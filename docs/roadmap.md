@@ -1,77 +1,68 @@
 # MOVRvest Roadmap
 
-> Invest with intelligence.
+## ✅ Foundation
+
+- CLI
+- Tests
+- CI
+- eToro integration
+- Yahoo Finance
+- Portfolio engine
+- Market engine
+- Policy engine
+- Decision engine
 
 ---
 
-# Vision
-
-Build the most trustworthy AI investment operating system.
-
-AI augments human judgment. It does not replace it.
-
----
-
-# Engineering Principles
-
-- Deterministic calculations
-- Explainable recommendations
-- Read-only before write access
-- Safety before automation
-- Tests before merge
-- Broker-agnostic architecture
-
----
-
-# Roadmap
-
-## Atlas ✅ (Foundation)
-
-- [x] eToro Demo connection
-- [x] Account Service
-- [x] Broker abstraction
-- [x] PortfolioSnapshot
-- [ ] Portfolio Service
-- [ ] `movrvest portfolio`
-
----
-
-## Mercury
-
-Market Intelligence
+## Phase 2
 
 - Economic calendar
-- Market data
-- News aggregation
-- Morning Brief
-
----
-
-## Apollo
-
-Investment Intelligence
-
-- Portfolio analysis
-- AI Committee
+- Earnings calendar
+- Watchlists
+- Portfolio analytics
 - Risk scoring
-- Recommendations
 
 ---
 
-## Athena
+## Phase 3
 
-Execution Intelligence
+Investment Committee
 
-- Trade proposals
-- Explainable execution
-- Approval workflow
+Specialized AI agents:
+
+- Risk Officer
+- Portfolio Manager
+- Macro Economist
+- Momentum Analyst
+- Value Investor
 
 ---
 
-## Olympus
+## Phase 4
 
-Autonomous Portfolio
+Web Dashboard
 
-- Multi-agent collaboration
-- Continuous learning
-- Multi-broker support
+- Portfolio visualization
+- Performance charts
+- Allocation
+- Historical decisions
+
+---
+
+## Phase 5
+
+Mobile Application
+
+iOS
+
+Android
+
+---
+
+## Long-Term Vision
+
+An AI-native investment operating system.
+
+Not another trading platform.
+
+A decision platform.

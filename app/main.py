@@ -9,7 +9,6 @@ from app.config import get_settings
 from app.models import PortfolioState, TradeProposal
 from app.risk import RiskEngine
 
-
 app = FastAPI(title="eToro Agentic Trader", version="0.2.0")
 settings = get_settings()
 risk_engine = RiskEngine(settings)

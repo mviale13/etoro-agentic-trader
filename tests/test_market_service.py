@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.domain.market_snapshot import MarketQuote
 from app.services.market_service import MarketService
@@ -23,7 +23,7 @@ def test_positive_low_volatility_market():
     snapshot = MarketService().build_snapshot(
         quotes,
         vix=12,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
     assert snapshot.market_mood == "positive"
@@ -50,21 +50,19 @@ def test_negative_high_volatility_market():
     snapshot = MarketService().build_snapshot(
         quotes,
         vix=30,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
     assert snapshot.market_mood == "negative"
     assert snapshot.volatility == "high"
-    assert snapshot.summary == (
-        "Markets are under pressure and volatility is high."
-    )
+    assert snapshot.summary == ("Markets are under pressure and volatility is high.")
 
 
 def test_empty_quotes_are_neutral():
     snapshot = MarketService().build_snapshot(
         (),
         vix=None,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
     assert snapshot.market_mood == "neutral"

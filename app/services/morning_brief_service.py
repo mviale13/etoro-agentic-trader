@@ -10,8 +10,7 @@ class MorningBriefService:
             health = "Healthy"
 
             summary = (
-                "Your portfolio is mostly cash. "
-                "There is no immediate action required."
+                "Your portfolio is mostly cash. There is no immediate action required."
             )
         else:
             recommendation = "REVIEW"

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.domain.account_snapshot import AccountSnapshot
 from app.services.portfolio_service import PortfolioService
@@ -13,7 +13,7 @@ def test_empty_invested_portfolio_is_all_cash():
         pending_orders=0,
         copy_portfolios=0,
         latency_ms=100,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         cash_usd=100_000,
         invested_usd=0,
         unrealized_pnl_usd=0,
@@ -38,7 +38,7 @@ def test_invested_assets_remain_unclassified_until_metadata_exists():
         pending_orders=0,
         copy_portfolios=0,
         latency_ms=100,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         cash_usd=20_000,
         invested_usd=80_000,
         unrealized_pnl_usd=0,
@@ -51,6 +51,5 @@ def test_invested_assets_remain_unclassified_until_metadata_exists():
     assert portfolio.allocation.unclassified == 80.0
     assert portfolio.positions == 2
     assert (
-        "Invested assets are not yet classified by asset type"
-        in portfolio.risk_flags
+        "Invested assets are not yet classified by asset type" in portfolio.risk_flags
     )

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
@@ -34,7 +34,7 @@ async def run() -> int:
         market = MarketService().build_snapshot(
             quotes=market_data.quotes,
             vix=market_data.vix,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
 
         decision = DecisionEngine().evaluate(
@@ -46,10 +46,7 @@ async def run() -> int:
         status = exc.response.status_code
         body = exc.response.text[:400]
 
-        print(
-            "MOVRvest could not retrieve the required data "
-            f"(HTTP {status})."
-        )
+        print(f"MOVRvest could not retrieve the required data (HTTP {status}).")
         print(body)
         return 1
     except Exception as exc:

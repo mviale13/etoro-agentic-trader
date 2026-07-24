@@ -37,10 +37,7 @@ class PolicyAnalyzer:
 
         threshold = policy.constraints.rebalance_threshold
 
-        compliant = all(
-            abs(item.difference) <= threshold
-            for item in differences
-        )
+        compliant = all(abs(item.difference) <= threshold for item in differences)
 
         return PolicyAnalysis(
             allocations=differences,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -117,8 +117,7 @@ class EtoroAccountBroker:
         )
 
         unrealized = sum(
-            cls._number((x.get("unrealizedPnL") or {}).get("pnL"))
-            for x in positions
+            cls._number((x.get("unrealizedPnL") or {}).get("pnL")) for x in positions
         )
 
         for mirror in mirrors:
@@ -126,9 +125,8 @@ class EtoroAccountBroker:
                 x for x in (mirror.get("positions") or []) if isinstance(x, dict)
             ]
             invested += sum(cls._number(x.get("amount")) for x in mirror_positions)
-            invested += (
-                cls._number(mirror.get("availableAmount"))
-                - cls._number(mirror.get("closedPositionsNetProfit"))
+            invested += cls._number(mirror.get("availableAmount")) - cls._number(
+                mirror.get("closedPositionsNetProfit")
             )
             unrealized += sum(
                 cls._number((x.get("unrealizedPnL") or {}).get("pnL"))
@@ -158,7 +156,7 @@ class EtoroAccountBroker:
             pending_orders=len(orders_for_open) + len(orders),
             copy_portfolios=len(mirrors),
             latency_ms=round(latency_ms, 1),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             cash_usd=cash,
             invested_usd=invested,
             unrealized_pnl_usd=unrealized,

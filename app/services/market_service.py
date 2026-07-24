@@ -33,9 +33,7 @@ class MarketService:
         if not quotes:
             return "neutral"
 
-        average_change = (
-            sum(quote.change_percent for quote in quotes) / len(quotes)
-        )
+        average_change = sum(quote.change_percent for quote in quotes) / len(quotes)
 
         if average_change >= self.POSITIVE_THRESHOLD:
             return "positive"

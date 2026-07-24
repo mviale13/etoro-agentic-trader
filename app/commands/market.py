@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.providers.yahoo_market_provider import YahooMarketProvider
 from app.renderers.market_renderer import MarketRenderer
@@ -12,7 +12,7 @@ async def run() -> int:
         snapshot = MarketService().build_snapshot(
             quotes=market_data.quotes,
             vix=market_data.vix,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
     except Exception as exc:
         print(f"MOVRvest market snapshot failed: {exc}")

@@ -60,8 +60,7 @@ class YahooMarketProvider:
         selected = instruments or self.DEFAULT_INSTRUMENTS
 
         tasks = [
-            asyncio.to_thread(self._fetch_quote, instrument)
-            for instrument in selected
+            asyncio.to_thread(self._fetch_quote, instrument) for instrument in selected
         ]
 
         results = await asyncio.gather(
@@ -78,9 +77,7 @@ class YahooMarketProvider:
             quotes.append(result)
 
         if not quotes:
-            raise RuntimeError(
-                "Yahoo Finance returned no usable market quotes"
-            )
+            raise RuntimeError("Yahoo Finance returned no usable market quotes")
 
         return tuple(quotes)
 
@@ -110,16 +107,14 @@ class YahooMarketProvider:
 
         if history is None or history.empty:
             raise RuntimeError(
-                "No Yahoo Finance data returned for "
-                f"{instrument.yahoo_symbol}"
+                f"No Yahoo Finance data returned for {instrument.yahoo_symbol}"
             )
 
         closes = history["Close"].dropna()
 
         if closes.empty:
             raise RuntimeError(
-                "No closing prices returned for "
-                f"{instrument.yahoo_symbol}"
+                f"No closing prices returned for {instrument.yahoo_symbol}"
             )
 
         latest = float(closes.iloc[-1])
@@ -128,9 +123,7 @@ class YahooMarketProvider:
             previous = float(closes.iloc[-2])
 
             change_percent = (
-                ((latest - previous) / previous) * 100
-                if previous != 0
-                else 0.0
+                ((latest - previous) / previous) * 100 if previous != 0 else 0.0
             )
         else:
             change_percent = 0.0
@@ -159,15 +152,11 @@ class YahooMarketProvider:
         )
 
         if history is None or history.empty:
-            raise RuntimeError(
-                f"No Yahoo Finance data returned for {symbol}"
-            )
+            raise RuntimeError(f"No Yahoo Finance data returned for {symbol}")
 
         closes = history["Close"].dropna()
 
         if closes.empty:
-            raise RuntimeError(
-                f"No closing prices returned for {symbol}"
-            )
+            raise RuntimeError(f"No closing prices returned for {symbol}")
 
         return round(float(closes.iloc[-1]), 2)

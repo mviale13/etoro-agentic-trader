@@ -18,7 +18,11 @@ class RiskEngine:
             reasons.append("short or sell-to-open trades are disabled")
         if proposal.leverage > self.s.max_leverage:
             reasons.append(f"leverage exceeds maximum {self.s.max_leverage}")
-        if not self.s.min_stop_loss_pct <= proposal.stop_loss_pct <= self.s.max_stop_loss_pct:
+        if (
+            not self.s.min_stop_loss_pct
+            <= proposal.stop_loss_pct
+            <= self.s.max_stop_loss_pct
+        ):
             reasons.append("stop-loss percentage is outside configured bounds")
         if proposal.take_profit_pct < self.s.min_take_profit_pct:
             reasons.append("take-profit percentage is below configured minimum")

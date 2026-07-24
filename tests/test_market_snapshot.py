@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 
@@ -22,7 +22,7 @@ def test_market_snapshot_returns_quote_by_symbol():
         market_mood="positive",
         volatility="low",
         summary="Markets are positive and volatility is low.",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
     bitcoin = snapshot.quote("btc")
@@ -38,7 +38,7 @@ def test_market_snapshot_returns_none_for_unknown_symbol():
         market_mood="neutral",
         volatility="unknown",
         summary="Markets are broadly neutral today.",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
     assert snapshot.quote("UNKNOWN") is None

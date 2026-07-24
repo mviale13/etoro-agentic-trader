@@ -1,14 +1,13 @@
-from datetime import datetime, timezone
 import json
+from datetime import UTC, datetime
 from pathlib import Path
-
 
 AUDIT_FILE = Path("audit.jsonl")
 
 
 def record(event_type: str, payload: dict) -> None:
     event = {
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "event_type": event_type,
         "payload": payload,
     }

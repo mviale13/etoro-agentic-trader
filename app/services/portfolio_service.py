@@ -23,9 +23,7 @@ class PortfolioService:
             risk_flags.append("Cash concentration")
 
         if invested_pct > 0:
-            risk_flags.append(
-                "Invested assets are not yet classified by asset type"
-            )
+            risk_flags.append("Invested assets are not yet classified by asset type")
 
         return PortfolioSnapshot(
             allocation=Allocation(

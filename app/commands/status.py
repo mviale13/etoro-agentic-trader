@@ -9,9 +9,7 @@ from app.services.account_service import AccountService
 async def run() -> int:
     settings = get_settings()
 
-    service = AccountService(
-        EtoroAccountBroker(settings)
-    )
+    service = AccountService(EtoroAccountBroker(settings))
 
     try:
         snapshot = await service.snapshot()

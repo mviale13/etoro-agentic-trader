@@ -26,16 +26,10 @@ class PolicyRenderer:
 
         print("Constraints")
 
-        print(
-            f"Max Position        {policy.constraints.max_single_position}%"
-        )
+        print(f"Max Position        {policy.constraints.max_single_position}%")
 
-        print(
-            f"Max Crypto          {policy.constraints.max_crypto}%"
-        )
+        print(f"Max Crypto          {policy.constraints.max_crypto}%")
 
-        print(
-            f"Rebalance Threshold {policy.constraints.rebalance_threshold}%"
-        )
+        print(f"Rebalance Threshold {policy.constraints.rebalance_threshold}%")
 
         print()

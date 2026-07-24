@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.domain.account_snapshot import AccountSnapshot
 from app.services.account_service import AccountService
@@ -15,12 +15,17 @@ class FakeBroker:
             pending_orders=1,
             copy_portfolios=0,
             latency_ms=12.5,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             cash_usd=900,
             invested_usd=100,
             unrealized_pnl_usd=5,
             equity_usd=1005,
         )
+
+
+class FailingBroker:
+    async def snapshot(self) -> AccountSnapshot:
+        raise RuntimeError("Connection failed")
 
 
 def test_account_service_returns_snapshot():
@@ -31,3 +36,7 @@ def test_account_service_returns_snapshot():
 
 def test_account_service_health():
     assert asyncio.run(AccountService(FakeBroker()).health())
+
+
+def test_account_service_health_returns_false_on_failure():
+    assert asyncio.run(AccountService(FailingBroker()).health()) is False
