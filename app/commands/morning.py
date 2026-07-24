@@ -1,4 +1,4 @@
-async def run():import httpx
+import httpx
 
 from app.brokers.etoro_account import EtoroAccountBroker
 from app.config import get_settings

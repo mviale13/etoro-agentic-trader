@@ -49,3 +49,4 @@ watchfiles==1.2.0
 websockets==16.1.1
 yfinance==1.5.2
 PyYAML==6.0.2
+ruff==0.16.0

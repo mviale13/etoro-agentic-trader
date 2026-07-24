@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class Side(str, Enum):
+class Side(StrEnum):
     buy = "buy"
     sell = "sell"
 
@@ -21,7 +21,7 @@ class TradeProposal(BaseModel):
     strategy: str
     reasons: list[str] = Field(min_length=1)
     approved_by_user: bool = False
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")
     def normalize_symbol(self):

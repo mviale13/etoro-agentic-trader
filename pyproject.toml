@@ -14,8 +14,8 @@ dependencies = [
   "pydantic==2.11.7",
   "pydantic-settings==2.10.1",
   "sqlalchemy==2.0.41",
-  "yfinance==1.5.2"
-  "PyYAML==6.0.2"
+  "yfinance==1.5.2",
+  "PyYAML==6.0.2",
 ]
 
 [project.scripts]
@@ -23,3 +23,10 @@ movrvest = "app.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
