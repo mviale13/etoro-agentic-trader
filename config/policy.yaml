@@ -1,0 +1,12 @@
+risk_profile: moderate
+
+target:
+  stocks: 60
+  etfs: 20
+  crypto: 10
+  cash: 10
+
+constraints:
+  max_single_position: 15
+  max_crypto: 20
+  rebalance_threshold: 5
