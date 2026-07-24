@@ -1,11 +1,12 @@
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 AUDIT_FILE = Path("audit.jsonl")
 
 
-def record(event_type: str, payload: dict) -> None:
+def record(event_type: str, payload: dict[str, Any]) -> None:
     event = {
         "created_at": datetime.now(UTC).isoformat(),
         "event_type": event_type,
@@ -15,7 +16,7 @@ def record(event_type: str, payload: dict) -> None:
         stream.write(json.dumps(event, default=str) + "\n")
 
 
-def recent(limit: int = 100) -> list[dict]:
+def recent(limit: int = 100) -> list[dict[str, Any]]:
     if not AUDIT_FILE.exists():
         return []
     lines = AUDIT_FILE.read_text(encoding="utf-8").splitlines()

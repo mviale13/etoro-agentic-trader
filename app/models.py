@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -24,7 +25,7 @@ class TradeProposal(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")
-    def normalize_symbol(self):
+    def normalize_symbol(self) -> "TradeProposal":
         self.symbol = self.symbol.upper().strip()
         return self
 
@@ -45,7 +46,6 @@ class RiskDecision(BaseModel):
 
 
 class ExecutionResult(BaseModel):
-    status: str
-    broker: str
-    proposal: TradeProposal
-    broker_response: dict = Field(default_factory=dict)
+    success: bool
+    message: str
+    broker_response: dict[str, Any] = Field(default_factory=dict)

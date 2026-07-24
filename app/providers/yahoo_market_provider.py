@@ -71,9 +71,8 @@ class YahooMarketProvider:
         quotes: list[MarketQuote] = []
 
         for result in results:
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 continue
-
             quotes.append(result)
 
         if not quotes:

@@ -1,7 +1,7 @@
 import argparse
 import asyncio
-from collections.abc import Awaitable, Callable
-from typing import NoReturn
+from collections.abc import Callable, Coroutine
+from typing import Any, NoReturn
 
 from app.commands import (
     decision,
@@ -11,7 +11,7 @@ from app.commands import (
     status,
 )
 
-CommandHandler = Callable[[], Awaitable[int]]
+CommandHandler = Callable[[], Coroutine[Any, Any, int]]
 
 COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "status": (

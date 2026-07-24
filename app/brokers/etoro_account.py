@@ -83,7 +83,10 @@ class EtoroAccountBroker:
             return default
 
     @classmethod
-    def _manual_pending_market_orders(cls, payload: dict[str, Any]) -> list[dict]:
+    def _manual_pending_market_orders(
+        cls,
+        payload: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         orders = payload.get("ordersForOpen") or []
         return [
             order

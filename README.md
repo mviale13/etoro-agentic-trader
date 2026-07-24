@@ -18,7 +18,6 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python -m pytest
-uvicorn app.main:app --reload
 ```
 
 Open `http://127.0.0.1:8000/docs`.
