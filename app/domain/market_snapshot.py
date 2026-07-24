@@ -15,6 +15,8 @@ class MarketQuote:
 class MarketSnapshot:
     quotes: tuple[MarketQuote, ...]
     market_mood: str
+    volatility: str
+    summary: str
     timestamp: datetime
 
     def quote(self, symbol: str) -> MarketQuote | None:

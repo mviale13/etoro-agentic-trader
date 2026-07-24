@@ -20,6 +20,8 @@ def test_market_snapshot_returns_quote_by_symbol():
             ),
         ),
         market_mood="positive",
+        volatility="low",
+        summary="Markets are positive and volatility is low.",
         timestamp=datetime.now(timezone.utc),
     )
 
@@ -34,6 +36,8 @@ def test_market_snapshot_returns_none_for_unknown_symbol():
     snapshot = MarketSnapshot(
         quotes=(),
         market_mood="neutral",
+        volatility="unknown",
+        summary="Markets are broadly neutral today.",
         timestamp=datetime.now(timezone.utc),
     )
 
