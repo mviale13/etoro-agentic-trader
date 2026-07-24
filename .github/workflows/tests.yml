@@ -1,11 +1,10 @@
-name: Tests
+name:Tests
 
 on:
   push:
     branches:
       - main
       - "agent/**"
-      - "feature/**"
   pull_request:
     branches:
       - main
@@ -29,4 +28,4 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m pytest
+          pytest
