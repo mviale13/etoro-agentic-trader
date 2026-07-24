@@ -10,7 +10,11 @@ class MarketQuote:
     change_percent: float
     currency: str = "USD"
 
-
+@dataclass(frozen=True, slots=True)
+class MarketData:
+    quotes: tuple[MarketQuote, ...]
+    vix: float | None
+    
 @dataclass(frozen=True, slots=True)
 class MarketSnapshot:
     quotes: tuple[MarketQuote, ...]
