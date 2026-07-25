@@ -5,6 +5,7 @@ from typing import Any, NoReturn
 
 from app.commands import (
     decision,
+    intelligence,
     market,
     morning,
     policy,
@@ -33,6 +34,10 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "decision": (
         "Generate a deterministic investment decision",
         decision.run,
+    ),
+    "intelligence": (
+        "Show the current market intelligence",
+        intelligence.run,
     ),
 }
 

@@ -1,18 +1,36 @@
+from dataclasses import FrozenInstanceError
+from datetime import UTC, datetime
+
+import pytest
+
 from app.domain.market_intelligence import MarketIntelligence
+from app.domain.market_snapshot import MarketSnapshot
+from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
 def test_market_intelligence_is_immutable():
     intelligence = MarketIntelligence(
-        market_mood="positive",
-        volatility="low",
-        fear_greed=70,
-        vix=14.2,
-        treasury_10y=4.1,
-        gold_change=0.3,
-        oil_change=-0.2,
-        dollar_index=102.1,
+        market=MarketSnapshot(
+            quotes=(),
+            market_mood="positive",
+            volatility="low",
+            summary="Healthy market.",
+            timestamp=datetime.now(UTC),
+        ),
+        sentiment=SentimentSnapshot(
+            score=70,
+            label="Greed",
+            source="Alternative.me",
+        ),
+        outlook="BULLISH",
+        confidence=90,
         summary="Markets remain constructive.",
     )
 
-    assert intelligence.market_mood == "positive"
-    assert intelligence.fear_greed == 70
+    assert intelligence.market.market_mood == "positive"
+    assert intelligence.sentiment.score == 70
+    assert intelligence.outlook == "BULLISH"
+    assert intelligence.confidence == 90
+
+    with pytest.raises(FrozenInstanceError):
+        intelligence.outlook = "BEARISH"
