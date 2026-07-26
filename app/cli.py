@@ -14,6 +14,7 @@ from app.commands import (
     morning,
     policy,
     status,
+    today,
     watchlist,
 )
 
@@ -63,6 +64,10 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "watchlist": (
         "Analyze your watchlist",
         watchlist.run,
+    ),
+    "today": (
+        "Show the MOVRvest Morning Brief",
+        today.run,
     ),
 }
 

@@ -1,89 +1,169 @@
 # MOVRvest Roadmap
 
-## ✅ Foundation
-
-- CLI
-- Tests
-- CI
-- eToro integration
-- Yahoo Finance
-- Portfolio engine
-- Market engine
-- Policy engine
-- Decision engine
+> Invest with intelligence.
 
 ---
 
-## Phase 2
+# Vision
 
-- Economic calendar
-- Earnings calendar
-- Watchlists
-- Portfolio analytics
-- Risk scoring
+MOVRvest is an explainable AI investment copilot designed for eToro investors.
 
----
+Its mission is simple:
 
-## Phase 3
+**Help investors make one better investment decision every day.**
 
-Investment Committee
+MOVRvest does not replace the investor.
 
-Specialized AI agents:
-
-- Risk Officer
-- Portfolio Manager
-- Macro Economist
-- Momentum Analyst
-- Value Investor
+It provides clear recommendations, transparent reasoning and actionable insights while keeping the human in control.
 
 ---
 
-## Phase 4
+# Product Principles
 
-Web Dashboard
+## Explainable
 
-- Portfolio visualization
-- Performance charts
+Every recommendation must explain itself.
+
+No black boxes.
+
+---
+
+## Calm
+
+Reduce noise.
+
+Never overwhelm the investor.
+
+---
+
+## Actionable
+
+Every screen ends with exactly one next action.
+
+---
+
+## Human First
+
+AI proposes.
+
+Humans decide.
+
+---
+
+## Trust
+
+Consistency is more important than excitement.
+
+---
+
+# North Star
+
+Users open MOVRvest before opening eToro.
+
+---
+
+# Roadmap
+
+## v0.5 – Intelligence Engine ✅
+
+- Committee Engine
+- Explain
+- Portfolio Doctor
+- Event Store
+- Morning Brief
+- FastAPI
+- REST API
+
+---
+
+## v0.6 – Platform ✅
+
+- FastAPI
+- Typed API
+- Next.js
+- Dashboard foundation
+
+---
+
+## v0.7 – Dashboard
+
+Goal:
+
+Build a dashboard investors want to open every morning.
+
+Features
+
+- Beautiful dashboard
+- Investment Readiness
+- Today's Opportunity
+- Next Action
+- Live Market Mood
+- Responsive layout
+
+---
+
+## v0.8 – Portfolio
+
+Goal:
+
+Understand the portfolio in seconds.
+
+Features
+
+- Portfolio Value
+- Cash
+- Positions
 - Allocation
-- Historical decisions
+- Performance
+- Investment Readiness
 
 ---
 
-## Phase 5
+## v0.9 – Explainability
 
-Mobile Application
+Goal:
 
-iOS
+Become the most transparent investing assistant.
 
-Android
+Features
+
+- Explain page
+- Committee votes
+- Confidence breakdown
+- Recommendation history
+- Decision timeline
 
 ---
 
-## Long-Term Vision
+## v1.0 – Public Beta
 
-An AI-native investment operating system.
+Goal:
 
-Not another trading platform.
+Daily operating system for eToro investors.
 
-A decision platform.
+Features
 
+- Authentication
+- Personalized dashboard
+- Daily Morning Brief
+- Watchlist
+- Notifications
+- Production deployment
 
-# MOVRvest Roadmap
+---
 
-## v0.4
-- [ ] Value Committee
-- [ ] Macro Committee
-- [ ] Watchlist
-- [ ] Explain command
+# Long-Term Vision
 
-## v0.5
-- [ ] Historical decisions
-- [ ] Performance tracking
-- [ ] Portfolio analytics
+Imagine opening MOVRvest every morning.
 
-## v1.0
-- [ ] Opportunity engine
-- [ ] Daily dashboard
-- [ ] AI analyst
-- [ ] CI/CD
-- [ ] Documentation
+It greets you.
+
+It explains what changed.
+
+It tells you whether you should act.
+
+If nothing important changed...
+
+It simply tells you to enjoy your day.
+
+That is success.
