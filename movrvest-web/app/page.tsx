@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Header } from "@/components/dashboard/Header";
 import { OpportunityCard } from "@/components/dashboard/OpportunityCard";
 import { PortfolioHealthCard } from "@/components/dashboard/PortfolioHealthCard";
+import { ChangesCard } from "@/components/dashboard/ChangesCard";
 
 export default async function Home() {
   const today = await getToday();
@@ -13,16 +14,7 @@ export default async function Home() {
       <Header greeting={today.greeting} />
 
         <section className="grid gap-6 md:grid-cols-2">
-          <article className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <p className="text-sm text-slate-400">Portfolio Health</p>
-
-            <p className="mt-3 text-4xl font-semibold">
-              {today.health.score}
-              <span className="text-xl text-slate-500"> / 100</span>
-            </p>
-
-            <p className="mt-4 text-slate-300">{today.summary}</p>
-          </article>
+          <ChangesCard changes={today.changes} />
 
           <OpportunityCard
             symbol={today.recommendation.symbol}
