@@ -1,12 +1,25 @@
 # MOVRvest
 
-> An explainable investment operating system.
+> Explainable Multi-Asset Investment Operating System
+
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Tests](https://img.shields.io/badge/tests-74%20passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-v0.4.0--alpha-orange)
+![Architecture](https://img.shields.io/badge/architecture-clean-success)
 
 MOVRvest combines portfolio data, market intelligence, investment policy, valuation, and specialist committee opinions to produce transparent investment recommendations.
 
 It does not trade automatically.
 
 It helps the investor make a better-informed decision.
+
+## Philosophy
+
+Before exploring the code, read the
+**[MOVRvest Manifesto](docs/MANIFESTO.md)**.
+
+It defines the principles that guide every architectural and investment decision.
 
 ## Current status
 

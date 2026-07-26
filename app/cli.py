@@ -7,6 +7,7 @@ from app.commands import (
     committee,
     daily,
     decision,
+    doctor,
     explain,
     intelligence,
     market,
@@ -50,6 +51,10 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "daily": (
         "Show the daily investment briefing",
         daily.run,
+    ),
+    "doctor": (
+        "Analyze your portfolio health",
+        doctor.run,
     ),
     "explain": (
         "Explain an investment decision",
