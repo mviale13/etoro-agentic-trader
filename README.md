@@ -1,4 +1,4 @@
-# eToro Agentic Trader v2
+# eToro Agentic Trader
 
 Python 3.12 starter with paper trading, crypto support, deterministic risk controls,
 manual approval, audit logging, a kill switch, and guarded eToro Demo/Real connectors.
