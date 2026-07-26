@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/Card";
+import { ProgressRing } from "@/components/ui/ProgressRing";
 
 type PortfolioHealthCardProps = {
   score: number;
@@ -15,15 +16,11 @@ export function PortfolioHealthCard({
         Portfolio Health
       </p>
 
-      <p className="mt-3 text-4xl font-semibold">
-        {score}
-        <span className="text-xl text-slate-500">
-          {" "}
-          / 100
-        </span>
-      </p>
+      <div className="mt-6 flex justify-center">
+        <ProgressRing value={score} />
+      </div>
 
-      <p className="mt-4 text-slate-300">
+      <p className="mt-6 text-center text-slate-300">
         {summary}
       </p>
     </Card>

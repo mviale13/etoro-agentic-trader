@@ -4,6 +4,7 @@ import { Header } from "@/components/dashboard/Header";
 import { OpportunityCard } from "@/components/dashboard/OpportunityCard";
 import { PortfolioHealthCard } from "@/components/dashboard/PortfolioHealthCard";
 import { ChangesCard } from "@/components/dashboard/ChangesCard";
+import { NextActionCard } from "@/components/dashboard/NextActionCard";
 
 export default async function Home() {
   const today = await getToday();
@@ -27,15 +28,7 @@ export default async function Home() {
             summary={today.summary}
           />
 
-          <article className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-6 md:col-span-2">
-            <p className="text-sm font-semibold uppercase tracking-wider text-cyan-300">
-              Next Action
-            </p>
-
-            <p className="mt-3 text-xl font-medium">
-              {today.next_action}
-            </p>
-          </article>
+          <NextActionCard action={today.next_action} />
         </section>
     </DashboardLayout>
   );
