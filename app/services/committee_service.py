@@ -10,9 +10,7 @@ from app.committee.risk import RiskCommittee
 from app.committee.value import ValueCommittee
 from app.config import get_settings
 from app.domain.committee_context import CommitteeContext
-from app.domain.committee_decision import CommitteeDecision
-from app.domain.market_intelligence import MarketIntelligence
-from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.recommendation import Recommendation
 from app.providers.crypto_fear_greed_provider import (
     CryptoFearGreedProvider,
 )
@@ -31,11 +29,7 @@ class CommitteeService:
     async def evaluate(
         self,
         symbol: str = "SPY",
-    ) -> tuple[
-        PortfolioSnapshot,
-        MarketIntelligence,
-        CommitteeDecision,
-    ]:
+    ) -> Recommendation:
         settings = get_settings()
 
         account = await AccountService(
@@ -81,4 +75,9 @@ class CommitteeService:
 
         decision = CommitteeChairman().decide(opinions)
 
-        return portfolio, intelligence, decision
+        return Recommendation(
+            symbol=symbol.upper(),
+            portfolio=portfolio,
+            intelligence=intelligence,
+            decision=decision,
+        )

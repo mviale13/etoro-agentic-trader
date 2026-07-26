@@ -56,7 +56,7 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
         explain.run,
     ),
     "watchlist": (
-        "Analyze your investment watchlist",
+        "Analyze your watchlist",
         watchlist.run,
     ),
 }

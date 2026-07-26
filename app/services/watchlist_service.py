@@ -1,12 +1,28 @@
-from app.domain.watchlist_result import WatchlistResult
+from app.domain.recommendation import Recommendation
+from app.services.committee_service import CommitteeService
 
 
 class WatchlistService:
-    def build(self) -> list[WatchlistResult]:
-        return [
-            WatchlistResult("ASML", "BUY", 91),
-            WatchlistResult("MSFT", "BUY", 88),
-            WatchlistResult("GOOGL", "BUY", 84),
-            WatchlistResult("META", "HOLD", 74),
-            WatchlistResult("AMD", "SELL", 58),
-        ]
+    WATCHLIST = [
+        "MSFT",
+        "ASML",
+        "GOOGL",
+        "META",
+        "AMZN",
+    ]
+
+    async def build(self) -> list[Recommendation]:
+        recommendations: list[Recommendation] = []
+
+        committee = CommitteeService()
+
+        for symbol in self.WATCHLIST:
+            recommendation = await committee.evaluate(symbol)
+            recommendations.append(recommendation)
+
+        recommendations.sort(
+            key=lambda r: r.decision.confidence,
+            reverse=True,
+        )
+
+        return recommendations

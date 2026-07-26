@@ -3,8 +3,8 @@ from app.services.watchlist_service import WatchlistService
 
 
 async def run() -> int:
-    results = WatchlistService().build()
+    recommendations = await WatchlistService().build()
 
-    WatchlistRenderer.render(results)
+    WatchlistRenderer.render(recommendations)
 
     return 0

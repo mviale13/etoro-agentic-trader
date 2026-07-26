@@ -1,14 +1,35 @@
-from app.domain.watchlist_result import WatchlistResult
+from rich.console import Console
+
+from app.domain.recommendation import Recommendation
+
+console = Console()
 
 
 class WatchlistRenderer:
     @staticmethod
-    def render(results: list[WatchlistResult]) -> None:
-        print()
-        print("MOVRvest")
-        print("Watchlist")
-        print("══════════════════════════════")
-        print()
+    def render(
+        recommendations: list[Recommendation],
+    ) -> None:
+        console.print()
 
-        for result in results:
-            print(f"{result.symbol:<8}{result.recommendation:<6}{result.confidence}%")
+        console.print("[bold cyan]MOVRvest[/bold cyan]")
+        console.print("[bold]Watchlist[/bold]")
+        console.print("══════════════════════════════")
+        console.print()
+
+        for recommendation in recommendations:
+            decision = recommendation.decision
+
+            color = {
+                "BUY": "green",
+                "HOLD": "yellow",
+                "SELL": "red",
+            }.get(decision.recommendation, "white")
+
+            console.print(
+                f"{recommendation.symbol:<8}"
+                f"[{color}]"
+                f"{decision.recommendation:<5}"
+                f"[/{color}]   "
+                f"{decision.confidence}%"
+            )
