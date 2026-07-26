@@ -2,6 +2,7 @@ import { getToday } from "@/lib/api";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Header } from "@/components/dashboard/Header";
 import { OpportunityCard } from "@/components/dashboard/OpportunityCard";
+import { PortfolioHealthCard } from "@/components/dashboard/PortfolioHealthCard";
 
 export default async function Home() {
   const today = await getToday();
@@ -29,17 +30,10 @@ export default async function Home() {
             confidence={today.recommendation.confidence}
           />
 
-          <article className="rounded-2xl border border-slate-800 bg-slate-900 p-6 md:col-span-2">
-            <p className="text-sm text-slate-400">What Changed</p>
-
-            <ul className="mt-4 space-y-2">
-              {today.changes.map((change) => (
-                <li key={change} className="text-slate-300">
-                  • {change}
-                </li>
-              ))}
-            </ul>
-          </article>
+          <PortfolioHealthCard
+            score={today.health.score}
+            summary={today.summary}
+          />
 
           <article className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-6 md:col-span-2">
             <p className="text-sm font-semibold uppercase tracking-wider text-cyan-300">
