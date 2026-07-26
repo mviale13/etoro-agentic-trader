@@ -74,15 +74,30 @@ def main() -> NoReturn:
     )
 
     for name, (help_text, _) in COMMANDS.items():
-        subparsers.add_parser(
+        command_parser = subparsers.add_parser(
             name,
             help=help_text,
         )
 
+        if name == "explain":
+            command_parser.add_argument(
+                "symbol",
+                nargs="?",
+                default="SPY",
+                help="Ticker symbol, for example MSFT, ASML or BTC-USD",
+            )
+
     args = parser.parse_args()
 
-    _, handler = COMMANDS[args.command]
-    raise SystemExit(asyncio.run(handler()))
+    if args.command == "explain":
+        raise SystemExit(
+            asyncio.run(
+                explain.run(args.symbol),
+            )
+        )
+
+    _, command_handler = COMMANDS[args.command]
+    raise SystemExit(asyncio.run(command_handler()))
 
 
 if __name__ == "__main__":
