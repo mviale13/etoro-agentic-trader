@@ -66,3 +66,24 @@ An AI-native investment operating system.
 Not another trading platform.
 
 A decision platform.
+
+
+# MOVRvest Roadmap
+
+## v0.4
+- [ ] Value Committee
+- [ ] Macro Committee
+- [ ] Watchlist
+- [ ] Explain command
+
+## v0.5
+- [ ] Historical decisions
+- [ ] Performance tracking
+- [ ] Portfolio analytics
+
+## v1.0
+- [ ] Opportunity engine
+- [ ] Daily dashboard
+- [ ] AI analyst
+- [ ] CI/CD
+- [ ] Documentation

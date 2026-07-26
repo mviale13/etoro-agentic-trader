@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from app.committee.momentum import MomentumCommittee
+from app.committee.risk import RiskCommittee
 from app.domain.committee_context import CommitteeContext
 from app.domain.investment_policy import (
     AllocationTarget,
@@ -13,12 +13,12 @@ from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
 from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
-def context(outlook: str) -> CommitteeContext:
+def context(volatility: str) -> CommitteeContext:
     intelligence = MarketIntelligence(
         market=MarketSnapshot(
             quotes=(),
             market_mood="positive",
-            volatility="low",
+            volatility=volatility,
             summary="Healthy",
             timestamp=datetime.now(UTC),
         ),
@@ -27,7 +27,7 @@ def context(outlook: str) -> CommitteeContext:
             label="Greed",
             source="Alternative.me",
         ),
-        outlook=outlook,
+        outlook="BULLISH",
         confidence=80,
         summary="Healthy market.",
     )
@@ -69,25 +69,25 @@ def context(outlook: str) -> CommitteeContext:
     )
 
 
-def test_buy_vote():
-    opinion = MomentumCommittee().evaluate(
-        context("BULLISH"),
+def test_low_volatility():
+    opinion = RiskCommittee().evaluate(
+        context("low"),
     )
 
     assert opinion.vote == "BUY"
 
 
-def test_sell_vote():
-    opinion = MomentumCommittee().evaluate(
-        context("BEARISH"),
+def test_medium_volatility():
+    opinion = RiskCommittee().evaluate(
+        context("medium"),
     )
 
-    assert opinion.vote == "SELL"
+    assert opinion.vote == "HOLD"
 
 
-def test_hold_vote():
-    opinion = MomentumCommittee().evaluate(
-        context("NEUTRAL"),
+def test_high_volatility():
+    opinion = RiskCommittee().evaluate(
+        context("high"),
     )
 
     assert opinion.vote == "HOLD"

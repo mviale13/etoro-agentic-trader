@@ -1,12 +1,15 @@
+from app.committee.base import CommitteeMember
+from app.domain.committee_context import CommitteeContext
 from app.domain.committee_opinion import CommitteeOpinion
-from app.domain.market_intelligence import MarketIntelligence
 
 
-class MomentumCommittee:
+class MomentumCommittee(CommitteeMember):
     def evaluate(
         self,
-        intelligence: MarketIntelligence,
+        context: CommitteeContext,
     ) -> CommitteeOpinion:
+        intelligence = context.intelligence
+
         if intelligence.outlook == "BULLISH":
             return CommitteeOpinion(
                 member="Momentum",

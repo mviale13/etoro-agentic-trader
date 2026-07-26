@@ -4,12 +4,16 @@ from collections.abc import Callable, Coroutine
 from typing import Any, NoReturn
 
 from app.commands import (
+    committee,
+    daily,
     decision,
+    explain,
     intelligence,
     market,
     morning,
     policy,
     status,
+    watchlist,
 )
 
 CommandHandler = Callable[[], Coroutine[Any, Any, int]]
@@ -38,6 +42,22 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "intelligence": (
         "Show the current market intelligence",
         intelligence.run,
+    ),
+    "committee": (
+        "Run the investment committee",
+        committee.run,
+    ),
+    "daily": (
+        "Show the daily investment briefing",
+        daily.run,
+    ),
+    "explain": (
+        "Explain an investment decision",
+        explain.run,
+    ),
+    "watchlist": (
+        "Analyze your investment watchlist",
+        watchlist.run,
     ),
 }
 

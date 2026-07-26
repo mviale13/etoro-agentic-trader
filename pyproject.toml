@@ -59,7 +59,3 @@ fail_under = 60
 [[tool.mypy.overrides]]
 module = "yfinance.*"
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "app.main"
-ignore_errors = true
