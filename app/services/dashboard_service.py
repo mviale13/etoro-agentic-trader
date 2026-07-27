@@ -13,11 +13,14 @@ from app.api.models.today import (
 )
 from app.brokers.etoro_account import EtoroAccountBroker
 from app.config import Settings
+from app.repositories.json_event_repository import JsonEventRepository
 from app.services.account_service import AccountService
 from app.services.brief_service import BriefService
 from app.services.daily_reflection_service import DailyReflectionService
 from app.services.investor_dna_service import InvestorDNAService
 from app.services.investor_observation_service import InvestorObservationService
+from app.services.memory_builder import MemoryBuilder
+from app.services.memory_service import MemoryService
 from app.services.opportunity_service import OpportunityService
 from app.services.portfolio_service import PortfolioService
 from app.services.signal_service import SignalService
@@ -132,6 +135,12 @@ class DashboardService:
             current=snapshot,
             previous=None,
         )
+
+        memory_service = MemoryService(JsonEventRepository())
+
+        for memory in MemoryBuilder().build(signals):
+            memory_service.remember(memory)
+
         result = InvestorObservationService().observe(signals)
 
         observation = ObservationResponse(

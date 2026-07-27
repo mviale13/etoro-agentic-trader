@@ -8,3 +8,4 @@ class EventType(StrEnum):
     ORDER_APPROVED = "order_approved"
     ORDER_EXECUTED = "order_executed"
     POSITION_CLOSED = "position_closed"
+    MEMORY_RECORDED = "memory_recorded"
