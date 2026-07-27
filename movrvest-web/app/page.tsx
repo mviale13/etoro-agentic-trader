@@ -7,10 +7,13 @@ import { ChangesCard } from "@/components/dashboard/ChangesCard";
 import { NextActionCard } from "@/components/dashboard/NextActionCard";
 import { DoctorCard } from "@/components/dashboard/DoctorCard";
 import { getDoctor } from "@/lib/doctor-api";
+import { ExplainCard } from "@/components/dashboard/ExplainCard";
+import { getExplanation } from "@/lib/explanation-api";
 
 export default async function Home() {
   const today = await getToday();
   const doctor = await getDoctor();
+  const explanation = await getExplanation();
 
   return (
     <DashboardLayout>
@@ -23,7 +26,12 @@ export default async function Home() {
           projectedHealth={doctor.projected_health}
         />
       )}
-        <section className="grid gap-6 md:grid-cols-2">
+      <ExplainCard
+        recommendation={explanation.recommendation}
+        confidence={explanation.confidence}
+        reasons={explanation.reasons}
+      />
+      <section className="grid gap-6 md:grid-cols-2">
           <ChangesCard changes={today.changes} />
 
           <OpportunityCard
