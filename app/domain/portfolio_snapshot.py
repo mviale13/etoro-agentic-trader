@@ -18,3 +18,8 @@ class PortfolioSnapshot:
     largest_position: str | None
     largest_position_pct: float
     risk_flags: tuple[str, ...]
+    total_value_eur: float = 0.0
+
+    @property
+    def total_value_usd(self) -> float:
+        return self.total_value

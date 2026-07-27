@@ -25,6 +25,7 @@ async def get_portfolio() -> PortfolioResponse:
 
     return PortfolioResponse(
         total_value=portfolio.total_value,
+        total_value_eur=portfolio.total_value_eur,
         positions=portfolio.positions,
         allocation=AllocationResponse(
             cash=portfolio.allocation.cash,

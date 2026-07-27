@@ -116,6 +116,7 @@ class DashboardService:
 
         portfolio = PortfolioResponse(
             total_value=snapshot.total_value,
+            total_value_eur=snapshot.total_value_eur,
             positions=snapshot.positions,
             allocation=AllocationResponse(
                 cash=snapshot.allocation.cash,

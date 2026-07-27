@@ -1,5 +1,6 @@
 from app.domain.account_snapshot import AccountSnapshot
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
+from app.services.exchange_rate_service import ExchangeRateService
 
 
 class PortfolioService:
@@ -38,10 +39,12 @@ class PortfolioService:
             largest_position=None,
             largest_position_pct=0.0,
             risk_flags=tuple(risk_flags),
+            total_value_eur=ExchangeRateService().usd_to_eur(equity),
         )
 
     @staticmethod
     def _percentage(value: float, total: float) -> float:
         if total <= 0:
             return 0.0
+
         return round((value / total) * 100, 2)
