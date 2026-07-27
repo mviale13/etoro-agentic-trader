@@ -8,6 +8,7 @@ from app.services.investor_observation_service import (
     InvestorObservationService,
 )
 from app.services.portfolio_service import PortfolioService
+from app.services.signal_service import SignalService
 
 router = APIRouter(
     prefix="/observation",
@@ -22,7 +23,12 @@ async def get_observation() -> ObservationResponse:
 
     account = await AccountService(broker).snapshot()
     portfolio = PortfolioService().analyze(account)
-    observation = InvestorObservationService().observe(portfolio)
+
+    signals = SignalService().analyze(
+        current=portfolio,
+        previous=None,
+    )
+    observation = InvestorObservationService().observe(signals)
 
     return ObservationResponse(
         title=observation.title,

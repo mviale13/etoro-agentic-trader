@@ -1,41 +1,59 @@
+from collections.abc import Sequence
+
 from app.domain.observation import Observation
-from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.signal import Signal
 
 
 class InvestorObservationService:
-    def observe(self, portfolio: PortfolioSnapshot) -> Observation:
-        if portfolio.allocation.cash >= 40:
-            return Observation(
-                title="Cash Position",
-                message=(
-                    "You currently hold a large cash position. "
-                    "This gives you flexibility if new opportunities appear."
-                ),
-                category="cash",
-            )
+    def observe(self, signals: Sequence[Signal]) -> Observation:
+        primary_signal = self._select_primary_signal(signals)
 
-        if portfolio.positions <= 5:
+        if primary_signal is None:
             return Observation(
-                title="Concentration",
+                title="Steady Course",
                 message=(
-                    "Your portfolio is relatively concentrated. "
-                    "Each investment will have a stronger impact on performance."
+                    "Your portfolio appears balanced. "
+                    "Staying disciplined is often an advantage."
                 ),
-                category="risk",
-            )
-
-        if portfolio.positions >= 20:
-            return Observation(
-                title="Diversification",
-                message=("Your portfolio is well diversified across many positions."),
-                category="diversification",
+                category="general",
             )
 
         return Observation(
-            title="Steady Course",
-            message=(
-                "Your portfolio appears balanced. "
-                "Staying disciplined is often an advantage."
+            title=primary_signal.title,
+            message=primary_signal.message,
+            category=self._category_for(primary_signal),
+        )
+
+    @staticmethod
+    def _select_primary_signal(
+        signals: Sequence[Signal],
+    ) -> Signal | None:
+        if not signals:
+            return None
+
+        severity_priority = {
+            "critical": 0,
+            "warning": 1,
+            "info": 2,
+        }
+
+        return min(
+            signals,
+            key=lambda signal: severity_priority.get(
+                signal.severity,
+                3,
             ),
-            category="general",
+        )
+
+    @staticmethod
+    def _category_for(signal: Signal) -> str:
+        categories = {
+            "cash": "cash",
+            "concentration": "risk",
+            "diversification": "diversification",
+        }
+
+        return categories.get(
+            signal.type,
+            "general",
         )

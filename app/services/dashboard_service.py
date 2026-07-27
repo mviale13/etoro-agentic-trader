@@ -20,6 +20,7 @@ from app.services.investor_dna_service import InvestorDNAService
 from app.services.investor_observation_service import InvestorObservationService
 from app.services.opportunity_service import OpportunityService
 from app.services.portfolio_service import PortfolioService
+from app.services.signal_service import SignalService
 
 
 class DashboardService:
@@ -126,7 +127,11 @@ class DashboardService:
             risk_flags=list(snapshot.risk_flags),
         )
 
-        result = InvestorObservationService().observe(snapshot)
+        signals = SignalService().analyze(
+            current=snapshot,
+            previous=None,
+        )
+        result = InvestorObservationService().observe(signals)
 
         observation = ObservationResponse(
             title=result.title,
