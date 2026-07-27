@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.routes.committee import router as committee_router
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.doctor import router as doctor_router
 from app.api.routes.explanation import router as explanation_router
@@ -26,6 +27,7 @@ app.include_router(portfolio_health_router)
 app.include_router(investor_dna_router)
 app.include_router(portfolio_router)
 app.include_router(observation_router)
+app.include_router(committee_router)
 app.include_router(dashboard_router)
 
 
