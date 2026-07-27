@@ -1,28 +1,33 @@
+import { ShieldCheck } from "lucide-react";
+
 import { Card } from "@/components/ui/Card";
-import { ProgressRing } from "@/components/ui/ProgressRing";
+import type { PortfolioHealthResponse } from "@/lib/portfolio-health-api";
 
 type PortfolioHealthCardProps = {
-  score: number;
-  summary: string;
+  health: PortfolioHealthResponse;
 };
 
 export function PortfolioHealthCard({
-  score,
-  summary,
+  health,
 }: PortfolioHealthCardProps) {
   return (
     <Card>
-      <p className="text-sm text-slate-400">
-        Portfolio Health
-      </p>
-
-      <div className="mt-6 flex justify-center">
-        <ProgressRing value={score} />
+      <div className="flex items-center gap-2">
+        <ShieldCheck className="h-5 w-5 text-green-400" />
+        <h2 className="text-lg font-semibold">
+          Portfolio Health
+        </h2>
       </div>
 
-      <p className="mt-6 text-center text-slate-300">
-        {summary}
-      </p>
+      <div className="mt-6">
+        <p className="text-5xl font-bold text-green-400">
+          {health.score}
+        </p>
+
+        <p className="mt-4 text-sm text-slate-300">
+          {health.summary}
+        </p>
+      </div>
     </Card>
   );
 }

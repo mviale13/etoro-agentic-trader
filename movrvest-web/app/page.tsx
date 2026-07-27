@@ -10,11 +10,16 @@ import { ExplainCard } from "@/components/dashboard/ExplainCard";
 import { getExplanation } from "@/lib/explanation-api";
 import { TopOpportunitiesCard } from "@/components/dashboard/TopOpportunitiesCard";
 import { getOpportunities } from "@/lib/opportunities-api";
+import { ReflectionCard } from "@/components/dashboard/ReflectionCard";
+import { getReflection } from "@/lib/reflection-api";
+import { getPortfolioHealth } from "@/lib/portfolio-health-api";
 
 export default async function Home() {
   const today = await getToday();
   const doctor = await getDoctor();
   const explanation = await getExplanation();
+  const portfolioHealth = await getPortfolioHealth();
+  const reflection = await getReflection();
   const opportunities = await getOpportunities();
 
   return (
@@ -38,12 +43,10 @@ export default async function Home() {
 
           <TopOpportunitiesCard opportunities={opportunities} />
 
-          <PortfolioHealthCard
-            score={today.health.score}
-            summary={today.summary}
-          />
+          <PortfolioHealthCard health={portfolioHealth} />
 
           <NextActionCard action={today.next_action} />
+          <ReflectionCard reflection={reflection} />
         </section>
     </DashboardLayout>
   );
