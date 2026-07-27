@@ -1,20 +1,36 @@
 # MOVRvest Roadmap
 
-> Invest with intelligence.
+## Phase 1 — Morning Brief
 
----
+- Top Opportunities
+- Portfolio Health
+- Discovery
+- Needs Review
+- Explain
 
-# Vision
+## Phase 2 — Portfolio Intelligence
 
-MOVRvest is an explainable AI investment copilot designed for eToro investors.
+- Portfolio page
+- Watchlist Intelligence
+- Timeline
+- Alerts
 
-Its mission is simple:
+## Phase 3 — Personal AI
 
-**Help investors make one better investment decision every day.**
+- Learns investment style
+- Personalized Discovery
+- Personalized recommendations
+- Portfolio optimization
 
-MOVRvest does not replace the investor.
+## Phase 4 — AI Chief Investment Officer
 
-It provides clear recommendations, transparent reasoning and actionable insights while keeping the human in control.
+Daily Brief
+
+Weekly Review
+
+Monthly Strategy
+
+Long-term portfolio guidance
 
 ---
 
