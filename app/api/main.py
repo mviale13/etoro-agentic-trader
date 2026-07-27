@@ -3,12 +3,21 @@ from fastapi import FastAPI
 from app.api.routes.committee import router as committee_router
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.doctor import router as doctor_router
+from app.api.routes.executive_dashboard import (
+    router as executive_dashboard_router,
+)
 from app.api.routes.explanation import router as explanation_router
 from app.api.routes.investor_dna import router as investor_dna_router
 from app.api.routes.observation import router as observation_router
 from app.api.routes.opportunities import router as opportunities_router
 from app.api.routes.portfolio import router as portfolio_router
 from app.api.routes.portfolio_health import router as portfolio_health_router
+from app.api.routes.recommendation import (
+    router as recommendation_router,
+)
+from app.api.routes.recommendation_timeline import (
+    router as recommendation_timeline_router,
+)
 from app.api.routes.reflection import router as reflection_router
 from app.api.routes.today import router as today_router
 
@@ -23,12 +32,17 @@ app.include_router(doctor_router)
 app.include_router(explanation_router)
 app.include_router(opportunities_router)
 app.include_router(reflection_router)
+app.include_router(recommendation_timeline_router)
 app.include_router(portfolio_health_router)
 app.include_router(investor_dna_router)
 app.include_router(portfolio_router)
 app.include_router(observation_router)
 app.include_router(committee_router)
 app.include_router(dashboard_router)
+app.include_router(
+    executive_dashboard_router,
+)
+app.include_router(recommendation_router)
 
 
 @app.get("/health")

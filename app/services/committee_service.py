@@ -24,6 +24,7 @@ from app.services.account_service import AccountService
 from app.services.market_intelligence_service import (
     MarketIntelligenceService,
 )
+from app.services.market_regime_service import MarketRegimeService
 from app.services.market_service import MarketService
 from app.services.policy_service import PolicyService
 from app.services.portfolio_service import PortfolioService
@@ -106,6 +107,9 @@ class CommitteeService:
         recommendation: Recommendation,
     ) -> None:
         decision = recommendation.decision
+        regime = MarketRegimeService().detect(
+            recommendation.intelligence,
+        )
 
         self._event_repository.save(
             Event(
@@ -115,6 +119,8 @@ class CommitteeService:
                 payload={
                     "recommendation": decision.recommendation,
                     "confidence": decision.confidence,
+                    "regime": regime.regime.value,
+                    "regime_confidence": regime.confidence,
                     "buy_votes": decision.buy_votes,
                     "hold_votes": decision.hold_votes,
                     "sell_votes": decision.sell_votes,
@@ -124,6 +130,13 @@ class CommitteeService:
                             "vote": opinion.vote,
                             "confidence": opinion.confidence,
                             "rationale": opinion.rationale,
+                            "evidence": [
+                                {
+                                    "title": item.title,
+                                    "value": item.value,
+                                }
+                                for item in opinion.evidence
+                            ],
                         }
                         for opinion in decision.opinions
                     ],

@@ -16,6 +16,7 @@ def test_committee_opinion():
     assert opinion.member == "Momentum"
     assert opinion.vote == "BUY"
     assert opinion.confidence == 82
+    assert opinion.evidence == ()
 
     with pytest.raises(FrozenInstanceError):
         opinion.vote = "SELL"

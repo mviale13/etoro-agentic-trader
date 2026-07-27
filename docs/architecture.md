@@ -1,399 +1,503 @@
 # MOVRvest Architecture
 
-## Vision
-
-MOVRvest is an explainable AI investment operating system.
-
-It helps investors understand:
-
-- what deserves attention,
-- how their portfolio is evolving,
-- why a recommendation exists,
-- and how their investment behaviour changes over time.
-
-The core philosophy is:
-
-> Deterministic reasoning first.  
-> AI communication second.
-
-AI must not invent portfolio facts, signals, scores, or investment decisions.
-
-Large Language Models may support:
-
-- explanation,
-- summarisation,
-- coaching,
-- scenario discussion,
-- and natural-language communication.
+> Version: 0.6.x
+>
+> Explainable, agentic investment intelligence platform for eToro investors.
 
 ---
 
-## System Overview
+# Vision
 
-```text
-eToro API
-    ↓
-EtoroAccountBroker
-    ↓
-AccountSnapshot
-    ↓
-PortfolioService
-    ↓
-PortfolioSnapshot
-    ↓
-Timeline Repository
-    ↓
-SignalService
-    ↓
-InvestorObservationService
-    ↓
-DashboardService
-    ↓
-FastAPI Dashboard API
-    ↓
-movrvest-web Morning Brief
+MOVRvest is not a trading bot.
+
+It is an AI investment operating system that continuously:
+
+- observes markets
+- understands the investor
+- debates investment decisions
+- explains every recommendation
+- remembers past events
+- learns from historical performance
+- improves committee weighting over time
+
+Every recommendation is explainable and fully auditable.
+
+---
+
+# High-Level Architecture
+
 ```
-
----
-
-## Repository Structure
-
-```text
-etoro-agentic-trader/
-├── app/
-│   ├── api/
-│   │   ├── main.py
-│   │   ├── models/
-│   │   └── routes/
-│   ├── brokers/
-│   ├── committees/
-│   ├── domain/
-│   ├── memory/
-│   ├── repositories/
-│   ├── services/
-│   └── renderers/
-├── data/
-├── docs/
-├── movrvest-web/
-└── tests/
+                Yahoo Finance
+                      │
+          Crypto Fear & Greed
+                      │
+                eToro Account
+                      │
+────────────────────────────────────────
+          Data Acquisition Layer
+────────────────────────────────────────
+                      │
+                      ▼
+            Market Intelligence
+                      │
+                      ▼
+             Portfolio Analysis
+                      │
+                      ▼
+             Investment Committee
+                      │
+                      ▼
+           Committee Chairman
+                      │
+                      ▼
+             Recommendation
+                      │
+                      ▼
+              Event Repository
+                      │
+         ┌────────────┴────────────┐
+         ▼                         ▼
+ Memory Engine             Committee Analytics
+         │                         │
+         ▼                         ▼
+ Pattern Engine            Performance Engine
+         │                         │
+         └────────────┬────────────┘
+                      ▼
+               Investor DNA
+                      │
+                      ▼
+             Executive Dashboard
 ```
 
 ---
 
-## Core Layers
+# Layers
 
-### 1. Broker Layer
+## Domain
 
-The broker layer retrieves external account data.
+Pure business objects.
 
-Current implementation:
+Examples:
 
-```text
-EtoroAccountBroker
-```
+- Recommendation
+- PortfolioSnapshot
+- CommitteeDecision
+- CommitteeOpinion
+- CommitteeOutcome
+- InvestorDNA
+- MemoryEvent
+- Event
 
-It produces an `AccountSnapshot` containing:
-
-- connection status,
-- account mode,
-- cash,
-- invested value,
-- unrealised profit and loss,
-- equity,
-- positions,
-- pending orders,
-- copy portfolios,
-- timestamp,
-- and latency.
-
-Business services must not parse raw eToro responses directly.
+Contains no infrastructure code.
 
 ---
 
-### 2. Domain Layer
+## Providers
 
-The domain layer contains framework-independent business objects.
+External market information.
 
-Important domain models include:
+Current:
 
-```text
-AccountSnapshot
-PortfolioSnapshot
-PortfolioHealth
-MarketSnapshot
-Opportunity
-Observation
-Signal
-DailyReflection
-InvestorDNA
-DailySnapshot
-Decision
-Explanation
-MorningBrief
-```
+- Yahoo Finance
+- Crypto Fear & Greed
 
-Domain objects must not depend on:
+Future:
 
-- FastAPI,
-- Pydantic API responses,
-- React,
-- HTTP,
-- or broker-specific JSON.
+- Macro indicators
+- SEC filings
+- News providers
+- Analyst consensus
 
 ---
 
-### 3. Service Layer
+## Brokers
 
-Services contain application and business logic.
+External broker integrations.
 
-Current important services include:
+Current:
 
-```text
-AccountService
-PortfolioService
-PortfolioHealthService
-BriefService
-DashboardService
-OpportunityService
-DailyReflectionService
-InvestorDNAService
-InvestorObservationService
-SignalService
-ExplanationService
-```
+- eToro
 
-Responsibilities remain separated:
+Future:
 
-```text
-AccountService
-    → retrieves account truth
-
-PortfolioService
-    → converts account data into portfolio analysis
-
-SignalService
-    → identifies facts that deserve attention
-
-InvestorObservationService
-    → turns portfolio facts into a human observation
-
-DashboardService
-    → composes the complete Morning Brief response
-```
-
-Routes remain thin and delegate work to services.
+- Interactive Brokers
+- Alpaca
+- Binance
 
 ---
 
-## Morning Brief Composition
+## Services
 
-The frontend consumes a unified dashboard response.
+Business logic.
 
-```text
-GET /dashboard/
-```
+Current services include:
 
-`DashboardService` composes:
+### Portfolio
 
-- today's brief,
-- portfolio,
-- portfolio observation,
-- daily reflection,
-- Investor DNA,
-- and top opportunities.
+- PortfolioService
+- ExchangeRateService
 
-The backend owns composition.
+### Market
 
-The frontend owns presentation.
+- MarketService
+- MarketIntelligenceService
 
-Individual endpoints remain available for testing and independent use.
+### Signals
 
----
+- SignalService
 
-## Timeline and Memory
+### Memory
 
-MOVRvest stores one portfolio snapshot per day.
+- MemoryService
+- MemoryBuilder
 
-```text
-data/portfolio_snapshots/
-├── 2026-07-27.json
-├── 2026-07-28.json
-└── ...
-```
+### Investor
 
-The snapshot repository supports:
+- PatternEngine
+- InvestorDNAService
+- InvestorObservationService
 
-```text
-save
-latest
-previous
-history
-```
+### Committee
 
-This enables:
+- CommitteeService
+- CommitteeAnalyticsService
+- CommitteeOutcomeService
 
-- daily comparisons,
-- weekly and monthly changes,
-- portfolio history,
-- investment journaling,
-- behavioural learning,
-- and evolving Investor DNA.
+### Dashboard
 
-A snapshot records facts.
-
-Interpretation is performed by services above the repository.
+- DashboardService
+- BriefService
 
 ---
 
-## Signals Pipeline
+# Investment Committee
 
-Signals are deterministic facts that deserve attention.
+Five independent experts evaluate every opportunity.
 
-```text
-Current PortfolioSnapshot
-        +
-Previous PortfolioSnapshot
-        ↓
-SignalService
-        ↓
-Signal[]
-```
+## Momentum
 
-Examples include:
+Trend following.
 
-- high cash allocation,
-- concentrated portfolio,
-- material cash reduction,
-- position-count changes,
-- new risk flags,
-- or significant portfolio-value changes.
+## Risk
 
-Signals are not recommendations.
+Portfolio risk.
 
-They become inputs for:
+## Cash
 
-- observations,
-- insights,
-- recommendations,
-- reflections,
-- and the Morning Brief.
+Liquidity management.
+
+## Diversification
+
+Portfolio concentration.
+
+## Value
+
+Fundamental valuation.
+
+Each member produces:
+
+- vote
+- confidence
+- rationale
 
 ---
 
-## Committee and Decision Pipeline
+# Chairman
 
-Investment committees analyse distinct perspectives such as:
+The Chairman aggregates committee opinions.
 
-- value,
-- momentum,
-- risk,
-- cash,
-- and diversification.
+Current capabilities:
 
-```text
-Market and Portfolio Context
-        ↓
-Specialist Committees
-        ↓
-Committee Opinions
-        ↓
-Committee Chairman
-        ↓
-Decision or Recommendation
-        ↓
-Explanation
-```
+- majority voting
+- confidence aggregation
+- weighted voting support
 
-Every recommendation should eventually answer:
+Future:
 
-- What should I do?
-- Why?
-- Why now?
-- Why for me?
-- Why not the obvious alternative?
-- What could make this recommendation wrong?
-- How certain is the system?
+- adaptive weights from historical performance
 
 ---
 
-## Frontend
+# Event Sourcing
 
-`movrvest-web` is the Next.js presentation layer.
+Every important decision is persisted.
 
-Its main product experience is the Morning Brief.
+Current events:
 
-Current dashboard components include:
+- recommendation_generated
+- recommendation_outcome_recorded
+- memory_recorded
 
-```text
-Header
-ReflectionCard
-TopOpportunitiesCard
-PortfolioCard
-PortfolioHealthCard
-ObservationCard
-InvestorDNACard
-DoctorCard
-ExplainCard
-ChangesCard
-NextActionCard
-```
+Future:
 
-Frontend components must handle:
-
-- loading,
-- success,
-- empty,
-- and error states.
-
-A failure in one capability must not crash the complete Morning Brief.
+- order_executed
+- portfolio_snapshot
+- investor_action
 
 ---
 
-## Architectural Rules
+# Memory System
 
-1. Reuse existing services before creating new ones.
-2. Never replace tested behaviour without understanding its consumers.
-3. Routes call services, not other routes.
-4. Domain objects remain independent from API and UI frameworks.
-5. Broker-specific parsing remains inside the broker layer.
-6. Facts, signals, observations, and recommendations remain separate concepts.
-7. Memory stores evidence; services produce interpretations.
-8. AI may communicate reasoning but must not invent deterministic facts.
-9. Every recommendation must be explainable.
-10. The system must be allowed to say, “I’m not sure.”
-11. The system may recommend doing nothing.
-12. Extend the proven architecture instead of introducing duplicate abstractions.
+Signals generate memories.
+
+Example:
+
+```
+High Cash Position
+
+↓
+
+Memory
+
+↓
+
+Pattern
+
+↓
+
+Investor DNA
+```
+
+The system slowly learns investor behaviour.
 
 ---
 
-## Current Evolution
+# Pattern Engine
 
-```text
-Raw broker data
-    ↓
-Account facts
-    ↓
-Portfolio snapshot
-    ↓
-Historical timeline
-    ↓
-Signals
-    ↓
-Observations
-    ↓
-Insights
-    ↓
-Recommendations
-    ↓
-Actions
-    ↓
-Memory events
-    ↓
-Improved Investor DNA
+Converts memories into reusable patterns.
+
+Examples:
+
+- prefers holding cash
+- frequently buys technology
+- accumulates after corrections
+- avoids volatility
+
+---
+
+# Investor DNA
+
+Current outputs:
+
+- confidence
+- quality preference
+- diversification preference
+- value preference
+- volatility preference
+
+Confidence increases as more evidence is collected.
+
+---
+
+# Committee Analytics
+
+Tracks committee behaviour.
+
+Current metrics:
+
+- recommendations
+- BUY/HOLD/SELL distribution
+- average confidence
+- member statistics
+- committee accuracy
+- member accuracy
+
+---
+
+# Recommendation Outcomes
+
+Recommendations can later be evaluated.
+
+Each outcome records:
+
+- entry price
+- evaluation price
+- return
+- success
+
+These outcomes feed committee analytics.
+
+---
+
+# Executive Dashboard
+
+Aggregates high-level intelligence.
+
+Current sections:
+
+- committee statistics
+- committee accuracy
+- investor understanding
+
+Future:
+
+- portfolio summary
+- recommendation history
+- member leaderboard
+- trend analysis
+- performance charts
+
+---
+
+# API
+
+Current endpoints include:
+
+```
+/today
+/dashboard
+/dashboard/executive
+/portfolio
+/portfolio/health
+/observation
+/investor-dna
+/opportunities
+/reflection
+/committee/statistics
+/health
 ```
 
-The long-term objective is not merely to remember transactions.
+---
 
-It is to understand:
+# Persistence
 
-> the investor the user is becoming.
+JSON repositories.
+
+Current:
+
+```
+data/events/
+```
+
+Future:
+
+- PostgreSQL
+- DuckDB
+- Vector database
+- Time-series storage
+
+---
+
+# Testing
+
+Current quality gates:
+
+- Ruff
+- MyPy
+- Pytest
+
+Current status:
+
+- ~150 typed Python source files
+- 110+ automated tests
+- strict static typing
+- formatted codebase
+- event-driven architecture
+
+---
+
+# Design Principles
+
+- Explainability first
+- Event-driven architecture
+- Strong typing
+- Immutable domain models
+- Dependency inversion
+- Small focused services
+- Test-first development
+- Human-in-the-loop investment intelligence
+
+---
+
+# Long-Term Roadmap
+
+## Phase 1 ✅
+
+Broker connectivity
+
+## Phase 2 ✅
+
+Portfolio intelligence
+
+## Phase 3 ✅
+
+Market intelligence
+
+## Phase 4 ✅
+
+Investment committee
+
+## Phase 5 ✅
+
+Persistent memory
+
+## Phase 6 ✅
+
+Investor DNA
+
+## Phase 7 ✅
+
+Committee analytics
+
+## Phase 8 ✅
+
+Recommendation outcome tracking
+
+## Phase 9 ✅
+
+Adaptive committee weighting
+
+## Learning & Adaptive Intelligence
+
+MOVRvest continuously improves its decision-making through an event-driven learning loop.
+
+```text
+Recommendation
+        │
+        ▼
+Outcome
+        │
+        ▼
+Performance Analytics
+        │
+        ▼
+Learning Service
+        │
+        ▼
+Regime Analytics
+        │
+        ▼
+Adaptive Weighting
+```
+
+### Components
+
+- CommitteeAnalyticsService
+    - Global committee statistics
+    - Member statistics
+    - Committee performance
+    - Member performance
+    - Regime-specific performance
+
+- LearningService
+    - Generates learning insights
+    - Suggests committee improvements
+
+- RecommendationJournalService
+    - Builds recommendation history
+    - Human-readable investment journal
+
+- RegimeWeightService
+    - Computes committee weights
+    - One weight table per market regime
+
+Future versions will allow the Chairman to automatically use these adaptive weights.
+```
+## Next
+
+- Recommendation backtesting
+- Dynamic committee weighting
+- Multi-agent debate
+- Strategy benchmarking
+- Autonomous portfolio management

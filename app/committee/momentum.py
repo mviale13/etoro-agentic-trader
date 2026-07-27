@@ -1,5 +1,6 @@
 from app.committee.base import CommitteeMember
 from app.domain.committee_context import CommitteeContext
+from app.domain.committee_evidence import CommitteeEvidence
 from app.domain.committee_opinion import CommitteeOpinion
 
 
@@ -10,12 +11,24 @@ class MomentumCommittee(CommitteeMember):
     ) -> CommitteeOpinion:
         intelligence = context.intelligence
 
+        evidence = (
+            CommitteeEvidence(
+                title="Market outlook",
+                value=intelligence.outlook,
+            ),
+            CommitteeEvidence(
+                title="Confidence",
+                value=str(intelligence.confidence),
+            ),
+        )
+
         if intelligence.outlook == "BULLISH":
             return CommitteeOpinion(
                 member="Momentum",
                 vote="BUY",
                 confidence=intelligence.confidence,
                 rationale=intelligence.summary,
+                evidence=evidence,
             )
 
         if intelligence.outlook == "BEARISH":
@@ -24,6 +37,7 @@ class MomentumCommittee(CommitteeMember):
                 vote="SELL",
                 confidence=intelligence.confidence,
                 rationale=intelligence.summary,
+                evidence=evidence,
             )
 
         return CommitteeOpinion(
@@ -31,4 +45,5 @@ class MomentumCommittee(CommitteeMember):
             vote="HOLD",
             confidence=intelligence.confidence,
             rationale=intelligence.summary,
+            evidence=evidence,
         )
