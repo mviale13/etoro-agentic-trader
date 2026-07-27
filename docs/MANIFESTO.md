@@ -1,225 +1,135 @@
-# MOVRvest Manifesto
+# The MOVRvest Manifesto
 
-> **Better investment decisions come from better information—not bigger predictions.**
+We believe investing should feel calm.
 
----
+Not stressful.
 
-## Our Mission
+Not overwhelming.
 
-MOVRvest is an explainable investment operating system.
-
-Its mission is to help investors make disciplined, transparent, and repeatable investment decisions across multiple asset classes.
-
-MOVRvest is not an autonomous trader.
-
-It informs.
-
-The investor decides.
+Not driven by fear or hype.
 
 ---
 
-# Our Vision
+For decades, investors have been forced to choose between two extremes.
 
-We believe Artificial Intelligence should augment human judgment, not replace it.
+On one side:
 
-Technology should improve discipline, reduce emotional investing, and provide transparent reasoning for every recommendation.
+Endless information.
 
-Every recommendation should be explainable.
+Charts.
 
-Every action should be intentional.
+News.
 
----
+Opinions.
 
-# Our Principles
+Noise.
 
-## 1. Explainability First
+On the other:
 
-Every recommendation must be understandable.
+Black-box algorithms that say "Buy" or "Sell" without explanation.
 
-If MOVRvest cannot explain a recommendation, it should not make it.
-
----
-
-## 2. Human Approval Always
-
-No order is ever executed without explicit user approval.
-
-Recommendations may be automatic.
-
-Execution is always intentional.
+We reject both.
 
 ---
 
-## 3. Deterministic Before AI
+We believe AI should not replace investors.
 
-Transparent rules come first.
+It should help them think better.
 
-Artificial Intelligence is another committee member.
+The role of AI is not to remove judgment.
 
-Never the chairman.
-
----
-
-## 4. Portfolio Before Prediction
-
-The objective is not to predict tomorrow's market.
-
-The objective is to continuously improve portfolio quality.
+It is to strengthen it.
 
 ---
 
-## 5. Long-Term Discipline
+We believe trust is earned.
 
-MOVRvest encourages patience.
+Not claimed.
 
-Diversification.
+An AI that always sounds certain is not intelligent.
 
-Consistency.
+It is dangerous.
 
-It discourages emotional investing and impulsive trading.
+The best advisors know when they don't know.
 
----
-
-## 6. Multi-Asset by Design
-
-MOVRvest is designed to support multiple asset classes.
-
-- Stocks
-- ETFs
-- Cryptocurrencies
-- Commodities
-- Forex
-- Indices
-
-Future support should extend naturally without changing the core architecture.
+So should AI.
 
 ---
 
-## 7. Transparency Over Complexity
+We believe recommendations should always be explainable.
 
-Simple, understandable systems are preferred over opaque sophistication.
+Every recommendation should answer:
 
-Complexity is justified only when it produces measurable value.
+Why?
 
----
+Why now?
 
-# The Three Questions
+Why for me?
 
-Every MOVRvest command must answer three questions.
+Why not something else?
 
-## What happened?
+Transparency is not a feature.
 
-Present the facts.
-
-Examples
-
-- Recommendation: BUY
-- Portfolio Health: 92/100
-- Market Outlook: BULLISH
+It is a responsibility.
 
 ---
 
-## Why?
+We believe memory changes everything.
 
-Explain the reasoning.
+An advisor who remembers your goals, your decisions and your philosophy becomes more valuable over time.
 
-Examples
+Technology should adapt to people.
 
-- Momentum is improving.
-- Volatility remains low.
-- Cash allocation supports new investments.
-- Valuation remains attractive.
+Not the other way around.
 
 ---
 
-## What should I do next?
+We believe investing is a lifelong journey.
 
-Every command should end with a clear Next Action.
+The objective is not simply to outperform the market.
 
-Examples
-
-- No immediate action required.
-- Improve diversification.
-- Deploy part of available cash.
-- Wait for market conditions to improve.
-
-Information without action creates uncertainty.
-
-MOVRvest always closes the loop.
+The objective is to become a wiser investor every year.
 
 ---
 
-# The One-Minute Rule
+Every morning should begin with clarity.
 
-A complete command should be understandable in approximately one minute.
+Not noise.
 
-After reading the output, the investor should immediately know:
+One reflection.
 
-- What happened.
-- Why it happened.
-- What to do next.
+A few opportunities.
 
-If the answer is not obvious, the command should be redesigned.
+An honest assessment of risk.
 
----
+A reminder of the long-term plan.
 
-# Safety
+Nothing more.
 
-MOVRvest is advisory software.
-
-It does not guarantee returns.
-
-It does not predict the future.
-
-It does not remove investment risk.
-
-It does not replace human judgment.
-
-The investor remains responsible for every investment decision.
+Nothing less.
 
 ---
 
-# The Future
+We are not building another investing app.
 
-MOVRvest is evolving toward a complete investment operating system.
+We are building an AI Chief Investment Officer.
 
-Future capabilities include:
+One that learns.
 
-- Portfolio Doctor
-- Portfolio Rebalancing Advisor
-- AI Specialist Committee Members
-- Historical Decision Journal
-- Multi-Broker Support
-- Advisory-Only Order Execution
-- Web Dashboard
-- Mobile Companion
-- Multi-Agent Investment Research
+One that explains.
+
+One that remembers.
+
+One that earns trust.
+
+One decision at a time.
+
+---
 
 Technology will evolve.
 
-These principles should not.
+Markets will evolve.
 
----
+Human nature changes slowly.
 
-# Our Promise
-
-MOVRvest will always strive to be:
-
-- Explainable
-- Transparent
-- Human-Centered
-- Deterministic where possible
-- Multi-Asset
-- Safety-First
-
----
-
-# Final Thought
-
-> **The best investment decision is not the one with the highest return. It is the one you still understand years later.**
-
----
-
-Built with ❤️ in Belgium 🇧🇪
-
-Designed for investors everywhere.
+We build for humans first.
