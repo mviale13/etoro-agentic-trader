@@ -244,5 +244,46 @@
     },
     "symbol": "SPY",
     "timestamp": "2026-07-27T07:41:23.044810+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-27T07:49:56.205576+00:00"
   }
 ]
