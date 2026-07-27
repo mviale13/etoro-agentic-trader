@@ -9,14 +9,18 @@ export type DoctorResponse = {
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
-export async function getDoctor(): Promise<DoctorResponse> {
-  const response = await fetch(`${API_URL}/doctor`, {
-    cache: "no-store",
-  });
+export async function getDoctor(): Promise<DoctorResponse | null> {
+  try {
+    const response = await fetch(`${API_URL}/doctor`, {
+      cache: "no-store",
+    });
 
-  if (!response.ok) {
-    throw new Error("Unable to load the Portfolio Doctor.");
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch {
+    return null;
   }
-
-  return response.json();
 }

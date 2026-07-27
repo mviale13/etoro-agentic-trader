@@ -80,5 +80,497 @@
     },
     "symbol": "MSFT",
     "timestamp": "2026-07-26T10:21:39.891358+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T10:38:02.990864+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T10:38:41.882453+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T10:45:10.761708+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T11:08:23.026473+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T11:15:01.199590+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T11:41:06.162599+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T11:41:57.997850+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T11:52:06.835274+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T12:24:06.477780+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T12:24:10.268452+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T12:25:57.762479+00:00"
+  },
+  {
+    "event_type": "recommendation_generated",
+    "payload": {
+      "confidence": 72,
+      "recommendation": "HOLD",
+      "votes": [
+        {
+          "confidence": 60,
+          "member": "Momentum",
+          "rationale": "Market and crypto sentiment signals are mixed.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 75,
+          "member": "Risk",
+          "rationale": "Moderate market volatility.",
+          "vote": "HOLD"
+        },
+        {
+          "confidence": 90,
+          "member": "Cash",
+          "rationale": "Cash allocation is 100.0%, above the 10.0% target.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 85,
+          "member": "Diversification",
+          "rationale": "Portfolio diversification is acceptable.",
+          "vote": "BUY"
+        },
+        {
+          "confidence": 50,
+          "member": "Value",
+          "rationale": "Forward P/E unavailable.",
+          "vote": "HOLD"
+        }
+      ]
+    },
+    "symbol": "SPY",
+    "timestamp": "2026-07-26T12:30:56.428462+00:00"
   }
 ]
