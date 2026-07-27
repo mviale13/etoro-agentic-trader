@@ -22,6 +22,7 @@ from app.services.investor_observation_service import InvestorObservationService
 from app.services.memory_builder import MemoryBuilder
 from app.services.memory_service import MemoryService
 from app.services.opportunity_service import OpportunityService
+from app.services.pattern_engine import PatternEngine
 from app.services.portfolio_service import PortfolioService
 from app.services.signal_service import SignalService
 
@@ -32,8 +33,12 @@ class DashboardService:
         portfolio, observation = await self._build_portfolio_sections()
 
         reflection = DailyReflectionService().today()
-        dna = InvestorDNAService().analyze([])
         opportunities = OpportunityService().top_opportunities()
+
+        memory_service = MemoryService(JsonEventRepository())
+        memories = memory_service.history()
+        patterns = PatternEngine().analyze(memories)
+        dna = InvestorDNAService().analyze(patterns)
 
         understanding = dna.confidence
 
