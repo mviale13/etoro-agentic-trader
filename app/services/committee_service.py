@@ -88,9 +88,7 @@ class CommitteeService:
 
         opinions = [member.evaluate(context) for member in committee]
 
-        decision = CommitteeChairman().decide(
-            opinions,
-        )
+        decision = CommitteeChairman().decide(opinions)
 
         recommendation = Recommendation(
             symbol=normalized_symbol,
@@ -99,9 +97,7 @@ class CommitteeService:
             decision=decision,
         )
 
-        self._log_recommendation(
-            recommendation,
-        )
+        self._log_recommendation(recommendation)
 
         return recommendation
 
@@ -119,6 +115,9 @@ class CommitteeService:
                 payload={
                     "recommendation": decision.recommendation,
                     "confidence": decision.confidence,
+                    "buy_votes": decision.buy_votes,
+                    "hold_votes": decision.hold_votes,
+                    "sell_votes": decision.sell_votes,
                     "votes": [
                         {
                             "member": opinion.member,
