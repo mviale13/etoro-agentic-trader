@@ -13,14 +13,23 @@ import { getOpportunities } from "@/lib/opportunities-api";
 import { ReflectionCard } from "@/components/dashboard/ReflectionCard";
 import { getReflection } from "@/lib/reflection-api";
 import { getPortfolioHealth } from "@/lib/portfolio-health-api";
+import { InvestorDNACard } from "@/components/dashboard/InvestorDNACard";
+import { getInvestorDNA } from "@/lib/investor-dna-api";
+import { getPortfolio } from "@/lib/portfolio-api";
+import { PortfolioCard } from "@/components/dashboard/PortfolioCard";
+import { getObservation } from "@/lib/observation-api";
+import { ObservationCard } from "@/components/dashboard/ObservationCard";
 
 export default async function Home() {
   const today = await getToday();
   const doctor = await getDoctor();
   const explanation = await getExplanation();
+  const portfolio = await getPortfolio();
   const portfolioHealth = await getPortfolioHealth();
   const reflection = await getReflection();
   const opportunities = await getOpportunities();
+  const dna = await getInvestorDNA();
+  const observation = await getObservation().catch(() => null);
 
   return (
     <DashboardLayout>
@@ -42,9 +51,17 @@ export default async function Home() {
           <ChangesCard changes={today.changes} />
 
           <TopOpportunitiesCard opportunities={opportunities} />
-
-          <PortfolioHealthCard health={portfolioHealth} />
-
+          <InvestorDNACard dna={dna} />
+          {
+            portfolio ? (
+              <PortfolioCard portfolio={portfolio} />
+            ) : (
+              <PortfolioHealthCard health={portfolioHealth} />
+            )
+          }
+          {observation && (
+            <ObservationCard observation={observation} />
+          )}
           <NextActionCard action={today.next_action} />
           <ReflectionCard reflection={reflection} />
         </section>

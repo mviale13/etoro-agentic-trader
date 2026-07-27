@@ -10,6 +10,27 @@ type TopOpportunitiesCardProps = {
 export function TopOpportunitiesCard({
   opportunities,
 }: TopOpportunitiesCardProps) {
+  if (opportunities.length === 0) {
+    return (
+      <Card className="md:col-span-2">
+        <div className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-amber-400" />
+          <h2 className="text-lg font-semibold">Top Opportunities</h2>
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-lg font-medium text-slate-200">
+            No exceptional opportunities today.
+          </p>
+
+          <p className="mt-3 text-sm text-slate-400">
+            Sometimes the best investment decision is to wait.
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="md:col-span-2">
       <div className="flex items-center gap-2">
@@ -25,9 +46,7 @@ export function TopOpportunitiesCard({
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-500">
-                  #{index + 1}
-                </p>
+                <p className="text-sm text-slate-500">#{index + 1}</p>
 
                 <p className="mt-1 text-xl font-semibold">
                   {opportunity.company}
