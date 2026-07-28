@@ -1,5 +1,7 @@
+import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
+
 type ExecutiveBriefProps = {
-  symbol: string;
+  brief: ExecutiveBriefViewModel;
 };
 
 const sections = [
@@ -13,7 +15,7 @@ const sections = [
 ];
 
 export function ExecutiveBrief({
-  symbol,
+  brief,
 }: ExecutiveBriefProps) {
   return (
     <main className="mx-auto max-w-5xl px-8 py-12">
@@ -23,11 +25,11 @@ export function ExecutiveBrief({
         </p>
 
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-900">
-          {symbol}
+          {brief.companyName}
         </h1>
 
         <p className="mt-2 text-lg text-slate-500">
-          Investment Opportunity
+          {brief.symbol} • {brief.sector}
         </p>
 
         <div className="mt-10">
@@ -36,11 +38,15 @@ export function ExecutiveBrief({
           </p>
 
           <p className="mt-2 text-6xl font-semibold tracking-tight text-slate-900">
-            92
+            {brief.executiveScore}
           </p>
 
           <p className="mt-3 text-base text-slate-600">
-            Worth your attention this week
+            {brief.attentionLabel}
+          </p>
+
+          <p className="mt-2 text-sm text-slate-500">
+            {brief.readingTime} • {brief.generatedAt}
           </p>
         </div>
       </header>
