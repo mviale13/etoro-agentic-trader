@@ -1,93 +1,80 @@
-from datetime import UTC, datetime
+from typing import cast
 
 from app.committee.momentum import MomentumCommittee
 from app.domain.committee_context import CommitteeContext
-from app.domain.investment_policy import (
-    AllocationTarget,
-    InvestmentConstraints,
-    InvestmentPolicy,
-)
+from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_intelligence import MarketIntelligence
-from app.domain.market_snapshot import MarketSnapshot
-from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
-from app.domain.sentiment_snapshot import SentimentSnapshot
+from app.domain.momentum_signal import MomentumSignal
+from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 
-def context(outlook: str) -> CommitteeContext:
-    intelligence = MarketIntelligence(
-        market=MarketSnapshot(
-            quotes=(),
-            market_mood="positive",
-            volatility="low",
-            summary="Healthy",
-            timestamp=datetime.now(UTC),
-        ),
-        sentiment=SentimentSnapshot(
-            score=70,
-            label="Greed",
-            source="Alternative.me",
-        ),
-        outlook=outlook,
-        confidence=80,
-        summary="Healthy market.",
-    )
-
-    portfolio = PortfolioSnapshot(
-        allocation=Allocation(
-            stocks=60,
-            etfs=20,
-            crypto=10,
-            cash=10,
-            unclassified=0,
-        ),
-        total_value=100_000,
-        positions=5,
-        largest_position=None,
-        largest_position_pct=0,
-        risk_flags=(),
-    )
-
-    policy = InvestmentPolicy(
-        risk_profile="moderate",
-        target=AllocationTarget(
-            stocks=60,
-            etfs=20,
-            crypto=10,
-            cash=10,
-        ),
-        constraints=InvestmentConstraints(
-            max_single_position=15,
-            max_crypto=20,
-            rebalance_threshold=5,
-        ),
-    )
-
+def context(
+    signal: MomentumSignal,
+) -> CommitteeContext:
     return CommitteeContext(
-        intelligence=intelligence,
-        portfolio=portfolio,
-        policy=policy,
+        intelligence=cast(MarketIntelligence, None),
+        portfolio=cast(PortfolioSnapshot, None),
+        policy=cast(InvestmentPolicy, None),
+        momentum_signal=signal,
     )
 
 
-def test_buy_vote():
+def test_buy_vote_for_bullish_signal() -> None:
     opinion = MomentumCommittee().evaluate(
-        context("BULLISH"),
+        context(
+            MomentumSignal(
+                trend="BULLISH",
+                strength="STRONG",
+                confidence=85,
+                evidence=("Short-term momentum is positive.",),
+            )
+        )
     )
 
     assert opinion.vote == "BUY"
+    assert opinion.confidence == 85
 
 
-def test_sell_vote():
+def test_sell_vote_for_bearish_signal() -> None:
     opinion = MomentumCommittee().evaluate(
-        context("BEARISH"),
+        context(
+            MomentumSignal(
+                trend="BEARISH",
+                strength="STRONG",
+                confidence=85,
+                evidence=("Short-term momentum is negative.",),
+            )
+        )
     )
 
     assert opinion.vote == "SELL"
 
 
-def test_hold_vote():
+def test_hold_vote_for_neutral_signal() -> None:
     opinion = MomentumCommittee().evaluate(
-        context("NEUTRAL"),
+        context(
+            MomentumSignal(
+                trend="NEUTRAL",
+                strength="WEAK",
+                confidence=60,
+                evidence=("No meaningful momentum is visible.",),
+            )
+        )
+    )
+
+    assert opinion.vote == "HOLD"
+
+
+def test_hold_vote_for_unknown_signal() -> None:
+    opinion = MomentumCommittee().evaluate(
+        context(
+            MomentumSignal(
+                trend="UNKNOWN",
+                strength="UNKNOWN",
+                confidence=20,
+                evidence=("Daily price change is unavailable.",),
+            )
+        )
     )
 
     assert opinion.vote == "HOLD"
