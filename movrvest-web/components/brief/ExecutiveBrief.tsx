@@ -1,4 +1,5 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
+
 import { CommitteeConsensus } from "./CommitteeConsensus";
 import { EvidenceSection } from "./EvidenceSection";
 import { ExecutiveAssessment } from "./ExecutiveAssessment";
@@ -10,64 +11,122 @@ type ExecutiveBriefProps = {
   brief: ExecutiveBriefViewModel;
 };
 
-export function ExecutiveBrief({
-  brief,
-}: ExecutiveBriefProps) {
+function MicrosoftMark() {
   return (
-    <main className="mx-auto max-w-5xl px-8 py-12">
-      <header className="border-b border-slate-200 pb-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-          Executive Brief
-        </p>
+    <div
+      aria-hidden="true"
+      className="grid h-14 w-14 shrink-0 grid-cols-2 gap-1"
+    >
+      <span className="bg-red-500" />
+      <span className="bg-lime-500" />
+      <span className="bg-sky-500" />
+      <span className="bg-amber-400" />
+    </div>
+  );
+}
 
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-900">
-          {brief.companyName}
-        </h1>
+export function ExecutiveBrief({ brief }: ExecutiveBriefProps) {
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-950">
+      <main className="mx-auto w-[90vw] max-w-none py-8">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-50 text-xs font-bold text-emerald-800">
+              M
+            </span>
 
-        <p className="mt-2 text-lg text-slate-500">
-          {brief.symbol} • {brief.sector}
-        </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+              Executive Brief
+            </p>
+          </div>
 
-        <div className="mt-10">
-          <p className="text-sm uppercase tracking-wide text-slate-500">
-            Executive Score
-          </p>
-
-          <p className="mt-2 text-6xl font-semibold tracking-tight text-slate-900">
-            {brief.executiveScore}
-          </p>
-
-          <p className="mt-3 text-base text-slate-600">
-            {brief.attentionLabel}
-          </p>
-
-          <p className="mt-2 text-sm text-slate-500">
-            {brief.readingTime} • {brief.generatedAt}
+          <p className="text-xs text-slate-500">
+            {brief.generatedAt}
+            <span className="mx-2">•</span>
+            {brief.readingTime}
           </p>
         </div>
-      </header>
 
-      <section className="py-12">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-          Executive Summary
-        </h2>
+        <header className="grid gap-5 lg:grid-cols-[3fr_1fr]">
+          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+            <div className="flex items-center gap-6">
+              <MicrosoftMark />
 
-        <p className="mt-6 max-w-3xl text-lg leading-9 text-slate-700">
-          {brief.executiveSummary}
-        </p>
-      </section>
+              <div>
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+                  {brief.companyName}
+                </h1>
 
-      <WhyThisBrief reasons={brief.whyNow} />
+                <p className="mt-3 text-base text-slate-500 sm:text-lg">
+                  {brief.symbol}
+                  <span className="mx-2">•</span>
+                  {brief.sector}
+                </p>
+              </div>
+            </div>
+          </section>
 
-      <CommitteeConsensus committees={brief.committees} />
+          <section className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Executive Score
+            </p>
 
-      <PortfolioImpact impact={brief.portfolioImpact} />
+            <p className="mt-3 text-6xl font-semibold tracking-tight text-emerald-700">
+              {brief.executiveScore}
+            </p>
 
-      <EvidenceSection evidence={brief.evidence} />
+            <p className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+              {brief.attentionLabel}
+            </p>
+          </section>
+        </header>
 
-      <RiskSection risks={brief.risks} />
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="space-y-6">
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div className="flex gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-lg text-emerald-800">
+                  ≡
+                </span>
 
-      <ExecutiveAssessment assessment={brief.executiveAssessment} />
-    </main>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+                    Executive Summary
+                  </h2>
+
+                  <p className="mt-3 text-sm leading-7 text-slate-700 sm:text-base">
+                    {brief.executiveSummary}
+                  </p>
+
+                  <div className="mt-8">
+                    <WhyThisBrief reasons={brief.whyNow} />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <PortfolioImpact impact={brief.portfolioImpact} />
+
+            <RiskSection risks={brief.risks} />
+          </div>
+
+          <div className="space-y-6">
+            <CommitteeConsensus committees={brief.committees} />
+
+            <EvidenceSection evidence={brief.evidence} />
+
+            <ExecutiveAssessment assessment={brief.executiveAssessment} />
+          </div>
+        </div>
+
+        <footer className="py-8 text-center">
+          <p className="text-xs leading-5 text-slate-500">
+            This brief is provided for informational purposes and does not
+            constitute financial advice. Final investment decisions remain
+            yours.
+          </p>
+        </footer>
+      </main>
+    </div>
   );
 }
