@@ -1,17 +1,17 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
+import { CommitteeConsensus } from "./CommitteeConsensus";
 import { WhyThisBrief } from "./WhyThisBrief";
 
-type ExecutiveBriefProps = {
-  brief: ExecutiveBriefViewModel;
-};
-
 const remainingSections = [
-  "Committee Consensus",
   "Portfolio Impact",
   "Evidence",
   "Risks",
   "Executive Assessment",
 ];
+
+type ExecutiveBriefProps = {
+  brief: ExecutiveBriefViewModel;
+};
 
 export function ExecutiveBrief({
   brief,
@@ -61,6 +61,8 @@ export function ExecutiveBrief({
       </section>
 
       <WhyThisBrief reasons={brief.whyNow} />
+
+      <CommitteeConsensus committees={brief.committees} />
 
       <div className="border-t border-slate-200">
         {remainingSections.map((section) => (
