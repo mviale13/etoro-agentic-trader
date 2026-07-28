@@ -4,16 +4,6 @@ type ExecutiveBriefProps = {
   brief: ExecutiveBriefViewModel;
 };
 
-const sections = [
-  "Executive Summary",
-  "Why This Brief",
-  "Committee Consensus",
-  "Portfolio Impact",
-  "Evidence",
-  "Risks",
-  "Executive Assessment",
-];
-
 export function ExecutiveBrief({
   brief,
 }: ExecutiveBriefProps) {
@@ -51,15 +41,32 @@ export function ExecutiveBrief({
         </div>
       </header>
 
-      <div className="divide-y divide-slate-200">
-        {sections.map((section) => (
-          <section key={section} className="py-10">
+      <section className="py-12">
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+          Executive Summary
+        </h2>
+
+        <p className="mt-6 max-w-3xl text-lg leading-9 text-slate-700">
+          {brief.executiveSummary}
+        </p>
+      </section>
+
+      <div className="border-t border-slate-200">
+        {[
+          "Why This Brief",
+          "Committee Consensus",
+          "Portfolio Impact",
+          "Evidence",
+          "Risks",
+          "Executive Assessment",
+        ].map((section) => (
+          <section key={section} className="py-10 border-b border-slate-200">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
               {section}
             </h2>
 
-            <p className="mt-4 text-base leading-7 text-slate-500">
-              Content coming in the next commit...
+            <p className="mt-4 text-slate-500">
+              Coming in the next commit...
             </p>
           </section>
         ))}
