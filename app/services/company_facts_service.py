@@ -68,12 +68,31 @@ class CompanyFactsService:
             name=item.name,
             asset_type=str(item.asset_type_id),
             exchange=str(item.exchange_id),
-            current_price=(quote.price if quote is not None else None),
+            # Market
+            current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
             market_cap=None,
+            # Valuation
             forward_pe=valuation.forward_pe,
+            # Growth
+            revenue_growth=None,
+            earnings_growth=None,
+            # Profitability
+            gross_margin=None,
+            operating_margin=None,
+            net_margin=None,
+            # Capital efficiency
+            roe=None,
+            roic=None,
+            # Balance sheet
+            debt_to_equity=None,
+            current_ratio=None,
+            # Cash generation
+            free_cash_flow=None,
+            # Shareholder returns
             eps=None,
             dividend_yield=valuation.dividend_yield,
+            # Classification
             sector=None,
             industry=None,
         )
