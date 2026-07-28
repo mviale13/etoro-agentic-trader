@@ -4,16 +4,29 @@ type CommitteeConsensusProps = {
   committees: CommitteeView[];
 };
 
-function verdictColor(verdict: CommitteeView["verdict"]) {
+function verdictClasses(verdict: CommitteeView["verdict"]) {
   switch (verdict) {
     case "Strong support":
-      return "text-emerald-700 bg-emerald-50";
+      return "bg-emerald-50 text-emerald-700";
     case "Support":
-      return "text-blue-700 bg-blue-50";
+      return "bg-sky-50 text-sky-700";
     case "Neutral":
-      return "text-amber-700 bg-amber-50";
+      return "bg-amber-50 text-amber-700";
     case "Caution":
-      return "text-red-700 bg-red-50";
+      return "bg-rose-50 text-rose-700";
+  }
+}
+
+function verdictLabel(verdict: CommitteeView["verdict"]) {
+  switch (verdict) {
+    case "Strong support":
+      return "High conviction";
+    case "Support":
+      return "Positive";
+    case "Neutral":
+      return "Neutral";
+    case "Caution":
+      return "Cautious";
   }
 }
 
@@ -21,37 +34,42 @@ export function CommitteeConsensus({
   committees,
 }: CommitteeConsensusProps) {
   return (
-    <section className="border-t border-slate-200 py-12">
-      <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-        Committee Consensus
-      </h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-sm font-bold text-emerald-800">
+          IC
+        </span>
 
-      <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-        Independent investment committees reviewed this opportunity from
-        different perspectives.
-      </p>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+            Committee Consensus
+          </h2>
 
-      <div className="mt-8 divide-y divide-slate-200 rounded-2xl border border-slate-200">
-        {committees.map((committee) => (
-          <div
-            key={committee.name}
-            className="flex items-center justify-between p-5"
-          >
-            <div>
-              <p className="text-lg font-medium text-slate-900">
-                {committee.name}
-              </p>
-            </div>
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Independent investment committees reviewed this opportunity.
+          </p>
 
-            <span
-              className={`rounded-full px-3 py-1 text-sm font-medium ${verdictColor(
-                committee.verdict,
-              )}`}
-            >
-              {committee.verdict}
-            </span>
+          <div className="mt-5 divide-y divide-slate-200">
+            {committees.map((committee) => (
+              <div
+                key={committee.name}
+                className="flex items-center justify-between gap-4 py-3"
+              >
+                <p className="text-sm font-medium text-slate-800">
+                  {committee.name} Committee
+                </p>
+
+                <span
+                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${verdictClasses(
+                    committee.verdict,
+                  )}`}
+                >
+                  {verdictLabel(committee.verdict)}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );

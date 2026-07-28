@@ -10,4 +10,5 @@ audit.jsonl
 *.egg-info/
 __pycache__/
 .pytest_cache/
-.vscode/
+.vscode/etoro-pnl-response.json
+etoro-watchlists-response.json

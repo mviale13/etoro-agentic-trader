@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import time
 import uuid
 from datetime import UTC, datetime
@@ -52,27 +53,43 @@ class EtoroAccountBroker:
 
         latency_ms = (time.perf_counter() - started) * 1000
         response.raise_for_status()
+
         body = response.json()
+
+        # Save the raw response for inspection
+        with open(
+            "etoro-pnl-response.json",
+            "w",
+            encoding="utf-8",
+        ) as file:
+            json.dump(body, file, indent=2)
+
         if not isinstance(body, dict):
             raise RuntimeError("Unexpected eToro P&L response format")
+
         return body, latency_ms
 
     @staticmethod
     def _portfolio_payload(body: dict[str, Any]) -> dict[str, Any]:
         expected = {"positions", "ordersForOpen", "orders", "mirrors", "credit"}
+
         if expected.intersection(body):
             return body
 
         queue: list[dict[str, Any]] = [
             value for value in body.values() if isinstance(value, dict)
         ]
+
         while queue:
             candidate = queue.pop(0)
+
             if expected.intersection(candidate):
                 return candidate
+
             queue.extend(
                 value for value in candidate.values() if isinstance(value, dict)
             )
+
         return body
 
     @staticmethod
@@ -88,6 +105,7 @@ class EtoroAccountBroker:
         payload: dict[str, Any],
     ) -> list[dict[str, Any]]:
         orders = payload.get("ordersForOpen") or []
+
         return [
             order
             for order in orders
@@ -101,20 +119,26 @@ class EtoroAccountBroker:
         payload: dict[str, Any],
     ) -> tuple[float | None, float, float, float | None]:
         positions = [x for x in (payload.get("positions") or []) if isinstance(x, dict)]
+
         orders = [x for x in (payload.get("orders") or []) if isinstance(x, dict)]
+
         mirrors = [x for x in (payload.get("mirrors") or []) if isinstance(x, dict)]
+
         manual_pending = cls._manual_pending_market_orders(payload)
 
         credit_raw = payload.get("credit")
         credit = None if credit_raw is None else cls._number(credit_raw)
 
         pending_amount = sum(cls._number(x.get("amount")) for x in manual_pending)
+
         pending_amount += sum(cls._number(x.get("amount")) for x in orders)
 
         cash = None if credit is None else credit - pending_amount
 
         invested = sum(cls._number(x.get("amount")) for x in positions)
+
         invested += pending_amount
+
         invested += sum(
             cls._number(x.get("totalExternalCosts")) for x in manual_pending
         )
@@ -127,17 +151,22 @@ class EtoroAccountBroker:
             mirror_positions = [
                 x for x in (mirror.get("positions") or []) if isinstance(x, dict)
             ]
+
             invested += sum(cls._number(x.get("amount")) for x in mirror_positions)
+
             invested += cls._number(mirror.get("availableAmount")) - cls._number(
                 mirror.get("closedPositionsNetProfit")
             )
+
             unrealized += sum(
                 cls._number((x.get("unrealizedPnL") or {}).get("pnL"))
                 for x in mirror_positions
             )
+
             unrealized += cls._number(mirror.get("closedPositionsNetProfit"))
 
         equity = None if cash is None else cash + invested + unrealized
+
         return cash, invested, unrealized, equity
 
     async def snapshot(self) -> AccountSnapshot:
