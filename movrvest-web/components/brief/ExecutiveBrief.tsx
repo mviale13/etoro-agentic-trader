@@ -1,6 +1,7 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
 import { CommitteeConsensus } from "./CommitteeConsensus";
 import { EvidenceSection } from "./EvidenceSection";
+import { ExecutiveAssessment } from "./ExecutiveAssessment";
 import { PortfolioImpact } from "./PortfolioImpact";
 import { RiskSection } from "./RiskSection";
 import { WhyThisBrief } from "./WhyThisBrief";
@@ -66,15 +67,7 @@ export function ExecutiveBrief({
 
       <RiskSection risks={brief.risks} />
 
-      <section className="border-y border-slate-200 py-10">
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-          Executive Assessment
-        </h2>
-
-        <p className="mt-4 text-slate-500">
-          Coming in the next commit...
-        </p>
-      </section>
+      <ExecutiveAssessment assessment={brief.executiveAssessment} />
     </main>
   );
 }
