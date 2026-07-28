@@ -1,10 +1,10 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
 import { CommitteeConsensus } from "./CommitteeConsensus";
+import { EvidenceSection } from "./EvidenceSection";
 import { PortfolioImpact } from "./PortfolioImpact";
 import { WhyThisBrief } from "./WhyThisBrief";
 
 const remainingSections = [
-  "Evidence",
   "Risks",
   "Executive Assessment",
 ];
@@ -65,6 +65,8 @@ export function ExecutiveBrief({
       <CommitteeConsensus committees={brief.committees} />
 
       <PortfolioImpact impact={brief.portfolioImpact} />
+
+      <EvidenceSection evidence={brief.evidence} />
 
       <div className="border-t border-slate-200">
         {remainingSections.map((section) => (
