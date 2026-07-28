@@ -1,24 +1,92 @@
+import asyncio
+from typing import Protocol
+
 from app.domain.company_facts import CompanyFacts
+from app.domain.market_snapshot import MarketQuote
+from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
+from app.providers.value_provider import ValueProvider
+from app.providers.yahoo_market_provider import (
+    YahooInstrument,
+    YahooMarketProvider,
+)
+
+
+class MarketQuoteProvider(Protocol):
+    async def quotes(
+        self,
+        instruments: tuple[YahooInstrument, ...] | None = None,
+    ) -> tuple[MarketQuote, ...]: ...
+
+
+class ValuationProvider(Protocol):
+    def snapshot(
+        self,
+        symbol: str,
+    ) -> ValuationSnapshot: ...
 
 
 class CompanyFactsService:
+    def __init__(
+        self,
+        market_provider: MarketQuoteProvider | None = None,
+        valuation_provider: ValuationProvider | None = None,
+    ) -> None:
+        self._market_provider = market_provider or YahooMarketProvider()
+        self._valuation_provider = valuation_provider or ValueProvider()
+
     async def build(
         self,
         item: WatchlistItem,
     ) -> CompanyFacts:
+        instrument = YahooInstrument(
+            yahoo_symbol=item.symbol,
+            movrvest_symbol=item.symbol,
+            name=item.name,
+        )
+
+        quotes_task = asyncio.create_task(self._market_provider.quotes((instrument,)))
+
+        valuation_task = asyncio.to_thread(
+            self._valuation_provider.snapshot,
+            item.symbol,
+        )
+
+        quotes, valuation = await asyncio.gather(
+            quotes_task,
+            valuation_task,
+        )
+
+        quote = self._find_quote(
+            quotes,
+            item.symbol,
+        )
+
         return CompanyFacts(
             instrument_id=item.instrument_id,
             symbol=item.symbol,
             name=item.name,
             asset_type=str(item.asset_type_id),
             exchange=str(item.exchange_id),
-            current_price=None,
-            daily_change_pct=None,
+            current_price=(quote.price if quote is not None else None),
+            daily_change_pct=(quote.change_percent if quote is not None else None),
             market_cap=None,
-            forward_pe=None,
+            forward_pe=valuation.forward_pe,
             eps=None,
-            dividend_yield=None,
+            dividend_yield=valuation.dividend_yield,
             sector=None,
             industry=None,
         )
+
+    @staticmethod
+    def _find_quote(
+        quotes: tuple[MarketQuote, ...],
+        symbol: str,
+    ) -> MarketQuote | None:
+        normalized = symbol.upper().strip()
+
+        for quote in quotes:
+            if quote.symbol.upper() == normalized:
+                return quote
+
+        return None
