@@ -2,12 +2,8 @@ import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
 import { CommitteeConsensus } from "./CommitteeConsensus";
 import { EvidenceSection } from "./EvidenceSection";
 import { PortfolioImpact } from "./PortfolioImpact";
+import { RiskSection } from "./RiskSection";
 import { WhyThisBrief } from "./WhyThisBrief";
-
-const remainingSections = [
-  "Risks",
-  "Executive Assessment",
-];
 
 type ExecutiveBriefProps = {
   brief: ExecutiveBriefViewModel;
@@ -68,22 +64,17 @@ export function ExecutiveBrief({
 
       <EvidenceSection evidence={brief.evidence} />
 
-      <div className="border-t border-slate-200">
-        {remainingSections.map((section) => (
-          <section
-            key={section}
-            className="border-b border-slate-200 py-10"
-          >
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-              {section}
-            </h2>
+      <RiskSection risks={brief.risks} />
 
-            <p className="mt-4 text-slate-500">
-              Coming in the next commit...
-            </p>
-          </section>
-        ))}
-      </div>
+      <section className="border-y border-slate-200 py-10">
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+          Executive Assessment
+        </h2>
+
+        <p className="mt-4 text-slate-500">
+          Coming in the next commit...
+        </p>
+      </section>
     </main>
   );
 }
