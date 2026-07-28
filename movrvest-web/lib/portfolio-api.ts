@@ -8,6 +8,7 @@ export type Allocation = {
 
 export type PortfolioResponse = {
   total_value: number;
+  total_value_eur: number;
   positions: number;
   allocation: Allocation;
   risk_flags: string[];
