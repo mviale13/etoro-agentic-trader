@@ -1,22 +1,86 @@
 import Link from "next/link";
-import { StrategyReadiness } from "@/lib/strategy-api";
+
 import { Card } from "@/components/ui/Card";
+import type {
+  StrategyReadiness,
+} from "@/lib/strategy-api";
 
 type Props = {
   readiness: StrategyReadiness;
 };
 
 const LABELS: Record<string, string> = {
-  investor_type: "Investor Type",
-  primary_goal: "Primary Goal",
-  time_horizon_years: "Time Horizon",
-  maximum_acceptable_drawdown_pct: "Maximum Drawdown",
-  target_cash_pct: "Target Cash Allocation",
+  investor_type: "Investor type",
+  primary_goal: "Primary goal",
+  time_horizon_years: "Time horizon",
+  maximum_acceptable_drawdown_pct:
+    "Maximum drawdown",
+  target_cash_pct: "Target cash allocation",
 };
 
 export function InvestmentPolicyCard({
   readiness,
 }: Props) {
+  if (readiness.status === "ready") {
+    return (
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold">
+              🧭 Investment Policy
+            </h2>
+
+            <p className="mt-1 text-sm text-green-400">
+              🟢 Ready and active
+            </p>
+          </div>
+
+          <Link
+            href="/strategy"
+            className="text-sm text-blue-400 hover:underline"
+          >
+            Edit
+          </Link>
+        </div>
+      </Card>
+    );
+  }
+
+  if (readiness.status === "incomplete") {
+    return (
+      <Card>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-semibold">
+              🧭 Investment Policy
+            </h2>
+
+            <p className="mt-1 text-sm text-amber-400">
+              🟡 More information needed
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Missing:{" "}
+              {readiness.missing_fields
+                .map(
+                  (field) =>
+                    LABELS[field] ?? field,
+                )
+                .join(", ")}
+            </p>
+          </div>
+
+          <Link
+            href="/strategy"
+            className="text-sm text-blue-400 hover:underline"
+          >
+            Complete
+          </Link>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <div className="flex items-center justify-between">
@@ -28,40 +92,18 @@ export function InvestmentPolicyCard({
           href="/strategy"
           className="text-sm text-blue-400 hover:underline"
         >
-          {readiness.configured ? "Edit" : "Complete"}
+          Start
         </Link>
       </div>
 
-      {readiness.configured ? (
-        <>
-          <p className="mt-4 text-green-400">
-            🟢 Personalized
-          </p>
+      <p className="mt-4 text-amber-400">
+        🟡 Generic recommendations
+      </p>
 
-          <p className="mt-2 text-slate-400">
-            Your investment policy is configured.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="mt-4 text-amber-400">
-            🟡 Generic recommendations
-          </p>
-
-          <p className="mt-2 text-slate-400">
-            Complete your Investment Policy so the
-            Brain can personalize its advice.
-          </p>
-
-          <ul className="mt-4 list-disc pl-5 text-sm text-slate-400">
-            {readiness.missing_fields.map((field) => (
-              <li key={field}>
-                {LABELS[field] ?? field}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <p className="mt-2 text-slate-400">
+        Complete your Investment Policy so the Brain
+        can personalize its advice.
+      </p>
     </Card>
   );
 }

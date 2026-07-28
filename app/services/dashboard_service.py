@@ -2,7 +2,10 @@ from app.api.models.dashboard import DashboardResponse
 from app.api.models.investor_dna import InvestorDNAResponse
 from app.api.models.observation import ObservationResponse
 from app.api.models.opportunity import OpportunityResponse
-from app.api.models.portfolio import AllocationResponse, PortfolioResponse
+from app.api.models.portfolio import (
+    AllocationResponse,
+    PortfolioResponse,
+)
 from app.api.models.reflection import ReflectionResponse
 from app.api.models.today import (
     HealthCheckResponse,
@@ -16,9 +19,15 @@ from app.config import Settings
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.account_service import AccountService
 from app.services.brief_service import BriefService
-from app.services.daily_reflection_service import DailyReflectionService
-from app.services.investor_dna_service import InvestorDNAService
-from app.services.investor_observation_service import InvestorObservationService
+from app.services.daily_reflection_service import (
+    DailyReflectionService,
+)
+from app.services.investor_dna_service import (
+    InvestorDNAService,
+)
+from app.services.investor_observation_service import (
+    InvestorObservationService,
+)
 from app.services.memory_builder import MemoryBuilder
 from app.services.memory_service import MemoryService
 from app.services.opportunity_service import OpportunityService
@@ -66,16 +75,22 @@ class DashboardService:
             ),
             opportunities=[
                 OpportunityResponse(
-                    company=item.company,
+                    symbol=item.symbol,
                     action=item.action,
-                    confidence=item.confidence,
-                    summary=item.summary,
+                    score=item.score,
+                    policy_fit=item.policy_fit,
+                    committee_confidence=item.committee_confidence,
+                    market_score=item.market_score,
+                    diversification_score=item.diversification_score,
+                    reason=item.reason,
                 )
                 for item in opportunities
             ],
         )
 
-    async def _build_today(self) -> TodayResponse:
+    async def _build_today(
+        self,
+    ) -> TodayResponse:
         snapshot = await BriefService().build()
 
         return TodayResponse(
@@ -96,8 +111,8 @@ class DashboardService:
             changes=list(snapshot.changes),
             recommendation=RecommendationResponse(
                 symbol=snapshot.recommendation.symbol,
-                action=snapshot.recommendation.decision.recommendation,
-                confidence=snapshot.recommendation.decision.confidence,
+                action=(snapshot.recommendation.decision.recommendation),
+                confidence=(snapshot.recommendation.decision.confidence),
                 opinions=[
                     OpinionResponse(
                         member=opinion.member,
@@ -105,7 +120,7 @@ class DashboardService:
                         confidence=opinion.confidence,
                         rationale=opinion.rationale,
                     )
-                    for opinion in snapshot.recommendation.decision.opinions
+                    for opinion in (snapshot.recommendation.decision.opinions)
                 ],
             ),
             next_action=snapshot.next_action,
@@ -113,7 +128,10 @@ class DashboardService:
 
     async def _build_portfolio_sections(
         self,
-    ) -> tuple[PortfolioResponse | None, ObservationResponse | None]:
+    ) -> tuple[
+        PortfolioResponse | None,
+        ObservationResponse | None,
+    ]:
         try:
             settings = Settings()
             broker = EtoroAccountBroker(settings)
@@ -124,14 +142,14 @@ class DashboardService:
 
         portfolio = PortfolioResponse(
             total_value=snapshot.total_value,
-            total_value_eur=snapshot.total_value_eur,
+            total_value_eur=(snapshot.total_value_eur),
             positions=snapshot.positions,
             allocation=AllocationResponse(
                 cash=snapshot.allocation.cash,
                 stocks=snapshot.allocation.stocks,
                 etfs=snapshot.allocation.etfs,
                 crypto=snapshot.allocation.crypto,
-                unclassified=snapshot.allocation.unclassified,
+                unclassified=(snapshot.allocation.unclassified),
             ),
             risk_flags=list(snapshot.risk_flags),
         )

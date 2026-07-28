@@ -26,14 +26,39 @@ class YahooMarketProvider:
             name="Nasdaq 100 ETF",
         ),
         YahooInstrument(
+            yahoo_symbol="IWM",
+            movrvest_symbol="IWM",
+            name="Russell 2000 ETF",
+        ),
+        YahooInstrument(
             yahoo_symbol="BTC-USD",
             movrvest_symbol="BTC",
             name="Bitcoin",
         ),
         YahooInstrument(
+            yahoo_symbol="ETH-USD",
+            movrvest_symbol="ETH",
+            name="Ethereum",
+        ),
+        YahooInstrument(
             yahoo_symbol="GLD",
             movrvest_symbol="GLD",
             name="Gold ETF",
+        ),
+        YahooInstrument(
+            yahoo_symbol="CL=F",
+            movrvest_symbol="WTI",
+            name="WTI Crude Oil",
+        ),
+        YahooInstrument(
+            yahoo_symbol="DX-Y.NYB",
+            movrvest_symbol="DXY",
+            name="US Dollar Index",
+        ),
+        YahooInstrument(
+            yahoo_symbol="^TNX",
+            movrvest_symbol="TNX",
+            name="US 10-Year Treasury Yield",
         ),
     )
 
@@ -55,12 +80,20 @@ class YahooMarketProvider:
 
     async def quotes(
         self,
-        instruments: tuple[YahooInstrument, ...] | None = None,
+        instruments: tuple[
+            YahooInstrument,
+            ...,
+        ]
+        | None = None,
     ) -> tuple[MarketQuote, ...]:
         selected = instruments or self.DEFAULT_INSTRUMENTS
 
         tasks = [
-            asyncio.to_thread(self._fetch_quote, instrument) for instrument in selected
+            asyncio.to_thread(
+                self._fetch_quote,
+                instrument,
+            )
+            for instrument in selected
         ]
 
         results = await asyncio.gather(
@@ -71,8 +104,12 @@ class YahooMarketProvider:
         quotes: list[MarketQuote] = []
 
         for result in results:
-            if isinstance(result, BaseException):
+            if isinstance(
+                result,
+                BaseException,
+            ):
                 continue
+
             quotes.append(result)
 
         if not quotes:
@@ -128,10 +165,13 @@ class YahooMarketProvider:
             change_percent = 0.0
 
         return MarketQuote(
-            symbol=instrument.movrvest_symbol,
+            symbol=(instrument.movrvest_symbol),
             name=instrument.name,
             price=round(latest, 4),
-            change_percent=round(change_percent, 2),
+            change_percent=round(
+                change_percent,
+                2,
+            ),
             currency="USD",
         )
 
@@ -158,4 +198,7 @@ class YahooMarketProvider:
         if closes.empty:
             raise RuntimeError(f"No closing prices returned for {symbol}")
 
-        return round(float(closes.iloc[-1]), 2)
+        return round(
+            float(closes.iloc[-1]),
+            2,
+        )

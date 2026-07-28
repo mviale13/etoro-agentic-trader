@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Opportunity:
-    company: str
+    symbol: str
     action: str
-    confidence: int
-    summary: str
+    score: float
+
+    policy_fit: float
+    committee_confidence: float
+    market_score: float
+    diversification_score: float
+
+    reason: str

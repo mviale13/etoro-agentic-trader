@@ -4,6 +4,7 @@ import { CommitteeWeightsCard } from "@/components/dashboard/CommitteeWeightsCar
 import { DoctorCard } from "@/components/dashboard/DoctorCard";
 import { ExplainCard } from "@/components/dashboard/ExplainCard";
 import { Header } from "@/components/dashboard/Header";
+import { InvestmentPolicyCard } from "@/components/dashboard/InvestmentPolicyCard";
 import { InvestorDNACard } from "@/components/dashboard/InvestorDNACard";
 import { NextActionCard } from "@/components/dashboard/NextActionCard";
 import { ObservationCard } from "@/components/dashboard/ObservationCard";
@@ -19,6 +20,7 @@ import { getDoctor } from "@/lib/doctor-api";
 import { getExplanation } from "@/lib/explanation-api";
 import { getOpportunities } from "@/lib/opportunities-api";
 import { getReflection } from "@/lib/reflection-api";
+import { getStrategyReadiness } from "@/lib/strategy-api";
 
 export default async function Home() {
   const today = await getToday();
@@ -27,6 +29,8 @@ export default async function Home() {
   const reflection = await getReflection();
   const opportunities = await getOpportunities();
   const committeeWeights = await getCommitteeWeights();
+  const strategyReadiness =
+    await getStrategyReadiness();
   const brain = await getBrain();
 
   const opportunitiesArePrimary =
@@ -35,6 +39,10 @@ export default async function Home() {
   return (
     <DashboardLayout>
       <Header greeting={today.greeting} />
+
+      <InvestmentPolicyCard
+        readiness={strategyReadiness}
+      />
 
       <BrainCard brain={brain} />
 
@@ -70,7 +78,8 @@ export default async function Home() {
 
         <InvestorDNACard
           dna={{
-            understanding: brain.investor_dna.confidence,
+            understanding:
+              brain.investor_dna.confidence,
             message:
               brain.investor_dna.message ??
               "MOVRvest is still learning your investment behaviour.",
@@ -83,12 +92,15 @@ export default async function Home() {
 
         <PortfolioCard
           portfolio={{
-            total_value: brain.portfolio.total_value,
+            total_value:
+              brain.portfolio.total_value,
             total_value_eur:
               brain.portfolio.total_value_eur,
-            positions: brain.portfolio.positions,
+            positions:
+              brain.portfolio.positions,
             allocation: {
-              cash: brain.portfolio.cash_allocation,
+              cash:
+                brain.portfolio.cash_allocation,
               stocks: 0,
               etfs: 0,
               crypto: 0,
@@ -100,8 +112,10 @@ export default async function Home() {
 
         <ObservationCard
           observation={{
-            title: brain.observation.title,
-            message: brain.observation.message,
+            title:
+              brain.observation.title,
+            message:
+              brain.observation.message,
             category: "general",
           }}
         />

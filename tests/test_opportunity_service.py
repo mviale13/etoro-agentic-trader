@@ -10,5 +10,6 @@ def test_returns_three_opportunities() -> None:
 def test_first_opportunity_is_microsoft() -> None:
     opportunity = OpportunityService().top_opportunities()[0]
 
-    assert opportunity.company == "Microsoft"
+    assert opportunity.symbol == "MSFT"
     assert opportunity.action == "BUY"
+    assert opportunity.score == 92.0

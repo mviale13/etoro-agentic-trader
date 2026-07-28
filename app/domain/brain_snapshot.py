@@ -1,0 +1,20 @@
+from dataclasses import dataclass
+
+from app.domain.executive_brief import ExecutiveBrief
+from app.domain.insight import Insight
+from app.domain.investor_dna import InvestorDNA
+from app.domain.observation import Observation
+from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.recommendation import Recommendation
+
+
+@dataclass(frozen=True)
+class BrainSnapshot:
+    portfolio: PortfolioSnapshot
+    recommendation: Recommendation
+    observation: Observation
+    investor_dna: InvestorDNA
+    summary: str
+    insights: list[Insight]
+    focus: str = "portfolio"
+    brief: ExecutiveBrief | None = None

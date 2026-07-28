@@ -1,8 +1,6 @@
-# MOVRvest Architecture
+# MOVRvest Architecture v4.0
 
-> Version: 0.6.x
->
-> Explainable, agentic investment intelligence platform for eToro investors.
+> "An Artificial Chief Investment Officer (ACIO)"
 
 ---
 
@@ -10,241 +8,734 @@
 
 MOVRvest is not a trading bot.
 
-It is an AI investment operating system that continuously:
+MOVRvest is an Artificial Chief Investment Officer whose mission is to help investors make better long-term investment decisions through transparent, explainable, evidence-based and continuously improving intelligence.
 
-- observes markets
-- understands the investor
-- debates investment decisions
-- explains every recommendation
-- remembers past events
-- learns from historical performance
-- improves committee weighting over time
+The investor always remains in control.
 
-Every recommendation is explainable and fully auditable.
+MOVRvest recommends.
+
+The investor decides.
+
+---
+
+# Architectural North Star
+
+MOVRvest transforms verified facts into transparent investment decisions through independent expert committees.
+
+Every recommendation must be:
+
+- Evidence-based
+- Explainable
+- Personalized
+- Consistent
+- Auditable
+
+---
+
+# Core Principles
+
+Facts before opinions.
+
+Committees reason.
+
+Executive Board decides.
+
+Executive Brief explains.
+
+Learning improves future decisions.
+
+Every component has exactly one responsibility.
 
 ---
 
 # High-Level Architecture
 
 ```
-                Yahoo Finance
-                      │
-          Crypto Fear & Greed
-                      │
-                eToro Account
-                      │
-────────────────────────────────────────
-          Data Acquisition Layer
-────────────────────────────────────────
-                      │
-                      ▼
-            Market Intelligence
-                      │
-                      ▼
-             Portfolio Analysis
-                      │
-                      ▼
-             Investment Committee
-                      │
-                      ▼
-           Committee Chairman
-                      │
-                      ▼
-             Recommendation
-                      │
-                      ▼
-              Event Repository
-                      │
-         ┌────────────┴────────────┐
-         ▼                         ▼
- Memory Engine             Committee Analytics
-         │                         │
-         ▼                         ▼
- Pattern Engine            Performance Engine
-         │                         │
-         └────────────┬────────────┘
-                      ▼
-               Investor DNA
-                      │
-                      ▼
-             Executive Dashboard
+                        External World
+
+ eToro     Yahoo     FRED     ECB     News     Future Sources
+
+                           │
+                           ▼
+
+                    Connectors / Providers
+
+                           │
+                           ▼
+
+────────────────────────────────────────────────────────────
+                     FACTS LAYER
+────────────────────────────────────────────────────────────
+
+PortfolioFacts
+
+MarketFacts
+
+InvestorFacts
+
+OpportunityFacts
+
+RiskFacts
+
+                           │
+                           ▼
+
+────────────────────────────────────────────────────────────
+                  DISCOVERY LAYER
+────────────────────────────────────────────────────────────
+
+Market Scanner
+
+↓
+
+Market Opportunities
+
+↓
+
+Opportunity Facts
+
+↓
+
+Opportunity Scorecards
+
+                           │
+                           ▼
+
+────────────────────────────────────────────────────────────
+                  COMMITTEE LAYER
+────────────────────────────────────────────────────────────
+
+Portfolio Committee
+
+Market Committee
+
+Opportunity Committee
+
+Risk Committee
+
+Policy Committee
+
+Behaviour Committee
+
+                           │
+
+                   Committee Votes
+
+                           │
+                           ▼
+
+────────────────────────────────────────────────────────────
+                 EXECUTIVE BOARD
+────────────────────────────────────────────────────────────
+
+Executive Decision
+
+↓
+
+Executive Summary
+
+↓
+
+Executive Brief
+
+                           │
+                           ▼
+
+────────────────────────────────────────────────────────────
+                PRESENTATION LAYER
+────────────────────────────────────────────────────────────
+
+Dashboard
+
+API
+
+Mobile
+
+Chat
+
+Email
+
+Notifications
 ```
 
 ---
 
-# Layers
+# Layer Responsibilities
 
-## Domain
+## 1. Connectors
 
-Pure business objects.
+Purpose
 
-Examples:
+Retrieve data from external systems.
 
-- Recommendation
-- PortfolioSnapshot
-- CommitteeDecision
-- CommitteeOpinion
-- CommitteeOutcome
-- InvestorDNA
-- MemoryEvent
-- Event
-
-Contains no infrastructure code.
-
----
-
-## Providers
-
-External market information.
-
-Current:
-
-- Yahoo Finance
-- Crypto Fear & Greed
-
-Future:
-
-- Macro indicators
-- SEC filings
-- News providers
-- Analyst consensus
-
----
-
-## Brokers
-
-External broker integrations.
-
-Current:
+Examples
 
 - eToro
+- Yahoo Finance
+- FRED
+- ECB
+- News APIs
 
-Future:
+Rules
 
-- Interactive Brokers
-- Alpaca
-- Binance
+Never perform reasoning.
 
----
+Never generate recommendations.
 
-## Services
+Output
 
-Business logic.
-
-Current services include:
-
-### Portfolio
-
-- PortfolioService
-- ExchangeRateService
-
-### Market
-
-- MarketService
-- MarketIntelligenceService
-
-### Signals
-
-- SignalService
-
-### Memory
-
-- MemoryService
-- MemoryBuilder
-
-### Investor
-
-- PatternEngine
-- InvestorDNAService
-- InvestorObservationService
-
-### Committee
-
-- CommitteeService
-- CommitteeAnalyticsService
-- CommitteeOutcomeService
-
-### Dashboard
-
-- DashboardService
-- BriefService
+Raw external information.
 
 ---
 
-# Investment Committee
+## 2. Facts Layer
 
-Five independent experts evaluate every opportunity.
+Purpose
 
-## Momentum
+Transform external information into normalized business facts.
 
-Trend following.
+Examples
 
-## Risk
+PortfolioFacts
 
-Portfolio risk.
+Contains
 
-## Cash
+- Portfolio value
+- Cash
+- Allocation
+- Positions
+- Pending orders
 
-Liquidity management.
+MarketFacts
 
-## Diversification
+Contains
 
-Portfolio concentration.
+- Market mood
+- Volatility
+- Major indices
+- Crypto
+- Commodities
 
-## Value
+InvestorFacts
 
-Fundamental valuation.
+Contains
 
-Each member produces:
+- Investment Policy
+- Investor DNA
+- Behaviour
+- Objectives
 
-- vote
-- confidence
-- rationale
+OpportunityFacts
 
----
+Contains
 
-# Chairman
+- Price
+- Daily performance
+- Asset class
+- Metadata
 
-The Chairman aggregates committee opinions.
+RiskFacts
 
-Current capabilities:
+Contains
 
-- majority voting
-- confidence aggregation
-- weighted voting support
+Portfolio risks.
 
-Future:
+Policy risks.
 
-- adaptive weights from historical performance
+Market risks.
 
----
+Rules
 
-# Event Sourcing
+Facts are deterministic.
 
-Every important decision is persisted.
-
-Current events:
-
-- recommendation_generated
-- recommendation_outcome_recorded
-- memory_recorded
-
-Future:
-
-- order_executed
-- portfolio_snapshot
-- investor_action
+Facts never contain opinions.
 
 ---
 
-# Memory System
+## 3. Discovery Layer
 
-Signals generate memories.
+Purpose
 
-Example:
+Identify assets worthy of analysis.
+
+Pipeline
+
+Universe
+
+↓
+
+Market Scanner
+
+↓
+
+Candidate Opportunities
+
+↓
+
+Opportunity Facts
+
+↓
+
+Opportunity Scorecards
+
+Responsibilities
+
+Discover.
+
+Never recommend.
+
+---
+
+## 4. Scorecard Layer
+
+Purpose
+
+Transform facts into measurable investment quality.
+
+Example
 
 ```
-High Cash Position
+Opportunity Scorecard
+
+Momentum
+
+Quality
+
+Valuation
+
+Growth
+
+Volatility
+
+Liquidity
+
+Overall Score
+```
+
+Rules
+
+Scorecards evaluate.
+
+They never decide.
+
+---
+
+## 5. Committee Layer
+
+Purpose
+
+Independent expert reasoning.
+
+Each committee owns exactly one domain.
+
+Portfolio Committee
+
+Mission
+
+Improve portfolio construction.
+
+Consumes
+
+PortfolioFacts
+
+InvestorFacts
+
+Produces
+
+CommitteeVote
+
+---
+
+Market Committee
+
+Mission
+
+Interpret current market conditions.
+
+Consumes
+
+MarketFacts
+
+Produces
+
+CommitteeVote
+
+---
+
+Opportunity Committee
+
+Mission
+
+Evaluate investment attractiveness.
+
+Consumes
+
+OpportunityScorecard
+
+Produces
+
+CommitteeVote
+
+---
+
+Risk Committee
+
+Mission
+
+Protect downside.
+
+Consumes
+
+RiskFacts
+
+PortfolioFacts
+
+Produces
+
+CommitteeVote
+
+---
+
+Policy Committee
+
+Mission
+
+Ensure recommendations respect the Investment Policy.
+
+Consumes
+
+InvestorFacts
+
+PortfolioFacts
+
+Produces
+
+CommitteeVote
+
+---
+
+Behaviour Committee
+
+Mission
+
+Protect the investor from behavioural mistakes.
+
+Consumes
+
+InvestorFacts
+
+Recommendation History
+
+Produces
+
+CommitteeVote
+
+---
+
+Every committee is independent.
+
+Committees never call external APIs.
+
+Committees never communicate with one another.
+
+---
+
+## 6. Executive Board
+
+Purpose
+
+Transform committee opinions into one executive decision.
+
+Consumes
+
+CommitteeVote[]
+
+Produces
+
+ExecutiveDecision
+
+Responsibilities
+
+- Aggregate votes
+- Resolve disagreements
+- Handle ties
+- Calculate confidence
+- Produce rationale
+
+Rules
+
+Executive Board never accesses facts.
+
+Executive Board only knows committee votes.
+
+---
+
+## 7. Communication Layer
+
+Purpose
+
+Explain executive decisions.
+
+Components
+
+ExecutiveSummaryService
+
+ExecutiveBriefService
+
+Dashboard Renderers
+
+Responsibilities
+
+Explain
+
+- What changed?
+- Why does it matter?
+- Why does it matter for me?
+- What should I do?
+- Why should I trust this?
+
+---
+
+## 8. Presentation Layer
+
+Interfaces
+
+Dashboard
+
+REST API
+
+Mobile
+
+Chat
+
+Email
+
+Notifications
+
+Future
+
+Voice
+
+Wearables
+
+Automations
+
+---
+
+# Domain Model
+
+PortfolioFacts
+
+Represents the investor's current portfolio.
+
+---
+
+MarketFacts
+
+Represents current market conditions.
+
+---
+
+InvestorFacts
+
+Represents investor objectives, preferences and policy.
+
+---
+
+OpportunityFacts
+
+Represents one investment candidate.
+
+---
+
+OpportunityScorecard
+
+Represents numerical investment quality.
+
+---
+
+CommitteeVote
+
+Represents one expert opinion.
+
+---
+
+ExecutiveDecision
+
+Represents the Executive Board decision.
+
+---
+
+ExecutiveBrief
+
+Represents the explanation delivered to the investor.
+
+---
+
+# System Pipeline
+
+```
+External World
+
+↓
+
+Connectors
+
+↓
+
+Facts
+
+↓
+
+Scanner
+
+↓
+
+Opportunity Facts
+
+↓
+
+Scorecards
+
+↓
+
+Committees
+
+↓
+
+Executive Board
+
+↓
+
+Executive Decision
+
+↓
+
+Executive Brief
+
+↓
+
+Dashboard
+```
+
+---
+
+# Dependency Rules
+
+Allowed
+
+```
+Connector
+
+↓
+
+Facts Service
+
+↓
+
+Facts
+
+↓
+
+Scorecard
+
+↓
+
+Committee
+
+↓
+
+Executive Board
+
+↓
+
+Executive Brief
+
+↓
+
+Dashboard
+```
+
+Forbidden
+
+Committee
+
+↓
+
+Yahoo
+
+Forbidden
+
+Committee
+
+↓
+
+eToro
+
+Forbidden
+
+Executive Board
+
+↓
+
+Facts
+
+Forbidden
+
+Dashboard
+
+↓
+
+Broker
+
+Every dependency must flow downward.
+
+---
+
+# Explainability
+
+Every recommendation must answer
+
+What changed?
+
+↓
+
+Why?
+
+↓
+
+Evidence?
+
+↓
+
+Confidence?
+
+↓
+
+Recommendation
+
+Every recommendation must cite supporting facts.
+
+---
+
+# Learning Layer (Roadmap)
+
+Future pipeline
+
+```
+Recommendation
+
+↓
+
+Execution
+
+↓
+
+Outcome
+
+↓
+
+Lesson
 
 ↓
 
@@ -252,252 +743,150 @@ Memory
 
 ↓
 
-Pattern
+Behaviour
 
 ↓
 
-Investor DNA
+Future Decisions
 ```
 
-The system slowly learns investor behaviour.
+Future capabilities
+
+- Recommendation history
+- Outcome analysis
+- Replay engine
+- Behaviour coaching
+- Confidence calibration
+- Continuous learning
 
 ---
 
-# Pattern Engine
+# Engineering Principles
 
-Converts memories into reusable patterns.
+Facts are deterministic.
 
-Examples:
+Reasoning is modular.
 
-- prefers holding cash
-- frequently buys technology
-- accumulates after corrections
-- avoids volatility
+Committees are independent.
 
----
+Executive Board is transparent.
 
-# Investor DNA
+Learning is continuous.
 
-Current outputs:
+The investor always remains in control.
 
-- confidence
-- quality preference
-- diversification preference
-- value preference
-- volatility preference
+Every recommendation is explainable.
 
-Confidence increases as more evidence is collected.
+Every service has one responsibility.
 
 ---
 
-# Committee Analytics
-
-Tracks committee behaviour.
-
-Current metrics:
-
-- recommendations
-- BUY/HOLD/SELL distribution
-- average confidence
-- member statistics
-- committee accuracy
-- member accuracy
-
----
-
-# Recommendation Outcomes
-
-Recommendations can later be evaluated.
-
-Each outcome records:
-
-- entry price
-- evaluation price
-- return
-- success
-
-These outcomes feed committee analytics.
-
----
-
-# Executive Dashboard
-
-Aggregates high-level intelligence.
-
-Current sections:
-
-- committee statistics
-- committee accuracy
-- investor understanding
-
-Future:
-
-- portfolio summary
-- recommendation history
-- member leaderboard
-- trend analysis
-- performance charts
-
----
-
-# API
-
-Current endpoints include:
+# Project Structure
 
 ```
-/today
-/dashboard
-/dashboard/executive
-/portfolio
-/portfolio/health
-/observation
-/investor-dna
-/opportunities
-/reflection
-/committee/statistics
-/health
+app/
+
+api/
+
+brokers/
+
+providers/
+
+domain/
+
+services/
+
+    connectors/
+
+    facts/
+
+    scanner/
+
+    scorecards/
+
+    committees/
+
+    executive/
+
+    communication/
+
+repositories/
+
+tests/
 ```
 
 ---
 
-# Persistence
+# Development Roadmap
 
-JSON repositories.
+## Phase 1 ✅ Foundation
 
-Current:
-
-```
-data/events/
-```
-
-Future:
-
-- PostgreSQL
-- DuckDB
-- Vector database
-- Time-series storage
+- FastAPI
+- Next.js
+- eToro integration
+- Portfolio
+- Dashboard
 
 ---
 
-# Testing
+## Phase 2 ✅ Executive Brain
 
-Current quality gates:
-
-- Ruff
-- MyPy
-- Pytest
-
-Current status:
-
-- ~150 typed Python source files
-- 110+ automated tests
-- strict static typing
-- formatted codebase
-- event-driven architecture
+- PortfolioFacts
+- MarketFacts
+- Executive Board
+- Committee Votes
 
 ---
 
-# Design Principles
+## Phase 3 🚧 Intelligence
 
-- Explainability first
-- Event-driven architecture
-- Strong typing
-- Immutable domain models
-- Dependency inversion
-- Small focused services
-- Test-first development
-- Human-in-the-loop investment intelligence
+- Opportunity Scanner
+- Opportunity Scorecards
+- Risk Committee
+- Policy Committee
+- Behaviour Committee
 
 ---
 
-# Long-Term Roadmap
+## Phase 4 🚧 Learning
 
-## Phase 1 ✅
+- Recommendation Memory
+- Outcome Analysis
+- Replay Engine
+- Behaviour Coaching
 
-Broker connectivity
+---
 
-## Phase 2 ✅
+## Phase 5 🚧 Artificial CIO
 
-Portfolio intelligence
+Daily Executive Meeting
 
-## Phase 3 ✅
+↓
 
-Market intelligence
+Committee Votes
 
-## Phase 4 ✅
+↓
 
-Investment committee
+Executive Decision
 
-## Phase 5 ✅
+↓
 
-Persistent memory
+Executive Brief
 
-## Phase 6 ✅
+↓
 
-Investor DNA
+Continuous Learning
 
-## Phase 7 ✅
+---
 
-Committee analytics
+# Long-Term Vision
 
-## Phase 8 ✅
+MOVRvest is an Artificial Chief Investment Officer.
 
-Recommendation outcome tracking
+Its mission is not to predict markets.
 
-## Phase 9 ✅
+Its mission is to help investors consistently make better investment decisions by transforming verified facts into transparent, explainable and trustworthy executive recommendations.
 
-Adaptive committee weighting
+Trust is the product.
 
-## Learning & Adaptive Intelligence
-
-MOVRvest continuously improves its decision-making through an event-driven learning loop.
-
-```text
-Recommendation
-        │
-        ▼
-Outcome
-        │
-        ▼
-Performance Analytics
-        │
-        ▼
-Learning Service
-        │
-        ▼
-Regime Analytics
-        │
-        ▼
-Adaptive Weighting
-```
-
-### Components
-
-- CommitteeAnalyticsService
-    - Global committee statistics
-    - Member statistics
-    - Committee performance
-    - Member performance
-    - Regime-specific performance
-
-- LearningService
-    - Generates learning insights
-    - Suggests committee improvements
-
-- RecommendationJournalService
-    - Builds recommendation history
-    - Human-readable investment journal
-
-- RegimeWeightService
-    - Computes committee weights
-    - One weight table per market regime
-
-Future versions will allow the Chairman to automatically use these adaptive weights.
-```
-## Next
-
-- Recommendation backtesting
-- Dynamic committee weighting
-- Multi-agent debate
-- Strategy benchmarking
-- Autonomous portfolio management
+Everything else exists to support it.

@@ -2,7 +2,13 @@ from pydantic import BaseModel
 
 
 class OpportunityResponse(BaseModel):
-    company: str
+    symbol: str
     action: str
-    confidence: int
-    summary: str
+    score: float
+
+    policy_fit: float
+    committee_confidence: float
+    market_score: float
+    diversification_score: float
+
+    reason: str
