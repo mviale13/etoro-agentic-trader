@@ -5,6 +5,7 @@ from typing import Any, NoReturn
 
 from app.commands import (
     committee,
+    company,
     daily,
     decision,
     doctor,
@@ -97,6 +98,15 @@ def main() -> NoReturn:
                 help="Ticker symbol, for example MSFT, ASML or BTC-USD",
             )
 
+    company_parser = subparsers.add_parser(
+        "company",
+        help="Analyze a company from your eToro watchlists",
+    )
+    company_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example MSFT, NVDA or BTC",
+    )
+
     args = parser.parse_args()
 
     if args.command == "explain":
@@ -106,8 +116,20 @@ def main() -> NoReturn:
             )
         )
 
+    if args.command == "company":
+        raise SystemExit(
+            asyncio.run(
+                company.run(args.symbol),
+            )
+        )
+
     _, command_handler = COMMANDS[args.command]
-    raise SystemExit(asyncio.run(command_handler()))
+
+    raise SystemExit(
+        asyncio.run(
+            command_handler(),
+        )
+    )
 
 
 if __name__ == "__main__":
