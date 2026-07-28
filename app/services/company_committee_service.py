@@ -46,49 +46,34 @@ class CompanyCommitteeService:
     def _value_score(
         signals: CompanySignals,
     ) -> int:
-        mapping = {
+        return {
             "CHEAP": 1,
             "FAIR": 0,
             "EXPENSIVE": -1,
             "UNKNOWN": 0,
-        }
-
-        return mapping.get(
-            signals.value.valuation,
-            0,
-        )
+        }.get(signals.value.valuation, 0)
 
     @staticmethod
     def _quality_score(
         signals: CompanySignals,
     ) -> int:
-        mapping = {
+        return {
             "HIGH": 1,
             "MEDIUM": 0,
             "LOW": -1,
             "UNKNOWN": 0,
-        }
-
-        return mapping.get(
-            signals.quality.quality,
-            0,
-        )
+        }.get(signals.quality.quality, 0)
 
     @staticmethod
     def _momentum_score(
         signals: CompanySignals,
     ) -> int:
-        mapping = {
+        return {
             "BULLISH": 1,
             "NEUTRAL": 0,
             "BEARISH": -1,
             "UNKNOWN": 0,
-        }
-
-        return mapping.get(
-            signals.momentum.trend,
-            0,
-        )
+        }.get(signals.momentum.trend, 0)
 
     def _recommendation(
         self,
