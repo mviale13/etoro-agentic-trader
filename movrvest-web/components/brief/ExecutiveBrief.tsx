@@ -1,8 +1,17 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
+import { WhyThisBrief } from "./WhyThisBrief";
 
 type ExecutiveBriefProps = {
   brief: ExecutiveBriefViewModel;
 };
+
+const remainingSections = [
+  "Committee Consensus",
+  "Portfolio Impact",
+  "Evidence",
+  "Risks",
+  "Executive Assessment",
+];
 
 export function ExecutiveBrief({
   brief,
@@ -51,16 +60,14 @@ export function ExecutiveBrief({
         </p>
       </section>
 
+      <WhyThisBrief reasons={brief.whyNow} />
+
       <div className="border-t border-slate-200">
-        {[
-          "Why This Brief",
-          "Committee Consensus",
-          "Portfolio Impact",
-          "Evidence",
-          "Risks",
-          "Executive Assessment",
-        ].map((section) => (
-          <section key={section} className="py-10 border-b border-slate-200">
+        {remainingSections.map((section) => (
+          <section
+            key={section}
+            className="border-b border-slate-200 py-10"
+          >
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
               {section}
             </h2>
