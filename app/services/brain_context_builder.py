@@ -1,21 +1,21 @@
 from app.application.brain.perception.investor_perception import (
     InvestorPerception,
 )
+from app.application.brain.perception.market_perception import (
+    MarketPerception,
+)
+from app.application.brain.perception.policy_perception import (
+    PolicyPerception,
+)
 from app.application.brain.perception.portfolio_perception import (
     PortfolioPerception,
+)
+from app.application.brain.perception.recommendation_perception import (
+    RecommendationPerception,
 )
 from app.domain.brain_context import BrainContext
 from app.repositories.json_event_repository import (
     JsonEventRepository,
-)
-from app.services.committee_service import (
-    CommitteeService,
-)
-from app.services.investor_strategy_service import (
-    InvestorStrategyService,
-)
-from app.services.market_context_service import (
-    MarketContextService,
 )
 
 
@@ -31,13 +31,13 @@ class BrainContextBuilder:
             portfolio=portfolio,
         )
 
-        recommendation = await CommitteeService(
-            repository,
-        ).evaluate()
+        recommendation = await RecommendationPerception(
+            repository=repository,
+        ).execute()
 
-        market = MarketContextService().build()
+        market = MarketPerception().execute()
 
-        investment_policy = InvestorStrategyService().load_policy()
+        investment_policy = PolicyPerception().execute()
 
         return BrainContext(
             portfolio=portfolio,
