@@ -1,12 +1,10 @@
-from app.brokers.etoro_account import (
-    EtoroAccountBroker,
+from app.application.brain.perception.portfolio_perception import (
+    PortfolioPerception,
 )
-from app.config import Settings
 from app.domain.brain_context import BrainContext
 from app.repositories.json_event_repository import (
     JsonEventRepository,
 )
-from app.services.account_service import AccountService
 from app.services.committee_service import (
     CommitteeService,
 )
@@ -24,24 +22,14 @@ from app.services.market_context_service import (
 )
 from app.services.memory_service import MemoryService
 from app.services.pattern_engine import PatternEngine
-from app.services.portfolio_service import (
-    PortfolioService,
-)
 from app.services.signal_service import SignalService
 
 
 class BrainContextBuilder:
     async def build(self) -> BrainContext:
-        settings = Settings()
         repository = JsonEventRepository()
 
-        account = await AccountService(
-            EtoroAccountBroker(settings),
-        ).snapshot()
-
-        portfolio = PortfolioService().analyze(
-            account,
-        )
+        portfolio = await PortfolioPerception().execute()
 
         signals = SignalService().analyze(
             current=portfolio,
