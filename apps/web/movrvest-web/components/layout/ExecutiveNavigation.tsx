@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { href: "/", label: "Executive Brief", icon: LayoutDashboard },
+  { href: "/", label: "Executive Workspace", icon: LayoutDashboard },
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
   { href: "/research", label: "Research", icon: FlaskConical },
   { href: "/markets", label: "Markets", icon: ChartNoAxesCombined },
