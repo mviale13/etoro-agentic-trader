@@ -1,3 +1,6 @@
+from app.application.brain.perception.investor_perception import (
+    InvestorPerception,
+)
 from app.application.brain.perception.portfolio_perception import (
     PortfolioPerception,
 )
@@ -8,21 +11,12 @@ from app.repositories.json_event_repository import (
 from app.services.committee_service import (
     CommitteeService,
 )
-from app.services.investor_dna_service import (
-    InvestorDNAService,
-)
-from app.services.investor_observation_service import (
-    InvestorObservationService,
-)
 from app.services.investor_strategy_service import (
     InvestorStrategyService,
 )
 from app.services.market_context_service import (
     MarketContextService,
 )
-from app.services.memory_service import MemoryService
-from app.services.pattern_engine import PatternEngine
-from app.services.signal_service import SignalService
 
 
 class BrainContextBuilder:
@@ -31,25 +25,10 @@ class BrainContextBuilder:
 
         portfolio = await PortfolioPerception().execute()
 
-        signals = SignalService().analyze(
-            current=portfolio,
-            previous=None,
-        )
-
-        observation = InvestorObservationService().observe(
-            signals,
-        )
-
-        memories = MemoryService(
-            repository,
-        ).history()
-
-        patterns = PatternEngine().analyze(
-            memories,
-        )
-
-        investor_dna = InvestorDNAService().analyze(
-            patterns,
+        investor = InvestorPerception(
+            repository=repository,
+        ).execute(
+            portfolio=portfolio,
         )
 
         recommendation = await CommitteeService(
@@ -63,8 +42,8 @@ class BrainContextBuilder:
         return BrainContext(
             portfolio=portfolio,
             recommendation=recommendation,
-            observation=observation,
-            investor_dna=investor_dna,
+            observation=investor.observation,
+            investor_dna=investor.investor_dna,
             market=market,
             investment_policy=investment_policy,
         )
