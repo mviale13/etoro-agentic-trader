@@ -62,6 +62,20 @@ def test_strong_profitability() -> None:
     assert opinion.verdict is ProfitabilityVerdict.STRONG
 
 
+def test_adequate_profitability() -> None:
+    opinion = ProfitabilityAnalyst().analyze(
+        company(
+            gross_margin=0.30,
+            operating_margin=0.10,
+            net_margin=0.05,
+        )
+    )
+
+    assert 50 <= opinion.score < 75
+    assert opinion.confidence == 1.0
+    assert opinion.verdict is ProfitabilityVerdict.ADEQUATE
+
+
 def test_weak_profitability() -> None:
     opinion = ProfitabilityAnalyst().analyze(
         company(
@@ -100,7 +114,7 @@ def test_missing_profitability_data_is_unknown() -> None:
         )
     )
 
-    assert opinion.score is None
+    assert opinion.score == 50
     assert opinion.confidence == 0.0
     assert opinion.verdict is ProfitabilityVerdict.UNKNOWN
     assert opinion.evidence == ()

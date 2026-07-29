@@ -1,23 +1,38 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 
 @dataclass(frozen=True, slots=True)
 class CompanyFacts:
-    instrument_id: int
+    """Observable company data available at a specific point in time.
 
+    Notes:
+    - Percentage values are expressed as decimal ratios:
+        0.12  -> 12%
+       -0.05 -> -5%
+    - Missing financial data is represented by None.
+    """
+
+    # Identity
+    instrument_id: int
     symbol: str
     name: str
 
+    # Classification
     asset_type: str
     exchange: str
 
+    # Observation metadata
+    observed_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    currency: str | None = None
+
     # Market
-    current_price: float | None
-    daily_change_pct: float | None
-    market_cap: float | None
+    current_price: float | None = None
+    daily_change_pct: float | None = None
+    market_cap: float | None = None
 
     # Valuation
-    forward_pe: float | None
+    forward_pe: float | None = None
 
     # Growth
     revenue_growth: float | None = None
@@ -44,6 +59,6 @@ class CompanyFacts:
     eps: float | None = None
     dividend_yield: float | None = None
 
-    # Classification
+    # Company classification
     sector: str | None = None
     industry: str | None = None

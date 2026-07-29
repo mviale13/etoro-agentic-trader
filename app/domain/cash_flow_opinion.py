@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from app.domain.opinion import Opinion
+from app.domain.verdict import Verdict
 
 
-class CashFlowVerdict(StrEnum):
+class CashFlowVerdict(Verdict):
     EXCELLENT = "excellent"
     STRONG = "strong"
     ADEQUATE = "adequate"
@@ -13,5 +13,5 @@ class CashFlowVerdict(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
-class CashFlowOpinion(Opinion):
-    verdict: CashFlowVerdict
+class CashFlowOpinion(Opinion[CashFlowVerdict]):
+    pass

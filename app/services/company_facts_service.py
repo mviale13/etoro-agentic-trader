@@ -1,4 +1,5 @@
 import asyncio
+from datetime import UTC, datetime
 from typing import Protocol
 
 from app.domain.company_facts import CompanyFacts
@@ -68,6 +69,7 @@ class CompanyFactsService:
             name=item.name,
             asset_type=str(item.asset_type_id),
             exchange=str(item.exchange_id),
+            observed_at=datetime.now(UTC),
             # Market
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
@@ -88,6 +90,7 @@ class CompanyFactsService:
             debt_to_equity=None,
             current_ratio=None,
             # Cash generation
+            operating_cash_flow=None,
             free_cash_flow=None,
             # Shareholder returns
             eps=None,

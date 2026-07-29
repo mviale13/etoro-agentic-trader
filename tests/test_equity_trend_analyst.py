@@ -123,7 +123,7 @@ def test_missing_equity_trend_data_is_unknown() -> None:
         )
     )
 
-    assert opinion.score is None
+    assert opinion.score == 50
     assert opinion.confidence == 0.0
     assert opinion.verdict is EquityTrendVerdict.UNKNOWN
     assert opinion.evidence == ()

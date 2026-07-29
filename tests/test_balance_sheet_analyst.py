@@ -66,6 +66,6 @@ def test_partial_data() -> None:
 def test_unknown() -> None:
     opinion = BalanceSheetAnalyst().analyze(company(None, None))
 
-    assert opinion.score is None
+    assert opinion.score == 50
     assert opinion.confidence == 0.0
     assert opinion.verdict is BalanceSheetVerdict.UNKNOWN

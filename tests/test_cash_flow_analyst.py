@@ -68,7 +68,7 @@ def test_weak_cash_flow() -> None:
 def test_unknown_cash_flow() -> None:
     opinion = CashFlowAnalyst().analyze(unknown_company())
 
-    assert opinion.score is None
+    assert opinion.score == 50
     assert opinion.verdict is CashFlowVerdict.UNKNOWN
     assert opinion.confidence == 0.0
     assert len(opinion.uncertainty) == 2

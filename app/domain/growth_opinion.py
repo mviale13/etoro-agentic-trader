@@ -1,17 +1,17 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from app.domain.opinion import Opinion
+from app.domain.verdict import Verdict
 
 
-class GrowthVerdict(StrEnum):
-    STRONG = "STRONG"
-    MODERATE = "MODERATE"
-    WEAK = "WEAK"
-    DECLINING = "DECLINING"
-    UNKNOWN = "UNKNOWN"
+class GrowthVerdict(Verdict):
+    STRONG = "strong"
+    MODERATE = "moderate"
+    WEAK = "weak"
+    DECLINING = "declining"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True, slots=True)
-class GrowthOpinion(Opinion):
-    verdict: GrowthVerdict
+class GrowthOpinion(Opinion[GrowthVerdict]):
+    pass

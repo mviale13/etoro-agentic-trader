@@ -1,16 +1,16 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from app.domain.opinion import Opinion
+from app.domain.verdict import Verdict
 
 
-class EquityTrendVerdict(StrEnum):
-    BULLISH = "BULLISH"
-    NEUTRAL = "NEUTRAL"
-    BEARISH = "BEARISH"
-    UNKNOWN = "UNKNOWN"
+class EquityTrendVerdict(Verdict):
+    BULLISH = "bullish"
+    NEUTRAL = "neutral"
+    BEARISH = "bearish"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True, slots=True)
-class EquityTrendOpinion(Opinion):
-    verdict: EquityTrendVerdict
+class EquityTrendOpinion(Opinion[EquityTrendVerdict]):
+    pass

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from app.domain.opinion import Opinion
+from app.domain.verdict import Verdict
 
 
-class FundamentalVerdict(StrEnum):
+class FundamentalVerdict(Verdict):
     STRONG_BUY = "strong_buy"
     BUY = "buy"
     HOLD = "hold"
@@ -13,5 +13,5 @@ class FundamentalVerdict(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
-class FundamentalOpinion(Opinion):
-    verdict: FundamentalVerdict
+class FundamentalOpinion(Opinion[FundamentalVerdict]):
+    pass

@@ -1,3 +1,4 @@
+from app.committees.committee import Committee
 from app.domain.company_research import CompanyResearch
 from app.domain.fundamental_opinion import (
     FundamentalOpinion,
@@ -5,8 +6,10 @@ from app.domain.fundamental_opinion import (
 )
 
 
-class FundamentalCommittee:
-    def evaluate(
+class FundamentalCommittee(Committee):
+    """Aggregates specialist research into a fundamental opinion."""
+
+    def review(
         self,
         research: CompanyResearch,
     ) -> FundamentalOpinion:
@@ -17,48 +20,36 @@ class FundamentalCommittee:
             research.cash_flow,
         )
 
-        scores = tuple(
-            opinion.score for opinion in opinions if opinion.score is not None
-        )
-
-        if not scores:
-            return FundamentalOpinion(
-                score=None,
-                confidence=0.0,
-                verdict=FundamentalVerdict.UNKNOWN,
-                evidence=(),
-                uncertainty=("No analyst opinions available.",),
-            )
-
-        score = round(sum(scores) / len(scores))
-
-        confidence = sum(opinion.confidence for opinion in opinions) / len(opinions)
-
-        evidence = tuple(item for opinion in opinions for item in opinion.evidence)
-
-        uncertainty = tuple(
-            item for opinion in opinions for item in opinion.uncertainty
-        )
+        score = self.aggregate_score(opinions)
+        confidence = self.aggregate_confidence(opinions)
 
         return FundamentalOpinion(
             score=score,
             confidence=confidence,
-            verdict=self._verdict(score),
-            evidence=evidence,
-            uncertainty=uncertainty,
+            evidence=self.aggregate_evidence(opinions),
+            uncertainty=self.aggregate_uncertainty(opinions),
+            verdict=self._verdict_for(
+                score=score,
+                confidence=confidence,
+            ),
         )
 
     @staticmethod
-    def _verdict(
+    def _verdict_for(
+        *,
         score: int,
+        confidence: float,
     ) -> FundamentalVerdict:
-        if score >= 90:
+        if confidence == 0.0:
+            return FundamentalVerdict.UNKNOWN
+
+        if score >= 80:
             return FundamentalVerdict.STRONG_BUY
 
-        if score >= 75:
+        if score >= 65:
             return FundamentalVerdict.BUY
 
-        if score >= 50:
+        if score >= 45:
             return FundamentalVerdict.HOLD
 
         return FundamentalVerdict.SELL

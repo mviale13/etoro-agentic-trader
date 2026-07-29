@@ -102,6 +102,6 @@ def test_missing_market_data() -> None:
         )
     )
 
-    assert opinion.score is None
+    assert opinion.score == 50
     assert opinion.confidence == 0.0
     assert opinion.verdict is TrendVerdict.UNKNOWN

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from app.domain.analyst_observation import AnalystObservation
 from app.domain.opinion import Opinion
 
 
-class Analyst[InputT, OpinionT: Opinion](ABC):
+class Analyst[InputT, OpinionT: Opinion[Any]](ABC):
     """
     Common evaluation workflow for MOVRvest analysts.
 

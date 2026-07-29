@@ -1,17 +1,17 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from app.domain.opinion import Opinion
+from app.domain.verdict import Verdict
 
 
-class BalanceSheetVerdict(StrEnum):
-    EXCELLENT = "EXCELLENT"
-    STRONG = "STRONG"
-    ADEQUATE = "ADEQUATE"
-    WEAK = "WEAK"
-    UNKNOWN = "UNKNOWN"
+class BalanceSheetVerdict(Verdict):
+    EXCELLENT = "excellent"
+    STRONG = "strong"
+    ADEQUATE = "adequate"
+    WEAK = "weak"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True, slots=True)
-class BalanceSheetOpinion(Opinion):
-    verdict: BalanceSheetVerdict
+class BalanceSheetOpinion(Opinion[BalanceSheetVerdict]):
+    pass

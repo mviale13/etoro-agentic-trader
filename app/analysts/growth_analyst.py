@@ -82,7 +82,7 @@ class GrowthAnalyst(Analyst[CompanyFacts, GrowthOpinion]):
         company: CompanyFacts,
     ) -> GrowthOpinion:
         return GrowthOpinion(
-            score=None,
+            score=50,
             confidence=0.0,
             verdict=GrowthVerdict.UNKNOWN,
             evidence=(),

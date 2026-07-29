@@ -100,7 +100,7 @@ class ProfitabilityAnalyst(Analyst[CompanyFacts, ProfitabilityOpinion]):
         company: CompanyFacts,
     ) -> ProfitabilityOpinion:
         return ProfitabilityOpinion(
-            score=None,
+            score=50,
             confidence=0.0,
             verdict=ProfitabilityVerdict.UNKNOWN,
             evidence=(),
@@ -157,6 +157,6 @@ class ProfitabilityAnalyst(Analyst[CompanyFacts, ProfitabilityOpinion]):
             return ProfitabilityVerdict.STRONG
 
         if score >= 50:
-            return ProfitabilityVerdict.AVERAGE
+            return ProfitabilityVerdict.ADEQUATE
 
         return ProfitabilityVerdict.WEAK

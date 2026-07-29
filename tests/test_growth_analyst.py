@@ -92,7 +92,7 @@ def test_missing_growth_data_is_unknown() -> None:
         )
     )
 
-    assert opinion.score is None
+    assert opinion.score == 50
     assert opinion.confidence == 0.0
     assert opinion.verdict is GrowthVerdict.UNKNOWN
     assert opinion.evidence == ()

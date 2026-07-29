@@ -85,7 +85,7 @@ class CashFlowAnalyst(Analyst[CompanyFacts, CashFlowOpinion]):
         company: CompanyFacts,
     ) -> CashFlowOpinion:
         return CashFlowOpinion(
-            score=None,
+            score=50,
             confidence=0.0,
             verdict=CashFlowVerdict.UNKNOWN,
             evidence=(),

@@ -85,7 +85,7 @@ class BalanceSheetAnalyst(Analyst[CompanyFacts, BalanceSheetOpinion]):
         company: CompanyFacts,
     ) -> BalanceSheetOpinion:
         return BalanceSheetOpinion(
-            score=None,
+            score=50,
             confidence=0.0,
             verdict=BalanceSheetVerdict.UNKNOWN,
             evidence=(),

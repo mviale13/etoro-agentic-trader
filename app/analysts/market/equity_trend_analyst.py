@@ -83,7 +83,7 @@ class EquityTrendAnalyst(Analyst[MarketFacts, EquityTrendOpinion]):
         market: MarketFacts,
     ) -> EquityTrendOpinion:
         return EquityTrendOpinion(
-            score=None,
+            score=50,
             confidence=0.0,
             verdict=EquityTrendVerdict.UNKNOWN,
             evidence=(),

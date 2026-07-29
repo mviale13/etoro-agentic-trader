@@ -4,14 +4,13 @@ from app.domain.opinion import Opinion
 from app.domain.verdict import Verdict
 
 
-class ProfitabilityVerdict(Verdict):
-    EXCELLENT = "excellent"
+class MarketBreadthVerdict(Verdict):
     STRONG = "strong"
-    ADEQUATE = "adequate"
+    MIXED = "mixed"
     WEAK = "weak"
     UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True, slots=True)
-class ProfitabilityOpinion(Opinion[ProfitabilityVerdict]):
+class MarketBreadthOpinion(Opinion[MarketBreadthVerdict]):
     pass

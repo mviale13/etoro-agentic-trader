@@ -1,14 +1,23 @@
 from app.analysts.analyst import Analyst
 from app.domain.analyst_observation import AnalystObservation
+from app.domain.market_breadth_opinion import (
+    MarketBreadthOpinion,
+    MarketBreadthVerdict,
+)
 from app.domain.market_facts import MarketFacts
-from app.domain.trend_opinion import TrendOpinion, TrendVerdict
 
 
-class TrendAnalyst(Analyst[MarketFacts, TrendOpinion]):
+class MarketBreadthAnalyst(
+    Analyst[
+        MarketFacts,
+        MarketBreadthOpinion,
+    ]
+):
     _SYMBOLS = (
         "SPY",
         "QQQ",
         "IWM",
+        "DIA",
     )
 
     @property
@@ -41,16 +50,8 @@ class TrendAnalyst(Analyst[MarketFacts, TrendOpinion]):
         self,
         observation: AnalystObservation,
     ) -> int:
-        value = observation.value
-
-        if value >= 1.0:
+        if observation.value > 0:
             return 100
-
-        if value >= 0.0:
-            return 75
-
-        if value >= -1.0:
-            return 40
 
         return 0
 
@@ -58,7 +59,9 @@ class TrendAnalyst(Analyst[MarketFacts, TrendOpinion]):
     def format_evidence(
         observation: AnalystObservation,
     ) -> str:
-        return f"{observation.label} changed {observation.value:.1f}%."
+        direction = "advanced" if observation.value > 0 else "declined"
+
+        return f"{observation.label} {direction} {abs(observation.value):.1f}%."
 
     def uncertainty(
         self,
@@ -77,8 +80,8 @@ class TrendAnalyst(Analyst[MarketFacts, TrendOpinion]):
         confidence: float,
         evidence: tuple[str, ...],
         uncertainty: tuple[str, ...],
-    ) -> TrendOpinion:
-        return TrendOpinion(
+    ) -> MarketBreadthOpinion:
+        return MarketBreadthOpinion(
             score=score,
             confidence=confidence,
             verdict=self._verdict(score),
@@ -89,11 +92,11 @@ class TrendAnalyst(Analyst[MarketFacts, TrendOpinion]):
     def unknown_opinion(
         self,
         facts: MarketFacts,
-    ) -> TrendOpinion:
-        return TrendOpinion(
+    ) -> MarketBreadthOpinion:
+        return MarketBreadthOpinion(
             score=50,
             confidence=0.0,
-            verdict=TrendVerdict.UNKNOWN,
+            verdict=MarketBreadthVerdict.UNKNOWN,
             evidence=(),
             uncertainty=self.uncertainty(facts),
         )
@@ -101,11 +104,11 @@ class TrendAnalyst(Analyst[MarketFacts, TrendOpinion]):
     @staticmethod
     def _verdict(
         score: int,
-    ) -> TrendVerdict:
-        if score >= 85:
-            return TrendVerdict.BULLISH
+    ) -> MarketBreadthVerdict:
+        if score >= 75:
+            return MarketBreadthVerdict.STRONG
 
-        if score >= 50:
-            return TrendVerdict.NEUTRAL
+        if score >= 25:
+            return MarketBreadthVerdict.MIXED
 
-        return TrendVerdict.BEARISH
+        return MarketBreadthVerdict.WEAK
