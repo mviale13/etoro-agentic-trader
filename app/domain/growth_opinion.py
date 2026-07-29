@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.opinion import Opinion
+
 
 class GrowthVerdict(StrEnum):
     STRONG = "STRONG"
@@ -11,9 +13,5 @@ class GrowthVerdict(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
-class GrowthOpinion:
-    score: int | None
-    confidence: float
+class GrowthOpinion(Opinion):
     verdict: GrowthVerdict
-    evidence: tuple[str, ...]
-    uncertainty: tuple[str, ...]
