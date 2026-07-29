@@ -1,33 +1,3 @@
-const researchCandidates = [
-  {
-    symbol: "UUUU",
-    company: "Energy Fuels",
-    source: "Watchlist",
-    conviction: 71,
-    status: "Research",
-    reason:
-      "Improving energy momentum and strategic exposure justify deeper fundamental analysis.",
-  },
-  {
-    symbol: "CANDIDATE 02",
-    company: "Quality compounder",
-    source: "Broader market",
-    conviction: 68,
-    status: "Research",
-    reason:
-      "Business quality passed the initial screen, but valuation still requires investigation.",
-  },
-  {
-    symbol: "CANDIDATE 03",
-    company: "Emerging opportunity",
-    source: "Broader market",
-    conviction: 65,
-    status: "Research",
-    reason:
-      "Recent operating improvement moved the company above the research threshold.",
-  },
-];
-
 const changes = [
   {
     value: "+12%",
@@ -36,10 +6,9 @@ const changes = [
     tone: "positive",
   },
   {
-    value: String(researchCandidates.length),
-    label: "New research candidates",
-    detail:
-      "Every company that exceeded the research threshold is included below.",
+    value: "3",
+    label: "New dossiers",
+    detail: "Added after screening the broader market and your watchlist.",
     tone: "neutral",
   },
   {
@@ -54,10 +23,10 @@ const agenda = [
   {
     number: "01",
     priority: "High priority",
-    title: `Review all ${researchCandidates.length} research candidates`,
+    title: "Review the three closest opportunities",
     description:
-      "Every company that exceeded the research threshold is available for review. Nothing is hidden behind an arbitrary top-three limit.",
-    meta: `${researchCandidates.length} candidates`,
+      "These companies passed the initial quality screen but still require stronger valuation or conviction.",
+    meta: "3 dossiers ready",
     href: "/research",
   },
   {
@@ -128,7 +97,7 @@ const committee = [
     label: "Opportunity",
     value: "Emerging",
     score: 71,
-    reason: `${researchCandidates.length} candidates merit research, but none are buy-ready.`,
+    reason: "Three candidates merit research, but none are buy-ready.",
   },
   {
     label: "Portfolio",
@@ -152,8 +121,8 @@ const evidence = [
     label: "Passed quality filters",
   },
   {
-    value: String(researchCandidates.length),
-    label: "Candidates above research threshold",
+    value: "3",
+    label: "Dossiers worth reviewing",
   },
   {
     value: "0",
@@ -193,27 +162,23 @@ export default function Home() {
 
         <div className="heroGrid">
           <div className="heroCopy">
-            <p className="heroKicker">What changed since your last visit</p>
+            <p className="greeting">Good evening, Marcos.</p>
 
-            <h1>Your opportunity set is evolving.</h1>
+            <h1>Continue holding cash.</h1>
 
-            <div className="heroChanges">
-              {changes.map((change) => (
-                <div className="heroChange" key={change.label}>
-                  <strong className={change.tone}>{change.value}</strong>
-
-                  <div>
-                    <h3>{change.label}</h3>
-                    <p>{change.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="heroWatchlistNote">
-              MOVRvest reviewed the broader market and every instrument in your
-              watchlist before reaching today’s capital decision.
+            <p className="lead">
+              No opportunity currently offers enough expected return for the
+              risk required. Your capital remains fully available while three
+              investment cases build conviction.
             </p>
+
+            <div className="briefConclusion">
+              <span className="briefLabel">MOVRvest view</span>
+              <p>
+                Waiting is currently a deliberate allocation decision—not an
+                absence of ideas.
+              </p>
+            </div>
           </div>
 
           <a className="decisionCard" href="/brain">
@@ -248,7 +213,28 @@ export default function Home() {
         </div>
       </section>
 
-      
+      <section className="section changedSection">
+        <div className="sectionHeading">
+          <div>
+            <p className="eyebrow">Since your last visit</p>
+            <h2>What changed</h2>
+          </div>
+
+          <a className="textLink" href="/events">
+            View decision timeline <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
+        <div className="changeGrid">
+          {changes.map((change) => (
+            <article className="changeItem" key={change.label}>
+              <p className={`changeValue ${change.tone}`}>{change.value}</p>
+              <h3>{change.label}</h3>
+              <p>{change.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="section">
         <div className="sectionHeading">
@@ -305,9 +291,8 @@ export default function Home() {
 
             <p>
               MOVRvest assessed the broader market and your complete watchlist.
-              Twelve companies passed the initial quality screen.{" "}
-              {researchCandidates.length} exceeded the research threshold and
-              every one is shown below. None currently offers a sufficient
+              Twelve companies passed the initial quality screen. Three deserve
+              deeper research, but none currently offers a sufficient
               combination of business quality, valuation, expected return and
               downside protection.
             </p>
@@ -333,67 +318,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
-        <div className="candidateSection">
-          <div className="candidateSectionHeader">
-            <div>
-              <p className="eyebrow">Research pipeline</p>
-              <h3>
-                {researchCandidates.length}{" "}
-                {researchCandidates.length === 1 ? "candidate" : "candidates"}{" "}
-                exceeded the research threshold
-              </h3>
-            </div>
-
-            <p>
-              Showing all qualifying candidates—not a curated top three.
-            </p>
-          </div>
-
-          <div className="candidateList">
-            {researchCandidates.map((candidate, index) => (
-              <a
-                className="candidateRow"
-                href="/research"
-                key={`${candidate.symbol}-${index}`}
-              >
-                <span className="candidateRank">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-
-                <div className="candidateIdentity">
-                  <div className="candidateTitleRow">
-                    <h4>{candidate.company}</h4>
-                    <span>{candidate.symbol}</span>
-                  </div>
-
-                  <p>{candidate.reason}</p>
-                </div>
-
-                <div className="candidateSource">
-                  <span>Discovered in</span>
-                  <strong>{candidate.source}</strong>
-                </div>
-
-                <div className="candidateConviction">
-                  <div>
-                    <span>Research conviction</span>
-                    <strong>{candidate.conviction}%</strong>
-                  </div>
-
-                  <div className="candidateTrack">
-                    <span style={{ width: `${candidate.conviction}%` }} />
-                  </div>
-                </div>
-
-                <span className="candidateArrow" aria-hidden="true">
-                  ↗
-                </span>
-              </a>
-            ))}
-          </div>
-        </div>
-
       </section>
 
       <section className="section">

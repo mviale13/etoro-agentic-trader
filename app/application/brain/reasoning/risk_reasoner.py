@@ -6,18 +6,19 @@ from app.application.brain.reasoning.models.assessment import Evidence
 from app.application.brain.reasoning.models.risk_assessment import (
     RiskAssessment,
 )
+from app.brain import Brain
 from app.domain.brain_context import BrainContext
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 
 class RiskReasoner:
-    """Evaluates overall portfolio risk."""
+    """Evaluate overall portfolio risk."""
 
     def assess(
         self,
-        context: BrainContext,
+        source: Brain | BrainContext,
     ) -> RiskAssessment:
-        portfolio = context.portfolio
+        portfolio = source.portfolio
 
         liquidity = self._liquidity_risk(portfolio)
         concentration = self._concentration_risk(portfolio)
@@ -52,7 +53,7 @@ class RiskReasoner:
             evidence.append(
                 Evidence(
                     description=(
-                        f"Largest holding represents "
+                        "Largest holding represents "
                         f"{portfolio.largest_position_pct:.1f}% "
                         "of the portfolio."
                     ),
@@ -77,10 +78,19 @@ class RiskReasoner:
         self,
         portfolio: PortfolioSnapshot,
     ) -> float:
-        return max(0.0, min((10.0 - portfolio.allocation.cash) / 10.0, 1.0))
+        return max(
+            0.0,
+            min(
+                (10.0 - portfolio.allocation.cash) / 10.0,
+                1.0,
+            ),
+        )
 
     def _concentration_risk(
         self,
         portfolio: PortfolioSnapshot,
     ) -> float:
-        return min(portfolio.largest_position_pct / 100.0, 1.0)
+        return min(
+            portfolio.largest_position_pct / 100.0,
+            1.0,
+        )

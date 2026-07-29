@@ -25,6 +25,6 @@ class BrainPipeline:
         insights = self._reasoning.execute(context)
 
         return self._communication.execute(
-            context=context,
-            insights=insights,
+            context,
+            insights,
         )

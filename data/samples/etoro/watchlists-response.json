@@ -1,0 +1,2436 @@
+{
+  "status": 200,
+  "watchlists": [
+    {
+      "watchlistId": "f64de5de-5c37-464a-bf3d-e047f0db5468",
+      "name": "Recently Invested",
+      "Gcid": 27756168,
+      "watchlistType": "RecentlyInvested",
+      "totalItems": 79,
+      "isDefault": false,
+      "watchlistRank": 0,
+      "dynamicUrl": null,
+      "items": [
+        {
+          "itemId": 14427,
+          "itemType": "Instrument",
+          "itemRank": 0,
+          "market": {
+            "id": "14427",
+            "symbolName": "UUUU",
+            "displayName": "Energy Fuels Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/14427/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/14427/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/14427/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/14427/14427_0B599B_F7F7F7.svg",
+                "backgroundColor": "#0B599B",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1004,
+          "itemType": "Instrument",
+          "itemRank": 1,
+          "market": {
+            "id": "1004",
+            "symbolName": "MSFT",
+            "displayName": "Microsoft",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/msft/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/msft/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/msft/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1004/1004_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 15618,
+          "itemType": "Instrument",
+          "itemRank": 2,
+          "market": {
+            "id": "15618",
+            "symbolName": "SPCX",
+            "displayName": "Space Exploration Technologies Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/15618/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/15618/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/15618/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/15618/15618_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100063,
+          "itemType": "Instrument",
+          "itemRank": 3,
+          "market": {
+            "id": "100063",
+            "symbolName": "SOL",
+            "displayName": "Solana",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100063/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100063/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100063/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100063/100063_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100446,
+          "itemType": "Instrument",
+          "itemRank": 4,
+          "market": {
+            "id": "100446",
+            "symbolName": "HYPE",
+            "displayName": "Hyperliquid",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1010,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100446/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100446/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100446/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100446/100446_28D3AB_F7F7F7.svg",
+                "backgroundColor": "#28D3AB",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1210,
+          "itemType": "Instrument",
+          "itemRank": 5,
+          "market": {
+            "id": "1210",
+            "symbolName": "VOW3.DE",
+            "displayName": "Volkswagen AG",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 6,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/vow3.de/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/vow3.de/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/vow3.de/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1210/1210_001E50_F7F7F7.svg",
+                "backgroundColor": "#001E50",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 15729,
+          "itemType": "Instrument",
+          "itemRank": 6,
+          "market": {
+            "id": "15729",
+            "symbolName": "MBGL",
+            "displayName": "Mobility Global Inc -W",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/15729/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/15729/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/15729/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/15729/15729_142546_F7F7F7.svg",
+                "backgroundColor": "#142546",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 3718,
+          "itemType": "Instrument",
+          "itemRank": 7,
+          "market": {
+            "id": "3718",
+            "symbolName": "GRE.MC",
+            "displayName": "Grenergy Renovables S.A.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 10,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/3718/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/3718/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/3718/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/3718/3718_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100001,
+          "itemType": "Instrument",
+          "itemRank": 8,
+          "market": {
+            "id": "100001",
+            "symbolName": "ETH",
+            "displayName": "Ethereum",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/eth-usd/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/eth-usd/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/eth-usd/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100001/100001_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100000,
+          "itemType": "Instrument",
+          "itemRank": 9,
+          "market": {
+            "id": "100000",
+            "symbolName": "BTC",
+            "displayName": "Bitcoin",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/btc/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/btc/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/btc/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100000/100000_F0AF32_F7F7F7.svg",
+                "backgroundColor": "#F0AF32",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1025,
+          "itemType": "Instrument",
+          "itemRank": 10,
+          "market": {
+            "id": "1025",
+            "symbolName": "MCD",
+            "displayName": "McDonald's",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/mcd/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/mcd/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/mcd/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1025/1025_DB000B_f7f7f7.svg",
+                "backgroundColor": "#DB000B",
+                "textColor": "#f7f7f7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 6904,
+          "itemType": "Instrument",
+          "itemRank": 11,
+          "market": {
+            "id": "6904",
+            "symbolName": "CPNG",
+            "displayName": "Coupang Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/6904/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/6904/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/6904/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/6904/6904_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 2260,
+          "itemType": "Instrument",
+          "itemRank": 12,
+          "market": {
+            "id": "2260",
+            "symbolName": "NOVO-B.CO",
+            "displayName": "Novo Nordisk B A/S",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 16,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/2260/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/2260/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/2260/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/2260/2260_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 6473,
+          "itemType": "Instrument",
+          "itemRank": 13,
+          "market": {
+            "id": "6473",
+            "symbolName": "MSTR",
+            "displayName": "Strategy Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/6473/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/6473/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/6473/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/6473/6473_D92530_F7F7F7.svg",
+                "backgroundColor": "#D92530",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1264,
+          "itemType": "Instrument",
+          "itemRank": 14,
+          "market": {
+            "id": "1264",
+            "symbolName": "SOLB.BR",
+            "displayName": "SOLVAY",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 23,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/solb.pa/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/solb.pa/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/solb.pa/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1264/1263_008FD0_F7F7F7.svg",
+                "backgroundColor": "#008FD0",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100418,
+          "itemType": "Instrument",
+          "itemRank": 15,
+          "market": {
+            "id": "100418",
+            "symbolName": "TAO",
+            "displayName": "Bittensor",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100418/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100418/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100418/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 4148,
+          "itemType": "Instrument",
+          "itemRank": 16,
+          "market": {
+            "id": "4148",
+            "symbolName": "SHOP",
+            "displayName": "Shopify Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/shop/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/shop/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/shop/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/4148/4148_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 2263,
+          "itemType": "Instrument",
+          "itemRank": 17,
+          "market": {
+            "id": "2263",
+            "symbolName": "VWS.CO",
+            "displayName": "Vestas Wind Systems A/S",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 16,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/2263/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/2263/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/2263/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/2263/2263_104277_F7F7F7.svg",
+                "backgroundColor": "#104277",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 2262,
+          "itemType": "Instrument",
+          "itemRank": 18,
+          "market": {
+            "id": "2262",
+            "symbolName": "ORSTED.CO",
+            "displayName": "Orsted A/S",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 16,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/2262/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/2262/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/2262/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/2262/2262_389CDE_F7F7F7.svg",
+                "backgroundColor": "#389CDE",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1563,
+          "itemType": "Instrument",
+          "itemRank": 19,
+          "market": {
+            "id": "1563",
+            "symbolName": "DHR",
+            "displayName": "Danaher Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/dhr/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/dhr/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/dhr/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1563/1563_005295_F7F7F7.svg",
+                "backgroundColor": "#005295",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 334,
+          "itemType": "Instrument",
+          "itemRank": 20,
+          "market": {
+            "id": "334",
+            "symbolName": "Coffee.FUT",
+            "displayName": "Coffee Arabica (Expiring Future)",
+            "assetTypeId": 2,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 2,
+            "hasExpirationDate": true,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/334/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/334/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/334/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/334/334_71412F_F7F7F7.svg",
+                "backgroundColor": "#71412F",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1051,
+          "itemType": "Instrument",
+          "itemRank": 21,
+          "market": {
+            "id": "1051",
+            "symbolName": "EBAY",
+            "displayName": "eBay",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/ebay/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/ebay/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/ebay/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1051/1051_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 10155159,
+          "itemType": "User",
+          "itemRank": 22
+        },
+        {
+          "itemId": 96,
+          "itemType": "Instrument",
+          "itemRank": 23,
+          "market": {
+            "id": "96",
+            "symbolName": "COCOA.FUT",
+            "displayName": "Cocoa (Expiring Future)",
+            "assetTypeId": 2,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 2,
+            "hasExpirationDate": true,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/96/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/96/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/96/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/96/96_5D3D29_F7F7F7.svg",
+                "backgroundColor": "#5D3D29",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1126,
+          "itemType": "Instrument",
+          "itemRank": 24,
+          "market": {
+            "id": "1126",
+            "symbolName": "ADBE",
+            "displayName": "Adobe Systems Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/adbe/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/adbe/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/adbe/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1126/1126_FA0F00_F7F7F7.svg",
+                "backgroundColor": "#FA0F00",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 47447928,
+          "itemType": "User",
+          "itemRank": 25
+        },
+        {
+          "itemId": 1001,
+          "itemType": "Instrument",
+          "itemRank": 26,
+          "market": {
+            "id": "1001",
+            "symbolName": "AAPL",
+            "displayName": "Apple",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/aapl/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/aapl/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/aapl/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1001/1001_494D5A_F7F7F7.svg",
+                "backgroundColor": "#494D5A",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 8628,
+          "itemType": "Instrument",
+          "itemRank": 27,
+          "market": {
+            "id": "8628",
+            "symbolName": "SRAD",
+            "displayName": "Sportradar Group AG",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/8628/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/8628/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/8628/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 10270,
+          "itemType": "Instrument",
+          "itemRank": 28,
+          "market": {
+            "id": "10270",
+            "symbolName": "INSE",
+            "displayName": "Inspired Entertainment Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/10270/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/10270/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/10270/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/10270/10270_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1442,
+          "itemType": "Instrument",
+          "itemRank": 29,
+          "market": {
+            "id": "1442",
+            "symbolName": "IB01.L",
+            "displayName": "iShares $ Treasury Bond 0-1yr UCITS ETF",
+            "assetTypeId": 6,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 7,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/1442/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/1442/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/1442/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 1005,
+          "itemType": "Instrument",
+          "itemRank": 30,
+          "market": {
+            "id": "1005",
+            "symbolName": "AMZN",
+            "displayName": "Amazon.com Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/amzn/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/amzn/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/amzn/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1005/1005_494D5A_F7F7F7.svg",
+                "backgroundColor": "#494D5A",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1010,
+          "itemType": "Instrument",
+          "itemRank": 31,
+          "market": {
+            "id": "1010",
+            "symbolName": "BA",
+            "displayName": "Boeing",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/ba/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/ba/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/ba/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1010/1010_1D439C_F7F7F7.svg",
+                "backgroundColor": "#1D439C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1485,
+          "itemType": "Instrument",
+          "itemRank": 32,
+          "market": {
+            "id": "1485",
+            "symbolName": "QCOM",
+            "displayName": "Qualcomm Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/qcom/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/qcom/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/qcom/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1485/1485_3253DC_F7F7F7.svg",
+                "backgroundColor": "#3253DC",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1127,
+          "itemType": "Instrument",
+          "itemRank": 33,
+          "market": {
+            "id": "1127",
+            "symbolName": "NFLX",
+            "displayName": "Netflix, Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/nflx/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/nflx/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/nflx/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1127/1127_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 9445,
+          "itemType": "Instrument",
+          "itemRank": 34,
+          "market": {
+            "id": "9445",
+            "symbolName": "DV",
+            "displayName": "DoubleVerify Holdings Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/9445/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/9445/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/9445/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/9445/9445_1E1B58_F7F7F7.svg",
+                "backgroundColor": "#1E1B58",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1029,
+          "itemType": "Instrument",
+          "itemRank": 35,
+          "market": {
+            "id": "1029",
+            "symbolName": "PG",
+            "displayName": "Procter & Gamble Co",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/pg/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/pg/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/pg/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1029/1029_003CAE_F7F7F7.svg",
+                "backgroundColor": "#003CAE",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 10967,
+          "itemType": "Instrument",
+          "itemRank": 36,
+          "market": {
+            "id": "10967",
+            "symbolName": "LUNR",
+            "displayName": "Intuitive Machines Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/10967/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/10967/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/10967/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/10967/10967_0159A3_F7F7F7.svg",
+                "backgroundColor": "#0159A3",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 4382,
+          "itemType": "Instrument",
+          "itemRank": 37,
+          "market": {
+            "id": "4382",
+            "symbolName": "DXCM",
+            "displayName": "DexCom Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/4382/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/4382/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/4382/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/4382/4382_6AAD40_F7F7F7.svg",
+                "backgroundColor": "#6AAD40",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 8594,
+          "itemType": "Instrument",
+          "itemRank": 38,
+          "market": {
+            "id": "8594",
+            "symbolName": "UDMY",
+            "displayName": "Udemy Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/8594/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/8594/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/8594/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 13875128,
+          "itemType": "User",
+          "itemRank": 39
+        },
+        {
+          "itemId": 1003,
+          "itemType": "Instrument",
+          "itemRank": 40,
+          "market": {
+            "id": "1003",
+            "symbolName": "META",
+            "displayName": "Meta Platforms Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/1003/35x35_b.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/1003/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/1003/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1003/1003_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1063,
+          "itemType": "Instrument",
+          "itemRank": 41,
+          "market": {
+            "id": "1063",
+            "symbolName": "LNTH",
+            "displayName": "Lantheus Holdings, Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/1063/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/1063/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/1063/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 7991,
+          "itemType": "Instrument",
+          "itemRank": 42,
+          "market": {
+            "id": "7991",
+            "symbolName": "PLTR",
+            "displayName": "Palantir Technologies Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/7991/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/7991/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/7991/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/7991/7991_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1400,
+          "itemType": "Instrument",
+          "itemRank": 43,
+          "market": {
+            "id": "1400",
+            "symbolName": "NESN.ZU",
+            "displayName": "Nestle SA",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 12,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/NESN/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/NESN/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/NESN/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1400/1400_949190_F7F7F7.svg",
+                "backgroundColor": "#949190",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1959,
+          "itemType": "Instrument",
+          "itemRank": 44,
+          "market": {
+            "id": "1959",
+            "symbolName": "XYL",
+            "displayName": "Xylem Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/xyl/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/xyl/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/xyl/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1959/1959_007FA8_F7F7F7.svg",
+                "backgroundColor": "#007FA8",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 6039,
+          "itemType": "Instrument",
+          "itemRank": 45,
+          "market": {
+            "id": "6039",
+            "symbolName": "PNR",
+            "displayName": "Pentair PLC",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/6039/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/6039/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/6039/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/6039/6039_09244F_F7F7F7.svg",
+                "backgroundColor": "#09244F",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 2475,
+          "itemType": "Instrument",
+          "itemRank": 46,
+          "market": {
+            "id": "2475",
+            "symbolName": "CWT",
+            "displayName": "California Water Service Group",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/2475/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/2475/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/2475/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 6596,
+          "itemType": "Instrument",
+          "itemRank": 47,
+          "market": {
+            "id": "6596",
+            "symbolName": "AOS",
+            "displayName": "A O Smith Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/6596/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/6596/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/6596/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/6596/6596_047835_F7F7F7.svg",
+                "backgroundColor": "#047835",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1269,
+          "itemType": "Instrument",
+          "itemRank": 48,
+          "market": {
+            "id": "1269",
+            "symbolName": "VIE.PA",
+            "displayName": "Veolia Environnement S.A.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 9,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/vie.pa/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/vie.pa/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/vie.pa/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1269/1269_ED1C24_F7F7F7.svg",
+                "backgroundColor": "#ED1C24",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 6404,
+          "itemType": "Instrument",
+          "itemRank": 49,
+          "market": {
+            "id": "6404",
+            "symbolName": "CLNE",
+            "displayName": "Clean Energy Fuels Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/6404/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/6404/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/6404/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/6404/6404_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1286,
+          "itemType": "Instrument",
+          "itemRank": 50,
+          "market": {
+            "id": "1286",
+            "symbolName": "LDO.MI",
+            "displayName": "Leonardo SpA",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 11,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/fnc.mi/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/fnc.mi/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/fnc.mi/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1286/1286_ED1B3A_F7F7F7.svg",
+                "backgroundColor": "#ED1B3A",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 6656088,
+          "itemType": "User",
+          "itemRank": 51
+        },
+        {
+          "itemId": 1832,
+          "itemType": "Instrument",
+          "itemRank": 52,
+          "market": {
+            "id": "1832",
+            "symbolName": "AMD",
+            "displayName": "Advanced Micro Devices Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/amd/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/amd/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/amd/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1832/1832_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1137,
+          "itemType": "Instrument",
+          "itemRank": 53,
+          "market": {
+            "id": "1137",
+            "symbolName": "NVDA",
+            "displayName": "NVIDIA Corporation",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/nvda/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/nvda/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/nvda/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1137/1137_76B900_F7F7F7.svg",
+                "backgroundColor": "#76B900",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1111,
+          "itemType": "Instrument",
+          "itemRank": 54,
+          "market": {
+            "id": "1111",
+            "symbolName": "TSLA",
+            "displayName": "Tesla Motors, Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/tsla/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/tsla/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/tsla/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1111/1111_E82127_F7F7F7.svg",
+                "backgroundColor": "#E82127",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 5743,
+          "itemType": "Instrument",
+          "itemRank": 55,
+          "market": {
+            "id": "5743",
+            "symbolName": "PROX.BR",
+            "displayName": "Proximus SA",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 23,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/5743/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/5743/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/5743/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/5743/5743_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100067,
+          "itemType": "Instrument",
+          "itemRank": 56,
+          "market": {
+            "id": "100067",
+            "symbolName": "1INCH",
+            "displayName": "1inch",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100067/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100067/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100067/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100067/100067_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100333,
+          "itemType": "Instrument",
+          "itemRank": 57,
+          "market": {
+            "id": "100333",
+            "symbolName": "ARB",
+            "displayName": "Arbitrum",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100333/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100333/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100333/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100333/100333_213246_F7F7F7.svg",
+                "backgroundColor": "#213246",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 9461,
+          "itemType": "Instrument",
+          "itemRank": 58,
+          "market": {
+            "id": "9461",
+            "symbolName": "FLYW",
+            "displayName": "Flywire Corporation",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/9461/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/9461/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/9461/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/9461/9461_147BD1_F7F7F7.svg",
+                "backgroundColor": "#147BD1",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1002,
+          "itemType": "Instrument",
+          "itemRank": 59,
+          "market": {
+            "id": "1002",
+            "symbolName": "GOOG",
+            "displayName": "Alphabet",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/goog/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/goog/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/goog/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1002/1002_3183FF_F7F7F7.svg",
+                "backgroundColor": "#3183FF",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 13000169,
+          "itemType": "User",
+          "itemRank": 60
+        },
+        {
+          "itemId": 1234,
+          "itemType": "Instrument",
+          "itemRank": 61,
+          "market": {
+            "id": "1234",
+            "symbolName": "AIR.PA",
+            "displayName": "AIRBUS SE",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 9,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/air.pa/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/air.pa/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/air.pa/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1234/1234_00205B_F7F7F7.svg",
+                "backgroundColor": "#00205B",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 2019,
+          "itemType": "Instrument",
+          "itemRank": 62,
+          "market": {
+            "id": "2019",
+            "symbolName": "BP.L",
+            "displayName": "BP",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 7,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/bp.l/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/bp.l/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/bp.l/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/2019/2019_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 5747,
+          "itemType": "Instrument",
+          "itemRank": 63,
+          "market": {
+            "id": "5747",
+            "symbolName": "UMI.BR",
+            "displayName": "Umicore",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 23,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/5747/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/5747/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/5747/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/5747/5747_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1112,
+          "itemType": "Instrument",
+          "itemRank": 64,
+          "market": {
+            "id": "1112",
+            "symbolName": "F",
+            "displayName": "Ford Motor Co",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/f/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/f/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/f/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1112/1112_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 5993821,
+          "itemType": "User",
+          "itemRank": 65
+        },
+        {
+          "itemId": 1022,
+          "itemType": "Instrument",
+          "itemRank": 66,
+          "market": {
+            "id": "1022",
+            "symbolName": "JNJ",
+            "displayName": "Johnson & Johnson",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/jnj/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/jnj/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/jnj/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1022/1022_D51900_F7F7F7.svg",
+                "backgroundColor": "#D51900",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1142,
+          "itemType": "Instrument",
+          "itemRank": 67,
+          "market": {
+            "id": "1142",
+            "symbolName": "SBUX",
+            "displayName": "Starbucks Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/sbux/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/sbux/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/sbux/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1142/1142_007042_F7F7F7.svg",
+                "backgroundColor": "#007042",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 3287,
+          "itemType": "Instrument",
+          "itemRank": 68,
+          "market": {
+            "id": "3287",
+            "symbolName": "SYENS.BR",
+            "displayName": "Syensqo SA",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 23,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/3287/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/3287/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/3287/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 5960,
+          "itemType": "Instrument",
+          "itemRank": 69,
+          "market": {
+            "id": "5960",
+            "symbolName": "SE",
+            "displayName": "Sea Ltd-ADR",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/5960/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/5960/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/5960/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/5960/5960_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 4111,
+          "itemType": "Instrument",
+          "itemRank": 70,
+          "market": {
+            "id": "4111",
+            "symbolName": "MNST",
+            "displayName": "Monster Beverage Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/mnst/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/mnst/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/mnst/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/4111/4111_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1484,
+          "itemType": "Instrument",
+          "itemRank": 71,
+          "market": {
+            "id": "1484",
+            "symbolName": "PYPL",
+            "displayName": "PayPal Holdings",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/pypl/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/pypl/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/pypl/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1484/1484_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1016,
+          "itemType": "Instrument",
+          "itemRank": 72,
+          "market": {
+            "id": "1016",
+            "symbolName": "DIS",
+            "displayName": "Walt Disney",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/dis/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/dis/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/dis/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1016/1016_2E3491_F7F7F7.svg",
+                "backgroundColor": "#2E3491",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 9292,
+          "itemType": "Instrument",
+          "itemRank": 73,
+          "market": {
+            "id": "9292",
+            "symbolName": "DIDIY",
+            "displayName": "DIDI Global Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 19,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/9292/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/9292/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/9292/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/9292/9292_FC9153_F7F7F7.svg",
+                "backgroundColor": "#FC9153",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 9287,
+          "itemType": "Instrument",
+          "itemRank": 74,
+          "market": {
+            "id": "9287",
+            "symbolName": "RIVN",
+            "displayName": "Rivian Automotive",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/9287/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/9287/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/9287/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/9287/9287_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 14051138,
+          "itemType": "User",
+          "itemRank": 75
+        },
+        {
+          "itemId": 1521,
+          "itemType": "Instrument",
+          "itemRank": 76,
+          "market": {
+            "id": "1521",
+            "symbolName": "DAL",
+            "displayName": "Delta Air Lines Inc (DE)",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/dal/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/dal/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/dal/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1521/1521_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1513,
+          "itemType": "Instrument",
+          "itemRank": 77,
+          "market": {
+            "id": "1513",
+            "symbolName": "EPD",
+            "displayName": "Enterprise Products Partners LP",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/epd/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/epd/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/epd/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1513/1513_002D62_F7F7F7.svg",
+                "backgroundColor": "#002D62",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100017,
+          "itemType": "Instrument",
+          "itemRank": 78,
+          "market": {
+            "id": "100017",
+            "symbolName": "ADA",
+            "displayName": "Cardano",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100017/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100017/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100017/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100017/100017_6299FE_F7F7F7.svg",
+                "backgroundColor": "#6299FE",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        }
+      ],
+      "isUserSelectedDefault": false,
+      "relatedAssets": null
+    },
+    {
+      "watchlistId": "60f38176-f0c9-460f-9800-406111767e11",
+      "name": "My Watchlist",
+      "Gcid": 27756168,
+      "watchlistType": "Default",
+      "totalItems": 34,
+      "isDefault": true,
+      "watchlistRank": 1,
+      "dynamicUrl": null,
+      "items": [
+        {
+          "itemId": 15618,
+          "itemType": "Instrument",
+          "itemRank": -10,
+          "market": {
+            "id": "15618",
+            "symbolName": "SPCX",
+            "displayName": "Space Exploration Technologies Corp",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/15618/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/15618/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/15618/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/15618/15618_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 14427,
+          "itemType": "Instrument",
+          "itemRank": -9,
+          "market": {
+            "id": "14427",
+            "symbolName": "UUUU",
+            "displayName": "Energy Fuels Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/14427/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/14427/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/14427/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/14427/14427_0B599B_F7F7F7.svg",
+                "backgroundColor": "#0B599B",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 12514,
+          "itemType": "Instrument",
+          "itemRank": -8,
+          "market": {
+            "id": "12514",
+            "symbolName": "IS7.DE",
+            "displayName": "InTiCa Systems SE",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 6,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/12514/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/12514/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/12514/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 12295,
+          "itemType": "Instrument",
+          "itemRank": -7,
+          "market": {
+            "id": "12295",
+            "symbolName": "H2O.DE",
+            "displayName": "Enapter AG",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 6,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/12295/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/12295/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/12295/150x150.png",
+              "svg": null
+            }
+          }
+        },
+        {
+          "itemId": 12200,
+          "itemType": "Instrument",
+          "itemRank": -6,
+          "market": {
+            "id": "12200",
+            "symbolName": "ETOR",
+            "displayName": "eToro Group LTD",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/12200/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/12200/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/12200/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/12200/12200_075434_F7F7F7.svg",
+                "backgroundColor": "#075434",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1111,
+          "itemType": "Instrument",
+          "itemRank": -5,
+          "market": {
+            "id": "1111",
+            "symbolName": "TSLA",
+            "displayName": "Tesla Motors, Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/tsla/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/tsla/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/tsla/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1111/1111_E82127_F7F7F7.svg",
+                "backgroundColor": "#E82127",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1003,
+          "itemType": "Instrument",
+          "itemRank": -4,
+          "market": {
+            "id": "1003",
+            "symbolName": "META",
+            "displayName": "Meta Platforms Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/1003/35x35_b.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/1003/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/1003/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1003/1003_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1002,
+          "itemType": "Instrument",
+          "itemRank": -3,
+          "market": {
+            "id": "1002",
+            "symbolName": "GOOG",
+            "displayName": "Alphabet",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/goog/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/goog/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/goog/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1002/1002_3183FF_F7F7F7.svg",
+                "backgroundColor": "#3183FF",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 6975,
+          "itemType": "Instrument",
+          "itemRank": -2
+        },
+        {
+          "itemId": 1485,
+          "itemType": "Instrument",
+          "itemRank": -1,
+          "market": {
+            "id": "1485",
+            "symbolName": "QCOM",
+            "displayName": "Qualcomm Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/qcom/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/qcom/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/qcom/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1485/1485_3253DC_F7F7F7.svg",
+                "backgroundColor": "#3253DC",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1010,
+          "itemType": "Instrument",
+          "itemRank": 0,
+          "market": {
+            "id": "1010",
+            "symbolName": "BA",
+            "displayName": "Boeing",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/ba/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/ba/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/ba/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1010/1010_1D439C_F7F7F7.svg",
+                "backgroundColor": "#1D439C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1137,
+          "itemType": "Instrument",
+          "itemRank": 1,
+          "market": {
+            "id": "1137",
+            "symbolName": "NVDA",
+            "displayName": "NVIDIA Corporation",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/nvda/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/nvda/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/nvda/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1137/1137_76B900_F7F7F7.svg",
+                "backgroundColor": "#76B900",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 5747,
+          "itemType": "Instrument",
+          "itemRank": 2,
+          "market": {
+            "id": "5747",
+            "symbolName": "UMI.BR",
+            "displayName": "Umicore",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 23,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/5747/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/5747/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/5747/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/5747/5747_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1005,
+          "itemType": "Instrument",
+          "itemRank": 3,
+          "market": {
+            "id": "1005",
+            "symbolName": "AMZN",
+            "displayName": "Amazon.com Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/amzn/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/amzn/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/amzn/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1005/1005_494D5A_F7F7F7.svg",
+                "backgroundColor": "#494D5A",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1016,
+          "itemType": "Instrument",
+          "itemRank": 4,
+          "market": {
+            "id": "1016",
+            "symbolName": "DIS",
+            "displayName": "Walt Disney",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/dis/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/dis/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/dis/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1016/1016_2E3491_F7F7F7.svg",
+                "backgroundColor": "#2E3491",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1126,
+          "itemType": "Instrument",
+          "itemRank": 5,
+          "market": {
+            "id": "1126",
+            "symbolName": "ADBE",
+            "displayName": "Adobe Systems Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/adbe/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/adbe/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/adbe/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1126/1126_FA0F00_F7F7F7.svg",
+                "backgroundColor": "#FA0F00",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1022,
+          "itemType": "Instrument",
+          "itemRank": 6,
+          "market": {
+            "id": "1022",
+            "symbolName": "JNJ",
+            "displayName": "Johnson & Johnson",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 5,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/jnj/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/jnj/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/jnj/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1022/1022_D51900_F7F7F7.svg",
+                "backgroundColor": "#D51900",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 4148,
+          "itemType": "Instrument",
+          "itemRank": 7,
+          "market": {
+            "id": "4148",
+            "symbolName": "SHOP",
+            "displayName": "Shopify Inc.",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/shop/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/shop/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/shop/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/4148/4148_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1484,
+          "itemType": "Instrument",
+          "itemRank": 8,
+          "market": {
+            "id": "1484",
+            "symbolName": "PYPL",
+            "displayName": "PayPal Holdings",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/pypl/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/pypl/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/pypl/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1484/1484_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100063,
+          "itemType": "Instrument",
+          "itemRank": 9,
+          "market": {
+            "id": "100063",
+            "symbolName": "SOL",
+            "displayName": "Solana",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100063/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100063/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100063/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100063/100063_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1001,
+          "itemType": "Instrument",
+          "itemRank": 10,
+          "market": {
+            "id": "1001",
+            "symbolName": "AAPL",
+            "displayName": "Apple",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/aapl/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/aapl/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/aapl/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1001/1001_494D5A_F7F7F7.svg",
+                "backgroundColor": "#494D5A",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 9287,
+          "itemType": "Instrument",
+          "itemRank": 11,
+          "market": {
+            "id": "9287",
+            "symbolName": "RIVN",
+            "displayName": "Rivian Automotive",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/9287/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/9287/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/9287/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/9287/9287_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100000,
+          "itemType": "Instrument",
+          "itemRank": 12,
+          "market": {
+            "id": "100000",
+            "symbolName": "BTC",
+            "displayName": "Bitcoin",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/btc/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/btc/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/btc/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100000/100000_F0AF32_F7F7F7.svg",
+                "backgroundColor": "#F0AF32",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1004,
+          "itemType": "Instrument",
+          "itemRank": 13,
+          "market": {
+            "id": "1004",
+            "symbolName": "MSFT",
+            "displayName": "Microsoft",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/msft/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/msft/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/msft/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1004/1004_F7F7F7_2C2C2C.svg",
+                "backgroundColor": "#F7F7F7",
+                "textColor": "#2C2C2C"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100017,
+          "itemType": "Instrument",
+          "itemRank": 14,
+          "market": {
+            "id": "100017",
+            "symbolName": "ADA",
+            "displayName": "Cardano",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/100017/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/100017/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/100017/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100017/100017_6299FE_F7F7F7.svg",
+                "backgroundColor": "#6299FE",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 1832,
+          "itemType": "Instrument",
+          "itemRank": 15,
+          "market": {
+            "id": "1832",
+            "symbolName": "AMD",
+            "displayName": "Advanced Micro Devices Inc",
+            "assetTypeId": 5,
+            "assetTypeSubCategoryId": 0,
+            "exchangeId": 4,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/amd/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/amd/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/amd/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/1832/1832_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 100001,
+          "itemType": "Instrument",
+          "itemRank": 16,
+          "market": {
+            "id": "100001",
+            "symbolName": "ETH",
+            "displayName": "Ethereum",
+            "assetTypeId": 10,
+            "assetTypeSubCategoryId": 1001,
+            "exchangeId": 8,
+            "hasExpirationDate": false,
+            "avatar": {
+              "small": "https://etoro-cdn.etorostatic.com/market-avatars/eth-usd/35x35.png",
+              "medium": "https://etoro-cdn.etorostatic.com/market-avatars/eth-usd/50x50.png",
+              "large": "https://etoro-cdn.etorostatic.com/market-avatars/eth-usd/150x150.png",
+              "svg": {
+                "url": "https://etoro-cdn.etorostatic.com/market-avatars/100001/100001_2C2C2C_F7F7F7.svg",
+                "backgroundColor": "#2C2C2C",
+                "textColor": "#F7F7F7"
+              }
+            }
+          }
+        },
+        {
+          "itemId": 10356358,
+          "itemType": "User",
+          "itemRank": 17
+        },
+        {
+          "itemId": 2164368,
+          "itemType": "User",
+          "itemRank": 18
+        },
+        {
+          "itemId": 918269,
+          "itemType": "User",
+          "itemRank": 19
+        },
+        {
+          "itemId": 9412304,
+          "itemType": "User",
+          "itemRank": 20
+        },
+        {
+          "itemId": 25198333,
+          "itemType": "User",
+          "itemRank": 21
+        },
+        {
+          "itemId": 13000169,
+          "itemType": "User",
+          "itemRank": 22
+        },
+        {
+          "itemId": 27259926,
+          "itemType": "User",
+          "itemRank": 23
+        }
+      ],
+      "isUserSelectedDefault": false,
+      "relatedAssets": null
+    }
+  ],
+  "exception": {
+    "invalidItems": [],
+    "reason": "None",
+    "message": ""
+  },
+  "meta": {
+    "pageNumber": 0,
+    "itemsPerPage": 100,
+    "maxItemsInWatchlistLimit": 100,
+    "maxWatchlistsLimit": 26
+  },
+  "isSucceeded": true
+}
