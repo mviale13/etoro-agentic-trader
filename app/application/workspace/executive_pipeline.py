@@ -1,0 +1,114 @@
+"""Artificial CIO execution pipeline."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from app.application.brain.reasoning import ReasoningService
+from app.application.committees.committee_service import CommitteeService
+from app.application.executive.decision_evidence_builder import (
+    DecisionEvidenceBuilder,
+)
+from app.application.executive.executive_evaluation import (
+    ExecutiveEvaluation,
+)
+from app.application.thesis.investment_thesis_builder import (
+    InvestmentThesisBuilder,
+)
+from app.brain import Brain
+from app.reasoning.executive_decision_engine import (
+    ExecutiveDecisionEngine,
+)
+
+from .executive_workspace import ExecutiveWorkspace
+
+
+@dataclass(slots=True)
+class ExecutivePipeline:
+    """Execute the complete Artificial CIO pipeline."""
+
+    reasoning: ReasoningService = field(
+        default_factory=ReasoningService,
+    )
+
+    committees: CommitteeService = field(
+        default_factory=CommitteeService,
+    )
+
+    evidence_builder: DecisionEvidenceBuilder = field(
+        default_factory=DecisionEvidenceBuilder,
+    )
+
+    decision_engine: ExecutiveDecisionEngine = field(
+        default_factory=ExecutiveDecisionEngine,
+    )
+
+    thesis_builder: InvestmentThesisBuilder = field(
+        default_factory=InvestmentThesisBuilder,
+    )
+
+    def execute(
+        self,
+        symbol: str,
+        brain: Brain,
+    ) -> ExecutiveWorkspace:
+
+        workspace = ExecutiveWorkspace(
+            symbol=symbol,
+            brain=brain,
+        )
+
+        workspace.reasoning = self.reasoning.reason(
+            brain,
+        )
+
+        workspace.committee_opinions = self.committees.review(
+            brain,
+            workspace.reasoning,
+        )
+
+        evidence = self.evidence_builder.build(
+            symbol,
+            brain,
+            workspace.reasoning,
+            workspace.committee_opinions,
+        )
+
+        workspace.decision = self.decision_engine.decide(
+            evidence,
+        )
+
+        workspace.thesis = self.thesis_builder.build(
+            symbol=symbol,
+            reasoning=workspace.reasoning,
+            committee_opinions=workspace.committee_opinions,
+            decision=workspace.decision,
+        )
+
+        return workspace
+
+    def evaluate(
+        self,
+        symbol: str,
+        brain: Brain,
+    ) -> ExecutiveEvaluation:
+
+        workspace = self.execute(
+            symbol=symbol,
+            brain=brain,
+        )
+
+        assert workspace.reasoning is not None
+        assert workspace.decision is not None
+        assert workspace.thesis is not None
+
+        reasoning = workspace.reasoning
+        decision = workspace.decision
+        thesis = workspace.thesis
+
+        return ExecutiveEvaluation(
+            decision=decision,
+            thesis=thesis,
+            reasoning=reasoning,
+            committee_opinions=workspace.committee_opinions,
+        )
