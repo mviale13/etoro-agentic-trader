@@ -4,6 +4,7 @@ from collections.abc import Callable, Coroutine
 from typing import Any, NoReturn
 
 from app.commands import (
+    brain,
     committee,
     company,
     daily,
@@ -58,10 +59,6 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
         "Analyze your portfolio health",
         doctor.run,
     ),
-    "explain": (
-        "Explain an investment decision",
-        explain.run,
-    ),
     "watchlist": (
         "Analyze your watchlist",
         watchlist.run,
@@ -70,10 +67,14 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
         "Show the MOVRvest Morning Brief",
         today.run,
     ),
+    "brain": (
+        "Run the complete MOVRvest Artificial CIO pipeline",
+        brain.run,
+    ),
 }
 
 
-def main() -> NoReturn:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="movrvest",
         description="MOVRvest — Invest with intelligence.",
@@ -85,49 +86,55 @@ def main() -> NoReturn:
     )
 
     for name, (help_text, _) in COMMANDS.items():
-        command_parser = subparsers.add_parser(
+        subparsers.add_parser(
             name,
             help=help_text,
+            description=help_text,
         )
 
-        if name == "explain":
-            command_parser.add_argument(
-                "symbol",
-                nargs="?",
-                default="SPY",
-                help="Ticker symbol, for example MSFT, ASML or BTC-USD",
-            )
+    explain_parser = subparsers.add_parser(
+        "explain",
+        help="Explain an investment decision",
+        description="Explain an investment decision",
+    )
+    explain_parser.add_argument(
+        "symbol",
+        nargs="?",
+        default="SPY",
+        help="Ticker symbol, for example MSFT, ASML or BTC-USD",
+    )
 
     company_parser = subparsers.add_parser(
         "company",
         help="Analyze a company from your eToro watchlists",
+        description="Analyze a company from your eToro watchlists",
     )
     company_parser.add_argument(
         "symbol",
         help="Ticker symbol, for example MSFT, NVDA or BTC",
     )
 
-    args = parser.parse_args()
+    return parser
 
+
+async def dispatch(args: argparse.Namespace) -> int:
     if args.command == "explain":
-        raise SystemExit(
-            asyncio.run(
-                explain.run(args.symbol),
-            )
-        )
+        return await explain.run(args.symbol)
 
     if args.command == "company":
-        raise SystemExit(
-            asyncio.run(
-                company.run(args.symbol),
-            )
-        )
+        return await company.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
+    return await command_handler()
+
+
+def main() -> NoReturn:
+    parser = build_parser()
+    args = parser.parse_args()
 
     raise SystemExit(
         asyncio.run(
-            command_handler(),
+            dispatch(args),
         )
     )
 
