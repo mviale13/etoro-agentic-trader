@@ -37,6 +37,7 @@ class CompanyFacts:
     current_ratio: float | None = None
 
     # Cash generation
+    operating_cash_flow: float | None = None
     free_cash_flow: float | None = None
 
     # Shareholder returns

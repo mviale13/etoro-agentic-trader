@@ -1,63 +1,98 @@
+from app.analysts.analyst import Analyst
+from app.domain.analyst_observation import AnalystObservation
 from app.domain.company_facts import CompanyFacts
 from app.domain.growth_opinion import GrowthOpinion, GrowthVerdict
 
 
-class GrowthAnalyst:
-    def analyze(
+class GrowthAnalyst(Analyst[CompanyFacts, GrowthOpinion]):
+    @property
+    def expected_observation_count(self) -> int:
+        return 2
+
+    def observations(
         self,
         company: CompanyFacts,
-    ) -> GrowthOpinion:
-        metrics = self._available_metrics(company)
+    ) -> tuple[AnalystObservation, ...]:
+        observations: list[AnalystObservation] = []
 
-        if not metrics:
-            return GrowthOpinion(
-                score=None,
-                confidence=0.0,
-                verdict=GrowthVerdict.UNKNOWN,
-                evidence=(),
-                uncertainty=(
-                    "Revenue growth data is unavailable.",
-                    "Earnings growth data is unavailable.",
-                ),
+        if company.revenue_growth is not None:
+            observations.append(
+                AnalystObservation(
+                    key="revenue_growth",
+                    label="Revenue growth",
+                    value=company.revenue_growth,
+                )
             )
 
-        score = round(
-            sum(self._metric_score(value) for _, value in metrics) / len(metrics)
-        )
+        if company.earnings_growth is not None:
+            observations.append(
+                AnalystObservation(
+                    key="earnings_growth",
+                    label="Earnings growth",
+                    value=company.earnings_growth,
+                )
+            )
 
-        confidence = len(metrics) / 2
-        verdict = self._verdict(score)
+        return tuple(observations)
 
-        evidence = tuple(
-            self._format_evidence(label, value) for label, value in metrics
-        )
+    def score_observation(
+        self,
+        observation: AnalystObservation,
+    ) -> int:
+        return self._metric_score(observation.value)
 
-        uncertainty = self._uncertainty(company)
+    @staticmethod
+    def format_evidence(
+        observation: AnalystObservation,
+    ) -> str:
+        return f"{observation.label} is {observation.value:.1%}."
 
+    def uncertainty(
+        self,
+        company: CompanyFacts,
+    ) -> tuple[str, ...]:
+        uncertainty: list[str] = []
+
+        if company.revenue_growth is None:
+            uncertainty.append("Revenue growth data is unavailable.")
+
+        if company.earnings_growth is None:
+            uncertainty.append("Earnings growth data is unavailable.")
+
+        return tuple(uncertainty)
+
+    def build_opinion(
+        self,
+        *,
+        score: int,
+        confidence: float,
+        evidence: tuple[str, ...],
+        uncertainty: tuple[str, ...],
+    ) -> GrowthOpinion:
         return GrowthOpinion(
             score=score,
             confidence=confidence,
-            verdict=verdict,
+            verdict=self._verdict(score),
             evidence=evidence,
             uncertainty=uncertainty,
         )
 
-    @staticmethod
-    def _available_metrics(
+    def unknown_opinion(
+        self,
         company: CompanyFacts,
-    ) -> tuple[tuple[str, float], ...]:
-        metrics: list[tuple[str, float]] = []
-
-        if company.revenue_growth is not None:
-            metrics.append(("Revenue", company.revenue_growth))
-
-        if company.earnings_growth is not None:
-            metrics.append(("Earnings", company.earnings_growth))
-
-        return tuple(metrics)
+    ) -> GrowthOpinion:
+        return GrowthOpinion(
+            score=None,
+            confidence=0.0,
+            verdict=GrowthVerdict.UNKNOWN,
+            evidence=(),
+            uncertainty=self.uncertainty(company),
+        )
 
     @staticmethod
-    def _metric_score(value: float) -> int:
+    def _metric_score(
+        value: float,
+    ) -> int:
         if value >= 0.30:
             return 100
 
@@ -79,7 +114,9 @@ class GrowthAnalyst:
         return 0
 
     @staticmethod
-    def _verdict(score: int) -> GrowthVerdict:
+    def _verdict(
+        score: int,
+    ) -> GrowthVerdict:
         if score >= 80:
             return GrowthVerdict.STRONG
 
@@ -90,24 +127,3 @@ class GrowthAnalyst:
             return GrowthVerdict.WEAK
 
         return GrowthVerdict.DECLINING
-
-    @staticmethod
-    def _format_evidence(
-        label: str,
-        value: float,
-    ) -> str:
-        return f"{label} growth is {value:.1%}."
-
-    @staticmethod
-    def _uncertainty(
-        company: CompanyFacts,
-    ) -> tuple[str, ...]:
-        uncertainty: list[str] = []
-
-        if company.revenue_growth is None:
-            uncertainty.append("Revenue growth data is unavailable.")
-
-        if company.earnings_growth is None:
-            uncertainty.append("Earnings growth data is unavailable.")
-
-        return tuple(uncertainty)
