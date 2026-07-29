@@ -1,22 +1,22 @@
 from collections import defaultdict
 
 from app.domain.committee_vote import CommitteeVote
-from app.domain.executive_decision import (
-    ExecutiveDecision,
-)
+from app.domain.executive_board_decision import ExecutiveBoardDecision
 
 
 class ExecutiveBoardService:
+    """Aggregate committee votes into a weighted Executive Board decision."""
+
     def decide(
         self,
         votes: tuple[CommitteeVote, ...],
-    ) -> ExecutiveDecision:
+    ) -> ExecutiveBoardDecision:
         if not votes:
-            return ExecutiveDecision(
+            return ExecutiveBoardDecision(
                 recommendation="HOLD",
                 confidence=0,
                 votes=(),
-                rationale=("No committee votes were available."),
+                rationale="No committee votes were available.",
             )
 
         weights: dict[str, float] = defaultdict(float)
@@ -58,7 +58,7 @@ class ExecutiveBoardService:
             else 0
         )
 
-        return ExecutiveDecision(
+        return ExecutiveBoardDecision(
             recommendation=recommendation,
             confidence=confidence,
             votes=votes,

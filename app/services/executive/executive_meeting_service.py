@@ -1,6 +1,6 @@
 from app.domain.brain_context import BrainContext
 from app.domain.committee_vote import CommitteeVote
-from app.domain.executive_decision import ExecutiveDecision
+from app.domain.executive_board_decision import ExecutiveBoardDecision
 from app.domain.market_facts import MarketFacts
 from app.domain.market_opportunity import MarketOpportunity
 from app.domain.portfolio_facts import PortfolioFacts
@@ -42,7 +42,7 @@ class ExecutiveMeetingService:
         portfolio_facts: PortfolioFacts,
         market_facts: MarketFacts,
         proposed_position_pct: float,
-    ) -> ExecutiveDecision:
+    ) -> ExecutiveBoardDecision:
         policy = context.investment_policy
 
         if policy is None:
