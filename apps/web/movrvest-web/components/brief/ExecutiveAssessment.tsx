@@ -1,3 +1,5 @@
+import { StatusDot } from "@/components/ui/StatusDot";
+
 type ExecutiveAssessmentProps = {
   assessment: string[];
 };
@@ -13,9 +15,13 @@ export function ExecutiveAssessment({
         </span>
 
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-semibold tracking-tight">
-            Executive Assessment
-          </h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold tracking-tight">
+              Executive Assessment
+            </h2>
+
+            <StatusDot status="placeholder" />
+          </div>
 
           <div className="mt-5 space-y-2">
             {assessment.map((statement) => (

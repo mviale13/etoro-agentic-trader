@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-import json
 import time
 import uuid
 from datetime import UTC, datetime
@@ -10,6 +7,7 @@ import httpx
 
 from app.config import Settings
 from app.domain.account_snapshot import AccountSnapshot
+from app.infrastructure.evidence import VersionedSnapshotStore
 
 
 class EtoroAccountBroker:
@@ -17,15 +15,18 @@ class EtoroAccountBroker:
         self,
         settings: Settings,
         client: httpx.AsyncClient | None = None,
+        evidence_store: VersionedSnapshotStore | None = None,
     ) -> None:
         self.settings = settings
         self._client = client
+        self._evidence_store = evidence_store or VersionedSnapshotStore()
 
     def _headers(self) -> dict[str, str]:
         if not self.settings.etoro_api_key or not self.settings.etoro_user_key:
             raise RuntimeError(
                 "Missing ETORO_API_KEY or ETORO_USER_KEY in the local .env file"
             )
+
         return {
             "x-api-key": self.settings.etoro_api_key,
             "x-user-key": self.settings.etoro_user_key,
@@ -35,37 +36,48 @@ class EtoroAccountBroker:
     def _pnl_path(self) -> str:
         if self.settings.trading_mode == "demo":
             return "/api/v1/trading/info/demo/pnl"
+
         if self.settings.trading_mode == "real":
             return "/api/v1/trading/info/real/pnl"
+
         raise RuntimeError(
             "Account status requires TRADING_MODE=demo or TRADING_MODE=real"
         )
 
     async def _fetch_pnl(self) -> tuple[dict[str, Any], float]:
         started = time.perf_counter()
-        url = f"{self.settings.etoro_base_url}{self._pnl_path()}"
+        path = self._pnl_path()
+        url = f"{self.settings.etoro_base_url}{path}"
+        headers = self._headers()
 
         if self._client is not None:
-            response = await self._client.get(url, headers=self._headers())
+            response = await self._client.get(url, headers=headers)
         else:
             async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.get(url, headers=self._headers())
+                response = await client.get(url, headers=headers)
 
         latency_ms = (time.perf_counter() - started) * 1000
         response.raise_for_status()
 
         body = response.json()
 
-        # Save the raw response for inspection
-        with open(
-            "etoro-pnl-response.json",
-            "w",
-            encoding="utf-8",
-        ) as file:
-            json.dump(body, file, indent=2)
-
         if not isinstance(body, dict):
             raise RuntimeError("Unexpected eToro P&L response format")
+
+        self._evidence_store.save(
+            broker="etoro",
+            environment=self.settings.trading_mode,
+            endpoint="pnl",
+            payload=body,
+            metadata={
+                "http_method": "GET",
+                "http_status": response.status_code,
+                "request_path": path,
+                "request_id": headers["x-request-id"],
+                "latency_ms": round(latency_ms, 3),
+                "response_headers": dict(response.headers),
+            },
+        )
 
         return body, latency_ms
 
@@ -118,51 +130,56 @@ class EtoroAccountBroker:
         cls,
         payload: dict[str, Any],
     ) -> tuple[float | None, float, float, float | None]:
-        positions = [x for x in (payload.get("positions") or []) if isinstance(x, dict)]
-
-        orders = [x for x in (payload.get("orders") or []) if isinstance(x, dict)]
-
-        mirrors = [x for x in (payload.get("mirrors") or []) if isinstance(x, dict)]
-
+        positions = [
+            item for item in (payload.get("positions") or []) if isinstance(item, dict)
+        ]
+        orders = [
+            item for item in (payload.get("orders") or []) if isinstance(item, dict)
+        ]
+        mirrors = [
+            item for item in (payload.get("mirrors") or []) if isinstance(item, dict)
+        ]
         manual_pending = cls._manual_pending_market_orders(payload)
 
         credit_raw = payload.get("credit")
         credit = None if credit_raw is None else cls._number(credit_raw)
 
-        pending_amount = sum(cls._number(x.get("amount")) for x in manual_pending)
-
-        pending_amount += sum(cls._number(x.get("amount")) for x in orders)
+        pending_amount = sum(
+            cls._number(order.get("amount")) for order in manual_pending
+        )
+        pending_amount += sum(cls._number(order.get("amount")) for order in orders)
 
         cash = None if credit is None else credit - pending_amount
 
-        invested = sum(cls._number(x.get("amount")) for x in positions)
-
+        invested = sum(cls._number(position.get("amount")) for position in positions)
         invested += pending_amount
-
         invested += sum(
-            cls._number(x.get("totalExternalCosts")) for x in manual_pending
+            cls._number(order.get("totalExternalCosts")) for order in manual_pending
         )
 
         unrealized = sum(
-            cls._number((x.get("unrealizedPnL") or {}).get("pnL")) for x in positions
+            cls._number((position.get("unrealizedPnL") or {}).get("pnL"))
+            for position in positions
         )
 
         for mirror in mirrors:
             mirror_positions = [
-                x for x in (mirror.get("positions") or []) if isinstance(x, dict)
+                item
+                for item in (mirror.get("positions") or [])
+                if isinstance(item, dict)
             ]
 
-            invested += sum(cls._number(x.get("amount")) for x in mirror_positions)
-
+            invested += sum(
+                cls._number(position.get("amount")) for position in mirror_positions
+            )
             invested += cls._number(mirror.get("availableAmount")) - cls._number(
                 mirror.get("closedPositionsNetProfit")
             )
 
             unrealized += sum(
-                cls._number((x.get("unrealizedPnL") or {}).get("pnL"))
-                for x in mirror_positions
+                cls._number((position.get("unrealizedPnL") or {}).get("pnL"))
+                for position in mirror_positions
             )
-
             unrealized += cls._number(mirror.get("closedPositionsNetProfit"))
 
         equity = None if cash is None else cash + invested + unrealized
@@ -184,7 +201,8 @@ class EtoroAccountBroker:
             broker="eToro",
             mode=self.settings.trading_mode,
             connected=True,
-            positions=len(positions),
+            positions_count=len(positions),
+            positions=(),
             pending_orders=len(orders_for_open) + len(orders),
             copy_portfolios=len(mirrors),
             latency_ms=round(latency_ms, 1),

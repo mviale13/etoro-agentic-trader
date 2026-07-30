@@ -12,3 +12,6 @@ __pycache__/
 .pytest_cache/
 .vscode/etoro-pnl-response.json
 etoro-watchlists-response.json
+
+# Immutable local broker evidence
+data/evidence/

@@ -1,6 +1,7 @@
 import { Wallet } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
+import { StatusDot } from "@/components/ui/StatusDot";
 import type { PortfolioResponse } from "@/lib/portfolio-api";
 
 type PortfolioCardProps = {
@@ -15,12 +16,16 @@ export function PortfolioCard({
 
   return (
     <Card>
-      <div className="flex items-center gap-2">
-        <Wallet className="h-5 w-5 text-emerald-400" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Wallet className="h-5 w-5 text-emerald-400" />
 
-        <h2 className="text-lg font-semibold">
-          Your Portfolio
-        </h2>
+          <h2 className="text-lg font-semibold">
+            Your Portfolio
+          </h2>
+        </div>
+
+        <StatusDot status="live" />
       </div>
 
       <div className="mt-6 space-y-5">

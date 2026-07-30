@@ -1,3 +1,5 @@
+import { StatusDot } from "@/components/ui/StatusDot";
+
 type WhyThisBriefProps = {
   reasons: string[];
 };
@@ -5,9 +7,13 @@ type WhyThisBriefProps = {
 export function WhyThisBrief({ reasons }: WhyThisBriefProps) {
   return (
     <section className="border-t border-slate-200 pt-7">
-      <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-        Why This Brief?
-      </h2>
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+          Why This Brief?
+        </h2>
+
+        <StatusDot status="placeholder" />
+      </div>
 
       <ul className="mt-5 space-y-3">
         {reasons.map((reason) => (

@@ -1,3 +1,4 @@
+import { PortfolioEvidenceKinds } from "@/lib/acio/ontology";
 import type {
   Claim,
   Evidence,
@@ -21,6 +22,7 @@ function createEvidence(
   return {
     id,
     source: "portfolio",
+    kind: PortfolioEvidenceKinds.CashBalance,
     title,
     description,
     strength: 100,

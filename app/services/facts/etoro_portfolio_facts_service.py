@@ -41,7 +41,7 @@ class EtoroPortfolioFactsService:
             invested_usd=(account.invested_usd or 0.0),
             unrealized_pnl_usd=(account.unrealized_pnl_usd or 0.0),
             cash_allocation=(portfolio.allocation.cash),
-            positions=account.positions,
+            positions=account.positions_count,
             pending_orders=(account.pending_orders),
             copy_portfolios=(account.copy_portfolios),
             connected=account.connected,

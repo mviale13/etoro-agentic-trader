@@ -1,3 +1,4 @@
+import { PortfolioEvidenceKinds } from "@/lib/acio/ontology";
 import { describe, expect, it } from "vitest";
 
 import { ClaimEngine } from "./ClaimEngine";
@@ -10,6 +11,7 @@ const evidence: Evidence = {
   statement: "Cash represents 100% of portfolio value.",
   value: 1,
   source: "portfolio",
+    kind: PortfolioEvidenceKinds.CashBalance,
   observedAt: "2026-07-30T08:00:00.000Z",
   recordedAt: "2026-07-30T08:00:00.000Z",
   reliability: 1,

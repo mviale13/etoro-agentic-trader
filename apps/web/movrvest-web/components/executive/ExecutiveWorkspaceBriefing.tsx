@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   WalletCards,
 } from "lucide-react";
-
+import { StatusPill } from "@/components/ui/StatusPill";
 import type {
   ChangeSeverity,
   ExecutiveWorkspaceViewModel,
@@ -152,12 +152,15 @@ function PortfolioSnapshot({
             Executive Workspace · {reviewedAt}
           </p>
 
-          <h1
-            id="portfolio-snapshot-heading"
-            className="mt-3 text-4xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl"
-          >
-            Portfolio snapshot
-          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <h1
+              id="portfolio-snapshot-heading"
+              className="text-4xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl"
+            >
+              Portfolio snapshot
+            </h1>
+            <StatusPill status="live" label="Backend" />
+          </div>
         </div>
 
         <Link
@@ -269,12 +272,17 @@ export function ExecutiveWorkspaceBriefing({
               Since your last visit
             </p>
 
-            <h2
-              id="changes-heading"
-              className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950"
-            >
-              What changed
-            </h2>
+            <div className="mt-2 flex items-center gap-3">
+
+              <h2
+                id="changes-heading"
+                className="text-3xl font-semibold tracking-[-0.035em] text-slate-950"
+              >
+                What changed
+              </h2>
+              <StatusPill status="live" />
+
+            </div>
           </div>
 
           <p className="max-w-lg text-sm leading-6 text-slate-500">
@@ -343,12 +351,15 @@ export function ExecutiveWorkspaceBriefing({
             Artificial CIO
           </p>
 
-          <h2
-            id="actions-heading"
-            className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950"
-          >
-            {workspace.priorities.length} executive actions
-          </h2>
+          <div className="mt-2 flex items-center gap-3">
+            <h2
+              id="actions-heading"
+              className="text-3xl font-semibold tracking-[-0.035em] text-slate-950"
+            >
+              {workspace.priorities.length} executive actions
+            </h2>
+            <StatusPill status="partial" />
+          </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
             These are attention items, not automatic trades. You remain in

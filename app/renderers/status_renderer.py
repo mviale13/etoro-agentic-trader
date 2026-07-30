@@ -23,7 +23,7 @@ class StatusRenderer:
         print(f"Available cash:  {cls._money(snapshot.cash_usd)}")
         print(f"Invested:        {cls._money(snapshot.invested_usd)}")
         print(f"Unrealized P&L:  {cls._money(snapshot.unrealized_pnl_usd)}")
-        print(f"Positions:       {snapshot.positions}")
+        print(f"Positions:       {snapshot.positions_count}")
         print(f"Pending orders:  {snapshot.pending_orders}")
         print(f"Copy portfolios: {snapshot.copy_portfolios}")
         print()

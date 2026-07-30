@@ -1,3 +1,4 @@
+import { StatusDot } from "@/components/ui/StatusDot";
 import type { EvidenceView } from "@/types/executive-brief";
 
 type EvidenceSectionProps = {
@@ -13,9 +14,13 @@ export function EvidenceSection({ evidence }: EvidenceSectionProps) {
         </span>
 
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-            Evidence
-          </h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+              Evidence
+            </h2>
+
+            <StatusDot status="placeholder" />
+          </div>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
             The assessment is supported by the following observable facts.

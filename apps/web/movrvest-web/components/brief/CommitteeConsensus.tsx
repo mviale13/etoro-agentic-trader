@@ -1,3 +1,4 @@
+import { StatusDot } from "@/components/ui/StatusDot";
 import type { CommitteeView } from "@/types/executive-brief";
 
 type CommitteeConsensusProps = {
@@ -41,9 +42,13 @@ export function CommitteeConsensus({
         </span>
 
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-            Committee Consensus
-          </h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+              Committee Consensus
+            </h2>
+
+            <StatusDot status="placeholder" />
+          </div>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
             Independent investment committees reviewed this opportunity.

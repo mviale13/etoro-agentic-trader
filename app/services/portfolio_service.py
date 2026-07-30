@@ -6,17 +6,29 @@ from app.services.exchange_rate_service import ExchangeRateService
 class PortfolioService:
     CASH_CONCENTRATION_THRESHOLD = 80.0
 
-    def analyze(self, account: AccountSnapshot) -> PortfolioSnapshot:
-        equity = account.equity_usd or 0.0
-        cash = account.cash_usd or 0.0
-        invested = account.invested_usd or 0.0
+    def __init__(
+        self,
+        exchange_rate_service: ExchangeRateService | None = None,
+    ) -> None:
+        self._exchange_rate_service = exchange_rate_service or ExchangeRateService()
 
-        if equity <= 0:
+    def analyze(self, account: AccountSnapshot) -> PortfolioSnapshot:
+        equity_usd = self._non_negative(account.equity_usd)
+        cash_usd = self._non_negative(account.cash_usd)
+
+        # Prefer the amount supplied by the broker because it is direct
+        # evidence. Derive it only when the broker does not provide it.
+        if account.invested_usd is None:
+            invested_usd = max(equity_usd - cash_usd, 0.0)
+        else:
+            invested_usd = self._non_negative(account.invested_usd)
+
+        if equity_usd <= 0:
             cash_pct = 0.0
             invested_pct = 0.0
         else:
-            cash_pct = self._percentage(cash, equity)
-            invested_pct = self._percentage(invested, equity)
+            cash_pct = self._percentage(cash_usd, equity_usd)
+            invested_pct = self._percentage(invested_usd, equity_usd)
 
         risk_flags: list[str] = []
 
@@ -26,6 +38,10 @@ class PortfolioService:
         if invested_pct > 0:
             risk_flags.append("Invested assets are not yet classified by asset type")
 
+        total_value_eur = self._exchange_rate_service.usd_to_eur(equity_usd)
+        available_cash_eur = self._exchange_rate_service.usd_to_eur(cash_usd)
+        invested_eur = self._exchange_rate_service.usd_to_eur(invested_usd)
+
         return PortfolioSnapshot(
             allocation=Allocation(
                 cash=cash_pct,
@@ -34,12 +50,18 @@ class PortfolioService:
                 crypto=0.0,
                 unclassified=invested_pct,
             ),
-            total_value=equity,
-            positions=account.positions,
+            total_value=round(equity_usd, 2),
+            total_value_eur=round(total_value_eur, 2),
+            available_cash_usd=round(cash_usd, 2),
+            available_cash_eur=round(available_cash_eur, 2),
+            invested_usd=round(invested_usd, 2),
+            invested_eur=round(invested_eur, 2),
+            liquidity_pct=cash_pct,
+            positions=account.positions_count,
             largest_position=None,
             largest_position_pct=0.0,
             risk_flags=tuple(risk_flags),
-            total_value_eur=ExchangeRateService().usd_to_eur(equity),
+            last_sync=account.timestamp,
         )
 
     @staticmethod
@@ -48,3 +70,10 @@ class PortfolioService:
             return 0.0
 
         return round((value / total) * 100, 2)
+
+    @staticmethod
+    def _non_negative(value: float | None) -> float:
+        if value is None:
+            return 0.0
+
+        return max(float(value), 0.0)

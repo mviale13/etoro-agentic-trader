@@ -1,4 +1,5 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
+import { StatusDot } from "@/components/ui/StatusDot";
 
 import { CommitteeConsensus } from "./CommitteeConsensus";
 import { EvidenceSection } from "./EvidenceSection";
@@ -40,11 +41,15 @@ export function ExecutiveBrief({ brief }: ExecutiveBriefProps) {
             </p>
           </div>
 
-          <p className="text-xs text-slate-500">
-            {brief.generatedAt}
-            <span className="mx-2">•</span>
-            {brief.readingTime}
-          </p>
+          <div className="flex items-center gap-3">
+            <StatusDot status="partial" />
+
+            <p className="text-xs text-slate-500">
+              {brief.generatedAt}
+              <span className="mx-2">•</span>
+              {brief.readingTime}
+            </p>
+          </div>
         </div>
 
         <header className="grid gap-5 lg:grid-cols-[3fr_1fr]">
