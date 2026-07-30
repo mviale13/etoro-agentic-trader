@@ -1,5 +1,18 @@
 export type ChangeSeverity = "information" | "attention" | "important";
 
+export interface PortfolioSnapshotViewModel {
+  totalEquity: number;
+  availableCash: number;
+  invested: number;
+  unrealizedProfitLoss: number;
+  openPositions: number;
+  pendingOrders: number;
+  healthScore: number;
+  healthLabel: string;
+  riskLevel: string;
+  diversification: string;
+}
+
 export interface ExecutiveChangeViewModel {
   id: string;
   severity: ChangeSeverity;
@@ -23,15 +36,8 @@ export interface ExecutivePriorityViewModel {
 export interface ExecutiveWorkspaceViewModel {
   lastReviewedAt: string;
   situation: "stable" | "attention" | "important";
-  headline: string;
-  summary: string;
 
-  reviewed: {
-    portfolioHoldings: number;
-    companies: number;
-    marketEvents: number;
-    macroIndicators: number;
-  };
+  portfolio: PortfolioSnapshotViewModel;
 
   changes: readonly ExecutiveChangeViewModel[];
   priorities: readonly ExecutivePriorityViewModel[];

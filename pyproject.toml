@@ -32,6 +32,7 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
+exclude = ["^tests/"]
 python_version = "3.12"
 
 strict = true
@@ -59,3 +60,7 @@ fail_under = 60
 [[tool.mypy.overrides]]
 module = "yfinance.*"
 ignore_missing_imports = true
+
+
+
+

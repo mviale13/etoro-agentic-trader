@@ -3,15 +3,18 @@ import type { ExecutiveWorkspaceViewModel } from "@/lib/view-models/executive-wo
 export const executiveWorkspaceMock: ExecutiveWorkspaceViewModel = {
   lastReviewedAt: "Wednesday, July 29 · 08:12",
   situation: "attention",
-  headline: "Three things deserve your attention.",
-  summary:
-    "The Artificial CIO completed its latest review. Portfolio health remains stable, while three developments warrant closer attention. No immediate trade is required.",
 
-  reviewed: {
-    portfolioHoldings: 18,
-    companies: 2483,
-    marketEvents: 187,
-    macroIndicators: 41,
+  portfolio: {
+    totalEquity: 100000,
+    availableCash: 100000,
+    invested: 0,
+    unrealizedProfitLoss: 0,
+    openPositions: 0,
+    pendingOrders: 0,
+    healthScore: 100,
+    healthLabel: "Healthy",
+    riskLevel: "Low",
+    diversification: "No active exposure",
   },
 
   changes: [
@@ -20,7 +23,8 @@ export const executiveWorkspaceMock: ExecutiveWorkspaceViewModel = {
       severity: "important",
       title: "NVIDIA conviction increased",
       detail: "Executive conviction moved from 68% to 82%.",
-      context: "Earnings revisions and margin strength improved the investment case.",
+      context:
+        "Earnings revisions and margin strength improved the investment case.",
       href: "/research/nvidia",
     },
     {
@@ -28,7 +32,8 @@ export const executiveWorkspaceMock: ExecutiveWorkspaceViewModel = {
       severity: "attention",
       title: "Technology concentration increased",
       detail: "Portfolio exposure moved 2.3 percentage points higher.",
-      context: "The allocation remains within policy but is approaching its preferred range.",
+      context:
+        "The allocation remains within policy but is approaching its preferred range.",
       href: "/portfolio",
     },
     {
@@ -36,7 +41,8 @@ export const executiveWorkspaceMock: ExecutiveWorkspaceViewModel = {
       severity: "information",
       title: "Rate expectations became more supportive",
       detail: "Markets are now pricing a more constructive rate path.",
-      context: "Growth assets may benefit, although the signal remains sensitive to inflation data.",
+      context:
+        "Growth assets may benefit, although the signal remains sensitive to inflation data.",
       href: "/markets",
     },
     {
@@ -73,7 +79,7 @@ export const executiveWorkspaceMock: ExecutiveWorkspaceViewModel = {
       urgency: "monitor",
       title: "Read the updated ASML dossier",
       rationale:
-        "The company remains one of the strongest opportunities in the current research queue.",
+        "ASML remains one of the strongest opportunities in the current research queue.",
       estimatedMinutes: 5,
       href: "/research/asml",
     },

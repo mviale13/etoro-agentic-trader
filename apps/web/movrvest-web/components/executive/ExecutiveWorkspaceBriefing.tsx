@@ -1,24 +1,31 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Building2,
-  ChartNoAxesCombined,
+  BriefcaseBusiness,
   CircleAlert,
   CircleCheck,
   Clock3,
-  Landmark,
-  Newspaper,
+  ShieldCheck,
+  WalletCards,
 } from "lucide-react";
 
 import type {
   ChangeSeverity,
   ExecutiveWorkspaceViewModel,
+  PortfolioSnapshotViewModel,
   PriorityUrgency,
 } from "@/lib/view-models/executive-workspace";
 
 interface ExecutiveWorkspaceBriefingProps {
   workspace: ExecutiveWorkspaceViewModel;
+  dataSource?: "backend" | "fallback";
 }
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 const changePresentation: Record<
   ChangeSeverity,
@@ -66,86 +73,194 @@ const priorityPresentation: Record<
   },
 };
 
-function ReviewMetric({
-  icon: Icon,
-  value,
+function SnapshotMetric({
   label,
+  value,
+  detail,
 }: {
-  icon: typeof Building2;
-  value: number;
   label: string;
+  value: string;
+  detail?: string;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-        <Icon aria-hidden="true" className="size-4" />
-      </span>
+    <div className="min-w-0">
+      <dt className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+        {label}
+      </dt>
 
-      <div>
-        <p className="text-sm font-semibold text-slate-950">
-          {value.toLocaleString("en-US")}
-        </p>
-        <p className="text-xs text-slate-500">{label}</p>
-      </div>
+      <dd className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+        {value}
+      </dd>
+
+      {detail ? (
+        <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+      ) : null}
     </div>
+  );
+}
+
+function DataSourceBadge({
+  dataSource,
+}: {
+  dataSource: "backend" | "fallback";
+}) {
+  const isBackend = dataSource === "backend";
+
+  return (
+    <div
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+        isBackend
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-amber-200 bg-amber-50 text-amber-700"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`size-1.5 rounded-full ${
+          isBackend ? "bg-emerald-500" : "bg-amber-500"
+        }`}
+      />
+
+      {isBackend ? "Live backend" : "Demo fallback"}
+    </div>
+  );
+}
+
+function PortfolioSnapshot({
+  portfolio,
+  reviewedAt,
+}: {
+  portfolio: PortfolioSnapshotViewModel;
+  reviewedAt: string;
+}) {
+  const cashRatio =
+    portfolio.totalEquity > 0
+      ? Math.round((portfolio.availableCash / portfolio.totalEquity) * 100)
+      : 0;
+
+  const unrealizedProfitLoss = currencyFormatter.format(
+    portfolio.unrealizedProfitLoss,
+  );
+
+  const profitLossPrefix = portfolio.unrealizedProfitLoss > 0 ? "+" : "";
+
+  return (
+    <section aria-labelledby="portfolio-snapshot-heading">
+      <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Executive Workspace · {reviewedAt}
+          </p>
+
+          <h1
+            id="portfolio-snapshot-heading"
+            className="mt-3 text-4xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl"
+          >
+            Portfolio snapshot
+          </h1>
+        </div>
+
+        <Link
+          href="/portfolio"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-950"
+        >
+          Open portfolio
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      </div>
+
+      <div className="mt-8 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_-48px_rgba(15,23,42,0.55)]">
+        <dl className="grid gap-px bg-slate-200 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="bg-white p-6">
+            <SnapshotMetric
+              label="Total equity"
+              value={currencyFormatter.format(portfolio.totalEquity)}
+              detail="Current account value"
+            />
+          </div>
+
+          <div className="bg-white p-6">
+            <SnapshotMetric
+              label="Available cash"
+              value={currencyFormatter.format(portfolio.availableCash)}
+              detail={`${cashRatio}% of portfolio`}
+            />
+          </div>
+
+          <div className="bg-white p-6">
+            <SnapshotMetric
+              label="Invested"
+              value={currencyFormatter.format(portfolio.invested)}
+              detail={`${profitLossPrefix}${unrealizedProfitLoss} unrealized P&L`}
+            />
+          </div>
+
+          <div className="bg-white p-6">
+            <SnapshotMetric
+              label="Positions"
+              value={portfolio.openPositions.toString()}
+              detail={`${portfolio.pendingOrders} pending orders`}
+            />
+          </div>
+
+          <div className="bg-white p-6">
+            <SnapshotMetric
+              label="Portfolio health"
+              value={`${portfolio.healthScore} / 100`}
+              detail={portfolio.healthLabel}
+            />
+          </div>
+        </dl>
+
+        <div className="grid gap-5 border-t border-slate-200 px-6 py-5 text-sm sm:grid-cols-3">
+          <div className="flex items-center gap-3">
+            <WalletCards aria-hidden="true" className="size-4 text-slate-400" />
+            <span className="text-slate-500">Liquidity</span>
+            <span className="ml-auto font-semibold text-slate-950">
+              {currencyFormatter.format(portfolio.availableCash)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <ShieldCheck aria-hidden="true" className="size-4 text-slate-400" />
+            <span className="text-slate-500">Risk</span>
+            <span className="ml-auto font-semibold text-slate-950">
+              {portfolio.riskLevel}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <BriefcaseBusiness
+              aria-hidden="true"
+              className="size-4 text-slate-400"
+            />
+            <span className="text-slate-500">Diversification</span>
+            <span className="ml-auto font-semibold text-slate-950">
+              {portfolio.diversification}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 export function ExecutiveWorkspaceBriefing({
   workspace,
+  dataSource = "fallback",
 }: ExecutiveWorkspaceBriefingProps) {
   return (
-    <div className="space-y-14">
-      <section
-        aria-labelledby="executive-workspace-heading"
-        className="border-b border-slate-200 pb-10"
-      >
-        <p className="text-sm font-medium text-slate-500">
-          Executive Workspace · {workspace.lastReviewedAt}
-        </p>
-
-        <div className="mt-5 grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Latest CIO review
-            </p>
-
-            <h1
-              id="executive-workspace-heading"
-              className="mt-3 max-w-4xl text-4xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl"
-            >
-              {workspace.headline}
-            </h1>
-
-            <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-600">
-              {workspace.summary}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-4 xl:grid-cols-2">
-            <ReviewMetric
-              icon={Building2}
-              value={workspace.reviewed.portfolioHoldings}
-              label="Portfolio holdings"
-            />
-            <ReviewMetric
-              icon={ChartNoAxesCombined}
-              value={workspace.reviewed.companies}
-              label="Companies reviewed"
-            />
-            <ReviewMetric
-              icon={Newspaper}
-              value={workspace.reviewed.marketEvents}
-              label="Market events"
-            />
-            <ReviewMetric
-              icon={Landmark}
-              value={workspace.reviewed.macroIndicators}
-              label="Macro indicators"
-            />
-          </div>
+    <div className="space-y-16">
+      <div>
+        <div className="mb-4 flex justify-end">
+          <DataSourceBadge dataSource={dataSource} />
         </div>
-      </section>
+
+        <PortfolioSnapshot
+          portfolio={workspace.portfolio}
+          reviewedAt={workspace.lastReviewedAt}
+        />
+      </div>
 
       <section aria-labelledby="changes-heading">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -153,6 +268,7 @@ export function ExecutiveWorkspaceBriefing({
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
               Since your last visit
             </p>
+
             <h2
               id="changes-heading"
               className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950"
@@ -184,6 +300,7 @@ export function ExecutiveWorkspaceBriefing({
                     <h3 className="font-semibold text-slate-950">
                       {change.title}
                     </h3>
+
                     <span className="text-xs font-medium text-slate-400">
                       {presentation.label}
                     </span>
@@ -220,17 +337,19 @@ export function ExecutiveWorkspaceBriefing({
         </div>
       </section>
 
-      <section aria-labelledby="priorities-heading">
+      <section aria-labelledby="actions-heading">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
             Artificial CIO
           </p>
+
           <h2
-            id="priorities-heading"
+            id="actions-heading"
             className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-slate-950"
           >
-            Executive actions
+            {workspace.priorities.length} executive actions
           </h2>
+
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
             These are attention items, not automatic trades. You remain in
             control of every investment decision.
@@ -238,17 +357,22 @@ export function ExecutiveWorkspaceBriefing({
         </div>
 
         <div className="mt-7 grid gap-4 xl:grid-cols-3">
-          {workspace.priorities.map((priority) => {
+          {workspace.priorities.map((priority, index) => {
             const presentation = priorityPresentation[priority.urgency];
 
             const content = (
               <article className="group h-full rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_18px_55px_-40px_rgba(15,23,42,0.5)] transition hover:-translate-y-0.5 hover:border-slate-300">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-slate-400">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
                     <span
                       aria-hidden="true"
                       className={`size-2 rounded-full ${presentation.markerClassName}`}
                     />
+
                     <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                       {presentation.label}
                     </span>
@@ -272,6 +396,7 @@ export function ExecutiveWorkspaceBriefing({
                 {priority.href ? (
                   <div className="mt-7 flex items-center gap-2 text-sm font-semibold text-slate-950">
                     Open action
+
                     <ArrowRight
                       aria-hidden="true"
                       className="size-4 transition-transform group-hover:translate-x-1"
