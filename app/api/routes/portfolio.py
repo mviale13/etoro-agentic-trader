@@ -26,6 +26,11 @@ async def get_portfolio() -> PortfolioResponse:
     return PortfolioResponse(
         total_value=portfolio.total_value,
         total_value_eur=portfolio.total_value_eur,
+        available_cash_usd=portfolio.available_cash_usd,
+        available_cash_eur=portfolio.available_cash_eur,
+        invested_usd=portfolio.invested_usd,
+        invested_eur=portfolio.invested_eur,
+        liquidity_pct=portfolio.liquidity_pct,
         positions=portfolio.positions,
         allocation=AllocationResponse(
             cash=portfolio.allocation.cash,
@@ -35,4 +40,6 @@ async def get_portfolio() -> PortfolioResponse:
             unclassified=portfolio.allocation.unclassified,
         ),
         risk_flags=list(portfolio.risk_flags),
+        last_sync=portfolio.last_sync,
+        source=f"{account.broker} {account.mode.title()}",
     )

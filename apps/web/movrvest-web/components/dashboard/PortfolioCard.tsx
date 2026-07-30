@@ -8,12 +8,34 @@ type PortfolioCardProps = {
   portfolio: PortfolioResponse;
 };
 
+function formatCurrency(value: number, currency: "EUR" | "USD"): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatLastSync(value: string | null): string {
+  if (!value) {
+    return "Sync time unavailable";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Sync time unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
 export function PortfolioCard({
   portfolio,
 }: PortfolioCardProps) {
-  const totalValueEur =
-    portfolio.total_value_eur ?? portfolio.total_value * 0.92;
-
   return (
     <Card>
       <div className="flex items-center justify-between">
@@ -35,22 +57,50 @@ export function PortfolioCard({
           </p>
 
           <p className="text-3xl font-bold">
-            €{totalValueEur.toLocaleString("en-US")}
+            {formatCurrency(portfolio.total_value_eur, "EUR")}
           </p>
 
           <p className="mt-2 text-lg text-slate-400">
-            Broker value: ${portfolio.total_value.toLocaleString("en-US")} USD
+            Broker value: {formatCurrency(portfolio.total_value, "USD")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-slate-400">
-              Cash
+              Available Cash
             </p>
 
             <p className="font-semibold">
-              {portfolio.allocation.cash.toFixed(1)}%
+              {formatCurrency(portfolio.available_cash_eur, "EUR")}
+            </p>
+
+            <p className="text-xs text-slate-500">
+              {formatCurrency(portfolio.available_cash_usd, "USD")}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-400">
+              Invested
+            </p>
+
+            <p className="font-semibold">
+              {formatCurrency(portfolio.invested_eur, "EUR")}
+            </p>
+
+            <p className="text-xs text-slate-500">
+              {formatCurrency(portfolio.invested_usd, "USD")}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-400">
+              Liquidity
+            </p>
+
+            <p className="font-semibold">
+              {portfolio.liquidity_pct.toFixed(1)}%
             </p>
           </div>
 
@@ -63,6 +113,11 @@ export function PortfolioCard({
               {portfolio.positions}
             </p>
           </div>
+        </div>
+
+        <div className="border-t border-slate-800 pt-4 text-xs text-slate-500">
+          <p>Source: {portfolio.source}</p>
+          <p>Last sync: {formatLastSync(portfolio.last_sync)}</p>
         </div>
       </div>
     </Card>

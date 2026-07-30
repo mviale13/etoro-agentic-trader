@@ -142,16 +142,23 @@ class DashboardService:
 
         portfolio = PortfolioResponse(
             total_value=snapshot.total_value,
-            total_value_eur=(snapshot.total_value_eur),
+            total_value_eur=snapshot.total_value_eur,
+            available_cash_usd=snapshot.available_cash_usd,
+            available_cash_eur=snapshot.available_cash_eur,
+            invested_usd=snapshot.invested_usd,
+            invested_eur=snapshot.invested_eur,
+            liquidity_pct=snapshot.liquidity_pct,
             positions=snapshot.positions,
             allocation=AllocationResponse(
                 cash=snapshot.allocation.cash,
                 stocks=snapshot.allocation.stocks,
                 etfs=snapshot.allocation.etfs,
                 crypto=snapshot.allocation.crypto,
-                unclassified=(snapshot.allocation.unclassified),
+                unclassified=snapshot.allocation.unclassified,
             ),
             risk_flags=list(snapshot.risk_flags),
+            last_sync=snapshot.last_sync,
+            source=f"{account.broker} {account.mode.title()}",
         )
 
         signals = SignalService().analyze(

@@ -9,9 +9,16 @@ export type Allocation = {
 export type PortfolioResponse = {
   total_value: number;
   total_value_eur: number;
+  available_cash_usd: number;
+  available_cash_eur: number;
+  invested_usd: number;
+  invested_eur: number;
+  liquidity_pct: number;
   positions: number;
   allocation: Allocation;
   risk_flags: string[];
+  last_sync: string | null;
+  source: string;
 };
 
 const API_URL =
