@@ -1,13 +1,9 @@
-from .market_reasoner import MarketReasoner
-from .portfolio_reasoner import PortfolioReasoner
-from .reasoning_service import ReasoningService
-from .reasoning_snapshot import ReasoningSnapshot
-from .risk_reasoner import RiskReasoner
+"""Cognitive reasoning components for the MOVRvest investment brain."""
+
+from app.application.brain.reasoning.portfolio_analyst import PortfolioAnalyst
+from app.application.brain.reasoning.reasoning_service import ReasoningService
 
 __all__ = [
-    "MarketReasoner",
-    "PortfolioReasoner",
+    "PortfolioAnalyst",
     "ReasoningService",
-    "ReasoningSnapshot",
-    "RiskReasoner",
 ]

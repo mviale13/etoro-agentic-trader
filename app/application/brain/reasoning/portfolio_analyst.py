@@ -11,7 +11,7 @@ from app.domain.brain_context import BrainContext
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 
-class PortfolioReasoner:
+class PortfolioAnalyst:
     """
     Transform the Brain's portfolio knowledge into a structured assessment.
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from app.application.brain.reasoning.market_reasoner import MarketReasoner
-from app.application.brain.reasoning.portfolio_reasoner import PortfolioReasoner
+from app.application.brain.reasoning.portfolio_analyst import PortfolioAnalyst
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
@@ -16,18 +16,18 @@ from app.brain import Brain
 @dataclass(slots=True)
 class ReasoningService:
     """
-    Runs every cognitive reasoner.
+    Runs every cognitive analyst and reasoner.
 
     Brain
         ↓
-    PortfolioReasoner
+    PortfolioAnalyst
     MarketReasoner
     RiskReasoner
         ↓
     ReasoningSnapshot
     """
 
-    portfolio_reasoner: PortfolioReasoner = field(default_factory=PortfolioReasoner)
+    portfolio_analyst: PortfolioAnalyst = field(default_factory=PortfolioAnalyst)
 
     market_reasoner: MarketReasoner = field(default_factory=MarketReasoner)
 
@@ -38,7 +38,7 @@ class ReasoningService:
         brain: Brain,
     ) -> ReasoningSnapshot:
         return ReasoningSnapshot(
-            portfolio=self.portfolio_reasoner.assess(brain),
+            portfolio=self.portfolio_analyst.assess(brain),
             market=self.market_reasoner.assess(brain),
             risk=self.risk_reasoner.assess(brain),
         )
