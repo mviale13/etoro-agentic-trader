@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
 from app.services.brain_service import BrainService
-from app.services.fx_service import FXService
 
 router = APIRouter(
     prefix="/brain",
@@ -13,15 +12,11 @@ router = APIRouter(
 async def get_brain() -> dict[str, object]:
     brain = await BrainService().build()
 
-    fx = FXService().portfolio(
-        brain.portfolio.total_value,
-    )
-
     return {
         "summary": brain.summary,
         "portfolio": {
-            "total_value": fx["total_value_usd"],
-            "total_value_eur": fx["total_value_eur"],
+            "total_value": brain.portfolio.total_value,
+            "total_value_eur": brain.portfolio.total_value_eur,
             "positions": brain.portfolio.positions,
             "cash_allocation": brain.portfolio.allocation.cash,
         },
