@@ -12,13 +12,31 @@ router = APIRouter(
 async def get_brain() -> dict[str, object]:
     brain = await BrainService().build()
 
+    executive_brief: dict[str, object] | None = None
+
+    if brain.brief is not None:
+        executive_brief = {
+            "headline": brain.brief.headline,
+            "why": brain.brief.why,
+            "action": brain.brief.action,
+            "confidence": brain.brief.confidence,
+        }
+
     return {
         "summary": brain.summary,
+        "focus": brain.focus,
+        "executive_brief": executive_brief,
         "portfolio": {
             "total_value": brain.portfolio.total_value,
             "total_value_eur": brain.portfolio.total_value_eur,
+            "available_cash_usd": brain.portfolio.available_cash_usd,
+            "available_cash_eur": brain.portfolio.available_cash_eur,
+            "invested_usd": brain.portfolio.invested_usd,
+            "invested_eur": brain.portfolio.invested_eur,
+            "liquidity_pct": brain.portfolio.liquidity_pct,
             "positions": brain.portfolio.positions,
             "cash_allocation": brain.portfolio.allocation.cash,
+            "last_sync": brain.portfolio.last_sync,
         },
         "observation": {
             "title": brain.observation.title,
