@@ -11,6 +11,7 @@ from app.application.workspace.executive_pipeline import (
     ExecutivePipeline,
 )
 from app.brain import Brain
+from app.domain.executive.executive_brief import ExecutiveBrief
 from app.domain.executive_decision import ExecutiveDecision
 
 
@@ -53,3 +54,22 @@ class ExecutiveService:
             symbol=symbol,
             brain=brain,
         )
+
+    def brief(
+        self,
+        symbol: str,
+        brain: Brain,
+    ) -> ExecutiveBrief:
+        """
+        Return the executive brief explaining the decision.
+        """
+
+        workspace = self.pipeline.execute(
+            symbol=symbol,
+            brain=brain,
+        )
+
+        if workspace.brief is None:
+            raise ValueError("ExecutivePipeline did not produce a brief.")
+
+        return workspace.brief

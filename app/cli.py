@@ -10,6 +10,7 @@ from app.commands import (
     daily,
     decision,
     doctor,
+    evaluate,
     explain,
     intelligence,
     market,
@@ -114,6 +115,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, NVDA or BTC",
     )
 
+    evaluate_parser = subparsers.add_parser(
+        "evaluate",
+        help="Run the Artificial CIO pipeline and explain the decision",
+        description="Run the Artificial CIO pipeline and explain the decision",
+    )
+    evaluate_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example MSFT, ASML or BTC-USD",
+    )
+
     return parser
 
 
@@ -123,6 +134,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "company":
         return await company.run(args.symbol)
+
+    if args.command == "evaluate":
+        return await evaluate.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

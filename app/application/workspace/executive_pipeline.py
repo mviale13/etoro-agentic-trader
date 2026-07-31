@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from app.application.brain.reasoning import ReasoningService
+from app.application.brief.executive_brief_builder import (
+    ExecutiveBriefBuilder,
+)
 from app.application.committees.committee_service import CommitteeService
 from app.application.executive.decision_evidence_builder import (
     DecisionEvidenceBuilder,
@@ -47,6 +50,10 @@ class ExecutivePipeline:
         default_factory=InvestmentThesisBuilder,
     )
 
+    brief_builder: ExecutiveBriefBuilder = field(
+        default_factory=ExecutiveBriefBuilder,
+    )
+
     def execute(
         self,
         symbol: str,
@@ -83,6 +90,10 @@ class ExecutivePipeline:
             reasoning=workspace.reasoning,
             committee_opinions=workspace.committee_opinions,
             decision=workspace.decision,
+        )
+
+        workspace.brief = self.brief_builder.build(
+            workspace,
         )
 
         return workspace

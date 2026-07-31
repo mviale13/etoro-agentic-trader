@@ -1,17 +1,37 @@
-"""Market perception component."""
+"""Canonical market perception."""
 
-from app.domain.market_context import MarketContext
-from app.services.market_context_service import MarketContextService
+from datetime import datetime
+
+from app.application.services.market_service import MarketService
+from app.domain.market_snapshot import MarketSnapshot
+from app.providers.yahoo_market_provider import YahooMarketProvider
 
 
 class MarketPerception:
-    """Produces the current market context."""
+    """
+    Produces the current market perception.
+
+    Responsibilities
+    ----------------
+    - Collect market facts from the infrastructure layer.
+    - Build the canonical MarketSnapshot.
+    - Perform no reasoning.
+    - Perform no executive decision making.
+    """
 
     def __init__(
         self,
-        market_service: MarketContextService | None = None,
+        provider: YahooMarketProvider | None = None,
+        market_service: MarketService | None = None,
     ) -> None:
-        self._market_service = market_service or MarketContextService()
+        self._provider = provider or YahooMarketProvider()
+        self._market_service = market_service or MarketService()
 
-    def execute(self) -> MarketContext:
-        return self._market_service.build()
+    async def execute(self) -> MarketSnapshot:
+        market_data = await self._provider.snapshot()
+
+        return self._market_service.build_snapshot(
+            quotes=market_data.quotes,
+            vix=market_data.vix,
+            timestamp=datetime.utcnow(),
+        )
