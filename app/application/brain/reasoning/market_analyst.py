@@ -1,9 +1,10 @@
-"""Market reasoning engine."""
+"""Market analysis engine."""
 
 from __future__ import annotations
 
 from statistics import fmean
 
+from app.application.brain.analysts import Analyst
 from app.application.brain.reasoning.models.assessment import Evidence
 from app.application.brain.reasoning.models.market_assessment import (
     MarketAssessment,
@@ -16,7 +17,7 @@ from app.domain.market_context import MarketContext
 from app.domain.market_snapshot import MarketSnapshot
 
 
-class MarketReasoner:
+class MarketAnalyst(Analyst[MarketAssessment]):
     """
     Transform market knowledge into a structured assessment.
 

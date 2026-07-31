@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.application.brain.analysts import Analyst
 from app.application.brain.reasoning.models.assessment import Evidence
 from app.application.brain.reasoning.models.portfolio_assessment import (
     PortfolioAssessment,
@@ -11,7 +12,7 @@ from app.domain.brain_context import BrainContext
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 
-class PortfolioAnalyst:
+class PortfolioAnalyst(Analyst[PortfolioAssessment]):
     """
     Transform the Brain's portfolio knowledge into a structured assessment.
 
