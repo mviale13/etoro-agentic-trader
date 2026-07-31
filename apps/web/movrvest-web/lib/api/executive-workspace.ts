@@ -1,14 +1,14 @@
 import { executiveWorkspaceMock } from "@/lib/mocks/executive-workspace";
 import type {
+  ExecutiveBriefViewModel,
+  ExecutivePriorityViewModel,
   ExecutiveWorkspaceViewModel,
   PortfolioSnapshotViewModel,
+  PriorityUrgency,
 } from "@/lib/view-models/executive-workspace";
 
 const BACKEND_URL =
-  process.env.MOVRVEST_API_URL?.replace(/\/$/, "") ??
-  "http://127.0.0.1:8000";
-
-type UnknownRecord = Record<string, unknown>;
+  process.env.MOVRVEST_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
 
 export interface ExecutiveWorkspaceResult {
   workspace: ExecutiveWorkspaceViewModel;
@@ -17,144 +17,136 @@ export interface ExecutiveWorkspaceResult {
   error?: string;
 }
 
-function isRecord(value: unknown): value is UnknownRecord {
+/**
+ * The backend contract.
+ *
+ * These mirror `GET /brain/` and `GET /executive/{symbol}` exactly. The
+ * dashboard never guesses at field names: if the backend renames a field the
+ * parse fails loudly instead of silently substituting demo data.
+ */
+interface BrainPortfolioPayload {
+  total_value: number;
+  available_cash_usd: number;
+  invested_usd: number;
+  liquidity_pct: number;
+  positions: number;
+}
+
+interface BrainPayload {
+  portfolio: BrainPortfolioPayload;
+  recommendation: {
+    symbol: string;
+  };
+}
+
+interface ExecutiveBriefPayload {
+  symbol: string;
+  headline: string;
+  summary: string;
+  confidence: number;
+  portfolio_health: number;
+  priorities: readonly {
+    title: string;
+    description: string;
+    urgency: number;
+  }[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function recordAt(
-  record: UnknownRecord,
-  ...keys: string[]
-): UnknownRecord | undefined {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (isRecord(value)) {
-      return value;
-    }
+function requireNumber(value: unknown, field: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`Expected a number at "${field}", received ${typeof value}`);
   }
 
-  return undefined;
+  return value;
 }
 
-function numberAt(
-  record: UnknownRecord,
-  keys: readonly string[],
-  fallback = 0,
-): number {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value;
-    }
-
-    if (typeof value === "string") {
-      const parsed = Number(value);
-
-      if (Number.isFinite(parsed)) {
-        return parsed;
-      }
-    }
+function requireString(value: unknown, field: string): string {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`Expected a string at "${field}", received ${typeof value}`);
   }
 
-  return fallback;
+  return value;
 }
 
-function stringAt(
-  record: UnknownRecord,
-  keys: readonly string[],
-  fallback: string,
-): string {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value;
-    }
+function parseBrain(payload: unknown): BrainPayload {
+  if (!isRecord(payload)) {
+    throw new Error("The /brain response is not a JSON object.");
   }
 
-  return fallback;
-}
+  const portfolio = payload.portfolio;
 
-function arrayLengthAt(
-  record: UnknownRecord,
-  keys: readonly string[],
-  fallback = 0,
-): number {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (Array.isArray(value)) {
-      return value.length;
-    }
-
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value;
-    }
+  if (!isRecord(portfolio)) {
+    throw new Error("The /brain response has no portfolio object.");
   }
 
-  return fallback;
+  const recommendation = payload.recommendation;
+
+  if (!isRecord(recommendation)) {
+    throw new Error("The /brain response has no recommendation object.");
+  }
+
+  return {
+    portfolio: {
+      total_value: requireNumber(portfolio.total_value, "portfolio.total_value"),
+      available_cash_usd: requireNumber(
+        portfolio.available_cash_usd,
+        "portfolio.available_cash_usd",
+      ),
+      invested_usd: requireNumber(
+        portfolio.invested_usd,
+        "portfolio.invested_usd",
+      ),
+      liquidity_pct: requireNumber(
+        portfolio.liquidity_pct,
+        "portfolio.liquidity_pct",
+      ),
+      positions: requireNumber(portfolio.positions, "portfolio.positions"),
+    },
+    recommendation: {
+      symbol: requireString(recommendation.symbol, "recommendation.symbol"),
+    },
+  };
 }
 
-function clampScore(value: number): number {
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
+function parseExecutiveBrief(payload: unknown): ExecutiveBriefPayload {
+  if (!isRecord(payload)) {
+    throw new Error("The /executive response is not a JSON object.");
+  }
 
-function inferHealthScore(
-  root: UnknownRecord,
-  portfolio: UnknownRecord,
-): number {
-  const explicitScore = numberAt(
-    portfolio,
-    [
-      "health_score",
-      "healthScore",
+  const priorities = Array.isArray(payload.priorities) ? payload.priorities : [];
+
+  return {
+    symbol: requireString(payload.symbol, "symbol"),
+    headline: requireString(payload.headline, "headline"),
+    summary: requireString(payload.summary, "summary"),
+    confidence: requireNumber(payload.confidence, "confidence"),
+    portfolio_health: requireNumber(
+      payload.portfolio_health,
       "portfolio_health",
-      "portfolioHealth",
-      "health",
-    ],
-    Number.NaN,
-  );
-
-  if (Number.isFinite(explicitScore)) {
-    return clampScore(explicitScore);
-  }
-
-  const rootScore = numberAt(
-    root,
-    ["portfolio_health", "portfolioHealth"],
-    Number.NaN,
-  );
-
-  if (Number.isFinite(rootScore)) {
-    return clampScore(rootScore);
-  }
-
-  return 100;
+    ),
+    priorities: priorities.filter(isRecord).map((priority, index) => ({
+      title: requireString(priority.title, `priorities[${index}].title`),
+      description: requireString(
+        priority.description,
+        `priorities[${index}].description`,
+      ),
+      urgency: requireNumber(priority.urgency, `priorities[${index}].urgency`),
+    })),
+  };
 }
 
-function inferHealthLabel(score: number): string {
+function healthLabel(score: number): string {
   if (score >= 85) return "Healthy";
   if (score >= 70) return "Stable";
   if (score >= 50) return "Needs attention";
   return "At risk";
 }
 
-function inferRiskLevel(
-  portfolio: UnknownRecord,
-  invested: number,
-  equity: number,
-): string {
-  const explicitRisk = stringAt(
-    portfolio,
-    ["risk_level", "riskLevel", "risk"],
-    "",
-  );
-
-  if (explicitRisk) {
-    return explicitRisk;
-  }
-
+function riskLevel(invested: number, equity: number): string {
   if (equity <= 0 || invested <= 0) {
     return "Low";
   }
@@ -166,164 +158,102 @@ function inferRiskLevel(
   return "Elevated";
 }
 
-function inferDiversification(
-  portfolio: UnknownRecord,
-  openPositions: number,
-): string {
-  const explicitDiversification = stringAt(
-    portfolio,
-    ["diversification", "diversification_label", "diversificationLabel"],
-    "",
-  );
-
-  if (explicitDiversification) {
-    return explicitDiversification;
-  }
-
+function diversification(openPositions: number): string {
   if (openPositions === 0) return "No active exposure";
   if (openPositions < 4) return "Concentrated";
   if (openPositions < 8) return "Moderate";
   return "Good";
 }
 
+/** Presentation banding only — the backend owns the underlying score. */
+function urgencyBand(urgency: number): PriorityUrgency {
+  if (urgency >= 0.6) return "now";
+  if (urgency >= 0.3) return "today";
+  return "monitor";
+}
+
 function mapPortfolio(
-  root: UnknownRecord,
-  fallback: PortfolioSnapshotViewModel,
+  brain: BrainPayload,
+  brief: ExecutiveBriefPayload,
 ): PortfolioSnapshotViewModel {
-  const portfolio =
-    recordAt(
-      root,
-      "portfolio",
-      "portfolio_snapshot",
-      "portfolioSnapshot",
-      "account",
-      "account_snapshot",
-      "accountSnapshot",
-    ) ?? root;
+  const totalEquity = brain.portfolio.total_value;
+  const invested = brain.portfolio.invested_usd;
+  const openPositions = brain.portfolio.positions;
 
-  const totalEquity = numberAt(
-    portfolio,
-    [
-      "total_equity",
-      "totalEquity",
-      "equity",
-      "portfolio_value",
-      "portfolioValue",
-      "account_value",
-      "accountValue",
-    ],
-    fallback.totalEquity,
+  const healthScore = Math.max(
+    0,
+    Math.min(100, Math.round(brief.portfolio_health * 100)),
   );
-
-  const availableCash = numberAt(
-    portfolio,
-    [
-      "available_cash",
-      "availableCash",
-      "cash",
-      "cash_available",
-      "cashAvailable",
-      "available_balance",
-      "availableBalance",
-    ],
-    fallback.availableCash,
-  );
-
-  const invested = numberAt(
-    portfolio,
-    [
-      "invested",
-      "invested_amount",
-      "investedAmount",
-      "total_invested",
-      "totalInvested",
-      "exposure",
-    ],
-    Math.max(0, totalEquity - availableCash),
-  );
-
-  const unrealizedProfitLoss = numberAt(
-    portfolio,
-    [
-      "unrealized_pnl",
-      "unrealizedPnl",
-      "unrealized_profit_loss",
-      "unrealizedProfitLoss",
-      "profit_loss",
-      "profitLoss",
-      "pnl",
-    ],
-    fallback.unrealizedProfitLoss,
-  );
-
-  const openPositions = arrayLengthAt(
-    portfolio,
-    [
-      "positions",
-      "open_positions",
-      "openPositions",
-      "position_count",
-      "positionCount",
-    ],
-    fallback.openPositions,
-  );
-
-  const pendingOrders = arrayLengthAt(
-    portfolio,
-    [
-      "pending_orders",
-      "pendingOrders",
-      "orders",
-      "order_count",
-      "orderCount",
-    ],
-    fallback.pendingOrders,
-  );
-
-  const healthScore = inferHealthScore(root, portfolio);
 
   return {
     totalEquity,
-    availableCash,
+    availableCash: brain.portfolio.available_cash_usd,
     invested,
-    unrealizedProfitLoss,
+    // The backend does not publish these yet; showing a demo number here
+    // would misrepresent the account.
+    unrealizedProfitLoss: null,
     openPositions,
-    pendingOrders,
+    pendingOrders: null,
     healthScore,
-    healthLabel: inferHealthLabel(healthScore),
-    riskLevel: inferRiskLevel(portfolio, invested, totalEquity),
-    diversification: inferDiversification(portfolio, openPositions),
+    healthLabel: healthLabel(healthScore),
+    riskLevel: riskLevel(invested, totalEquity),
+    diversification: diversification(openPositions),
   };
 }
 
+function mapPriorities(
+  brief: ExecutiveBriefPayload,
+): ExecutivePriorityViewModel[] {
+  return brief.priorities.map((priority, index) => ({
+    id: `${brief.symbol}-priority-${index}`,
+    urgency: urgencyBand(priority.urgency),
+    title: priority.title,
+    rationale: priority.description,
+  }));
+}
+
+function mapBrief(brief: ExecutiveBriefPayload): ExecutiveBriefViewModel {
+  return {
+    symbol: brief.symbol,
+    headline: brief.headline,
+    summary: brief.summary,
+    confidence: brief.confidence,
+  };
+}
+
+async function fetchJson(endpoint: string): Promise<unknown> {
+  const response = await fetch(endpoint, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const responseBody = await response.text();
+
+    throw new Error(
+      `Backend returned ${response.status} for ${endpoint}: ${responseBody.slice(0, 300)}`,
+    );
+  }
+
+  return response.json();
+}
+
 export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult> {
-  const endpoint = `${BACKEND_URL}/brain/`;
+  const brainEndpoint = `${BACKEND_URL}/brain/`;
 
   try {
-    const response = await fetch(endpoint, {
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    const brain = parseBrain(await fetchJson(brainEndpoint));
 
-    if (!response.ok) {
-      const responseBody = await response.text();
+    const briefEndpoint = `${BACKEND_URL}/executive/${encodeURIComponent(
+      brain.recommendation.symbol,
+    )}`;
 
-      throw new Error(
-        `Backend returned ${response.status}: ${responseBody.slice(0, 300)}`,
-      );
-    }
-
-    const payload: unknown = await response.json();
-
-    if (!isRecord(payload)) {
-      throw new Error("The /brain response is not a JSON object.");
-    }
+    const brief = parseExecutiveBrief(await fetchJson(briefEndpoint));
 
     return {
       workspace: {
-        ...executiveWorkspaceMock,
         lastReviewedAt: new Intl.DateTimeFormat("en-US", {
           weekday: "long",
           month: "long",
@@ -331,16 +261,22 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
           hour: "2-digit",
           minute: "2-digit",
         }).format(new Date()),
-        portfolio: mapPortfolio(payload, executiveWorkspaceMock.portfolio),
+        situation: "stable",
+        portfolio: mapPortfolio(brain, brief),
+        brief: mapBrief(brief),
+        // No backend source for the change feed yet, so the dashboard shows
+        // nothing rather than demo entries.
+        changes: [],
+        priorities: mapPriorities(brief),
       },
       source: "backend",
-      backendUrl: endpoint,
+      backendUrl: brainEndpoint,
     };
   } catch (error) {
     return {
       workspace: executiveWorkspaceMock,
       source: "fallback",
-      backendUrl: endpoint,
+      backendUrl: brainEndpoint,
       error: error instanceof Error ? error.message : "Unknown backend error",
     };
   }

@@ -138,11 +138,19 @@ function PortfolioSnapshot({
       ? Math.round((portfolio.availableCash / portfolio.totalEquity) * 100)
       : 0;
 
-  const unrealizedProfitLoss = currencyFormatter.format(
-    portfolio.unrealizedProfitLoss,
-  );
+  const investedDetail =
+    portfolio.unrealizedProfitLoss === null
+      ? "Unrealized P&L not reported"
+      : `${
+          portfolio.unrealizedProfitLoss > 0 ? "+" : ""
+        }${currencyFormatter.format(
+          portfolio.unrealizedProfitLoss,
+        )} unrealized P&L`;
 
-  const profitLossPrefix = portfolio.unrealizedProfitLoss > 0 ? "+" : "";
+  const positionsDetail =
+    portfolio.pendingOrders === null
+      ? "Open positions"
+      : `${portfolio.pendingOrders} pending orders`;
 
   return (
     <section aria-labelledby="portfolio-snapshot-heading">
@@ -194,7 +202,7 @@ function PortfolioSnapshot({
             <SnapshotMetric
               label="Invested"
               value={currencyFormatter.format(portfolio.invested)}
-              detail={`${profitLossPrefix}${unrealizedProfitLoss} unrealized P&L`}
+              detail={investedDetail}
             />
           </div>
 
@@ -202,7 +210,7 @@ function PortfolioSnapshot({
             <SnapshotMetric
               label="Positions"
               value={portfolio.openPositions.toString()}
-              detail={`${portfolio.pendingOrders} pending orders`}
+              detail={positionsDetail}
             />
           </div>
 
@@ -292,6 +300,13 @@ export function ExecutiveWorkspaceBriefing({
         </div>
 
         <div className="mt-7 divide-y divide-slate-200 border-y border-slate-200">
+          {workspace.changes.length === 0 ? (
+            <p className="py-8 text-sm leading-6 text-slate-500">
+              No change feed is connected yet. This section stays empty until
+              the backend publishes what moved since your last visit.
+            </p>
+          ) : null}
+
           {workspace.changes.map((change) => {
             const presentation = changePresentation[change.severity];
             const Icon = presentation.icon;
@@ -366,6 +381,24 @@ export function ExecutiveWorkspaceBriefing({
             control of every investment decision.
           </p>
         </div>
+
+        {workspace.brief ? (
+          <article className="mt-7 rounded-[24px] border border-slate-200 bg-slate-50 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+                {workspace.brief.headline}
+              </h3>
+
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                {Math.round(workspace.brief.confidence * 100)}% conviction
+              </span>
+            </div>
+
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
+              {workspace.brief.summary}
+            </p>
+          </article>
+        ) : null}
 
         <div className="mt-7 grid gap-4 xl:grid-cols-3">
           {workspace.priorities.map((priority, index) => {

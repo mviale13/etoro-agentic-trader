@@ -4,9 +4,11 @@ export interface PortfolioSnapshotViewModel {
   totalEquity: number;
   availableCash: number;
   invested: number;
-  unrealizedProfitLoss: number;
+  /** Null when the backend does not publish a P&L figure. */
+  unrealizedProfitLoss: number | null;
   openPositions: number;
-  pendingOrders: number;
+  /** Null when the backend does not publish an order count. */
+  pendingOrders: number | null;
   healthScore: number;
   healthLabel: string;
   riskLevel: string;
@@ -33,11 +35,21 @@ export interface ExecutivePriorityViewModel {
   href?: string;
 }
 
+/** The Artificial CIO's explanation of its current decision. */
+export interface ExecutiveBriefViewModel {
+  symbol: string;
+  headline: string;
+  summary: string;
+  confidence: number;
+}
+
 export interface ExecutiveWorkspaceViewModel {
   lastReviewedAt: string;
   situation: "stable" | "attention" | "important";
 
   portfolio: PortfolioSnapshotViewModel;
+
+  brief?: ExecutiveBriefViewModel;
 
   changes: readonly ExecutiveChangeViewModel[];
   priorities: readonly ExecutivePriorityViewModel[];

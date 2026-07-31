@@ -8,6 +8,7 @@ from app.api.routes.committee_weights import (
 )
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.doctor import router as doctor_router
+from app.api.routes.executive import router as executive_router
 from app.api.routes.executive_dashboard import (
     router as executive_dashboard_router,
 )
@@ -61,6 +62,7 @@ app.include_router(observation_router)
 app.include_router(committee_router)
 app.include_router(dashboard_router)
 app.include_router(executive_dashboard_router)
+app.include_router(executive_router)
 app.include_router(recommendation_router)
 app.include_router(committee_weights_router)
 app.include_router(home_router)
