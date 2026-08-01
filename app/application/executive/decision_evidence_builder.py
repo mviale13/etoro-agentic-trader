@@ -85,9 +85,10 @@ class DecisionEvidenceBuilder:
 
         valuation = self._valuation_score(company, market.momentum_score)
 
-        portfolio_fit = int(
-            (portfolio.health_score + (1.0 - risk.overall_risk_score)) / 2.0 * 100
-        )
+        # The OpportunityAnalyst already weighs diversification, policy
+        # alignment and risk into a portfolio-fit score, so the CIO uses that
+        # judgement rather than recomputing a cruder one of its own.
+        portfolio_fit = int(reasoning.opportunity.portfolio_fit_score * 100)
 
         strengths = tuple(
             dict.fromkeys(
@@ -105,11 +106,23 @@ class DecisionEvidenceBuilder:
                     *portfolio.weaknesses,
                     *market.risks,
                     *risk.risk_factors,
+                    # Behavioural biases are risks to the decision, not to the
+                    # security: acting against your own policy is a way to
+                    # lose money regardless of what the asset does.
+                    *reasoning.behavior.observed_biases,
+                    *reasoning.opportunity.constraints,
                 )
             )
         )
 
-        catalysts = tuple(market.opportunities)
+        catalysts = tuple(
+            dict.fromkeys(
+                (
+                    *market.opportunities,
+                    *reasoning.opportunity.opportunities,
+                )
+            )
+        )
 
         return DecisionEvidence(
             symbol=symbol,

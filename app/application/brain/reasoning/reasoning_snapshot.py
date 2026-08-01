@@ -4,8 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.application.brain.reasoning.models.behavior_assessment import (
+    BehaviorAssessment,
+)
 from app.application.brain.reasoning.models.market_assessment import (
     MarketAssessment,
+)
+from app.application.brain.reasoning.models.opportunity_assessment import (
+    OpportunityAssessment,
 )
 from app.application.brain.reasoning.models.portfolio_assessment import (
     PortfolioAssessment,
@@ -29,3 +35,7 @@ class ReasoningSnapshot:
     market: MarketAssessment
 
     risk: RiskAssessment
+
+    behavior: BehaviorAssessment
+
+    opportunity: OpportunityAssessment
