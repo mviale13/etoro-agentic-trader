@@ -19,9 +19,7 @@ from app.application.thesis.investment_thesis_builder import (
     InvestmentThesisBuilder,
 )
 from app.brain import Brain
-from app.reasoning.executive_decision_engine import (
-    ExecutiveDecisionEngine,
-)
+from app.cio.artificial_cio import ExecutiveDecisionEngine
 
 from .executive_workspace import ExecutiveWorkspace
 
