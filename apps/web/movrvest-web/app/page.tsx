@@ -2,6 +2,7 @@ import { ExecutiveWorkspaceBriefing } from "@/components/executive/ExecutiveWork
 import { TopInvestmentCases } from "@/components/executive/TopInvestmentCases";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { getExecutiveWorkspace } from "@/lib/api/executive-workspace";
+import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,20 @@ export default async function HomePage() {
 
   return (
     <DashboardLayout>
+      <PageIntegrity
+        status={result.source === "backend" ? "partial" : "placeholder"}
+        endpoint={
+          result.source === "backend"
+            ? "/brain/ + /executive/portfolio"
+            : undefined
+        }
+        description={
+          result.source === "backend"
+            ? "Portfolio and executive decisions are live. The change feed has no backend source yet."
+            : `Backend unreachable, showing demo data. ${result.error ?? ""}`
+        }
+      />
+
       <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
         <ExecutiveWorkspaceBriefing
           workspace={result.workspace}

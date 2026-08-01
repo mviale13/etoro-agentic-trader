@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
+import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 
 type WorkspacePlaceholderProps = {
@@ -25,6 +26,10 @@ export function WorkspacePlaceholder({
 }: WorkspacePlaceholderProps) {
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
+      <PageIntegrity
+        status="placeholder"
+        description={`${title} is still a workspace placeholder.`}
+      />
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-950"

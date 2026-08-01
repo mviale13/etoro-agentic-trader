@@ -12,6 +12,7 @@ import {
 
 import { getArtificialCio } from "@/lib/api/artificial-cio";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,16 @@ export default async function InvestorPage() {
 
   return (
     <main className="min-h-screen bg-[#f6f7f9] px-5 py-8 text-[#15171a] sm:px-8 lg:px-12">
+      <PageIntegrity
+        status={result.source === "backend" ? "partial" : "placeholder"}
+        endpoint={result.source === "backend" ? "/brain/" : undefined}
+        description={
+          result.source === "backend"
+            ? "Observation and investor DNA are live. Recent learning awaits the Learning layer."
+            : "Backend unreachable, showing demo data."
+        }
+      />
+
       <div className="mx-auto w-full max-w-[1500px] space-y-8">
         <header className="flex flex-col gap-6 rounded-[28px] border border-black/5 bg-white p-7 shadow-[0_20px_60px_rgba(0,0,0,0.05)] lg:flex-row lg:items-end lg:justify-between lg:p-10">
           <div className="max-w-4xl">

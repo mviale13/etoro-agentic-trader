@@ -10,6 +10,7 @@ import {
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
 const BUY_THRESHOLD = 80;
 
@@ -97,6 +98,11 @@ export default function ResearchPage() {
   return (
     <DashboardLayout>
       <main className="mx-auto w-[90%] max-w-[1700px] py-10">
+        <PageIntegrity
+          status="placeholder"
+          description="Research candidates are hardcoded in the page; no scanner feeds them."
+        />
+
         <section className="grid gap-8 border-b border-neutral-200 pb-12 xl:grid-cols-[1.2fr_0.8fr]">
           <div>
             <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-800">

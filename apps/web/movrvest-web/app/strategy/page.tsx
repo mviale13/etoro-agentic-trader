@@ -6,6 +6,7 @@ import {
   getStrategyReadiness,
 } from "@/lib/strategy-api";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
 export default async function StrategyPage() {
   const strategy = await getStrategy();
@@ -14,6 +15,12 @@ export default async function StrategyPage() {
 
   return (
     <main className="mx-auto max-w-4xl p-8">
+      <PageIntegrity
+        status="live"
+        endpoint="/strategy"
+        description="The investment policy is read from and written to the backend."
+      />
+
       <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">

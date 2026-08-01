@@ -20,6 +20,7 @@ import {
   type PortfolioOverview,
 } from "@/lib/api/portfolio";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
 export const dynamic = "force-dynamic";
 
@@ -267,6 +268,16 @@ export default async function PortfolioPage() {
 
   return (
     <DashboardLayout>
+      <PageIntegrity
+        status={result.source === "backend" ? "live" : "placeholder"}
+        endpoint={result.source === "backend" ? "/brain/" : undefined}
+        description={
+          result.source === "backend"
+            ? "Real broker figures from the portfolio snapshot."
+            : "Backend unreachable, showing demo data."
+        }
+      />
+
       <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
         <header className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
