@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
-from app.services.brain_service import BrainService
+from app.application.brain.brain_snapshot_service import (
+    BrainSnapshotService,
+)
 
 router = APIRouter(
     prefix="/brain",
@@ -10,7 +12,7 @@ router = APIRouter(
 
 @router.get("/")
 async def get_brain() -> dict[str, object]:
-    brain = await BrainService().build()
+    brain = await BrainSnapshotService().build()
 
     executive_brief: dict[str, object] | None = None
 

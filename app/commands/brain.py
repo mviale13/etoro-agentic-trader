@@ -5,7 +5,9 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from app.services.brain_service import BrainService
+from app.application.brain.brain_snapshot_service import (
+    BrainSnapshotService,
+)
 
 
 def _serialize(value: Any) -> Any:
@@ -30,9 +32,9 @@ def _serialize(value: Any) -> Any:
 
 
 async def run() -> int:
-    """Run and display the complete MOVRvest Brain pipeline."""
+    """Show what the Brain currently knows about the investor."""
 
-    brain = await BrainService().build()
+    brain = await BrainSnapshotService().build()
 
     print(
         json.dumps(

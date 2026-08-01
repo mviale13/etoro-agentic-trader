@@ -11,7 +11,7 @@ from app.domain.brain_context import BrainContext
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 
-class RiskReasoner:
+class RiskAnalyst:
     """Evaluate overall portfolio risk."""
 
     def assess(
