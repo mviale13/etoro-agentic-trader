@@ -129,9 +129,11 @@ function DataSourceBadge({
 function PortfolioSnapshot({
   portfolio,
   reviewedAt,
+  dataSource,
 }: {
   portfolio: PortfolioSnapshotViewModel;
   reviewedAt: string;
+  dataSource: "backend" | "fallback";
 }) {
   const cashRatio =
     portfolio.totalEquity > 0
@@ -167,7 +169,14 @@ function PortfolioSnapshot({
             >
               Portfolio snapshot
             </h1>
-            <StatusPill status="live" label="Backend" />
+
+            {/* Real account figures, unless the backend was unreachable and
+                the demo workspace is standing in. */}
+            {dataSource === "backend" ? (
+              <StatusPill status="live" label="Live account" />
+            ) : (
+              <StatusPill status="placeholder" label="Demo data" />
+            )}
           </div>
         </div>
 
@@ -270,6 +279,7 @@ export function ExecutiveWorkspaceBriefing({
         <PortfolioSnapshot
           portfolio={workspace.portfolio}
           reviewedAt={workspace.lastReviewedAt}
+          dataSource={dataSource}
         />
       </div>
 
@@ -288,7 +298,9 @@ export function ExecutiveWorkspaceBriefing({
               >
                 What changed
               </h2>
-              <StatusPill status="live" />
+
+              {/* No backend publishes a change feed yet. */}
+              <StatusPill status="placeholder" label="Not connected" />
 
             </div>
           </div>
@@ -375,7 +387,15 @@ export function ExecutiveWorkspaceBriefing({
                 ? "No executive actions"
                 : `${workspace.priorities.length} executive actions`}
             </h2>
-            <StatusPill status="partial" />
+
+            {/* Decisions come from the Artificial CIO. Behavioural
+                consistency and conviction history are still missing, so this
+                is genuine but incomplete reasoning. */}
+            {dataSource === "backend" ? (
+              <StatusPill status="partial" label="Artificial CIO" />
+            ) : (
+              <StatusPill status="placeholder" label="Demo data" />
+            )}
           </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">

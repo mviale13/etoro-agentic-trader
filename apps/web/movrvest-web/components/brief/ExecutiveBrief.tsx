@@ -1,5 +1,5 @@
 import type { ExecutiveBriefViewModel } from "@/types/executive-brief";
-import { StatusDot } from "@/components/ui/StatusDot";
+import { StatusDot, type Status } from "@/components/ui/StatusDot";
 
 import { CommitteeConsensus } from "./CommitteeConsensus";
 import { EvidenceSection } from "./EvidenceSection";
@@ -10,6 +10,8 @@ import { WhyThisBrief } from "./WhyThisBrief";
 
 type ExecutiveBriefProps = {
   brief: ExecutiveBriefViewModel;
+  /** Provenance of `brief`. Callers passing example data must say so. */
+  status?: Status;
 };
 
 function MicrosoftMark() {
@@ -26,7 +28,10 @@ function MicrosoftMark() {
   );
 }
 
-export function ExecutiveBrief({ brief }: ExecutiveBriefProps) {
+export function ExecutiveBrief({
+  brief,
+  status = "placeholder",
+}: ExecutiveBriefProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <main className="mx-auto w-[90vw] max-w-none py-8">
@@ -42,7 +47,7 @@ export function ExecutiveBrief({ brief }: ExecutiveBriefProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <StatusDot status="partial" />
+            <StatusDot status={status} />
 
             <p className="text-xs text-slate-500">
               {brief.generatedAt}

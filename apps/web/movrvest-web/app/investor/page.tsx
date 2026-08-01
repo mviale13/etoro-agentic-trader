@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { getArtificialCio } from "@/lib/api/artificial-cio";
+import { StatusPill } from "@/components/ui/StatusPill";
 
 export const dynamic = "force-dynamic";
 
@@ -28,9 +29,19 @@ export default async function InvestorPage() {
               Investor relationship
             </div>
 
-            <h1 className="text-4xl font-semibold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
-              My Artificial CIO
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-semibold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+                My Artificial CIO
+              </h1>
+
+              {/* Observation and investor DNA are real; the "recent learning"
+                  section falls back, because no Learning layer exists yet. */}
+              {result.source === "backend" ? (
+                <StatusPill status="partial" label="Learning pending" />
+              ) : (
+                <StatusPill status="placeholder" label="Demo data" />
+              )}
+            </div>
 
             <p className="mt-5 max-w-3xl text-base leading-7 text-black/55 sm:text-lg">
               Your investment partner learns how you think, understands your

@@ -13,30 +13,48 @@ type PageIntegrity = {
   description: string;
 };
 
+// This map is maintained by hand and will drift unless it is updated
+// alongside the page it describes. Where a page renders its own StatusPill
+// from a real data source, that pill is the more reliable signal — keep the
+// two in agreement.
 const PAGE_STATUS: Record<string, PageIntegrity> = {
   "/": {
     status: "partial",
-    endpoint: "/brain/",
-    description: "Portfolio is live. Other executive sections may still use placeholders.",
+    endpoint: "/brain/ + /executive/portfolio",
+    description:
+      "Portfolio and executive decisions are live. The change feed has no backend source yet.",
   },
   "/brain": {
-    status: "live",
-    endpoint: "/brain/",
-    description: "Connected to the MOVRvest Brain.",
+    status: "placeholder",
+    description: "This route is still a workspace placeholder.",
   },
   "/portfolio": {
-    status: "placeholder",
-    description: "The dedicated portfolio page is not connected yet.",
+    status: "live",
+    endpoint: "/brain/",
+    description: "Real broker figures from the portfolio snapshot.",
   },
   "/investor": {
     status: "partial",
     endpoint: "/brain/",
-    description: "Investor DNA is live. Policy and learning sections may be placeholders.",
+    description:
+      "Observation and investor DNA are live. Recent learning awaits the Learning layer.",
   },
   "/strategy": {
-    status: "partial",
-    endpoint: "/brain/",
-    description: "The current recommendation is live. Other strategy fields may be placeholders.",
+    status: "live",
+    endpoint: "/strategy",
+    description: "The investment policy is read from and written to the backend.",
+  },
+  "/briefs": {
+    status: "placeholder",
+    description: "This brief renders a fixed example, not your holdings.",
+  },
+  "/dossiers": {
+    status: "placeholder",
+    description: "This route is still a workspace placeholder.",
+  },
+  "/events": {
+    status: "placeholder",
+    description: "This route is still a workspace placeholder.",
   },
   "/markets": {
     status: "placeholder",
@@ -44,7 +62,7 @@ const PAGE_STATUS: Record<string, PageIntegrity> = {
   },
   "/research": {
     status: "placeholder",
-    description: "Research sections are currently static.",
+    description: "Research candidates are hardcoded; no scanner feeds them.",
   },
   "/settings": {
     status: "placeholder",

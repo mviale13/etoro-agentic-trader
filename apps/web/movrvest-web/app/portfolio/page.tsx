@@ -19,6 +19,7 @@ import {
   getPortfolioOverview,
   type PortfolioOverview,
 } from "@/lib/api/portfolio";
+import { StatusPill } from "@/components/ui/StatusPill";
 
 export const dynamic = "force-dynamic";
 
@@ -273,9 +274,18 @@ export default async function PortfolioPage() {
               Portfolio
             </p>
 
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              Portfolio health
-            </h1>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+                Portfolio health
+              </h1>
+
+              {/* Real broker figures when the Brain is reachable. */}
+              {result.source === "backend" ? (
+                <StatusPill status="live" label="Live account" />
+              ) : (
+                <StatusPill status="placeholder" label="Demo data" />
+              )}
+            </div>
 
             <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
               Understand how your capital is currently allocated before making

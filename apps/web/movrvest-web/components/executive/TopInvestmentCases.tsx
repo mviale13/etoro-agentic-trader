@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { StatusPill } from "@/components/ui/StatusPill";
 import type { RankedInvestmentCaseViewModel } from "@/lib/view-models/investment-case";
 
 interface TopInvestmentCasesProps {
@@ -141,14 +142,25 @@ export function TopInvestmentCases({ cases }: TopInvestmentCasesProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
             Executive Committee
           </p>
-          <h2
-            id="top-investment-cases-heading"
-            className="mt-3 max-w-3xl text-4xl font-semibold tracking-[-0.045em] text-zinc-950 sm:text-5xl dark:text-white"
-          >
-            {cases.length === 0
-              ? "No holdings to review."
-              : `Your ${cases.length} holdings, reviewed.`}
-          </h2>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <h2
+              id="top-investment-cases-heading"
+              className="max-w-3xl text-4xl font-semibold tracking-[-0.045em] text-zinc-950 sm:text-5xl dark:text-white"
+            >
+              {cases.length === 0
+                ? "No holdings to review."
+                : `Your ${cases.length} holdings, reviewed.`}
+            </h2>
+
+            {/* Real decisions on real holdings, but each case is missing
+                price targets and conviction history. */}
+            {cases.length === 0 ? (
+              <StatusPill status="placeholder" label="No data" />
+            ) : (
+              <StatusPill status="partial" label="Artificial CIO" />
+            )}
+          </div>
         </div>
 
         <p className="max-w-md text-sm leading-6 text-zinc-600 dark:text-zinc-400">

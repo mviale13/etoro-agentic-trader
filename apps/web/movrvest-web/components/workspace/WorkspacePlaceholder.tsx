@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
+import { StatusPill } from "@/components/ui/StatusPill";
+
 type WorkspacePlaceholderProps = {
   eyebrow: string;
   title: string;
@@ -38,9 +40,14 @@ export function WorkspacePlaceholder({
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           {eyebrow}
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
-          {title}
-        </h1>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl">
+            {title}
+          </h1>
+
+          {/* Every workspace placeholder is, by definition, not real data. */}
+          <StatusPill status="placeholder" />
+        </div>
         <p className="mt-5 text-xl font-medium leading-8 text-slate-800">
           {question}
         </p>

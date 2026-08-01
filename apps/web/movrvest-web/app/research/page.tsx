@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { StatusPill } from "@/components/ui/StatusPill";
 
 const BUY_THRESHOLD = 80;
 
@@ -103,9 +104,14 @@ export default function ResearchPage() {
               Opportunity pipeline
             </div>
 
-            <h1 className="max-w-5xl font-serif text-5xl leading-[0.98] tracking-[-0.05em] text-neutral-950 md:text-7xl">
-              {candidates.length} candidates deserve deeper research.
-            </h1>
+            <div className="flex flex-wrap items-center gap-4">
+              <h1 className="max-w-5xl font-serif text-5xl leading-[0.98] tracking-[-0.05em] text-neutral-950 md:text-7xl">
+                {candidates.length} candidates deserve deeper research.
+              </h1>
+
+              {/* Candidates are hardcoded in this page; no scanner feeds it. */}
+              <StatusPill status="placeholder" label="Illustrative" />
+            </div>
 
             <p className="mt-7 max-w-3xl text-base leading-7 text-neutral-600 md:text-lg">
               Every company above the research threshold is shown. MOVRvest

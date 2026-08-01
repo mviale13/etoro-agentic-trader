@@ -5,6 +5,7 @@ import {
   getStrategy,
   getStrategyReadiness,
 } from "@/lib/strategy-api";
+import { StatusPill } from "@/components/ui/StatusPill";
 
 export default async function StrategyPage() {
   const strategy = await getStrategy();
@@ -15,9 +16,14 @@ export default async function StrategyPage() {
     <main className="mx-auto max-w-4xl p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">
-            Investment Policy
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold">
+              Investment Policy
+            </h1>
+
+            {/* The policy is read from and written to the backend. */}
+            <StatusPill status="live" label="Live policy" />
+          </div>
 
           <p className="mt-2 text-slate-400">
             Define how MOVRvest should evaluate your
