@@ -1,0 +1,143 @@
+# MOVRvest Project State
+
+---
+
+# Mission
+
+MOVRvest is an Artificial Chief Investment Officer.
+
+Its mission is to help investors make better long-term investment decisions
+through transparent, explainable, evidence-based and continuously improving
+intelligence.
+
+MOVRvest recommends. The investor decides.
+
+---
+
+# Current Status
+
+## Product
+
+Status: 🚧 Active Development
+
+The canonical pipeline runs end to end. A decision travels from eToro and
+market data, through perception, reasoning, committees and the Artificial
+CIO, to an executive brief on the CLI and the dashboard.
+
+## Architecture
+
+Status: 🟢 Cognitive Architecture v5.0, implemented
+
+v5.0 is no longer only a design. See
+[`architecture/REPOSITORY_INVENTORY.md`](architecture/REPOSITORY_INVENTORY.md)
+for the package-by-package mapping, verified against the import graph.
+
+---
+
+# Repository Health
+
+| Area | Status |
+|------|--------|
+| Ruff | 🟢 Clean |
+| Mypy | 🟢 Clean |
+| Pytest | 🟢 318 passing |
+| Backend | 🟢 Stable |
+| Frontend | 🟢 Builds clean |
+| Duplicate implementations | 🟢 Removed |
+
+Verify the **commit**, not the working tree. Pre-commit stashes unstaged
+changes but leaves untracked files in place, so hooks can pass on a tree the
+commit does not contain:
+
+```bash
+git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
+  && python -m mypy app && python -m pytest -q
+```
+
+---
+
+# What Works Today
+
+- `movrvest evaluate SYMBOL` — the Artificial CIO's decision and reasoning
+- `movrvest brain` — what the Brain currently knows
+- `GET /executive/portfolio` — every holding, ranked by conviction
+- `GET /executive/{symbol}` — one investment case
+- `GET /brain/` — portfolio facts, investor observation and DNA
+- The dashboard renders real account data and a real brief
+
+## Recently completed
+
+- Communication wired in; the hardcoded "No urgent decision today" is gone
+- The dashboard's silent mock fallback is fixed, and its last mock removed
+- Holdings are perceived per security, so the CIO judges each on its own
+  evidence rather than repeating one portfolio-level verdict
+- `policy_alignment_score` is measured against the Investment Policy rather
+  than hardcoded to 0.80
+- The legacy `BrainPipeline` chain and 45 superseded files are deleted
+
+---
+
+# Known Gaps
+
+Named rather than hidden. None of these are estimated away in the product.
+
+## Evidence quality
+
+- Yahoo fundamentals are rate-limited and uncached; signals can flip between
+  runs, and a flipped signal can flip a decision
+- Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
+- A holding absent from every watchlist cannot be named or analysed
+- Holdings are not classified by asset type, which blocks allocation-drift
+  scoring and the crypto policy limit
+
+## Reasoning
+
+- `consistency_score` awaits the Learning layer
+- `app/analysts` holds real per-security fundamental analysis the canonical
+  reasoning layer does not yet own
+
+## Delivery
+
+- API routes construct services directly, so they cannot be tested without
+  network access
+- The dashboard change feed has no backend source
+- `ExecutivePipeline` recomputes symbol-independent reasoning per holding
+- `ClaimEngine.test.ts` has pre-existing TypeScript errors (missing `vitest`)
+
+## Structure
+
+- `app/services` still mixes load-bearing and incidental modules
+- Analysts accept `Brain | BrainContext`; narrowing them retires the legacy
+  `BrainContext`
+
+---
+
+# Next Priorities
+
+## Trustworthy evidence
+
+Caching and a more reliable fundamentals source, crypto symbol resolution,
+and asset-class classification. Everything downstream inherits the quality of
+this layer.
+
+## Learning
+
+Recommendation history, outcome analysis, and the behavioural consistency
+that depends on them.
+
+## Explainability
+
+The change feed — what moved since the investor last looked, and why it
+matters to them.
+
+---
+
+# Long-Term Vision
+
+MOVRvest is an Artificial Chief Investment Officer.
+
+Its purpose is not to predict markets. It is to help investors consistently
+make better investment decisions by transforming verified evidence into
+transparent, explainable and trustworthy executive recommendations.
+
+Trust is the product. Everything else exists to support it.

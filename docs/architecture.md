@@ -1,6 +1,25 @@
-# MOVRvest Architecture v4.0
+# MOVRvest Architecture
 
 > "An Artificial Chief Investment Officer (ACIO)"
+
+**The current architecture is Cognitive Architecture v5.0**, at the end of
+this document. Read that section for how the platform works today.
+
+Everything between here and there is **v4.0, retained for history**. It
+describes a Facts → Scorecards → Committees → Executive Board pipeline that
+was never built in that shape: the platform reasons through analysts and an
+Artificial CIO instead. Where v4.0 and v5.0 disagree, v5.0 is correct.
+
+For which packages implement v5.0, see
+[`architecture/REPOSITORY_INVENTORY.md`](architecture/REPOSITORY_INVENTORY.md).
+
+---
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     HISTORICAL — v4.0. Superseded by Cognitive Architecture v5.0 below.
+     ───────────────────────────────────────────────────────────────── -->
+
+# Architecture v4.0 (historical)
 
 ---
 
@@ -890,3 +909,200 @@ Its mission is to help investors consistently make better investment decisions b
 Trust is the product.
 
 Everything else exists to support it.
+---
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     END OF HISTORICAL v4.0. The current architecture follows.
+     ───────────────────────────────────────────────────────────────── -->
+
+# Cognitive Architecture v5.0
+
+**This is the current architecture.**
+
+MOVRvest models how an investment executive thinks.
+
+Every execution cycle follows the same immutable pipeline:
+
+Reality
+    ↓
+Evidence
+    ↓
+Perception
+    ↓
+Brain (Working Memory)
+    ↓
+Reasoning
+    ↓
+Executive Committee
+    ↓
+Artificial CIO
+    ↓
+Communication
+    ↓
+Executive Brief
+    ↓
+Investor
+
+The investor always remains in control.
+
+
+---
+
+# Brain
+
+The Brain is the canonical working memory of MOVRvest.
+
+It never performs reasoning.
+
+It never makes recommendations.
+
+It never renders UI.
+
+Its only responsibility is to represent the current investment reality.
+
+Contains:
+
+- Portfolio
+- Market
+- Macro
+- Investor
+- Investment Policy
+- Evidence
+- Memory
+- Timeline
+
+Question answered:
+
+"What is true?"
+
+
+---
+
+# Reasoning
+
+Reasoning is distributed.
+
+Each analyst owns one domain.
+
+Examples:
+
+- Portfolio Analyst
+- Market Analyst
+- Risk Analyst
+- Valuation Analyst
+- Behaviour Analyst
+- Macro Analyst
+
+Each produces an immutable Assessment.
+
+Assessments never contain investment decisions.
+
+
+---
+
+# Artificial CIO
+
+The Artificial CIO owns investment judgment.
+
+Input:
+
+- Assessments
+- Committee opinions
+- Investment Policy
+
+Output:
+
+ExecutiveDecision
+
+Decision States
+
+- REJECT
+- INVESTIGATE
+- MONITOR
+- PREPARE
+- RECOMMEND
+
+Only the Artificial CIO may produce investment recommendations.
+
+
+---
+
+# Communication
+
+Communication never reasons.
+
+Communication explains.
+
+It transforms ExecutiveDecision into ExecutiveBrief.
+
+Every Executive Brief answers:
+
+1. What changed?
+2. Why does it matter?
+3. Why does it matter for me?
+4. What should I do?
+5. Why should I trust this?
+
+
+---
+
+# Engineering Constitution
+
+These principles are architectural invariants.
+
+1. Evidence before inference.
+2. The Brain stores facts, never conclusions.
+3. Analysts produce assessments, never decisions.
+4. The Executive Committee debates.
+5. The Artificial CIO owns judgment.
+6. Communication explains decisions.
+7. The Dashboard presents information but never reasons.
+8. One business concept equals one canonical model.
+9. One canonical execution pipeline.
+10. The investor always remains in control.
+11. Absent evidence is reported as absent, never estimated.
+
+
+---
+
+# How v5.0 Is Implemented
+
+The stages above map onto real packages. This section exists so the
+architecture can be checked against the code rather than taken on trust.
+
+| Stage | Package | Produces |
+|---|---|---|
+| Perception | `app/application/brain/perception` | Snapshots and per-security evidence |
+| Brain | `app/brain` via `BrainBuilderService` | `Brain` |
+| Reasoning | `app/application/brain/reasoning` | `ReasoningSnapshot` |
+| Executive Committee | `app/application/committees` | `CommitteeOpinion[]` |
+| Decision evidence | `app/application/executive` | `DecisionEvidence` |
+| Artificial CIO | `app/cio` | `ExecutiveDecision` |
+| Investment thesis | `app/application/thesis` | `InvestmentThesis` |
+| Communication | `app/application/brief` | `ExecutiveBrief` |
+| Presentation | `app/renderers` | View models |
+| Delivery | `app/api`, `app/commands`, `apps/web` | Brief on a surface |
+
+Orchestration lives in `app/application/workspace`: `ExecutivePipeline` for
+one symbol, `PortfolioBriefingService` for every holding ranked by
+conviction, and `BrainSnapshotService` for facts alone.
+
+Package-level detail, including what was removed and what remains
+transitional, is in
+[`architecture/REPOSITORY_INVENTORY.md`](architecture/REPOSITORY_INVENTORY.md).
+
+## Where the platform is honest about not knowing
+
+Principle 11 is load-bearing, so the gaps are named rather than filled:
+
+- A holding no watchlist can name keeps a visible `#id` identity instead of
+  being dropped or guessed
+- Investment cases carry no price targets or upside projections, because the
+  platform cannot evidence them
+- `consistency_score` reports the neutral midpoint until a Learning layer
+  supplies decision history
+- Asset-class policy targets are not scored while holdings are unclassified,
+  since the drift would measure the missing classification
+- Unrealized P&L, pending orders and the change feed are reported as absent
+  when the backend does not publish them
+
