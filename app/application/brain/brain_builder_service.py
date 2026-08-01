@@ -9,6 +9,9 @@ from app.application.brain.perception.policy_perception import (
 from app.application.brain.perception.portfolio_perception import (
     PortfolioPerception,
 )
+from app.application.brain.perception.security_perception import (
+    SecurityPerception,
+)
 from app.brain.brain import Brain
 from app.brain.brain_builder import BrainBuilder
 
@@ -27,6 +30,12 @@ class BrainBuilderService:
     - render communication outputs
     """
 
+    def __init__(
+        self,
+        security_perception: SecurityPerception | None = None,
+    ) -> None:
+        self._security_perception = security_perception or SecurityPerception()
+
     async def build(self) -> Brain:
         portfolio = await PortfolioPerception().execute()
         market = await MarketPerception().execute()
@@ -38,8 +47,11 @@ class BrainBuilderService:
                 "The Artificial CIO cannot reason without one."
             )
 
+        evidence = await self._security_perception.execute(portfolio)
+
         return BrainBuilder(
             portfolio=portfolio,
             market=market,
             investment_policy=investment_policy,
+            evidence=evidence,
         ).build()

@@ -2,7 +2,6 @@ import { ExecutiveWorkspaceBriefing } from "@/components/executive/ExecutiveWork
 import { TopInvestmentCases } from "@/components/executive/TopInvestmentCases";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { getExecutiveWorkspace } from "@/lib/api/executive-workspace";
-import { topInvestmentCasesMock } from "@/lib/mocks/top-investment-cases";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +38,7 @@ export default async function HomePage() {
         ) : null}
 
         <div className="mt-20 border-t border-slate-200 pt-14">
-          <TopInvestmentCases cases={topInvestmentCasesMock} />
+          <TopInvestmentCases cases={result.investmentCases} />
         </div>
       </main>
     </DashboardLayout>

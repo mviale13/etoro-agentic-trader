@@ -6,10 +6,13 @@ from app.application.executive.decision_evidence_builder import (
 from app.application.executive.executive_evaluation import (
     ExecutiveEvaluation,
 )
-from app.application.executive.executive_service import ExecutiveService
+
+# ExecutiveService is deliberately not re-exported here. It depends on the
+# workspace package, which in turn imports this one, so eagerly importing it
+# makes the two packages import-order dependent. Import it from its own
+# module instead.
 
 __all__ = [
     "DecisionEvidenceBuilder",
     "ExecutiveEvaluation",
-    "ExecutiveService",
 ]

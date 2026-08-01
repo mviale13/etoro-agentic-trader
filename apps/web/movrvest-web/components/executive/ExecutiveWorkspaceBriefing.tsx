@@ -371,7 +371,9 @@ export function ExecutiveWorkspaceBriefing({
               id="actions-heading"
               className="text-3xl font-semibold tracking-[-0.035em] text-slate-950"
             >
-              {workspace.priorities.length} executive actions
+              {workspace.priorities.length === 0
+                ? "No executive actions"
+                : `${workspace.priorities.length} executive actions`}
             </h2>
             <StatusPill status="partial" />
           </div>

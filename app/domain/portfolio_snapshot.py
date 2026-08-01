@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.portfolio_position import PortfolioPosition
+
 
 @dataclass(frozen=True, slots=True)
 class Allocation:
@@ -28,6 +30,12 @@ class PortfolioSnapshot:
     invested_eur: float = 0.0
     liquidity_pct: float = 0.0
     last_sync: datetime | None = None
+
+    # The individual holdings behind `positions`. The Brain stores the facts
+    # the broker actually reported, so reasoning can work per symbol.
+    holdings: tuple[PortfolioPosition, ...] = ()
+    pending_orders: int = 0
+    unrealized_pnl_usd: float = 0.0
 
     @property
     def total_value_usd(self) -> float:

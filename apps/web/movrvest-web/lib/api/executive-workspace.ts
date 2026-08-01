@@ -6,12 +6,17 @@ import type {
   PortfolioSnapshotViewModel,
   PriorityUrgency,
 } from "@/lib/view-models/executive-workspace";
+import type {
+  ConvictionLevel,
+  RankedInvestmentCaseViewModel,
+} from "@/lib/view-models/investment-case";
 
 const BACKEND_URL =
   process.env.MOVRVEST_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
 
 export interface ExecutiveWorkspaceResult {
   workspace: ExecutiveWorkspaceViewModel;
+  investmentCases: readonly RankedInvestmentCaseViewModel[];
   source: "backend" | "fallback";
   backendUrl: string;
   error?: string;
@@ -30,26 +35,40 @@ interface BrainPortfolioPayload {
   invested_usd: number;
   liquidity_pct: number;
   positions: number;
+  pending_orders: number;
+  unrealized_pnl_usd: number;
 }
 
 interface BrainPayload {
   portfolio: BrainPortfolioPayload;
-  recommendation: {
-    symbol: string;
-  };
 }
 
-interface ExecutiveBriefPayload {
+interface PriorityPayload {
+  title: string;
+  description: string;
+  urgency: number;
+}
+
+interface RankedCasePayload {
+  rank: number;
   symbol: string;
+  recommendation: string;
+  conviction: number;
+  committee_agreement: number;
+  risk_level: string;
+  summary: string;
+  why_now: readonly string[];
+  risks: readonly string[];
+  expected_holding_period: string;
+}
+
+interface PortfolioBriefingPayload {
   headline: string;
   summary: string;
   confidence: number;
   portfolio_health: number;
-  priorities: readonly {
-    title: string;
-    description: string;
-    urgency: number;
-  }[];
+  priorities: readonly PriorityPayload[];
+  investment_cases: readonly RankedCasePayload[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -83,12 +102,6 @@ function parseBrain(payload: unknown): BrainPayload {
     throw new Error("The /brain response has no portfolio object.");
   }
 
-  const recommendation = payload.recommendation;
-
-  if (!isRecord(recommendation)) {
-    throw new Error("The /brain response has no recommendation object.");
-  }
-
   return {
     portfolio: {
       total_value: requireNumber(portfolio.total_value, "portfolio.total_value"),
@@ -105,22 +118,29 @@ function parseBrain(payload: unknown): BrainPayload {
         "portfolio.liquidity_pct",
       ),
       positions: requireNumber(portfolio.positions, "portfolio.positions"),
-    },
-    recommendation: {
-      symbol: requireString(recommendation.symbol, "recommendation.symbol"),
+      pending_orders: requireNumber(
+        portfolio.pending_orders,
+        "portfolio.pending_orders",
+      ),
+      unrealized_pnl_usd: requireNumber(
+        portfolio.unrealized_pnl_usd,
+        "portfolio.unrealized_pnl_usd",
+      ),
     },
   };
 }
 
-function parseExecutiveBrief(payload: unknown): ExecutiveBriefPayload {
+function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
   if (!isRecord(payload)) {
-    throw new Error("The /executive response is not a JSON object.");
+    throw new Error("The /executive/portfolio response is not a JSON object.");
   }
 
   const priorities = Array.isArray(payload.priorities) ? payload.priorities : [];
+  const cases = Array.isArray(payload.investment_cases)
+    ? payload.investment_cases
+    : [];
 
   return {
-    symbol: requireString(payload.symbol, "symbol"),
     headline: requireString(payload.headline, "headline"),
     summary: requireString(payload.summary, "summary"),
     confidence: requireNumber(payload.confidence, "confidence"),
@@ -136,7 +156,68 @@ function parseExecutiveBrief(payload: unknown): ExecutiveBriefPayload {
       ),
       urgency: requireNumber(priority.urgency, `priorities[${index}].urgency`),
     })),
+    investment_cases: cases.filter(isRecord).map((item, index) => ({
+      rank: requireNumber(item.rank, `investment_cases[${index}].rank`),
+      symbol: requireString(item.symbol, `investment_cases[${index}].symbol`),
+      recommendation: requireString(
+        item.recommendation,
+        `investment_cases[${index}].recommendation`,
+      ),
+      conviction: requireNumber(
+        item.conviction,
+        `investment_cases[${index}].conviction`,
+      ),
+      committee_agreement: requireNumber(
+        item.committee_agreement,
+        `investment_cases[${index}].committee_agreement`,
+      ),
+      risk_level: requireString(
+        item.risk_level,
+        `investment_cases[${index}].risk_level`,
+      ),
+      summary: requireString(item.summary, `investment_cases[${index}].summary`),
+      why_now: Array.isArray(item.why_now)
+        ? item.why_now.filter((value): value is string => typeof value === "string")
+        : [],
+      risks: Array.isArray(item.risks)
+        ? item.risks.filter((value): value is string => typeof value === "string")
+        : [],
+      expected_holding_period: requireString(
+        item.expected_holding_period,
+        `investment_cases[${index}].expected_holding_period`,
+      ),
+    })),
   };
+}
+
+function convictionLevel(conviction: number): ConvictionLevel {
+  if (conviction >= 85) return "Very High Conviction";
+  if (conviction >= 70) return "High Conviction";
+  if (conviction >= 50) return "Moderate Conviction";
+  return "Low Conviction";
+}
+
+function titleCase(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
+function mapInvestmentCases(
+  briefing: PortfolioBriefingPayload,
+): RankedInvestmentCaseViewModel[] {
+  return briefing.investment_cases.map((item) => ({
+    rank: item.rank,
+    symbol: item.symbol,
+    recommendation: item.recommendation,
+    conviction: item.conviction,
+    convictionLevel: convictionLevel(item.conviction),
+    committeeAgreement: item.committee_agreement,
+    riskLevel: titleCase(item.risk_level.replace(/_/g, " ")),
+    summary: item.summary,
+    whyNow: item.why_now,
+    risks: item.risks,
+    expectedHoldingPeriod: item.expected_holding_period,
+    dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
+  }));
 }
 
 function healthLabel(score: number): string {
@@ -174,7 +255,7 @@ function urgencyBand(urgency: number): PriorityUrgency {
 
 function mapPortfolio(
   brain: BrainPayload,
-  brief: ExecutiveBriefPayload,
+  briefing: PortfolioBriefingPayload,
 ): PortfolioSnapshotViewModel {
   const totalEquity = brain.portfolio.total_value;
   const invested = brain.portfolio.invested_usd;
@@ -182,18 +263,16 @@ function mapPortfolio(
 
   const healthScore = Math.max(
     0,
-    Math.min(100, Math.round(brief.portfolio_health * 100)),
+    Math.min(100, Math.round(briefing.portfolio_health * 100)),
   );
 
   return {
     totalEquity,
     availableCash: brain.portfolio.available_cash_usd,
     invested,
-    // The backend does not publish these yet; showing a demo number here
-    // would misrepresent the account.
-    unrealizedProfitLoss: null,
+    unrealizedProfitLoss: brain.portfolio.unrealized_pnl_usd,
     openPositions,
-    pendingOrders: null,
+    pendingOrders: brain.portfolio.pending_orders,
     healthScore,
     healthLabel: healthLabel(healthScore),
     riskLevel: riskLevel(invested, totalEquity),
@@ -202,22 +281,24 @@ function mapPortfolio(
 }
 
 function mapPriorities(
-  brief: ExecutiveBriefPayload,
+  briefing: PortfolioBriefingPayload,
 ): ExecutivePriorityViewModel[] {
-  return brief.priorities.map((priority, index) => ({
-    id: `${brief.symbol}-priority-${index}`,
+  return briefing.priorities.map((priority, index) => ({
+    id: `${priority.title}-${index}`,
     urgency: urgencyBand(priority.urgency),
     title: priority.title,
     rationale: priority.description,
   }));
 }
 
-function mapBrief(brief: ExecutiveBriefPayload): ExecutiveBriefViewModel {
+function mapBrief(
+  briefing: PortfolioBriefingPayload,
+): ExecutiveBriefViewModel {
   return {
-    symbol: brief.symbol,
-    headline: brief.headline,
-    summary: brief.summary,
-    confidence: brief.confidence,
+    symbol: "Portfolio",
+    headline: briefing.headline,
+    summary: briefing.summary,
+    confidence: briefing.confidence,
   };
 }
 
@@ -244,13 +325,13 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
   const brainEndpoint = `${BACKEND_URL}/brain/`;
 
   try {
-    const brain = parseBrain(await fetchJson(brainEndpoint));
+    const [brainPayload, briefingPayload] = await Promise.all([
+      fetchJson(brainEndpoint),
+      fetchJson(`${BACKEND_URL}/executive/portfolio`),
+    ]);
 
-    const briefEndpoint = `${BACKEND_URL}/executive/${encodeURIComponent(
-      brain.recommendation.symbol,
-    )}`;
-
-    const brief = parseExecutiveBrief(await fetchJson(briefEndpoint));
+    const brain = parseBrain(brainPayload);
+    const briefing = parsePortfolioBriefing(briefingPayload);
 
     return {
       workspace: {
@@ -262,19 +343,24 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
           minute: "2-digit",
         }).format(new Date()),
         situation: "stable",
-        portfolio: mapPortfolio(brain, brief),
-        brief: mapBrief(brief),
+        portfolio: mapPortfolio(brain, briefing),
+        brief: mapBrief(briefing),
         // No backend source for the change feed yet, so the dashboard shows
         // nothing rather than demo entries.
         changes: [],
-        priorities: mapPriorities(brief),
+        priorities: mapPriorities(briefing),
       },
+      investmentCases: mapInvestmentCases(briefing),
       source: "backend",
       backendUrl: brainEndpoint,
     };
   } catch (error) {
     return {
       workspace: executiveWorkspaceMock,
+      // No demo investment cases: an unreachable backend means we know
+      // nothing about the holdings, and inventing cases would be worse than
+      // showing none.
+      investmentCases: [],
       source: "fallback",
       backendUrl: brainEndpoint,
       error: error instanceof Error ? error.message : "Unknown backend error",

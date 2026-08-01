@@ -7,6 +7,7 @@ import httpx
 
 from app.config import Settings
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.portfolio_position import PortfolioPosition
 from app.infrastructure.evidence import VersionedSnapshotStore
 
 
@@ -126,6 +127,46 @@ class EtoroAccountBroker:
         ]
 
     @classmethod
+    def _build_positions(
+        cls,
+        payload_positions: list[Any],
+    ) -> tuple[PortfolioPosition, ...]:
+        """
+        Report each holding the broker returned.
+
+        eToro identifies holdings by instrument id; ticker symbols are
+        resolved later, during perception.
+        """
+
+        positions: list[PortfolioPosition] = []
+
+        for raw in payload_positions:
+            if not isinstance(raw, dict):
+                continue
+
+            invested = cls._number(raw.get("amount"))
+            unrealized = cls._number((raw.get("unrealizedPnL") or {}).get("pnL"))
+
+            exposure = (raw.get("unrealizedPnL") or {}).get("exposureInAccountCurrency")
+
+            market_value = (
+                cls._number(exposure) if exposure is not None else invested + unrealized
+            )
+
+            positions.append(
+                PortfolioPosition(
+                    symbol="",
+                    quantity=cls._number(raw.get("units")),
+                    invested_usd=round(invested, 2),
+                    market_value_usd=round(market_value, 2),
+                    unrealized_pnl_usd=round(unrealized, 2),
+                    instrument_id=int(cls._number(raw.get("instrumentID"))),
+                )
+            )
+
+        return tuple(positions)
+
+    @classmethod
     def _calculate_values(
         cls,
         payload: dict[str, Any],
@@ -202,7 +243,7 @@ class EtoroAccountBroker:
             mode=self.settings.trading_mode,
             connected=True,
             positions_count=len(positions),
-            positions=(),
+            positions=self._build_positions(positions),
             pending_orders=len(orders_for_open) + len(orders),
             copy_portfolios=len(mirrors),
             latency_ms=round(latency_ms, 1),

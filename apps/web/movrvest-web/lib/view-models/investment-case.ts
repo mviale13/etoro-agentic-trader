@@ -4,22 +4,25 @@ export type ConvictionLevel =
   | "Moderate Conviction"
   | "Low Conviction";
 
-export type RiskLevel = "Low" | "Moderate" | "Elevated" | "High";
-
+/**
+ * One holding, as judged by the Artificial CIO.
+ *
+ * Price targets, upside and downside projections and conviction history are
+ * absent by design: the platform cannot yet evidence them, and an estimated
+ * figure on an investment dashboard reads as a measurement.
+ */
 export interface RankedInvestmentCaseViewModel {
-  rank: 1 | 2 | 3;
+  rank: number;
   symbol: string;
-  companyName: string;
-  exchange: string;
+  /** Decision state, e.g. PREPARE, INVESTIGATE, REJECT. */
+  recommendation: string;
   conviction: number;
   convictionLevel: ConvictionLevel;
-  convictionChange: number;
-  expectedUpside: number;
-  potentialDownside: number;
-  riskLevel: RiskLevel;
   committeeAgreement: number;
-  recommendation: "Increase" | "Hold" | "Reduce";
-  whyNow: readonly string[];
+  riskLevel: string;
   summary: string;
+  whyNow: readonly string[];
+  risks: readonly string[];
+  expectedHoldingPeriod: string;
   dossierHref: string;
 }

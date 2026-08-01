@@ -1,5 +1,5 @@
 from app.application.brain.brain_builder_service import BrainBuilderService
-from app.application.executive import ExecutiveService
+from app.application.executive.executive_service import ExecutiveService
 from app.renderers.executive_brief_console_renderer import (
     ExecutiveBriefConsoleRenderer,
 )

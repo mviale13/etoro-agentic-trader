@@ -1,4 +1,5 @@
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.portfolio_position import PortfolioPosition
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
 from app.services.exchange_rate_service import ExchangeRateService
 
@@ -42,6 +43,11 @@ class PortfolioService:
         available_cash_eur = self._exchange_rate_service.usd_to_eur(cash_usd)
         invested_eur = self._exchange_rate_service.usd_to_eur(invested_usd)
 
+        largest_position, largest_position_pct = self._largest_position(
+            account.positions,
+            equity_usd,
+        )
+
         return PortfolioSnapshot(
             allocation=Allocation(
                 cash=cash_pct,
@@ -58,10 +64,32 @@ class PortfolioService:
             invested_eur=round(invested_eur, 2),
             liquidity_pct=cash_pct,
             positions=account.positions_count,
-            largest_position=None,
-            largest_position_pct=0.0,
+            largest_position=largest_position,
+            largest_position_pct=largest_position_pct,
             risk_flags=tuple(risk_flags),
             last_sync=account.timestamp,
+            holdings=account.positions,
+            pending_orders=account.pending_orders,
+            unrealized_pnl_usd=round(
+                self._value(account.unrealized_pnl_usd),
+                2,
+            ),
+        )
+
+    @classmethod
+    def _largest_position(
+        cls,
+        positions: tuple[PortfolioPosition, ...],
+        equity_usd: float,
+    ) -> tuple[str | None, float]:
+        if not positions:
+            return None, 0.0
+
+        largest = max(positions, key=lambda position: position.market_value_usd)
+
+        return largest.symbol, cls._percentage(
+            largest.market_value_usd,
+            equity_usd,
         )
 
     @staticmethod
@@ -77,3 +105,11 @@ class PortfolioService:
             return 0.0
 
         return max(float(value), 0.0)
+
+    @staticmethod
+    def _value(value: float | None) -> float:
+        """Unclamped: unrealized P&L is legitimately negative."""
+        if value is None:
+            return 0.0
+
+        return float(value)
