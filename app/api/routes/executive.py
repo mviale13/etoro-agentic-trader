@@ -6,17 +6,21 @@ from app.api.models.executive_brief import (
     InvestmentCaseResponse,
 )
 from app.api.models.portfolio_briefing import (
+    ChangeResponse,
     PortfolioBriefingResponse,
     RankedInvestmentCaseResponse,
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
+from app.application.change_feed.change_feed_service import ChangeFeedService
 from app.application.executive.executive_service import ExecutiveService
+from app.application.learning.decision_journal import DecisionJournal
 from app.application.workspace.executive_pipeline import ExecutivePipeline
 from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
 from app.renderers import ExecutiveBriefRenderer
+from app.repositories.json_event_repository import JsonEventRepository
 
 router = APIRouter(
     prefix="/executive",
@@ -50,10 +54,14 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
     Brain → Reasoning → Executive Committee → Artificial CIO → Executive Brief
     """
 
+    journal = DecisionJournal(
+        repository=JsonEventRepository(),
+    )
+
     brain = await BrainBuilderService().build()
 
     briefing = PortfolioBriefingService(
-        pipeline=ExecutivePipeline.with_memory(),
+        pipeline=ExecutivePipeline(journal=journal),
     ).build(brain)
 
     if briefing is None:
@@ -90,6 +98,12 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
             )
         )
 
+    # Built after the briefing, so a decision that changed during this
+    # review is already recorded and reported.
+    changes = ChangeFeedService(journal=journal).build(
+        symbols=[workspace.symbol for workspace in briefing.workspaces],
+    )
+
     return PortfolioBriefingResponse(
         headline=brief.headline,
         summary=brief.summary,
@@ -104,6 +118,17 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
             for priority in brief.priorities
         ],
         investment_cases=cases,
+        changes=[
+            ChangeResponse(
+                title=change.title,
+                description=change.description,
+                category=change.category.value,
+                severity=change.severity.value,
+                timestamp=change.timestamp,
+                action_required=change.action_required,
+            )
+            for change in changes.events
+        ],
     )
 
 

@@ -94,6 +94,13 @@ ArtificialCIO → ExecutiveDecision → DecisionJournal → EventRepository
   investment case says nothing rather than "no change"
 - The pipeline only writes when a journal is injected, so a test or a
   what-if evaluation never enters the record
+- `ChangeFeedService` returned three hardcoded examples ("NVIDIA upgraded")
+  and was imported by nothing. It now reads the journal, reports each
+  recorded state change newest first, and reaches the dashboard through
+  `GET /executive/portfolio`. Severity is the distance the decision moved
+  along the lifecycle, so it is measured rather than asserted
+- The Python reasoning stranded inside `apps/web/movrvest-web` is deleted,
+  along with two uncommitted migration shims
 
 ## Deleted
 
@@ -126,9 +133,8 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 - [ ] API routes construct services directly, so they cannot be tested
       without network access
-- [ ] The dashboard change feed has no backend source. `ChangeFeedService`
-      returns hardcoded examples and is imported by nothing; the decision
-      journal is the real source it should be built on
+- [ ] The change feed covers recorded decision changes only. Market and macro
+      movements are not recorded anywhere, so they are absent from it
 - [ ] `ExecutivePipeline` recomputes symbol-independent reasoning per holding
 
 ## Structure

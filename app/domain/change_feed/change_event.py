@@ -6,6 +6,7 @@ from enum import StrEnum
 
 
 class ChangeCategory(StrEnum):
+    DECISION = "decision"
     PORTFOLIO = "portfolio"
     WATCHLIST = "watchlist"
     MARKET = "market"

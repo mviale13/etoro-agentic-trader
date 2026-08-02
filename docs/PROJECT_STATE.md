@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 336 passing |
+| Pytest | 🟢 343 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -65,6 +65,7 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `GET /brain/` — portfolio facts, investor observation and DNA
 - The dashboard renders real account data and a real brief
 - Every decision is recorded, and the next cycle says what changed
+- The dashboard change feed reports the decisions the CIO actually changed
 
 ## Recently completed
 
@@ -109,7 +110,8 @@ Named rather than hidden. None of these are estimated away in the product.
 
 - API routes construct services directly, so they cannot be tested without
   network access
-- The dashboard change feed has no backend source
+- The change feed reports recorded decision changes only; market and macro
+  movements are not recorded anywhere
 - `ExecutivePipeline` recomputes symbol-independent reasoning per holding
 - `ClaimEngine.test.ts` has pre-existing TypeScript errors (missing `vitest`)
 
@@ -137,8 +139,9 @@ are still open.
 
 ## Explainability
 
-The change feed — what moved since the investor last looked, and why it
-matters to them. The decision journal is its first real source.
+The change feed reports what the Artificial CIO changed its mind about.
+Extending it to what moved in the market and why it matters to this investor
+needs those movements recorded first.
 
 ---
 

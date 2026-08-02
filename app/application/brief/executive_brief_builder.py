@@ -6,7 +6,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from app.application.workspace.executive_workspace import ExecutiveWorkspace
-from app.cio.decision_state import DecisionState
 from app.domain.executive.executive_brief import (
     ExecutiveBrief,
     ExecutivePriority,
@@ -16,12 +15,6 @@ from app.domain.executive.executive_brief import (
 @dataclass(slots=True)
 class ExecutiveBriefBuilder:
     """Build an executive brief from a completed executive workspace."""
-
-    #: Decision states the investor is asked to look at.
-    ACTIONABLE_STATES = (
-        DecisionState.RECOMMEND.value,
-        DecisionState.PREPARE.value,
-    )
 
     def build(
         self,
@@ -72,9 +65,7 @@ class ExecutiveBriefBuilder:
         briefs = tuple(self.build(workspace) for workspace in ranked)
 
         actionable = tuple(
-            workspace
-            for workspace in ranked
-            if self._decision_state(workspace) in self.ACTIONABLE_STATES
+            workspace for workspace in ranked if self._asks_for_action(workspace)
         )
 
         first = ranked[0]
@@ -102,12 +93,12 @@ class ExecutiveBriefBuilder:
         )
 
     @staticmethod
-    def _conviction(workspace: ExecutiveWorkspace) -> int:
-        return workspace.decision.conviction if workspace.decision else 0
+    def _asks_for_action(workspace: ExecutiveWorkspace) -> bool:
+        """Whether the CIO's decision puts this holding to the investor."""
 
-    @staticmethod
-    def _decision_state(workspace: ExecutiveWorkspace) -> str:
-        return workspace.decision.state.value if workspace.decision else ""
+        decision = workspace.decision
+
+        return decision is not None and decision.state.asks_for_action
 
     @staticmethod
     def _mean(values: tuple[float, ...]) -> float:

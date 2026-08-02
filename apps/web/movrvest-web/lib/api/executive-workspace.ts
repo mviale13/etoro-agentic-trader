@@ -1,6 +1,8 @@
 import { executiveWorkspaceMock } from "@/lib/mocks/executive-workspace";
 import type {
+  ChangeSeverity,
   ExecutiveBriefViewModel,
+  ExecutiveChangeViewModel,
   ExecutivePriorityViewModel,
   ExecutiveWorkspaceViewModel,
   PortfolioSnapshotViewModel,
@@ -63,6 +65,15 @@ interface RankedCasePayload {
   previous_decisions: string | null;
 }
 
+interface ChangePayload {
+  title: string;
+  description: string;
+  category: string;
+  severity: string;
+  timestamp: string;
+  action_required: boolean;
+}
+
 interface PortfolioBriefingPayload {
   headline: string;
   summary: string;
@@ -70,6 +81,7 @@ interface PortfolioBriefingPayload {
   portfolio_health: number;
   priorities: readonly PriorityPayload[];
   investment_cases: readonly RankedCasePayload[];
+  changes: readonly ChangePayload[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -159,6 +171,7 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
   const cases = Array.isArray(payload.investment_cases)
     ? payload.investment_cases
     : [];
+  const changes = Array.isArray(payload.changes) ? payload.changes : [];
 
   return {
     headline: requireString(payload.headline, "headline"),
@@ -211,6 +224,17 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         `investment_cases[${index}].previous_decisions`,
       ),
     })),
+    changes: changes.filter(isRecord).map((change, index) => ({
+      title: requireString(change.title, `changes[${index}].title`),
+      description: requireString(
+        change.description,
+        `changes[${index}].description`,
+      ),
+      category: requireString(change.category, `changes[${index}].category`),
+      severity: requireString(change.severity, `changes[${index}].severity`),
+      timestamp: requireString(change.timestamp, `changes[${index}].timestamp`),
+      action_required: change.action_required === true,
+    })),
   };
 }
 
@@ -242,6 +266,31 @@ function mapInvestmentCases(
     expectedHoldingPeriod: item.expected_holding_period,
     previousDecisions: item.previous_decisions,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
+  }));
+}
+
+/**
+ * The backend measures severity as how far a decision moved along the
+ * investment-case lifecycle. The dashboard only renames it.
+ */
+function changeSeverity(severity: string): ChangeSeverity {
+  if (severity === "high") return "important";
+  if (severity === "medium") return "attention";
+  return "information";
+}
+
+function mapChanges(
+  briefing: PortfolioBriefingPayload,
+): ExecutiveChangeViewModel[] {
+  return briefing.changes.map((change) => ({
+    id: `${change.timestamp}-${change.title}`,
+    severity: changeSeverity(change.severity),
+    title: change.title,
+    detail: change.description,
+    context: `Recorded ${new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "numeric",
+    }).format(new Date(change.timestamp))}`,
   }));
 }
 
@@ -370,9 +419,9 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
         situation: "stable",
         portfolio: mapPortfolio(brain, briefing),
         brief: mapBrief(briefing),
-        // No backend source for the change feed yet, so the dashboard shows
-        // nothing rather than demo entries.
-        changes: [],
+        // Decision changes the Artificial CIO actually recorded. An empty
+        // feed means it has not changed its mind, not that nothing is known.
+        changes: mapChanges(briefing),
         priorities: mapPriorities(briefing),
       },
       investmentCases: mapInvestmentCases(briefing),

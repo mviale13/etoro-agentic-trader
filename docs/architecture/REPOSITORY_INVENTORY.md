@@ -71,6 +71,7 @@ Orchestration lives in `app/application/workspace`:
 | `app/application/executive` | `ExecutiveService`, `DecisionEvidenceBuilder` |
 | `app/cio` | `ArtificialCIO`, `ExecutiveDecision`, `DecisionPolicy` |
 | `app/application/learning` | `DecisionJournal` — what the CIO decided before |
+| `app/application/change_feed` | `ChangeFeedService` — the decisions that changed |
 | `app/application/thesis` | `InvestmentThesisBuilder` |
 | `app/application/brief` | `ExecutiveBriefBuilder` — the Communication layer |
 | `app/application/workspace` | Pipeline orchestration |

@@ -299,23 +299,29 @@ export function ExecutiveWorkspaceBriefing({
                 What changed
               </h2>
 
-              {/* No backend publishes a change feed yet. */}
-              <StatusPill status="placeholder" label="Not connected" />
+              {/* Recorded decision changes are real. Market and macro
+                  movements are not recorded anywhere yet, so the feed is
+                  genuine but partial. */}
+              {dataSource === "backend" ? (
+                <StatusPill status="partial" label="Decision changes" />
+              ) : (
+                <StatusPill status="placeholder" label="Demo data" />
+              )}
 
             </div>
           </div>
 
           <p className="max-w-lg text-sm leading-6 text-slate-500">
-            Changes are ranked by relevance to your portfolio, investment policy
-            and active research.
+            Every decision the Artificial CIO changed about a holding, newest
+            first. Market and macro movements are not tracked here yet.
           </p>
         </div>
 
         <div className="mt-7 divide-y divide-slate-200 border-y border-slate-200">
           {workspace.changes.length === 0 ? (
             <p className="py-8 text-sm leading-6 text-slate-500">
-              No change feed is connected yet. This section stays empty until
-              the backend publishes what moved since your last visit.
+              The Artificial CIO has not changed its decision on any holding.
+              This fills in when one of them moves.
             </p>
           ) : null}
 

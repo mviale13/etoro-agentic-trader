@@ -20,7 +20,7 @@ export default async function HomePage() {
         }
         description={
           result.source === "backend"
-            ? "Portfolio and executive decisions are live. The change feed has no backend source yet."
+            ? "Portfolio, executive decisions and recorded decision changes are live. The change feed does not yet cover market or macro movements."
             : `Backend unreachable, showing demo data. ${result.error ?? ""}`
         }
       />
