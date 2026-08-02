@@ -1,7 +1,6 @@
 from app.api.models.dashboard import DashboardResponse
 from app.api.models.investor_dna import InvestorDNAResponse
 from app.api.models.observation import ObservationResponse
-from app.api.models.opportunity import OpportunityResponse
 from app.api.models.portfolio import (
     AllocationResponse,
     PortfolioResponse,
@@ -30,7 +29,6 @@ from app.services.investor_observation_service import (
 )
 from app.services.memory_builder import MemoryBuilder
 from app.services.memory_service import MemoryService
-from app.services.opportunity_service import OpportunityService
 from app.services.pattern_engine import PatternEngine
 from app.services.portfolio_service import PortfolioService
 from app.services.signal_service import SignalService
@@ -42,7 +40,6 @@ class DashboardService:
         portfolio, observation = await self._build_portfolio_sections()
 
         reflection = DailyReflectionService().today()
-        opportunities = OpportunityService().top_opportunities()
 
         memory_service = MemoryService(JsonEventRepository())
         memories = memory_service.history()
@@ -73,19 +70,6 @@ class DashboardService:
                 understanding=understanding,
                 message=dna_message,
             ),
-            opportunities=[
-                OpportunityResponse(
-                    symbol=item.symbol,
-                    action=item.action,
-                    score=item.score,
-                    policy_fit=item.policy_fit,
-                    committee_confidence=item.committee_confidence,
-                    market_score=item.market_score,
-                    diversification_score=item.diversification_score,
-                    reason=item.reason,
-                )
-                for item in opportunities
-            ],
         )
 
     async def _build_today(

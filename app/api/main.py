@@ -16,7 +16,6 @@ from app.api.routes.explanation import router as explanation_router
 from app.api.routes.home import router as home_router
 from app.api.routes.investor_dna import router as investor_dna_router
 from app.api.routes.observation import router as observation_router
-from app.api.routes.opportunities import router as opportunities_router
 from app.api.routes.portfolio import router as portfolio_router
 from app.api.routes.portfolio_health import (
     router as portfolio_health_router,
@@ -28,6 +27,7 @@ from app.api.routes.recommendation_timeline import (
     router as recommendation_timeline_router,
 )
 from app.api.routes.reflection import router as reflection_router
+from app.api.routes.research import router as research_router
 from app.api.routes.strategy import router as strategy_router
 from app.api.routes.today import router as today_router
 
@@ -52,7 +52,7 @@ app.include_router(strategy_router)
 app.include_router(today_router)
 app.include_router(doctor_router)
 app.include_router(explanation_router)
-app.include_router(opportunities_router)
+app.include_router(research_router)
 app.include_router(reflection_router)
 app.include_router(recommendation_timeline_router)
 app.include_router(portfolio_health_router)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from app.application.brain.reasoning import ReasoningService
@@ -69,6 +70,26 @@ class ExecutivePipeline:
             ),
         )
 
+    def execute_all(
+        self,
+        symbols: Sequence[str],
+        brain: Brain,
+    ) -> tuple[ExecutiveWorkspace, ...]:
+        """
+        Evaluate several securities against one Brain.
+
+        Every security is judged against exactly the same view of reality,
+        which is what makes their convictions comparable.
+        """
+
+        return tuple(
+            self.execute(
+                symbol=symbol,
+                brain=brain,
+            )
+            for symbol in symbols
+        )
+
     def execute(
         self,
         symbol: str,
@@ -89,7 +110,7 @@ class ExecutivePipeline:
             workspace.reasoning,
         )
 
-        evidence = self.evidence_builder.build(
+        workspace.evidence = self.evidence_builder.build(
             symbol,
             brain,
             workspace.reasoning,
@@ -97,7 +118,7 @@ class ExecutivePipeline:
         )
 
         workspace.decision = self.decision_engine.decide(
-            evidence,
+            workspace.evidence,
         )
 
         # The Brain perceived this history before the cycle began, so the

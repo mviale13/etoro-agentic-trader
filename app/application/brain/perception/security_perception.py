@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Sequence
 
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.research_candidate import ResearchCandidate
 from app.domain.watchlist_item import WatchlistItem
 from app.services.company_committee_service import (
     CompanyCommitteeService,
@@ -18,14 +20,19 @@ from app.services.instrument_symbol_resolver import (
 
 class SecurityPerception:
     """
-    Collect evidence about each individual holding.
+    Collect evidence about each individual security.
 
     Portfolio and market perception describe the whole account. This
-    component describes the securities inside it, so reasoning can tell one
-    holding apart from another.
+    component describes the securities the Artificial CIO may judge — every
+    holding, and the research candidates it is asked to look at — so
+    reasoning can tell one investment case apart from another.
 
     A security this component cannot describe simply produces no evidence.
     Absent evidence is reported as absent; it is never estimated.
+
+    Candidates are evidenced up to a limit the caller sets. Each one costs a
+    fundamentals request, and the provider rate-limits, so the caller decides
+    how much of the universe a single cycle can honestly cover.
     """
 
     def __init__(
@@ -41,10 +48,12 @@ class SecurityPerception:
     async def execute(
         self,
         portfolio: PortfolioSnapshot,
+        candidates: Sequence[ResearchCandidate] = (),
+        candidate_limit: int = 0,
     ) -> dict[str, tuple[object, ...]]:
         """Return per-symbol evidence, keyed by ticker symbol."""
 
-        if not portfolio.holdings:
+        if not portfolio.holdings and not candidates:
             return {}
 
         instruments = await self._symbol_resolver.items()
@@ -54,6 +63,14 @@ class SecurityPerception:
             for holding in portfolio.holdings
             if holding.is_resolved and holding.instrument_id in instruments
         ]
+
+        targets.extend(
+            self._candidate_targets(
+                candidates,
+                instruments,
+                candidate_limit,
+            )
+        )
 
         if not targets:
             return {}
@@ -74,6 +91,30 @@ class SecurityPerception:
                 evidence[symbol] = (recommendation,)
 
         return evidence
+
+    @staticmethod
+    def _candidate_targets(
+        candidates: Sequence[ResearchCandidate],
+        instruments: dict[int, WatchlistItem],
+        limit: int,
+    ) -> list[tuple[str, WatchlistItem]]:
+        """Choose the candidates this cycle can afford to evidence."""
+
+        if limit <= 0:
+            return []
+
+        targets: list[tuple[str, WatchlistItem]] = []
+
+        for candidate in candidates:
+            if len(targets) >= limit:
+                break
+
+            item = instruments.get(candidate.instrument_id)
+
+            if item is not None:
+                targets.append((candidate.symbol, item))
+
+        return targets
 
     async def _evaluate(
         self,

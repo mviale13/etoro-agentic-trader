@@ -9,6 +9,7 @@ from app.application.brief.executive_brief_builder import (
 )
 from app.application.workspace.executive_pipeline import ExecutivePipeline
 from app.application.workspace.executive_workspace import ExecutiveWorkspace
+from app.application.workspace.ranking import rank_by_conviction
 from app.brain import Brain
 from app.domain.executive.executive_brief import ExecutiveBrief
 
@@ -60,12 +61,9 @@ class PortfolioBriefingService:
     ) -> tuple[ExecutiveWorkspace, ...]:
         """Evaluate every holding against the same Brain."""
 
-        return tuple(
-            self.pipeline.execute(
-                symbol=symbol,
-                brain=brain,
-            )
-            for symbol in self.symbols(brain)
+        return self.pipeline.execute_all(
+            symbols=self.symbols(brain),
+            brain=brain,
         )
 
     def build(
@@ -84,21 +82,9 @@ class PortfolioBriefingService:
         if not workspaces:
             return None
 
-        ranked = tuple(
-            sorted(
-                workspaces,
-                key=self._conviction,
-                reverse=True,
-            )
-        )
+        ranked = rank_by_conviction(workspaces)
 
         return PortfolioBriefing(
             brief=self.brief_builder.build_portfolio(ranked),
             workspaces=ranked,
         )
-
-    @staticmethod
-    def _conviction(
-        workspace: ExecutiveWorkspace,
-    ) -> int:
-        return workspace.decision.conviction if workspace.decision else 0

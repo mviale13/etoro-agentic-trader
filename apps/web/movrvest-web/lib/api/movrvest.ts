@@ -216,8 +216,8 @@ export function getRecommendationTimeline(): Promise<ApiResult<UnknownRecord>> {
   return getJson("/recommendations/timeline", (payload) => payload);
 }
 
-export function getOpportunities(): Promise<ApiResult<UnknownRecord>> {
-  return getJson("/opportunities/", (payload) => payload);
+export function getResearchCandidates(): Promise<ApiResult<UnknownRecord>> {
+  return getJson("/research/candidates", (payload) => payload);
 }
 
 export function getCommitteeMembers(): Promise<ApiResult<UnknownRecord>> {

@@ -102,6 +102,27 @@ ArtificialCIO → ExecutiveDecision → DecisionJournal → EventRepository
 - The Python reasoning stranded inside `apps/web/movrvest-web` is deleted,
   along with two uncommitted migration shims
 
+## The opportunity pipeline is evidenced
+
+```
+Watchlists → OpportunityPerception → Brain.candidates
+                                          ↓
+                     SecurityPerception (capped) → evidence
+                                          ↓
+              CandidateResearchService → ExecutivePipeline → /research/candidates
+```
+
+- Only candidates the Brain can describe on their own evidence are judged.
+  Judging the rest would produce a verdict about the account wearing the
+  candidate's name, so they are counted and reported as unevidenced
+- The funnel separates "not reviewed" from "reviewed but not evidenced", so a
+  rate-limit budget is never mistaken for a screening result
+- `ExecutiveWorkspace` now keeps the `DecisionEvidence` the decision was made
+  on, which is what the page shows as quality, valuation, risk and fit
+- Deleted: `OpportunityService` and `OpportunityDiscoveryService` (both
+  returned hardcoded companies), `GET /opportunities/`, the dead
+  `TopOpportunitiesCard`, and the hardcoded candidate array in the page
+
 ## Deleted
 
 See the Removed table in `REPOSITORY_INVENTORY.md`.
@@ -116,6 +137,8 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       between runs, which can flip a decision
 - [ ] Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
 - [ ] Holdings absent from every watchlist cannot be named or analysed
+- [ ] Research evidences a capped number of candidates per cycle; caching
+      fundamentals would let it cover the whole watchlist
 - [ ] Holdings are not classified by asset type, which blocks allocation
       drift scoring and the crypto policy limit
 

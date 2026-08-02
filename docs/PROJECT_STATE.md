@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 343 passing |
+| Pytest | 🟢 348 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -63,11 +63,19 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `GET /executive/portfolio` — every holding, ranked by conviction
 - `GET /executive/{symbol}` — one investment case
 - `GET /brain/` — portfolio facts, investor observation and DNA
+- `GET /research/candidates` — the watched securities, judged and ranked
 - The dashboard renders real account data and a real brief
 - Every decision is recorded, and the next cycle says what changed
 - The dashboard change feed reports the decisions the CIO actually changed
+- The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The opportunity pipeline is real. `OpportunityPerception` reads the
+  investor's watchlists, `SecurityPerception` evidences a capped number of
+  the candidates, and the Artificial CIO judges each one on that evidence.
+  The three fabricated services behind the old page — `OpportunityService`,
+  `OpportunityDiscoveryService` and the hardcoded candidate array — are gone
 
 - The Artificial CIO remembers its own decisions. `DecisionJournal` records
   each one, `MemoryPerception` reads them back into the Brain, and the
@@ -93,6 +101,9 @@ Named rather than hidden. None of these are estimated away in the product.
   runs, and a flipped signal can flip a decision
 - Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
 - A holding absent from every watchlist cannot be named or analysed
+- Research covers a capped number of candidates per cycle, because
+  fundamentals are uncached and the provider rate-limits. The page reports
+  how many it could not reach
 - Holdings are not classified by asset type, which blocks allocation-drift
   scoring and the crypto policy limit
 

@@ -55,6 +55,7 @@ Orchestration lives in `app/application/workspace`:
 |---|---|
 | `ExecutivePipeline` | One symbol, end to end |
 | `PortfolioBriefingService` | Every holding, ranked by conviction |
+| `CandidateResearchService` | Every evidenced watchlist candidate |
 | `ExecutiveService` | Public entry point for the Artificial CIO |
 | `BrainSnapshotService` | Facts only — what the Brain currently knows |
 
@@ -89,6 +90,7 @@ Orchestration lives in `app/application/workspace`:
 | `SecurityPerception` | Per-security evidence, keyed by symbol |
 | `InvestorPerception` | `Observation`, `InvestorDNA` |
 | `RecommendationPerception` | `Recommendation` |
+| `OpportunityPerception` | `ResearchCandidate` — watched, not held |
 | `MemoryPerception` | `DecisionHistory`, keyed by symbol |
 
 ## Analysts
@@ -130,6 +132,8 @@ reintroduces them.
 | `ExecutiveCommittee`, `ExecutiveRecommendation`, `ExecutiveBriefService` | `DecisionEvidenceBuilder` → `ArtificialCIO` |
 | `app/agents`, `app/strategy`, `app/models.py`, `app/risk.py`, `app/audit.py` | Nothing — orphaned |
 | `app/page.tsx` | `apps/web/movrvest-web` |
+| Python reasoning inside `apps/web/movrvest-web` | `app/application/brain/reasoning` |
+| `OpportunityService`, `OpportunityDiscoveryService`, `GET /opportunities/` | `CandidateResearchService`, `GET /research/candidates` |
 
 ---
 

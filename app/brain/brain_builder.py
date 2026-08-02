@@ -8,6 +8,7 @@ from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.research_candidate import ResearchCandidate
 
 
 @dataclass(slots=True)
@@ -27,6 +28,7 @@ class BrainBuilder:
     evidence: Mapping[str, tuple[object, ...]] = field(default_factory=dict)
     committee_opinions: Mapping[str, tuple[object, ...]] = field(default_factory=dict)
     memory: Mapping[str, object] = field(default_factory=dict)
+    candidates: tuple[ResearchCandidate, ...] = ()
     decision_history: Mapping[str, DecisionHistory] = field(default_factory=dict)
     alerts: tuple[str, ...] = ()
 
@@ -44,6 +46,7 @@ class BrainBuilder:
                 for symbol, opinions in self.committee_opinions.items()
             },
             memory=dict(self.memory),
+            candidates=tuple(self.candidates),
             decision_history=dict(self.decision_history),
             alerts=tuple(self.alerts),
         )

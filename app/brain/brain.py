@@ -6,6 +6,7 @@ from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.research_candidate import ResearchCandidate
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +50,11 @@ class Brain:
     @property
     def memory(self) -> dict[str, object]:
         return dict(self.context.memory)
+
+    @property
+    def candidates(self) -> tuple[ResearchCandidate, ...]:
+        """Securities the investor watches but does not hold."""
+        return self.context.candidates
 
     @property
     def decision_history(self) -> dict[str, DecisionHistory]:

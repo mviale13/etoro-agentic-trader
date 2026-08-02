@@ -6,6 +6,7 @@ from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.research_candidate import ResearchCandidate
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +34,8 @@ class BrainContext:
     memory: Mapping[str, object] = field(
         default_factory=dict,
     )
+    #: Securities the investor watches but does not hold.
+    candidates: tuple[ResearchCandidate, ...] = ()
     #: What the Artificial CIO decided before, keyed by symbol.
     decision_history: Mapping[str, DecisionHistory] = field(
         default_factory=dict,

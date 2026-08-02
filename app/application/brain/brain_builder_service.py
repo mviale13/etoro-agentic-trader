@@ -6,6 +6,9 @@ from app.application.brain.perception.market_perception import (
 from app.application.brain.perception.memory_perception import (
     MemoryPerception,
 )
+from app.application.brain.perception.opportunity_perception import (
+    OpportunityPerception,
+)
 from app.application.brain.perception.policy_perception import (
     PolicyPerception,
 )
@@ -38,11 +41,19 @@ class BrainBuilderService:
         self,
         security_perception: SecurityPerception | None = None,
         memory_perception: MemoryPerception | None = None,
+        opportunity_perception: OpportunityPerception | None = None,
+        candidate_limit: int = 0,
     ) -> None:
         self._security_perception = security_perception or SecurityPerception()
         self._memory_perception = memory_perception or MemoryPerception(
             repository=JsonEventRepository(),
         )
+        self._opportunity_perception = opportunity_perception or OpportunityPerception()
+
+        # Evidencing a candidate costs a fundamentals request against a
+        # rate-limited provider, so a cycle that will not research candidates
+        # does not pay for them. Research asks for a budget explicitly.
+        self._candidate_limit = candidate_limit
 
     async def build(self) -> Brain:
         portfolio = await PortfolioPerception().execute()
@@ -55,7 +66,14 @@ class BrainBuilderService:
                 "The Artificial CIO cannot reason without one."
             )
 
-        evidence = await self._security_perception.execute(portfolio)
+        candidates = await self._opportunity_perception.execute(portfolio)
+
+        evidence = await self._security_perception.execute(
+            portfolio,
+            candidates=candidates,
+            candidate_limit=self._candidate_limit,
+        )
+
         decision_history = self._memory_perception.execute()
 
         return BrainBuilder(
@@ -63,5 +81,6 @@ class BrainBuilderService:
             market=market,
             investment_policy=investment_policy,
             evidence=evidence,
+            candidates=candidates,
             decision_history=decision_history,
         ).build()
