@@ -18,3 +18,6 @@ data/evidence/
 
 # iCloud Drive sync conflict copies ("reasoning_service 2.py")
 * [0-9].*
+
+# Cached provider evidence — re-fetchable, never source of truth
+data/cache/

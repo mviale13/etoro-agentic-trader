@@ -6,11 +6,9 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.market_snapshot import MarketQuote
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
-from app.providers.value_provider import ValueProvider
-from app.providers.yahoo_market_provider import (
-    YahooInstrument,
-    YahooMarketProvider,
-)
+from app.providers.cached_market_provider import CachedMarketProvider
+from app.providers.cached_value_provider import CachedValueProvider
+from app.providers.yahoo_market_provider import YahooInstrument
 
 
 class MarketQuoteProvider(Protocol):
@@ -33,8 +31,8 @@ class CompanyFactsService:
         market_provider: MarketQuoteProvider | None = None,
         valuation_provider: ValuationProvider | None = None,
     ) -> None:
-        self._market_provider = market_provider or YahooMarketProvider()
-        self._valuation_provider = valuation_provider or ValueProvider()
+        self._market_provider = market_provider or CachedMarketProvider()
+        self._valuation_provider = valuation_provider or CachedValueProvider()
 
     async def build(
         self,
@@ -69,11 +67,13 @@ class CompanyFactsService:
             name=item.name,
             asset_type=str(item.asset_type_id),
             exchange=str(item.exchange_id),
-            observed_at=datetime.now(UTC),
+            # The oldest reading in here, so nothing is dated fresher than
+            # the evidence actually is.
+            observed_at=valuation.observed_at or datetime.now(UTC),
             # Market
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
-            market_cap=None,
+            market_cap=valuation.market_cap,
             # Valuation
             forward_pe=valuation.forward_pe,
             # Growth
@@ -93,7 +93,7 @@ class CompanyFactsService:
             operating_cash_flow=None,
             free_cash_flow=None,
             # Shareholder returns
-            eps=None,
+            eps=valuation.eps,
             dividend_yield=valuation.dividend_yield,
             # Classification
             sector=None,

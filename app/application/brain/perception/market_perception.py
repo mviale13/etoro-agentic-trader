@@ -1,10 +1,17 @@
 """Canonical market perception."""
 
 from datetime import datetime
+from typing import Protocol
 
 from app.application.services.market_service import MarketService
-from app.domain.market_snapshot import MarketSnapshot
-from app.providers.yahoo_market_provider import YahooMarketProvider
+from app.domain.market_snapshot import MarketData, MarketSnapshot
+from app.providers.cached_market_provider import CachedMarketProvider
+
+
+class MarketDataProvider(Protocol):
+    """Anything that can price the market, cached or direct."""
+
+    async def snapshot(self) -> MarketData: ...
 
 
 class MarketPerception:
@@ -21,10 +28,10 @@ class MarketPerception:
 
     def __init__(
         self,
-        provider: YahooMarketProvider | None = None,
+        provider: MarketDataProvider | None = None,
         market_service: MarketService | None = None,
     ) -> None:
-        self._provider = provider or YahooMarketProvider()
+        self._provider = provider or CachedMarketProvider()
         self._market_service = market_service or MarketService()
 
     async def execute(self) -> MarketSnapshot:

@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 348 passing |
+| Pytest | 🟢 360 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -71,6 +71,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- Evidence is cached and deterministic. Fundamentals are read once a day,
+  quotes for 15 minutes, and a symbol the provider cannot price is
+  remembered as unpriceable for 30 rather than retried every cycle. A
+  research cycle went from 50 provider calls to 0 on a warm cache, and
+  two runs on the same day now produce the same decisions
+- Company facts stopped discarding market cap and earnings, which the same
+  provider call already returned. The quality signal could not score above
+  LOW before; real quality now separates the candidates
+
 - The opportunity pipeline is real. `OpportunityPerception` reads the
   investor's watchlists, `SecurityPerception` evidences a capped number of
   the candidates, and the Artificial CIO judges each one on that evidence.
@@ -97,8 +106,12 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Evidence quality
 
-- Yahoo fundamentals are rate-limited and uncached; signals can flip between
-  runs, and a flipped signal can flip a decision
+- When fundamentals are missing entirely, `DecisionEvidenceBuilder`
+  substitutes portfolio health for company quality and market momentum for
+  valuation. That is an estimate presented as a measurement, and it is the
+  next thing to fix
+- Cached evidence carries its true observation date, but no surface shows
+  it: an investor cannot yet see that a company's fundamentals are a day old
 - Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
 - A holding absent from every watchlist cannot be named or analysed
 - Research covers a capped number of candidates per cycle, because

@@ -123,6 +123,28 @@ Watchlists → OpportunityPerception → Brain.candidates
   returned hardcoded companies), `GET /opportunities/`, the dead
   `TopOpportunitiesCard`, and the hardcoded candidate array in the page
 
+## Evidence is cached, and therefore deterministic
+
+```
+CompanyFactsService → CachedValueProvider  → fundamentals, once a day
+                    → CachedMarketProvider → quotes, 15 minutes
+```
+
+- Fundamentals are read once per UTC day, so two runs on the same day cannot
+  produce different decisions on their own. That matters more than the saved
+  requests: the journal records decision changes, and provider noise was
+  about to be reported to the investor as the CIO changing its mind
+- A quote is never served stale. A price is a claim about now, so an expired
+  one is fetched or reported absent — never replayed
+- Fundamentals *are* served stale when the provider fails, carrying the date
+  they were actually observed. Old evidence is still evidence; it is simply
+  never dated today
+- Symbols the provider cannot price (crypto without a `-USD` suffix, eToro
+  futures) are remembered as unpriceable for 30 minutes instead of being
+  retried on every request
+- Measured on the live account: a research cycle went from 50 provider calls
+  and 9.0s to 0 calls and 2.2s, with identical decisions across runs
+
 ## Deleted
 
 See the Removed table in `REPOSITORY_INVENTORY.md`.
@@ -133,12 +155,16 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Evidence quality
 
-- [ ] Yahoo fundamentals are rate-limited and uncached; signals can flip
-      between runs, which can flip a decision
+- [ ] `DecisionEvidenceBuilder` substitutes portfolio health for an unknown
+      company quality, and market momentum for an unknown valuation. Absent
+      evidence must be absent, and the decision policy must treat an
+      unmeasured gate as unmet rather than passed
+- [ ] Cached evidence knows its true age; no surface reports it yet
 - [ ] Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
 - [ ] Holdings absent from every watchlist cannot be named or analysed
-- [ ] Research evidences a capped number of candidates per cycle; caching
-      fundamentals would let it cover the whole watchlist
+- [ ] Research still evidences a capped number of candidates per cycle. With
+      the cache warm the cap could rise substantially; the first cycle of a
+      day is what costs
 - [ ] Holdings are not classified by asset type, which blocks allocation
       drift scoring and the crypto policy limit
 

@@ -79,6 +79,8 @@ Orchestration lives in `app/application/workspace`:
 | `app/renderers` | Presentation models and console output |
 | `app/api`, `app/commands` | Delivery |
 | `app/domain` | Shared domain models |
+| `app/providers` | Provider access, cached: `CachedValueProvider`, `CachedMarketProvider` |
+| `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
 
 ## Perception components
 
