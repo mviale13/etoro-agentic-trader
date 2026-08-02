@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from app.cio.investment_case import InvestmentCase
+from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
@@ -32,6 +33,10 @@ class BrainContext:
     memory: Mapping[str, object] = field(
         default_factory=dict,
     )
+    #: What the Artificial CIO decided before, keyed by symbol.
+    decision_history: Mapping[str, DecisionHistory] = field(
+        default_factory=dict,
+    )
     alerts: tuple[str, ...] = ()
 
     def investment_case(self, symbol: str) -> InvestmentCase | None:
@@ -48,3 +53,18 @@ class BrainContext:
         """Return all committee opinions for a normalized market symbol."""
 
         return self.committee_opinions.get(symbol.upper().strip(), ())
+
+    def decision_history_for(self, symbol: str) -> DecisionHistory:
+        """
+        Return every decision recorded for a normalized market symbol.
+
+        A symbol the CIO has never judged returns an empty history, which
+        reports the absence rather than implying a decision was made.
+        """
+
+        normalized = symbol.upper().strip()
+
+        return self.decision_history.get(
+            normalized,
+            DecisionHistory(symbol=normalized),
+        )

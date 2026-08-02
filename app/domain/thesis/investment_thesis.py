@@ -25,3 +25,8 @@ class InvestmentThesis:
     expected_holding_period: str
 
     created_at: datetime
+
+    #: What the Artificial CIO decided about this symbol before, stated as
+    #: fact. None when nothing was ever recorded — the CIO does not claim a
+    #: history it does not have.
+    previous_decisions: str | None = None

@@ -76,6 +76,25 @@ now runs end to end, from `movrvest evaluate` and from `GET /executive/...`.
   is measured against the Investment Policy rather than hardcoded
 - The legacy `BrainPipeline` chain and 45 superseded files are deleted
 
+## The Artificial CIO has memory
+
+Each decision is recorded once per symbol, per day, per state, and the next
+cycle perceives it:
+
+```
+ArtificialCIO → ExecutiveDecision → DecisionJournal → EventRepository
+                                          ↓
+                        MemoryPerception → Brain.decision_history
+                                          ↓
+                        InvestmentThesis.previous_decisions → CLI · API · web
+```
+
+- `MemoryPerception` was an empty class; it now reads the journal
+- A symbol the CIO has never judged reports an empty history, and the
+  investment case says nothing rather than "no change"
+- The pipeline only writes when a journal is injected, so a test or a
+  what-if evaluation never enters the record
+
 ## Deleted
 
 See the Removed table in `REPOSITORY_INVENTORY.md`.
@@ -95,7 +114,11 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Reasoning
 
-- [ ] `consistency_score` needs recommendation history — the Learning layer
+- [ ] `consistency_score` needs a record of the investor's own actions. The
+      decision journal records the CIO's decisions, not what the investor did
+      with them
+- [ ] No decision is scored against its outcome; the journal is a record, not
+      a track record
 - [ ] `app/analysts` holds real per-security fundamental analysis that the
       canonical reasoning layer does not yet own
 
@@ -103,7 +126,9 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 - [ ] API routes construct services directly, so they cannot be tested
       without network access
-- [ ] The dashboard change feed has no backend source
+- [ ] The dashboard change feed has no backend source. `ChangeFeedService`
+      returns hardcoded examples and is imported by nothing; the decision
+      journal is the real source it should be built on
 - [ ] `ExecutivePipeline` recomputes symbol-independent reasoning per holding
 
 ## Structure

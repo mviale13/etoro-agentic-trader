@@ -1,5 +1,6 @@
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.executive.executive_service import ExecutiveService
+from app.application.workspace.executive_pipeline import ExecutivePipeline
 from app.renderers.executive_brief_console_renderer import (
     ExecutiveBriefConsoleRenderer,
 )
@@ -20,7 +21,9 @@ class EvaluateCommand:
 
         brain = await BrainBuilderService().build()
 
-        brief = ExecutiveService().brief(
+        brief = ExecutiveService(
+            pipeline=ExecutivePipeline.with_memory(),
+        ).brief(
             symbol=normalized_symbol,
             brain=brain,
         )

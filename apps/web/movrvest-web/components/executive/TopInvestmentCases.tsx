@@ -121,6 +121,19 @@ function InvestmentCaseCard({
       <ReasonList title="Why now" reasons={investmentCase.whyNow} />
       <ReasonList title="Risks" reasons={investmentCase.risks} />
 
+      {/* Absent until the CIO has judged this holding at least once before.
+          A first decision says nothing here rather than "no change". */}
+      {investmentCase.previousDecisions ? (
+        <div className="mt-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            Previously
+          </p>
+          <p className="mt-3 text-sm leading-5 text-zinc-700 dark:text-zinc-300">
+            {investmentCase.previousDecisions}
+          </p>
+        </div>
+      ) : null}
+
       <div className="mt-7 flex items-center justify-end">
         <Link
           href={investmentCase.dossierHref}
@@ -153,8 +166,9 @@ export function TopInvestmentCases({ cases }: TopInvestmentCasesProps) {
                 : `Your ${cases.length} holdings, reviewed.`}
             </h2>
 
-            {/* Real decisions on real holdings, but each case is missing
-                price targets and conviction history. */}
+            {/* Real decisions on real holdings, and each decision is now
+                recorded, so a case can say what it decided before. Price
+                targets are still missing. */}
             {cases.length === 0 ? (
               <StatusPill status="placeholder" label="No data" />
             ) : (

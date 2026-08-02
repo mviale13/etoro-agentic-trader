@@ -70,10 +70,11 @@ class BehaviorAnalyst:
 
         return BehaviorAssessment(
             discipline_score=discipline,
-            # Behavioural consistency compares decisions over time. The
-            # Learning layer that would supply that history does not exist
-            # yet, so this reports the neutral midpoint rather than implying
-            # an observation that was never made.
+            # Behavioural consistency compares the investor's own actions
+            # over time. The journal records what the Artificial CIO decided,
+            # not what the investor did with those decisions, so this still
+            # reports the neutral midpoint rather than implying an
+            # observation that was never made.
             consistency_score=0.50,
             emotional_risk_score=emotional_risk,
             policy_alignment_score=policy_alignment,

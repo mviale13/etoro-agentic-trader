@@ -13,6 +13,10 @@ class InvestmentCaseResponse(BaseModel):
     confidence: float
     summary: str
 
+    #: What the Artificial CIO decided about this symbol before. Null when
+    #: nothing was recorded, which is reported as absent rather than filled.
+    previous_decisions: str | None = None
+
 
 class ExecutiveBriefResponse(BaseModel):
     symbol: str

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.brain.brain_context import BrainContext
 from app.cio.investment_case import InvestmentCase
+from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
@@ -50,12 +51,21 @@ class Brain:
         return dict(self.context.memory)
 
     @property
+    def decision_history(self) -> dict[str, DecisionHistory]:
+        """What the Artificial CIO decided in previous cycles, by symbol."""
+        return dict(self.context.decision_history)
+
+    @property
     def alerts(self) -> tuple[str, ...]:
         return self.context.alerts
 
     def investment_case(self, symbol: str) -> InvestmentCase | None:
         """Return the investment case associated with a symbol."""
         return self.context.investment_case(symbol)
+
+    def decision_history_for(self, symbol: str) -> DecisionHistory:
+        """Return every decision recorded for a symbol."""
+        return self.context.decision_history_for(symbol)
 
     def evidence_for(self, symbol: str) -> tuple[object, ...]:
         """Return all evidence available for a symbol."""

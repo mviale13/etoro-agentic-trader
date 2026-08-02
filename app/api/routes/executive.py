@@ -11,6 +11,7 @@ from app.api.models.portfolio_briefing import (
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.executive.executive_service import ExecutiveService
+from app.application.workspace.executive_pipeline import ExecutivePipeline
 from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
@@ -51,7 +52,9 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
 
     brain = await BrainBuilderService().build()
 
-    briefing = PortfolioBriefingService().build(brain)
+    briefing = PortfolioBriefingService(
+        pipeline=ExecutivePipeline.with_memory(),
+    ).build(brain)
 
     if briefing is None:
         raise HTTPException(
@@ -83,6 +86,7 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
                 why_now=list(thesis.catalysts),
                 risks=list(thesis.risks),
                 expected_holding_period=thesis.expected_holding_period,
+                previous_decisions=thesis.previous_decisions,
             )
         )
 
@@ -120,7 +124,9 @@ async def executive_brief(
 
     brain = await BrainBuilderService().build()
 
-    brief = ExecutiveService().brief(
+    brief = ExecutiveService(
+        pipeline=ExecutivePipeline.with_memory(),
+    ).brief(
         symbol=normalized_symbol,
         brain=brain,
     )
@@ -149,6 +155,7 @@ async def executive_brief(
                 recommendation=case.recommendation,
                 confidence=case.confidence,
                 summary=case.summary,
+                previous_decisions=case.previous_decisions,
             )
             for case in view.investment_cases
         ],

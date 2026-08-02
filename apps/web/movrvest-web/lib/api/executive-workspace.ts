@@ -60,6 +60,7 @@ interface RankedCasePayload {
   why_now: readonly string[];
   risks: readonly string[];
   expected_holding_period: string;
+  previous_decisions: string | null;
 }
 
 interface PortfolioBriefingPayload {
@@ -89,6 +90,25 @@ function requireString(value: unknown, field: string): string {
   }
 
   return value;
+}
+
+/**
+ * Read a field the backend reports as absent when it has nothing to say.
+ *
+ * Null stays null: an absent value is never replaced with a placeholder.
+ */
+function optionalString(value: unknown, field: string): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(
+      `Expected a string or null at "${field}", received ${typeof value}`,
+    );
+  }
+
+  return value.trim().length === 0 ? null : value;
 }
 
 function parseBrain(payload: unknown): BrainPayload {
@@ -186,6 +206,10 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.expected_holding_period,
         `investment_cases[${index}].expected_holding_period`,
       ),
+      previous_decisions: optionalString(
+        item.previous_decisions,
+        `investment_cases[${index}].previous_decisions`,
+      ),
     })),
   };
 }
@@ -216,6 +240,7 @@ function mapInvestmentCases(
     whyNow: item.why_now,
     risks: item.risks,
     expectedHoldingPeriod: item.expected_holding_period,
+    previousDecisions: item.previous_decisions,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
   }));
 }

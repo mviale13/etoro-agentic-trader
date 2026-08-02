@@ -10,3 +10,4 @@ class EventType(StrEnum):
     ORDER_EXECUTED = "order_executed"
     POSITION_CLOSED = "position_closed"
     MEMORY_RECORDED = "memory_recorded"
+    EXECUTIVE_DECISION_RECORDED = "executive_decision_recorded"

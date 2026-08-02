@@ -43,6 +43,7 @@ class ExecutiveBriefRenderer:
                 recommendation=case.recommendation,
                 confidence=case.confidence,
                 summary=case.summary,
+                previous_decisions=case.previous_decisions,
             )
             for case in brief.investment_cases
         )

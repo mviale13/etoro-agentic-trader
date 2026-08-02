@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 318 passing |
+| Pytest | 🟢 336 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -64,9 +64,14 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `GET /executive/{symbol}` — one investment case
 - `GET /brain/` — portfolio facts, investor observation and DNA
 - The dashboard renders real account data and a real brief
+- Every decision is recorded, and the next cycle says what changed
 
 ## Recently completed
 
+- The Artificial CIO remembers its own decisions. `DecisionJournal` records
+  each one, `MemoryPerception` reads them back into the Brain, and the
+  investment case states what was decided before — or says nothing at all
+  when the holding has never been judged
 - Communication wired in; the hardcoded "No urgent decision today" is gone
 - The dashboard's silent mock fallback is fixed, and its last mock removed
 - Holdings are perceived per security, so the CIO judges each on its own
@@ -92,7 +97,11 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Reasoning
 
-- `consistency_score` awaits the Learning layer
+- `consistency_score` measures the investor's own consistency. The journal
+  records what the CIO decided, not what the investor did about it, so the
+  score still reports the neutral midpoint
+- No decision is scored against its outcome; the journal is a record, not a
+  track record
 - `app/analysts` holds real per-security fundamental analysis the canonical
   reasoning layer does not yet own
 
@@ -122,13 +131,14 @@ this layer.
 
 ## Learning
 
-Recommendation history, outcome analysis, and the behavioural consistency
-that depends on them.
+Decision history is recorded. Outcome analysis — was the decision right? —
+and the behavioural consistency that depends on the investor's own actions
+are still open.
 
 ## Explainability
 
 The change feed — what moved since the investor last looked, and why it
-matters to them.
+matters to them. The decision journal is its first real source.
 
 ---
 

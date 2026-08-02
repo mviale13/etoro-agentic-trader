@@ -65,6 +65,10 @@ class ExecutiveBriefConsoleRenderer:
                 console.print()
 
             console.print(f"Expected holding period: {case.expected_holding_period}")
+
+            if case.previous_decisions:
+                console.print(f"Previously: {case.previous_decisions}")
+
             console.print()
 
         if brief.priorities:

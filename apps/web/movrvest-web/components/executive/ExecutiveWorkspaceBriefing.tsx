@@ -388,9 +388,10 @@ export function ExecutiveWorkspaceBriefing({
                 : `${workspace.priorities.length} executive actions`}
             </h2>
 
-            {/* Decisions come from the Artificial CIO. Behavioural
-                consistency and conviction history are still missing, so this
-                is genuine but incomplete reasoning. */}
+            {/* Decisions come from the Artificial CIO, which now remembers
+                what it decided before. Behavioural consistency still needs a
+                record of the investor's own actions, so this is genuine but
+                incomplete reasoning. */}
             {dataSource === "backend" ? (
               <StatusPill status="partial" label="Artificial CIO" />
             ) : (

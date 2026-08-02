@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from app.brain.brain import Brain
 from app.brain.brain_context import BrainContext
 from app.cio.investment_case import InvestmentCase
+from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
@@ -26,6 +27,7 @@ class BrainBuilder:
     evidence: Mapping[str, tuple[object, ...]] = field(default_factory=dict)
     committee_opinions: Mapping[str, tuple[object, ...]] = field(default_factory=dict)
     memory: Mapping[str, object] = field(default_factory=dict)
+    decision_history: Mapping[str, DecisionHistory] = field(default_factory=dict)
     alerts: tuple[str, ...] = ()
 
     def build(self) -> Brain:
@@ -42,6 +44,7 @@ class BrainBuilder:
                 for symbol, opinions in self.committee_opinions.items()
             },
             memory=dict(self.memory),
+            decision_history=dict(self.decision_history),
             alerts=tuple(self.alerts),
         )
 

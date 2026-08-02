@@ -38,6 +38,8 @@ Decision Evidence       app/application/executive
     ↓                   → DecisionEvidence
 Artificial CIO          app/cio
     ↓                   → ExecutiveDecision
+Decision Journal        app/application/learning
+    ↓                   → recorded, then perceived by the next cycle
 Investment Thesis       app/application/thesis
     ↓                   → InvestmentThesis
 Communication           app/application/brief
@@ -68,6 +70,7 @@ Orchestration lives in `app/application/workspace`:
 | `app/application/committees` | `CommitteeService`, `CommitteeOpinion` |
 | `app/application/executive` | `ExecutiveService`, `DecisionEvidenceBuilder` |
 | `app/cio` | `ArtificialCIO`, `ExecutiveDecision`, `DecisionPolicy` |
+| `app/application/learning` | `DecisionJournal` — what the CIO decided before |
 | `app/application/thesis` | `InvestmentThesisBuilder` |
 | `app/application/brief` | `ExecutiveBriefBuilder` — the Communication layer |
 | `app/application/workspace` | Pipeline orchestration |
@@ -85,6 +88,7 @@ Orchestration lives in `app/application/workspace`:
 | `SecurityPerception` | Per-security evidence, keyed by symbol |
 | `InvestorPerception` | `Observation`, `InvestorDNA` |
 | `RecommendationPerception` | `Recommendation` |
+| `MemoryPerception` | `DecisionHistory`, keyed by symbol |
 
 ## Analysts
 

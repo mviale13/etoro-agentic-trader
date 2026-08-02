@@ -15,11 +15,13 @@ from app.application.executive.decision_evidence_builder import (
 from app.application.executive.executive_evaluation import (
     ExecutiveEvaluation,
 )
+from app.application.learning.decision_journal import DecisionJournal
 from app.application.thesis.investment_thesis_builder import (
     InvestmentThesisBuilder,
 )
 from app.brain import Brain
 from app.cio.artificial_cio import ExecutiveDecisionEngine
+from app.repositories.json_event_repository import JsonEventRepository
 
 from .executive_workspace import ExecutiveWorkspace
 
@@ -52,6 +54,21 @@ class ExecutivePipeline:
         default_factory=ExecutiveBriefBuilder,
     )
 
+    #: Where decisions are remembered. None runs the pipeline without
+    #: memory, which is what a test or a what-if evaluation wants: nothing
+    #: the investor never saw should enter the record.
+    journal: DecisionJournal | None = None
+
+    @classmethod
+    def with_memory(cls) -> ExecutivePipeline:
+        """Build the pipeline that remembers what it decided."""
+
+        return cls(
+            journal=DecisionJournal(
+                repository=JsonEventRepository(),
+            ),
+        )
+
     def execute(
         self,
         symbol: str,
@@ -83,12 +100,18 @@ class ExecutivePipeline:
             evidence,
         )
 
+        # The Brain perceived this history before the cycle began, so the
+        # thesis compares today's decision against what came before it.
         workspace.thesis = self.thesis_builder.build(
             symbol=symbol,
             reasoning=workspace.reasoning,
             committee_opinions=workspace.committee_opinions,
             decision=workspace.decision,
+            history=brain.decision_history_for(symbol),
         )
+
+        if self.journal is not None:
+            self.journal.record(workspace.decision)
 
         workspace.brief = self.brief_builder.build(
             workspace,

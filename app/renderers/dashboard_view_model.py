@@ -22,6 +22,7 @@ class DashboardInvestmentCase:
     recommendation: str
     confidence: float
     summary: str
+    previous_decisions: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

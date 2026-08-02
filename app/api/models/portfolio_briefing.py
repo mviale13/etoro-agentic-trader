@@ -9,8 +9,7 @@ class RankedInvestmentCaseResponse(BaseModel):
 
     Every field is evidenced by the decision that produced it. Figures the
     platform cannot yet evidence — price targets, upside and downside
-    projections, conviction history — are deliberately absent rather than
-    estimated.
+    projections — are deliberately absent rather than estimated.
     """
 
     rank: int
@@ -23,6 +22,10 @@ class RankedInvestmentCaseResponse(BaseModel):
     why_now: list[str]
     risks: list[str]
     expected_holding_period: str
+
+    #: What the Artificial CIO decided about this holding before. Null until
+    #: a decision has been recorded for it.
+    previous_decisions: str | None = None
 
 
 class PortfolioBriefingResponse(BaseModel):
