@@ -112,6 +112,12 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       code
 - [ ] Analysts accept `Brain | BrainContext`; narrowing them retires the
       legacy `BrainContext`
+- [ ] `ClaimEngine.test.ts` has pre-existing TypeScript errors (`vitest` is
+      not installed); excluded from the Next build graph, so it does not
+      break the gate
+- [ ] `docs/` holds ~20 documents, several superseded and a few iCloud
+      conflict copies. Consolidate or mark them, as was done for
+      architecture v4.0
 
 ---
 
