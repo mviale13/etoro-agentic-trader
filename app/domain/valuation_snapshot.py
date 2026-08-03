@@ -20,4 +20,11 @@ class ValuationSnapshot:
     market_cap: float | None = None
     eps: float | None = None
 
+    #: What a token has instead of a balance sheet: how much of it exists,
+    #: how much ever will, how much changes hands, and how long it has.
+    circulating_supply: float | None = None
+    max_supply: float | None = None
+    volume_24h: float | None = None
+    inception: datetime | None = None
+
     observed_at: datetime | None = None

@@ -136,6 +136,10 @@ class RecordingValuationProvider:
             peg_ratio=None,
             dividend_yield=None,
             market_cap=1_255_684_964_352.0,
+            circulating_supply=20_065_192.0,
+            max_supply=21_000_000.0,
+            volume_24h=19_753_431_040.0,
+            inception=datetime(2010, 7, 13, tzinfo=UTC),
         )
 
 
@@ -200,25 +204,54 @@ def test_crypto_evidence_comes_back_under_its_own_symbol() -> None:
     assert facts.max_drawdown == 0.31
 
 
-def test_crypto_is_not_asked_for_company_fundamentals() -> None:
+def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:
     """
     The provider answers about a token, and the answer reads like a company.
 
-    A `marketCap` of 1.26 trillion, read as company facts, makes the quality
-    signal report Bitcoin as a large-cap company. It has no company, so the
-    fundamentals are reported absent rather than borrowed from a field that
-    happens to be populated.
+    A `marketCap` of 1.26 trillion is a network's total value, reported in
+    the field a business reports its equity value under. Fed to the company
+    quality signal it makes Bitcoin a large-cap company, which is why that
+    signal is not the one a token is sent to.
     """
 
-    facts, _, valuation = build_crypto_facts()
+    facts, _, _ = build_crypto_facts()
 
-    assert valuation.requested == []
-    assert facts.market_cap is None
+    # The hazard, demonstrated: asked the company question, a token
+    # answers as a company.
+    mistaken = QualitySignalService().build(facts)
 
-    signal = QualitySignalService().build(facts)
+    assert "Large-cap company." in statements(mistaken.evidence)
 
-    assert signal.quality == "UNKNOWN"
-    assert statements(signal.evidence) == ("Insufficient quality data.",)
+    # The path a token actually takes asks it about itself.
+    from app.services.crypto_quality_signal_service import (
+        CryptoQualitySignalService,
+    )
+
+    signal = CryptoQualitySignalService().build(facts)
+
+    assert "Large-cap company." not in statements(signal.evidence)
+    assert any("Network value" in line for line in statements(signal.evidence))
+
+
+def test_a_token_carries_what_a_token_has() -> None:
+    """Supply, issuance cap, turnover and age — all in the same response."""
+
+    facts, _, _ = build_crypto_facts()
+
+    assert facts.circulating_supply == 20_065_192.0
+    assert facts.max_supply == 21_000_000.0
+    assert facts.volume_24h == 19_753_431_040.0
+    assert facts.inception == datetime(2010, 7, 13, tzinfo=UTC)
+
+
+def test_a_token_carries_no_company_fundamentals() -> None:
+    """No earnings, no dividend, no price/earnings ratio — never borrowed."""
+
+    facts, _, _ = build_crypto_facts()
+
+    assert facts.eps is None
+    assert facts.dividend_yield is None
+    assert facts.forward_pe is None
 
 
 def test_facts_carry_the_asset_class_rather_than_a_broker_id() -> None:

@@ -37,6 +37,13 @@ class CompanyFacts:
     #: Deepest peak-to-trough fall observed, as a positive ratio.
     max_drawdown: float | None = None
 
+    #: What a token has in place of company fundamentals. None for a
+    #: company, which has a balance sheet instead.
+    circulating_supply: float | None = None
+    max_supply: float | None = None
+    volume_24h: float | None = None
+    inception: datetime | None = None
+
     # Valuation
     forward_pe: float | None = None
 

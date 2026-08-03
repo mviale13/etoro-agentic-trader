@@ -162,10 +162,7 @@ class ArtificialCIO:
         if evidence.valuation_score is None:
             return (
                 DecisionState.PREPARE,
-                (
-                    "The case is credible, but valuation has not been "
-                    "measured, so no recommendation can rest on it."
-                ),
+                self._unassessable_valuation(evidence),
             )
 
         if evidence.risk_score is None:
@@ -248,6 +245,33 @@ class ArtificialCIO:
         return (
             "Business quality has not been measured, so the case cannot "
             "progress beyond research."
+        )
+
+    @staticmethod
+    def _unassessable_valuation(
+        evidence: DecisionEvidence,
+    ) -> str:
+        """
+        Why valuation is missing: not yet read, or nothing to read it from.
+
+        A token has no earnings, so there is no price/earnings ratio to be
+        cheap or expensive on. Its scale, liquidity, issuance and age are
+        assessable and now assessed; what it is worth is not, and saying
+        the measurement is pending would promise one that cannot come.
+        """
+
+        asset_class = evidence.asset_class
+
+        if asset_class is not None and asset_class.has_no_company:
+            return (
+                f"A {asset_class.noun} has no earnings to be valued "
+                "against, so this platform cannot judge what it is worth. "
+                "No recommendation is made without that."
+            )
+
+        return (
+            "The case is credible, but valuation has not been measured, "
+            "so no recommendation can rest on it."
         )
 
     @staticmethod

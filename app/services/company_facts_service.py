@@ -49,15 +49,25 @@ class CompanyFactsService:
 
         quotes_task = asyncio.create_task(self._market_provider.quotes((instrument,)))
 
+        # The resolved ticker, not the broker's. `BTC` returns nothing
+        # from the fundamentals endpoint for the same reason it returns
+        # nothing from the quote one; this path only escaped it while
+        # crypto fundamentals were being skipped altogether.
         quotes, valuation = await asyncio.gather(
             quotes_task,
-            self._valuation(item.symbol, asset_class),
+            self._valuation(instrument.yahoo_symbol),
         )
 
         quote = self._find_quote(
             quotes,
             item.symbol,
         )
+
+        # `marketCap` means a network's total value for a token and a
+        # company's equity value for a business. The same field, two
+        # different claims, so which fields are read is decided by which
+        # kind of thing this is.
+        is_token = asset_class.has_no_company
 
         return CompanyFacts(
             instrument_id=item.instrument_id,
@@ -77,8 +87,15 @@ class CompanyFactsService:
                 quote.realized_volatility if quote is not None else None
             ),
             max_drawdown=(quote.max_drawdown if quote is not None else None),
-            # Valuation
-            forward_pe=valuation.forward_pe,
+            # What a token has. Absent for a company, which has the
+            # balance-sheet fields below instead.
+            circulating_supply=(valuation.circulating_supply if is_token else None),
+            max_supply=valuation.max_supply if is_token else None,
+            volume_24h=valuation.volume_24h if is_token else None,
+            inception=valuation.inception if is_token else None,
+            # Valuation. A token has no earnings to be priced against, so
+            # these stay absent however populated the response was.
+            forward_pe=valuation.forward_pe if not is_token else None,
             # Growth
             revenue_growth=None,
             earnings_growth=None,
@@ -96,8 +113,8 @@ class CompanyFactsService:
             operating_cash_flow=None,
             free_cash_flow=None,
             # Shareholder returns
-            eps=valuation.eps,
-            dividend_yield=valuation.dividend_yield,
+            eps=valuation.eps if not is_token else None,
+            dividend_yield=valuation.dividend_yield if not is_token else None,
             # Classification
             sector=None,
             industry=None,
@@ -105,32 +122,24 @@ class CompanyFactsService:
 
     async def _valuation(
         self,
-        symbol: str,
-        asset_class: AssetClass,
+        yahoo_symbol: str,
     ) -> ValuationSnapshot:
         """
-        The company fundamentals behind this security, if it has a company.
+        Whatever the provider knows about this security.
 
-        A cryptocurrency has no earnings, no dividend and no price/earnings
-        ratio — but the provider answers anyway, reporting a network's total
-        value under the same `marketCap` field a business reports its equity
-        value under. Read as company facts, that number becomes evidence
-        that Bitcoin is a large-cap company. So nothing is read at all: the
-        fundamentals a crypto asset does not have are reported as absent,
-        and the request is not spent.
+        The response is not read as company facts regardless of what the
+        security is. A cryptocurrency has no earnings, no dividend and no
+        price/earnings ratio, and the provider reports a network's total
+        value under the same `marketCap` field a business reports its
+        equity value under — read as company quality, that made Bitcoin a
+        large-cap company. What it does have, this call already returns:
+        supply, issuance cap, turnover and age. Which of those reach the
+        facts is decided below, by what the asset is.
         """
-
-        if not asset_class.has_company_fundamentals:
-            return ValuationSnapshot(
-                forward_pe=None,
-                trailing_pe=None,
-                peg_ratio=None,
-                dividend_yield=None,
-            )
 
         return await asyncio.to_thread(
             self._valuation_provider.snapshot,
-            symbol,
+            yahoo_symbol,
         )
 
     @staticmethod

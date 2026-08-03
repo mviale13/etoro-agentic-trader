@@ -27,5 +27,21 @@ class ValueProvider:
             dividend_yield=info.get("dividendYield"),
             market_cap=info.get("marketCap"),
             eps=info.get("trailingEps", info.get("forwardEps")),
+            circulating_supply=info.get("circulatingSupply"),
+            max_supply=info.get("maxSupply"),
+            volume_24h=info.get("volume24Hr", info.get("regularMarketVolume")),
+            inception=self._inception(info.get("startDate")),
             observed_at=datetime.now(UTC),
         )
+
+    @staticmethod
+    def _inception(value: object) -> datetime | None:
+        """When the asset began trading, if the provider says."""
+
+        if not isinstance(value, (int, float)):
+            return None
+
+        try:
+            return datetime.fromtimestamp(int(value), tz=UTC)
+        except (OverflowError, OSError, ValueError):
+            return None

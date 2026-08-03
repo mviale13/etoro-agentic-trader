@@ -251,9 +251,12 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       as this platform's limit, with the gates unchanged
 - [x] `CryptoFearGreedProvider` reads Alternative.me rather than returning
       a hardcoded 72 under that service's name
-- [ ] Assessing crypto on its own terms needs token fundamentals — supply,
-      network activity, realised cap — which no provider here supplies.
-      Until then a crypto case stops at INVESTIGATE by design
+- [x] Crypto is assessed on token fundamentals — network value, turnover,
+      issuance and age — read from the provider call already being made
+- [ ] Crypto valuation stays absent. There are no earnings to price
+      against, and exchange volume is not on-chain volume, so an NVT-style
+      ratio would be a metric invented rather than measured. A crypto case
+      therefore stops at PREPARE
 - [ ] Holdings absent from every watchlist cannot be named or analysed
 - [ ] Research still evidences a capped number of candidates per cycle. With
       the cache warm the cap could rise substantially; the first cycle of a

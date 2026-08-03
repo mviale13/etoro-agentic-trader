@@ -1,0 +1,200 @@
+"""How sound a token is, on what a token actually has."""
+
+from datetime import UTC, datetime
+
+from app.domain.company_facts import CompanyFacts
+from app.domain.finding import Finding
+from app.domain.quality_signal import QualitySignal
+
+
+class CryptoQualitySignalService:
+    """
+    Assess a cryptocurrency without asking it company questions.
+
+    `QualitySignalService` scores size, earnings and dividends. A token has
+    none of those, so it returned UNKNOWN for every crypto asset and the
+    case stopped at research — for a preferred asset class, permanently.
+
+    What a token does have, the same provider call already returns. Four
+    things, each measured and each meaning something an investor can check:
+
+    Scale — the value of the whole network. A large network is not thereby
+    a good one, but a small one is easier to move and easier to abandon.
+
+    Liquidity — a day's turnover against that scale. This is the question
+    of whether a position can be left, which for an asset with no earnings
+    is most of what "quality" can honestly mean.
+
+    Issuance — how much of the eventual supply exists already. A token 20%
+    issued has five times its float still to come; the holder is diluted by
+    a schedule, not by a decision. A token with no stated cap cannot be
+    scored on this, and is not.
+
+    Age — how long it has traded. Survival is weak evidence, and it is
+    evidence.
+
+    The bands are policy, stated here rather than buried in a score, so a
+    reader can disagree with a threshold without doubting the measurement.
+    """
+
+    #: Network value, in dollars.
+    LARGE_NETWORK = 10_000_000_000
+    SMALL_NETWORK = 1_000_000_000
+
+    #: A day's volume as a share of network value.
+    LIQUID = 0.02
+    ILLIQUID = 0.002
+
+    #: Share of the eventual supply already issued.
+    MOSTLY_ISSUED = 0.90
+    PARTLY_ISSUED = 0.60
+
+    #: Years of trading history.
+    ESTABLISHED_YEARS = 5.0
+    YOUNG_YEARS = 2.0
+
+    def build(
+        self,
+        company: CompanyFacts,
+    ) -> QualitySignal:
+        evidence: list[Finding] = []
+        score = 0
+        measured = 0
+
+        for point, finding in (
+            self._scale(company),
+            self._liquidity(company),
+            self._issuance(company),
+            self._age(company),
+        ):
+            if finding is None:
+                continue
+
+            measured += 1
+            score += point
+            evidence.append(finding)
+
+        if not measured:
+            return QualitySignal(
+                quality="UNKNOWN",
+                confidence=20,
+                evidence=(Finding.neutral("Insufficient quality data."),),
+            )
+
+        # Judged against what could be measured, so a token missing one
+        # reading is not marked down for the reading's absence.
+        ratio = score / measured
+
+        if ratio >= 0.75:
+            quality, confidence = "HIGH", 60 + measured * 7
+        elif ratio >= 0.25:
+            quality, confidence = "MEDIUM", 50 + measured * 6
+        else:
+            quality, confidence = "LOW", 45 + measured * 5
+
+        return QualitySignal(
+            quality=quality,
+            confidence=min(confidence, 90),
+            evidence=tuple(evidence),
+        )
+
+    @classmethod
+    def _scale(
+        cls,
+        company: CompanyFacts,
+    ) -> tuple[int, Finding | None]:
+        value = company.market_cap
+
+        if value is None:
+            return 0, None
+
+        billions = value / 1_000_000_000
+
+        if value >= cls.LARGE_NETWORK:
+            return 1, Finding.favourable(f"Network value is ${billions:,.1f}bn.")
+
+        if value >= cls.SMALL_NETWORK:
+            return 0, Finding.neutral(f"Network value is ${billions:,.1f}bn.")
+
+        return -1, Finding.adverse(f"Network value is only ${billions:,.2f}bn.")
+
+    @classmethod
+    def _liquidity(
+        cls,
+        company: CompanyFacts,
+    ) -> tuple[int, Finding | None]:
+        volume = company.volume_24h
+        value = company.market_cap
+
+        if volume is None or not value:
+            return 0, None
+
+        turnover = volume / value
+
+        if turnover >= cls.LIQUID:
+            return 1, Finding.favourable(
+                f"A day's trading turns over {turnover * 100:.1f}% of the network."
+            )
+
+        if turnover >= cls.ILLIQUID:
+            return 0, Finding.neutral(
+                f"A day's trading turns over {turnover * 100:.1f}% of the network."
+            )
+
+        return -1, Finding.adverse(
+            f"A day's trading turns over only {turnover * 100:.2f}% of the "
+            "network, so a position may be hard to leave."
+        )
+
+    @classmethod
+    def _issuance(
+        cls,
+        company: CompanyFacts,
+    ) -> tuple[int, Finding | None]:
+        circulating = company.circulating_supply
+        cap = company.max_supply
+
+        if not circulating or not cap:
+            # No stated cap means no schedule to be diluted by, and no
+            # measurement either. It is left out rather than assumed benign.
+            return 0, None
+
+        issued = circulating / cap
+
+        if issued >= cls.MOSTLY_ISSUED:
+            return 1, Finding.favourable(
+                f"{issued * 100:.1f}% of the eventual supply already exists."
+            )
+
+        if issued >= cls.PARTLY_ISSUED:
+            return 0, Finding.neutral(
+                f"{issued * 100:.1f}% of the eventual supply already exists."
+            )
+
+        return -1, Finding.adverse(
+            f"Only {issued * 100:.1f}% of the eventual supply exists, so "
+            "holders are diluted as the rest is issued."
+        )
+
+    @classmethod
+    def _age(
+        cls,
+        company: CompanyFacts,
+    ) -> tuple[int, Finding | None]:
+        inception = company.inception
+
+        if inception is None:
+            return 0, None
+
+        years = (datetime.now(UTC) - inception).days / 365.25
+
+        if years >= cls.ESTABLISHED_YEARS:
+            return 1, Finding.favourable(f"Traded for {years:.0f} years.")
+
+        if years >= cls.YOUNG_YEARS:
+            return 0, Finding.neutral(f"Traded for {years:.1f} years.")
+
+        return -1, Finding.adverse(
+            f"Traded for only {years:.1f} years, so little of its record "
+            "has been observed."
+        )

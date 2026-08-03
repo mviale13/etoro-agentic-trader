@@ -74,11 +74,20 @@ class CachedValueProvider:
             "dividend_yield": snapshot.dividend_yield,
             "market_cap": snapshot.market_cap,
             "eps": snapshot.eps,
+            "circulating_supply": snapshot.circulating_supply,
+            "max_supply": snapshot.max_supply,
+            "volume_24h": snapshot.volume_24h,
+            "inception": (
+                snapshot.inception.isoformat()
+                if snapshot.inception is not None
+                else None
+            ),
             "observed_at": observed_at.isoformat(),
         }
 
-    @staticmethod
+    @classmethod
     def _restore(
+        cls,
         entry: CachedEntry,
     ) -> ValuationSnapshot:
         value = entry.value
@@ -105,5 +114,19 @@ class CachedValueProvider:
             dividend_yield=number("dividend_yield"),
             market_cap=number("market_cap"),
             eps=number("eps"),
+            circulating_supply=number("circulating_supply"),
+            max_supply=number("max_supply"),
+            volume_24h=number("volume_24h"),
+            inception=cls._timestamp(value.get("inception")),
             observed_at=observed_at,
         )
+
+    @staticmethod
+    def _timestamp(raw: object) -> datetime | None:
+        if not isinstance(raw, str):
+            return None
+
+        try:
+            return datetime.fromisoformat(raw)
+        except ValueError:
+            return None

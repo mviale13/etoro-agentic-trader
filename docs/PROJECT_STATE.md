@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 435 passing |
+| Pytest | 🟢 444 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,16 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Crypto is assessed on what a token has. `CryptoQualitySignalService`
+  measures network value, a day's turnover against it, how much of the
+  eventual supply already exists, and how long the asset has traded — all
+  four from the provider call the platform already made and was throwing
+  away. BTC scores 80 on a $1,269bn network, 95.5% issued, 16 years
+  traded; ADA scores 62 on $7bn and is rejected on its own 64.9%
+  volatility. Crypto moved from a permanent INVESTIGATE to real, differing
+  cases. None reached RECOMMEND: valuation stays absent, because there are
+  no earnings to price against and inventing a metric was the alternative
 
 - The crypto sentiment index is read from the service it cites.
   `CryptoFearGreedProvider` returned a hardcoded 72, labelled "Greed", and
@@ -247,10 +257,9 @@ Named rather than hidden. None of these are estimated away in the product.
 - Research covers a capped number of candidates per cycle, because
   fundamentals are uncached and the provider rate-limits. The page reports
   how many it could not reach
-- A crypto case cannot progress past INVESTIGATE, and now says why: the
-  platform judges a case on business quality and valuation, and a token has
-  neither. That is a limit of this platform, stated as one. Assessing crypto
-  properly needs token fundamentals no provider here supplies
+- A crypto case stops at PREPARE. Its quality is now measured, and its
+  worth cannot be: a token has no earnings to be priced against, which the
+  CIO states as this platform's limit rather than as a pending measurement
 
 ## Reasoning
 
