@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 525 passing |
+| Pytest | 🟢 558 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -72,10 +72,34 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `GET /market/` and the markets page report every instrument the
   platform prices, grouped, with what the average move netted out
 - Every decision is recorded, and the next cycle says what changed
+- Every market observation is recorded, and the next cycle says what the
+  market did — the mood, the volatility band and the sentiment reading,
+  each stated with the figures behind it
 - The dashboard change feed reports the decisions the CIO actually changed
+  and the market movements that were actually recorded
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **The market has a past.** Quotes were fetched, cached for fifteen
+  minutes and discarded, so nothing in the repository ever held two market
+  readings at once and no question about the market beginning "since"
+  could be answered at all. The change feed could only report decisions,
+  because decisions were the only thing anything wrote down.
+  `MarketSnapshotArchive` records each observation through the same
+  `VersionedSnapshotStore` the eToro responses go to — the store was
+  write-only and now reads back, rather than a second archive being
+  invented to hold the same kind of evidence twice. **Facts are stored and
+  the classification is not:** mood, volatility band and summary are
+  derived from the quotes and the VIX, so they are recomputed on the way
+  out by the one service that classifies markets anywhere, and a threshold
+  that changes does not leave stale conclusions behind it. A quote replayed
+  from the cache carries the time its price was actually taken, so a
+  snapshot identical to the last recorded one is not recorded again: a
+  replay is not an observation. `GET /market/` now builds its snapshot
+  through `MarketPerception` rather than assembling a second one from the
+  same three collaborators. Not verified against live data — this was
+  built and tested in a sandbox with no credentials and no network
 
 - **A sentiment reading now says what it is a reading of.** The only index
   the platform reads is Alternative.me's crypto Fear & Greed, and it was
@@ -409,9 +433,13 @@ Named rather than hidden. None of these are estimated away in the product.
 - No sentiment index is read for equities. The crypto reading is the only
   one, it is labelled as such everywhere it appears, and the gap is stated
   rather than filled by the index that happens to exist
-- Nothing records what the market did. Quotes are cached for 15 minutes
-  and discarded, so there is no market series, no macro history, and
-  nothing for the change feed to say moved
+- An individual instrument's move is not reported as a change. Every
+  instrument moves between any two readings, so reporting one means
+  deciding which moves matter, and nothing here measures that. A threshold
+  chosen to look sensible would be an invented figure on an investment
+  surface. The quotes are recorded, so the measure can be built on
+  evidence later. The same holds for a VIX that moved without leaving its
+  band
 - Cash transactions are wired but uncalled: the endpoint wants a cash
   account id, and the CID from `/api/v1/me` is rejected as invalid. Which
   route lists those ids has not been established, and none is guessed at
@@ -428,8 +456,10 @@ Named rather than hidden. None of these are estimated away in the product.
 
 - API routes construct services directly, so they cannot be tested without
   network access
-- The change feed reports recorded decision changes only; market and macro
-  movements are not recorded anywhere
+- The change feed reads the market archive, so it reports movements only
+  from the second recorded observation onwards. A fresh clone has no
+  market past and says nothing rather than comparing against an invented
+  first reading
 - `ExecutivePipeline` recomputes symbol-independent reasoning per holding
 - `ClaimEngine.test.ts` has pre-existing TypeScript errors (missing `vitest`)
 
@@ -457,9 +487,10 @@ are still open.
 
 ## Explainability
 
-The change feed reports what the Artificial CIO changed its mind about.
-Extending it to what moved in the market and why it matters to this investor
-needs those movements recorded first.
+The change feed reports what the Artificial CIO changed its mind about and
+what the market did. Why a given movement matters to *this* investor — which
+holding it touches, and how much — is still open, and needs a measure of
+which moves matter before it can be answered honestly.
 
 ---
 

@@ -72,7 +72,8 @@ Orchestration lives in `app/application/workspace`:
 | `app/application/executive` | `ExecutiveService`, `DecisionEvidenceBuilder` |
 | `app/cio` | `ArtificialCIO`, `ExecutiveDecision`, `DecisionPolicy` |
 | `app/application/learning` | `DecisionJournal` — what the CIO decided before |
-| `app/application/change_feed` | `ChangeFeedService` — the decisions that changed |
+| `app/application/market` | `MarketSnapshotArchive` — what the market read before |
+| `app/application/change_feed` | `ChangeFeedService`, `MarketChangeService` — what changed |
 | `app/application/thesis` | `InvestmentThesisBuilder` |
 | `app/application/brief` | `ExecutiveBriefBuilder` — the Communication layer |
 | `app/application/workspace` | Pipeline orchestration |
@@ -81,6 +82,7 @@ Orchestration lives in `app/application/workspace`:
 | `app/domain` | Shared domain models |
 | `app/providers` | Provider access, cached: `CachedValueProvider`, `CachedMarketProvider` |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
+| `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |
 
 ## Perception components
@@ -88,7 +90,7 @@ Orchestration lives in `app/application/workspace`:
 | Component | Produces |
 |---|---|
 | `PortfolioPerception` | `PortfolioSnapshot`, including per-holding detail |
-| `MarketPerception` | `MarketSnapshot` |
+| `MarketPerception` | `MarketSnapshot`, and the record of it |
 | `PolicyPerception` | `InvestmentPolicy` |
 | `SecurityPerception` | Per-security evidence, keyed by symbol |
 | `InvestorPerception` | `Observation`, `InvestorDNA` |

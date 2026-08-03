@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 from typing import Protocol
 
+from app.application.market import MarketSnapshotArchive
 from app.application.services.market_service import MarketService
 from app.domain.market_snapshot import MarketData, MarketSnapshot
 from app.domain.sentiment_snapshot import SentimentSnapshot
@@ -22,6 +23,12 @@ class SentimentProvider(Protocol):
     async def snapshot(self) -> SentimentSnapshot | None: ...
 
 
+class MarketArchive(Protocol):
+    """Anything that keeps what the market read."""
+
+    def record(self, snapshot: MarketSnapshot) -> object: ...
+
+
 class MarketPerception:
     """
     Produces the current market perception.
@@ -30,8 +37,15 @@ class MarketPerception:
     ----------------
     - Collect market facts from the infrastructure layer.
     - Build the canonical MarketSnapshot.
+    - Record what was observed, so a later cycle can say what moved.
     - Perform no reasoning.
     - Perform no executive decision making.
+
+    Recording belongs here because this is where market facts enter the
+    platform, exactly as `EtoroClient` keeps every response that comes
+    through its own door. Before it, a quote lived fifteen minutes in a
+    cache and was gone, and no question about the market beginning "since"
+    could be answered.
     """
 
     def __init__(
@@ -39,15 +53,17 @@ class MarketPerception:
         provider: MarketDataProvider | None = None,
         market_service: MarketService | None = None,
         sentiment_provider: SentimentProvider | None = None,
+        archive: MarketArchive | None = None,
     ) -> None:
         self._provider = provider or CachedMarketProvider()
         self._market_service = market_service or MarketService()
         self._sentiment_provider = sentiment_provider or CryptoFearGreedProvider()
+        self._archive = archive or MarketSnapshotArchive()
 
     async def execute(self) -> MarketSnapshot:
         market_data = await self._provider.snapshot()
 
-        return self._market_service.build_snapshot(
+        snapshot = self._market_service.build_snapshot(
             quotes=market_data.quotes,
             vix=market_data.vix,
             # Not `utcnow()`, which returns a naive datetime and cannot be
@@ -55,6 +71,29 @@ class MarketPerception:
             timestamp=datetime.now(UTC),
             sentiment=await self._sentiment(),
         )
+
+        self._record(snapshot)
+
+        return snapshot
+
+    def _record(
+        self,
+        snapshot: MarketSnapshot,
+    ) -> None:
+        """
+        Keep this observation, or carry on without it.
+
+        An archive that cannot be written to costs the record, not the
+        cycle. The investor asked what the market is doing; a full disk is
+        not a reason to refuse to answer, and the failure to record is
+        visible as a gap in the series rather than hidden behind a
+        fabricated entry.
+        """
+
+        try:
+            self._archive.record(snapshot)
+        except OSError:
+            return
 
     async def _sentiment(self) -> SentimentSnapshot | None:
         """

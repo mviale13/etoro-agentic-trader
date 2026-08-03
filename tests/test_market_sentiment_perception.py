@@ -56,11 +56,19 @@ class SentimentStub:
         return self._snapshot
 
 
+class ArchiveStub:
+    """Records nothing. These tests are about the reading, not the record."""
+
+    def record(self, snapshot: MarketSnapshot) -> object:
+        return None
+
+
 def perceive(sentiment: SentimentStub) -> MarketSnapshot:
     return asyncio.run(
         MarketPerception(
             provider=MarketStub(),
             sentiment_provider=sentiment,
+            archive=ArchiveStub(),
         ).execute()
     )
 

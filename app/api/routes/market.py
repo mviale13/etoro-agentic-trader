@@ -1,13 +1,9 @@
 """What the platform can say about the market itself."""
 
-from datetime import UTC, datetime
-
 from fastapi import APIRouter
 
-from app.application.services.market_service import MarketService
+from app.application.brain.perception.market_perception import MarketPerception
 from app.domain.market_snapshot import MarketSnapshot
-from app.providers.cached_market_provider import CachedMarketProvider
-from app.providers.crypto_fear_greed_provider import CryptoFearGreedProvider
 from app.services.market_breadth_service import MarketBreadthService
 
 router = APIRouter(
@@ -80,15 +76,14 @@ def _payload(
 
 @router.get("/")
 async def get_market() -> dict[str, object]:
-    """The current market snapshot, priced once and shared."""
+    """
+    The current market snapshot, priced once and shared.
 
-    data = await CachedMarketProvider().snapshot()
+    Built by `MarketPerception`, which is the one place a market snapshot
+    is assembled. This route used to assemble its own from the same three
+    collaborators, so the page and the Brain read the market through two
+    implementations of one concept — and only one of them would have
+    gained anything added to the other.
+    """
 
-    market = MarketService().build_snapshot(
-        quotes=data.quotes,
-        vix=data.vix,
-        timestamp=datetime.now(UTC),
-        sentiment=await CryptoFearGreedProvider().snapshot(),
-    )
-
-    return _payload(market)
+    return _payload(await MarketPerception().execute())
