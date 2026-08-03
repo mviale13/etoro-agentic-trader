@@ -17,6 +17,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ExecutivePortfolioAssessment } from "@/components/portfolio/ExecutivePortfolioAssessment";
 import {
   getPortfolioOverview,
+  type PortfolioDrawdown,
   type PortfolioOverview,
 } from "@/lib/api/portfolio";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -84,6 +85,82 @@ function MetricCard({
           <Icon aria-hidden="true" className="h-5 w-5" />
         </div>
       </div>
+    </article>
+  );
+}
+
+function formatDay(value: string): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+/**
+ * What the account has actually been through.
+ *
+ * Every other figure on this page describes this morning. This one is
+ * read off the daily balances eToro holds, and it is the only thing here
+ * that can say the account fell and recovered rather than that it is
+ * currently worth what it is worth.
+ */
+function DrawdownCard({ drawdown }: { drawdown: PortfolioDrawdown | null }) {
+  return (
+    <article className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-slate-500">
+            Deepest fall on record
+          </p>
+
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            {drawdown
+              ? `${drawdown.depthPct.toFixed(1)}% peak to trough`
+              : "Not measured"}
+          </h2>
+        </div>
+
+        {drawdown ? (
+          <StatusPill status="live" label={drawdown.reading} />
+        ) : (
+          <StatusPill status="partial" label="No balance history" />
+        )}
+      </div>
+
+      {drawdown ? (
+        <>
+          <p className="mt-6 leading-7 text-slate-600">
+            The account peaked on {formatDay(drawdown.peakOn)} and bottomed out
+            on {formatDay(drawdown.troughOn)}.{" "}
+            {drawdown.recovered
+              ? "It has since recovered to a new high."
+              : `It is still ${drawdown.currentDepthPct.toFixed(
+                  1,
+                )}% below that peak.`}
+          </p>
+
+          {/* The window is named rather than implied: a year is asked for
+              and as much of it as the account has lived through comes
+              back. A 15% fall over a year and a 15% fall over a month are
+              not the same statement about an account. */}
+          <p className="mt-4 text-sm text-slate-500">
+            Measured over {drawdown.observations} daily balances,{" "}
+            {formatDay(drawdown.startsOn)} to {formatDay(drawdown.endsOn)}.
+          </p>
+        </>
+      ) : (
+        <p className="mt-6 leading-7 text-slate-600">
+          MOVRvest measures this from the account&apos;s daily balances, and
+          needs at least 30 of them. Until the broker supplies that history,
+          the fall this account has taken is unknown — it is not zero.
+        </p>
+      )}
     </article>
   );
 }
@@ -197,6 +274,8 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
               </div>
             </div>
           </article>
+
+          <DrawdownCard drawdown={portfolio.drawdown} />
 
           <ExecutivePortfolioAssessment
             liquidity={portfolio.liquidityPct}

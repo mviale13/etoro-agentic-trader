@@ -1,6 +1,7 @@
 """Tests for portfolio perception."""
 
 import inspect
+from datetime import UTC, date, datetime, timedelta
 from typing import cast
 
 import pytest
@@ -9,13 +10,16 @@ from app.application.brain.perception.portfolio_perception import (
     PortfolioPerception,
 )
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.equity_curve import EquityCurve, EquityPoint
 from app.domain.portfolio_position import PortfolioPosition
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
+from app.domain.provenance import Provenance
 from app.domain.watchlist_item import WatchlistItem
 from app.services.account_service import AccountService
 from app.services.instrument_symbol_resolver import (
     InstrumentSymbolResolver,
 )
+from app.services.portfolio_history_service import PortfolioHistoryService
 from app.services.portfolio_service import PortfolioService
 
 
@@ -81,9 +85,43 @@ class ResolverStub:
         return f"#{instrument_id}"
 
 
+class HistoryStub:
+    """The balance history, or a broker that could not be reached."""
+
+    def __init__(
+        self,
+        curve: EquityCurve | None = None,
+        failure: Exception | None = None,
+    ) -> None:
+        self.curve = curve
+        self.failure = failure
+        self.asked_for: date | None = None
+
+    async def equity_curve(self, since: date) -> EquityCurve | None:
+        self.asked_for = since
+
+        if self.failure is not None:
+            raise self.failure
+
+        return self.curve
+
+
+def make_curve(*totals: float) -> EquityCurve:
+    start = date(2026, 7, 1)
+
+    return EquityCurve(
+        points=tuple(
+            EquityPoint(start + timedelta(days=offset), total)
+            for offset, total in enumerate(totals)
+        ),
+        reading=Provenance(source="eToro", observed_at=datetime.now(UTC)),
+    )
+
+
 def build_perception(
     snapshot: PortfolioSnapshot,
     instruments: dict[int, WatchlistItem] | None = None,
+    history: HistoryStub | None = None,
 ) -> PortfolioPerception:
     account = cast(AccountSnapshot, object())
 
@@ -105,6 +143,10 @@ def build_perception(
         symbol_resolver=cast(
             InstrumentSymbolResolver,
             ResolverStub(instruments or {}),
+        ),
+        history_service=cast(
+            PortfolioHistoryService,
+            history or HistoryStub(),
         ),
     )
 
@@ -152,6 +194,49 @@ async def test_portfolio_perception_names_each_holding() -> None:
 
     # The largest holding is now named rather than reported as unknown.
     assert result.largest_position == "META"
+
+
+@pytest.mark.anyio
+async def test_the_snapshot_carries_what_the_account_has_been_through() -> None:
+    """Every other field on the snapshot describes this morning only."""
+
+    history = HistoryStub(curve=make_curve(*(100.0,) * 20, *(75.0,) * 15))
+
+    result = await build_perception(make_snapshot(), history=history).execute()
+
+    assert result.drawdown is not None
+    assert result.drawdown.depth == 0.25
+    assert result.drawdown.observations == 35
+
+    # A year, so the account's fall and each holding's fall are measured
+    # over comparable stretches of time.
+    assert history.asked_for is not None
+    assert 360 <= (date.today() - history.asked_for).days <= 370
+
+
+@pytest.mark.anyio
+async def test_a_history_too_short_to_measure_leaves_the_drawdown_absent() -> None:
+    history = HistoryStub(curve=make_curve(*(100.0,) * 10, 60.0))
+
+    result = await build_perception(make_snapshot(), history=history).execute()
+
+    assert result.drawdown is None
+
+
+@pytest.mark.anyio
+async def test_an_unreachable_history_costs_the_drawdown_not_the_cycle() -> None:
+    """
+    The account snapshot is what the platform cannot reason without. The
+    history is what it would like to have, and not having it is reported
+    as unmeasured rather than raised.
+    """
+
+    history = HistoryStub(failure=RuntimeError("eToro did not answer"))
+
+    result = await build_perception(make_snapshot(), history=history).execute()
+
+    assert result.drawdown is None
+    assert result.total_value == 1_000.0
 
 
 @pytest.mark.anyio

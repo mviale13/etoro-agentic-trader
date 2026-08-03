@@ -15,6 +15,12 @@ class InvestmentConstraints:
     max_crypto: float
     rebalance_threshold: float
 
+    #: The deepest fall the investor said they could sit through, as a
+    #: percentage. None where they have not said — which is not the same
+    #: as unlimited, and is why the platform's own default is applied
+    #: somewhere that names itself as a default.
+    max_drawdown: float | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class InvestmentPolicy:

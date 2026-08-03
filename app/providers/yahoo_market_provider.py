@@ -9,6 +9,7 @@ from typing import Any
 import yfinance as yf
 
 from app.domain.asset_class import AssetClass
+from app.domain.drawdown import deepest_drawdown
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
 
@@ -262,19 +263,24 @@ class YahooMarketProvider:
         cls,
         closes: Any,
     ) -> float | None:
-        """The deepest peak-to-trough fall in the observed window."""
+        """
+        The deepest peak-to-trough fall in the observed window.
+
+        The walk itself lives in the domain, because the account's own
+        equity curve is measured the same way and two implementations of
+        "how far did it fall" would eventually disagree on a dashboard
+        that shows both.
+        """
 
         if len(closes) < cls.MINIMUM_OBSERVATIONS:
             return None
 
-        drawdowns = closes / closes.cummax() - 1.0
+        measurement = deepest_drawdown([float(close) for close in closes])
 
-        deepest = float(drawdowns.min())
-
-        if not isfinite(deepest):
+        if measurement is None:
             return None
 
-        return round(abs(deepest), 4)
+        return measurement.depth
 
     @staticmethod
     def _fetch_latest_close(

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.portfolio_drawdown import PortfolioDrawdown
 from app.domain.portfolio_position import PortfolioPosition
 
 
@@ -36,6 +37,12 @@ class PortfolioSnapshot:
     holdings: tuple[PortfolioPosition, ...] = ()
     pending_orders: int = 0
     unrealized_pnl_usd: float = 0.0
+
+    # What this account has actually been through, which every other field
+    # here is silent about: they all describe the present moment. None
+    # where the broker's balance history was unreachable or too short to
+    # measure, and never filled in with a figure derived from the holdings.
+    drawdown: PortfolioDrawdown | None = None
 
     @property
     def total_value_usd(self) -> float:

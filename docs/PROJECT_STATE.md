@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 481 passing |
+| Pytest | 🟢 512 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -65,18 +65,35 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `GET /brain/` — portfolio facts, investor observation and DNA
 - `GET /research/candidates` — the watched securities, judged and ranked
 - The dashboard renders real account data and a real brief
+- The portfolio page states the deepest fall the account has taken, the
+  days it ran between, and how far below that peak it still sits
 - Every decision is recorded, and the next cycle says what changed
 - The dashboard change feed reports the decisions the CIO actually changed
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
 
+- Portfolio drawdown is measured. The account fell **15.8%** from its peak
+  on 10 May 2026 to its low on 25 June 2026 and is still 7.7% below that
+  peak — read off 365 daily balances, not inferred from the holdings.
+  Two of the risk score's four components were hardcoded 0.50s; this was
+  one of them. The fall is scored against the 20% the investor stated they
+  could sit through, a figure the strategy form has always collected and
+  nothing had ever read, which puts the account at 0.79 of its own
+  mandate. The window is stated everywhere the number is, because 15.8%
+  over a year and 15.8% over a month are different statements. Market risk
+  is still unmeasured, so overall risk stays absent
+
+- The balance history reaches back a year, not a month. The first live
+  call asked for one month and got 33 snapshots; asking for 365 days
+  returns 365. What the archive holds is what was requested, which is
+  exactly why the request window is recorded alongside the response
+
 - The account has a past, not just a present. `EtoroHistoryBroker` reads
-  closed trades, historical balance snapshots and cash transactions —
-  33 daily balance snapshots came back on the first live call, the first
-  time anything here has held a figure from before today. Every decision
-  until now rested on a snapshot of now, which is why no decision can yet
-  be scored against its outcome. Pages are walked to a ceiling the caller
+  closed trades, historical balance snapshots and cash transactions — the
+  first figures in this repository from before today. Every decision until
+  now rested on a snapshot of now, which is why no decision can yet be
+  scored against its outcome. Pages are walked to a ceiling the caller
   sets, because the read budget is pooled and a loop that follows "next"
   until it runs out spends an allowance the rest of the platform needs
 
@@ -319,8 +336,10 @@ Named rather than hidden. None of these are estimated away in the product.
   doing its job. Fit reads 99 for all of them — honestly, on an account
   that is 97% cash with no position above 0.5% — so nothing on live data
   yet demonstrates it separating one security from another
-- Portfolio-level drawdown is still unmeasured. Balance history now
-  supplies the daily equity series it needs; nothing reads it yet
+- Market risk is still unmeasured, and it is now the only component
+  holding overall portfolio risk absent. It needs a volatility series for
+  the account as a whole; the daily equity curve that drawdown is read off
+  could supply one, and nothing computes it yet
 - Cash transactions are wired but uncalled: the endpoint wants a cash
   account id, and the CID from `/api/v1/me` is rejected as invalid. Which
   route lists those ids has not been established, and none is guessed at

@@ -30,6 +30,14 @@ class InvestmentPolicyMapper:
             ),
         )
 
+        objectives = cast(
+            dict[str, Any],
+            strategy.get(
+                "objectives",
+                {},
+            ),
+        )
+
         investor_type = str(preferences.get("investor_type") or "custom")
 
         target_cash = self._required_number(
@@ -49,6 +57,14 @@ class InvestmentPolicyMapper:
             default=0.0,
         )
 
+        # The one figure the investor states about losses rather than about
+        # allocations. It was collected by the strategy form, checked for
+        # completeness and then read by nothing.
+        maximum_drawdown = self._stated_number(
+            objectives,
+            "maximum_acceptable_drawdown_pct",
+        )
+
         return InvestmentPolicy(
             risk_profile=investor_type,
             target=AllocationTarget(
@@ -61,8 +77,26 @@ class InvestmentPolicyMapper:
                 max_single_position=(maximum_single_position),
                 max_crypto=maximum_crypto,
                 rebalance_threshold=(DEFAULT_REBALANCE_THRESHOLD_PCT),
+                max_drawdown=maximum_drawdown,
             ),
         )
+
+    def _stated_number(
+        self,
+        source: dict[str, Any],
+        field: str,
+    ) -> float | None:
+        """The investor's figure, or nothing where they gave none."""
+
+        value = source.get(field)
+
+        if value is None or value == "":
+            return None
+
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
 
     def _required_number(
         self,

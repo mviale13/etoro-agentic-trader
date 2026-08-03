@@ -1,18 +1,25 @@
 """Portfolio perception component for the MOVRvest investment brain."""
 
+import logging
 from collections.abc import Mapping
 from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 
 from app.brokers.etoro_account import EtoroAccountBroker
 from app.config import Settings
 from app.domain.asset_class import AssetClass
+from app.domain.portfolio_drawdown import PortfolioDrawdown
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.services.account_service import AccountService
 from app.services.instrument_symbol_resolver import (
     InstrumentSymbolResolver,
 )
+from app.services.portfolio_drawdown_service import PortfolioDrawdownService
+from app.services.portfolio_history_service import PortfolioHistoryService
 from app.services.portfolio_service import PortfolioService
+
+logger = logging.getLogger(__name__)
 
 
 class PortfolioPerception:
@@ -23,12 +30,16 @@ class PortfolioPerception:
         account_service: AccountService | None = None,
         portfolio_service: PortfolioService | None = None,
         symbol_resolver: InstrumentSymbolResolver | None = None,
+        history_service: PortfolioHistoryService | None = None,
+        drawdown_service: PortfolioDrawdownService | None = None,
     ) -> None:
         self._account_service = account_service or AccountService(
             EtoroAccountBroker(Settings())
         )
         self._portfolio_service = portfolio_service or PortfolioService()
         self._symbol_resolver = symbol_resolver or InstrumentSymbolResolver()
+        self._history_service = history_service or PortfolioHistoryService()
+        self._drawdown_service = drawdown_service or PortfolioDrawdownService()
 
     async def execute(self) -> PortfolioSnapshot:
         """Build the current portfolio snapshot from broker account data."""
@@ -36,7 +47,43 @@ class PortfolioPerception:
 
         snapshot = self._portfolio_service.analyze(account)
 
-        return await self._resolve_symbols(snapshot)
+        snapshot = await self._resolve_symbols(snapshot)
+
+        drawdown = await self._drawdown()
+
+        if drawdown is None:
+            return snapshot
+
+        return replace(snapshot, drawdown=drawdown)
+
+    async def _drawdown(self) -> PortfolioDrawdown | None:
+        """
+        What the account has been through, or nothing.
+
+        One extra request per cycle against a pooled allowance, for the
+        only evidence here that describes more than this morning.
+
+        A failure costs the drawdown, not the cycle. The account snapshot
+        is what the platform cannot reason without; the history is what it
+        would like to have, and an unreachable history is reported as
+        unmeasured — which is exactly what it is.
+        """
+
+        since = (
+            datetime.now(UTC) - timedelta(days=PortfolioHistoryService.WINDOW_DAYS)
+        ).date()
+
+        try:
+            curve = await self._history_service.equity_curve(since)
+        except Exception:
+            logger.warning(
+                "Balance history was unreachable; portfolio drawdown is unmeasured.",
+                exc_info=True,
+            )
+
+            return None
+
+        return self._drawdown_service.measure(curve)
 
     async def _resolve_symbols(
         self,
