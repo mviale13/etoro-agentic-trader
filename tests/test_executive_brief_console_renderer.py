@@ -45,6 +45,19 @@ def rendered(capsys: pytest.CaptureFixture[str]) -> str:
     return capsys.readouterr().out
 
 
+def test_committee_agreement_is_not_presented_as_conviction(rendered: str) -> None:
+    """
+    The brief carries the committees' agreement, not the CIO's conviction.
+
+    Labelled "Conviction", a RECOMMEND read "Conviction: 32%" — the
+    decision's own conviction never reaches this brief, so the number
+    shown was answering a different question than the one asked.
+    """
+
+    assert "Committee agreement:" in rendered
+    assert "Conviction:" not in rendered
+
+
 def test_the_case_reports_what_was_read_about_the_security(rendered: str) -> None:
     assert "Evidence weighed" in rendered
     assert "94.0%" in rendered

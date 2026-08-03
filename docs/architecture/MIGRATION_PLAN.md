@@ -258,13 +258,16 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Reasoning
 
-- [ ] **`movrvest evaluate SYMBOL` never evidences that symbol.**
-      `BrainBuilderService` defaults `candidate_limit=0`, and the account
-      holds nothing, so `SecurityPerception` returns `{}` and the command
-      decides on portfolio and market context alone. `evaluate UUUU` returns
-      INVESTIGATE while the research pipeline, given the same symbol and a
-      research budget, returns REJECT on 94% volatility and negative
-      earnings. Same security, two verdicts, because one path has evidence
+- [x] `movrvest evaluate SYMBOL` and `GET /executive/{symbol}` evidence the
+      symbol they are asked about. `BrainBuilderService.build` takes
+      `focus_symbols`, which `SecurityPerception` evidences whatever the
+      candidate budget says. Both paths now return REJECT for UUUU, where
+      the CLI returned INVESTIGATE and the research pipeline REJECT
+- [ ] The executive brief carries committee agreement, not the decision's
+      conviction. The console labels it honestly; the CIO's own conviction
+      still does not reach `ExecutiveBrief` or `InvestmentThesis`
+- [ ] Signal evidence has no polarity, so favourable and adverse findings
+      cannot be told apart. `InvestmentThesis.strengths` and `.risks`
 - [ ] Signal evidence has no polarity, so favourable and adverse findings
       cannot be told apart. `InvestmentThesis.strengths` and `.risks`
       therefore still describe the portfolio and the market rather than the

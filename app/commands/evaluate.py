@@ -19,7 +19,9 @@ class EvaluateCommand:
     ) -> int:
         normalized_symbol = symbol.upper().strip()
 
-        brain = await BrainBuilderService().build()
+        brain = await BrainBuilderService().build(
+            focus_symbols=(normalized_symbol,),
+        )
 
         brief = ExecutiveService(
             pipeline=ExecutivePipeline.with_memory(),

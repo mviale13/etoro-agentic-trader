@@ -1,5 +1,7 @@
 """Canonical composition root for the Artificial CIO Brain."""
 
+from collections.abc import Sequence
+
 from app.application.brain.perception.market_perception import (
     MarketPerception,
 )
@@ -55,7 +57,19 @@ class BrainBuilderService:
         # does not pay for them. Research asks for a budget explicitly.
         self._candidate_limit = candidate_limit
 
-    async def build(self) -> Brain:
+    async def build(
+        self,
+        focus_symbols: Sequence[str] = (),
+    ) -> Brain:
+        """
+        Assemble the Brain, evidencing anything the caller names.
+
+        A caller that asks about one symbol needs that symbol evidenced.
+        Without it the Artificial CIO judged the security on portfolio and
+        market context alone, and reached a different verdict from the one
+        the research pipeline reached about the same ticker.
+        """
+
         portfolio = await PortfolioPerception().execute()
         market = await MarketPerception().execute()
         investment_policy = PolicyPerception().execute()
@@ -72,6 +86,7 @@ class BrainBuilderService:
             portfolio,
             candidates=candidates,
             candidate_limit=self._candidate_limit,
+            focus_symbols=focus_symbols,
         )
 
         decision_history = self._memory_perception.execute()

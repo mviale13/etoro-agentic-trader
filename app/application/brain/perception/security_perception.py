@@ -50,10 +50,18 @@ class SecurityPerception:
         portfolio: PortfolioSnapshot,
         candidates: Sequence[ResearchCandidate] = (),
         candidate_limit: int = 0,
+        focus_symbols: Sequence[str] = (),
     ) -> dict[str, tuple[object, ...]]:
-        """Return per-symbol evidence, keyed by ticker symbol."""
+        """
+        Return per-symbol evidence, keyed by ticker symbol.
 
-        if not portfolio.holdings and not candidates:
+        `focus_symbols` are evidenced whatever the candidate budget says.
+        A caller asking about one security is asking for that security to
+        be looked at, and a cycle that answered without looking was
+        answering about the account instead.
+        """
+
+        if not portfolio.holdings and not candidates and not focus_symbols:
             return {}
 
         instruments = await self._symbol_resolver.items()
@@ -69,6 +77,14 @@ class SecurityPerception:
                 candidates,
                 instruments,
                 candidate_limit,
+            )
+        )
+
+        targets.extend(
+            self._focus_targets(
+                focus_symbols,
+                instruments,
+                already_targeted={symbol.upper().strip() for symbol, _ in targets},
             )
         )
 
@@ -113,6 +129,38 @@ class SecurityPerception:
 
             if item is not None:
                 targets.append((candidate.symbol, item))
+
+        return targets
+
+    @staticmethod
+    def _focus_targets(
+        focus_symbols: Sequence[str],
+        instruments: dict[int, WatchlistItem],
+        already_targeted: set[str],
+    ) -> list[tuple[str, WatchlistItem]]:
+        """
+        Evidence the securities the caller actually asked about.
+
+        A security the watchlists cannot describe still produces nothing.
+        That is the same gap a holding hits when no watchlist names it, and
+        it is reported as missing evidence rather than filled in.
+        """
+
+        by_symbol = {item.symbol.upper().strip(): item for item in instruments.values()}
+
+        targets: list[tuple[str, WatchlistItem]] = []
+
+        for symbol in focus_symbols:
+            normalized = symbol.upper().strip()
+
+            if normalized in already_targeted:
+                continue
+
+            item = by_symbol.get(normalized)
+
+            if item is not None:
+                targets.append((normalized, item))
+                already_targeted.add(normalized)
 
         return targets
 

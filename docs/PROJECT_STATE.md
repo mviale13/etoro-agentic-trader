@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 405 passing |
+| Pytest | 🟢 409 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Asking about a security now looks at it. `movrvest evaluate SYMBOL` and
+  `GET /executive/{symbol}` built a Brain with no research budget, so with
+  an account holding nothing, per-security perception returned nothing and
+  the Artificial CIO judged the security on portfolio and market context
+  alone. `evaluate UUUU` answered INVESTIGATE while the research pipeline
+  answered REJECT about the same ticker on the same day. Both now say
+  REJECT, on 94% volatility, negative earnings and an analyst veto. A
+  symbol no watchlist names still produces no evidence, and says so
 
 - **The platform makes recommendations.** VOW3.DE and NOVO-B.CO are the
   first, and they were not unblocked by lowering a threshold. Portfolio fit
@@ -168,11 +177,10 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Reasoning
 
-- `movrvest evaluate SYMBOL` decides without evidencing that symbol. The
-  brain is built with no research budget and the account holds nothing, so
-  the command judges on portfolio and market context alone — and returns
-  INVESTIGATE for a security the research pipeline rejects on its own
-  numbers
+- The executive brief does not carry the decision's conviction. It carries
+  how far the committees agreed, which the console now labels as such. The
+  CIO's own conviction stops at the decision and reaches the research page
+  but not the brief
 
 - Signal findings carry no polarity, so favourable and adverse ones cannot
   be separated. An investment case therefore has no per-security strengths

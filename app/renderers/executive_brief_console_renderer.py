@@ -33,8 +33,13 @@ class ExecutiveBriefConsoleRenderer:
         console.print(brief.summary)
         console.print()
 
+        # Not the CIO's conviction in its decision — that number lives on
+        # the decision and does not reach this brief. This is how far the
+        # committees agreed, which is worth reading on a RECOMMEND but is
+        # not the same claim.
         console.print(
-            f"Conviction: {ExecutiveBriefConsoleRenderer._percent(brief.confidence)}"
+            "Committee agreement: "
+            f"{ExecutiveBriefConsoleRenderer._percent(brief.confidence)}"
         )
         console.print(
             "Portfolio health: "
