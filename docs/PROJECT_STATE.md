@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 472 passing |
+| Pytest | 🟢 481 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The account has a past, not just a present. `EtoroHistoryBroker` reads
+  closed trades, historical balance snapshots and cash transactions —
+  33 daily balance snapshots came back on the first live call, the first
+  time anything here has held a figure from before today. Every decision
+  until now rested on a snapshot of now, which is why no decision can yet
+  be scored against its outcome. Pages are walked to a ceiling the caller
+  sets, because the read budget is pooled and a loop that follows "next"
+  until it runs out spends an allowance the rest of the platform needs
 
 - The platform knows what its own key can do. `movrvest credentials`
   reads `GET /api/v1/me`: 26 scopes granted, 10 of them writes, including
@@ -310,8 +319,11 @@ Named rather than hidden. None of these are estimated away in the product.
   doing its job. Fit reads 99 for all of them — honestly, on an account
   that is 97% cash with no position above 0.5% — so nothing on live data
   yet demonstrates it separating one security from another
-- Portfolio-level drawdown is still unmeasured: it needs position history,
-  which nothing records. Security-level drawdown is measured
+- Portfolio-level drawdown is still unmeasured. Balance history now
+  supplies the daily equity series it needs; nothing reads it yet
+- Cash transactions are wired but uncalled: the endpoint wants a cash
+  account id, and the CID from `/api/v1/me` is rejected as invalid. Which
+  route lists those ids has not been established, and none is guessed at
 
 - `consistency_score` measures the investor's own consistency. The journal
   records what the CIO decided, not what the investor did about it, so the
