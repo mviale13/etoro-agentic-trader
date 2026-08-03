@@ -134,9 +134,15 @@ class InvestmentThesisBuilder:
     @staticmethod
     def _committee_confidence(
         committee_opinions: tuple[CommitteeOpinion, ...],
-    ) -> float:
-        # Only committees that formed a view are averaged. One that could
-        # not counts as silence, not as opposition.
+    ) -> float | None:
+        """
+        How far the committees that spoke agreed, or nothing at all.
+
+        A committee that could not form a view counts as silence, not as
+        opposition. When none of them could, the answer is that agreement
+        was not measured — reporting 0% would say they disagreed.
+        """
+
         stated = [
             opinion.confidence
             for opinion in committee_opinions
@@ -144,7 +150,7 @@ class InvestmentThesisBuilder:
         ]
 
         if not stated:
-            return 0.0
+            return None
 
         return max(0.0, min(1.0, sum(stated) / len(stated)))
 

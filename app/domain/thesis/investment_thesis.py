@@ -10,7 +10,8 @@ class InvestmentThesis:
 
     recommendation: str
 
-    confidence: float
+    #: How far the committees that spoke agreed. None where none could.
+    confidence: float | None
 
     summary: str
 

@@ -40,7 +40,14 @@ export interface ExecutiveBriefViewModel {
   symbol: string;
   headline: string;
   summary: string;
-  confidence: number;
+
+  /**
+   * How far the committees that spoke agreed.
+   *
+   * Null where none of them could form a view — not the same as their
+   * having disagreed, and never rendered as a zero.
+   */
+  confidence: number | null;
 }
 
 export interface ExecutiveWorkspaceViewModel {

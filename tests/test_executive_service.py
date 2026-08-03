@@ -39,7 +39,7 @@ def test_executive_evaluate_returns_complete_evaluation():
     assert evaluation.thesis.symbol == "AAPL"
     assert evaluation.thesis.recommendation
     assert evaluation.thesis.summary
-    assert 0.0 <= evaluation.thesis.confidence <= 1.0
+    assert evaluation.thesis.confidence is None
     assert evaluation.thesis.expected_holding_period == "3-5 years"
     assert evaluation.thesis.created_at.tzinfo is not None
 

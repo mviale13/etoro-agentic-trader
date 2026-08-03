@@ -21,6 +21,7 @@ def test_committees_review_reasoning():
     opinions = CommitteeService().review(
         brain,
         reasoning,
+        "MSFT",
     )
 
     assert len(opinions) == 2

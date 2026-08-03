@@ -29,15 +29,19 @@ class CommitteeService:
         self,
         brain: Brain,
         reasoning: ReasoningSnapshot,
+        symbol: str,
     ) -> tuple[CommitteeOpinion, ...]:
+        """Both committees review one investment case, not the account."""
 
         return (
             self.investment.review(
                 brain,
                 reasoning,
+                symbol,
             ),
             self.risk.review(
                 brain,
                 reasoning,
+                symbol,
             ),
         )

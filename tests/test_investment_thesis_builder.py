@@ -28,7 +28,7 @@ def test_investment_thesis_is_built_from_executive_pipeline():
     assert thesis.symbol == "MSFT"
     assert thesis.recommendation
     assert thesis.summary
-    assert 0.0 <= thesis.confidence <= 1.0
+    assert thesis.confidence is None
     assert isinstance(thesis.strengths, tuple)
     assert isinstance(thesis.risks, tuple)
     assert isinstance(thesis.catalysts, tuple)

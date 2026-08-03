@@ -39,7 +39,11 @@ class ExecutiveBriefConsoleRenderer:
         # not the same claim.
         console.print(
             "Committee agreement: "
-            f"{ExecutiveBriefConsoleRenderer._percent(brief.confidence)}"
+            + (
+                "not measured"
+                if brief.confidence is None
+                else ExecutiveBriefConsoleRenderer._percent(brief.confidence)
+            )
         )
         console.print(
             "Portfolio health: "

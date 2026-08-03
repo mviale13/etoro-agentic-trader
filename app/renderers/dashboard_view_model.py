@@ -20,7 +20,7 @@ class DashboardInvestmentCase:
 
     symbol: str
     recommendation: str
-    confidence: float
+    confidence: float | None
     summary: str
     previous_decisions: str | None = None
 
@@ -42,7 +42,7 @@ class DashboardViewModel:
 
     headline: str
     summary: str
-    confidence: float
+    confidence: float | None
     portfolio_health: float
     priorities: tuple[DashboardPriority, ...]
     investment_cases: tuple[DashboardInvestmentCase, ...]

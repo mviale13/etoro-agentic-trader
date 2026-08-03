@@ -48,7 +48,9 @@ def test_executive_brief_explains_the_decision():
     assert brief.summary == decision.rationale
     assert brief.summary
 
-    assert 0.0 <= brief.confidence <= 1.0
+    # No security evidence in this brain, so both committees abstain and
+    # agreement is absent rather than reported as zero.
+    assert brief.confidence is None
     assert 0.0 <= brief.portfolio_health <= 1.0
 
 

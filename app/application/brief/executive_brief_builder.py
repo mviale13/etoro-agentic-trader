@@ -32,7 +32,9 @@ class ExecutiveBriefBuilder:
         priority = ExecutivePriority(
             title=thesis.symbol,
             description=thesis.summary,
-            urgency=1.0 - thesis.confidence,
+            # An unmeasured agreement is not a calm one, so a case nobody
+            # could review is as urgent as this brief can make it.
+            urgency=1.0 - (thesis.confidence or 0.0),
         )
 
         return ExecutiveBrief(
@@ -76,7 +78,9 @@ class ExecutiveBriefBuilder:
             headline=self._portfolio_headline(ranked, actionable),
             summary=self._portfolio_summary(ranked, actionable),
             confidence=self._mean(
-                tuple(brief.confidence for brief in briefs),
+                tuple(
+                    brief.confidence for brief in briefs if brief.confidence is not None
+                ),
             ),
             portfolio_health=first.reasoning.portfolio.health_score,
             # Priorities are attention items. A holding the CIO is content to

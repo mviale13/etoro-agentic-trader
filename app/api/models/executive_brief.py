@@ -10,7 +10,7 @@ class ExecutivePriorityResponse(BaseModel):
 class InvestmentCaseResponse(BaseModel):
     symbol: str
     recommendation: str
-    confidence: float
+    confidence: float | None = None
     summary: str
 
     #: What the Artificial CIO decided about this symbol before. Null when
@@ -22,7 +22,7 @@ class ExecutiveBriefResponse(BaseModel):
     symbol: str
     headline: str
     summary: str
-    confidence: float
+    confidence: float | None = None
     portfolio_health: float
     priorities: list[ExecutivePriorityResponse]
     investment_cases: list[InvestmentCaseResponse]

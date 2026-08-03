@@ -93,7 +93,7 @@ def make_holding(symbol: str, market_value_usd: float = 100.0) -> PortfolioPosit
 
 def build_evidence(brain: Brain, symbol: str):
     reasoning = ReasoningService().reason(brain)
-    opinions = CommitteeService().review(brain, reasoning)
+    opinions = CommitteeService().review(brain, reasoning, symbol)
 
     return DecisionEvidenceBuilder().build(
         symbol,

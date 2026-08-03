@@ -271,10 +271,14 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       could not form a view is excluded from agreement rather than averaged
       in as a zero, and confidence comes from the assessments' own
       confidence rather than from how bullish the view is
-- [ ] `InvestmentCommittee` and `RiskCommittee` reason only about the
-      portfolio and the market. Their opinions are identical for every
-      symbol, so committee agreement says nothing about the security the
-      CIO is deciding on — the same defect `portfolio_fit_score` had
+- [x] `InvestmentCommittee` and `RiskCommittee` review one investment case.
+      `CommitteeService.review` takes the symbol, `Brain.security_evidence`
+      is the single accessor both use, and a committee with nothing to go on
+      abstains rather than opining on the account
+- [ ] A security no watchlist names now draws no committee view at all, so
+      `InvestmentThesis.confidence` is None and the brief says agreement was
+      not measured. Correct, but it means `movrvest evaluate` on an unknown
+      symbol reports less than it used to
 - [ ] Signal evidence has no polarity, so favourable and adverse findings
       cannot be told apart. `InvestmentThesis.strengths` and `.risks`
 - [x] Signal evidence carries polarity. `Finding` pairs each statement

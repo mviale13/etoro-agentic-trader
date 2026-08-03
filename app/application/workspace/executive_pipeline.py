@@ -108,6 +108,7 @@ class ExecutivePipeline:
         workspace.committee_opinions = self.committees.review(
             brain,
             workspace.reasoning,
+            symbol,
         )
 
         workspace.evidence = self.evidence_builder.build(

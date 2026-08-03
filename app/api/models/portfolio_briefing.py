@@ -49,7 +49,7 @@ class ChangeResponse(BaseModel):
 class PortfolioBriefingResponse(BaseModel):
     headline: str
     summary: str
-    confidence: float
+    confidence: float | None = None
     portfolio_health: float
     priorities: list[ExecutivePriorityResponse]
     investment_cases: list[RankedInvestmentCaseResponse]

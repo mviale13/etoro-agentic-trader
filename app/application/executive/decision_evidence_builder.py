@@ -59,17 +59,6 @@ class DecisionEvidenceBuilder:
         "EXPENSIVE": 25,
     }
 
-    #: How violently the security itself has moved, by signal. SEVERE sits
-    #: above DecisionPolicy.maximum_acceptable_risk, so a security that
-    #: swings that hard is rejected on its own record rather than on a
-    #: judgement about the account holding it.
-    RISK_SCORES = {
-        "LOW": 20,
-        "MODERATE": 45,
-        "HIGH": 65,
-        "SEVERE": 85,
-    }
-
     def build(
         self,
         symbol: str,
@@ -81,7 +70,7 @@ class DecisionEvidenceBuilder:
         market = reasoning.market
         risk = reasoning.risk
 
-        company = self._company_evidence(brain, symbol)
+        company = brain.security_evidence(symbol)
 
         investment = next(
             (
@@ -171,22 +160,6 @@ class DecisionEvidenceBuilder:
             catalysts=catalysts,
         )
 
-    @staticmethod
-    def _company_evidence(
-        brain: Brain,
-        symbol: str,
-    ) -> CompanyRecommendation | None:
-        """Return the Brain's evidence about this security, if it holds any."""
-
-        return next(
-            (
-                item
-                for item in brain.evidence_for(symbol)
-                if isinstance(item, CompanyRecommendation)
-            ),
-            None,
-        )
-
     @classmethod
     def _quality_score(
         cls,
@@ -222,7 +195,9 @@ class DecisionEvidenceBuilder:
         if company is None or company.signals.risk is None:
             return None
 
-        return cls.RISK_SCORES.get(company.signals.risk.level)
+        severity = company.signals.risk.severity
+
+        return None if severity is None else round(severity * 100)
 
     @classmethod
     def _valuation_score(

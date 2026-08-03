@@ -77,7 +77,7 @@ interface ChangePayload {
 interface PortfolioBriefingPayload {
   headline: string;
   summary: string;
-  confidence: number;
+  confidence: number | null;
   portfolio_health: number;
   priorities: readonly PriorityPayload[];
   investment_cases: readonly RankedCasePayload[];
@@ -94,6 +94,11 @@ function requireNumber(value: unknown, field: string): number {
   }
 
   return value;
+}
+
+/** A number the platform may not have been able to measure. */
+function optionalNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function requireString(value: unknown, field: string): string {
@@ -176,7 +181,7 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
   return {
     headline: requireString(payload.headline, "headline"),
     summary: requireString(payload.summary, "summary"),
-    confidence: requireNumber(payload.confidence, "confidence"),
+    confidence: optionalNumber(payload.confidence),
     portfolio_health: requireNumber(
       payload.portfolio_health,
       "portfolio_health",

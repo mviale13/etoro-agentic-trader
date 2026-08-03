@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.brain.brain_context import BrainContext
 from app.cio.investment_case import InvestmentCase
+from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_snapshot import MarketSnapshot
@@ -76,6 +77,23 @@ class Brain:
     def evidence_for(self, symbol: str) -> tuple[object, ...]:
         """Return all evidence available for a symbol."""
         return self.context.evidence_for(symbol)
+
+    def security_evidence(self, symbol: str) -> CompanyRecommendation | None:
+        """
+        What the Brain knows about this security itself, or nothing.
+
+        Asked by everything that must not judge a security on the account's
+        condition when it has nothing about the security.
+        """
+
+        return next(
+            (
+                item
+                for item in self.evidence_for(symbol)
+                if isinstance(item, CompanyRecommendation)
+            ),
+            None,
+        )
 
     def opinions_for(self, symbol: str) -> tuple[object, ...]:
         """Return all committee opinions available for a symbol."""

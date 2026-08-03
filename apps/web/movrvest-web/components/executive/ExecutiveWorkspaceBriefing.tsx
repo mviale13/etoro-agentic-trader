@@ -418,8 +418,14 @@ export function ExecutiveWorkspaceBriefing({
                 {workspace.brief.headline}
               </h3>
 
+              {/* Committee agreement, not the CIO's conviction — the
+                  decision's own conviction does not reach this brief. Null
+                  where no committee could form a view, which is not the
+                  same as their having disagreed. */}
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                {Math.round(workspace.brief.confidence * 100)}% conviction
+                {workspace.brief.confidence === null
+                  ? "Committee agreement not measured"
+                  : `${Math.round(workspace.brief.confidence * 100)}% committee agreement`}
               </span>
             </div>
 

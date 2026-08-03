@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 426 passing |
+| Pytest | 🟢 429 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,17 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The Executive Committees review the security, not just the account. Both
+  read only portfolio and market assessments, so their opinions were
+  identical under every symbol: agreement could read 94% for a security
+  neither had looked at. The Investment Committee now leads on the
+  security's own committee verdict, and the Risk Committee speaks to the
+  security's measured volatility and deepest fall rather than abstaining
+  on an account risk nothing records. On live candidates they finally
+  disagree with each other and with themselves across symbols — UUUU draws
+  reduce and sell, VOW3.DE strong_buy and hold, and MBGL's risk stays an
+  honest abstention because its price history is too short
 
 - The account reports what it holds. Every invested euro used to sit in
   `unclassified` under a standing risk flag, because nothing joined the
@@ -205,11 +216,6 @@ Named rather than hidden. None of these are estimated away in the product.
   how far the committees agreed, which the console now labels as such. The
   CIO's own conviction stops at the decision and reaches the research page
   but not the brief
-
-- Both Executive Committees reason only about the portfolio and the market,
-  so their opinions are identical whichever security is being judged. They
-  can agree at 94% while the Artificial CIO recommends a security they
-  never looked at, because they are answering a different question
 
 - Every gate now clears on measured evidence, and RECOMMEND is reached.
   Valuation is what holds most candidates at PREPARE, which is the gate

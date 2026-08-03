@@ -20,7 +20,7 @@ class ExecutiveBrief:
 
     summary: str
 
-    confidence: float
+    confidence: float | None
 
     portfolio_health: float
 
