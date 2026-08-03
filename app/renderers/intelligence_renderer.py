@@ -16,12 +16,20 @@ class IntelligenceRenderer:
         print(f"Volatility      : {intelligence.market.volatility.title()}")
 
         print()
-        print(
-            f"Crypto sentiment: "
-            f"{intelligence.sentiment.score} "
-            f"({intelligence.sentiment.label})"
-        )
-        print(f"Source           : {intelligence.sentiment.source}")
+
+        # The source line is a citation. It is printed only beside a figure
+        # actually read from that source — the pair used to appear over a
+        # hardcoded number, which is what made it convincing.
+        sentiment = intelligence.sentiment
+
+        if sentiment is None:
+            print("Crypto sentiment: not available")
+        else:
+            print(f"Crypto sentiment: {sentiment.score} ({sentiment.label})")
+            print(f"Source           : {sentiment.source}")
+
+            if sentiment.observed_at is not None:
+                print(f"Published        : {sentiment.observed_at.date().isoformat()}")
 
         print()
         print(f"Outlook          : {intelligence.outlook}")

@@ -249,6 +249,8 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [x] A crypto case says why it cannot progress: the platform judges on
       business quality and valuation, which a token has neither of. Stated
       as this platform's limit, with the gates unchanged
+- [x] `CryptoFearGreedProvider` reads Alternative.me rather than returning
+      a hardcoded 72 under that service's name
 - [ ] Assessing crypto on its own terms needs token fundamentals — supply,
       network activity, realised cap — which no provider here supplies.
       Until then a crypto case stops at INVESTIGATE by design

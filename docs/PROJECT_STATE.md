@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 430 passing |
+| Pytest | 🟢 435 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,16 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The crypto sentiment index is read from the service it cites.
+  `CryptoFearGreedProvider` returned a hardcoded 72, labelled "Greed", and
+  the renderer printed "Source: Alternative.me" beneath it. The service is
+  real and the number was not: the published index that day read 28,
+  "Fear". `movrvest intelligence` moved from NEUTRAL at 60% to BEARISH at
+  95% once it read the real figure. The citation is now printed only
+  beside a figure actually read from that source, with the date the source
+  published it, and an unreachable index reports nothing rather than the
+  last mood it saw
 
 - Housekeeping. Three iCloud conflict copies were tracked despite the
   `.gitignore` rule that covers them; both event copies were strict

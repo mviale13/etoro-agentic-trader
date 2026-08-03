@@ -30,10 +30,15 @@ class DailyRenderer:
 
         print(f"Mood            : {intelligence.market.market_mood.title()}")
         print(f"Volatility      : {intelligence.market.volatility.title()}")
+        sentiment = intelligence.sentiment
+
         print(
-            f"Crypto Sentiment: "
-            f"{intelligence.sentiment.score} "
-            f"({intelligence.sentiment.label})"
+            "Crypto Sentiment: "
+            + (
+                "not available"
+                if sentiment is None
+                else f"{sentiment.score} ({sentiment.label})"
+            )
         )
 
         print()
