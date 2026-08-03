@@ -37,8 +37,8 @@ export interface ResearchCandidateViewModel {
   riskScore: number | null;
   evidenceScore: number;
 
-  /** Fit describes the account, not the company. Equal for every row. */
-  portfolioFitScore: number;
+  /** Room the portfolio has for this security, under the investor's policy. */
+  portfolioFitScore: number | null;
 
   /** Evidence behind the decision, as weighed — not curated into a case. */
   evidenceWeighed: readonly string[];

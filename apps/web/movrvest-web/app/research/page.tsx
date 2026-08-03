@@ -253,23 +253,22 @@ function CandidateCard({
             </div>
           </div>
 
-          {/* Quality, valuation and risk are measured about this company.
-              Risk comes from its own price history — see the evidence above
-              for the volatility and drawdown behind the score. */}
+          {/* Every score here is measured about this security. Risk comes
+              from its own price history, and fit from the room this
+              portfolio has for it under the investor's own policy — see the
+              evidence above for the numbers behind them. */}
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Score label="Quality" value={candidate.qualityScore} />
             <Score label="Valuation" value={candidate.valuationScore} />
             <Score label="Risk" value={candidate.riskScore} />
-            <Metric label="Evidence" value={String(candidate.evidenceScore)} />
+            <Score
+              label="Fit with your portfolio"
+              value={candidate.portfolioFitScore}
+            />
           </div>
 
-          {/* Fit is measured about the account, not the company, so it is
-              labelled as such and kept out of the row above. */}
           <div className="mt-3">
-            <Metric
-              label="Fit with your portfolio"
-              value={String(candidate.portfolioFitScore)}
-            />
+            <Metric label="Evidence" value={String(candidate.evidenceScore)} />
           </div>
 
           <ReasonList title="Still missing" reasons={candidate.missingEvidence} />

@@ -187,6 +187,15 @@ class ArtificialCIO:
                 ),
             )
 
+        if evidence.portfolio_fit_score is None:
+            return (
+                DecisionState.PREPARE,
+                (
+                    "The case is credible, but how it would fit the "
+                    "portfolio has not been measured."
+                ),
+            )
+
         if evidence.portfolio_fit_score < policy.minimum_portfolio_fit:
             return (
                 DecisionState.PREPARE,

@@ -217,18 +217,29 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
    quality data." under **Strengths** was wrong: those sections are built by
    `InvestmentThesisBuilder` from portfolio and market assessments and never
    contained company evidence.
-3. **The portfolio-fit gate.** It is now what blocks every RECOMMEND (47
-   against a minimum of 60). Either the account really is far from its policy
-   targets, or the gate measures the wrong thing — an account sitting 97% in
-   cash arguably has more room for a new position, not less. Settle which,
-   before it silently blocks every recommendation the platform would make.
+3. ~~**The portfolio-fit gate.**~~ Settled: it measured the wrong thing, and
+   both its terms ran backwards. The 47 was `mean(9 positions / 20, policy
+   alignment 0.50)` — the account marked down for holding too few positions
+   and for sitting in cash against a 5% target, with both marks then used to
+   refuse the only action that would fix either. `PortfolioFit` now measures
+   the room this portfolio has for this security: funding room from the cash
+   target, concentration room from the single-position limit. VOW3.DE and
+   NOVO-B.CO are the platform's first RECOMMENDs.
 
 ## Evidence quality
 
 - [ ] Portfolio-level drawdown needs position history, which nothing
       records. Security-level risk is measured; the account's is not
-- [ ] `portfolio_fit_score` is now the binding gate on RECOMMEND (47
-      against a minimum of 60). Confirm it measures what it claims
+- [x] `portfolio_fit_score` measures this security against this portfolio.
+      `OpportunityAssessment.portfolio_fit_score`, which described only the
+      account, is now `portfolio_readiness_score`
+- [ ] Fit reads 99 for every candidate today — not by construction any
+      more, but because a 97%-cash account with no position above 0.5% has
+      near-full room for all of them. It will separate them once positions
+      grow; nothing yet proves that on live data
+- [ ] Asset-class room is not part of fit. The policy sets stock, ETF and
+      crypto targets and `max_crypto`, but holdings are unclassified, so
+      the term is left out rather than estimated
 - [ ] Cached evidence knows its true age; no surface reports it yet
 - [x] Crypto tickers resolve. `AssetClass` classifies an eToro instrument,
       and a crypto one is priced as a pair

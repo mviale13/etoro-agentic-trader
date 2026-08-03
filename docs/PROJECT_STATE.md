@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 396 passing |
+| Pytest | 🟢 405 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,18 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **The platform makes recommendations.** VOW3.DE and NOVO-B.CO are the
+  first, and they were not unblocked by lowering a threshold. Portfolio fit
+  measured neither the portfolio nor the fit: it was `mean(9 positions / 20,
+  policy alignment 0.50)` — a constant 47 under every symbol, against a gate
+  of 60. Both terms ran backwards. The account was marked down for holding
+  nine positions rather than twenty, and again for sitting 97% in cash
+  against a 5% target, and both marks were spent refusing the one action
+  that would have corrected either. `PortfolioFit` now measures room:
+  funding room from the cash target, concentration room from the
+  single-position limit. It is per security, and it is absent rather than
+  invented when the policy states no limit to measure against
 
 - Nothing calls raw evidence a strength any more. `DecisionEvidence` and
   `ExecutiveDecision` carry `evidence_weighed`, and it holds only what was
@@ -166,10 +178,11 @@ Named rather than hidden. None of these are estimated away in the product.
   be separated. An investment case therefore has no per-security strengths
   or risks; what it has is the full list of what was read
 
-- The risk gate now clears on measured evidence, so RECOMMEND is reachable.
-  The binding constraint today is `portfolio_fit_score` at 47 against a
-  policy minimum of 60 — diversification and policy alignment on an account
-  that is 97% cash. Worth confirming that gate says what it should
+- Every gate now clears on measured evidence, and RECOMMEND is reached.
+  Valuation is what holds most candidates at PREPARE, which is the gate
+  doing its job. Fit reads 99 for all of them — honestly, on an account
+  that is 97% cash with no position above 0.5% — so nothing on live data
+  yet demonstrates it separating one security from another
 - Portfolio-level drawdown is still unmeasured: it needs position history,
   which nothing records. Security-level drawdown is measured
 

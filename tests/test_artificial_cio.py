@@ -108,3 +108,26 @@ def test_symbol_mismatch_is_rejected() -> None:
             InvestmentCase(symbol="MSFT"),
             evidence(symbol="NVDA"),
         )
+
+
+def test_unmeasured_portfolio_fit_stops_short_of_recommending() -> None:
+    """
+    Not knowing how a position would fit is not the same as it fitting.
+
+    It is also not the same as it fitting badly: the case is held at
+    PREPARE, the way an unmeasured valuation or risk is, rather than
+    rejected or waved through on a substituted number.
+    """
+
+    decision = ArtificialCIO().decide(
+        evidence().model_copy(update={"portfolio_fit_score": None}),
+    )
+
+    assert decision.state is DecisionState.PREPARE
+    assert "fit the portfolio has not been measured" in decision.rationale
+
+
+def test_a_measured_fit_above_the_policy_gate_allows_a_recommendation() -> None:
+    decision = ArtificialCIO().decide(evidence())
+
+    assert decision.state is DecisionState.RECOMMEND

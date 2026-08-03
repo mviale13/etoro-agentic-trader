@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
@@ -11,6 +11,7 @@ from app.application.committees.models.committee_opinion import (
     CommitteeOpinion,
     Recommendation,
 )
+from app.application.executive.portfolio_fit import PortfolioFit
 from app.brain import Brain
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.executive_decision import DecisionEvidence
@@ -39,6 +40,8 @@ class DecisionEvidenceBuilder:
     # committee rates such holdings HOLD, and the Artificial CIO must not
     # reject an investment case its own committee is content to hold. A
     # genuine sell opinion is expressed through analyst_veto instead.
+
+    portfolio_fit: PortfolioFit = field(default_factory=PortfolioFit)
 
     #: Quality of the security itself, by signal.
     QUALITY_SCORES = {
@@ -96,10 +99,15 @@ class DecisionEvidenceBuilder:
 
         valuation = self._valuation_score(company)
 
-        # The OpportunityAnalyst already weighs diversification, policy
-        # alignment and risk into a portfolio-fit score, so the CIO uses that
-        # judgement rather than recomputing a cruder one of its own.
-        portfolio_fit = int(reasoning.opportunity.portfolio_fit_score * 100)
+        # Measured about this security and this account together. The
+        # OpportunityAnalyst's number described only the account, so it was
+        # the same for every candidate and could never say whether one of
+        # them fitted better than another.
+        portfolio_fit = self.portfolio_fit.measure(
+            symbol,
+            brain.portfolio,
+            brain.investment_policy,
+        )
 
         # Everything read about this security, whatever it says. A quality
         # signal reports "Negative earnings." the same way it reports

@@ -27,7 +27,10 @@ class DecisionEvidence(BaseModel):
     evidence_score: int = Field(ge=0, le=100)
     valuation_score: int | None = Field(default=None, ge=0, le=100)
     risk_score: int | None = Field(default=None, ge=0, le=100)
-    portfolio_fit_score: int = Field(ge=0, le=100)
+    #: How much room the portfolio has for this security, under the
+    #: investor's own policy. None when the policy states no limit this
+    #: could be measured against.
+    portfolio_fit_score: int | None = Field(default=None, ge=0, le=100)
 
     actionable_now: bool = False
     hard_reject: bool = False

@@ -53,9 +53,10 @@ class ResearchCandidateResponse(BaseModel):
 
     evidence_score: int
 
-    #: Fit describes the account, not the company. Equal for every candidate
-    #: by construction, and labelled as such.
-    portfolio_fit_score: int
+    #: How much room the portfolio has for this security under the
+    #: investor's own policy — funding room and concentration room. Null
+    #: where the policy states no limit it could be measured against.
+    portfolio_fit_score: int | None = None
 
     #: The evidence lines the decision was weighed on, positive or not.
     #: They are reported as the CIO saw them, not filtered into a case.

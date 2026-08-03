@@ -18,7 +18,13 @@ class OpportunityAssessment:
     opportunity_score: float
     expected_upside_score: float
     timing_score: float
-    portfolio_fit_score: float
+
+    #: How ready the account is to act at all — its diversification, its
+    #: distance from its own policy, and its measured risk. This describes
+    #: the portfolio, not any security, and was called `portfolio_fit_score`
+    #: until it was found being used as a per-security gate.
+    portfolio_readiness_score: float
+
     confidence: float
     opportunities: tuple[str, ...] = field(default_factory=tuple)
     constraints: tuple[str, ...] = field(default_factory=tuple)
@@ -29,7 +35,7 @@ class OpportunityAssessment:
             "opportunity_score",
             "expected_upside_score",
             "timing_score",
-            "portfolio_fit_score",
+            "portfolio_readiness_score",
             "confidence",
         ):
             value = getattr(self, field_name)

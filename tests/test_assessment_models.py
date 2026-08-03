@@ -98,7 +98,7 @@ def test_opportunity_assessment_exposes_opportunity_level() -> None:
         opportunity_score=0.82,
         expected_upside_score=0.78,
         timing_score=0.7,
-        portfolio_fit_score=0.9,
+        portfolio_readiness_score=0.9,
         confidence=0.76,
     )
 

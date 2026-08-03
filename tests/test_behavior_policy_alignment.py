@@ -150,6 +150,6 @@ def test_opportunity_reflects_policy_alignment() -> None:
     )
 
     assert (
-        breaching.opportunity.portfolio_fit_score
-        < aligned.opportunity.portfolio_fit_score
+        breaching.opportunity.portfolio_readiness_score
+        < aligned.opportunity.portfolio_readiness_score
     )

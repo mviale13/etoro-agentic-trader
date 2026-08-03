@@ -34,20 +34,26 @@ class OpportunityAnalyst:
 
         timing = (market.momentum_score + (1.0 - market.volatility_score)) / 2.0
 
-        # Portfolio fit averages the terms that were measured. When risk
-        # could not be measured its term is left out rather than assumed
-        # benign, which averaging in a zero would quietly do.
-        fit_terms = [
+        # How ready the account is to act. This says nothing about any
+        # particular security, so it is not a fit score and no longer named
+        # like one — it was serving as the CIO's per-security portfolio gate,
+        # where an account marked down for holding cash was refused the one
+        # action that would deploy it.
+        #
+        # Averages the terms that were measured. When risk could not be
+        # measured its term is left out rather than assumed benign, which
+        # averaging in a zero would quietly do.
+        readiness_terms = [
             portfolio.diversification_score,
             behavior.policy_alignment_score,
         ]
 
         if risk.overall_risk_score is not None:
-            fit_terms.append(1.0 - risk.overall_risk_score)
+            readiness_terms.append(1.0 - risk.overall_risk_score)
 
-        portfolio_fit = sum(fit_terms) / len(fit_terms)
+        readiness = sum(readiness_terms) / len(readiness_terms)
 
-        opportunity = expected_upside * 0.40 + timing * 0.30 + portfolio_fit * 0.30
+        opportunity = expected_upside * 0.40 + timing * 0.30 + readiness * 0.30
 
         if risk.overall_risk_score is not None:
             opportunity *= 1.0 - risk.overall_risk_score * 0.25
@@ -102,7 +108,7 @@ class OpportunityAnalyst:
 
         evidence.append(
             Evidence(
-                description=(f"Portfolio fit score is {portfolio_fit:.2f}."),
+                description=(f"Portfolio readiness score is {readiness:.2f}."),
                 source="PortfolioAssessment",
                 strength=portfolio.confidence,
             )
@@ -112,7 +118,7 @@ class OpportunityAnalyst:
             opportunity_score=opportunity,
             expected_upside_score=expected_upside,
             timing_score=timing,
-            portfolio_fit_score=portfolio_fit,
+            portfolio_readiness_score=readiness,
             confidence=confidence,
             opportunities=tuple(opportunities),
             constraints=tuple(constraints),
