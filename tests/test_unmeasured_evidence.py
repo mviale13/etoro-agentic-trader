@@ -137,9 +137,13 @@ def test_unmeasured_risk_cannot_reach_a_recommendation() -> None:
 
 
 def test_unmeasured_risk_reaches_the_investor_as_missing_evidence() -> None:
-    missing = build_evidence(make_brain(), "MSFT").missing_evidence
+    """A security whose price history says nothing reports that."""
 
-    assert any("Market risk" in item for item in missing)
+    brain = make_brain(evidence={"SHORT": (make_company("SHORT"),)})
+
+    missing = build_evidence(brain, "SHORT").missing_evidence
+
+    assert any("too short to measure risk" in item for item in missing)
 
 
 def _brain():
@@ -150,3 +154,52 @@ def _brain():
         market=make_market(),
         investment_policy=make_policy(),
     ).build()
+
+
+def test_a_securitys_own_risk_is_what_the_cio_scores() -> None:
+    """Risk used to be one portfolio number repeated for every security."""
+
+    calm = make_company("CALM")
+    violent = make_company("VIOLENT")
+
+    brain = make_brain(
+        evidence={
+            "CALM": (_with_risk(calm, "LOW"),),
+            "VIOLENT": (_with_risk(violent, "SEVERE"),),
+        },
+    )
+
+    calm_score = build_evidence(brain, "CALM").risk_score
+    violent_score = build_evidence(brain, "VIOLENT").risk_score
+
+    assert calm_score is not None and violent_score is not None
+    assert violent_score > calm_score
+
+
+def test_a_severe_security_is_rejected_on_its_own_record() -> None:
+    from app.cio import DecisionPolicy
+
+    brain = make_brain(
+        evidence={"VIOLENT": (_with_risk(make_company("VIOLENT"), "SEVERE"),)},
+    )
+
+    score = build_evidence(brain, "VIOLENT").risk_score
+
+    assert score is not None
+    assert score > DecisionPolicy().maximum_acceptable_risk
+
+
+def _with_risk(company, level: str):
+    from dataclasses import replace
+
+    from app.domain.risk_signal import RiskSignal
+
+    signal = RiskSignal(
+        level=level,
+        volatility=0.15 if level == "LOW" else 0.90,
+        max_drawdown=0.10 if level == "LOW" else 0.60,
+        confidence=90,
+        evidence=(f"{level} risk.",),
+    )
+
+    return replace(company, signals=replace(company.signals, risk=signal))

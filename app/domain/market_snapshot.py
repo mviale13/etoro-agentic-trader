@@ -10,6 +10,14 @@ class MarketQuote:
     change_percent: float
     currency: str = "USD"
 
+    #: Annualised standard deviation of daily returns, as a ratio (0.28 is
+    #: 28%). None when the series was too short to measure it.
+    realized_volatility: float | None = None
+
+    #: Deepest peak-to-trough fall over the observed window, as a positive
+    #: ratio (0.34 is a 34% fall). None when unmeasured.
+    max_drawdown: float | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class MarketData:

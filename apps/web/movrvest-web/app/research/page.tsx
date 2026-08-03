@@ -253,20 +253,19 @@ function CandidateCard({
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          {/* Quality, valuation and risk are measured about this company.
+              Risk comes from its own price history — see the evidence above
+              for the volatility and drawdown behind the score. */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Score label="Quality" value={candidate.qualityScore} />
             <Score label="Valuation" value={candidate.valuationScore} />
+            <Score label="Risk" value={candidate.riskScore} />
             <Metric label="Evidence" value={String(candidate.evidenceScore)} />
           </div>
 
-          {/* Risk and fit are measured about the account, not this company,
-              so they are labelled as such and kept out of the per-company
-              row above, where they read as properties of the business. */}
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <Score
-              label="Your portfolio's risk"
-              value={candidate.portfolioRiskScore}
-            />
+          {/* Fit is measured about the account, not the company, so it is
+              labelled as such and kept out of the row above. */}
+          <div className="mt-3">
             <Metric
               label="Fit with your portfolio"
               value={String(candidate.portfolioFitScore)}

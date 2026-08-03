@@ -159,6 +159,8 @@ class CachedMarketProvider:
             "price": quote.price,
             "change_percent": quote.change_percent,
             "currency": quote.currency,
+            "realized_volatility": quote.realized_volatility,
+            "max_drawdown": quote.max_drawdown,
         }
 
     @staticmethod
@@ -175,10 +177,17 @@ class CachedMarketProvider:
         if not isinstance(price, (int, float)):
             return None
 
+        def ratio(field: str) -> float | None:
+            raw = value.get(field)
+
+            return float(raw) if isinstance(raw, (int, float)) else None
+
         return MarketQuote(
             symbol=symbol,
             name=str(value.get("name", symbol)),
             price=float(price),
             change_percent=float(change) if isinstance(change, (int, float)) else 0.0,
             currency=str(value.get("currency", "USD")),
+            realized_volatility=ratio("realized_volatility"),
+            max_drawdown=ratio("max_drawdown"),
         )

@@ -105,11 +105,8 @@ function parseCandidate(
       payload.valuation_score,
       at("valuation_score"),
     ),
+    riskScore: optionalNumber(payload.risk_score, at("risk_score")),
     evidenceScore: requireNumber(payload.evidence_score, at("evidence_score")),
-    portfolioRiskScore: optionalNumber(
-      payload.portfolio_risk_score,
-      at("portfolio_risk_score"),
-    ),
     portfolioFitScore: requireNumber(
       payload.portfolio_fit_score,
       at("portfolio_fit_score"),

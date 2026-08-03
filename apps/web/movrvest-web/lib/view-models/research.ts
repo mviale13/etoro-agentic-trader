@@ -33,10 +33,11 @@ export interface ResearchCandidateViewModel {
   /** Null where the platform did not measure it. Never zero. */
   qualityScore: number | null;
   valuationScore: number | null;
+  /** From this security's own volatility and deepest observed fall. */
+  riskScore: number | null;
   evidenceScore: number;
 
-  /** These describe the account, not the company. Equal for every row. */
-  portfolioRiskScore: number | null;
+  /** Fit describes the account, not the company. Equal for every row. */
   portfolioFitScore: number;
 
   /** Evidence behind the decision, as weighed — not curated into a case. */

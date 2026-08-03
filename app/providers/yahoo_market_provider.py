@@ -1,5 +1,7 @@
 import asyncio
 from dataclasses import dataclass
+from math import isfinite, sqrt
+from typing import Any
 
 import yfinance as yf
 
@@ -63,6 +65,20 @@ class YahooMarketProvider:
     )
 
     VIX_SYMBOL = "^VIX"
+
+    #: How much price history one quote request carries.
+    #:
+    #: Five days priced the instrument and told us nothing else. A year costs
+    #: the same single request and is enough to measure how violently the
+    #: security has actually moved — which is the difference between risk
+    #: being measured and risk being asserted.
+    HISTORY_PERIOD = "1y"
+
+    #: Daily observations needed before volatility or drawdown mean anything.
+    MINIMUM_OBSERVATIONS = 30
+
+    #: Trading days in a year, for annualising a daily standard deviation.
+    TRADING_DAYS = 252
 
     async def snapshot(self) -> MarketData:
         quotes_task = asyncio.create_task(self.quotes())
@@ -132,7 +148,7 @@ class YahooMarketProvider:
     ) -> MarketQuote:
         history = yf.download(
             instrument.yahoo_symbol,
-            period="5d",
+            period=YahooMarketProvider.HISTORY_PERIOD,
             interval="1d",
             auto_adjust=True,
             progress=False,
@@ -173,7 +189,55 @@ class YahooMarketProvider:
                 2,
             ),
             currency="USD",
+            realized_volatility=YahooMarketProvider._realized_volatility(closes),
+            max_drawdown=YahooMarketProvider._max_drawdown(closes),
         )
+
+    @classmethod
+    def _realized_volatility(
+        cls,
+        closes: Any,
+    ) -> float | None:
+        """
+        How violently this security actually moved, annualised.
+
+        This is a measurement of the observed window, not a forecast. A
+        series too short to say anything returns nothing.
+        """
+
+        if len(closes) < cls.MINIMUM_OBSERVATIONS:
+            return None
+
+        returns = closes.pct_change().dropna()
+
+        if returns.empty:
+            return None
+
+        deviation = float(returns.std())
+
+        if not isfinite(deviation):
+            return None
+
+        return round(deviation * sqrt(cls.TRADING_DAYS), 4)
+
+    @classmethod
+    def _max_drawdown(
+        cls,
+        closes: Any,
+    ) -> float | None:
+        """The deepest peak-to-trough fall in the observed window."""
+
+        if len(closes) < cls.MINIMUM_OBSERVATIONS:
+            return None
+
+        drawdowns = closes / closes.cummax() - 1.0
+
+        deepest = float(drawdowns.min())
+
+        if not isfinite(deepest):
+            return None
+
+        return round(abs(deepest), 4)
 
     @staticmethod
     def _fetch_latest_close(

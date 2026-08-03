@@ -174,6 +174,29 @@ Consequences, all deliberate:
   was measured about the account: "Your portfolio's risk" and "Fit with your
   portfolio" no longer sit in the per-company row
 
+## Risk is measured from the security's own record
+
+```
+yf.download(period="1y")  →  MarketQuote.realized_volatility, .max_drawdown
+                                        ↓
+                          CompanyFacts → RiskSignalService → RiskSignal
+                                        ↓
+                     DecisionEvidence.risk_score, per security
+```
+
+- The quote request already existed and fetched five daily bars. A year
+  costs the same single request, and it is cached, so the measurement is
+  effectively free
+- Volatility is the annualised standard deviation of daily returns;
+  drawdown is the deepest peak-to-trough fall in the window. Both describe
+  the observed past and neither predicts anything
+- The bands that turn those measurements into LOW/MODERATE/HIGH/SEVERE are
+  policy, stated in `RiskSignalService` rather than buried in a score
+- SEVERE sits above `DecisionPolicy.maximum_acceptable_risk`, so a security
+  is rejected on its own record rather than on a judgement about the account
+- A security whose history is too short reports UNKNOWN, and the case cannot
+  reach RECOMMEND on it
+
 ## Deleted
 
 See the Removed table in `REPOSITORY_INVENTORY.md`.
@@ -184,9 +207,10 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Evidence quality
 
-- [ ] Market risk and drawdown risk are not measured, so no investment case
-      can reach RECOMMEND. Market risk needs a volatility series; drawdown
-      needs position history. Highest-value gap in the product
+- [ ] Portfolio-level drawdown needs position history, which nothing
+      records. Security-level risk is measured; the account's is not
+- [ ] `portfolio_fit_score` is now the binding gate on RECOMMEND (47
+      against a minimum of 60). Confirm it measures what it claims
 - [ ] Cached evidence knows its true age; no surface reports it yet
 - [ ] Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
 - [ ] Holdings absent from every watchlist cannot be named or analysed

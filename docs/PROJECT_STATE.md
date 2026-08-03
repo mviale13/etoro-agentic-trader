@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 373 passing |
+| Pytest | 🟢 380 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,12 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Risk is measured, per security, from the price history a quote request
+  already carries. One parameter took that request from five days to a
+  year, and annualised volatility and deepest observed fall now separate
+  the candidates: 94% volatility on Energy Fuels against 18% on
+  McDonald's, where every candidate previously scored the same 25
 
 - Absent evidence is absent everywhere in the decision path. An unknown
   company quality no longer becomes the portfolio's health score, an
@@ -125,10 +131,12 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Reasoning
 
-- **Nothing can reach RECOMMEND today.** Market risk needs a volatility
-  series and drawdown risk needs position history; neither is measured, so
-  overall risk is absent and the CIO will not recommend buying on it. This
-  is deliberate, and it is the single highest-value gap to close
+- The risk gate now clears on measured evidence, so RECOMMEND is reachable.
+  The binding constraint today is `portfolio_fit_score` at 47 against a
+  policy minimum of 60 — diversification and policy alignment on an account
+  that is 97% cash. Worth confirming that gate says what it should
+- Portfolio-level drawdown is still unmeasured: it needs position history,
+  which nothing records. Security-level drawdown is measured
 
 - `consistency_score` measures the investor's own consistency. The journal
   records what the CIO decided, not what the investor did about it, so the

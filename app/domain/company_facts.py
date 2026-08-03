@@ -31,6 +31,12 @@ class CompanyFacts:
     daily_change_pct: float | None = None
     market_cap: float | None = None
 
+    # Risk, measured from the observed price history rather than assumed.
+    #: Annualised standard deviation of daily returns, as a ratio.
+    realized_volatility: float | None = None
+    #: Deepest peak-to-trough fall observed, as a positive ratio.
+    max_drawdown: float | None = None
+
     # Valuation
     forward_pe: float | None = None
 

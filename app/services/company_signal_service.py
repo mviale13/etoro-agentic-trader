@@ -6,6 +6,7 @@ from app.domain.watchlist_item import WatchlistItem
 from app.services.company_facts_service import CompanyFactsService
 from app.services.momentum_signal_service import MomentumSignalService
 from app.services.quality_signal_service import QualitySignalService
+from app.services.risk_signal_service import RiskSignalService
 from app.services.value_signal_service import ValueSignalService
 
 
@@ -33,4 +34,5 @@ class CompanySignalService:
             value=ValueSignalService().build(facts),
             momentum=MomentumSignalService().build(facts),
             quality=QualitySignalService().build(facts),
+            risk=RiskSignalService().build(facts),
         )

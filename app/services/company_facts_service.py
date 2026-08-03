@@ -74,6 +74,10 @@ class CompanyFactsService:
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
             market_cap=valuation.market_cap,
+            realized_volatility=(
+                quote.realized_volatility if quote is not None else None
+            ),
+            max_drawdown=(quote.max_drawdown if quote is not None else None),
             # Valuation
             forward_pe=valuation.forward_pe,
             # Growth

@@ -47,12 +47,15 @@ class ResearchCandidateResponse(BaseModel):
     quality_score: int | None = None
     valuation_score: int | None = None
 
-    #: Risk and fit describe the account, not this company. They are equal
-    #: for every candidate by construction, and labelled as such.
-    portfolio_risk_score: int | None = None
-    portfolio_fit_score: int
+    #: Measured from this security's own price history — its volatility and
+    #: its deepest observed fall. Null when that history is too short.
+    risk_score: int | None = None
 
     evidence_score: int
+
+    #: Fit describes the account, not the company. Equal for every candidate
+    #: by construction, and labelled as such.
+    portfolio_fit_score: int
 
     #: The evidence lines the decision was weighed on, positive or not.
     #: They are reported as the CIO saw them, not filtered into a case.

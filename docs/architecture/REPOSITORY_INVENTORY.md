@@ -81,6 +81,7 @@ Orchestration lives in `app/application/workspace`:
 | `app/domain` | Shared domain models |
 | `app/providers` | Provider access, cached: `CachedValueProvider`, `CachedMarketProvider` |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
+| `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |
 
 ## Perception components
 

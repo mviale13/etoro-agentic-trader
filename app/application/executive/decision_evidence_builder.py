@@ -4,9 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.application.brain.reasoning.models.risk_assessment import (
-    RiskAssessment,
-)
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
@@ -57,6 +54,17 @@ class DecisionEvidenceBuilder:
         "EXPENSIVE": 25,
     }
 
+    #: How violently the security itself has moved, by signal. SEVERE sits
+    #: above DecisionPolicy.maximum_acceptable_risk, so a security that
+    #: swings that hard is rejected on its own record rather than on a
+    #: judgement about the account holding it.
+    RISK_SCORES = {
+        "LOW": 20,
+        "MODERATE": 45,
+        "HIGH": 65,
+        "SEVERE": 85,
+    }
+
     def build(
         self,
         symbol: str,
@@ -97,6 +105,7 @@ class DecisionEvidenceBuilder:
             dict.fromkeys(
                 (
                     *self._company_strengths(company),
+                    *self._company_risk_evidence(company),
                     *portfolio.strengths,
                     *market.opportunities,
                 )
@@ -132,18 +141,14 @@ class DecisionEvidenceBuilder:
             quality_score=quality,
             evidence_score=evidence_score,
             valuation_score=valuation,
-            risk_score=(
-                None
-                if risk.overall_risk_score is None
-                else int(risk.overall_risk_score * 100)
-            ),
+            risk_score=self._risk_score(company),
             portfolio_fit_score=portfolio_fit,
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
             analyst_veto=company is not None and company.recommendation == "SELL",
             strengths=strengths,
             risks=risks,
-            missing_evidence=self._missing_evidence(company, symbol, risk),
+            missing_evidence=self._missing_evidence(company, symbol),
             catalysts=catalysts,
         )
 
@@ -181,6 +186,24 @@ class DecisionEvidenceBuilder:
             return None
 
         return cls.QUALITY_SCORES.get(company.signals.quality.quality)
+
+    @classmethod
+    def _risk_score(
+        cls,
+        company: CompanyRecommendation | None,
+    ) -> int | None:
+        """
+        How risky this security is, measured from its own price history.
+
+        This used to be the portfolio's risk score, which was identical for
+        every security and, before that, mostly two hardcoded constants. It
+        is now the security's own volatility and drawdown, or nothing.
+        """
+
+        if company is None or company.signals.risk is None:
+            return None
+
+        return cls.RISK_SCORES.get(company.signals.risk.level)
 
     @classmethod
     def _valuation_score(
@@ -241,16 +264,21 @@ class DecisionEvidenceBuilder:
         return company.evidence
 
     @staticmethod
+    def _company_risk_evidence(
+        company: CompanyRecommendation | None,
+    ) -> tuple[str, ...]:
+        if company is None or company.signals.risk is None:
+            return ()
+
+        return company.signals.risk.evidence
+
+    @staticmethod
     def _missing_evidence(
         company: CompanyRecommendation | None,
         symbol: str,
-        risk: RiskAssessment,
     ) -> tuple[str, ...]:
         if company is None:
-            return (
-                f"No security-level analysis is available for {symbol}.",
-                *risk.unmeasured,
-            )
+            return (f"No security-level analysis is available for {symbol}.",)
 
         missing: list[str] = []
 
@@ -260,6 +288,7 @@ class DecisionEvidenceBuilder:
         if company.signals.quality.quality == "UNKNOWN":
             missing.append(f"Quality data is unavailable for {symbol}.")
 
-        missing.extend(risk.unmeasured)
+        if company.signals.risk is None or company.signals.risk.level == "UNKNOWN":
+            missing.append(f"Price history for {symbol} is too short to measure risk.")
 
         return tuple(missing)
