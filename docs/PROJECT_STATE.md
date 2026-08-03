@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 457 passing |
+| Pytest | 🟢 463 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Every eToro request goes through one door, and every response is kept.
+  `EtoroClient` owns the credentials, reads the published allowance off
+  each response and waits for the window rather than spending into a 429.
+  `/watchlists` was fetched and discarded — the only description the
+  platform has of an instrument, never archived — and is now captured like
+  `/pnl`. Query parameters are recorded, which the API inventory asked for
+  and nothing did: a paginated capture that does not say which page it
+  holds is a corrupted archive
 
 - A source that did not answer says so. `CachedValueProvider` serves the
   last real reading when the provider fails — deliberate, and until now

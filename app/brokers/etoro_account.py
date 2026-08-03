@@ -1,10 +1,10 @@
 import time
-import uuid
 from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 
+from app.brokers.etoro_client import EtoroClient
 from app.config import Settings
 from app.domain.account_snapshot import AccountSnapshot
 from app.domain.portfolio_position import PortfolioPosition
@@ -17,22 +17,14 @@ class EtoroAccountBroker:
         settings: Settings,
         client: httpx.AsyncClient | None = None,
         evidence_store: VersionedSnapshotStore | None = None,
+        api: EtoroClient | None = None,
     ) -> None:
         self.settings = settings
-        self._client = client
-        self._evidence_store = evidence_store or VersionedSnapshotStore()
-
-    def _headers(self) -> dict[str, str]:
-        if not self.settings.etoro_api_key or not self.settings.etoro_user_key:
-            raise RuntimeError(
-                "Missing ETORO_API_KEY or ETORO_USER_KEY in the local .env file"
-            )
-
-        return {
-            "x-api-key": self.settings.etoro_api_key,
-            "x-user-key": self.settings.etoro_user_key,
-            "x-request-id": str(uuid.uuid4()),
-        }
+        self._api = api or EtoroClient(
+            settings,
+            client=client,
+            evidence_store=evidence_store,
+        )
 
     def _pnl_path(self) -> str:
         if self.settings.trading_mode == "demo":
@@ -47,38 +39,13 @@ class EtoroAccountBroker:
 
     async def _fetch_pnl(self) -> tuple[dict[str, Any], float]:
         started = time.perf_counter()
-        path = self._pnl_path()
-        url = f"{self.settings.etoro_base_url}{path}"
-        headers = self._headers()
 
-        if self._client is not None:
-            response = await self._client.get(url, headers=headers)
-        else:
-            async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.get(url, headers=headers)
+        body = await self._api.get(self._pnl_path(), endpoint="pnl")
 
         latency_ms = (time.perf_counter() - started) * 1000
-        response.raise_for_status()
-
-        body = response.json()
 
         if not isinstance(body, dict):
             raise RuntimeError("Unexpected eToro P&L response format")
-
-        self._evidence_store.save(
-            broker="etoro",
-            environment=self.settings.trading_mode,
-            endpoint="pnl",
-            payload=body,
-            metadata={
-                "http_method": "GET",
-                "http_status": response.status_code,
-                "request_path": path,
-                "request_id": headers["x-request-id"],
-                "latency_ms": round(latency_ms, 3),
-                "response_headers": dict(response.headers),
-            },
-        )
 
         return body, latency_ms
 

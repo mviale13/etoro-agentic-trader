@@ -1,50 +1,39 @@
+"""The investor's watchlists, as eToro returns them."""
+
 from __future__ import annotations
 
-import uuid
 from typing import Any
 
 import httpx
 
+from app.brokers.etoro_client import EtoroClient
 from app.config import Settings
 
 
 class EtoroWatchlistBroker:
+    """
+    Read the watchlists, and keep what was read.
+
+    This fetched and discarded. The watchlists are the only description
+    the platform has of an instrument — its symbol, its name, its asset
+    type, its exchange — so every decision about a security rests on a
+    payload that was never archived, and no past state of it can be
+    recovered.
+    """
+
+    PATH = "/api/v1/watchlists"
+
     def __init__(
         self,
         settings: Settings,
         client: httpx.AsyncClient | None = None,
+        api: EtoroClient | None = None,
     ) -> None:
         self._settings = settings
-        self._client = client
-
-    def _headers(self) -> dict[str, str]:
-        if not self._settings.etoro_api_key or not self._settings.etoro_user_key:
-            raise RuntimeError("Missing ETORO_API_KEY or ETORO_USER_KEY")
-
-        return {
-            "x-api-key": self._settings.etoro_api_key,
-            "x-user-key": self._settings.etoro_user_key,
-            "x-request-id": str(uuid.uuid4()),
-        }
+        self._api = api or EtoroClient(settings, client=client)
 
     async def fetch(self) -> dict[str, Any]:
-        url = f"{self._settings.etoro_base_url}/api/v1/watchlists"
-
-        if self._client is not None:
-            response = await self._client.get(
-                url,
-                headers=self._headers(),
-            )
-        else:
-            async with httpx.AsyncClient(timeout=30) as client:
-                response = await client.get(
-                    url,
-                    headers=self._headers(),
-                )
-
-        response.raise_for_status()
-
-        body = response.json()
+        body = await self._api.get(self.PATH, endpoint="watchlists")
 
         if not isinstance(body, dict):
             raise RuntimeError("Unexpected eToro watchlist response")
