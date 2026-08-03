@@ -58,6 +58,10 @@ class ResearchCandidateResponse(BaseModel):
     #: where the policy states no limit it could be measured against.
     portfolio_fit_score: int | None = None
 
+    #: How old the security's evidence is, as the investor should read it
+    #: — "Yahoo Finance, 14 minutes ago". Null where none was read.
+    evidence_as_of: str | None = None
+
     #: The evidence lines the decision was weighed on, positive or not.
     #: They are reported as the CIO saw them, not filtered into a case.
     evidence_weighed: list[str]

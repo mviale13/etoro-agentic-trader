@@ -35,6 +35,35 @@ class Provenance:
 
         return (now or datetime.now(UTC)) - self.observed_at
 
+    def stated(
+        self,
+        now: datetime | None = None,
+    ) -> str:
+        """
+        The age as the investor should read it.
+
+        Coarse on purpose. "14 minutes ago" is what matters about a price;
+        the second it was taken is not, and printing it would suggest a
+        precision the number does not have.
+        """
+
+        age = self.age(now)
+        minutes = int(age.total_seconds() // 60)
+
+        if minutes < 1:
+            when = "just now"
+        elif minutes < 60:
+            when = f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+        elif age.days < 1:
+            hours = minutes // 60
+            when = f"{hours} hour{'s' if hours != 1 else ''} ago"
+        elif age.days == 1:
+            when = "yesterday"
+        else:
+            when = f"{age.days} days ago"
+
+        return f"{self.source}, {when}"
+
     def is_older_than(
         self,
         limit: timedelta,

@@ -40,6 +40,9 @@ export interface ResearchCandidateViewModel {
   /** Room the portfolio has for this security, under the investor's policy. */
   portfolioFitScore: number | null;
 
+  /** How old that evidence is, e.g. "Yahoo Finance, 14 minutes ago". */
+  evidenceAsOf: string | null;
+
   /** Evidence behind the decision, as weighed — not curated into a case. */
   evidenceWeighed: readonly string[];
   whyNotYet: string;

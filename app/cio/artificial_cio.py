@@ -66,6 +66,7 @@ class ArtificialCIO:
                 state,
             ),
             rationale=rationale,
+            evidence_as_of=evidence.evidence_as_of,
             evidence_weighed=evidence.evidence_weighed,
             key_strengths=evidence.strengths,
             key_risks=evidence.risks,

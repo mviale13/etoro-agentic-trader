@@ -243,8 +243,11 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [x] Every reading carries a `Provenance` — its source and the time it
       was taken. A cached quote keeps the time the price was taken, not the
       time it was served
-- [ ] No surface reports the age yet. Next: freshness enforced where a
-      reading is used, and stated on screen
+- [x] The age is stated on the brief and the research page, coarsely —
+      "14 minutes ago", not a timestamp implying precision the number
+      lacks. `Provenance.is_older_than` lets a caller set its own limit;
+      no gate rejects on age yet, and none should until a real one is
+      identified
 - [ ] eToro identity carries no reading, because the watchlist fetch
       records no time. Plumbing that is the other half of two-source
       provenance

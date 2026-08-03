@@ -151,6 +151,7 @@ class DecisionEvidenceBuilder:
             valuation_score=valuation,
             risk_score=self._risk_score(company),
             portfolio_fit_score=portfolio_fit,
+            evidence_as_of=company.reading if company is not None else None,
             asset_class=asset_class,
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,

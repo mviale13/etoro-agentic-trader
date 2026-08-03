@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 451 passing |
+| Pytest | 🟢 452 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,13 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The investor can see how old the evidence is. Provenance travels from
+  the facts through the signals, the recommendation and the decision to
+  the brief and the research page, which now read "Yahoo Finance, 6
+  minutes ago" under a case. It is the stalest reading behind that case,
+  not the freshest, and a case with no security-level reading says so
+  rather than looking freshly checked
 
 - Evidence knows where it came from and when. `MarketQuote` carried no
   time at all, so a price replayed from a fifteen-minute cache was
@@ -259,8 +266,6 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Evidence quality
 
-- Every reading now carries its source and time, but no surface shows it
-  yet: an investor still cannot see that a price is fourteen minutes old
 - eToro identity carries no reading. The watchlist fetch records no time,
   and inventing one would be the fabrication this model exists to prevent
 - `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are reported

@@ -40,6 +40,7 @@ class CompanyCommitteeService:
             ),
             signals=signals,
             evidence=evidence,
+            reading=signals.reading,
         )
 
     @staticmethod

@@ -82,6 +82,11 @@ async def research_candidates(
                 risk_score=evidence.risk_score,
                 portfolio_fit_score=evidence.portfolio_fit_score,
                 evidence_score=evidence.evidence_score,
+                evidence_as_of=(
+                    decision.evidence_as_of.stated()
+                    if decision.evidence_as_of is not None
+                    else None
+                ),
                 evidence_weighed=list(decision.evidence_weighed),
                 why_not_yet=decision.rationale,
                 missing_evidence=list(decision.missing_evidence),

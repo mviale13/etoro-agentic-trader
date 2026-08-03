@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.cio.decision_state import DecisionState
 from app.domain.asset_class import AssetClass
+from app.domain.provenance import Provenance
 
 
 class DecisionEvidence(BaseModel):
@@ -32,6 +33,14 @@ class DecisionEvidence(BaseModel):
     #: investor's own policy. None when the policy states no limit this
     #: could be measured against.
     portfolio_fit_score: int | None = Field(default=None, ge=0, le=100)
+
+    #: When the security's own evidence was read.
+    #:
+    #: The portfolio and market readings behind this case are not dated —
+    #: they come from eToro, whose fetch time nothing records yet — so this
+    #: covers the security's evidence and says so rather than standing for
+    #: the whole case.
+    evidence_as_of: Provenance | None = None
 
     #: What kind of asset this is. The Artificial CIO needs it to tell a
     #: measurement that has not arrived from a question that does not
@@ -81,6 +90,7 @@ class ExecutiveDecision(BaseModel):
     conviction: int = Field(ge=0, le=100)
 
     rationale: str
+    evidence_as_of: Provenance | None = None
     evidence_weighed: tuple[str, ...] = ()
     key_strengths: tuple[str, ...] = ()
     key_risks: tuple[str, ...] = ()

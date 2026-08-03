@@ -82,6 +82,7 @@ class InvestmentThesisBuilder:
             evidence_weighed=decision.evidence_weighed,
             context_strengths=context_strengths,
             context_risks=context_risks,
+            evidence_as_of=decision.evidence_as_of,
             previous_decisions=self._previous_decisions(
                 history,
                 decision,

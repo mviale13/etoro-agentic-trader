@@ -64,6 +64,18 @@ class ExecutiveBriefConsoleRenderer:
                 "Conviction: "
                 f"{ExecutiveBriefConsoleRenderer._percent(case.conviction / 100)}"
             )
+
+            # How old the evidence under this decision is. Absent readings
+            # say so rather than leaving the case looking freshly checked.
+            console.print(
+                "Evidence: "
+                + (
+                    case.evidence_as_of.stated()
+                    if case.evidence_as_of is not None
+                    else "no security-level reading"
+                )
+            )
+
             console.print()
 
             # The security's own case first, then the record it was drawn

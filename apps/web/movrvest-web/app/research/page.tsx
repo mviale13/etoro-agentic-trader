@@ -228,6 +228,16 @@ function CandidateCard({
                   Evidence weighed
                 </h4>
 
+                {/* How old these readings are. A judgement is exactly as
+                    current as the facts under it, and the investor could
+                    not previously tell whether they were minutes or a day
+                    old. */}
+                {candidate.evidenceAsOf ? (
+                  <p className="mt-1 text-xs font-medium text-emerald-800">
+                    {candidate.evidenceAsOf}
+                  </p>
+                ) : null}
+
                 <ul className="mt-3 space-y-2">
                   {candidate.evidenceWeighed.map((line) => (
                     <li

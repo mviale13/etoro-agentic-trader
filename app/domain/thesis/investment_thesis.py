@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.provenance import Provenance
+
 
 @dataclass(frozen=True, slots=True)
 class InvestmentThesis:
@@ -50,6 +52,9 @@ class InvestmentThesis:
 
     #: Risks of the account and the market, not of this security.
     context_risks: tuple[str, ...] = ()
+
+    #: When the security's evidence was read. None where none was read.
+    evidence_as_of: Provenance | None = None
 
     #: What the Artificial CIO decided about this symbol before, stated as
     #: fact. None when nothing was ever recorded — the CIO does not claim a

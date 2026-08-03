@@ -90,3 +90,19 @@ def test_evidence_carrying_no_reading_claims_no_age() -> None:
     """Which is not the same as being fresh."""
 
     assert facts().observed_at is None
+
+
+def test_an_age_is_stated_as_the_investor_should_read_it() -> None:
+    """
+    Coarse on purpose.
+
+    "14 minutes ago" is what matters about a price. The second it was taken
+    is not, and printing it would suggest a precision the number lacks.
+    """
+
+    assert reading("Yahoo Finance", 0).stated(NOW) == "Yahoo Finance, just now"
+    assert reading("Yahoo Finance", 1).stated(NOW) == "Yahoo Finance, 1 minute ago"
+    assert reading("Yahoo Finance", 14).stated(NOW) == "Yahoo Finance, 14 minutes ago"
+    assert reading("Yahoo Finance", 180).stated(NOW) == "Yahoo Finance, 3 hours ago"
+    assert reading("eToro", 1_440).stated(NOW) == "eToro, yesterday"
+    assert reading("eToro", 5_760).stated(NOW) == "eToro, 4 days ago"

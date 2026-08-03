@@ -111,6 +111,7 @@ function parseCandidate(
       payload.portfolio_fit_score,
       at("portfolio_fit_score"),
     ),
+    evidenceAsOf: optionalString(payload.evidence_as_of, at("evidence_as_of")),
     evidenceWeighed: stringList(payload.evidence_weighed),
     whyNotYet: requireString(payload.why_not_yet, at("why_not_yet")),
     missingEvidence: stringList(payload.missing_evidence),
