@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from dataclasses import dataclass
 from math import isfinite, sqrt
@@ -5,6 +7,7 @@ from typing import Any
 
 import yfinance as yf
 
+from app.domain.asset_class import AssetClass
 from app.domain.market_snapshot import MarketData, MarketQuote
 
 
@@ -13,6 +16,31 @@ class YahooInstrument:
     yahoo_symbol: str
     movrvest_symbol: str
     name: str
+
+    @classmethod
+    def for_security(
+        cls,
+        symbol: str,
+        name: str,
+        asset_class: AssetClass,
+    ) -> YahooInstrument:
+        """
+        The ticker Yahoo prices this security under.
+
+        Most securities trade under the symbol the broker already uses.
+        Cryptocurrencies do not: Yahoo quotes them against a currency, so
+        `BTC` prices as `BTC-USD` and the bare ticker returns nothing at
+        all. The security keeps its own symbol everywhere else, so evidence
+        still comes back under the name the investor knows.
+        """
+
+        return cls(
+            yahoo_symbol=(
+                f"{symbol}-USD" if asset_class is AssetClass.CRYPTO else symbol
+            ),
+            movrvest_symbol=symbol,
+            name=name,
+        )
 
 
 class YahooMarketProvider:

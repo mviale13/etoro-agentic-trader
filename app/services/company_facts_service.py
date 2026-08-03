@@ -2,6 +2,7 @@ import asyncio
 from datetime import UTC, datetime
 from typing import Protocol
 
+from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.market_snapshot import MarketQuote
 from app.domain.valuation_snapshot import ValuationSnapshot
@@ -38,22 +39,19 @@ class CompanyFactsService:
         self,
         item: WatchlistItem,
     ) -> CompanyFacts:
-        instrument = YahooInstrument(
-            yahoo_symbol=item.symbol,
-            movrvest_symbol=item.symbol,
-            name=item.name,
+        asset_class = AssetClass.from_etoro(item.asset_type_id)
+
+        instrument = YahooInstrument.for_security(
+            item.symbol,
+            item.name,
+            asset_class,
         )
 
         quotes_task = asyncio.create_task(self._market_provider.quotes((instrument,)))
 
-        valuation_task = asyncio.to_thread(
-            self._valuation_provider.snapshot,
-            item.symbol,
-        )
-
         quotes, valuation = await asyncio.gather(
             quotes_task,
-            valuation_task,
+            self._valuation(item.symbol, asset_class),
         )
 
         quote = self._find_quote(
@@ -65,10 +63,11 @@ class CompanyFactsService:
             instrument_id=item.instrument_id,
             symbol=item.symbol,
             name=item.name,
-            asset_type=str(item.asset_type_id),
+            asset_type=asset_class.value,
             exchange=str(item.exchange_id),
             # The oldest reading in here, so nothing is dated fresher than
-            # the evidence actually is.
+            # the evidence actually is. A security with no fundamentals to
+            # read has only its quote, which is never served stale.
             observed_at=valuation.observed_at or datetime.now(UTC),
             # Market
             current_price=quote.price if quote is not None else None,
@@ -102,6 +101,36 @@ class CompanyFactsService:
             # Classification
             sector=None,
             industry=None,
+        )
+
+    async def _valuation(
+        self,
+        symbol: str,
+        asset_class: AssetClass,
+    ) -> ValuationSnapshot:
+        """
+        The company fundamentals behind this security, if it has a company.
+
+        A cryptocurrency has no earnings, no dividend and no price/earnings
+        ratio — but the provider answers anyway, reporting a network's total
+        value under the same `marketCap` field a business reports its equity
+        value under. Read as company facts, that number becomes evidence
+        that Bitcoin is a large-cap company. So nothing is read at all: the
+        fundamentals a crypto asset does not have are reported as absent,
+        and the request is not spent.
+        """
+
+        if not asset_class.has_company_fundamentals:
+            return ValuationSnapshot(
+                forward_pe=None,
+                trailing_pe=None,
+                peg_ratio=None,
+                dividend_yield=None,
+            )
+
+        return await asyncio.to_thread(
+            self._valuation_provider.snapshot,
+            symbol,
         )
 
     @staticmethod

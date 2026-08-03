@@ -207,9 +207,9 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Agreed order
 
-1. **Crypto symbol resolution.** `BTC`, `ETH`, `SOL`, `HYPE` and `TAO` do not
-   price, so a real part of the account gets no security-level evidence and,
-   since absent evidence now stops a case at INVESTIGATE, can never progress.
+1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`
+   and `1INCH` now price and carry measured risk. `TAO` and `HYPE` have no
+   plain `-USD` listing and stay absent rather than guessed at.
 2. **The `strengths` mislabel.** `DecisionEvidence.strengths` carries raw
    evidence, positive or not. The research page calls it "Evidence weighed";
    the executive brief and dossier still print "Insufficient quality data."
@@ -227,13 +227,20 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [ ] `portfolio_fit_score` is now the binding gate on RECOMMEND (47
       against a minimum of 60). Confirm it measures what it claims
 - [ ] Cached evidence knows its true age; no surface reports it yet
-- [ ] Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
+- [x] Crypto tickers resolve. `AssetClass` classifies an eToro instrument,
+      and a crypto one is priced as a pair
+- [ ] `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are
+      reported unpriceable rather than guessed at under a disambiguated
+      ticker
+- [ ] A crypto case cannot progress past INVESTIGATE: the quality gate asks
+      about a business, and a token has none. The gate is company-shaped
 - [ ] Holdings absent from every watchlist cannot be named or analysed
 - [ ] Research still evidences a capped number of candidates per cycle. With
       the cache warm the cap could rise substantially; the first cycle of a
       day is what costs
 - [ ] Holdings are not classified by asset type, which blocks allocation
-      drift scoring and the crypto policy limit
+      drift scoring and the crypto policy limit. `AssetClass` now exists and
+      `PortfolioService` needs the position → instrument join to use it
 
 ## Reasoning
 

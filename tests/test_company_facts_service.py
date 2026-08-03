@@ -100,3 +100,127 @@ def test_facts_are_never_dated_fresher_than_the_evidence() -> None:
     facts = make_facts(make_snapshot(observed_at=observed_at))
 
     assert facts.observed_at == observed_at
+
+
+class RecordingMarketProvider:
+    """A provider that remembers which ticker it was asked about."""
+
+    def __init__(self, quote: MarketQuote) -> None:
+        self.requested: list[str] = []
+        self._quote = quote
+
+    async def quotes(
+        self,
+        instruments: tuple[YahooInstrument, ...] | None = None,
+    ) -> tuple[MarketQuote, ...]:
+        self.requested.extend(
+            instrument.yahoo_symbol for instrument in instruments or ()
+        )
+
+        return (self._quote,)
+
+
+class RecordingValuationProvider:
+    def __init__(self) -> None:
+        self.requested: list[str] = []
+
+    def snapshot(self, symbol: str) -> ValuationSnapshot:
+        self.requested.append(symbol)
+
+        # What Yahoo actually answers for BTC-USD: a network's total value,
+        # in the field a business reports its equity value under.
+        return ValuationSnapshot(
+            forward_pe=None,
+            trailing_pe=None,
+            peg_ratio=None,
+            dividend_yield=None,
+            market_cap=1_255_684_964_352.0,
+        )
+
+
+BITCOIN = WatchlistItem(
+    instrument_id=100000,
+    symbol="BTC",
+    name="Bitcoin",
+    asset_type_id=10,
+    asset_type_subcategory_id=1001,
+    exchange_id=8,
+    rank=0,
+    avatar_url=None,
+)
+
+
+def build_crypto_facts() -> tuple[
+    CompanyFacts,
+    RecordingMarketProvider,
+    RecordingValuationProvider,
+]:
+    market = RecordingMarketProvider(
+        MarketQuote(
+            symbol="BTC",
+            name="Bitcoin",
+            price=62_537.75,
+            change_percent=-0.8,
+            realized_volatility=0.47,
+            max_drawdown=0.31,
+        )
+    )
+
+    valuation = RecordingValuationProvider()
+
+    service = CompanyFactsService(
+        market_provider=market,  # type: ignore[arg-type]
+        valuation_provider=valuation,  # type: ignore[arg-type]
+    )
+
+    return asyncio.run(service.build(BITCOIN)), market, valuation
+
+
+def test_crypto_is_priced_under_the_ticker_that_resolves() -> None:
+    """
+    `BTC` returns nothing from Yahoo; `BTC-USD` returns a year of prices.
+
+    Every crypto holding and candidate was therefore unpriceable, and since
+    absent evidence stops an investment case at INVESTIGATE, none of them
+    could ever progress.
+    """
+
+    _, market, _ = build_crypto_facts()
+
+    assert market.requested == ["BTC-USD"]
+
+
+def test_crypto_evidence_comes_back_under_its_own_symbol() -> None:
+    facts, _, _ = build_crypto_facts()
+
+    assert facts.symbol == "BTC"
+    assert facts.current_price == 62_537.75
+    assert facts.realized_volatility == 0.47
+    assert facts.max_drawdown == 0.31
+
+
+def test_crypto_is_not_asked_for_company_fundamentals() -> None:
+    """
+    The provider answers about a token, and the answer reads like a company.
+
+    A `marketCap` of 1.26 trillion, read as company facts, makes the quality
+    signal report Bitcoin as a large-cap company. It has no company, so the
+    fundamentals are reported absent rather than borrowed from a field that
+    happens to be populated.
+    """
+
+    facts, _, valuation = build_crypto_facts()
+
+    assert valuation.requested == []
+    assert facts.market_cap is None
+
+    signal = QualitySignalService().build(facts)
+
+    assert signal.quality == "UNKNOWN"
+    assert signal.evidence == ("Insufficient quality data.",)
+
+
+def test_facts_carry_the_asset_class_rather_than_a_broker_id() -> None:
+    facts, _, _ = build_crypto_facts()
+
+    assert facts.asset_type == "crypto"

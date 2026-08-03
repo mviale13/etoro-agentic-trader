@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 380 passing |
+| Pytest | 🟢 390 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,16 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Crypto is evidenced. An eToro instrument is classified by `AssetClass`,
+  and a crypto one is priced as a pair — `BTC` as `BTC-USD` — so six
+  previously unpriceable assets now carry a real price and measured risk:
+  58% annualised volatility and a 75% deepest fall on Solana against 32%
+  and 34% on Microsoft. `BTC` moved from REJECT to INVESTIGATE on evidence
+  rather than on a changed rule. It is also not asked for company
+  fundamentals: Yahoo answers about a token with a `marketCap` of 1.26
+  trillion, which read as company facts would have reported Bitcoin as a
+  large-cap company
 
 - Risk is measured, per security, from the price history a quote request
   already carries. One parameter took that request from five days to a
@@ -121,13 +131,18 @@ Named rather than hidden. None of these are estimated away in the product.
 
 - Cached evidence carries its true observation date, but no surface shows
   it: an investor cannot yet see that a company's fundamentals are a day old
-- Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
+- `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are reported
+  unpriceable rather than guessed at under a disambiguated ticker
 - A holding absent from every watchlist cannot be named or analysed
 - Research covers a capped number of candidates per cycle, because
   fundamentals are uncached and the provider rate-limits. The page reports
   how many it could not reach
 - Holdings are not classified by asset type, which blocks allocation-drift
-  scoring and the crypto policy limit
+  scoring and the crypto policy limit. `AssetClass` now exists; what is
+  missing is the position → instrument join inside `PortfolioService`
+- A crypto case cannot progress past INVESTIGATE. The quality gate asks how
+  good the business is, and a token has no business, so the answer is
+  honestly absent and the gate honestly refuses. The gate is company-shaped
 
 ## Reasoning
 
