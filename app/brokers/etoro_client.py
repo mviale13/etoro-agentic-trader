@@ -104,19 +104,33 @@ class EtoroClient:
         settings: Settings,
         client: httpx.AsyncClient | None = None,
         evidence_store: VersionedSnapshotStore | None = None,
-        budget: RateBudget | None = None,
         timeout: float = 30.0,
     ) -> None:
         self._settings = settings
         self._client = client
         self._store = evidence_store or VersionedSnapshotStore()
-        self._budget = budget or RateBudget()
         self._timeout = timeout
         self._gate = asyncio.Lock()
 
-    @property
-    def budget(self) -> RateBudget:
-        return self._budget
+        # One allowance per endpoint, not one for the whole API.
+        #
+        # eToro pools its limits: most reads share a single 60-per-minute
+        # budget, while market data has its own 120. A single shared
+        # counter let a market-data response — reporting what was left of
+        # 120 — overwrite what was left of the 60, and the client would
+        # believe it had headroom it did not have. Each endpoint now
+        # remembers only what its own responses reported.
+        #
+        # Endpoints sharing a pool learn its state independently, so one
+        # can drain a budget another still believes in until its next
+        # response corrects it. That errs toward a 429, which is captured
+        # and recoverable; the reverse errs toward silent overspending.
+        self._budgets: dict[str, RateBudget] = {}
+
+    def budget_for(self, endpoint: str) -> RateBudget:
+        """What the last response from this endpoint said was left."""
+
+        return self._budgets.setdefault(endpoint, RateBudget())
 
     async def get(
         self,
@@ -130,7 +144,7 @@ class EtoroClient:
         headers = self._headers()
         url = f"{self._settings.etoro_base_url}{path}"
 
-        await self._await_allowance()
+        await self._await_allowance(endpoint)
 
         started = time.perf_counter()
 
@@ -142,7 +156,7 @@ class EtoroClient:
 
         latency_ms = (time.perf_counter() - started) * 1000
 
-        self._budget.observe(response.headers)
+        self.budget_for(endpoint).observe(response.headers)
 
         self._capture(
             endpoint=endpoint,
@@ -157,11 +171,13 @@ class EtoroClient:
 
         return response.json()
 
-    async def _await_allowance(self) -> None:
+    async def _await_allowance(self, endpoint: str) -> None:
         """Wait for the window to turn over if the allowance is spent."""
 
+        budget = self.budget_for(endpoint)
+
         async with self._gate:
-            pause = self._budget.pause_needed()
+            pause = budget.pause_needed()
 
             if pause > 0:
                 await asyncio.sleep(pause)
@@ -169,7 +185,7 @@ class EtoroClient:
                 # The window has turned over. What is left is unknown until
                 # a response says so, which is different from knowing it is
                 # full.
-                self._budget.remaining = None
+                budget.remaining = None
 
     def _capture(
         self,

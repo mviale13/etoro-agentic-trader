@@ -144,3 +144,41 @@ def test_the_credentials_are_sent_and_each_call_is_identifiable(tmp_path) -> Non
     assert request.headers["x-api-key"] == "test-api-key"
     assert request.headers["x-user-key"] == "test-user-key"
     assert request.headers["x-request-id"]
+
+
+def test_one_pool_s_allowance_does_not_speak_for_another(tmp_path) -> None:
+    """
+    eToro pools its limits, and not into one pool.
+
+    Most reads share a 60-per-minute budget; market data has its own 120.
+    A single counter let a market-data response — reporting what was left
+    of 120 — overwrite what was left of the 60, and the client believed it
+    had headroom it did not have.
+    """
+
+    api = client(tmp_path, responder())
+
+    api.budget_for("pnl").observe({**PUBLISHED, "ratelimit-remaining": "0"}, now=NOW)
+    api.budget_for("market-data").observe(
+        {
+            "ratelimit-limit": "120",
+            "ratelimit-remaining": "119",
+            "ratelimit-reset": "58",
+        },
+        now=NOW,
+    )
+
+    assert api.budget_for("pnl").remaining == 0
+    assert api.budget_for("pnl").limit == 60
+
+    assert api.budget_for("market-data").remaining == 119
+    assert api.budget_for("market-data").limit == 120
+
+
+def test_an_endpoint_never_asked_about_has_no_allowance_to_report(tmp_path) -> None:
+    """Unknown is not full, and is not throttled against either."""
+
+    budget = client(tmp_path, responder()).budget_for("never-called")
+
+    assert budget.remaining is None
+    assert budget.pause_needed(now=NOW) == 0.0
