@@ -106,8 +106,7 @@ class MarketChangeService:
 
         return ChangeEvent(
             title=(
-                f"Volatility moved from {previous.volatility} "
-                f"to {current.volatility}"
+                f"Volatility moved from {previous.volatility} to {current.volatility}"
             ),
             description=self._vix_figures(previous, current),
             # The VIX is a reading of the market's own expectations rather

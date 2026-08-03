@@ -130,9 +130,7 @@ def test_reads_captures_back_newest_first(tmp_path: Path) -> None:
     )
 
     assert [item.payload["equity"] for item in stored] == [300, 200]
-    assert stored[0].reference.captured_at == datetime(
-        2026, 7, 30, 15, 0, tzinfo=UTC
-    )
+    assert stored[0].reference.captured_at == datetime(2026, 7, 30, 15, 0, tzinfo=UTC)
     assert stored[0].reference.endpoint == "account"
     assert stored[0].reference.content_hash == store.content_hash({"equity": 300})
 
