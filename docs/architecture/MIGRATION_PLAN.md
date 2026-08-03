@@ -205,6 +205,21 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 # Open Work
 
+## Agreed order
+
+1. **Crypto symbol resolution.** `BTC`, `ETH`, `SOL`, `HYPE` and `TAO` do not
+   price, so a real part of the account gets no security-level evidence and,
+   since absent evidence now stops a case at INVESTIGATE, can never progress.
+2. **The `strengths` mislabel.** `DecisionEvidence.strengths` carries raw
+   evidence, positive or not. The research page calls it "Evidence weighed";
+   the executive brief and dossier still print "Insufficient quality data."
+   under **Strengths**.
+3. **The portfolio-fit gate.** It is now what blocks every RECOMMEND (47
+   against a minimum of 60). Either the account really is far from its policy
+   targets, or the gate measures the wrong thing — an account sitting 97% in
+   cash arguably has more room for a new position, not less. Settle which,
+   before it silently blocks every recommendation the platform would make.
+
 ## Evidence quality
 
 - [ ] Portfolio-level drawdown needs position history, which nothing
