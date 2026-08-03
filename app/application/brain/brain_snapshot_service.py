@@ -9,6 +9,7 @@ from app.application.brain.perception.investor_perception import (
 from app.application.brain.perception.recommendation_perception import (
     RecommendationPerception,
 )
+from app.application.brain.reasoning.risk_analyst import RiskAnalyst
 from app.domain.brain_snapshot import BrainSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.repositories.json_event_repository import JsonEventRepository
@@ -52,6 +53,12 @@ class BrainSnapshotService:
             summary=self._summary(brain.portfolio),
             insights=[],
             focus="portfolio",
+            # Cheap enough to belong here: the risk analyst reads the
+            # portfolio and market the Brain already holds and makes no
+            # request of its own. It is the per-holding evaluation behind
+            # the executive brief that is too slow for a page load, not
+            # reasoning as such.
+            risk=RiskAnalyst().assess(brain),
             # The executive brief is produced by the Artificial CIO and served
             # from /executive/portfolio. Reporting a placeholder here would
             # put words in the CIO's mouth.

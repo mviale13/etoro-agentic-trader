@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 512 passing |
+| Pytest | 🟢 528 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -67,11 +67,31 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The dashboard renders real account data and a real brief
 - The portfolio page states the deepest fall the account has taken, the
   days it ran between, and how far below that peak it still sits
+- The portfolio page reports overall risk and its four measured
+  components, each with the evidence behind it
 - Every decision is recorded, and the next cycle says what changed
 - The dashboard change feed reports the decisions the CIO actually changed
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **Overall portfolio risk is a measurement.** Market risk was the last of
+  the four components still absent, and it is read off evidence the Brain
+  already held: every benchmark quote carries a year of realised
+  volatility, and every holding is classified, so the blend follows what
+  this account actually holds. It reads **0.8% annualised** — 97.4% cash,
+  which does not move with the market, 1.3% equities at 17.1% and 1.2%
+  crypto at 45.4%. Overall risk is 0.20, LOW, and the only real risk this
+  account carries is the fall it already took. An account in cash is
+  exposed to no market, which is a measurement rather than a rule, and
+  0.2% of it has no benchmark and is excluded rather than counted calm
+
+- The portfolio page stopped inventing its own risk. `ExecutivePortfolio-
+  Assessment` derived four scores in the browser from the cash percentage
+  with hardcoded ladders, "Portfolio risk" among them — an inverted cash
+  ladder presented beside the real figures. It now presents the four
+  measured components and says "Not measured" where one is absent, which
+  is what the dashboard rule has always required
 
 - Portfolio drawdown is measured. The account fell **15.8%** from its peak
   on 10 May 2026 to its low on 25 June 2026 and is still 7.7% below that
@@ -336,10 +356,18 @@ Named rather than hidden. None of these are estimated away in the product.
   doing its job. Fit reads 99 for all of them — honestly, on an account
   that is 97% cash with no position above 0.5% — so nothing on live data
   yet demonstrates it separating one security from another
-- Market risk is still unmeasured, and it is now the only component
-  holding overall portfolio risk absent. It needs a volatility series for
-  the account as a whole; the daily equity curve that drawdown is read off
-  could supply one, and nothing computes it yet
+- Market intelligence is thin, and three services are the evidence.
+  `MarketContextService` and `MarketFactsService` are imported by nothing
+  at all; `MarketBreadthService` classifies equities, technology, crypto,
+  gold, oil, the dollar and rates, and is imported only by its own test.
+  The Brain's whole market view is the average one-day move of nine
+  instruments plus a VIX band, and `/markets` is still a placeholder
+- Crypto Fear & Greed sets the outlook for the whole market, equities
+  included, and only on the CLI and committee path. The canonical Brain
+  pipeline never sees sentiment
+- Nothing records what the market did. Quotes are cached for 15 minutes
+  and discarded, so there is no market series, no macro history, and
+  nothing for the change feed to say moved
 - Cash transactions are wired but uncalled: the endpoint wants a cash
   account id, and the CID from `/api/v1/me` is rejected as invalid. Which
   route lists those ids has not been established, and none is guessed at

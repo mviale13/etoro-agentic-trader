@@ -8,13 +8,22 @@ from app.application.brain.reasoning.models.risk_assessment import (
 )
 from app.brain import Brain
 from app.domain.brain_context import BrainContext
+from app.domain.market_risk import MarketRisk
+from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_drawdown import PortfolioDrawdown
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.services.market_risk_service import MarketRiskService
 from app.services.portfolio_drawdown_service import PortfolioDrawdownService
 
 
 class RiskAnalyst:
     """Evaluate overall portfolio risk."""
+
+    def __init__(
+        self,
+        market_risk_service: MarketRiskService | None = None,
+    ) -> None:
+        self._market_risk_service = market_risk_service or MarketRiskService()
 
     def assess(
         self,
@@ -29,21 +38,42 @@ class RiskAnalyst:
         tolerance = policy.constraints.max_drawdown if policy is not None else None
         drawdown = self._drawdown_risk(portfolio.drawdown, tolerance)
 
+        # The legacy `BrainContext` carries a `MarketContext`, which holds
+        # a mood and a headline and no volatility series. There is nothing
+        # there to measure, and saying so is better than reading a number
+        # off an adjective.
+        exposure = (
+            self._market_risk_service.measure(source.market, portfolio)
+            if isinstance(source.market, MarketSnapshot)
+            else None
+        )
+
+        market = (
+            MarketRiskService.risk_score(exposure) if exposure is not None else None
+        )
+
         # Market risk and drawdown risk were 0.50 each — two constants that
         # between them made up most of every risk score the investor saw.
-        # Drawdown is now read off the account's own balance history;
-        # market risk still needs a volatility series nothing supplies.
+        # Both are measurements now, so overall risk is one too.
         #
-        # Overall risk stays absent while any component is missing. Averaging
-        # the components that are measured would report a low risk for an
-        # account whose market exposure nobody has looked at — and a low
-        # number flatters the case, because the Artificial CIO scores low
-        # risk as conviction.
-        overall = None
+        # It stays absent while any component is missing. Averaging the
+        # components that were measured would report a low risk for an
+        # account whose exposure nobody had looked at, and a low number
+        # flatters the case, because the Artificial CIO scores low risk as
+        # conviction.
+        overall = self._overall(
+            market=market,
+            concentration=concentration,
+            liquidity=liquidity,
+            drawdown=drawdown,
+        )
 
         risk_factors: list[str] = []
         mitigants: list[str] = []
         evidence: list[Evidence] = []
+
+        if exposure is not None:
+            evidence.append(self._market_evidence(exposure))
 
         if portfolio.drawdown is not None:
             evidence.append(self._drawdown_evidence(portfolio.drawdown))
@@ -81,14 +111,17 @@ class RiskAnalyst:
                 )
             )
 
-        unmeasured = ["Market risk is not measured."]
+        unmeasured: list[str] = []
+
+        if market is None:
+            unmeasured.append("Market risk is not measured.")
 
         if drawdown is None:
             unmeasured.append("Drawdown risk is not measured.")
 
         return RiskAssessment(
             overall_risk_score=overall,
-            market_risk_score=None,
+            market_risk_score=market,
             concentration_risk_score=concentration,
             liquidity_risk_score=liquidity,
             drawdown_risk_score=drawdown,
@@ -97,6 +130,75 @@ class RiskAnalyst:
             mitigants=tuple(mitigants),
             evidence=tuple(evidence),
             unmeasured=tuple(unmeasured),
+        )
+
+    @staticmethod
+    def _overall(
+        market: float | None,
+        concentration: float | None,
+        liquidity: float | None,
+        drawdown: float | None,
+    ) -> float | None:
+        """
+        The four components together, or nothing while one is missing.
+
+        Deliberately not an average of whatever happens to be available.
+        Each component describes a different way this account can lose
+        money, and a mean of three of them is not a smaller version of
+        the answer — it is a different question, reported under the same
+        name and read as complete.
+        """
+
+        components = (market, concentration, liquidity, drawdown)
+
+        if any(component is None for component in components):
+            return None
+
+        measured = [component for component in components if component is not None]
+
+        return sum(measured) / len(measured)
+
+    def _market_evidence(
+        self,
+        exposure: MarketRisk,
+    ) -> Evidence:
+        """
+        What the account is exposed to, slice by slice.
+
+        The blend alone would hide the shape: 3% blended volatility reads
+        as a calm market, when what it actually says here is that almost
+        none of the account is in the market at all.
+        """
+
+        slices = ", ".join(
+            f"{item.share * 100:.1f}% {item.exposure}"
+            + (
+                " (does not move with the market)"
+                if not item.benchmarks
+                else f" at {item.volatility * 100:.1f}% ({', '.join(item.benchmarks)})"
+            )
+            for item in exposure.exposures
+        )
+
+        statement = (
+            "The market this account is exposed to has moved "
+            f"{exposure.volatility * 100:.1f}% annualised: {slices}."
+        )
+
+        if exposure.uncovered_share > 0:
+            statement += (
+                f" {exposure.uncovered_share * 100:.1f}% of the account has no "
+                "benchmark and is excluded."
+            )
+
+        return Evidence(
+            description=statement,
+            source=(
+                exposure.reading.stated()
+                if exposure.reading is not None
+                else "MarketSnapshot"
+            ),
+            strength=0.90,
         )
 
     @staticmethod

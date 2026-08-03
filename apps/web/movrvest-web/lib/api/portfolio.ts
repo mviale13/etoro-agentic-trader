@@ -23,6 +23,25 @@ export interface PortfolioDrawdown {
   reading: string;
 }
 
+/**
+ * The four ways this account can lose money, as the Brain measured them.
+ *
+ * Each component is a ratio from 0 to 1, or null where it is unmeasured.
+ * Null is never rendered as zero: a risk nobody could measure and a risk
+ * measured at nothing are opposite findings.
+ */
+export interface PortfolioRisk {
+  overall: number | null;
+  level: string | null;
+  market: number | null;
+  concentration: number | null;
+  liquidity: number | null;
+  drawdown: number | null;
+  factors: string[];
+  evidence: { statement: string; source: string }[];
+  unmeasured: string[];
+}
+
 export interface PortfolioOverview {
   totalValueUsd: number;
   totalValueEur: number;
@@ -36,6 +55,7 @@ export interface PortfolioOverview {
   observationTitle: string;
   observationMessage: string;
   drawdown: PortfolioDrawdown | null;
+  risk: PortfolioRisk | null;
 }
 
 export interface PortfolioOverviewResult {
@@ -107,6 +127,60 @@ function drawdownValue(portfolio: UnknownRecord): PortfolioDrawdown | null {
   };
 }
 
+function ratioValue(record: UnknownRecord, key: string): number | null {
+  const value = record[key];
+
+  // Null means unmeasured and must survive as null. Falling back to zero
+  // here would render "no risk" for a component nobody could measure.
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  return null;
+}
+
+function stringList(record: UnknownRecord, key: string): string[] {
+  const value = record[key];
+
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is string => typeof item === "string");
+}
+
+function riskValue(payload: UnknownRecord): PortfolioRisk | null {
+  const risk = payload.risk;
+
+  if (!isRecord(risk)) {
+    return null;
+  }
+
+  const evidence = Array.isArray(risk.evidence) ? risk.evidence : [];
+
+  return {
+    overall: ratioValue(risk, "overall"),
+    level: stringValue(risk, "level") || null,
+    market: ratioValue(risk, "market"),
+    concentration: ratioValue(risk, "concentration"),
+    liquidity: ratioValue(risk, "liquidity"),
+    drawdown: ratioValue(risk, "drawdown"),
+    factors: stringList(risk, "factors"),
+    evidence: evidence.flatMap((item) =>
+      isRecord(item) && typeof item.statement === "string"
+        ? [
+            {
+              statement: item.statement,
+              source:
+                typeof item.source === "string" ? item.source : "",
+            },
+          ]
+        : [],
+    ),
+    unmeasured: stringList(risk, "unmeasured"),
+  };
+}
+
 export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
   const endpoint = `${BACKEND_URL}/brain/`;
 
@@ -163,6 +237,7 @@ export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
           "MOVRvest has not produced a portfolio observation yet.",
         ),
         drawdown: drawdownValue(portfolio),
+        risk: riskValue(payload),
       },
       source: "backend",
       backendUrl: endpoint,

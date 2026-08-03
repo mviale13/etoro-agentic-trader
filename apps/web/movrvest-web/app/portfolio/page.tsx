@@ -277,10 +277,7 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
 
           <DrawdownCard drawdown={portfolio.drawdown} />
 
-          <ExecutivePortfolioAssessment
-            liquidity={portfolio.liquidityPct}
-            positions={portfolio.positions}
-          />
+          <ExecutivePortfolioAssessment risk={portfolio.risk} />
         </div>
 
         <aside className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white sm:p-8">

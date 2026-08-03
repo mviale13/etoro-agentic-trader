@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.application.brain.brain_snapshot_service import (
     BrainSnapshotService,
 )
+from app.application.brain.reasoning.models.risk_assessment import RiskAssessment
 from app.domain.portfolio_drawdown import PortfolioDrawdown
 
 router = APIRouter(
@@ -37,6 +38,37 @@ def _drawdown(
         "ends_on": drawdown.ends_on.isoformat(),
         "observations": drawdown.observations,
         "reading": drawdown.reading.stated(),
+    }
+
+
+def _risk(
+    risk: RiskAssessment | None,
+) -> dict[str, object] | None:
+    """
+    The four ways this account can lose money, each measured or null.
+
+    Served as scores and statements, not as the five-segment bars the page
+    draws. What a score means visually is presentation; what it is worth
+    is measurement, and the page had been deciding both.
+    """
+
+    if risk is None:
+        return None
+
+    return {
+        "overall": risk.overall_risk_score,
+        "level": risk.risk_level.value if risk.risk_level is not None else None,
+        "market": risk.market_risk_score,
+        "concentration": risk.concentration_risk_score,
+        "liquidity": risk.liquidity_risk_score,
+        "drawdown": risk.drawdown_risk_score,
+        "factors": list(risk.risk_factors),
+        "mitigants": list(risk.mitigants),
+        "evidence": [
+            {"statement": item.description, "source": item.source}
+            for item in risk.evidence
+        ],
+        "unmeasured": list(risk.unmeasured),
     }
 
 
@@ -75,6 +107,7 @@ async def get_brain() -> dict[str, object]:
             "last_sync": brain.portfolio.last_sync,
             "drawdown": _drawdown(brain.portfolio.drawdown),
         },
+        "risk": _risk(brain.risk),
         "observation": {
             "title": brain.observation.title,
             "message": brain.observation.message,
