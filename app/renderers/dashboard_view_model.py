@@ -21,6 +21,7 @@ class DashboardInvestmentCase:
     symbol: str
     recommendation: str
     confidence: float | None
+    conviction: int
     summary: str
     previous_decisions: str | None = None
 

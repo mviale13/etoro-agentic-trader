@@ -264,9 +264,9 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       `focus_symbols`, which `SecurityPerception` evidences whatever the
       candidate budget says. Both paths now return REJECT for UUUU, where
       the CLI returned INVESTIGATE and the research pipeline REJECT
-- [ ] The executive brief carries committee agreement, not the decision's
-      conviction. The console labels it honestly; the CIO's own conviction
-      still does not reach `ExecutiveBrief` or `InvestmentThesis`
+- [x] `InvestmentThesis.conviction` carries the decision's own conviction
+      to the brief and to `GET /executive/{symbol}`, beside the committees'
+      agreement rather than in place of it
 - [x] `CommitteeOpinion.confidence` is `float | None`. A committee that
       could not form a view is excluded from agreement rather than averaged
       in as a zero, and confidence comes from the assessments' own

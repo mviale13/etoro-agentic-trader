@@ -42,6 +42,7 @@ class ExecutiveBriefRenderer:
                 symbol=case.symbol,
                 recommendation=case.recommendation,
                 confidence=case.confidence,
+                conviction=case.conviction,
                 summary=case.summary,
                 previous_decisions=case.previous_decisions,
             )

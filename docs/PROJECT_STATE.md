@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 429 passing |
+| Pytest | 🟢 430 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The brief reports the decision's own conviction. It carried only how far
+  the committees agreed, printed as "Conviction", so a RECOMMEND could
+  show 32% while the Artificial CIO held the decision at 81. Both numbers
+  are now stated under their own names, and they separate: UUUU draws 93%
+  committee agreement — the committees are confident, and confident it is
+  a sell — against 40% conviction, capped by the REJECT it reached.
+  Conviction sits inside each case rather than in the header, because it
+  is held in a decision about one security
 
 - The Executive Committees review the security, not just the account. Both
   read only portfolio and market assessments, so their opinions were
@@ -211,11 +220,6 @@ Named rather than hidden. None of these are estimated away in the product.
   honestly absent and the gate honestly refuses. The gate is company-shaped
 
 ## Reasoning
-
-- The executive brief does not carry the decision's conviction. It carries
-  how far the committees agreed, which the console now labels as such. The
-  CIO's own conviction stops at the decision and reaches the research page
-  but not the brief
 
 - Every gate now clears on measured evidence, and RECOMMEND is reached.
   Valuation is what holds most candidates at PREPARE, which is the gate

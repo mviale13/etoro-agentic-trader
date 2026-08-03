@@ -71,6 +71,7 @@ class InvestmentThesisBuilder:
             symbol=symbol,
             recommendation=decision.state.value,
             confidence=confidence,
+            conviction=decision.conviction,
             summary=decision.rationale,
             strengths=strengths,
             risks=risks,

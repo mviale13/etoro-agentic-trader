@@ -10,7 +10,13 @@ class ExecutivePriorityResponse(BaseModel):
 class InvestmentCaseResponse(BaseModel):
     symbol: str
     recommendation: str
+
+    #: How far the committees that spoke agreed. Null where none could.
     confidence: float | None = None
+
+    #: The Artificial CIO's own conviction in this decision, 0-100.
+    conviction: int = 0
+
     summary: str
 
     #: What the Artificial CIO decided about this symbol before. Null when

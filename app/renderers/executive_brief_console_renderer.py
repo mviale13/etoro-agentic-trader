@@ -57,6 +57,15 @@ class ExecutiveBriefConsoleRenderer:
             console.print(f"[bold]{case.symbol}[/bold] — {case.recommendation}")
             console.print()
 
+            # The Artificial CIO's own conviction in this decision. The
+            # brief carried only the committees' agreement, so a RECOMMEND
+            # printed a number that answered a different question.
+            console.print(
+                "Conviction: "
+                f"{ExecutiveBriefConsoleRenderer._percent(case.conviction / 100)}"
+            )
+            console.print()
+
             # The security's own case first, then the record it was drawn
             # from, then the account and market it sits in. Each section
             # says whose it is: "Healthy liquidity" is a fact about the

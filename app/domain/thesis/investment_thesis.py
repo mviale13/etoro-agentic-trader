@@ -13,6 +13,14 @@ class InvestmentThesis:
     #: How far the committees that spoke agreed. None where none could.
     confidence: float | None
 
+    #: The Artificial CIO's own conviction in this decision, 0-100.
+    #:
+    #: It was never carried here, so a brief could show a RECOMMEND above
+    #: the committees' agreement and nothing about how strongly the CIO
+    #: held the view. The two answer different questions and are now both
+    #: reported, each under its own name.
+    conviction: int
+
     summary: str
 
     #: What the signals found for and against this security.

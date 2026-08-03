@@ -23,6 +23,7 @@ def make_brief() -> ExecutiveBrief:
                 symbol="UUUU",
                 recommendation="INVESTIGATE",
                 confidence=0.32,
+                conviction=81,
                 summary="Business quality has not been measured.",
                 strengths=("Positive earnings.",),
                 risks=("Annualised volatility is 94.0% over the past year.",),
@@ -48,17 +49,32 @@ def rendered(capsys: pytest.CaptureFixture[str]) -> str:
     return capsys.readouterr().out
 
 
-def test_committee_agreement_is_not_presented_as_conviction(rendered: str) -> None:
+def test_both_numbers_are_reported_under_their_own_names(rendered: str) -> None:
     """
-    The brief carries the committees' agreement, not the CIO's conviction.
+    They answer different questions and used to be conflated.
 
-    Labelled "Conviction", a RECOMMEND read "Conviction: 32%" — the
-    decision's own conviction never reaches this brief, so the number
-    shown was answering a different question than the one asked.
+    The brief carried only the committees' agreement, printed as
+    "Conviction", so a RECOMMEND could read "Conviction: 32%" while the
+    Artificial CIO held the decision at 81. Both are now stated, and the
+    one labelled conviction is the decision's own.
     """
 
-    assert "Committee agreement:" in rendered
-    assert "Conviction:" not in rendered
+    assert "Committee agreement: 32%" in rendered
+    assert "Conviction: 81%" in rendered
+
+
+def test_conviction_belongs_to_the_case_not_the_brief(rendered: str) -> None:
+    """
+    Conviction is held in a decision about a security.
+
+    A portfolio brief covers several, so the number sits inside each case
+    rather than in the header, where one of them would stand for all.
+    """
+
+    header, case = rendered.split("UUUU — INVESTIGATE")
+
+    assert "Conviction:" not in header
+    assert "Conviction:" in case
 
 
 def test_the_case_reports_what_was_read_about_the_security(rendered: str) -> None:
