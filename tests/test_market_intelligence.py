@@ -3,8 +3,10 @@ from datetime import UTC, datetime
 
 import pytest
 
+from app.domain.asset_class import AssetClass
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.market_snapshot import MarketSnapshot
+from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
@@ -20,7 +22,11 @@ def test_market_intelligence_is_immutable():
         sentiment=SentimentSnapshot(
             score=70,
             label="Greed",
-            source="Alternative.me",
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source="Alternative.me",
+                observed_at=datetime.now(UTC),
+            ),
         ),
         outlook="BULLISH",
         confidence=90,

@@ -1,8 +1,10 @@
 from datetime import UTC, datetime
 
+from app.domain.asset_class import AssetClass
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.market_regime import MarketRegimeType
 from app.domain.market_snapshot import MarketSnapshot
+from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 from app.services.market_regime_service import MarketRegimeService
 
@@ -22,7 +24,11 @@ def build_intelligence(
         sentiment=SentimentSnapshot(
             score=50,
             label="Neutral",
-            source="Test",
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source="Test",
+                observed_at=datetime.now(UTC),
+            ),
         ),
         outlook=outlook,
         confidence=confidence,

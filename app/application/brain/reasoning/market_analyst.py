@@ -73,7 +73,7 @@ class MarketAnalyst(Analyst[MarketAssessment]):
         elif volatility <= 0.30:
             opportunities.append("Stable market conditions")
 
-        evidence = (
+        evidence: tuple[Evidence, ...] = (
             Evidence(
                 description=(
                     f"Average market move is {average_change:+.2f}% "
@@ -97,6 +97,24 @@ class MarketAnalyst(Analyst[MarketAssessment]):
                 strength=0.80,
             ),
         )
+
+        # Reported, never folded into momentum or volatility. It describes
+        # one asset class, and the scores above describe nine instruments;
+        # mixing them would let a crypto mood move an equity reading.
+        sentiment = market.sentiment
+
+        if sentiment is not None:
+            evidence = (
+                *evidence,
+                Evidence(
+                    description=(
+                        f"{sentiment.stated}, which describes "
+                        f"{sentiment.subject.value} only."
+                    ),
+                    source=sentiment.reading.stated(),
+                    strength=0.70,
+                ),
+            )
 
         return MarketAssessment(
             trend=trend,

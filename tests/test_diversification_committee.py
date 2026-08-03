@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from app.committee.diversification import DiversificationCommittee
+from app.domain.asset_class import AssetClass
 from app.domain.committee_context import CommitteeContext
 from app.domain.investment_policy import (
     AllocationTarget,
@@ -10,6 +11,7 @@ from app.domain.investment_policy import (
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
+from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
@@ -55,7 +57,11 @@ def build_context(position_pct: float):
         sentiment=SentimentSnapshot(
             score=70,
             label="Greed",
-            source="Alternative.me",
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source="Alternative.me",
+                observed_at=datetime.now(UTC),
+            ),
         ),
         outlook="BULLISH",
         confidence=85,

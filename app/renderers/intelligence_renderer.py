@@ -23,17 +23,22 @@ class IntelligenceRenderer:
         sentiment = intelligence.sentiment
 
         if sentiment is None:
-            print("Crypto sentiment: not available")
+            print("Sentiment       : not available")
         else:
-            print(f"Crypto sentiment: {sentiment.score} ({sentiment.label})")
-            print(f"Source           : {sentiment.source}")
+            # Named by subject. The index describes one asset class, and a
+            # line that omits which one invites the reader to apply it to
+            # everything they hold.
+            label = f"{sentiment.subject.value.capitalize()} sentiment"
 
-            if sentiment.observed_at is not None:
-                print(f"Published        : {sentiment.observed_at.date().isoformat()}")
+            print(f"{label:<16}: {sentiment.score} ({sentiment.label})")
+            print(f"{'Source':<16}: {sentiment.reading.source}")
+            print(
+                f"{'Published':<16}: {sentiment.reading.observed_at.date().isoformat()}"
+            )
 
         print()
-        print(f"Outlook          : {intelligence.outlook}")
-        print(f"Confidence       : {intelligence.confidence}%")
+        print(f"{'Outlook':<16}: {intelligence.outlook}")
+        print(f"{'Confidence':<16}: {intelligence.confidence}%")
 
         print()
         print(intelligence.summary)

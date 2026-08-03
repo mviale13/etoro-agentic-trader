@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.application.services.market_service import MarketService
 from app.domain.market_snapshot import MarketSnapshot
 from app.providers.cached_market_provider import CachedMarketProvider
+from app.providers.crypto_fear_greed_provider import CryptoFearGreedProvider
 from app.services.market_breadth_service import MarketBreadthService
 
 router = APIRouter(
@@ -35,6 +36,19 @@ def _payload(
         # The figure the band was decided by, not only the band.
         "vix": market.vix,
         "observed": market.reading.stated() if market.reading is not None else None,
+        # Named by subject, never as "market sentiment". The only index
+        # read here is a crypto one, and a page that drops the subject
+        # invites the reader to apply it to everything they hold.
+        "sentiment": (
+            {
+                "score": market.sentiment.score,
+                "label": market.sentiment.label,
+                "subject": market.sentiment.subject.value,
+                "observed": market.sentiment.reading.stated(),
+            }
+            if market.sentiment is not None
+            else None
+        ),
         "breadth": {
             "equities": breadth.equities,
             "technology": breadth.technology,
@@ -74,6 +88,7 @@ async def get_market() -> dict[str, object]:
         quotes=data.quotes,
         vix=data.vix,
         timestamp=datetime.now(UTC),
+        sentiment=await CryptoFearGreedProvider().snapshot(),
     )
 
     return _payload(market)

@@ -37,12 +37,27 @@ export interface MarketQuote {
   maxDrawdown: number | null;
 }
 
+/**
+ * A published sentiment reading, and the asset class it describes.
+ *
+ * `subject` is rendered, always. The only index MOVRvest reads is a
+ * crypto one, and a card labelled "market sentiment" invites the reader
+ * to apply it to everything they hold.
+ */
+export interface MarketSentiment {
+  score: number;
+  label: string;
+  subject: string;
+  observed: string;
+}
+
 export interface MarketOverview {
   mood: string;
   summary: string;
   volatility: string;
   vix: number | null;
   observed: string | null;
+  sentiment: MarketSentiment | null;
   breadth: MarketBreadth;
   quotes: MarketQuote[];
 }
@@ -104,6 +119,31 @@ function quotes(value: unknown): MarketQuote[] {
   });
 }
 
+function sentiment(value: unknown): MarketSentiment | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const score = numberOrNull(value.score);
+
+  // A reading with no score, label or subject is not a reading. Rendering
+  // a partial one would put a mood on the page with nothing behind it.
+  if (
+    score === null ||
+    typeof value.label !== "string" ||
+    typeof value.subject !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    score,
+    label: value.label,
+    subject: value.subject,
+    observed: typeof value.observed === "string" ? value.observed : "",
+  };
+}
+
 export async function getMarket(): Promise<MarketResult> {
   const endpoint = `${BACKEND_URL}/market/`;
 
@@ -137,6 +177,7 @@ export async function getMarket(): Promise<MarketResult> {
           typeof payload.volatility === "string" ? payload.volatility : "unknown",
         vix: numberOrNull(payload.vix),
         observed: typeof payload.observed === "string" ? payload.observed : null,
+        sentiment: sentiment(payload.sentiment),
         breadth: {
           equities: direction(breadth.equities),
           technology: direction(breadth.technology),

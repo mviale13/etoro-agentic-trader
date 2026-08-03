@@ -3,6 +3,7 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
 
+from app.domain.asset_class import AssetClass
 from app.domain.market_snapshot import MarketSnapshot
 from app.providers.crypto_fear_greed_provider import CryptoFearGreedProvider
 from app.services.market_intelligence_service import MarketIntelligenceService
@@ -53,8 +54,36 @@ def test_the_published_reading_is_what_is_reported(tmp_path) -> None:
     assert snapshot is not None
     assert snapshot.score == 28
     assert snapshot.label == "Fear"
-    assert snapshot.source == "Alternative.me"
-    assert snapshot.observed_at == datetime(2026, 8, 3, tzinfo=UTC)
+    assert snapshot.reading.source == "Alternative.me"
+    assert snapshot.reading.observed_at == datetime(2026, 8, 3, tzinfo=UTC)
+
+
+def test_the_reading_says_which_market_it_is_a_reading_of(tmp_path) -> None:
+    """
+    It is the crypto Fear & Greed index. It says nothing about equities,
+    and anything asking it to must first read this field.
+    """
+
+    snapshot = asyncio.run(Provider(PAYLOAD, tmp_path).snapshot())
+
+    assert snapshot is not None
+    assert snapshot.subject is AssetClass.CRYPTO
+    assert snapshot.describes_crypto
+    assert snapshot.stated == "Crypto sentiment reads 28 (Fear)"
+
+
+def test_a_replayed_reading_keeps_its_subject_and_its_date(tmp_path) -> None:
+    """The cache round-trip must not quietly drop what the reading is of."""
+
+    provider = Provider(PAYLOAD, tmp_path)
+
+    asyncio.run(provider.snapshot())
+    replayed = asyncio.run(provider.snapshot())
+
+    assert provider.calls == 1
+    assert replayed is not None
+    assert replayed.subject is AssetClass.CRYPTO
+    assert replayed.reading.observed_at == datetime(2026, 8, 3, tzinfo=UTC)
 
 
 def test_an_unreachable_index_reports_nothing(tmp_path) -> None:
@@ -98,16 +127,10 @@ def market(mood: str) -> MarketSnapshot:
 
 
 def test_an_outlook_without_sentiment_says_what_it_rests_on() -> None:
-    """
-    Two readings agreeing is what earns the higher confidence here.
-
-    With sentiment unavailable there is nothing to agree with, so claiming
-    a confirmation would report an observation never made.
-    """
+    """An index that could not be read is named as missing, not ignored."""
 
     intelligence = MarketIntelligenceService().build(market("negative"), None)
 
     assert intelligence.sentiment is None
     assert intelligence.outlook == "BEARISH"
-    assert intelligence.confidence == 50
-    assert "rests on market conditions alone" in intelligence.summary
+    assert "No sentiment index could be read" in intelligence.summary

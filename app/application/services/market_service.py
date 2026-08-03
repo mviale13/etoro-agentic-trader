@@ -4,6 +4,7 @@ from datetime import datetime
 
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 from app.domain.provenance import least_reliable
+from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
 class MarketService:
@@ -23,6 +24,7 @@ class MarketService:
         *,
         vix: float | None = None,
         timestamp: datetime,
+        sentiment: SentimentSnapshot | None = None,
     ) -> MarketSnapshot:
         market_mood = self.classify_market_mood(quotes)
         volatility = self.classify_volatility(vix)
@@ -39,6 +41,10 @@ class MarketService:
             # quotes. A provider that did not answer outranks a merely
             # older one, which is why this is not simply the oldest.
             reading=least_reliable(*(quote.reading for quote in quotes)),
+            # Carried, never folded into the mood. The mood is what nine
+            # instruments did; sentiment is what one asset class feels,
+            # and averaging the two would let each stand in for the other.
+            sentiment=sentiment,
         )
 
     def classify_market_mood(

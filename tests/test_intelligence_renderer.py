@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
 
+from app.domain.asset_class import AssetClass
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
+from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 from app.renderers.intelligence_renderer import IntelligenceRenderer
 
@@ -27,7 +29,11 @@ def test_renderer_outputs_information(capsys):
         sentiment=SentimentSnapshot(
             score=72,
             label="Greed",
-            source="Alternative.me",
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source="Alternative.me",
+                observed_at=datetime.now(UTC),
+            ),
         ),
         outlook="BULLISH",
         confidence=90,

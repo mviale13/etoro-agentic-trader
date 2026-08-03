@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from app.domain.provenance import Provenance
+from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +56,13 @@ class MarketSnapshot:
     #: its `timestamp` is when this object was assembled, which is not
     #: when anything in it was observed.
     reading: Provenance | None = None
+
+    #: How the market feels, where anything publishes a reading of it.
+    #:
+    #: One reading, of crypto. It names its own subject, because the Brain
+    #: holding it must not let it describe an asset class it was never
+    #: taken of. None when the index could not be read.
+    sentiment: SentimentSnapshot | None = None
 
     def quote(self, symbol: str) -> MarketQuote | None:
         normalized = symbol.upper().strip()

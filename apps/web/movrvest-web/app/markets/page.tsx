@@ -188,6 +188,36 @@ function MarketContent({ market }: { market: MarketOverview }) {
         </div>
       </section>
 
+      {market.sentiment ? (
+        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              {/* Labelled by subject, always. The only index MOVRvest reads
+                  is a crypto one, and "market sentiment" would invite the
+                  reader to apply it to everything they hold. */}
+              <p className="text-sm font-medium text-slate-500">
+                <span className="capitalize">{market.sentiment.subject}</span>{" "}
+                sentiment
+              </p>
+
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                {market.sentiment.score} — {market.sentiment.label}
+              </h2>
+
+              <p className="mt-3 max-w-2xl leading-7 text-slate-600">
+                This describes {market.sentiment.subject} and is not evidence
+                about the rest of the market. No sentiment index is read for
+                equities.
+              </p>
+            </div>
+
+            <span className="text-sm text-slate-500">
+              {market.sentiment.observed}
+            </span>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
         <h2 className="text-xl font-semibold tracking-tight text-slate-950">
           What each instrument did

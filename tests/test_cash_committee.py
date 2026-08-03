@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from app.committee.cash import CashCommittee
+from app.domain.asset_class import AssetClass
 from app.domain.committee_context import CommitteeContext
 from app.domain.investment_policy import (
     AllocationTarget,
@@ -10,6 +11,7 @@ from app.domain.investment_policy import (
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
+from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 
 
@@ -55,7 +57,11 @@ def build_context(cash: float) -> CommitteeContext:
         sentiment=SentimentSnapshot(
             score=50,
             label="Neutral",
-            source="Alternative.me",
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source="Alternative.me",
+                observed_at=datetime.now(UTC),
+            ),
         ),
         outlook="NEUTRAL",
         confidence=60,

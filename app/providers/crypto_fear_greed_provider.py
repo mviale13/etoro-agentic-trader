@@ -7,6 +7,8 @@ import json
 import urllib.request
 from datetime import UTC, datetime, timedelta
 
+from app.domain.asset_class import AssetClass
+from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 from app.infrastructure.cache.json_cache import JsonCache
 
@@ -106,8 +108,14 @@ class CryptoFearGreedProvider:
         return SentimentSnapshot(
             score=score,
             label=label,
-            source=cls.SOURCE,
-            observed_at=observed_at,
+            # What this index is a reading of. It is the crypto Fear &
+            # Greed index; it says nothing about equities, and anything
+            # asking it to must first read this field.
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source=cls.SOURCE,
+                observed_at=observed_at,
+            ),
         )
 
     @staticmethod
@@ -117,11 +125,8 @@ class CryptoFearGreedProvider:
         return {
             "score": snapshot.score,
             "label": snapshot.label,
-            "observed_at": (
-                snapshot.observed_at.isoformat()
-                if snapshot.observed_at is not None
-                else None
-            ),
+            "subject": snapshot.subject.value,
+            "observed_at": snapshot.reading.observed_at.isoformat(),
         }
 
     @classmethod
@@ -131,22 +136,29 @@ class CryptoFearGreedProvider:
     ) -> SentimentSnapshot | None:
         score = value.get("score")
         label = value.get("label")
+        raw = value.get("observed_at")
 
         if not isinstance(score, int) or not isinstance(label, str):
             return None
 
-        observed_at: datetime | None = None
-        raw = value.get("observed_at")
+        if not isinstance(raw, str):
+            return None
 
-        if isinstance(raw, str):
-            try:
-                observed_at = datetime.fromisoformat(raw)
-            except ValueError:
-                observed_at = None
+        try:
+            observed_at = datetime.fromisoformat(raw)
+        except ValueError:
+            # An entry that cannot say when it was published is not a
+            # sentiment reading. Serving it undated would let an old mood
+            # be read as the current one, which is what this provider
+            # refuses to do with a stale reading anyway.
+            return None
 
         return SentimentSnapshot(
             score=score,
             label=label,
-            source=cls.SOURCE,
-            observed_at=observed_at,
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(
+                source=cls.SOURCE,
+                observed_at=observed_at,
+            ),
         )

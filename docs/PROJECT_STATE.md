@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 516 passing |
+| Pytest | 🟢 525 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -76,6 +76,27 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A sentiment reading now says what it is a reading of.** The only index
+  the platform reads is Alternative.me's crypto Fear & Greed, and it was
+  being blended with the mood of nine instruments into one outlook: a
+  negative market plus crypto fear read BEARISH at 95% confidence,
+  summarised "weak market conditions are confirmed by crypto fear".
+  Crypto fear cannot confirm an equity sell-off, and the agreement it
+  could not give was raising the confidence of the regime that weights
+  the committees. `SentimentSnapshot` carries its `subject` and its
+  `Provenance`; the outlook rests on market conditions alone at a stated
+  50%, and the reading is reported beside it, named for the asset class
+  it describes. Live today: crypto reads 28, Fear, while the market mood
+  is neutral
+
+- Sentiment reached the canonical pipeline. It lived only on the legacy
+  committee path and the `intelligence` command, so the Brain could not
+  see it at all and the one asset class it does describe was judged
+  without it. `MarketPerception` reads it, `MarketSnapshot` carries it,
+  and the `MarketAnalyst` states it as evidence naming its subject —
+  never folded into momentum or volatility, which describe nine
+  instruments rather than one asset class
 
 - The second market stack is gone. `MarketResearchService`,
   `MarketBreadthAnalyst`, `EquityTrendAnalyst`, `TrendAnalyst`,
@@ -385,9 +406,9 @@ Named rather than hidden. None of these are estimated away in the product.
   yet demonstrates it separating one security from another
 - Sector rotation and market events are still unmeasured. `/markets` says
   so rather than illustrating them
-- Crypto Fear & Greed sets the outlook for the whole market, equities
-  included, and only on the CLI and committee path. The canonical Brain
-  pipeline never sees sentiment
+- No sentiment index is read for equities. The crypto reading is the only
+  one, it is labelled as such everywhere it appears, and the gap is stated
+  rather than filled by the index that happens to exist
 - Nothing records what the market did. Quotes are cached for 15 minutes
   and discarded, so there is no market series, no macro history, and
   nothing for the change feed to say moved
