@@ -81,6 +81,29 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The market does not gate a decision, and this is the decision not to
+  make it one.** `DecisionEvidence` carries no market score. The question
+  was examined properly rather than answered by adding a field: the two
+  scores that describe the market — momentum and volatility — never reach
+  the Artificial CIO at all, and the one market input that does,
+  `MarketAssessment.confidence`, carries no information about what the
+  market did. It is `1 − | |momentum − 0.5| × 2 − volatility |`, which is
+  exactly 1 whenever the instruments move together, so a flat market and a
+  market where every instrument fell 8% both read 0.940. It is
+  nevertheless one third of the cognitive average inside `evidence_score`,
+  which is gated at 30, 60 and 75 — so the market already moves a gate, by
+  a route nobody chose, in proportion to how uniformly the instruments
+  moved. A market score would also be identical for every symbol, which is
+  the exact shape this branch removed from portfolio fit, from quality and
+  from risk; what would make it per-security — this security's exposure to
+  the corner of the market that moved — is not measured at all. And no
+  decision has yet been scored against its outcome, so no threshold could
+  be calibrated rather than asserted. The reasoning, the figures behind it
+  and the four things that must exist first are in
+  [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md). The
+  code is unchanged. Figures computed from the repository's own code, not
+  observed against a live account
+
 - **The market has a past.** Quotes were fetched, cached for fifteen
   minutes and discarded, so nothing in the repository ever held two market
   readings at once and no question about the market beginning "since"
@@ -430,6 +453,15 @@ Named rather than hidden. None of these are estimated away in the product.
   yet demonstrates it separating one security from another
 - Sector rotation and market events are still unmeasured. `/markets` says
   so rather than illustrating them
+- The market gates nothing, deliberately. It reaches the Artificial CIO
+  only through `MarketAssessment.confidence`, one third of the cognitive
+  average inside `evidence_score` — and that term measures how uniformly
+  the instruments moved, not what the market did. Making it mean evidence
+  quality, or removing it from the score, is the first fix and it changes
+  live decisions
+- A security's exposure to the market is not measured. Nothing computes a
+  beta or a correlation, so no market reading can be said to bear on one
+  security more than another — which is why no market gate exists
 - No sentiment index is read for equities. The crypto reading is the only
   one, it is labelled as such everywhere it appears, and the gap is stated
   rather than filled by the index that happens to exist
