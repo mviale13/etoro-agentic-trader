@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 534 passing |
+| Pytest | 🟢 516 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -76,6 +76,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The second market stack is gone. `MarketResearchService`,
+  `MarketBreadthAnalyst`, `EquityTrendAnalyst`, `TrendAnalyst`,
+  `MarketFacts`, `MarketFactsService`, `RiskAssessmentService` and the
+  fabricating `MarketContextService` — 14 modules and their tests, every
+  one reachable only from the others. It was a parallel representation of
+  a market the canonical `MarketSnapshot` already describes, and the
+  repository has been here before: four committee implementations, with
+  the docs calling a dead one canonical
 
 - **`/markets` reports what the market mood hides.** The Brain's whole
   market view was the average move of nine instruments, and an average
@@ -374,13 +383,6 @@ Named rather than hidden. None of these are estimated away in the product.
   doing its job. Fit reads 99 for all of them — honestly, on an account
   that is 97% cash with no position above 0.5% — so nothing on live data
   yet demonstrates it separating one security from another
-- A second market stack is still in the tree and reaches nothing.
-  `MarketResearchService` is imported by nothing, and `MarketBreadthAnalyst`,
-  `EquityTrendAnalyst` and `TrendAnalyst` hang off it, along with
-  `MarketFacts`, `MarketFactsService` and `RiskAssessmentService`. It is a
-  parallel representation of the market that the canonical `MarketSnapshot`
-  now covers. `MarketContextService` returns four hardcoded strings —
-  regime "Bullish", sentiment "Greed" — and is imported by nothing
 - Sector rotation and market events are still unmeasured. `/markets` says
   so rather than illustrating them
 - Crypto Fear & Greed sets the outlook for the whole market, equities
