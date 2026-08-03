@@ -15,6 +15,7 @@ from app.api.routes.executive_dashboard import (
 from app.api.routes.explanation import router as explanation_router
 from app.api.routes.home import router as home_router
 from app.api.routes.investor_dna import router as investor_dna_router
+from app.api.routes.market import router as market_router
 from app.api.routes.observation import router as observation_router
 from app.api.routes.portfolio import router as portfolio_router
 from app.api.routes.portfolio_health import (
@@ -67,6 +68,7 @@ app.include_router(recommendation_router)
 app.include_router(committee_weights_router)
 app.include_router(home_router)
 app.include_router(brain_router)
+app.include_router(market_router)
 
 
 @app.get("/health")

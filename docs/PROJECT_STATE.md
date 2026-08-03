@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 528 passing |
+| Pytest | 🟢 534 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -69,11 +69,29 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   days it ran between, and how far below that peak it still sits
 - The portfolio page reports overall risk and its four measured
   components, each with the evidence behind it
+- `GET /market/` and the markets page report every instrument the
+  platform prices, grouped, with what the average move netted out
 - Every decision is recorded, and the next cycle says what changed
 - The dashboard change feed reports the decisions the CIO actually changed
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **`/markets` reports what the market mood hides.** The Brain's whole
+  market view was the average move of nine instruments, and an average
+  nets a rally against a sell-off and reports neither. On the first live
+  call it read "Markets are broadly neutral today" while equities were up
+  1.5–1.8% and oil had fallen 5.1%. The page now classifies every corner
+  the platform prices — equities, technology, small caps, crypto,
+  commodities, the dollar, rates and volatility — and a group nothing
+  could price reads "Not priced" rather than flat. `MarketBreadthService`
+  was written, tested and imported by nothing; it now reads the canonical
+  `MarketSnapshot` instead of a second market representation
+
+- The market snapshot keeps the VIX figure and knows when it was
+  observed. The number was fetched, classified into an adjective and
+  dropped, and the snapshot's only timestamp was the moment it was
+  assembled — not when anything in it was seen
 
 - **Overall portfolio risk is a measurement.** Market risk was the last of
   the four components still absent, and it is read off evidence the Brain
@@ -356,12 +374,15 @@ Named rather than hidden. None of these are estimated away in the product.
   doing its job. Fit reads 99 for all of them — honestly, on an account
   that is 97% cash with no position above 0.5% — so nothing on live data
   yet demonstrates it separating one security from another
-- Market intelligence is thin, and three services are the evidence.
-  `MarketContextService` and `MarketFactsService` are imported by nothing
-  at all; `MarketBreadthService` classifies equities, technology, crypto,
-  gold, oil, the dollar and rates, and is imported only by its own test.
-  The Brain's whole market view is the average one-day move of nine
-  instruments plus a VIX band, and `/markets` is still a placeholder
+- A second market stack is still in the tree and reaches nothing.
+  `MarketResearchService` is imported by nothing, and `MarketBreadthAnalyst`,
+  `EquityTrendAnalyst` and `TrendAnalyst` hang off it, along with
+  `MarketFacts`, `MarketFactsService` and `RiskAssessmentService`. It is a
+  parallel representation of the market that the canonical `MarketSnapshot`
+  now covers. `MarketContextService` returns four hardcoded strings —
+  regime "Bullish", sentiment "Greed" — and is imported by nothing
+- Sector rotation and market events are still unmeasured. `/markets` says
+  so rather than illustrating them
 - Crypto Fear & Greed sets the outlook for the whole market, equities
   included, and only on the CLI and committee path. The canonical Brain
   pipeline never sees sentiment

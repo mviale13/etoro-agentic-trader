@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
+from app.domain.provenance import least_reliable
 
 
 class MarketService:
@@ -33,6 +34,11 @@ class MarketService:
             volatility=volatility,
             summary=summary,
             timestamp=timestamp,
+            vix=vix,
+            # The reading that most qualifies everything read off these
+            # quotes. A provider that did not answer outranks a merely
+            # older one, which is why this is not simply the oldest.
+            reading=least_reliable(*(quote.reading for quote in quotes)),
         )
 
     def classify_market_mood(

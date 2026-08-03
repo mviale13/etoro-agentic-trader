@@ -42,6 +42,20 @@ class MarketSnapshot:
     summary: str
     timestamp: datetime
 
+    #: What the VIX actually read, beside the band it falls in.
+    #:
+    #: The number was fetched, classified into "low", "medium" or "high"
+    #: and then dropped. An adjective cannot be compared with yesterday's
+    #: adjective, and a reader who wants to know how frightened the market
+    #: is deserves the figure that decided the word.
+    vix: float | None = None
+
+    #: Where these quotes came from and when, taken from the least
+    #: reliable of them. Nothing could date the market snapshot before:
+    #: its `timestamp` is when this object was assembled, which is not
+    #: when anything in it was observed.
+    reading: Provenance | None = None
+
     def quote(self, symbol: str) -> MarketQuote | None:
         normalized = symbol.upper().strip()
 

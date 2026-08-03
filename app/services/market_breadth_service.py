@@ -1,116 +1,75 @@
-from app.domain.market_breadth import (
-    MarketBreadth,
-)
-from app.domain.market_facts import MarketFacts
+"""What moved, across the whole market rather than one index."""
+
+from app.application.services.market_service import MarketService
+from app.domain.market_breadth import MarketBreadth
+from app.domain.market_snapshot import MarketSnapshot
 
 
 class MarketBreadthService:
-    POSITIVE_THRESHOLD = 0.25
-    NEGATIVE_THRESHOLD = -0.25
+    """
+    Classify each corner of the market the platform actually prices.
+
+    The Brain's market view is a single mood: the average move of nine
+    instruments, which nets a crypto rally against a bond sell-off and
+    reports neither. This says which of them moved, so "markets are
+    broadly neutral today" can be read for what it hides.
+
+    Every group is named, including the ones nothing could price. A
+    corner of the market this platform did not see is reported unknown
+    rather than left out of a picture claiming to be whole.
+    """
+
+    #: A move smaller than this is not a direction, it is noise. The same
+    #: line the market mood is drawn at, because a day that counts as
+    #: positive for the market cannot count as flat for equities.
+    POSITIVE_THRESHOLD = MarketService.POSITIVE_THRESHOLD
+    NEGATIVE_THRESHOLD = MarketService.NEGATIVE_THRESHOLD
 
     def build(
         self,
-        facts: MarketFacts,
+        market: MarketSnapshot,
     ) -> MarketBreadth:
-        spy = self._change(
-            facts,
-            "SPY",
-        )
-        qqq = self._change(
-            facts,
-            "QQQ",
-        )
-        iwm = self._change(
-            facts,
-            "IWM",
-        )
-        btc = self._change(
-            facts,
-            "BTC",
-        )
-        eth = self._change(
-            facts,
-            "ETH",
-        )
-        gold = self._change(
-            facts,
-            "GLD",
-        )
-        oil = self._change(
-            facts,
-            "WTI",
-        )
-        dollar = self._change(
-            facts,
-            "DXY",
-        )
-        rates = self._change(
-            facts,
-            "TNX",
-        )
-
         return MarketBreadth(
-            equities=self._classify_group(
-                (
-                    spy,
-                    qqq,
-                    iwm,
-                )
-            ),
-            technology=self._classify_change(qqq),
-            small_caps=self._classify_change(iwm),
-            crypto=self._classify_group(
-                (
-                    btc,
-                    eth,
-                )
-            ),
-            commodities=self._classify_group(
-                (
-                    gold,
-                    oil,
-                )
-            ),
-            volatility=self._classify_vix(facts.vix),
-            dollar=self._classify_change(dollar),
-            rates=self._classify_change(rates),
+            equities=self._group(market, "SPY", "QQQ", "IWM"),
+            technology=self._group(market, "QQQ"),
+            small_caps=self._group(market, "IWM"),
+            crypto=self._group(market, "BTC", "ETH"),
+            commodities=self._group(market, "GLD", "WTI"),
+            # The band the VIX falls in, classified once, in the service
+            # that owns what "high volatility" means here.
+            volatility=MarketService.classify_volatility(market.vix),
+            dollar=self._group(market, "DXY"),
+            rates=self._group(market, "TNX"),
         )
 
-    def _change(
+    def _group(
         self,
-        facts: MarketFacts,
-        symbol: str,
-    ) -> float | None:
-        quote = facts.quote(symbol)
-
-        if quote is None:
-            return None
-
-        return quote.change_percent
-
-    def _classify_group(
-        self,
-        changes: tuple[
-            float | None,
-            ...,
-        ],
+        market: MarketSnapshot,
+        *symbols: str,
     ) -> str:
-        available = [change for change in changes if change is not None]
+        """
+        Which way a group of instruments moved, or that nobody knows.
 
-        if not available:
+        Averaged over the instruments that were priced. One missing
+        member weakens the reading; none priced makes it unknown, which
+        is said rather than shown as flat.
+        """
+
+        changes = [
+            quote.change_percent
+            for quote in (market.quote(symbol) for symbol in symbols)
+            if quote is not None
+        ]
+
+        if not changes:
             return "unknown"
 
-        average = sum(available) / len(available)
+        return self._classify(sum(changes) / len(changes))
 
-        return self._classify_change(average)
-
-    def _classify_change(
+    def _classify(
         self,
-        change: float | None,
+        change: float,
     ) -> str:
-        if change is None:
-            return "unknown"
-
         if change >= self.POSITIVE_THRESHOLD:
             return "positive"
 
@@ -118,18 +77,3 @@ class MarketBreadthService:
             return "negative"
 
         return "neutral"
-
-    @staticmethod
-    def _classify_vix(
-        vix: float | None,
-    ) -> str:
-        if vix is None:
-            return "unknown"
-
-        if vix < 15:
-            return "low"
-
-        if vix <= 25:
-            return "medium"
-
-        return "high"
