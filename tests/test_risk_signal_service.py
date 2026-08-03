@@ -25,7 +25,7 @@ def test_a_calm_security_is_low_risk() -> None:
     assert signal.level == "LOW"
     assert signal.volatility == 0.14
     assert signal.max_drawdown == 0.08
-    assert any("14.0%" in item for item in signal.evidence)
+    assert any("14.0%" in finding.statement for finding in signal.evidence)
 
 
 def test_a_violent_security_is_severe_risk() -> None:
@@ -44,7 +44,7 @@ def test_a_security_without_history_reports_unknown_risk() -> None:
     assert signal.level == "UNKNOWN"
     assert signal.volatility is None
     assert signal.max_drawdown is None
-    assert any("not measured" in item for item in signal.evidence)
+    assert any("not measured" in finding.statement for finding in signal.evidence)
 
 
 def test_one_reading_is_still_a_measurement() -> None:

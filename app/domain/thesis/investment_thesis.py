@@ -14,11 +14,7 @@ class InvestmentThesis:
 
     summary: str
 
-    #: What the portfolio and the market look like around this security.
-    #:
-    #: These describe the account and the conditions, not the security —
-    #: "Healthy liquidity" is a fact about the investor's cash, and reads
-    #: as a fact about the security only because of where it is printed.
+    #: What the signals found for and against this security.
     strengths: tuple[str, ...]
 
     risks: tuple[str, ...]
@@ -35,6 +31,16 @@ class InvestmentThesis:
     #: favourable or not. Without it an investment case says nothing that
     #: tells one security apart from another.
     evidence_weighed: tuple[str, ...] = ()
+
+    #: What the portfolio and the market look like around this security.
+    #:
+    #: These describe the account and the conditions, not the security —
+    #: "Healthy liquidity" is a fact about the investor's cash, and reads
+    #: as a fact about the security only because of where it is printed.
+    context_strengths: tuple[str, ...] = ()
+
+    #: Risks of the account and the market, not of this security.
+    context_risks: tuple[str, ...] = ()
 
     #: What the Artificial CIO decided about this symbol before, stated as
     #: fact. None when nothing was ever recorded — the CIO does not claim a

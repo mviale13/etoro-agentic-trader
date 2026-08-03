@@ -276,11 +276,10 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       CIO is deciding on — the same defect `portfolio_fit_score` had
 - [ ] Signal evidence has no polarity, so favourable and adverse findings
       cannot be told apart. `InvestmentThesis.strengths` and `.risks`
-- [ ] Signal evidence has no polarity, so favourable and adverse findings
-      cannot be told apart. `InvestmentThesis.strengths` and `.risks`
-      therefore still describe the portfolio and the market rather than the
-      security; the console labels them accordingly. Real per-security
-      strengths need a sense on each finding, at the four signal services
+- [x] Signal evidence carries polarity. `Finding` pairs each statement
+      with the `Sense` the signal read it with, so `InvestmentThesis`
+      states the security's own strengths and risks, and the portfolio and
+      market keep `context_strengths` and `context_risks`
 - [ ] `consistency_score` needs a record of the investor's own actions. The
       decision journal records the CIO's decisions, not what the investor did
       with them

@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 412 passing |
+| Pytest | 🟢 418 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,13 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- An investment case states the security's own strengths and risks. Signal
+  findings carry the sense the signal read them with, so "Negative
+  earnings." is no longer indistinguishable from "Positive earnings." and
+  a 94% volatility no longer reads the same as a 12% one. UUUU's case
+  lists six risks and no strengths; VOW3.DE's lists four strengths. The
+  portfolio and market sections are still there, under their own headings
 
 - A committee that cannot measure something is silent, not opposed. The
   brief read "32%" beneath a RECOMMEND, and the reason was arithmetic
@@ -197,10 +204,6 @@ Named rather than hidden. None of these are estimated away in the product.
   so their opinions are identical whichever security is being judged. They
   can agree at 94% while the Artificial CIO recommends a security they
   never looked at, because they are answering a different question
-
-- Signal findings carry no polarity, so favourable and adverse ones cannot
-  be separated. An investment case therefore has no per-security strengths
-  or risks; what it has is the full list of what was read
 
 - Every gate now clears on measured evidence, and RECOMMEND is reached.
   Valuation is what holds most candidates at PREPARE, which is the gate

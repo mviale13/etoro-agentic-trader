@@ -2,6 +2,7 @@ from app.committee.base import CommitteeMember
 from app.domain.committee_context import CommitteeContext
 from app.domain.committee_evidence import CommitteeEvidence
 from app.domain.committee_opinion import CommitteeOpinion
+from app.domain.finding import statements
 from app.domain.momentum_signal import MomentumSignal
 
 
@@ -26,9 +27,9 @@ class MomentumCommittee(CommitteeMember):
         evidence = tuple(
             CommitteeEvidence(
                 title="Momentum evidence",
-                value=item,
+                value=finding.statement,
             )
-            for item in signal.evidence
+            for finding in signal.evidence
         )
 
         if signal.trend == "BULLISH":
@@ -42,7 +43,7 @@ class MomentumCommittee(CommitteeMember):
             member="Momentum",
             vote=vote,
             confidence=signal.confidence,
-            rationale=" ".join(signal.evidence),
+            rationale=" ".join(statements(signal.evidence)),
             evidence=evidence,
         )
 

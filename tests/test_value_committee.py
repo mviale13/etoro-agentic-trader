@@ -2,6 +2,7 @@ from typing import cast
 
 from app.committee.value import ValueCommittee
 from app.domain.committee_context import CommitteeContext
+from app.domain.finding import Finding
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.portfolio_snapshot import PortfolioSnapshot
@@ -34,7 +35,7 @@ def test_buy_when_value_signal_is_cheap() -> None:
             signal=ValueSignal(
                 valuation="CHEAP",
                 confidence=90,
-                evidence=("Forward P/E is attractive.",),
+                evidence=(Finding.favourable("Forward P/E is attractive."),),
             )
         )
     )
@@ -49,7 +50,7 @@ def test_hold_when_value_signal_is_fair() -> None:
             signal=ValueSignal(
                 valuation="FAIR",
                 confidence=80,
-                evidence=("Forward P/E is reasonable.",),
+                evidence=(Finding.neutral("Forward P/E is reasonable."),),
             )
         )
     )
@@ -63,7 +64,7 @@ def test_hold_when_value_signal_is_expensive() -> None:
             signal=ValueSignal(
                 valuation="EXPENSIVE",
                 confidence=85,
-                evidence=("Forward P/E is elevated.",),
+                evidence=(Finding.adverse("Forward P/E is elevated."),),
             )
         )
     )

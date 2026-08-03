@@ -9,6 +9,7 @@ number moved their ranking.
 
 from app.application.brain.reasoning.risk_analyst import RiskAnalyst
 from app.cio import ArtificialCIO, DecisionEvidence, DecisionPolicy, DecisionState
+from app.domain.finding import Finding
 from tests.test_brain_context import make_market, make_policy, make_portfolio
 from tests.test_security_evidence import build_evidence, make_brain, make_company
 
@@ -199,7 +200,7 @@ def _with_risk(company, level: str):
         volatility=0.15 if level == "LOW" else 0.90,
         max_drawdown=0.10 if level == "LOW" else 0.60,
         confidence=90,
-        evidence=(f"{level} risk.",),
+        evidence=(Finding.neutral(f"{level} risk."),),
     )
 
     return replace(company, signals=replace(company.signals, risk=signal))

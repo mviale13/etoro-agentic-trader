@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from app.domain.company_signals import CompanySignals
+from app.domain.finding import Finding
 
 
 @dataclass(frozen=True, slots=True)
@@ -10,4 +11,4 @@ class CompanyRecommendation:
     confidence: int
     summary: str
     signals: CompanySignals
-    evidence: tuple[str, ...]
+    evidence: tuple[Finding, ...]

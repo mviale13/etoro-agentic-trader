@@ -16,6 +16,7 @@ from app.application.workspace.portfolio_briefing_service import (
 from app.brain import Brain, BrainBuilder
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_signals import CompanySignals
+from app.domain.finding import Finding
 from app.domain.momentum_signal import MomentumSignal
 from app.domain.portfolio_position import PortfolioPosition
 from app.domain.quality_signal import QualitySignal
@@ -45,7 +46,7 @@ def make_company(
             value=ValueSignal(
                 valuation=valuation,
                 confidence=confidence,
-                evidence=(f"{symbol} looks {valuation.lower()}.",),
+                evidence=(Finding.neutral(f"{symbol} looks {valuation.lower()}."),),
             ),
             quality=QualitySignal(
                 quality=quality,
@@ -59,7 +60,7 @@ def make_company(
                 evidence=(),
             ),
         ),
-        evidence=(f"{symbol} evidence.",),
+        evidence=(Finding.neutral(f"{symbol} evidence."),),
     )
 
 
@@ -287,7 +288,7 @@ def test_evidence_handed_over_under_an_unknown_name_is_rejected() -> None:
             symbol="MSFT",
             evidence_score=80,
             portfolio_fit_score=70,
-            strengths=("Durable competitive advantage.",),  # type: ignore[call-arg]
+            conviction=99,  # type: ignore[call-arg]
         )
 
 

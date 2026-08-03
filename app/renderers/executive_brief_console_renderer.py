@@ -53,32 +53,25 @@ class ExecutiveBriefConsoleRenderer:
             console.print(f"[bold]{case.symbol}[/bold] — {case.recommendation}")
             console.print()
 
-            if case.evidence_weighed:
-                console.print("[bold]Evidence weighed[/bold]")
-
-                for finding in case.evidence_weighed:
-                    console.print(f"• {finding}")
-
-                console.print()
-
-            # Named for what they describe. "Healthy liquidity" is a fact
-            # about the investor's account, and printing it as a strength
-            # under a ticker attributes it to the security instead.
-            if case.strengths:
-                console.print("[bold]Portfolio and market strengths[/bold]")
-
-                for strength in case.strengths:
-                    console.print(f"• {strength}")
-
-                console.print()
-
-            if case.risks:
-                console.print("[bold]Portfolio and market risks[/bold]")
-
-                for risk in case.risks:
-                    console.print(f"• {risk}")
-
-                console.print()
+            # The security's own case first, then the record it was drawn
+            # from, then the account and market it sits in. Each section
+            # says whose it is: "Healthy liquidity" is a fact about the
+            # investor's cash, and under a bare heading beneath a ticker it
+            # read as a fact about the security.
+            ExecutiveBriefConsoleRenderer._section("Strengths", case.strengths)
+            ExecutiveBriefConsoleRenderer._section("Risks", case.risks)
+            ExecutiveBriefConsoleRenderer._section(
+                "Evidence weighed",
+                case.evidence_weighed,
+            )
+            ExecutiveBriefConsoleRenderer._section(
+                "Portfolio and market strengths",
+                case.context_strengths,
+            )
+            ExecutiveBriefConsoleRenderer._section(
+                "Portfolio and market risks",
+                case.context_risks,
+            )
 
             console.print(f"Expected holding period: {case.expected_holding_period}")
 
@@ -96,6 +89,21 @@ class ExecutiveBriefConsoleRenderer:
                 console.print(f"• {priority.title}: {priority.description}")
 
             console.print()
+
+    @staticmethod
+    def _section(
+        title: str,
+        lines: tuple[str, ...],
+    ) -> None:
+        if not lines:
+            return
+
+        console.print(f"[bold]{title}[/bold]")
+
+        for line in lines:
+            console.print(f"• {line}")
+
+        console.print()
 
     @staticmethod
     def _percent(

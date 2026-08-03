@@ -1,4 +1,5 @@
 from app.domain.company_signals import CompanySignals
+from app.domain.finding import Finding
 from app.domain.momentum_signal import MomentumSignal
 from app.domain.quality_signal import QualitySignal
 from app.domain.value_signal import ValueSignal
@@ -15,18 +16,18 @@ def build_signals(
         value=ValueSignal(
             valuation=value,
             confidence=90,
-            evidence=(f"Value is {value}.",),
+            evidence=(Finding.neutral(f"Value is {value}."),),
         ),
         momentum=MomentumSignal(
             trend=momentum,
             strength="STRONG",
             confidence=90,
-            evidence=(f"Momentum is {momentum}.",),
+            evidence=(Finding.neutral(f"Momentum is {momentum}."),),
         ),
         quality=QualitySignal(
             quality=quality,
             confidence=90,
-            evidence=(f"Quality is {quality}.",),
+            evidence=(Finding.neutral(f"Quality is {quality}."),),
         ),
     )
 

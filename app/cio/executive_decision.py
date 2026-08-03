@@ -44,7 +44,21 @@ class DecisionEvidence(BaseModel):
     #: presented it as a list of strengths would be reporting an absent
     #: measurement as a reason to invest.
     evidence_weighed: tuple[str, ...] = ()
+
+    #: The findings that argue for this security, and only those. The name
+    #: is safe to use again: the signals now state the sense they read each
+    #: finding with, so this is a selection rather than the whole list
+    #: wearing a flattering label.
+    strengths: tuple[str, ...] = ()
+
+    #: The findings that argue against this security.
     risks: tuple[str, ...] = ()
+
+    #: Risks belonging to the account and the market rather than to the
+    #: security, plus the behavioural risks of acting against policy.
+    #: Identical under every symbol, and kept apart for that reason.
+    context_risks: tuple[str, ...] = ()
+
     missing_evidence: tuple[str, ...] = ()
     catalysts: tuple[str, ...] = ()
 
@@ -62,7 +76,9 @@ class ExecutiveDecision(BaseModel):
 
     rationale: str
     evidence_weighed: tuple[str, ...] = ()
+    key_strengths: tuple[str, ...] = ()
     key_risks: tuple[str, ...] = ()
+    context_risks: tuple[str, ...] = ()
     missing_evidence: tuple[str, ...] = ()
     catalysts: tuple[str, ...] = ()
 

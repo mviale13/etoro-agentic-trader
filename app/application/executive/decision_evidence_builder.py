@@ -15,6 +15,7 @@ from app.application.executive.portfolio_fit import PortfolioFit
 from app.brain import Brain
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.executive_decision import DecisionEvidence
+from app.domain.finding import Finding, Sense, statements, statements_where
 
 
 @dataclass(slots=True)
@@ -109,29 +110,24 @@ class DecisionEvidenceBuilder:
             brain.investment_policy,
         )
 
-        # Everything read about this security, whatever it says. A quality
-        # signal reports "Negative earnings." the same way it reports
-        # "Large-cap company.", and a risk signal reports a 94% volatility
-        # as readily as a 12% one. Sorting these into strengths would need
-        # a polarity the signals do not currently carry, so the honest
-        # thing is to name the collection for what it is.
+        # Everything read about this security, each finding carrying the
+        # sense the signal read it with. The full list is the record; the
+        # split below is what an investment case can honestly state.
         #
-        # The portfolio's strengths and the market's opportunities used to
-        # be mixed in here. They are identical for every symbol, so they
-        # told the reader nothing about the one in front of them, and each
-        # candidate's evidence began with the same three lines about the
-        # account. They are still weighed — as scores, and as the context
-        # the case is set in — but they are not evidence about a security.
-        evidence_weighed = tuple(
-            dict.fromkeys(
-                (
-                    *self._company_findings(company),
-                    *self._company_risk_evidence(company),
-                )
-            )
-        )
+        # The portfolio's strengths and the market's opportunities are not
+        # in here. They are identical for every symbol, so they told the
+        # reader nothing about the one in front of them. They are still
+        # weighed — as scores, and as the context the case is set in — but
+        # they are not evidence about a security.
+        findings = tuple(dict.fromkeys(self._company_findings(company)))
 
-        risks = tuple(
+        evidence_weighed = statements(findings)
+
+        strengths = statements_where(findings, Sense.FAVOURABLE)
+
+        risks = statements_where(findings, Sense.ADVERSE)
+
+        context_risks = tuple(
             dict.fromkeys(
                 (
                     *portfolio.weaknesses,
@@ -166,7 +162,9 @@ class DecisionEvidenceBuilder:
             hard_reject=False,
             analyst_veto=company is not None and company.recommendation == "SELL",
             evidence_weighed=evidence_weighed,
+            strengths=strengths,
             risks=risks,
+            context_risks=context_risks,
             missing_evidence=self._missing_evidence(company, symbol),
             catalysts=catalysts,
         )
@@ -276,22 +274,18 @@ class DecisionEvidenceBuilder:
     @staticmethod
     def _company_findings(
         company: CompanyRecommendation | None,
-    ) -> tuple[str, ...]:
-        """What the value, quality and momentum signals actually found."""
+    ) -> tuple[Finding, ...]:
+        """Everything the signals found about this security, with its sense."""
 
         if company is None:
             return ()
 
-        return company.evidence
+        risk = company.signals.risk
 
-    @staticmethod
-    def _company_risk_evidence(
-        company: CompanyRecommendation | None,
-    ) -> tuple[str, ...]:
-        if company is None or company.signals.risk is None:
-            return ()
-
-        return company.signals.risk.evidence
+        return (
+            *company.evidence,
+            *(risk.evidence if risk is not None else ()),
+        )
 
     @staticmethod
     def _missing_evidence(

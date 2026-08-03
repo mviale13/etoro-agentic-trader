@@ -1,6 +1,7 @@
 from app.committee.base import CommitteeMember
 from app.domain.committee_context import CommitteeContext
 from app.domain.committee_opinion import CommitteeOpinion
+from app.domain.finding import statements
 from app.domain.value_signal import ValueSignal
 
 
@@ -22,7 +23,7 @@ class ValueCommittee(CommitteeMember):
     def _from_signal(
         signal: ValueSignal,
     ) -> CommitteeOpinion:
-        rationale = " ".join(signal.evidence)
+        rationale = " ".join(statements(signal.evidence))
 
         if signal.valuation == "CHEAP":
             vote = "BUY"

@@ -24,15 +24,18 @@ def make_brief() -> ExecutiveBrief:
                 recommendation="INVESTIGATE",
                 confidence=0.32,
                 summary="Business quality has not been measured.",
-                strengths=("Healthy liquidity",),
-                risks=("Cash concentration",),
+                strengths=("Positive earnings.",),
+                risks=("Annualised volatility is 94.0% over the past year.",),
                 catalysts=(),
                 invalidation_conditions=(),
                 expected_holding_period="3-5 years",
                 created_at=datetime(2026, 8, 3, tzinfo=UTC),
                 evidence_weighed=(
+                    "Positive earnings.",
                     "Annualised volatility is 94.0% over the past year.",
                 ),
+                context_strengths=("Healthy liquidity",),
+                context_risks=("Cash concentration",),
             ),
         ),
     )
@@ -74,5 +77,19 @@ def test_the_accounts_liquidity_is_not_presented_as_the_securitys_strength(
     for something it says nothing about.
     """
 
-    assert "Portfolio and market strengths" in rendered
-    assert "Portfolio and market risks" in rendered
+    security, context = rendered.split("Portfolio and market strengths")
+
+    assert "Healthy liquidity" not in security
+    assert "Healthy liquidity" in context
+    assert "Portfolio and market risks" in context
+
+
+def test_the_case_states_the_securitys_own_strengths_and_risks(
+    rendered: str,
+) -> None:
+    """A case that lists neither says nothing about the security."""
+
+    strengths, rest = rendered.split("Risks", 1)
+
+    assert "Positive earnings." in strengths
+    assert "94.0%" in rest.split("Evidence weighed")[0]

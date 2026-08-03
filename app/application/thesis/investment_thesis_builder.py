@@ -38,18 +38,20 @@ class InvestmentThesisBuilder:
             committee_opinions,
         )
 
-        strengths = self._unique(
+        # The security's own, as the Artificial CIO weighed them. These used
+        # to be the portfolio's strengths and the market's opportunities,
+        # which are the same under every symbol, so one investment case read
+        # exactly like the next.
+        strengths = self._unique(decision.key_strengths)
+
+        risks = self._unique(decision.key_risks)
+
+        context_risks = self._unique(decision.context_risks)
+
+        context_strengths = self._unique(
             (
                 *portfolio.strengths,
                 *market.opportunities,
-            )
-        )
-
-        risks = self._unique(
-            (
-                *portfolio.weaknesses,
-                *market.risks,
-                *risk.risk_factors,
             )
         )
 
@@ -76,9 +78,9 @@ class InvestmentThesisBuilder:
             invalidation_conditions=invalidation_conditions,
             expected_holding_period=self.default_holding_period,
             created_at=datetime.now(UTC),
-            # The one part of the case that is about this security rather
-            # than about the account holding it.
             evidence_weighed=decision.evidence_weighed,
+            context_strengths=context_strengths,
+            context_risks=context_risks,
             previous_decisions=self._previous_decisions(
                 history,
                 decision,

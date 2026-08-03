@@ -1,4 +1,5 @@
 from app.domain.company_facts import CompanyFacts
+from app.domain.finding import Finding
 from app.domain.momentum_signal import MomentumSignal
 
 
@@ -19,17 +20,24 @@ class MomentumSignalService:
                 trend="UNKNOWN",
                 strength="UNKNOWN",
                 confidence=20,
-                evidence=("Daily price change is unavailable.",),
+                evidence=(Finding.neutral("Daily price change is unavailable."),),
             )
 
+        # The day's move is stated with the sense the trend was read with:
+        # a rise is a point for the security, a fall a point against, and a
+        # move too small to mean anything is neither.
         if change >= self.STRONG_POSITIVE_THRESHOLD:
             return MomentumSignal(
                 trend="BULLISH",
                 strength="STRONG",
                 confidence=85,
                 evidence=(
-                    f"{company.symbol} gained {change:+.2f}% today.",
-                    "Short-term price momentum is strongly positive.",
+                    Finding.favourable(
+                        f"{company.symbol} gained {change:+.2f}% today."
+                    ),
+                    Finding.favourable(
+                        "Short-term price momentum is strongly positive."
+                    ),
                 ),
             )
 
@@ -39,8 +47,10 @@ class MomentumSignalService:
                 strength="MODERATE",
                 confidence=70,
                 evidence=(
-                    f"{company.symbol} gained {change:+.2f}% today.",
-                    "Short-term price momentum is positive.",
+                    Finding.favourable(
+                        f"{company.symbol} gained {change:+.2f}% today."
+                    ),
+                    Finding.favourable("Short-term price momentum is positive."),
                 ),
             )
 
@@ -50,8 +60,8 @@ class MomentumSignalService:
                 strength="STRONG",
                 confidence=85,
                 evidence=(
-                    f"{company.symbol} declined {change:+.2f}% today.",
-                    "Short-term price momentum is strongly negative.",
+                    Finding.adverse(f"{company.symbol} declined {change:+.2f}% today."),
+                    Finding.adverse("Short-term price momentum is strongly negative."),
                 ),
             )
 
@@ -61,8 +71,8 @@ class MomentumSignalService:
                 strength="MODERATE",
                 confidence=70,
                 evidence=(
-                    f"{company.symbol} declined {change:+.2f}% today.",
-                    "Short-term price momentum is negative.",
+                    Finding.adverse(f"{company.symbol} declined {change:+.2f}% today."),
+                    Finding.adverse("Short-term price momentum is negative."),
                 ),
             )
 
@@ -71,7 +81,7 @@ class MomentumSignalService:
             strength="WEAK",
             confidence=60,
             evidence=(
-                f"{company.symbol} moved {change:+.2f}% today.",
-                "No meaningful short-term momentum is visible.",
+                Finding.neutral(f"{company.symbol} moved {change:+.2f}% today."),
+                Finding.neutral("No meaningful short-term momentum is visible."),
             ),
         )

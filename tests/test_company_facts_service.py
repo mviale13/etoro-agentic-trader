@@ -4,6 +4,7 @@ import asyncio
 from datetime import UTC, datetime
 
 from app.domain.company_facts import CompanyFacts
+from app.domain.finding import statements
 from app.domain.market_snapshot import MarketQuote
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
@@ -91,7 +92,7 @@ def test_quality_can_be_assessed_from_those_facts() -> None:
     signal = QualitySignalService().build(make_facts(make_snapshot()))
 
     assert signal.quality == "HIGH"
-    assert "Insufficient quality data." not in signal.evidence
+    assert "Insufficient quality data." not in statements(signal.evidence)
 
 
 def test_facts_are_never_dated_fresher_than_the_evidence() -> None:
@@ -217,7 +218,7 @@ def test_crypto_is_not_asked_for_company_fundamentals() -> None:
     signal = QualitySignalService().build(facts)
 
     assert signal.quality == "UNKNOWN"
-    assert signal.evidence == ("Insufficient quality data.",)
+    assert statements(signal.evidence) == ("Insufficient quality data.",)
 
 
 def test_facts_carry_the_asset_class_rather_than_a_broker_id() -> None:

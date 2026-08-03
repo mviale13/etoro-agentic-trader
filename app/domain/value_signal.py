@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from app.domain.finding import Finding
+
 
 @dataclass(frozen=True, slots=True)
 class ValueSignal:
@@ -7,4 +9,4 @@ class ValueSignal:
 
     confidence: int
 
-    evidence: tuple[str, ...]
+    evidence: tuple[Finding, ...]

@@ -1,4 +1,5 @@
 from app.domain.company_facts import CompanyFacts
+from app.domain.finding import Finding
 from app.domain.risk_signal import RiskSignal
 
 
@@ -35,21 +36,33 @@ class RiskSignalService:
                 max_drawdown=None,
                 confidence=20,
                 evidence=(
-                    f"No usable price history for {company.symbol}, so its "
-                    "risk is not measured.",
+                    Finding.neutral(
+                        f"No usable price history for {company.symbol}, so its "
+                        "risk is not measured."
+                    ),
                 ),
             )
 
-        evidence: list[str] = []
+        # A measurement's sense is the band it lands in. 12% volatility and
+        # 94% volatility are both readings, but only one of them is an
+        # argument against holding the security.
+        evidence: list[Finding] = []
 
         if volatility is not None:
             evidence.append(
-                f"Annualised volatility is {volatility * 100:.1f}% over the past year."
+                self._finding(
+                    f"Annualised volatility is {volatility * 100:.1f}% "
+                    "over the past year.",
+                    self._volatility_level(volatility),
+                )
             )
 
         if drawdown is not None:
             evidence.append(
-                f"Deepest fall over the past year was {drawdown * 100:.1f}%."
+                self._finding(
+                    f"Deepest fall over the past year was {drawdown * 100:.1f}%.",
+                    self._drawdown_level(drawdown),
+                )
             )
 
         return RiskSignal(
@@ -59,6 +72,21 @@ class RiskSignalService:
             confidence=90 if volatility is not None and drawdown is not None else 60,
             evidence=tuple(evidence),
         )
+
+    @staticmethod
+    def _finding(
+        statement: str,
+        level: str | None,
+    ) -> Finding:
+        """A calm reading argues for the security; a violent one against."""
+
+        if level == "LOW":
+            return Finding.favourable(statement)
+
+        if level in ("HIGH", "SEVERE"):
+            return Finding.adverse(statement)
+
+        return Finding.neutral(statement)
 
     def _level(
         self,

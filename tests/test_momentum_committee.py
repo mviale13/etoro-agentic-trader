@@ -2,6 +2,7 @@ from typing import cast
 
 from app.committee.momentum import MomentumCommittee
 from app.domain.committee_context import CommitteeContext
+from app.domain.finding import Finding
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.momentum_signal import MomentumSignal
@@ -26,7 +27,7 @@ def test_buy_vote_for_bullish_signal() -> None:
                 trend="BULLISH",
                 strength="STRONG",
                 confidence=85,
-                evidence=("Short-term momentum is positive.",),
+                evidence=(Finding.favourable("Short-term momentum is positive."),),
             )
         )
     )
@@ -42,7 +43,7 @@ def test_sell_vote_for_bearish_signal() -> None:
                 trend="BEARISH",
                 strength="STRONG",
                 confidence=85,
-                evidence=("Short-term momentum is negative.",),
+                evidence=(Finding.adverse("Short-term momentum is negative."),),
             )
         )
     )
@@ -57,7 +58,7 @@ def test_hold_vote_for_neutral_signal() -> None:
                 trend="NEUTRAL",
                 strength="WEAK",
                 confidence=60,
-                evidence=("No meaningful momentum is visible.",),
+                evidence=(Finding.neutral("No meaningful momentum is visible."),),
             )
         )
     )
@@ -72,7 +73,7 @@ def test_hold_vote_for_unknown_signal() -> None:
                 trend="UNKNOWN",
                 strength="UNKNOWN",
                 confidence=20,
-                evidence=("Daily price change is unavailable.",),
+                evidence=(Finding.neutral("Daily price change is unavailable."),),
             )
         )
     )

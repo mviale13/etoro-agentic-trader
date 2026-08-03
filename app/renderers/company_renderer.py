@@ -26,5 +26,5 @@ class CompanyRenderer:
 
         print("Evidence")
         print("--------")
-        for item in recommendation.evidence:
-            print(f"• {item}")
+        for finding in recommendation.evidence:
+            print(f"• {finding.statement}")
