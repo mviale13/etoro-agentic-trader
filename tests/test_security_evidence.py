@@ -204,6 +204,121 @@ def test_portfolio_briefing_ranks_holdings_by_conviction() -> None:
     assert convictions == sorted(convictions, reverse=True)
 
 
+def test_what_was_weighed_is_not_a_list_of_strengths() -> None:
+    """
+    This collection was called `strengths`. It never held only strengths.
+
+    A company the platform cannot score still produces evidence, and that
+    evidence says so. Anything trusting the old name would have printed
+    "Insufficient quality data." as a reason to invest — an absent
+    measurement presented as a favourable finding.
+    """
+
+    from app.domain.company_facts import CompanyFacts
+    from app.services.quality_signal_service import QualitySignalService
+
+    unscoreable = QualitySignalService().build(
+        CompanyFacts(
+            instrument_id=1,
+            symbol="OPAQUE",
+            name="Opaque Holdings",
+            asset_type="stock",
+            exchange="4",
+        )
+    )
+
+    company = CompanyRecommendation(
+        symbol="OPAQUE",
+        recommendation="HOLD",
+        confidence=50,
+        summary="HOLD: OPAQUE",
+        signals=CompanySignals(
+            value=ValueSignal(valuation="UNKNOWN", confidence=20, evidence=()),
+            quality=unscoreable,
+            momentum=MomentumSignal(
+                trend="UNKNOWN",
+                strength="WEAK",
+                confidence=20,
+                evidence=(),
+            ),
+        ),
+        evidence=unscoreable.evidence,
+    )
+
+    evidence = build_evidence(make_brain(evidence={"OPAQUE": (company,)}), "OPAQUE")
+
+    assert "Insufficient quality data." in evidence.evidence_weighed
+
+
+def test_the_accounts_condition_is_not_evidence_about_a_security() -> None:
+    """
+    Every candidate's evidence used to open with the same lines.
+
+    "Healthy liquidity" is true of the account whichever security is being
+    judged, so repeating it under each one told the reader nothing and
+    padded a thin case into a full-looking one.
+    """
+
+    brain = make_brain(evidence={"GOOD": (make_company("GOOD"),)})
+
+    reasoning = ReasoningService().reason(brain)
+    weighed = build_evidence(brain, "GOOD").evidence_weighed
+
+    assert weighed == ("GOOD evidence.",)
+
+    for strength in reasoning.portfolio.strengths:
+        assert strength not in weighed
+
+
+def test_evidence_handed_over_under_an_unknown_name_is_rejected() -> None:
+    """
+    Silently dropping it would report gathered evidence as absent.
+
+    This is how the old name survived its own rename: `strengths=(...)`
+    kept being passed, kept being accepted, and kept being discarded.
+    """
+
+    from pydantic import ValidationError
+
+    from app.cio.executive_decision import DecisionEvidence
+
+    with pytest.raises(ValidationError):
+        DecisionEvidence(
+            symbol="MSFT",
+            evidence_score=80,
+            portfolio_fit_score=70,
+            strengths=("Durable competitive advantage.",),  # type: ignore[call-arg]
+        )
+
+
+def test_the_investment_case_states_what_was_read_about_this_security() -> None:
+    """
+    Without this, every case reads the same.
+
+    Strengths and risks describe the account and the market, so two
+    securities produced identical prose. The findings about the security
+    itself were built, carried as far as the decision, and then dropped.
+    """
+
+    brain = make_brain(
+        evidence={
+            "GOOD": (make_company("GOOD", quality="HIGH", valuation="CHEAP"),),
+            "POOR": (make_company("POOR", quality="LOW", valuation="EXPENSIVE"),),
+        },
+        holdings=(make_holding("GOOD"), make_holding("POOR")),
+    )
+
+    briefing = PortfolioBriefingService().build(brain)
+
+    assert briefing is not None
+
+    cases = {case.symbol: case for case in briefing.brief.investment_cases}
+
+    assert "GOOD evidence." in cases["GOOD"].evidence_weighed
+    assert "POOR evidence." in cases["POOR"].evidence_weighed
+    assert cases["GOOD"].evidence_weighed != cases["POOR"].evidence_weighed
+
+
 def test_portfolio_briefing_is_none_without_holdings() -> None:
     assert PortfolioBriefingService().build(make_brain()) is None
 

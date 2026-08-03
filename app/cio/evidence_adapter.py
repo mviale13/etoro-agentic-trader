@@ -52,7 +52,7 @@ class EvidenceAdapter:
         quality_score = self._weighted_score(analyst_evidence)
         evidence_score = self._evidence_coverage(analyst_evidence)
 
-        strengths = self._collect_unique(
+        evidence_weighed = self._collect_unique(
             item for evidence in analyst_evidence for item in evidence.strengths
         )
         risks = self._collect_unique(
@@ -72,7 +72,7 @@ class EvidenceAdapter:
             actionable_now=actionable_now,
             hard_reject=hard_reject,
             analyst_veto=any(evidence.veto for evidence in analyst_evidence),
-            strengths=strengths,
+            evidence_weighed=evidence_weighed,
             risks=risks,
             missing_evidence=missing_evidence,
             catalysts=catalysts,

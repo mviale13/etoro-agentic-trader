@@ -101,13 +101,24 @@ class DecisionEvidenceBuilder:
         # judgement rather than recomputing a cruder one of its own.
         portfolio_fit = int(reasoning.opportunity.portfolio_fit_score * 100)
 
-        strengths = tuple(
+        # Everything read about this security, whatever it says. A quality
+        # signal reports "Negative earnings." the same way it reports
+        # "Large-cap company.", and a risk signal reports a 94% volatility
+        # as readily as a 12% one. Sorting these into strengths would need
+        # a polarity the signals do not currently carry, so the honest
+        # thing is to name the collection for what it is.
+        #
+        # The portfolio's strengths and the market's opportunities used to
+        # be mixed in here. They are identical for every symbol, so they
+        # told the reader nothing about the one in front of them, and each
+        # candidate's evidence began with the same three lines about the
+        # account. They are still weighed — as scores, and as the context
+        # the case is set in — but they are not evidence about a security.
+        evidence_weighed = tuple(
             dict.fromkeys(
                 (
-                    *self._company_strengths(company),
+                    *self._company_findings(company),
                     *self._company_risk_evidence(company),
-                    *portfolio.strengths,
-                    *market.opportunities,
                 )
             )
         )
@@ -146,7 +157,7 @@ class DecisionEvidenceBuilder:
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
             analyst_veto=company is not None and company.recommendation == "SELL",
-            strengths=strengths,
+            evidence_weighed=evidence_weighed,
             risks=risks,
             missing_evidence=self._missing_evidence(company, symbol),
             catalysts=catalysts,
@@ -255,9 +266,11 @@ class DecisionEvidenceBuilder:
         )
 
     @staticmethod
-    def _company_strengths(
+    def _company_findings(
         company: CompanyRecommendation | None,
     ) -> tuple[str, ...]:
+        """What the value, quality and momentum signals actually found."""
+
         if company is None:
             return ()
 

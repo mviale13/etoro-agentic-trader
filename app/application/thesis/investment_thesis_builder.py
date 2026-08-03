@@ -76,6 +76,9 @@ class InvestmentThesisBuilder:
             invalidation_conditions=invalidation_conditions,
             expected_holding_period=self.default_holding_period,
             created_at=datetime.now(UTC),
+            # The one part of the case that is about this security rather
+            # than about the account holding it.
+            evidence_weighed=decision.evidence_weighed,
             previous_decisions=self._previous_decisions(
                 history,
                 decision,

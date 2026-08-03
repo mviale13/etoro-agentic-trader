@@ -48,8 +48,19 @@ class ExecutiveBriefConsoleRenderer:
             console.print(f"[bold]{case.symbol}[/bold] — {case.recommendation}")
             console.print()
 
+            if case.evidence_weighed:
+                console.print("[bold]Evidence weighed[/bold]")
+
+                for finding in case.evidence_weighed:
+                    console.print(f"• {finding}")
+
+                console.print()
+
+            # Named for what they describe. "Healthy liquidity" is a fact
+            # about the investor's account, and printing it as a strength
+            # under a ticker attributes it to the security instead.
             if case.strengths:
-                console.print("[bold]Strengths[/bold]")
+                console.print("[bold]Portfolio and market strengths[/bold]")
 
                 for strength in case.strengths:
                     console.print(f"• {strength}")
@@ -57,7 +68,7 @@ class ExecutiveBriefConsoleRenderer:
                 console.print()
 
             if case.risks:
-                console.print("[bold]Risks[/bold]")
+                console.print("[bold]Portfolio and market risks[/bold]")
 
                 for risk in case.risks:
                     console.print(f"• {risk}")

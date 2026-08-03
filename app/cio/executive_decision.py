@@ -15,7 +15,11 @@ class DecisionEvidence(BaseModel):
     progress past the point where that measurement is required.
     """
 
-    model_config = ConfigDict(frozen=True)
+    # An unrecognised field is an error, not something to drop quietly.
+    # While this model accepted extras, `strengths=(...)` went on being
+    # passed after the field was renamed and simply vanished — evidence
+    # that was gathered, handed over, and silently reported as absent.
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
     symbol: str = Field(min_length=1)
 
@@ -29,7 +33,14 @@ class DecisionEvidence(BaseModel):
     hard_reject: bool = False
     analyst_veto: bool = False
 
-    strengths: tuple[str, ...] = ()
+    #: Every finding read about this security, favourable or not.
+    #:
+    #: This was called `strengths`, and it never was. It carries whatever
+    #: the signals measured — "Large-cap company." sits beside "Negative
+    #: earnings." and "Insufficient quality data." — so anything that
+    #: presented it as a list of strengths would be reporting an absent
+    #: measurement as a reason to invest.
+    evidence_weighed: tuple[str, ...] = ()
     risks: tuple[str, ...] = ()
     missing_evidence: tuple[str, ...] = ()
     catalysts: tuple[str, ...] = ()
@@ -47,7 +58,7 @@ class ExecutiveDecision(BaseModel):
     conviction: int = Field(ge=0, le=100)
 
     rationale: str
-    key_strengths: tuple[str, ...] = ()
+    evidence_weighed: tuple[str, ...] = ()
     key_risks: tuple[str, ...] = ()
     missing_evidence: tuple[str, ...] = ()
     catalysts: tuple[str, ...] = ()

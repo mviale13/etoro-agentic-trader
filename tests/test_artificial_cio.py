@@ -23,7 +23,7 @@ def evidence(
         risk_score=25,
         portfolio_fit_score=80,
         actionable_now=actionable,
-        strengths=("Durable competitive advantage.",),
+        evidence_weighed=("Durable competitive advantage.",),
         risks=("Valuation risk.",),
         catalysts=("Cloud growth acceleration.",),
     )

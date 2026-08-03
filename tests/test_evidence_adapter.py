@@ -52,7 +52,7 @@ def test_adapter_produces_normalized_decision_evidence() -> None:
     assert result.symbol == "MSFT"
     assert result.quality_score == 79
     assert result.valuation_score == 65
-    assert len(result.strengths) == 2
+    assert len(result.evidence_weighed) == 2
     assert len(result.risks) == 2
 
 

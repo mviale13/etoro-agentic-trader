@@ -210,10 +210,13 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`
    and `1INCH` now price and carry measured risk. `TAO` and `HYPE` have no
    plain `-USD` listing and stay absent rather than guessed at.
-2. **The `strengths` mislabel.** `DecisionEvidence.strengths` carries raw
-   evidence, positive or not. The research page calls it "Evidence weighed";
-   the executive brief and dossier still print "Insufficient quality data."
-   under **Strengths**.
+2. ~~**The `strengths` mislabel.**~~ Done. `DecisionEvidence.strengths` and
+   `ExecutiveDecision.key_strengths` are now `evidence_weighed`, and carry
+   only what was read about the security. The brief's remaining sections say
+   whose strengths they are. The claim that the brief printed "Insufficient
+   quality data." under **Strengths** was wrong: those sections are built by
+   `InvestmentThesisBuilder` from portfolio and market assessments and never
+   contained company evidence.
 3. **The portfolio-fit gate.** It is now what blocks every RECOMMEND (47
    against a minimum of 60). Either the account really is far from its policy
    targets, or the gate measures the wrong thing — an account sitting 97% in
@@ -244,6 +247,18 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Reasoning
 
+- [ ] **`movrvest evaluate SYMBOL` never evidences that symbol.**
+      `BrainBuilderService` defaults `candidate_limit=0`, and the account
+      holds nothing, so `SecurityPerception` returns `{}` and the command
+      decides on portfolio and market context alone. `evaluate UUUU` returns
+      INVESTIGATE while the research pipeline, given the same symbol and a
+      research budget, returns REJECT on 94% volatility and negative
+      earnings. Same security, two verdicts, because one path has evidence
+- [ ] Signal evidence has no polarity, so favourable and adverse findings
+      cannot be told apart. `InvestmentThesis.strengths` and `.risks`
+      therefore still describe the portfolio and the market rather than the
+      security; the console labels them accordingly. Real per-security
+      strengths need a sense on each finding, at the four signal services
 - [ ] `consistency_score` needs a record of the investor's own actions. The
       decision journal records the CIO's decisions, not what the investor did
       with them

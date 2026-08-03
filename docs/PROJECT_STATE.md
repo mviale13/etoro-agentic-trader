@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 390 passing |
+| Pytest | 🟢 396 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,16 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Nothing calls raw evidence a strength any more. `DecisionEvidence` and
+  `ExecutiveDecision` carry `evidence_weighed`, and it holds only what was
+  read about the security. The research page's list of a candidate now
+  reads "Negative earnings", "Annualised volatility is 94.0%" and "Deepest
+  fall was 61.3%" — findings that were previously the candidate's
+  `key_strengths`. The account's own condition was mixed in there too and
+  is gone: it was identical under every symbol. On the brief, the sections
+  that do describe the portfolio and the market now say so, rather than
+  printing "Healthy liquidity" under a ticker
 
 - Crypto is evidenced. An eToro instrument is classified by `AssetClass`,
   and a crypto one is priced as a pair — `BTC` as `BTC-USD` — so six
@@ -145,6 +155,16 @@ Named rather than hidden. None of these are estimated away in the product.
   honestly absent and the gate honestly refuses. The gate is company-shaped
 
 ## Reasoning
+
+- `movrvest evaluate SYMBOL` decides without evidencing that symbol. The
+  brain is built with no research budget and the account holds nothing, so
+  the command judges on portfolio and market context alone — and returns
+  INVESTIGATE for a security the research pipeline rejects on its own
+  numbers
+
+- Signal findings carry no polarity, so favourable and adverse ones cannot
+  be separated. An investment case therefore has no per-security strengths
+  or risks; what it has is the full list of what was read
 
 - The risk gate now clears on measured evidence, so RECOMMEND is reachable.
   The binding constraint today is `portfolio_fit_score` at 47 against a
