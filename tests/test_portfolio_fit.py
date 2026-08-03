@@ -142,3 +142,43 @@ def test_an_empty_account_cannot_be_measured_for_concentration() -> None:
     portfolio = replace(make_portfolio(), total_value=0.0)
 
     assert PortfolioFit()._concentration_room("ANY", portfolio, make_policy()) is None
+
+
+def test_crypto_fit_narrows_as_the_policy_ceiling_fills() -> None:
+    """
+    The policy caps crypto. Fit could not see it while nothing was classified.
+
+    A ceiling compared against a partly-identified portfolio understates
+    what is already held, so the term applies only to a fully classified
+    account.
+    """
+
+    from app.domain.asset_class import AssetClass
+
+    empty = make_portfolio(cash=50.0)
+    loaded = replace(
+        empty,
+        allocation=replace(empty.allocation, crypto=60.0, unclassified=0.0),
+    )
+
+    room = PortfolioFit().measure("BTC", loaded, make_policy(), AssetClass.CRYPTO)
+    without = PortfolioFit().measure("BTC", loaded, make_policy())
+
+    assert room is not None and without is not None
+    assert room < without
+
+
+def test_an_unclassified_account_is_not_scored_against_the_crypto_ceiling() -> None:
+    from app.domain.asset_class import AssetClass
+
+    portfolio = make_portfolio(cash=50.0)
+
+    assert portfolio.allocation.unclassified > 0
+    assert (
+        PortfolioFit()._asset_class_room(
+            AssetClass.CRYPTO,
+            portfolio,
+            make_policy(),
+        )
+        is None
+    )

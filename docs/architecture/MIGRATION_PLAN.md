@@ -237,9 +237,9 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
       more, but because a 97%-cash account with no position above 0.5% has
       near-full room for all of them. It will separate them once positions
       grow; nothing yet proves that on live data
-- [ ] Asset-class room is not part of fit. The policy sets stock, ETF and
-      crypto targets and `max_crypto`, but holdings are unclassified, so
-      the term is left out rather than estimated
+- [x] Asset-class room is part of fit, for the one class the policy caps.
+      Stock and ETF targets are targets to rebalance toward, not ceilings a
+      new position can breach, so they are not scored as room
 - [ ] Cached evidence knows its true age; no surface reports it yet
 - [x] Crypto tickers resolve. `AssetClass` classifies an eToro instrument,
       and a crypto one is priced as a pair
@@ -252,9 +252,10 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [ ] Research still evidences a capped number of candidates per cycle. With
       the cache warm the cap could rise substantially; the first cycle of a
       day is what costs
-- [ ] Holdings are not classified by asset type, which blocks allocation
-      drift scoring and the crypto policy limit. `AssetClass` now exists and
-      `PortfolioService` needs the position → instrument join to use it
+- [x] Holdings are classified by asset type. `PortfolioPerception` joins
+      the watchlist instrument onto each position, `PortfolioService.allocate`
+      splits the invested share by class, and the crypto ceiling is scored
+      in both `BehaviorAnalyst` and `PortfolioFit`
 
 ## Reasoning
 

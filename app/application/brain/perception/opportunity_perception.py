@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.domain.asset_class import AssetClass
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.research_candidate import ResearchCandidate
 from app.services.watchlist_service import WatchlistService
@@ -51,6 +52,7 @@ class OpportunityPerception:
                     name=item.name,
                     source=watchlist.name,
                     instrument_id=item.instrument_id,
+                    asset_class=AssetClass.from_etoro(item.asset_type_id).value,
                 )
 
         return tuple(candidates.values())

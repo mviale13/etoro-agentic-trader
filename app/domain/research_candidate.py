@@ -21,3 +21,7 @@ class ResearchCandidate:
     source: str
 
     instrument_id: int
+
+    #: What kind of asset it is, so the policy's class targets can be
+    #: applied to it. None where the watchlists do not say.
+    asset_class: str | None = None

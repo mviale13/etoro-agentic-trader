@@ -13,6 +13,7 @@ from app.application.committees.models.committee_opinion import (
 )
 from app.application.executive.portfolio_fit import PortfolioFit
 from app.brain import Brain
+from app.domain.asset_class import AssetClass
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.executive_decision import DecisionEvidence
 from app.domain.finding import Finding, Sense, statements, statements_where
@@ -108,6 +109,7 @@ class DecisionEvidenceBuilder:
             symbol,
             brain.portfolio,
             brain.investment_policy,
+            self._asset_class(brain, symbol),
         )
 
         # Everything read about this security, each finding carrying the
@@ -270,6 +272,31 @@ class DecisionEvidenceBuilder:
             Recommendation.BUY,
             Recommendation.STRONG_BUY,
         )
+
+    @staticmethod
+    def _asset_class(
+        brain: Brain,
+        symbol: str,
+    ) -> AssetClass | None:
+        """
+        What kind of asset this is, from whichever side already knows.
+
+        A holding carries its class; so does a watched candidate. A symbol
+        that is neither returns nothing, and the policy limits that depend
+        on the class are simply not applied.
+        """
+
+        normalized = symbol.upper().strip()
+
+        for holding in brain.portfolio.holdings:
+            if holding.symbol.upper().strip() == normalized and holding.asset_class:
+                return AssetClass(holding.asset_class)
+
+        for candidate in brain.candidates:
+            if candidate.symbol.upper().strip() == normalized and candidate.asset_class:
+                return AssetClass(candidate.asset_class)
+
+        return None
 
     @staticmethod
     def _company_findings(

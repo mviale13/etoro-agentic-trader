@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 418 passing |
+| Pytest | 🟢 426 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The account reports what it holds. Every invested euro used to sit in
+  `unclassified` under a standing risk flag, because nothing joined the
+  eToro asset type the watchlists already carried onto the holdings. The
+  live account now reads 1.2% stocks, 1.2% crypto and 0.2% unclassified —
+  a single holding no watchlist names, flagged with its exact size rather
+  than a blanket disclaimer. The policy's crypto ceiling is enforceable
+  for the first time, in policy alignment and in portfolio fit, and both
+  decline to score it while any part of the account is unidentified
 
 - An investment case states the security's own strengths and risks. Signal
   findings carry the sense the signal read them with, so "Negative
@@ -186,9 +195,6 @@ Named rather than hidden. None of these are estimated away in the product.
 - Research covers a capped number of candidates per cycle, because
   fundamentals are uncached and the provider rate-limits. The page reports
   how many it could not reach
-- Holdings are not classified by asset type, which blocks allocation-drift
-  scoring and the crypto policy limit. `AssetClass` now exists; what is
-  missing is the position → instrument join inside `PortfolioService`
 - A crypto case cannot progress past INVESTIGATE. The quality gate asks how
   good the business is, and a token has no business, so the answer is
   honestly absent and the gate honestly refuses. The gate is company-shaped

@@ -96,6 +96,9 @@ def build_perception(
             assert received_account is account
             return snapshot
 
+        def allocate(self, resolved: PortfolioSnapshot) -> PortfolioSnapshot:
+            return PortfolioService.allocate(resolved)
+
     return PortfolioPerception(
         account_service=cast(AccountService, AccountServiceStub()),
         portfolio_service=cast(PortfolioService, PortfolioServiceStub()),

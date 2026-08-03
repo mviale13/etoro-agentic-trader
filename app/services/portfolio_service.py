@@ -1,4 +1,7 @@
+from dataclasses import replace
+
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.asset_class import AssetClass
 from app.domain.portfolio_position import PortfolioPosition
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
 from app.services.exchange_rate_service import ExchangeRateService
@@ -36,6 +39,9 @@ class PortfolioService:
         if cash_pct >= self.CASH_CONCENTRATION_THRESHOLD:
             risk_flags.append("Cash concentration")
 
+        # True of a snapshot the broker has just been read into: nothing
+        # here knows what the holdings are yet. `allocate` replaces this
+        # once they have been classified against the watchlists.
         if invested_pct > 0:
             risk_flags.append("Invested assets are not yet classified by asset type")
 
@@ -75,6 +81,78 @@ class PortfolioService:
                 2,
             ),
         )
+
+    @classmethod
+    def allocate(
+        cls,
+        snapshot: PortfolioSnapshot,
+    ) -> PortfolioSnapshot:
+        """
+        Split the invested share of the account by asset class.
+
+        Called once the holdings know what they are. Until they did, every
+        invested euro sat in `unclassified` and the account carried a
+        standing risk flag saying so, which meant the policy's stock, ETF
+        and crypto targets had nothing to be compared against.
+
+        A holding no watchlist describes stays unclassified, and so does one
+        whose class the policy sets no target for — a commodity cannot drift
+        from a target that does not exist. The flag is raised only for what
+        remains genuinely unaccounted for, and says how much.
+        """
+
+        equity = snapshot.total_value
+
+        if equity <= 0 or not snapshot.holdings:
+            return snapshot
+
+        totals = {AssetClass.STOCK: 0.0, AssetClass.ETF: 0.0, AssetClass.CRYPTO: 0.0}
+        unclassified = 0.0
+
+        for holding in snapshot.holdings:
+            asset_class = cls._asset_class(holding)
+
+            if asset_class in totals:
+                totals[asset_class] += holding.market_value_usd
+            else:
+                unclassified += holding.market_value_usd
+
+        unclassified_pct = cls._percentage(unclassified, equity)
+
+        risk_flags = tuple(
+            flag
+            for flag in snapshot.risk_flags
+            if not flag.startswith("Invested assets are not")
+        )
+
+        if unclassified_pct > 0:
+            risk_flags = (
+                *risk_flags,
+                f"{unclassified_pct:.1f}% of the account is held in assets "
+                "the platform cannot classify",
+            )
+
+        return replace(
+            snapshot,
+            allocation=replace(
+                snapshot.allocation,
+                stocks=cls._percentage(totals[AssetClass.STOCK], equity),
+                etfs=cls._percentage(totals[AssetClass.ETF], equity),
+                crypto=cls._percentage(totals[AssetClass.CRYPTO], equity),
+                unclassified=unclassified_pct,
+            ),
+            risk_flags=risk_flags,
+        )
+
+    @staticmethod
+    def _asset_class(holding: PortfolioPosition) -> AssetClass | None:
+        if holding.asset_class is None:
+            return None
+
+        try:
+            return AssetClass(holding.asset_class)
+        except ValueError:
+            return None
 
     @classmethod
     def _largest_position(

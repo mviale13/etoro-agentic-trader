@@ -96,10 +96,10 @@ class BehaviorAnalyst:
         Score how far the portfolio sits from its own Investment Policy.
 
         Only limits the portfolio can actually be measured against are
-        scored. Asset-class targets are not: PortfolioService does not yet
-        classify holdings by asset type, so comparing them to the policy's
-        stock, ETF and crypto targets would report drift that reflects the
-        missing classification rather than the investor's behaviour.
+        scored. The crypto limit is one of them now that holdings carry an
+        asset class; while they did not, comparing them to the policy's
+        stock, ETF and crypto targets would have reported drift that
+        reflected the missing classification rather than the investor.
         """
 
         if policy is None:
@@ -125,7 +125,60 @@ class BehaviorAnalyst:
             evidence,
         )
 
+        alignment -= self._crypto_penalty(
+            portfolio,
+            policy,
+            biases,
+            positives,
+            evidence,
+        )
+
         return max(0.0, min(1.0, alignment))
+
+    @staticmethod
+    def _crypto_penalty(
+        portfolio: PortfolioSnapshot,
+        policy: InvestmentPolicy,
+        biases: list[str],
+        positives: list[str],
+        evidence: list[Evidence],
+    ) -> float:
+        """
+        Score the crypto holding against the policy's own ceiling.
+
+        Measured only where there is something to measure. An account whose
+        holdings could not all be classified is not scored against this
+        limit, because the share below the ceiling would be understated by
+        exactly the part nobody could identify.
+        """
+
+        limit = policy.constraints.max_crypto
+
+        if limit <= 0 or portfolio.allocation.unclassified > 0:
+            return 0.0
+
+        held = portfolio.allocation.crypto
+
+        if held <= limit:
+            positives.append("Crypto exposure is within the policy limit")
+            return 0.0
+
+        overage = held - limit
+
+        biases.append("Crypto exposure exceeds the policy limit")
+        evidence.append(
+            Evidence(
+                description=(
+                    f"Crypto is {held:.1f}% of the portfolio, against a "
+                    f"{limit:.1f}% policy limit."
+                ),
+                source="InvestmentPolicy",
+                strength=0.95,
+            )
+        )
+
+        # A breach of twice the limit exhausts this third of the score.
+        return min(0.34, (overage / limit) * 0.34)
 
     @staticmethod
     def _concentration_penalty(

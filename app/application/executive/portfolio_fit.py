@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.domain.asset_class import AssetClass
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
@@ -33,10 +34,10 @@ class PortfolioFit:
     has left. A security the investor does not hold has all of it; one
     already at the limit has none, and adding to it would breach the policy.
 
-    Asset-class room is not measured. The policy sets stock, ETF and crypto
-    targets, but holdings are not classified, so any drift reported would
-    describe the missing classification rather than the portfolio. It is
-    left out rather than guessed at.
+    Asset-class room — how much of the policy's ceiling for this kind of
+    asset is left. Measured only when the security's class is known and the
+    account is fully classified, because a ceiling compared against a
+    partly-identified portfolio understates what is already held.
     """
 
     def measure(
@@ -44,14 +45,16 @@ class PortfolioFit:
         symbol: str,
         portfolio: PortfolioSnapshot,
         policy: InvestmentPolicy,
+        asset_class: AssetClass | None = None,
     ) -> int | None:
-        """Fit as a 0-100 score, or None when neither term can be measured."""
+        """Fit as a 0-100 score, or None when no term can be measured."""
 
         rooms = [
             room
             for room in (
                 self._funding_room(portfolio, policy),
                 self._concentration_room(symbol, portfolio, policy),
+                self._asset_class_room(asset_class, portfolio, policy),
             )
             if room is not None
         ]
@@ -76,6 +79,27 @@ class PortfolioFit:
         spare = portfolio.allocation.cash - target
 
         return max(0.0, min(spare / (100.0 - target), 1.0))
+
+    @staticmethod
+    def _asset_class_room(
+        asset_class: AssetClass | None,
+        portfolio: PortfolioSnapshot,
+        policy: InvestmentPolicy,
+    ) -> float | None:
+        """How much of the policy's ceiling for this asset class is left."""
+
+        if asset_class is not AssetClass.CRYPTO:
+            # Crypto is the only class the policy puts a ceiling on. The
+            # others have targets, and a target is something to rebalance
+            # towards rather than a limit a new position can breach.
+            return None
+
+        limit = policy.constraints.max_crypto
+
+        if limit <= 0 or portfolio.allocation.unclassified > 0:
+            return None
+
+        return max(0.0, min((limit - portfolio.allocation.crypto) / limit, 1.0))
 
     @staticmethod
     def _concentration_room(
