@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 430 passing |
+| Pytest | 🟢 434 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,17 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- A question that does not apply is no longer reported as a measurement
+  that has not arrived. "Business quality has not been measured" promised
+  a later cycle would close the gap; for a cryptocurrency none ever will.
+  BTC now reads "A cryptocurrency has no business quality or valuation to
+  assess, and this platform judges an investment case on both", and its
+  missing evidence says it has no earnings to be valued against rather
+  than that valuation data is unavailable. The gates are unchanged and
+  nothing became recommendable. An asset the platform could not classify
+  is still told its data is pending, because "not known to have a company"
+  is not "known to have none"
 
 - The brief reports the decision's own conviction. It carried only how far
   the committees agreed, printed as "Conviction", so a RECOMMEND could
@@ -215,9 +226,10 @@ Named rather than hidden. None of these are estimated away in the product.
 - Research covers a capped number of candidates per cycle, because
   fundamentals are uncached and the provider rate-limits. The page reports
   how many it could not reach
-- A crypto case cannot progress past INVESTIGATE. The quality gate asks how
-  good the business is, and a token has no business, so the answer is
-  honestly absent and the gate honestly refuses. The gate is company-shaped
+- A crypto case cannot progress past INVESTIGATE, and now says why: the
+  platform judges a case on business quality and valuation, and a token has
+  neither. That is a limit of this platform, stated as one. Assessing crypto
+  properly needs token fundamentals no provider here supplies
 
 ## Reasoning
 

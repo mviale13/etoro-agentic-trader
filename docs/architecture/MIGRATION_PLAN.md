@@ -246,8 +246,12 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [ ] `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are
       reported unpriceable rather than guessed at under a disambiguated
       ticker
-- [ ] A crypto case cannot progress past INVESTIGATE: the quality gate asks
-      about a business, and a token has none. The gate is company-shaped
+- [x] A crypto case says why it cannot progress: the platform judges on
+      business quality and valuation, which a token has neither of. Stated
+      as this platform's limit, with the gates unchanged
+- [ ] Assessing crypto on its own terms needs token fundamentals — supply,
+      network activity, realised cap — which no provider here supplies.
+      Until then a crypto case stops at INVESTIGATE by design
 - [ ] Holdings absent from every watchlist cannot be named or analysed
 - [ ] Research still evidences a capped number of candidates per cycle. With
       the cache warm the cap could rise substantially; the first cycle of a

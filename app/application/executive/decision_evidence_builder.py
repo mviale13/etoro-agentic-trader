@@ -94,11 +94,13 @@ class DecisionEvidenceBuilder:
         # OpportunityAnalyst's number described only the account, so it was
         # the same for every candidate and could never say whether one of
         # them fitted better than another.
+        asset_class = self._asset_class(brain, symbol)
+
         portfolio_fit = self.portfolio_fit.measure(
             symbol,
             brain.portfolio,
             brain.investment_policy,
-            self._asset_class(brain, symbol),
+            asset_class,
         )
 
         # Everything read about this security, each finding carrying the
@@ -149,6 +151,7 @@ class DecisionEvidenceBuilder:
             valuation_score=valuation,
             risk_score=self._risk_score(company),
             portfolio_fit_score=portfolio_fit,
+            asset_class=asset_class,
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
             analyst_veto=company is not None and company.recommendation == "SELL",
@@ -156,7 +159,7 @@ class DecisionEvidenceBuilder:
             strengths=strengths,
             risks=risks,
             context_risks=context_risks,
-            missing_evidence=self._missing_evidence(company, symbol),
+            missing_evidence=self._missing_evidence(company, symbol, asset_class),
             catalysts=catalysts,
         )
 
@@ -293,17 +296,39 @@ class DecisionEvidenceBuilder:
     def _missing_evidence(
         company: CompanyRecommendation | None,
         symbol: str,
+        asset_class: AssetClass | None = None,
     ) -> tuple[str, ...]:
+        """
+        What this case is short of, and whether it can ever be supplied.
+
+        "Valuation data is unavailable" reads as a gap a later cycle might
+        close. For an asset with no company behind it there is nothing to
+        become available, and saying otherwise sends the investor back to
+        wait for evidence that does not exist.
+        """
+
         if company is None:
             return (f"No security-level analysis is available for {symbol}.",)
 
         missing: list[str] = []
 
+        # Only an asset positively known to have no company is told so.
+        # An unclassified one is short of data, which may yet arrive.
+        has_company = asset_class is None or not asset_class.has_no_company
+
         if company.signals.value.valuation == "UNKNOWN":
-            missing.append(f"Valuation data is unavailable for {symbol}.")
+            missing.append(
+                f"Valuation data is unavailable for {symbol}."
+                if has_company
+                else f"{symbol} has no earnings to be valued against."
+            )
 
         if company.signals.quality.quality == "UNKNOWN":
-            missing.append(f"Quality data is unavailable for {symbol}.")
+            missing.append(
+                f"Quality data is unavailable for {symbol}."
+                if has_company
+                else f"{symbol} has no business whose quality could be assessed."
+            )
 
         if company.signals.risk is None or company.signals.risk.level == "UNKNOWN":
             missing.append(f"Price history for {symbol} is too short to measure risk.")

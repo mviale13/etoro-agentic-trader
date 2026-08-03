@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.cio.decision_state import DecisionState
+from app.domain.asset_class import AssetClass
 
 
 class DecisionEvidence(BaseModel):
@@ -31,6 +32,11 @@ class DecisionEvidence(BaseModel):
     #: investor's own policy. None when the policy states no limit this
     #: could be measured against.
     portfolio_fit_score: int | None = Field(default=None, ge=0, le=100)
+
+    #: What kind of asset this is. The Artificial CIO needs it to tell a
+    #: measurement that has not arrived from a question that does not
+    #: apply: a token has no business quality, and never will.
+    asset_class: AssetClass | None = None
 
     actionable_now: bool = False
     hard_reject: bool = False

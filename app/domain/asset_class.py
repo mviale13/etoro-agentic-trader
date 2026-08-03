@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class AssetClass(Enum):
+class AssetClass(StrEnum):
     """
     The kind of asset an instrument represents.
 
@@ -38,6 +38,25 @@ class AssetClass(Enum):
 
         return self in (AssetClass.STOCK, AssetClass.ETF)
 
+    @property
+    def has_no_company(self) -> bool:
+        """
+        Positively known to have no business behind it.
+
+        Deliberately not `not has_company_fundamentals`. An instrument this
+        platform could not classify is UNKNOWN, and saying an unknown thing
+        has no business would be asserting something nobody established —
+        the same substitution the rest of the decision path stopped making.
+        """
+
+        return self in (AssetClass.CRYPTO, AssetClass.COMMODITY)
+
+    @property
+    def noun(self) -> str:
+        """How to name this to the investor, in a sentence."""
+
+        return _NOUNS.get(self, "security")
+
 
 #: eToro's asset type ids, as observed in the investor's own watchlists.
 #:
@@ -49,4 +68,13 @@ _ETORO_ASSET_TYPES: dict[int, AssetClass] = {
     5: AssetClass.STOCK,
     6: AssetClass.ETF,
     10: AssetClass.CRYPTO,
+}
+
+
+#: Names that read as English rather than as an enum value.
+_NOUNS = {
+    AssetClass.STOCK: "company",
+    AssetClass.ETF: "fund",
+    AssetClass.CRYPTO: "cryptocurrency",
+    AssetClass.COMMODITY: "commodity",
 }

@@ -126,10 +126,7 @@ class ArtificialCIO:
         if evidence.quality_score is None:
             return (
                 DecisionState.INVESTIGATE,
-                (
-                    "Business quality has not been measured, so the case "
-                    "cannot progress beyond research."
-                ),
+                self._unassessable_quality(evidence),
             )
 
         if (
@@ -222,6 +219,35 @@ class ArtificialCIO:
                 "The investment case satisfies quality, evidence, "
                 "valuation, risk, and portfolio gates."
             ),
+        )
+
+    @staticmethod
+    def _unassessable_quality(
+        evidence: DecisionEvidence,
+    ) -> str:
+        """
+        Why quality is missing: not yet read, or not a question that applies.
+
+        "Business quality has not been measured" promises a measurement that
+        is coming. For a cryptocurrency none is: there is no business to
+        assess and no earnings to price it against, so the case would sit at
+        INVESTIGATE forever while the wording implied otherwise. The limit
+        is this platform's, and it is stated as this platform's.
+        """
+
+        asset_class = evidence.asset_class
+
+        if asset_class is not None and asset_class.has_no_company:
+            return (
+                f"A {asset_class.noun} has no business quality or valuation to "
+                "assess, and this platform judges an investment case on "
+                "both. Its measured risk and portfolio fit are reported, "
+                "but no recommendation rests on them alone."
+            )
+
+        return (
+            "Business quality has not been measured, so the case cannot "
+            "progress beyond research."
         )
 
     @staticmethod
