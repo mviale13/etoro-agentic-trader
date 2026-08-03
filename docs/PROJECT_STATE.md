@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 463 passing |
+| Pytest | 🟢 472 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,15 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- The platform knows what its own key can do. `movrvest credentials`
+  reads `GET /api/v1/me`: 26 scopes granted, 10 of them writes, including
+  `etoro-public:trade.real:write`. Nothing in MOVRvest calls a
+  state-changing route, but the permission exists and is now stated every
+  time rather than assumed away. Capability is read off the `:write`
+  suffix, not off a list of documented scope names — the published names
+  differ from the live ones, and matching the list reported a key that can
+  place real orders as read-only
 
 - Every eToro request goes through one door, and every response is kept.
   `EtoroClient` owns the credentials, reads the published allowance off

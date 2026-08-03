@@ -7,6 +7,7 @@ from app.commands import (
     brain,
     committee,
     company,
+    credentials,
     daily,
     decision,
     doctor,
@@ -71,6 +72,10 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "brain": (
         "Run the complete MOVRvest Artificial CIO pipeline",
         brain.run,
+    ),
+    "credentials": (
+        "Show what the configured eToro credentials can reach",
+        credentials.run,
     ),
 }
 
