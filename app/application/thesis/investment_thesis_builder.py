@@ -133,14 +133,18 @@ class InvestmentThesisBuilder:
     def _committee_confidence(
         committee_opinions: tuple[CommitteeOpinion, ...],
     ) -> float:
-        if not committee_opinions:
+        # Only committees that formed a view are averaged. One that could
+        # not counts as silence, not as opposition.
+        stated = [
+            opinion.confidence
+            for opinion in committee_opinions
+            if opinion.confidence is not None
+        ]
+
+        if not stated:
             return 0.0
 
-        confidence = sum(opinion.confidence for opinion in committee_opinions) / len(
-            committee_opinions
-        )
-
-        return max(0.0, min(1.0, confidence))
+        return max(0.0, min(1.0, sum(stated) / len(stated)))
 
     @staticmethod
     def _unique(

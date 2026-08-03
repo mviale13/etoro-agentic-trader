@@ -266,6 +266,14 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [ ] The executive brief carries committee agreement, not the decision's
       conviction. The console labels it honestly; the CIO's own conviction
       still does not reach `ExecutiveBrief` or `InvestmentThesis`
+- [x] `CommitteeOpinion.confidence` is `float | None`. A committee that
+      could not form a view is excluded from agreement rather than averaged
+      in as a zero, and confidence comes from the assessments' own
+      confidence rather than from how bullish the view is
+- [ ] `InvestmentCommittee` and `RiskCommittee` reason only about the
+      portfolio and the market. Their opinions are identical for every
+      symbol, so committee agreement says nothing about the security the
+      CIO is deciding on — the same defect `portfolio_fit_score` had
 - [ ] Signal evidence has no polarity, so favourable and adverse findings
       cannot be told apart. `InvestmentThesis.strengths` and `.risks`
 - [ ] Signal evidence has no polarity, so favourable and adverse findings

@@ -52,10 +52,15 @@ class InvestmentCommittee:
             *market.evidence,
         )
 
+        # The score decides what to recommend. It is not how sure the
+        # committee is of it: reporting the score as confidence meant a
+        # bearish view was, by construction, a tentative one, and a SELL
+        # could never be stated with conviction. Confidence comes from how
+        # well the assessments behind the view were evidenced.
         return CommitteeOpinion(
             committee="Investment Committee",
             recommendation=recommendation,
-            confidence=score,
+            confidence=(portfolio.confidence + market.confidence) / 2.0,
             summary=("Portfolio and market outlook evaluated."),
             evidence=evidence,
         )

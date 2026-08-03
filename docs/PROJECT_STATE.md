@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 409 passing |
+| Pytest | 🟢 412 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,17 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- A committee that cannot measure something is silent, not opposed. The
+  brief read "32%" beneath a RECOMMEND, and the reason was arithmetic
+  rather than dissent: portfolio risk is unmeasurable, the Risk Committee
+  correctly said so, and its 0.0 confidence was then averaged in as though
+  a committee had objected. It reports no opinion now, and agreement reads
+  94%. Confidence also stopped being the recommendation in disguise —
+  both committees derived it from how bullish they were, so a bearish view
+  was by construction a tentative one and a SELL could never be stated
+  with conviction. It now comes from how well the assessments behind it
+  were evidenced
 
 - Asking about a security now looks at it. `movrvest evaluate SYMBOL` and
   `GET /executive/{symbol}` built a Brain with no research budget, so with
@@ -181,6 +192,11 @@ Named rather than hidden. None of these are estimated away in the product.
   how far the committees agreed, which the console now labels as such. The
   CIO's own conviction stops at the decision and reaches the research page
   but not the brief
+
+- Both Executive Committees reason only about the portfolio and the market,
+  so their opinions are identical whichever security is being judged. They
+  can agree at 94% while the Artificial CIO recommends a security they
+  never looked at, because they are answering a different question
 
 - Signal findings carry no polarity, so favourable and adverse ones cannot
   be separated. An investment case therefore has no per-security strengths

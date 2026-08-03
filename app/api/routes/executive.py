@@ -33,14 +33,17 @@ def _committee_agreement(
 ) -> int:
     """Mean committee confidence, as a whole percentage."""
 
-    opinions = workspace.committee_opinions
+    # A committee that could not form a view is silent, not opposed.
+    stated = [
+        opinion.confidence
+        for opinion in workspace.committee_opinions
+        if opinion.confidence is not None
+    ]
 
-    if not opinions:
+    if not stated:
         return 0
 
-    mean = sum(opinion.confidence for opinion in opinions) / len(opinions)
-
-    return max(0, min(100, round(mean * 100)))
+    return max(0, min(100, round(sum(stated) / len(stated) * 100)))
 
 
 @router.get(

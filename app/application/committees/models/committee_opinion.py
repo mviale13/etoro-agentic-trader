@@ -29,8 +29,19 @@ class CommitteeOpinion:
 
     recommendation: Recommendation
 
-    confidence: float
+    #: How sure this committee is of its own view, given how well the
+    #: assessments behind it were evidenced.
+    #:
+    #: None when the committee could not form a view at all. That is not
+    #: the same as being unconvinced, and averaging it in as a zero said
+    #: the opposite: a portfolio whose risk could not be measured dragged
+    #: committee agreement down as though a committee had objected.
+    confidence: float | None
 
     summary: str
 
     evidence: tuple[Evidence, ...]
+
+    @property
+    def has_opinion(self) -> bool:
+        return self.confidence is not None
