@@ -42,11 +42,17 @@ class ResearchCandidateResponse(BaseModel):
     recommendation: str
     conviction: int
 
-    quality_score: int
-    valuation_score: int
-    risk_score: int
-    evidence_score: int
+    #: Null where the platform did not measure it. Never zero, never
+    #: substituted from something else.
+    quality_score: int | None = None
+    valuation_score: int | None = None
+
+    #: Risk and fit describe the account, not this company. They are equal
+    #: for every candidate by construction, and labelled as such.
+    portfolio_risk_score: int | None = None
     portfolio_fit_score: int
+
+    evidence_score: int
 
     #: The evidence lines the decision was weighed on, positive or not.
     #: They are reported as the CIO saw them, not filtered into a case.

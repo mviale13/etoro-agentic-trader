@@ -23,10 +23,17 @@ class RiskAnalyst:
         liquidity = self._liquidity_risk(portfolio)
         concentration = self._concentration_risk(portfolio)
 
-        market = 0.50
-        drawdown = 0.50
-
-        overall = (liquidity + concentration + market + drawdown) / 4.0
+        # Market risk and drawdown risk were 0.50 each — two constants that
+        # between them made up most of every risk score the investor saw.
+        # Nothing in the Brain measures either: market risk needs a
+        # volatility series, drawdown needs position history.
+        #
+        # Overall risk stays absent while any component is missing. Averaging
+        # the two that are measured would report "risk: 0" for an account
+        # whose market and drawdown exposure nobody has looked at — and a
+        # zero flatters the case, because the Artificial CIO scores low risk
+        # as conviction.
+        overall = None
 
         risk_factors: list[str] = []
         mitigants: list[str] = []
@@ -64,14 +71,18 @@ class RiskAnalyst:
 
         return RiskAssessment(
             overall_risk_score=overall,
-            market_risk_score=market,
+            market_risk_score=None,
             concentration_risk_score=concentration,
             liquidity_risk_score=liquidity,
-            drawdown_risk_score=drawdown,
+            drawdown_risk_score=None,
             confidence=0.80,
             risk_factors=tuple(risk_factors),
             mitigants=tuple(mitigants),
             evidence=tuple(evidence),
+            unmeasured=(
+                "Market risk is not measured.",
+                "Drawdown risk is not measured.",
+            ),
         )
 
     def _liquidity_risk(

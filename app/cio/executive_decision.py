@@ -6,16 +6,23 @@ from app.cio.decision_state import DecisionState
 
 
 class DecisionEvidence(BaseModel):
-    """Normalized evidence consumed by the Artificial CIO."""
+    """
+    Normalized evidence consumed by the Artificial CIO.
+
+    A score of None means the platform did not measure it. It never means
+    zero, and it is never filled in from something else: a gate that was not
+    measured cannot be cleared, so the investment case simply does not
+    progress past the point where that measurement is required.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     symbol: str = Field(min_length=1)
 
-    quality_score: int = Field(ge=0, le=100)
+    quality_score: int | None = Field(default=None, ge=0, le=100)
     evidence_score: int = Field(ge=0, le=100)
-    valuation_score: int = Field(ge=0, le=100)
-    risk_score: int = Field(ge=0, le=100)
+    valuation_score: int | None = Field(default=None, ge=0, le=100)
+    risk_score: int | None = Field(default=None, ge=0, le=100)
     portfolio_fit_score: int = Field(ge=0, le=100)
 
     actionable_now: bool = False

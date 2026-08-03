@@ -20,11 +20,23 @@ class RiskCommittee:
     ) -> CommitteeOpinion:
 
         risk = reasoning.risk
+        overall = risk.overall_risk_score
 
-        if risk.overall_risk_score >= 0.75:
+        if overall is None:
+            # Nothing measurable to hold an opinion about. Recommending HOLD
+            # here would read as "risk is acceptable", which is a claim.
+            return CommitteeOpinion(
+                committee="Risk Committee",
+                recommendation=Recommendation.HOLD,
+                confidence=0.0,
+                summary="Portfolio risk could not be measured.",
+                evidence=risk.evidence,
+            )
+
+        if overall >= 0.75:
             recommendation = Recommendation.SELL
 
-        elif risk.overall_risk_score >= 0.50:
+        elif overall >= 0.50:
             recommendation = Recommendation.REDUCE
 
         else:
@@ -33,7 +45,7 @@ class RiskCommittee:
         return CommitteeOpinion(
             committee="Risk Committee",
             recommendation=recommendation,
-            confidence=1.0 - risk.overall_risk_score,
+            confidence=1.0 - overall,
             summary="Portfolio risk evaluated.",
             evidence=risk.evidence,
         )

@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 360 passing |
+| Pytest | 🟢 373 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,13 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Absent evidence is absent everywhere in the decision path. An unknown
+  company quality no longer becomes the portfolio's health score, an
+  unknown valuation no longer becomes market momentum, and risk no longer
+  contains two hardcoded 0.50 constants that made up most of it. Scores
+  that were not measured are None, are excluded from conviction, and
+  cannot clear the gate they belong to
 
 - Evidence is cached and deterministic. Fundamentals are read once a day,
   quotes for 15 minutes, and a symbol the provider cannot price is
@@ -106,10 +113,6 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Evidence quality
 
-- When fundamentals are missing entirely, `DecisionEvidenceBuilder`
-  substitutes portfolio health for company quality and market momentum for
-  valuation. That is an estimate presented as a measurement, and it is the
-  next thing to fix
 - Cached evidence carries its true observation date, but no surface shows
   it: an investor cannot yet see that a company's fundamentals are a day old
 - Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
@@ -121,6 +124,11 @@ Named rather than hidden. None of these are estimated away in the product.
   scoring and the crypto policy limit
 
 ## Reasoning
+
+- **Nothing can reach RECOMMEND today.** Market risk needs a volatility
+  series and drawdown risk needs position history; neither is measured, so
+  overall risk is absent and the CIO will not recommend buying on it. This
+  is deliberate, and it is the single highest-value gap to close
 
 - `consistency_score` measures the investor's own consistency. The journal
   records what the CIO decided, not what the investor did about it, so the

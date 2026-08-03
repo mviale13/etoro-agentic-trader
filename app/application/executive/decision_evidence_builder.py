@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.application.brain.reasoning.models.risk_assessment import (
+    RiskAssessment,
+)
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
@@ -76,14 +79,14 @@ class DecisionEvidenceBuilder:
             None,
         )
 
-        quality = self._quality_score(company, portfolio.health_score)
+        quality = self._quality_score(company)
 
         evidence_score = self._evidence_score(
             company,
             (portfolio.confidence + market.confidence + risk.confidence) / 3.0,
         )
 
-        valuation = self._valuation_score(company, market.momentum_score)
+        valuation = self._valuation_score(company)
 
         # The OpportunityAnalyst already weighs diversification, policy
         # alignment and risk into a portfolio-fit score, so the CIO uses that
@@ -129,14 +132,18 @@ class DecisionEvidenceBuilder:
             quality_score=quality,
             evidence_score=evidence_score,
             valuation_score=valuation,
-            risk_score=int(risk.overall_risk_score * 100),
+            risk_score=(
+                None
+                if risk.overall_risk_score is None
+                else int(risk.overall_risk_score * 100)
+            ),
             portfolio_fit_score=portfolio_fit,
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
             analyst_veto=company is not None and company.recommendation == "SELL",
             strengths=strengths,
             risks=risks,
-            missing_evidence=self._missing_evidence(company, symbol),
+            missing_evidence=self._missing_evidence(company, symbol, risk),
             catalysts=catalysts,
         )
 
@@ -160,29 +167,37 @@ class DecisionEvidenceBuilder:
     def _quality_score(
         cls,
         company: CompanyRecommendation | None,
-        portfolio_health: float,
-    ) -> int:
-        if company is None:
-            return int(portfolio_health * 100)
+    ) -> int | None:
+        """
+        How good the business is, or nothing at all.
 
-        return cls.QUALITY_SCORES.get(
-            company.signals.quality.quality,
-            int(portfolio_health * 100),
-        )
+        This used to fall back to the portfolio's health score, so a company
+        nobody could describe was scored with a number measured from the
+        investor's account. Four unrelated companies would report the same
+        quality, and that number moved their ranking.
+        """
+
+        if company is None:
+            return None
+
+        return cls.QUALITY_SCORES.get(company.signals.quality.quality)
 
     @classmethod
     def _valuation_score(
         cls,
         company: CompanyRecommendation | None,
-        market_momentum: float,
-    ) -> int:
-        if company is None:
-            return int(market_momentum * 100)
+    ) -> int | None:
+        """
+        How attractive the price is, or nothing at all.
 
-        return cls.VALUATION_SCORES.get(
-            company.signals.value.valuation,
-            int(market_momentum * 100),
-        )
+        The fallback here was market momentum, which says nothing about
+        whether this company is cheap.
+        """
+
+        if company is None:
+            return None
+
+        return cls.VALUATION_SCORES.get(company.signals.value.valuation)
 
     @staticmethod
     def _evidence_score(
@@ -229,9 +244,13 @@ class DecisionEvidenceBuilder:
     def _missing_evidence(
         company: CompanyRecommendation | None,
         symbol: str,
+        risk: RiskAssessment,
     ) -> tuple[str, ...]:
         if company is None:
-            return (f"No security-level analysis is available for {symbol}.",)
+            return (
+                f"No security-level analysis is available for {symbol}.",
+                *risk.unmeasured,
+            )
 
         missing: list[str] = []
 
@@ -240,5 +259,7 @@ class DecisionEvidenceBuilder:
 
         if company.signals.quality.quality == "UNKNOWN":
             missing.append(f"Quality data is unavailable for {symbol}.")
+
+        missing.extend(risk.unmeasured)
 
         return tuple(missing)

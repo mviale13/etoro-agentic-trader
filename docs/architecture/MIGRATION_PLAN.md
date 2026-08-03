@@ -145,6 +145,35 @@ CompanyFactsService → CachedValueProvider  → fundamentals, once a day
 - Measured on the live account: a research cycle went from 50 provider calls
   and 9.0s to 0 calls and 2.2s, with identical decisions across runs
 
+## Absent evidence is absent in the decision path
+
+Three substitutions filled a missing measurement with a number measured
+about something else:
+
+| Missing | Was filled with | Now |
+|---|---|---|
+| Company quality | The portfolio's health score | Absent |
+| Company valuation | Market momentum | Absent |
+| Market and drawdown risk | `0.50` each, hardcoded | Absent, and named |
+
+Consequences, all deliberate:
+
+- `DecisionEvidence.quality_score`, `valuation_score` and `risk_score` are
+  `int | None`. None means not measured — never zero, never borrowed
+- An unmeasured score is not a reason to reject: not knowing something is
+  not the same as knowing it is bad. It is a reason not to progress, so
+  unmeasured quality caps the case at INVESTIGATE and unmeasured valuation
+  or risk caps it at PREPARE
+- Conviction averages only the scores that exist, so a gap is neither
+  counted as zero nor credited as full marks
+- Overall risk stays absent while any component is missing. Averaging the
+  measured half reported "risk: 0" for an account whose market and drawdown
+  exposure nobody had looked at — and because low risk is scored as
+  conviction, that zero pushed two candidates to RECOMMEND
+- The research page separates what was measured about the company from what
+  was measured about the account: "Your portfolio's risk" and "Fit with your
+  portfolio" no longer sit in the per-company row
+
 ## Deleted
 
 See the Removed table in `REPOSITORY_INVENTORY.md`.
@@ -155,10 +184,9 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Evidence quality
 
-- [ ] `DecisionEvidenceBuilder` substitutes portfolio health for an unknown
-      company quality, and market momentum for an unknown valuation. Absent
-      evidence must be absent, and the decision policy must treat an
-      unmeasured gate as unmet rather than passed
+- [ ] Market risk and drawdown risk are not measured, so no investment case
+      can reach RECOMMEND. Market risk needs a volatility series; drawdown
+      needs position history. Highest-value gap in the product
 - [ ] Cached evidence knows its true age; no surface reports it yet
 - [ ] Crypto tickers do not resolve (`SOL` needs `SOL-USD`)
 - [ ] Holdings absent from every watchlist cannot be named or analysed

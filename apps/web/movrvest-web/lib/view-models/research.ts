@@ -30,10 +30,13 @@ export interface ResearchCandidateViewModel {
   recommendation: string;
   conviction: number;
 
-  qualityScore: number;
-  valuationScore: number;
-  riskScore: number;
+  /** Null where the platform did not measure it. Never zero. */
+  qualityScore: number | null;
+  valuationScore: number | null;
   evidenceScore: number;
+
+  /** These describe the account, not the company. Equal for every row. */
+  portfolioRiskScore: number | null;
   portfolioFitScore: number;
 
   /** Evidence behind the decision, as weighed — not curated into a case. */

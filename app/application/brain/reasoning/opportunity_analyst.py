@@ -34,15 +34,23 @@ class OpportunityAnalyst:
 
         timing = (market.momentum_score + (1.0 - market.volatility_score)) / 2.0
 
-        portfolio_fit = (
-            portfolio.diversification_score
-            + behavior.policy_alignment_score
-            + (1.0 - risk.overall_risk_score)
-        ) / 3.0
+        # Portfolio fit averages the terms that were measured. When risk
+        # could not be measured its term is left out rather than assumed
+        # benign, which averaging in a zero would quietly do.
+        fit_terms = [
+            portfolio.diversification_score,
+            behavior.policy_alignment_score,
+        ]
+
+        if risk.overall_risk_score is not None:
+            fit_terms.append(1.0 - risk.overall_risk_score)
+
+        portfolio_fit = sum(fit_terms) / len(fit_terms)
 
         opportunity = expected_upside * 0.40 + timing * 0.30 + portfolio_fit * 0.30
 
-        opportunity *= 1.0 - risk.overall_risk_score * 0.25
+        if risk.overall_risk_score is not None:
+            opportunity *= 1.0 - risk.overall_risk_score * 0.25
 
         opportunity = max(0.0, min(opportunity, 1.0))
 
@@ -66,7 +74,7 @@ class OpportunityAnalyst:
         if behavior.policy_alignment_score > 0.80:
             opportunities.append("Portfolio aligns with investment policy")
 
-        if risk.overall_risk_score > 0.60:
+        if risk.overall_risk_score is not None and risk.overall_risk_score > 0.60:
             constraints.append("Elevated portfolio risk")
 
         if market.volatility_score > 0.70:
@@ -84,6 +92,8 @@ class OpportunityAnalyst:
             Evidence(
                 description=(
                     f"Overall portfolio risk score is {risk.overall_risk_score:.2f}."
+                    if risk.overall_risk_score is not None
+                    else "Portfolio risk could not be measured."
                 ),
                 source="RiskAssessment",
                 strength=risk.confidence,

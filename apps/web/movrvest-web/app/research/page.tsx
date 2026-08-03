@@ -44,6 +44,27 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * A score the Artificial CIO may not have been able to measure.
+ *
+ * An unmeasured score says so. It is never rendered as a zero, and never
+ * filled in from a number measured about something else.
+ */
+function Score({ label, value }: { label: string; value: number | null }) {
+  if (value === null) {
+    return (
+      <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-4">
+        <span className="block text-xs text-neutral-500">{label}</span>
+        <strong className="mt-2 block font-serif text-base font-normal italic text-neutral-400">
+          Not measured
+        </strong>
+      </div>
+    );
+  }
+
+  return <Metric label={label} value={String(value)} />;
+}
+
 function ReasonList({
   title,
   reasons,
@@ -232,13 +253,22 @@ function CandidateCard({
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <Metric label="Quality" value={String(candidate.qualityScore)} />
-            <Metric label="Valuation" value={String(candidate.valuationScore)} />
-            <Metric label="Risk" value={String(candidate.riskScore)} />
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <Score label="Quality" value={candidate.qualityScore} />
+            <Score label="Valuation" value={candidate.valuationScore} />
             <Metric label="Evidence" value={String(candidate.evidenceScore)} />
+          </div>
+
+          {/* Risk and fit are measured about the account, not this company,
+              so they are labelled as such and kept out of the per-company
+              row above, where they read as properties of the business. */}
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <Score
+              label="Your portfolio's risk"
+              value={candidate.portfolioRiskScore}
+            />
             <Metric
-              label="Portfolio fit"
+              label="Fit with your portfolio"
               value={String(candidate.portfolioFitScore)}
             />
           </div>

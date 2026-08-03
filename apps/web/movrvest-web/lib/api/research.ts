@@ -51,6 +51,15 @@ function optionalString(value: unknown, field: string): string | null {
   return text.trim().length === 0 ? null : text;
 }
 
+/** An absent measurement stays absent; it is never read as a zero. */
+function optionalNumber(value: unknown, field: string): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return requireNumber(value, field);
+}
+
 function stringList(value: unknown): readonly string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string")
@@ -91,13 +100,16 @@ function parseCandidate(
     source: requireString(payload.source, at("source")),
     recommendation: requireString(payload.recommendation, at("recommendation")),
     conviction: requireNumber(payload.conviction, at("conviction")),
-    qualityScore: requireNumber(payload.quality_score, at("quality_score")),
-    valuationScore: requireNumber(
+    qualityScore: optionalNumber(payload.quality_score, at("quality_score")),
+    valuationScore: optionalNumber(
       payload.valuation_score,
       at("valuation_score"),
     ),
-    riskScore: requireNumber(payload.risk_score, at("risk_score")),
     evidenceScore: requireNumber(payload.evidence_score, at("evidence_score")),
+    portfolioRiskScore: optionalNumber(
+      payload.portfolio_risk_score,
+      at("portfolio_risk_score"),
+    ),
     portfolioFitScore: requireNumber(
       payload.portfolio_fit_score,
       at("portfolio_fit_score"),

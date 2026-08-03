@@ -89,7 +89,11 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
                 recommendation=decision.state.value,
                 conviction=decision.conviction,
                 committee_agreement=_committee_agreement(workspace),
-                risk_level=reasoning.risk.risk_level.value,
+                risk_level=(
+                    reasoning.risk.risk_level.value
+                    if reasoning.risk.risk_level is not None
+                    else "Not measured"
+                ),
                 summary=thesis.summary,
                 why_now=list(thesis.catalysts),
                 risks=list(thesis.risks),
