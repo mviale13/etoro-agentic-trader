@@ -307,7 +307,7 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 ## Structure
 
-- [ ] `app/services` (~69 modules) still mixes load-bearing and incidental
+- [ ] `app/services` (66 modules) still mixes load-bearing and incidental
       code
 - [ ] Analysts accept `Brain | BrainContext`; narrowing them retires the
       legacy `BrainContext`

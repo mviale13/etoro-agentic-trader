@@ -21,3 +21,10 @@ data/evidence/
 
 # Cached provider evidence — re-fetchable, never source of truth
 data/cache/
+
+# The Artificial CIO's decision journal. Written every cycle, and the
+# memory it feeds belongs to the machine that made those decisions — a
+# fresh clone has no history and honestly says so rather than replaying
+# someone else's. Tracking it also put this directory in the path of
+# iCloud's conflict copies, twice.
+data/events/

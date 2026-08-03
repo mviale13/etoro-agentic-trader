@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 434 passing |
+| Pytest | 🟢 430 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,17 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Housekeeping. Three iCloud conflict copies were tracked despite the
+  `.gitignore` rule that covers them; both event copies were strict
+  subsets of their base, so nothing was lost. Two pre-refactor `.tsx`
+  backups, and a dead cluster of seven modules — `OpportunityScoringService`
+  with its hardcoded quality of 70 and valuation of 70, `PolicyAssessmentService`,
+  `OpportunityFactsService` and their domain models — imported by nothing
+  but their own tests. The decision journal is no longer tracked: it is
+  written every cycle, its memory belongs to the machine that made those
+  decisions, and tracking it is what put `data/events/` in the path of
+  iCloud's conflict copies twice. The files stay on disk
 
 - A question that does not apply is no longer reported as a measurement
   that has not arrived. "Business quality has not been measured" promised
