@@ -1,5 +1,4 @@
 import asyncio
-from datetime import UTC, datetime
 from typing import Protocol
 
 from app.domain.asset_class import AssetClass
@@ -75,10 +74,11 @@ class CompanyFactsService:
             name=item.name,
             asset_type=asset_class.value,
             exchange=str(item.exchange_id),
-            # The oldest reading in here, so nothing is dated fresher than
-            # the evidence actually is. A security with no fundamentals to
-            # read has only its quote, which is never served stale.
-            observed_at=valuation.observed_at or datetime.now(UTC),
+            # Each half dated by the call that produced it. These are two
+            # requests to one provider and they age separately: a quote is
+            # good for fifteen minutes, fundamentals for a day.
+            price_reading=quote.reading if quote is not None else None,
+            fundamentals_reading=valuation.reading,
             # Market
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),

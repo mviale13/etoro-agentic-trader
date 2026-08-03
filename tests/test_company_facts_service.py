@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from app.domain.company_facts import CompanyFacts
 from app.domain.finding import statements
 from app.domain.market_snapshot import MarketQuote
+from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.yahoo_market_provider import YahooInstrument
@@ -46,7 +47,11 @@ def make_snapshot(
         dividend_yield=0.012,
         market_cap=3_000_000_000_000.0,
         eps=12.5,
-        observed_at=observed_at,
+        reading=(
+            Provenance(source="Yahoo Finance", observed_at=observed_at)
+            if observed_at is not None
+            else None
+        ),
     )
 
 

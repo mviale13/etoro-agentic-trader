@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from math import isfinite, sqrt
 from typing import Any
 
@@ -9,6 +10,7 @@ import yfinance as yf
 
 from app.domain.asset_class import AssetClass
 from app.domain.market_snapshot import MarketData, MarketQuote
+from app.domain.provenance import Provenance
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,6 +93,9 @@ class YahooMarketProvider:
             name="US 10-Year Treasury Yield",
         ),
     )
+
+    #: Named as the investor would see it, because it is printed to them.
+    SOURCE = "Yahoo Finance"
 
     VIX_SYMBOL = "^VIX"
 
@@ -219,6 +224,10 @@ class YahooMarketProvider:
             currency="USD",
             realized_volatility=YahooMarketProvider._realized_volatility(closes),
             max_drawdown=YahooMarketProvider._max_drawdown(closes),
+            reading=Provenance(
+                source=YahooMarketProvider.SOURCE,
+                observed_at=datetime.now(UTC),
+            ),
         )
 
     @classmethod

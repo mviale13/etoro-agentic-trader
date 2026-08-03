@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.provenance import Provenance
+
 
 @dataclass(frozen=True)
 class ValuationSnapshot:
-    """What the fundamentals provider reports about one company.
+    """What the fundamentals provider reports about one security.
 
-    `observed_at` is when the data was actually read from the provider, not
-    when it was served. A snapshot replayed from cache keeps its original
-    observation time, so nothing downstream can mistake yesterday's
-    fundamentals for today's.
+    `reading` is when the data was actually read, and from where. A
+    snapshot replayed from cache keeps its original observation time, so
+    nothing downstream can mistake yesterday's fundamentals for today's.
     """
 
     forward_pe: float | None
@@ -27,4 +28,10 @@ class ValuationSnapshot:
     volume_24h: float | None = None
     inception: datetime | None = None
 
-    observed_at: datetime | None = None
+    reading: Provenance | None = None
+
+    @property
+    def observed_at(self) -> datetime | None:
+        """When this was read, if it says."""
+
+        return self.reading.observed_at if self.reading is not None else None

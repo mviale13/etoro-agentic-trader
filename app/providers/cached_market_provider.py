@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from app.domain.market_snapshot import MarketData, MarketQuote
+from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import JsonCache
 from app.providers.yahoo_market_provider import (
     YahooInstrument,
@@ -161,6 +162,14 @@ class CachedMarketProvider:
             "currency": quote.currency,
             "realized_volatility": quote.realized_volatility,
             "max_drawdown": quote.max_drawdown,
+            # The time the price was taken, not the time it was written.
+            # A replayed quote that redated itself would report a
+            # fifteen-minute-old price as current, which is the thing this
+            # cache exists to avoid doing quietly.
+            "source": quote.reading.source if quote.reading else None,
+            "observed_at": (
+                quote.reading.observed_at.isoformat() if quote.reading else None
+            ),
         }
 
     @staticmethod
@@ -190,4 +199,23 @@ class CachedMarketProvider:
             currency=str(value.get("currency", "USD")),
             realized_volatility=ratio("realized_volatility"),
             max_drawdown=ratio("max_drawdown"),
+            reading=CachedMarketProvider._reading(value),
         )
+
+    @staticmethod
+    def _reading(
+        value: dict[str, object],
+    ) -> Provenance | None:
+        source = value.get("source")
+        observed_at = value.get("observed_at")
+
+        if not isinstance(source, str) or not isinstance(observed_at, str):
+            return None
+
+        try:
+            return Provenance(
+                source=source,
+                observed_at=datetime.fromisoformat(observed_at),
+            )
+        except ValueError:
+            return None

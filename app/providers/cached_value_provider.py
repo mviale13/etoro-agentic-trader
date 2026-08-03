@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 from app.providers.value_provider import ValueProvider
@@ -65,7 +66,10 @@ class CachedValueProvider:
     def _encode(
         snapshot: ValuationSnapshot,
     ) -> dict[str, object]:
-        observed_at = snapshot.observed_at or datetime.now(UTC)
+        reading = snapshot.reading or Provenance(
+            source=ValueProvider.SOURCE,
+            observed_at=datetime.now(UTC),
+        )
 
         return {
             "forward_pe": snapshot.forward_pe,
@@ -82,7 +86,8 @@ class CachedValueProvider:
                 if snapshot.inception is not None
                 else None
             ),
-            "observed_at": observed_at.isoformat(),
+            "source": reading.source,
+            "observed_at": reading.observed_at.isoformat(),
         }
 
     @classmethod
@@ -107,6 +112,8 @@ class CachedValueProvider:
             except ValueError:
                 observed_at = entry.stored_at
 
+        source = value.get("source")
+
         return ValuationSnapshot(
             forward_pe=number("forward_pe"),
             trailing_pe=number("trailing_pe"),
@@ -118,7 +125,10 @@ class CachedValueProvider:
             max_supply=number("max_supply"),
             volume_24h=number("volume_24h"),
             inception=cls._timestamp(value.get("inception")),
-            observed_at=observed_at,
+            reading=Provenance(
+                source=source if isinstance(source, str) else ValueProvider.SOURCE,
+                observed_at=observed_at,
+            ),
         )
 
     @staticmethod

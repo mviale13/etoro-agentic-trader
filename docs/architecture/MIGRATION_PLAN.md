@@ -240,7 +240,16 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [x] Asset-class room is part of fit, for the one class the policy caps.
       Stock and ETF targets are targets to rebalance toward, not ceilings a
       new position can breach, so they are not scored as room
-- [ ] Cached evidence knows its true age; no surface reports it yet
+- [x] Every reading carries a `Provenance` — its source and the time it
+      was taken. A cached quote keeps the time the price was taken, not the
+      time it was served
+- [ ] No surface reports the age yet. Next: freshness enforced where a
+      reading is used, and stated on screen
+- [ ] eToro identity carries no reading, because the watchlist fetch
+      records no time. Plumbing that is the other half of two-source
+      provenance
+- [ ] A degraded source is not named. When Yahoo fundamentals fail the
+      case silently rests on a stale reading; it should say so
 - [x] Crypto tickers resolve. `AssetClass` classifies an eToro instrument,
       and a crypto one is priced as a pair
 - [ ] `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are

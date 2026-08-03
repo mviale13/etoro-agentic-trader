@@ -8,6 +8,7 @@ from app.domain.company_profile import (
     Sector,
 )
 from app.domain.company_research_context import CompanyResearchContext
+from app.domain.provenance import Provenance
 from app.domain.research_plan import AnalystKey, ResearchPlan
 from app.services.company_research_service import CompanyResearchService
 from app.services.research_strategy import ResearchStrategy
@@ -68,7 +69,10 @@ def make_company() -> CompanyFacts:
         daily_change_pct=0.01,
         market_cap=1_000_000_000.0,
         forward_pe=20.0,
-        observed_at=datetime.now(UTC),
+        fundamentals_reading=Provenance(
+            source="Yahoo Finance",
+            observed_at=datetime.now(UTC),
+        ),
     )
 
 

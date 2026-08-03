@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 444 passing |
+| Pytest | 🟢 451 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,16 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- Evidence knows where it came from and when. `MarketQuote` carried no
+  time at all, so a price replayed from a fifteen-minute cache was
+  indistinguishable from a live one, and `CompanyFacts.observed_at` was
+  the *fundamentals* date standing in for the whole object — one figure
+  describing a third of it and dating the rest by implication. `Provenance`
+  now travels with each reading, a cached quote keeps the time the price
+  was actually taken, and evidence dates itself to its stalest part rather
+  than its freshest. This is the foundation for stating and enforcing
+  reliability rather than asserting it
 
 - Crypto is assessed on what a token has. `CryptoQualitySignalService`
   measures network value, a day's turnover against it, how much of the
@@ -249,8 +259,10 @@ Named rather than hidden. None of these are estimated away in the product.
 
 ## Evidence quality
 
-- Cached evidence carries its true observation date, but no surface shows
-  it: an investor cannot yet see that a company's fundamentals are a day old
+- Every reading now carries its source and time, but no surface shows it
+  yet: an investor still cannot see that a price is fourteen minutes old
+- eToro identity carries no reading. The watchlist fetch records no time,
+  and inventing one would be the fabrication this model exists to prevent
 - `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are reported
   unpriceable rather than guessed at under a disambiguated ticker
 - A holding absent from every watchlist cannot be named or analysed

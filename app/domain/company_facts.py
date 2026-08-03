@@ -1,5 +1,7 @@
-from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from dataclasses import dataclass
+from datetime import datetime
+
+from app.domain.provenance import Provenance, oldest
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,8 +24,20 @@ class CompanyFacts:
     asset_type: str
     exchange: str
 
-    # Observation metadata
-    observed_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    # Where each part of this came from, and when.
+    #
+    # One date used to cover the lot, and it was the fundamentals' date.
+    # The price beside it could be fifteen minutes old and the identity
+    # beside that came from a different service entirely — so the single
+    # figure described one third of the object and dated the rest by
+    # implication.
+
+    #: The quote: price, day change, volatility, drawdown.
+    price_reading: Provenance | None = None
+
+    #: The fundamentals: valuation, size, earnings, supply.
+    fundamentals_reading: Provenance | None = None
+
     currency: str | None = None
 
     # Market
@@ -75,3 +89,16 @@ class CompanyFacts:
     # Company classification
     sector: str | None = None
     industry: str | None = None
+
+    @property
+    def observed_at(self) -> datetime | None:
+        """
+        The age this evidence can honestly claim: that of its stalest part.
+
+        None when nothing here carries a reading at all, which is not the
+        same as this being fresh.
+        """
+
+        reading = oldest(self.price_reading, self.fundamentals_reading)
+
+        return reading.observed_at if reading is not None else None

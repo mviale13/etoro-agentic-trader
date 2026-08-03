@@ -2,10 +2,13 @@ from datetime import UTC, datetime
 
 import yfinance as yf
 
+from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 
 
 class ValueProvider:
+    SOURCE = "Yahoo Finance"
+
     """
     Read the fundamentals a single provider call already returns.
 
@@ -31,7 +34,7 @@ class ValueProvider:
             max_supply=info.get("maxSupply"),
             volume_24h=info.get("volume24Hr", info.get("regularMarketVolume")),
             inception=self._inception(info.get("startDate")),
-            observed_at=datetime.now(UTC),
+            reading=Provenance(source=self.SOURCE, observed_at=datetime.now(UTC)),
         )
 
     @staticmethod

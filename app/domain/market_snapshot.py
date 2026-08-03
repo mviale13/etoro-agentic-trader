@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.provenance import Provenance
+
 
 @dataclass(frozen=True, slots=True)
 class MarketQuote:
@@ -17,6 +19,13 @@ class MarketQuote:
     #: Deepest peak-to-trough fall over the observed window, as a positive
     #: ratio (0.34 is a 34% fall). None when unmeasured.
     max_drawdown: float | None = None
+
+    #: When this price was read, and from where.
+    #:
+    #: A quote replayed from cache keeps the time it was actually taken. A
+    #: price is a claim about now, and without this a fifteen-minute-old
+    #: one was indistinguishable from a live one to everything downstream.
+    reading: Provenance | None = None
 
 
 @dataclass(frozen=True, slots=True)

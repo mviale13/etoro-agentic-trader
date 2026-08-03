@@ -2,12 +2,14 @@
 
 import asyncio
 import json
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 from app.domain.market_snapshot import MarketQuote
+from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import JsonCache
 from app.providers.cached_market_provider import CachedMarketProvider
@@ -27,7 +29,7 @@ class CountingValueProvider:
             dividend_yield=0.012,
             market_cap=3_000_000_000_000.0,
             eps=12.5,
-            observed_at=datetime.now(UTC),
+            reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
         )
 
     def snapshot(self, symbol: str) -> ValuationSnapshot:
@@ -80,7 +82,7 @@ def test_the_same_day_produces_the_same_evidence(tmp_path: Path) -> None:
             dividend_yield=0.0,
             market_cap=1.0,
             eps=-5.0,
-            observed_at=datetime.now(UTC),
+            reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
         )
     )
 
@@ -286,3 +288,42 @@ def test_the_market_index_is_read_once_too(tmp_path: Path) -> None:
     assert asyncio.run(cached.vix()) == 14.0
     assert asyncio.run(cached.vix()) == 14.0
     assert provider.vix_calls == 1
+
+
+def test_a_replayed_quote_keeps_the_time_the_price_was_taken(tmp_path) -> None:
+    """
+    Otherwise a fifteen-minute-old price reports itself as current.
+
+    The cache exists so the provider is not asked twice, and the whole
+    value of that is undone if the copy it serves looks freshly fetched.
+    """
+
+    taken_at = datetime.now(UTC) - timedelta(minutes=14)
+
+    class DatedProvider(CountingMarketProvider):
+        async def quotes(
+            self,
+            instruments: tuple[YahooInstrument, ...] | None = None,
+        ) -> tuple[MarketQuote, ...]:
+            fetched = await super().quotes(instruments)
+
+            return tuple(
+                replace(
+                    quote,
+                    reading=Provenance(source="Yahoo Finance", observed_at=taken_at),
+                )
+                for quote in fetched
+            )
+
+    provider = CachedMarketProvider(
+        provider=DatedProvider(),  # type: ignore[arg-type]
+        cache=JsonCache(str(tmp_path)),
+    )
+
+    live = asyncio.run(provider.quotes())
+    replayed = asyncio.run(provider.quotes())
+
+    assert live[0].reading is not None
+    assert replayed[0].reading is not None
+    assert replayed[0].reading.observed_at == taken_at
+    assert replayed[0].reading.source == "Yahoo Finance"
