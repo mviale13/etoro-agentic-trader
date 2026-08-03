@@ -124,6 +124,26 @@ def test_a_failing_provider_serves_the_last_real_reading(tmp_path: Path) -> None
     assert snapshot.observed_at is not None
     assert snapshot.observed_at.date() < datetime.now(UTC).date()
 
+    # And it is marked. Served under its own date alone it would be
+    # indistinguishable from a reading taken on schedule, which hides a
+    # provider outage behind a plausible-looking figure.
+    assert snapshot.reading is not None
+    assert snapshot.reading.last_known
+
+
+def test_a_reading_served_on_its_normal_cadence_is_not_marked(
+    tmp_path: Path,
+) -> None:
+    """Fundamentals are read once a day by design; that is not degradation."""
+
+    provider = make_value_provider(tmp_path, CountingValueProvider())
+
+    provider.snapshot("MSFT")
+    snapshot = provider.snapshot("MSFT")
+
+    assert snapshot.reading is not None
+    assert not snapshot.reading.last_known
+
 
 def test_a_failing_provider_with_nothing_remembered_still_fails(
     tmp_path: Path,

@@ -53,8 +53,12 @@ class CachedValueProvider:
             # would flip its evidence to "unknown" and, with it, the
             # decision — so the last real reading is served, still carrying
             # the date it was actually taken.
+            #
+            # And marked. Served under its own date it is indistinguishable
+            # from a reading taken on schedule, which would hide a provider
+            # outage behind a plausible-looking figure.
             if entry is not None:
-                return self._restore(entry)
+                return self._restore(entry, last_known=True)
 
             raise
 
@@ -94,6 +98,7 @@ class CachedValueProvider:
     def _restore(
         cls,
         entry: CachedEntry,
+        last_known: bool = False,
     ) -> ValuationSnapshot:
         value = entry.value
 
@@ -128,6 +133,7 @@ class CachedValueProvider:
             reading=Provenance(
                 source=source if isinstance(source, str) else ValueProvider.SOURCE,
                 observed_at=observed_at,
+                last_known=last_known,
             ),
         )
 

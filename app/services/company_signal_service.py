@@ -3,7 +3,7 @@ from typing import Protocol
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.company_signals import CompanySignals
-from app.domain.provenance import oldest
+from app.domain.provenance import least_reliable
 from app.domain.quality_signal import QualitySignal
 from app.domain.watchlist_item import WatchlistItem
 from app.services.company_facts_service import CompanyFactsService
@@ -43,7 +43,10 @@ class CompanySignalService:
             momentum=MomentumSignalService().build(facts),
             quality=self._quality(item, facts),
             risk=RiskSignalService().build(facts),
-            reading=oldest(facts.price_reading, facts.fundamentals_reading),
+            reading=least_reliable(
+                facts.price_reading,
+                facts.fundamentals_reading,
+            ),
         )
 
     @staticmethod

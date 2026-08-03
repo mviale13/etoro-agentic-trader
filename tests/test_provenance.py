@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, timedelta
 
 from app.domain.company_facts import CompanyFacts
-from app.domain.provenance import Provenance, oldest
+from app.domain.provenance import Provenance, least_reliable, oldest
 
 NOW = datetime(2026, 8, 3, 12, 0, tzinfo=UTC)
 
@@ -106,3 +106,66 @@ def test_an_age_is_stated_as_the_investor_should_read_it() -> None:
     assert reading("Yahoo Finance", 180).stated(NOW) == "Yahoo Finance, 3 hours ago"
     assert reading("eToro", 1_440).stated(NOW) == "eToro, yesterday"
     assert reading("eToro", 5_760).stated(NOW) == "eToro, 4 days ago"
+
+
+def test_a_source_that_did_not_answer_says_so() -> None:
+    """
+    Age alone cannot tell the two situations apart.
+
+    Fundamentals read yesterday on their daily cadence and fundamentals
+    read yesterday because the provider did not answer this morning carry
+    the same date and mean different things. The second is the platform
+    running on memory.
+    """
+
+    on_cadence = Provenance("Yahoo Finance", NOW - timedelta(days=1))
+    degraded = Provenance("Yahoo Finance", NOW - timedelta(days=1), last_known=True)
+
+    assert on_cadence.stated(NOW) == "Yahoo Finance, yesterday"
+    assert degraded.stated(NOW) == (
+        "Yahoo Finance did not answer — last reading, yesterday"
+    )
+
+
+def test_a_source_that_failed_outranks_mere_age() -> None:
+    """
+    The trap this walked into first.
+
+    A last-known reading keeps the time it was originally taken, so moments
+    after a failure it can be *newer* than a freshly fetched price beside
+    it. Picking the stalest reading dropped the flag exactly when it began
+    to matter — confirmed by running it, not by reasoning about it.
+    """
+
+    fresh_price = Provenance("Yahoo Finance", NOW - timedelta(minutes=20))
+    recent_but_degraded = Provenance(
+        "Yahoo Finance",
+        NOW - timedelta(minutes=14),
+        last_known=True,
+    )
+
+    assert oldest(fresh_price, recent_but_degraded) is fresh_price
+    assert least_reliable(fresh_price, recent_but_degraded) is recent_but_degraded
+
+
+def test_a_failed_source_is_never_relabelled_onto_another() -> None:
+    """
+    Stamping "did not answer" onto the stalest reading would attribute a
+    failure to whichever source happened to be oldest.
+    """
+
+    etoro = Provenance("eToro", NOW - timedelta(days=2))
+    yahoo = Provenance("Yahoo Finance", NOW - timedelta(minutes=1), last_known=True)
+
+    surfaced = least_reliable(etoro, yahoo)
+
+    assert surfaced is yahoo
+    assert surfaced is not None and surfaced.source == "Yahoo Finance"
+
+
+def test_nothing_is_flagged_when_every_source_answered() -> None:
+    fresh = Provenance("Yahoo Finance", NOW - timedelta(minutes=2))
+    older = Provenance("Yahoo Finance", NOW - timedelta(hours=3))
+
+    assert least_reliable(fresh, older) is older
+    assert least_reliable() is None

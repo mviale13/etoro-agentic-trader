@@ -251,8 +251,10 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [ ] eToro identity carries no reading, because the watchlist fetch
       records no time. Plumbing that is the other half of two-source
       provenance
-- [ ] A degraded source is not named. When Yahoo fundamentals fail the
-      case silently rests on a stale reading; it should say so
+- [x] A degraded source is named. `Provenance.last_known` marks a reading
+      served because its source failed, and `least_reliable` surfaces it
+      ahead of a merely older one — a last-known reading keeps its original
+      time, so it can be newer than the price beside it
 - [x] Crypto tickers resolve. `AssetClass` classifies an eToro instrument,
       and a crypto one is priced as a pair
 - [ ] `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are

@@ -27,6 +27,17 @@ class Provenance:
 
     observed_at: datetime
 
+    #: True when the source could not be reached and this is the most
+    #: recent reading there is.
+    #:
+    #: Age alone cannot tell these apart. Fundamentals read yesterday
+    #: because that is their cadence and fundamentals read yesterday
+    #: because the provider did not answer this morning are the same date
+    #: and a different situation — the second means the platform is
+    #: running on memory, and the investor should be told so rather than
+    #: discovering it.
+    last_known: bool = False
+
     def age(
         self,
         now: datetime | None = None,
@@ -62,6 +73,11 @@ class Provenance:
         else:
             when = f"{age.days} days ago"
 
+        # Not "unreachable since": all that is known is that the most
+        # recent attempt failed, not that every attempt between would have.
+        if self.last_known:
+            return f"{self.source} did not answer — last reading, {when}"
+
         return f"{self.source}, {when}"
 
     def is_older_than(
@@ -78,6 +94,34 @@ class Provenance:
         """
 
         return self.age(now) > limit
+
+
+def least_reliable(
+    *readings: Provenance | None,
+) -> Provenance | None:
+    """
+    The reading that most qualifies a conclusion drawn from all of them.
+
+    A source that did not answer outranks mere age. It is tempting to
+    assume the degraded reading is also the stalest and let `oldest` carry
+    it, and that is wrong: a last-known reading keeps the time it was
+    originally taken, so moments after a failure it can be *newer* than a
+    freshly fetched price sitting beside it. The flag would vanish exactly
+    when it started mattering.
+
+    Whichever reading is returned is returned intact, never relabelled —
+    stamping "did not answer" onto the stalest reading would attribute a
+    failure to whichever source happened to be oldest.
+    """
+
+    present = [item for item in readings if item is not None]
+
+    if not present:
+        return None
+
+    degraded = [item for item in present if item.last_known]
+
+    return min(degraded or present, key=lambda item: item.observed_at)
 
 
 def oldest(

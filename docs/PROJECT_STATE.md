@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 452 passing |
+| Pytest | 🟢 457 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -70,6 +70,13 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- A source that did not answer says so. `CachedValueProvider` serves the
+  last real reading when the provider fails — deliberate, and until now
+  indistinguishable from a reading taken on schedule, so a Yahoo outage
+  hid behind a plausible date. A degraded reading is marked and outranks
+  mere age when a case reports what it rests on: "Yahoo Finance did not
+  answer — last reading, 14 minutes ago"
 
 - The investor can see how old the evidence is. Provenance travels from
   the facts through the signals, the recommendation and the decision to
