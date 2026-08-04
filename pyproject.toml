@@ -17,6 +17,9 @@ dependencies = [
   "yfinance==1.5.2",
   "PyYAML==6.0.3",
   "rich==15.0.0",
+  # The home route renders a Jinja template at import time, so a fresh
+  # install that omits this cannot even construct the app.
+  "Jinja2==3.1.6",
 ]
 
 [project.scripts]
