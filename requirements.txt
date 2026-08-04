@@ -51,3 +51,8 @@ ruff==0.16.0
 mypy==1.18.1
 Jinja2==3.1.6
 pytest-cov==7.1.0
+# `app.services.policy_service` imports yaml, and `mypy app` runs strict,
+# so the stubs are a gate dependency, not an optional extra. They were
+# installed by hand on this machine and absent from a fresh checkout,
+# which is where a green tree here would have failed there.
+types-PyYAML==6.0.12.20260724
