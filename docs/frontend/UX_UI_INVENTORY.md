@@ -206,10 +206,23 @@ isolation via `git archive HEAD`:
   Inspection proved no caller to migrate: zero external references, no
   dynamic imports, no mounting route.
 
-Still open, in order: labeled Executive Workspace fallback (unresolved —
-revisit in the Overview contract slice), de-calculating the Overview
-(`riskLevel`/`diversification`/liquidity % to the backend), the real Dossier
-composed from canonical backend outputs (`ExecutiveDecision`,
-`InvestmentThesis`, `DecisionEvidence`, `CommitteeOpinion`, `Provenance` — no
-second frontend dossier model), then navigation reshape and the shared
-`DecisionCard`.
+- **Overview contract slice** (`86eb81c`, PR #9) — the first two-sided slice.
+  Backend: `app/renderers/brief_language.py` puts the brief's numbers into
+  words once (`health_label`, `conviction_label`, `urgency_band`); both
+  `/executive` routes serve `portfolio_health_label`, `urgency_band`,
+  `conviction_label`. Frontend: `riskLevel()`, `diversification()`,
+  `healthLabel()`, `convictionLevel()`, `urgencyBand()` and the liquidity
+  recompute deleted; the Risk row renders the Brain's own `risk.level`
+  ("Not measured" when null); "Diversification" became the measured
+  "Largest position"; labels are validated against the rendered vocabulary
+  and fail loudly on unknown words. The labeled demo fallback is resolved:
+  `lib/mocks/executive-workspace.ts` deleted, an unreachable backend renders
+  an explicit unavailable state with no figures at all. Verified live in
+  both states.
+
+Still open, in order: the real Dossier composed from canonical backend
+outputs (`ExecutiveDecision`, `InvestmentThesis`, `DecisionEvidence`,
+`CommitteeOpinion`, `Provenance` — no second frontend dossier model), then
+navigation reshape and the shared `DecisionCard`, then
+Portfolio/Research/Markets/Track Record per the mission's screen
+responsibilities.
