@@ -22,6 +22,11 @@ from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
 from app.renderers import ExecutiveBriefRenderer
+from app.renderers.brief_language import (
+    conviction_label,
+    health_label,
+    urgency_band,
+)
 from app.repositories.json_event_repository import JsonEventRepository
 
 router = APIRouter(
@@ -95,6 +100,7 @@ async def portfolio_briefing(
                 symbol=workspace.symbol,
                 recommendation=decision.state.value,
                 conviction=decision.conviction,
+                conviction_label=conviction_label(decision.conviction),
                 committee_agreement=_committee_agreement(workspace),
                 risk_level=(
                     reasoning.risk.risk_level.value
@@ -125,11 +131,13 @@ async def portfolio_briefing(
         summary=brief.summary,
         confidence=brief.confidence,
         portfolio_health=brief.portfolio_health,
+        portfolio_health_label=health_label(brief.portfolio_health),
         priorities=[
             ExecutivePriorityResponse(
                 title=priority.title,
                 description=priority.description,
                 urgency=priority.urgency,
+                urgency_band=urgency_band(priority.urgency),
             )
             for priority in brief.priorities
         ],
@@ -185,11 +193,13 @@ async def executive_brief(
         summary=view.summary,
         confidence=view.confidence,
         portfolio_health=view.portfolio_health,
+        portfolio_health_label=health_label(view.portfolio_health),
         priorities=[
             ExecutivePriorityResponse(
                 title=priority.title,
                 description=priority.description,
                 urgency=priority.urgency,
+                urgency_band=urgency_band(priority.urgency),
             )
             for priority in view.priorities
         ],
@@ -199,6 +209,7 @@ async def executive_brief(
                 recommendation=case.recommendation,
                 confidence=case.confidence,
                 conviction=case.conviction,
+                conviction_label=conviction_label(case.conviction),
                 summary=case.summary,
                 previous_decisions=case.previous_decisions,
             )

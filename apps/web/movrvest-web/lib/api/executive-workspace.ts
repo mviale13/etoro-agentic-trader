@@ -1,4 +1,3 @@
-import { executiveWorkspaceMock } from "@/lib/mocks/executive-workspace";
 import type {
   ChangeSeverity,
   ExecutiveBriefViewModel,
@@ -17,9 +16,14 @@ const BACKEND_URL =
   process.env.MOVRVEST_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
 
 export interface ExecutiveWorkspaceResult {
-  workspace: ExecutiveWorkspaceViewModel;
+  /**
+   * Null when the backend was unreachable. An unreachable backend means
+   * nothing is known about the account, and a demo workspace with plausible
+   * figures would read as a measurement — so nothing is what is shown.
+   */
+  workspace: ExecutiveWorkspaceViewModel | null;
   investmentCases: readonly RankedInvestmentCaseViewModel[];
-  source: "backend" | "fallback";
+  source: "backend" | "unavailable";
   backendUrl: string;
   error?: string;
 }
@@ -39,16 +43,29 @@ interface BrainPortfolioPayload {
   positions: number;
   pending_orders: number;
   unrealized_pnl_usd: number;
+  largest_position: string | null;
+  largest_position_pct: number | null;
+}
+
+/**
+ * The Brain's risk assessment, or null where none could be measured.
+ *
+ * The level is the backend's word, not a banding this dashboard performs.
+ */
+interface BrainRiskPayload {
+  level: string | null;
 }
 
 interface BrainPayload {
   portfolio: BrainPortfolioPayload;
+  risk: BrainRiskPayload | null;
 }
 
 interface PriorityPayload {
   title: string;
   description: string;
   urgency: number;
+  urgency_band: string;
 }
 
 interface RankedCasePayload {
@@ -56,6 +73,7 @@ interface RankedCasePayload {
   symbol: string;
   recommendation: string;
   conviction: number;
+  conviction_label: string;
   committee_agreement: number;
   risk_level: string;
   summary: string;
@@ -79,6 +97,7 @@ interface PortfolioBriefingPayload {
   summary: string;
   confidence: number | null;
   portfolio_health: number;
+  portfolio_health_label: string;
   priorities: readonly PriorityPayload[];
   investment_cases: readonly RankedCasePayload[];
   changes: readonly ChangePayload[];
@@ -139,7 +158,14 @@ function parseBrain(payload: unknown): BrainPayload {
     throw new Error("The /brain response has no portfolio object.");
   }
 
+  // Null when the Brain could not assess risk. The distinction between a
+  // low risk and an unmeasured one is kept, never papered over.
+  const risk = isRecord(payload.risk)
+    ? { level: optionalString(payload.risk.level, "risk.level") }
+    : null;
+
   return {
+    risk,
     portfolio: {
       total_value: requireNumber(portfolio.total_value, "portfolio.total_value"),
       available_cash_usd: requireNumber(
@@ -163,6 +189,11 @@ function parseBrain(payload: unknown): BrainPayload {
         portfolio.unrealized_pnl_usd,
         "portfolio.unrealized_pnl_usd",
       ),
+      largest_position: optionalString(
+        portfolio.largest_position,
+        "portfolio.largest_position",
+      ),
+      largest_position_pct: optionalNumber(portfolio.largest_position_pct),
     },
   };
 }
@@ -186,6 +217,10 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
       payload.portfolio_health,
       "portfolio_health",
     ),
+    portfolio_health_label: requireString(
+      payload.portfolio_health_label,
+      "portfolio_health_label",
+    ),
     priorities: priorities.filter(isRecord).map((priority, index) => ({
       title: requireString(priority.title, `priorities[${index}].title`),
       description: requireString(
@@ -193,6 +228,10 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         `priorities[${index}].description`,
       ),
       urgency: requireNumber(priority.urgency, `priorities[${index}].urgency`),
+      urgency_band: requireString(
+        priority.urgency_band,
+        `priorities[${index}].urgency_band`,
+      ),
     })),
     investment_cases: cases.filter(isRecord).map((item, index) => ({
       rank: requireNumber(item.rank, `investment_cases[${index}].rank`),
@@ -204,6 +243,10 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
       conviction: requireNumber(
         item.conviction,
         `investment_cases[${index}].conviction`,
+      ),
+      conviction_label: requireString(
+        item.conviction_label,
+        `investment_cases[${index}].conviction_label`,
       ),
       committee_agreement: requireNumber(
         item.committee_agreement,
@@ -243,11 +286,26 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
   };
 }
 
-function convictionLevel(conviction: number): ConvictionLevel {
-  if (conviction >= 85) return "Very High Conviction";
-  if (conviction >= 70) return "High Conviction";
-  if (conviction >= 50) return "Moderate Conviction";
-  return "Low Conviction";
+/**
+ * The backend's conviction wording, validated against the vocabulary this
+ * dashboard renders. An unknown label fails loudly instead of being guessed
+ * into a band the CIO never assigned.
+ */
+function parseConvictionLabel(value: string, field: string): ConvictionLevel {
+  const known: readonly ConvictionLevel[] = [
+    "Very High Conviction",
+    "High Conviction",
+    "Moderate Conviction",
+    "Low Conviction",
+  ];
+
+  const match = known.find((label) => label === value);
+
+  if (!match) {
+    throw new Error(`Unknown conviction label at "${field}": ${value}`);
+  }
+
+  return match;
 }
 
 function titleCase(value: string): string {
@@ -257,12 +315,15 @@ function titleCase(value: string): string {
 function mapInvestmentCases(
   briefing: PortfolioBriefingPayload,
 ): RankedInvestmentCaseViewModel[] {
-  return briefing.investment_cases.map((item) => ({
+  return briefing.investment_cases.map((item, index) => ({
     rank: item.rank,
     symbol: item.symbol,
     recommendation: item.recommendation,
     conviction: item.conviction,
-    convictionLevel: convictionLevel(item.conviction),
+    convictionLevel: parseConvictionLabel(
+      item.conviction_label,
+      `investment_cases[${index}].conviction_label`,
+    ),
     committeeAgreement: item.committee_agreement,
     riskLevel: titleCase(item.risk_level.replace(/_/g, " ")),
     summary: item.summary,
@@ -299,63 +360,45 @@ function mapChanges(
   }));
 }
 
-function healthLabel(score: number): string {
-  if (score >= 85) return "Healthy";
-  if (score >= 70) return "Stable";
-  if (score >= 50) return "Needs attention";
-  return "At risk";
-}
-
-function riskLevel(invested: number, equity: number): string {
-  if (equity <= 0 || invested <= 0) {
-    return "Low";
+/**
+ * The backend's urgency banding, validated against the queues this
+ * dashboard renders. An unknown band fails loudly instead of being guessed
+ * into an urgency the CIO never assigned.
+ */
+function parseUrgencyBand(value: string, field: string): PriorityUrgency {
+  if (value === "now" || value === "today" || value === "monitor") {
+    return value;
   }
 
-  const investedRatio = invested / equity;
-
-  if (investedRatio < 0.35) return "Low";
-  if (investedRatio < 0.75) return "Moderate";
-  return "Elevated";
-}
-
-function diversification(openPositions: number): string {
-  if (openPositions === 0) return "No active exposure";
-  if (openPositions < 4) return "Concentrated";
-  if (openPositions < 8) return "Moderate";
-  return "Good";
-}
-
-/** Presentation banding only — the backend owns the underlying score. */
-function urgencyBand(urgency: number): PriorityUrgency {
-  if (urgency >= 0.6) return "now";
-  if (urgency >= 0.3) return "today";
-  return "monitor";
+  throw new Error(`Unknown urgency band at "${field}": ${value}`);
 }
 
 function mapPortfolio(
   brain: BrainPayload,
   briefing: PortfolioBriefingPayload,
 ): PortfolioSnapshotViewModel {
-  const totalEquity = brain.portfolio.total_value;
-  const invested = brain.portfolio.invested_usd;
-  const openPositions = brain.portfolio.positions;
-
+  // Rounding a 0-1 score into "87 / 100" is formatting; the score and its
+  // word both arrive from the backend.
   const healthScore = Math.max(
     0,
     Math.min(100, Math.round(briefing.portfolio_health * 100)),
   );
 
   return {
-    totalEquity,
+    totalEquity: brain.portfolio.total_value,
     availableCash: brain.portfolio.available_cash_usd,
-    invested,
+    invested: brain.portfolio.invested_usd,
     unrealizedProfitLoss: brain.portfolio.unrealized_pnl_usd,
-    openPositions,
+    openPositions: brain.portfolio.positions,
     pendingOrders: brain.portfolio.pending_orders,
+    liquidityPct: brain.portfolio.liquidity_pct,
     healthScore,
-    healthLabel: healthLabel(healthScore),
-    riskLevel: riskLevel(invested, totalEquity),
-    diversification: diversification(openPositions),
+    healthLabel: briefing.portfolio_health_label,
+    // Null when the Brain could not assess risk — rendered as "Not
+    // measured", never defaulted to a reassuring "Low".
+    riskLevel: brain.risk?.level ?? null,
+    largestPositionSymbol: brain.portfolio.largest_position,
+    largestPositionPct: brain.portfolio.largest_position_pct,
   };
 }
 
@@ -364,7 +407,10 @@ function mapPriorities(
 ): ExecutivePriorityViewModel[] {
   return briefing.priorities.map((priority, index) => ({
     id: `${priority.title}-${index}`,
-    urgency: urgencyBand(priority.urgency),
+    urgency: parseUrgencyBand(
+      priority.urgency_band,
+      `priorities[${index}].urgency_band`,
+    ),
     title: priority.title,
     rationale: priority.description,
   }));
@@ -434,13 +480,13 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
       backendUrl: brainEndpoint,
     };
   } catch (error) {
+    // An unreachable backend means nothing is known about the account.
+    // Nothing is what is shown: no demo workspace, no demo cases. A
+    // plausible figure on an investment surface reads as a measurement.
     return {
-      workspace: executiveWorkspaceMock,
-      // No demo investment cases: an unreachable backend means we know
-      // nothing about the holdings, and inventing cases would be worse than
-      // showing none.
+      workspace: null,
       investmentCases: [],
-      source: "fallback",
+      source: "unavailable",
       backendUrl: brainEndpoint,
       error: error instanceof Error ? error.message : "Unknown backend error",
     };

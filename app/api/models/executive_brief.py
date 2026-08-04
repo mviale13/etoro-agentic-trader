@@ -6,6 +6,10 @@ class ExecutivePriorityResponse(BaseModel):
     description: str
     urgency: float
 
+    #: The urgency banded into an attention queue: "now", "today" or
+    #: "monitor". Worded by the backend so every surface says the same thing.
+    urgency_band: str
+
 
 class InvestmentCaseResponse(BaseModel):
     symbol: str
@@ -16,6 +20,10 @@ class InvestmentCaseResponse(BaseModel):
 
     #: The Artificial CIO's own conviction in this decision, 0-100.
     conviction: int = 0
+
+    #: The conviction put into words, e.g. "High Conviction". Worded by the
+    #: backend so no surface invents its own thresholds.
+    conviction_label: str = "Low Conviction"
 
     summary: str
 
@@ -30,5 +38,10 @@ class ExecutiveBriefResponse(BaseModel):
     summary: str
     confidence: float | None = None
     portfolio_health: float
+
+    #: The health score put into words, e.g. "Healthy". Worded by the
+    #: backend so no surface invents its own thresholds.
+    portfolio_health_label: str
+
     priorities: list[ExecutivePriorityResponse]
     investment_cases: list[InvestmentCaseResponse]

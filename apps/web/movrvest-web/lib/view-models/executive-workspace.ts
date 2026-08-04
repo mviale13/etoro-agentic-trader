@@ -9,10 +9,19 @@ export interface PortfolioSnapshotViewModel {
   openPositions: number;
   /** Null when the backend does not publish an order count. */
   pendingOrders: number | null;
+  /** Cash as a share of the account, measured by the backend. */
+  liquidityPct: number;
   healthScore: number;
+  /** The backend's word for the health score, e.g. "Healthy". */
   healthLabel: string;
-  riskLevel: string;
-  diversification: string;
+  /**
+   * The Brain's overall risk level, or null where none could be measured.
+   * Null is rendered as "Not measured", never as a reassuring default.
+   */
+  riskLevel: string | null;
+  /** The largest holding, or null when the account holds nothing. */
+  largestPositionSymbol: string | null;
+  largestPositionPct: number | null;
 }
 
 export interface ExecutiveChangeViewModel {
