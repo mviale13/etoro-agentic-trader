@@ -37,6 +37,10 @@ def make_market() -> MarketSnapshot:
                 name="Microsoft",
                 price=500.0,
                 change_percent=1.5,
+                # The year-long figure a real quote carries. Market
+                # confidence now measures how well evidenced the reading is,
+                # and a quote priced without its history is a bare price.
+                realized_volatility=0.18,
             ),
         ),
         market_mood="constructive",

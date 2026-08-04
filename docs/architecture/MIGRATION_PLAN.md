@@ -259,6 +259,15 @@ rather than to what the market did.
 *(Those figures are computed from this repository's own code, not observed
 against a live account.)*
 
+**Update (2026-08-04): the dispersion term is gone.**
+`MarketAssessment.confidence` now measures how well evidenced the reading is
+— how much of the panel priced, and how much of it carries the year-long
+`realized_volatility` — not cross-sectional dispersion. A flat market and one
+down 8% across the board now read the same confidence, because direction is
+the trend's and the regime's, not the reading's trustworthiness. It still
+reaches `evidence_score`, but as a reading's trustworthiness rather than as a
+market-direction term nobody chose.
+
 **Why no market score should be added on this evidence.**
 
 1. **It cannot separate one security from another.** Any market score is
@@ -274,7 +283,12 @@ against a live account.)*
    security is to the corner of the market that moved. Nothing measures
    that. `MarketBreadthService` classifies corners and `AssetClass`
    classifies securities, but sharing a label is not exposure — no beta, no
-   correlation, nothing regressed against anything.
+   correlation, nothing regressed against anything. **Update (2026-08-04):
+   now measured.** `market_sensitivity` regresses each security's year of
+   returns on the benchmark's for a beta and the correlation beside it, so
+   exposure is a number per security and reaches the CIO as evidence on the
+   security's `RiskSignal`. This removes the "cannot separate one security
+   from another" objection — the remaining blockers are the two below.
 3. **The evidence is one day deep.** Both scores come from a single day's
    change. The market archive has only just started recording, so there is
    no history to calibrate against yet — and note the analyst does not use
@@ -297,23 +311,29 @@ against a live account.)*
 
 **What has to exist first, in this order.**
 
-- [ ] Make `MarketAssessment.confidence` mean how well evidenced the market
-      reading is — or take it out of `evidence_score`. Today it measures
-      cross-sectional dispersion and quote count, and it is the only market
-      input that moves a gate. This is the first thing to fix, and it
-      changes live decisions, so it wants a live account to verify against
-- [ ] Measure a security's exposure to the market, from the year of daily
-      closes the quote request already fetches. Without it, no market
-      reading can be said to bear on one security more than another
+- [x] Make `MarketAssessment.confidence` mean how well evidenced the market
+      reading is. **Done (2026-08-04).** It measures panel breadth and how
+      much of it carries the year-long volatility figure, not cross-sectional
+      dispersion, so it no longer moves a gate by how uniformly the
+      instruments happened to move.
+- [x] Measure a security's exposure to the market, from the year of daily
+      closes the quote request already fetches. **Done (2026-08-04).**
+      `market_sensitivity` (beta and correlation against the benchmark) rides
+      `MarketQuote` to `CompanyFacts` and is reported on the security's
+      `RiskSignal`, so a market reading now bears on one security more than
+      another.
 - [ ] Accumulate market history, now that `MarketSnapshotArchive` records
       it, so a market reading can be placed against its own past rather
       than read as a single day
 - [ ] Score decisions against their outcomes, so any proposed threshold can
       be calibrated rather than asserted
 
-Until all four hold, the market stays what it honestly is: context stated
-beside the decision, and a movement reported in the change feed. It does
-not gate.
+Two of the four now hold. Until the remaining two do — market history deep
+enough to place a reading against its own past, and decisions scored against
+their outcomes so a threshold can be calibrated rather than asserted — the
+market stays what it honestly is: context stated beside the decision,
+per-security exposure weighed as evidence, and a movement reported in the
+change feed. It does not gate.
 
 ## Evidence quality
 

@@ -14,7 +14,7 @@ from app.application.brain.reasoning.models.market_assessment import (
 from app.brain import Brain
 from app.domain.brain_context import BrainContext
 from app.domain.market_context import MarketContext
-from app.domain.market_snapshot import MarketSnapshot
+from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 
 
 class MarketAnalyst(Analyst[MarketAssessment]):
@@ -25,6 +25,14 @@ class MarketAnalyst(Analyst[MarketAssessment]):
     may still expose MarketContext, so both representations are supported
     during the architecture migration.
     """
+
+    #: The market panel a full reading prices; see
+    #: `YahooMarketProvider.DEFAULT_INSTRUMENTS`. Confidence is measured
+    #: against it, so a reading assembled from three instruments that
+    #: answered is not trusted like one built on the whole panel. Kept in
+    #: step with that panel by hand — a reading is only ever as broad as
+    #: what MarketPerception actually prices.
+    EXPECTED_INSTRUMENTS = 9
 
     def assess(
         self,
@@ -54,11 +62,7 @@ class MarketAnalyst(Analyst[MarketAssessment]):
         trend = self._trend(momentum)
         regime = self._regime(momentum, volatility)
 
-        confidence = self._snapshot_confidence(
-            quote_count=len(changes),
-            momentum=momentum,
-            volatility=volatility,
-        )
+        confidence = self._snapshot_confidence(market.quotes)
 
         opportunities: list[str] = []
         risks: list[str] = []
@@ -218,18 +222,39 @@ class MarketAnalyst(Analyst[MarketAssessment]):
 
     def _snapshot_confidence(
         self,
-        *,
-        quote_count: int,
-        momentum: float,
-        volatility: float,
+        quotes: tuple[MarketQuote, ...],
     ) -> float:
-        sample_confidence = min(quote_count / 10.0, 1.0)
+        """
+        How well evidenced the market reading is — not which way it moved.
 
-        consistency = 1.0 - abs(abs(momentum - 0.5) * 2.0 - volatility)
+        A confidence restored to meaning what its name says. It used to move
+        with how *uniformly* the instruments happened to move on the day:
+        `1 − ||momentum − 0.5| × 2 − volatility|` is exactly 1 whenever they
+        all move together, so a flat market and one down 8% across the board
+        both read 0.94 — and that number is one third of a cognitive average
+        that gates real decisions. Direction is the market's, and it belongs
+        in the trend and the regime; how much to trust the reading is this,
+        and it must not rise or fall with where the market went.
 
-        confidence = sample_confidence * 0.60 + max(0.0, consistency) * 0.40
+        Two things make a reading well evidenced: how much of the panel
+        actually priced, and how much of what priced carries the year-long
+        volatility measurement rather than only the day's change. A reading
+        is at its strongest when the whole panel came back with its history,
+        and it falls where instruments went missing or arrived as a bare
+        price — which is the honest reason to trust one reading less than
+        another, unlike the dispersion it replaces.
+        """
 
-        return max(0.50, min(confidence, 1.0))
+        if not quotes:
+            return 0.0
+
+        priced = len(quotes)
+        measured = sum(1 for quote in quotes if quote.realized_volatility is not None)
+
+        breadth = min(priced / self.EXPECTED_INSTRUMENTS, 1.0)
+        depth = measured / priced
+
+        return round(breadth * 0.5 + depth * 0.5, 4)
 
     def _context_momentum_score(
         self,

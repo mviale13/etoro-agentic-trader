@@ -14,14 +14,18 @@ from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
 from app.brain import Brain, BrainBuilder
+from app.domain.company_facts import CompanyFacts
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_signals import CompanySignals
 from app.domain.finding import Finding
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.momentum_signal import MomentumSignal
 from app.domain.portfolio_position import PortfolioPosition
 from app.domain.quality_signal import QualitySignal
+from app.domain.risk_signal import RiskSignal
 from app.domain.value_signal import ValueSignal
 from app.domain.watchlist_item import WatchlistItem
+from app.services.risk_signal_service import RiskSignalService
 from tests.test_brain_context import (
     make_market,
     make_policy,
@@ -36,6 +40,7 @@ def make_company(
     quality: str = "HIGH",
     valuation: str = "CHEAP",
     trend: str = "BULLISH",
+    risk: RiskSignal | None = None,
 ) -> CompanyRecommendation:
     return CompanyRecommendation(
         symbol=symbol,
@@ -59,6 +64,7 @@ def make_company(
                 confidence=confidence,
                 evidence=(),
             ),
+            risk=risk,
         ),
         evidence=(Finding.neutral(f"{symbol} evidence."),),
     )
@@ -101,6 +107,41 @@ def build_evidence(brain: Brain, symbol: str):
         reasoning,
         opinions,
     )
+
+
+def test_market_sensitivity_reaches_the_decision_as_per_security_evidence() -> None:
+    """
+    The reconsidered market gate: exposure is weighed, not gated.
+
+    Now that beta is measured per security, a market reading bears on one
+    holding more than another — a high-beta name and a defensive one are no
+    longer the same case. It arrives on the security's `RiskSignal` and is
+    weighed as evidence beside the decision, which is the honest form the
+    market takes until a threshold can be calibrated against outcomes.
+    """
+
+    facts = CompanyFacts(
+        instrument_id=1,
+        symbol="GOOD",
+        name="Good Co",
+        asset_type="Stock",
+        exchange="NASDAQ",
+        realized_volatility=0.2,
+        max_drawdown=0.1,
+        market_sensitivity=MarketSensitivity(
+            beta=1.8,
+            correlation=0.7,
+            observations=240,
+            benchmark="SPY",
+        ),
+    )
+
+    company = make_company("GOOD", risk=RiskSignalService().build(facts))
+    brain = make_brain(evidence={"GOOD": (company,)})
+
+    evidence = build_evidence(brain, "GOOD")
+
+    assert any("1.80×" in statement for statement in evidence.evidence_weighed)
 
 
 def test_security_evidence_distinguishes_two_holdings() -> None:
