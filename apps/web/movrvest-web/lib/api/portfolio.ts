@@ -42,6 +42,41 @@ export interface PortfolioRisk {
   unmeasured: string[];
 }
 
+/**
+ * How much room the account has to act, measured in the Brain against the
+ * investor's own policy. Headroom arrives signed: a largest position over
+ * its limit is a negative number — a measured breach the page must state.
+ */
+export interface PortfolioCapacity {
+  cashActualPct: number;
+  cashTargetPct: number | null;
+  fundingRoomPct: number | null;
+  fundingRoomUsd: number | null;
+  singlePositionLimitPct: number | null;
+  largestPosition: string | null;
+  largestPositionPct: number | null;
+  singlePositionHeadroomPct: number | null;
+  cryptoLimitPct: number | null;
+  cryptoActualPct: number | null;
+  cryptoHeadroomPct: number | null;
+  unmeasured: string[];
+}
+
+/**
+ * One position as the broker reported it. The weight is the snapshot's own
+ * measurement and arrives ready — null when the account reports no value
+ * to take a share of, which is not the same as a weight of zero.
+ */
+export interface PortfolioHolding {
+  symbol: string;
+  resolved: boolean;
+  assetClass: string | null;
+  investedUsd: number;
+  marketValueUsd: number;
+  unrealizedPnlUsd: number;
+  weightPct: number | null;
+}
+
 export interface PortfolioOverview {
   totalValueUsd: number;
   totalValueEur: number;
@@ -56,6 +91,8 @@ export interface PortfolioOverview {
   observationMessage: string;
   drawdown: PortfolioDrawdown | null;
   risk: PortfolioRisk | null;
+  capacity: PortfolioCapacity | null;
+  holdings: PortfolioHolding[];
 }
 
 export interface PortfolioOverviewResult {
@@ -127,7 +164,7 @@ function drawdownValue(portfolio: UnknownRecord): PortfolioDrawdown | null {
   };
 }
 
-function ratioValue(record: UnknownRecord, key: string): number | null {
+function measuredNumber(record: UnknownRecord, key: string): number | null {
   const value = record[key];
 
   // Null means unmeasured and must survive as null. Falling back to zero
@@ -159,12 +196,12 @@ function riskValue(payload: UnknownRecord): PortfolioRisk | null {
   const evidence = Array.isArray(risk.evidence) ? risk.evidence : [];
 
   return {
-    overall: ratioValue(risk, "overall"),
+    overall: measuredNumber(risk, "overall"),
     level: stringValue(risk, "level") || null,
-    market: ratioValue(risk, "market"),
-    concentration: ratioValue(risk, "concentration"),
-    liquidity: ratioValue(risk, "liquidity"),
-    drawdown: ratioValue(risk, "drawdown"),
+    market: measuredNumber(risk, "market"),
+    concentration: measuredNumber(risk, "concentration"),
+    liquidity: measuredNumber(risk, "liquidity"),
+    drawdown: measuredNumber(risk, "drawdown"),
     factors: stringList(risk, "factors"),
     evidence: evidence.flatMap((item) =>
       isRecord(item) && typeof item.statement === "string"
@@ -179,6 +216,58 @@ function riskValue(payload: UnknownRecord): PortfolioRisk | null {
     ),
     unmeasured: stringList(risk, "unmeasured"),
   };
+}
+
+function capacityValue(payload: UnknownRecord): PortfolioCapacity | null {
+  const capacity = payload.capacity;
+
+  if (!isRecord(capacity)) {
+    return null;
+  }
+
+  return {
+    cashActualPct: numberValue(capacity, "cash_actual_pct"),
+    cashTargetPct: measuredNumber(capacity, "cash_target_pct"),
+    fundingRoomPct: measuredNumber(capacity, "funding_room_pct"),
+    fundingRoomUsd: measuredNumber(capacity, "funding_room_usd"),
+    singlePositionLimitPct: measuredNumber(capacity, "single_position_limit_pct"),
+    largestPosition: stringValue(capacity, "largest_position") || null,
+    largestPositionPct: measuredNumber(capacity, "largest_position_pct"),
+    singlePositionHeadroomPct: measuredNumber(
+      capacity,
+      "single_position_headroom_pct",
+    ),
+    cryptoLimitPct: measuredNumber(capacity, "crypto_limit_pct"),
+    cryptoActualPct: measuredNumber(capacity, "crypto_actual_pct"),
+    cryptoHeadroomPct: measuredNumber(capacity, "crypto_headroom_pct"),
+    unmeasured: stringList(capacity, "unmeasured"),
+  };
+}
+
+function holdingsValue(portfolio: UnknownRecord): PortfolioHolding[] {
+  const holdings = portfolio.holdings;
+
+  if (!Array.isArray(holdings)) {
+    return [];
+  }
+
+  return holdings.flatMap((item) => {
+    if (!isRecord(item) || typeof item.symbol !== "string") {
+      return [];
+    }
+
+    return [
+      {
+        symbol: item.symbol,
+        resolved: item.resolved === true,
+        assetClass: stringValue(item, "asset_class") || null,
+        investedUsd: numberValue(item, "invested_usd"),
+        marketValueUsd: numberValue(item, "market_value_usd"),
+        unrealizedPnlUsd: numberValue(item, "unrealized_pnl_usd"),
+        weightPct: measuredNumber(item, "weight_pct"),
+      },
+    ];
+  });
 }
 
 export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
@@ -238,6 +327,8 @@ export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
         ),
         drawdown: drawdownValue(portfolio),
         risk: riskValue(payload),
+        capacity: capacityValue(payload),
+        holdings: holdingsValue(portfolio),
       },
       source: "backend",
       backendUrl: endpoint,

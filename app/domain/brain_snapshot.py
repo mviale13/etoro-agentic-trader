@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from app.application.brain.reasoning.models.capacity_assessment import (
+    CapacityAssessment,
+)
 from app.application.brain.reasoning.models.risk_assessment import RiskAssessment
 from app.domain.executive_brief import ExecutiveBrief
 from app.domain.insight import Insight
@@ -24,3 +27,8 @@ class BrainSnapshot:
     #: any security and not a recommendation — which is why it belongs in
     #: what the Brain knows, unlike the executive brief beside it.
     risk: RiskAssessment | None = None
+
+    #: How much room the account has to act, measured against the policy.
+    #: A comparison of two facts the investor already stated or the broker
+    #: already reported — not a judgement about any security.
+    capacity: CapacityAssessment | None = None

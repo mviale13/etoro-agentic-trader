@@ -9,6 +9,7 @@ from app.application.brain.perception.investor_perception import (
 from app.application.brain.perception.recommendation_perception import (
     RecommendationPerception,
 )
+from app.application.brain.reasoning.capacity_analyst import CapacityAnalyst
 from app.application.brain.reasoning.risk_analyst import RiskAnalyst
 from app.domain.brain_snapshot import BrainSnapshot
 from app.domain.portfolio_snapshot import PortfolioSnapshot
@@ -59,6 +60,10 @@ class BrainSnapshotService:
             # the executive brief that is too slow for a page load, not
             # reasoning as such.
             risk=RiskAnalyst().assess(brain),
+            # Same reasoning: capacity compares two figures the Brain
+            # already holds — the broker's allocation and the investor's
+            # policy — and makes no request of its own.
+            capacity=CapacityAnalyst().assess(brain),
             # The executive brief is produced by the Artificial CIO and served
             # from /executive/portfolio. Reporting a placeholder here would
             # put words in the CIO's mouth.

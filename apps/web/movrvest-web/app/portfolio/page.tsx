@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { CapacityToAct } from "@/components/portfolio/CapacityToAct";
 import { ExecutivePortfolioAssessment } from "@/components/portfolio/ExecutivePortfolioAssessment";
+import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
 import {
   getPortfolioOverview,
   type PortfolioDrawdown,
@@ -205,6 +207,10 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
 
       <section className="mt-6 grid items-start gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <div className="space-y-6">
+          {/* The measured story leads: room to act, then how the account
+              can lose money. The raw rows come last, as evidence. */}
+          <CapacityToAct capacity={portfolio.capacity} />
+
           <article className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -320,8 +326,9 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
               />
 
               <p className="text-sm leading-6 text-slate-300">
-                Position-level exposure, concentration and performance analysis
-                will arrive in the next portfolio slice.
+                Capacity to act is measured against the investor policy, and
+                every open position is listed below with the broker&apos;s own
+                figures.
               </p>
             </div>
           </div>
@@ -335,6 +342,11 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
           </Link>
         </aside>
       </section>
+
+      <HoldingsTable
+        holdings={portfolio.holdings}
+        positions={portfolio.positions}
+      />
     </>
   );
 }

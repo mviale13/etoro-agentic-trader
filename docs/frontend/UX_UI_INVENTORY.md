@@ -243,8 +243,22 @@ isolation via `git archive HEAD`:
   `MOVRVEST_API_URL`) and it crashed with a 500 when the backend was away —
   it now joins the shared layout and fails honestly.
 
-Still open, in order: Portfolio/Research/Markets/Track Record refinement per
-the mission's screen responsibilities (portfolio capacity and measured risk
-decomposition; research funnel reviewed/unevidenced emphasis; markets
-"informs, does not gate" statement; honest outcome maturity), and a future
-Decisions inbox surface once the contract earns it.
+- **Portfolio slice** (`e4b7613`, PR #12) — the screen leads with the
+  measured story before any raw rows. Backend: `CapacityAnalyst` (beside
+  `RiskAnalyst`) measures room to act against the stated policy — funding
+  room in points and dollars, single-position headroom served *signed* (a
+  holding over its limit is a measured breach, not a zero), crypto-ceiling
+  room unmeasured while any of the account is unclassified, reason named.
+  `/brain/` serves the assessment plus the holdings the snapshot already
+  carried, each with the snapshot's own weight (null on a valueless
+  account, never zero). Frontend: `CapacityToAct` renders the three terms
+  in the Brain's figures; `HoldingsTable` renders last, as evidence, with
+  unresolved instruments keeping their reported identity; the aside's
+  "next portfolio slice" promise retired. Verified live in both states —
+  the real account exercised the honest paths on its own (an unresolved
+  `#1238` row, a 0.2%-unclassified crypto absence with its reason).
+
+Still open, in order: Research/Markets/Track Record refinement per the
+mission's screen responsibilities (research funnel reviewed/unevidenced
+emphasis; markets "informs, does not gate" statement; honest outcome
+maturity), and a future Decisions inbox surface once the contract earns it.
