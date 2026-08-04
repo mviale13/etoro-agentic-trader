@@ -90,6 +90,21 @@ class CachedValueProvider:
                 if snapshot.inception is not None
                 else None
             ),
+            # Fundamentals read from the same call. Dropped on a cache hit,
+            # they would leave the analysts nothing to analyse for the rest
+            # of the day the reading was taken.
+            "revenue_growth": snapshot.revenue_growth,
+            "earnings_growth": snapshot.earnings_growth,
+            "gross_margin": snapshot.gross_margin,
+            "operating_margin": snapshot.operating_margin,
+            "net_margin": snapshot.net_margin,
+            "return_on_equity": snapshot.return_on_equity,
+            "debt_to_equity": snapshot.debt_to_equity,
+            "current_ratio": snapshot.current_ratio,
+            "operating_cash_flow": snapshot.operating_cash_flow,
+            "free_cash_flow": snapshot.free_cash_flow,
+            "sector": snapshot.sector,
+            "industry": snapshot.industry,
             "source": reading.source,
             "observed_at": reading.observed_at.isoformat(),
         }
@@ -105,7 +120,15 @@ class CachedValueProvider:
         def number(field: str) -> float | None:
             raw = value.get(field)
 
-            return float(raw) if isinstance(raw, (int, float)) else None
+            if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+                return None
+
+            return float(raw)
+
+        def text(field: str) -> str | None:
+            raw = value.get(field)
+
+            return raw if isinstance(raw, str) and raw.strip() else None
 
         observed_at = entry.stored_at
 
@@ -130,6 +153,18 @@ class CachedValueProvider:
             max_supply=number("max_supply"),
             volume_24h=number("volume_24h"),
             inception=cls._timestamp(value.get("inception")),
+            revenue_growth=number("revenue_growth"),
+            earnings_growth=number("earnings_growth"),
+            gross_margin=number("gross_margin"),
+            operating_margin=number("operating_margin"),
+            net_margin=number("net_margin"),
+            return_on_equity=number("return_on_equity"),
+            debt_to_equity=number("debt_to_equity"),
+            current_ratio=number("current_ratio"),
+            operating_cash_flow=number("operating_cash_flow"),
+            free_cash_flow=number("free_cash_flow"),
+            sector=text("sector"),
+            industry=text("industry"),
             reading=Provenance(
                 source=source if isinstance(source, str) else ValueProvider.SOURCE,
                 observed_at=observed_at,

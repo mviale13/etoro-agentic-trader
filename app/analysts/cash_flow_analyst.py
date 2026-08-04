@@ -50,6 +50,31 @@ class CashFlowAnalyst(Analyst[CompanyFacts, CashFlowOpinion]):
 
         raise ValueError(f"Unsupported cash-flow observation: {observation.key}")
 
+    @staticmethod
+    def format_evidence(
+        observation: AnalystObservation,
+    ) -> str:
+        """
+        A cash flow reads in billions, not to the penny.
+
+        The base formatter's two decimals turn a hundred-billion-dollar cash
+        flow into a wall of digits. Cash flow is scored by its sign, so the
+        magnitude is stated compactly rather than exactly.
+        """
+
+        return f"{observation.label} is {CashFlowAnalyst._money(observation.value)}."
+
+    @staticmethod
+    def _money(value: float) -> str:
+        sign = "-" if value < 0 else ""
+        magnitude = abs(value)
+
+        for threshold, suffix in ((1e12, "T"), (1e9, "B"), (1e6, "M")):
+            if magnitude >= threshold:
+                return f"{sign}${magnitude / threshold:.1f}{suffix}"
+
+        return f"{sign}${magnitude:,.0f}"
+
     def uncertainty(
         self,
         company: CompanyFacts,

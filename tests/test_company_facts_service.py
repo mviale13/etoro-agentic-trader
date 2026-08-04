@@ -85,6 +85,35 @@ def test_company_facts_carry_everything_the_provider_returned() -> None:
     assert facts.current_price == 500.0
 
 
+def test_company_facts_carry_the_fundamentals_for_a_company() -> None:
+    """Growth, margins and cash flow reach the facts, not just valuation."""
+
+    snapshot = ValuationSnapshot(
+        forward_pe=None,
+        trailing_pe=None,
+        peg_ratio=None,
+        dividend_yield=None,
+        gross_margin=0.48,
+        operating_margin=0.31,
+        net_margin=0.24,
+        revenue_growth=0.16,
+        debt_to_equity=0.78,
+        current_ratio=1.07,
+        free_cash_flow=99_000_000_000.0,
+        return_on_equity=1.5,
+        sector="Technology",
+    )
+
+    facts = make_facts(snapshot)
+
+    assert facts.gross_margin == 0.48
+    assert facts.revenue_growth == 0.16
+    assert facts.debt_to_equity == 0.78
+    assert facts.free_cash_flow == 99_000_000_000.0
+    assert facts.roe == 1.5
+    assert facts.sector == "Technology"
+
+
 def test_quality_can_be_assessed_from_those_facts() -> None:
     """
     The quality signal needs size, earnings and dividends.

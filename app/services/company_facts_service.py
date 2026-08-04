@@ -99,28 +99,32 @@ class CompanyFactsService:
             # Valuation. A token has no earnings to be priced against, so
             # these stay absent however populated the response was.
             forward_pe=valuation.forward_pe if not is_token else None,
-            # Growth
-            revenue_growth=None,
-            earnings_growth=None,
-            # Profitability
-            gross_margin=None,
-            operating_margin=None,
-            net_margin=None,
-            # Capital efficiency
-            roe=None,
+            # Growth, profitability, balance sheet and cash generation, read
+            # from the same call as the valuation above. A token has none of
+            # these — it has the supply fields instead — so they are populated
+            # for a company only, and stay absent rather than zero elsewhere.
+            revenue_growth=valuation.revenue_growth if not is_token else None,
+            earnings_growth=valuation.earnings_growth if not is_token else None,
+            gross_margin=valuation.gross_margin if not is_token else None,
+            operating_margin=valuation.operating_margin if not is_token else None,
+            net_margin=valuation.net_margin if not is_token else None,
+            # Return on equity is reported; return on invested capital is not,
+            # so it stays absent rather than being derived from figures the
+            # provider did not give.
+            roe=valuation.return_on_equity if not is_token else None,
             roic=None,
-            # Balance sheet
-            debt_to_equity=None,
-            current_ratio=None,
-            # Cash generation
-            operating_cash_flow=None,
-            free_cash_flow=None,
+            debt_to_equity=valuation.debt_to_equity if not is_token else None,
+            current_ratio=valuation.current_ratio if not is_token else None,
+            operating_cash_flow=(
+                valuation.operating_cash_flow if not is_token else None
+            ),
+            free_cash_flow=valuation.free_cash_flow if not is_token else None,
             # Shareholder returns
             eps=valuation.eps if not is_token else None,
             dividend_yield=valuation.dividend_yield if not is_token else None,
             # Classification
-            sector=None,
-            industry=None,
+            sector=valuation.sector if not is_token else None,
+            industry=valuation.industry if not is_token else None,
         )
 
     async def _valuation(

@@ -57,6 +57,25 @@ def test_excellent_cash_flow() -> None:
     assert opinion.confidence == 1.0
 
 
+def test_cash_flow_is_stated_in_readable_magnitudes() -> None:
+    """A hundred-billion-dollar flow reads in billions, not to the penny."""
+
+    company = CompanyFacts(
+        instrument_id=1,
+        symbol="TEST",
+        name="Test Company",
+        asset_type="Stock",
+        exchange="NASDAQ",
+        operating_cash_flow=146_723_995_648.0,
+        free_cash_flow=-1_200_000_000.0,
+    )
+
+    evidence = CashFlowAnalyst().analyze(company).evidence
+
+    assert "Operating cash flow is $146.7B." in evidence
+    assert "Free cash flow is -$1.2B." in evidence
+
+
 def test_weak_cash_flow() -> None:
     opinion = CashFlowAnalyst().analyze(weak_company())
 

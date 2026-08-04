@@ -429,8 +429,13 @@ change feed. It does not gate.
       INVESTIGATE are not calls and are never scored as ones, and a hit
       rate is withheld below 10 measured calls. The journal is young, so
       the honest reading today is 61 decisions and 0 outcomes
-- [ ] `app/analysts` holds real per-security fundamental analysis that the
-      canonical reasoning layer does not yet own
+- [x] `app/analysts` is wired into the canonical decision. `ValueProvider`
+      reads the growth, margins, balance sheet and cash flow already in the
+      one `.info` call it makes; `CompanyFactsService` carries them; and
+      `CompanySignalService` runs the four analysts for a company and attaches
+      the research to `CompanySignals`. Each verdict reaches the case as
+      weighed evidence on the decision, the way risk and sensitivity do — not
+      as a gate, until it can be calibrated
 
 ## Delivery
 

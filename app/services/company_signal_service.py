@@ -2,11 +2,13 @@ from typing import Protocol
 
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
+from app.domain.company_research import CompanyResearch
 from app.domain.company_signals import CompanySignals
 from app.domain.provenance import least_reliable
 from app.domain.quality_signal import QualitySignal
 from app.domain.watchlist_item import WatchlistItem
 from app.services.company_facts_service import CompanyFactsService
+from app.services.company_research_service import CompanyResearchService
 from app.services.crypto_quality_signal_service import (
     CryptoQualitySignalService,
 )
@@ -43,11 +45,32 @@ class CompanySignalService:
             momentum=MomentumSignalService().build(facts),
             quality=self._quality(item, facts),
             risk=RiskSignalService().build(facts),
+            research=self._research(asset_class, facts),
             reading=least_reliable(
                 facts.price_reading,
                 facts.fundamentals_reading,
             ),
         )
+
+    @staticmethod
+    def _research(
+        asset_class: AssetClass,
+        facts: CompanyFacts,
+    ) -> CompanyResearch | None:
+        """
+        The fundamental analysts' read of the business, for a company.
+
+        Growth, profitability, a balance sheet and cash flow are questions
+        only a company can answer: a fund has no margins and a token no
+        balance sheet. The analysts already handle a fact they cannot read as
+        an unknown, so a company whose fundamentals did not come back gets a
+        research package that says so rather than none at all.
+        """
+
+        if asset_class is not AssetClass.STOCK:
+            return None
+
+        return CompanyResearchService().analyze(facts)
 
     @staticmethod
     def _quality(

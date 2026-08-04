@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
@@ -15,8 +16,10 @@ from app.application.executive.portfolio_fit import PortfolioFit
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
 from app.domain.company_recommendation import CompanyRecommendation
+from app.domain.company_research import CompanyResearch
 from app.domain.executive_decision import DecisionEvidence
 from app.domain.finding import Finding, Sense, statements, statements_where
+from app.domain.opinion import Opinion
 
 
 @dataclass(slots=True)
@@ -291,7 +294,70 @@ class DecisionEvidenceBuilder:
         return (
             *company.evidence,
             *(risk.evidence if risk is not None else ()),
+            *DecisionEvidenceBuilder._research_findings(company.signals.research),
         )
+
+    @staticmethod
+    def _research_findings(
+        research: CompanyResearch | None,
+    ) -> tuple[Finding, ...]:
+        """
+        The fundamental analysts' verdicts, weighed as evidence not gated.
+
+        Each analyst's read reaches the case the way the risk signal does:
+        as a finding carrying its own sense, for the CIO to weigh against
+        everything else. It does not move a gate — quality, valuation and the
+        rest still decide that — because whether strong fundamentals settle a
+        case is the Artificial CIO's judgement, and folding a new score into
+        a gate before it is calibrated is the same step the market gate was
+        declined for.
+        """
+
+        if research is None:
+            return ()
+
+        findings = (
+            DecisionEvidenceBuilder._opinion_finding(
+                "Profitability", research.profitability
+            ),
+            DecisionEvidenceBuilder._opinion_finding("Growth", research.growth),
+            DecisionEvidenceBuilder._opinion_finding(
+                "Balance sheet", research.balance_sheet
+            ),
+            DecisionEvidenceBuilder._opinion_finding("Cash flow", research.cash_flow),
+        )
+
+        return tuple(finding for finding in findings if finding is not None)
+
+    @staticmethod
+    def _opinion_finding(
+        aspect: str,
+        opinion: Opinion[Any],
+    ) -> Finding | None:
+        """
+        One analyst's verdict as a finding, or nothing where it measured none.
+
+        An analyst that could read no figure contributes no finding — its
+        silence is a gap, reported as missing evidence, not a neutral verdict
+        dressed as a reading. Where it did measure, the sense is read off its
+        own 0-100 score, banded once the way a strong signal argues for a case
+        and a weak one against.
+        """
+
+        if opinion.confidence <= 0.0 or not opinion.evidence:
+            return None
+
+        statement = (
+            f"{aspect} is {opinion.verdict.value} — {' '.join(opinion.evidence)}"
+        )
+
+        if opinion.score >= 75:
+            return Finding.favourable(statement)
+
+        if opinion.score <= 40:
+            return Finding.adverse(statement)
+
+        return Finding.neutral(statement)
 
     @staticmethod
     def _missing_evidence(

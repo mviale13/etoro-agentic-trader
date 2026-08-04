@@ -70,6 +70,42 @@ def test_fundamentals_are_read_once_a_day(tmp_path: Path) -> None:
     assert first == second
 
 
+def test_a_replayed_reading_keeps_its_fundamentals(tmp_path: Path) -> None:
+    """
+    Growth, margins and cash flow survive the cache.
+
+    Dropped on a same-day hit, they would leave the analysts nothing to
+    analyse for the rest of the day the reading was taken.
+    """
+
+    snapshot = ValuationSnapshot(
+        forward_pe=21.5,
+        trailing_pe=24.1,
+        peg_ratio=1.4,
+        dividend_yield=0.012,
+        market_cap=3_000_000_000_000.0,
+        eps=12.5,
+        gross_margin=0.48,
+        revenue_growth=0.16,
+        debt_to_equity=0.78,
+        free_cash_flow=99_000_000_000.0,
+        sector="Technology",
+        reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
+    )
+
+    provider = CountingValueProvider(snapshot)
+    cached = make_value_provider(tmp_path, provider)
+
+    cached.snapshot("MSFT")
+    replayed = cached.snapshot("MSFT")
+
+    assert provider.calls == 1
+    assert replayed.gross_margin == 0.48
+    assert replayed.debt_to_equity == 0.78
+    assert replayed.free_cash_flow == 99_000_000_000.0
+    assert replayed.sector == "Technology"
+
+
 def test_the_same_day_produces_the_same_evidence(tmp_path: Path) -> None:
     """A second run must not be able to change a decision on its own."""
 

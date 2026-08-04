@@ -16,6 +16,7 @@ from app.application.workspace.portfolio_briefing_service import (
 from app.brain import Brain, BrainBuilder
 from app.domain.company_facts import CompanyFacts
 from app.domain.company_recommendation import CompanyRecommendation
+from app.domain.company_research import CompanyResearch
 from app.domain.company_signals import CompanySignals
 from app.domain.finding import Finding
 from app.domain.market_sensitivity import MarketSensitivity
@@ -41,6 +42,7 @@ def make_company(
     valuation: str = "CHEAP",
     trend: str = "BULLISH",
     risk: RiskSignal | None = None,
+    research: CompanyResearch | None = None,
 ) -> CompanyRecommendation:
     return CompanyRecommendation(
         symbol=symbol,
@@ -65,6 +67,7 @@ def make_company(
                 evidence=(),
             ),
             risk=risk,
+            research=research,
         ),
         evidence=(Finding.neutral(f"{symbol} evidence."),),
     )
@@ -142,6 +145,50 @@ def test_market_sensitivity_reaches_the_decision_as_per_security_evidence() -> N
     evidence = build_evidence(brain, "GOOD")
 
     assert any("1.80×" in statement for statement in evidence.evidence_weighed)
+
+
+def test_fundamental_research_reaches_the_decision_as_weighed_evidence() -> None:
+    """
+    The starved analysts, fed and wired: their verdicts reach the case.
+
+    Growth, profitability, the balance sheet and cash flow are read from the
+    facts the platform already fetched, and each analyst's verdict is weighed
+    as evidence — a strong one as a strength — rather than gated, exactly as
+    the risk and sensitivity readings are.
+    """
+
+    from app.services.company_research_service import CompanyResearchService
+
+    facts = CompanyFacts(
+        instrument_id=1,
+        symbol="GOOD",
+        name="Good Co",
+        asset_type="stock",
+        exchange="NASDAQ",
+        gross_margin=0.62,
+        operating_margin=0.30,
+        net_margin=0.24,
+        revenue_growth=0.18,
+        free_cash_flow=50_000_000_000.0,
+        operating_cash_flow=60_000_000_000.0,
+        debt_to_equity=0.4,
+        current_ratio=1.5,
+    )
+
+    research = CompanyResearchService().analyze(facts)
+    company = make_company("GOOD", research=research)
+    brain = make_brain(evidence={"GOOD": (company,)})
+
+    evidence = build_evidence(brain, "GOOD")
+
+    assert any(
+        statement.startswith("Profitability is")
+        for statement in evidence.evidence_weighed
+    )
+    # An excellent-profitability read argues for the case, not merely noted.
+    assert any(
+        statement.startswith("Profitability is") for statement in evidence.strengths
+    )
 
 
 def test_security_evidence_distinguishes_two_holdings() -> None:
