@@ -337,8 +337,11 @@ change feed. It does not gate.
 
 ## Evidence quality
 
-- [ ] Portfolio-level drawdown needs position history, which nothing
-      records. Security-level risk is measured; the account's is not
+- [x] Portfolio-level drawdown is measured from the account's own equity
+      curve. `PortfolioHistoryService` reads eToro's `/balances/history`,
+      `PortfolioDrawdownService` measures the fall, and `PortfolioPerception`
+      carries it onto the snapshot for `RiskAnalyst` — absent only when the
+      history is unreachable, which is reported as unmeasured, not zero
 - [x] `portfolio_fit_score` measures this security against this portfolio.
       `OpportunityAssessment.portfolio_fit_score`, which described only the
       account, is now `portfolio_readiness_score`
@@ -439,7 +442,10 @@ change feed. It does not gate.
       volatility band and the sentiment label that moved between the last
       two. An individual instrument's move is not reported: deciding which
       moves matter needs a threshold nothing measures
-- [ ] `ExecutivePipeline` recomputes symbol-independent reasoning per holding
+- [x] `ExecutivePipeline` reasons the account once per cycle. The portfolio,
+      market and risk assessments do not depend on the security being judged,
+      so `execute_all` reasons them once and shares the one `ReasoningSnapshot`
+      across every holding, rather than repeating three analyst passes per name
 
 ## Structure
 

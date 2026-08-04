@@ -6,6 +6,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from app.application.brain.reasoning import ReasoningService
+from app.application.brain.reasoning.reasoning_snapshot import (
+    ReasoningSnapshot,
+)
 from app.application.brief.executive_brief_builder import (
     ExecutiveBriefBuilder,
 )
@@ -80,12 +83,22 @@ class ExecutivePipeline:
 
         Every security is judged against exactly the same view of reality,
         which is what makes their convictions comparable.
+
+        The portfolio, the market and the account's risk do not depend on
+        which security is being judged, so that view is reasoned once and
+        shared across the cycle. Reasoning it per holding repeated three
+        analyst passes for every name, and it let "exactly the same view"
+        rest on the assessments coming out identical rather than on their
+        being the one object they are here.
         """
+
+        reasoning = self.reasoning.reason(brain)
 
         return tuple(
             self.execute(
                 symbol=symbol,
                 brain=brain,
+                reasoning=reasoning,
             )
             for symbol in symbols
         )
@@ -94,6 +107,7 @@ class ExecutivePipeline:
         self,
         symbol: str,
         brain: Brain,
+        reasoning: ReasoningSnapshot | None = None,
     ) -> ExecutiveWorkspace:
 
         workspace = ExecutiveWorkspace(
@@ -101,8 +115,10 @@ class ExecutivePipeline:
             brain=brain,
         )
 
-        workspace.reasoning = self.reasoning.reason(
-            brain,
+        # Shared by `execute_all` across the cycle; computed here for a
+        # caller judging a single security on its own.
+        workspace.reasoning = (
+            reasoning if reasoning is not None else self.reasoning.reason(brain)
         )
 
         workspace.committee_opinions = self.committees.review(
