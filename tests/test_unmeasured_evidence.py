@@ -57,6 +57,19 @@ def test_a_security_with_no_evidence_scores_nothing() -> None:
     assert unknown.quality_score is None
     assert unknown.valuation_score is None
     assert unknown.missing_evidence
+    # Nothing about the security itself was gathered, and the evidence says
+    # so — apart from a security that was looked at and scored nothing.
+    assert unknown.security_evidenced is False
+
+
+def test_a_known_security_is_evidenced_even_when_it_scores_nothing() -> None:
+    """An unpriceable holding was still looked at; that is not no evidence."""
+
+    brain = make_brain(
+        evidence={"PARTIAL": (make_company("PARTIAL", quality="UNKNOWN"),)},
+    )
+
+    assert build_evidence(brain, "PARTIAL").security_evidenced is True
 
 
 def test_an_unmeasured_quality_stops_the_case_at_research() -> None:
@@ -64,6 +77,33 @@ def test_an_unmeasured_quality_stops_the_case_at_research() -> None:
 
     assert decision.state is DecisionState.INVESTIGATE
     assert "not been measured" in decision.rationale
+
+
+def test_no_security_evidence_is_stated_plainly_not_as_unmeasured_quality() -> None:
+    """
+    A symbol the platform holds nothing about must not be told its quality
+    "has not been measured" — that promises a reading of a security we do
+    not have. What is true is only that there is no analysis of it.
+    """
+
+    decision = ArtificialCIO().decide(build_evidence(make_brain(), "NOTHING"))
+
+    assert decision.state is DecisionState.INVESTIGATE
+    assert "No security-level analysis is available for NOTHING" in decision.rationale
+    assert "quality" not in decision.rationale.lower()
+
+
+def test_a_looked_at_security_still_says_quality_not_measured() -> None:
+    """The other side of the distinction: this one was analysed."""
+
+    brain = make_brain(
+        evidence={"PARTIAL": (make_company("PARTIAL", quality="UNKNOWN"),)},
+    )
+
+    decision = ArtificialCIO().decide(build_evidence(brain, "PARTIAL"))
+
+    assert "quality has not been measured" in decision.rationale
+    assert "No security-level analysis" not in decision.rationale
 
 
 def test_an_unmeasured_valuation_cannot_reach_a_recommendation() -> None:

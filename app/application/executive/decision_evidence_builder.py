@@ -155,6 +155,10 @@ class DecisionEvidenceBuilder:
             risk_score=self._risk_score(company),
             portfolio_fit_score=portfolio_fit,
             evidence_as_of=company.reading if company is not None else None,
+            # A known security always leaves a recommendation here, even an
+            # unpriceable one; nothing at all means the symbol named nothing
+            # the platform could gather evidence about.
+            security_evidenced=company is not None,
             asset_class=asset_class,
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
