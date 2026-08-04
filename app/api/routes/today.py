@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies import get_brief_service
 from app.api.models.today import (
     HealthCheckResponse,
     HealthResponse,
@@ -20,8 +21,10 @@ router = APIRouter(
     response_model=TodayResponse,
     summary="Get today's MOVRvest Morning Brief",
 )
-async def get_today() -> TodayResponse:
-    snapshot = await BriefService().build()
+async def get_today(
+    brief_service: BriefService = Depends(get_brief_service),
+) -> TodayResponse:
+    snapshot = await brief_service.build()
 
     return TodayResponse(
         greeting=snapshot.greeting,
