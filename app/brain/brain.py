@@ -58,6 +58,11 @@ class Brain:
         return self.context.candidates
 
     @property
+    def attempted_candidates(self) -> tuple[str, ...]:
+        """Candidate symbols this cycle spent a fundamentals request on."""
+        return self.context.attempted_candidates
+
+    @property
     def decision_history(self) -> dict[str, DecisionHistory]:
         """What the Artificial CIO decided in previous cycles, by symbol."""
         return dict(self.context.decision_history)

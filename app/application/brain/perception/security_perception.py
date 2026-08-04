@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.portfolio_snapshot import PortfolioSnapshot
@@ -16,6 +17,21 @@ from app.services.company_signal_service import CompanySignalService
 from app.services.instrument_symbol_resolver import (
     InstrumentSymbolResolver,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class SecurityEvidence:
+    """
+    What one perception cycle looked at, and what it could describe.
+
+    `attempted_candidates` records which candidates the cycle actually
+    spent a fundamentals request on. Without that record, "reviewed" had
+    to be reconstructed downstream by arithmetic on the budget — a claim
+    about what happened, made by someone who was not there.
+    """
+
+    evidence: dict[str, tuple[object, ...]] = field(default_factory=dict)
+    attempted_candidates: tuple[str, ...] = ()
 
 
 class SecurityPerception:
@@ -52,8 +68,26 @@ class SecurityPerception:
         candidate_limit: int = 0,
         focus_symbols: Sequence[str] = (),
     ) -> dict[str, tuple[object, ...]]:
+        """The evidence alone, for callers that need nothing else."""
+
+        perception = await self.perceive(
+            portfolio,
+            candidates=candidates,
+            candidate_limit=candidate_limit,
+            focus_symbols=focus_symbols,
+        )
+
+        return perception.evidence
+
+    async def perceive(
+        self,
+        portfolio: PortfolioSnapshot,
+        candidates: Sequence[ResearchCandidate] = (),
+        candidate_limit: int = 0,
+        focus_symbols: Sequence[str] = (),
+    ) -> SecurityEvidence:
         """
-        Return per-symbol evidence, keyed by ticker symbol.
+        Return per-symbol evidence, and what was attempted to get it.
 
         `focus_symbols` are evidenced whatever the candidate budget says.
         A caller asking about one security is asking for that security to
@@ -62,7 +96,7 @@ class SecurityPerception:
         """
 
         if not portfolio.holdings and not candidates and not focus_symbols:
-            return {}
+            return SecurityEvidence()
 
         instruments = await self._symbol_resolver.items()
 
@@ -72,13 +106,15 @@ class SecurityPerception:
             if holding.is_resolved and holding.instrument_id in instruments
         ]
 
-        targets.extend(
-            self._candidate_targets(
-                candidates,
-                instruments,
-                candidate_limit,
-            )
+        candidate_targets = self._candidate_targets(
+            candidates,
+            instruments,
+            candidate_limit,
         )
+
+        targets.extend(candidate_targets)
+
+        attempted = tuple(symbol for symbol, _ in candidate_targets)
 
         targets.extend(
             self._focus_targets(
@@ -89,7 +125,7 @@ class SecurityPerception:
         )
 
         if not targets:
-            return {}
+            return SecurityEvidence(attempted_candidates=attempted)
 
         recommendations = await asyncio.gather(
             *(self._evaluate(symbol, item) for symbol, item in targets),
@@ -106,7 +142,10 @@ class SecurityPerception:
             if isinstance(recommendation, CompanyRecommendation):
                 evidence[symbol] = (recommendation,)
 
-        return evidence
+        return SecurityEvidence(
+            evidence=evidence,
+            attempted_candidates=attempted,
+        )
 
     @staticmethod
     def _candidate_targets(

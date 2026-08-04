@@ -89,7 +89,7 @@ class BrainBuilderService:
 
         candidates = await self._opportunity_perception.execute(portfolio)
 
-        evidence = await self._security_perception.execute(
+        perception = await self._security_perception.perceive(
             portfolio,
             candidates=candidates,
             candidate_limit=budget,
@@ -102,7 +102,8 @@ class BrainBuilderService:
             portfolio=portfolio,
             market=market,
             investment_policy=investment_policy,
-            evidence=evidence,
+            evidence=perception.evidence,
             candidates=candidates,
+            attempted_candidates=perception.attempted_candidates,
             decision_history=decision_history,
         ).build()

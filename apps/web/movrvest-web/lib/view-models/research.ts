@@ -56,7 +56,25 @@ export interface ResearchCandidateViewModel {
   dossierHref: string;
 }
 
+/**
+ * A watched security the cycle could not judge, by name.
+ *
+ * The funnel counts these; this names them. A security silently absent
+ * from the candidate list reads as considered-and-dismissed, which is a
+ * different claim from "nobody looked" or "nothing could be read".
+ */
+export interface WatchedCandidateViewModel {
+  symbol: string;
+  name: string;
+  /** The watchlist that names it. */
+  source: string;
+}
+
 export interface ResearchPipelineViewModel {
   funnel: ResearchFunnelViewModel;
   candidates: readonly ResearchCandidateViewModel[];
+  /** Reviewed — a request was spent — but no evidence came back. */
+  unevidenced: readonly WatchedCandidateViewModel[];
+  /** Outside this cycle's review budget; nobody looked. */
+  notReviewed: readonly WatchedCandidateViewModel[];
 }

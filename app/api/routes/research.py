@@ -5,6 +5,7 @@ from app.api.models.research import (
     ResearchCandidateResponse,
     ResearchFunnelResponse,
     ResearchPipelineResponse,
+    WatchedCandidateResponse,
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.learning.decision_journal import DecisionJournal
@@ -53,10 +54,7 @@ async def research_candidates(
                 repository=JsonEventRepository(),
             ),
         ),
-    ).build(
-        brain,
-        reviewed=min(limit, len(brain.candidates)),
-    )
+    ).build(brain)
 
     candidates: list[ResearchCandidateResponse] = []
 
@@ -111,4 +109,20 @@ async def research_candidates(
             actionable=funnel.actionable,
         ),
         candidates=candidates,
+        unevidenced=[
+            WatchedCandidateResponse(
+                symbol=candidate.symbol,
+                name=candidate.name,
+                source=candidate.source,
+            )
+            for candidate in research.unevidenced
+        ],
+        not_reviewed=[
+            WatchedCandidateResponse(
+                symbol=candidate.symbol,
+                name=candidate.name,
+                source=candidate.source,
+            )
+            for candidate in research.not_reviewed
+        ],
     )

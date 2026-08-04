@@ -115,7 +115,10 @@ def test_a_held_security_is_not_a_candidate() -> None:
     assert [candidate.symbol for candidate in candidates] == ["NVDA", "ASML"]
 
 
-def make_brain(evidenced: tuple[str, ...]) -> Brain:
+def make_brain(
+    evidenced: tuple[str, ...],
+    attempted: tuple[str, ...] | None = None,
+) -> Brain:
     candidates = (
         ResearchCandidate(
             symbol="MSFT",
@@ -137,13 +140,16 @@ def make_brain(evidenced: tuple[str, ...]) -> Brain:
         investment_policy=make_policy(),
         candidates=candidates,
         evidence={symbol: (make_company(symbol),) for symbol in evidenced},
+        # What this cycle actually spent requests on. Defaults to the
+        # evidenced set: a request that came back with evidence was
+        # certainly made.
+        attempted_candidates=attempted if attempted is not None else evidenced,
     ).build()
 
 
 def test_only_evidenced_candidates_are_judged() -> None:
     research = CandidateResearchService().build(
-        make_brain(evidenced=("MSFT",)),
-        reviewed=2,
+        make_brain(evidenced=("MSFT",), attempted=("MSFT", "NVDA")),
     )
 
     assert [workspace.symbol for workspace in research.workspaces] == ["MSFT"]
@@ -156,18 +162,49 @@ def test_only_evidenced_candidates_are_judged() -> None:
 
 def test_the_funnel_reports_what_it_could_not_look_at() -> None:
     research = CandidateResearchService().build(
-        make_brain(evidenced=("MSFT",)),
-        reviewed=1,
+        make_brain(evidenced=("MSFT",), attempted=("MSFT",)),
     )
 
     assert research.funnel.not_reviewed == 1
     assert research.funnel.unevidenced == 0
 
 
+def test_an_unevidenced_candidate_is_named_not_just_counted() -> None:
+    """The investor deserves to know WHICH security could not be read."""
+
+    research = CandidateResearchService().build(
+        make_brain(evidenced=("MSFT",), attempted=("MSFT", "NVDA")),
+    )
+
+    assert [candidate.symbol for candidate in research.unevidenced] == ["NVDA"]
+    assert research.unevidenced[0].name == "NVIDIA"
+    assert research.unevidenced[0].source == "My Watchlist"
+    assert research.not_reviewed == ()
+
+
+def test_a_candidate_outside_the_budget_is_named_not_just_counted() -> None:
+    """Silently absent reads as considered-and-dismissed, which is false."""
+
+    research = CandidateResearchService().build(
+        make_brain(evidenced=("MSFT",), attempted=("MSFT",)),
+    )
+
+    assert research.unevidenced == ()
+    assert [candidate.symbol for candidate in research.not_reviewed] == ["NVDA"]
+
+
+def test_the_named_groups_match_the_funnel_counts() -> None:
+    research = CandidateResearchService().build(
+        make_brain(evidenced=(), attempted=("MSFT",)),
+    )
+
+    assert len(research.unevidenced) == research.funnel.unevidenced == 1
+    assert len(research.not_reviewed) == research.funnel.not_reviewed == 1
+
+
 def test_a_candidate_carries_the_scores_it_was_judged_on() -> None:
     research = CandidateResearchService().build(
         make_brain(evidenced=("MSFT", "NVDA")),
-        reviewed=2,
     )
 
     workspace = research.workspaces[0]
@@ -182,7 +219,6 @@ def test_a_candidate_carries_the_scores_it_was_judged_on() -> None:
 def test_candidates_are_ranked_by_conviction() -> None:
     research = CandidateResearchService().build(
         make_brain(evidenced=("MSFT", "NVDA")),
-        reviewed=2,
     )
 
     convictions = [
@@ -197,7 +233,6 @@ def test_candidates_are_ranked_by_conviction() -> None:
 def test_the_candidate_behind_each_evaluation_is_reported() -> None:
     research = CandidateResearchService().build(
         make_brain(evidenced=("MSFT",)),
-        reviewed=1,
     )
 
     assert research.candidates["MSFT"].name == "Microsoft"

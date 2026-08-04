@@ -55,6 +55,16 @@ class CandidateResearch:
     #: The candidate behind each evaluation, keyed by symbol.
     candidates: dict[str, ResearchCandidate]
 
+    #: Candidates a fundamentals request was spent on that produced no
+    #: evidence. Named, not just counted: the investor deserves to know
+    #: which of their watched securities could not be described.
+    unevidenced: tuple[ResearchCandidate, ...] = ()
+
+    #: Candidates this cycle did not have the budget to look at. Named for
+    #: the same reason — a security silently absent from the list reads as
+    #: a security that was considered and dismissed.
+    not_reviewed: tuple[ResearchCandidate, ...] = ()
+
 
 @dataclass(slots=True)
 class CandidateResearchService:
@@ -87,18 +97,35 @@ class CandidateResearchService:
     def build(
         self,
         brain: Brain,
-        reviewed: int | None = None,
     ) -> CandidateResearch:
         """
         Evaluate every evidenced candidate against the same Brain.
 
-        `reviewed` is how many candidates this cycle actually spent a
-        fundamentals request on. The caller sets that budget, so only the
-        caller can report it; without it the funnel claims no more than what
-        it can see.
+        "Reviewed" is read off the Brain's own record of which candidates
+        a fundamentals request was spent on. It used to be reconstructed
+        from the budget by the caller, which counted the candidates that
+        were left out but could not name them.
         """
 
         evidenced = self.evidenced(brain)
+
+        attempted = {symbol.upper().strip() for symbol in brain.attempted_candidates}
+
+        evidenced_symbols = {candidate.symbol for candidate in evidenced}
+
+        unevidenced = tuple(
+            candidate
+            for candidate in brain.candidates
+            if candidate.symbol.upper().strip() in attempted
+            and candidate.symbol not in evidenced_symbols
+        )
+
+        not_reviewed = tuple(
+            candidate
+            for candidate in brain.candidates
+            if candidate.symbol.upper().strip() not in attempted
+            and candidate.symbol not in evidenced_symbols
+        )
 
         ranked = rank_by_conviction(
             self.pipeline.execute_all(
@@ -110,7 +137,7 @@ class CandidateResearchService:
         return CandidateResearch(
             funnel=ResearchFunnel(
                 candidates=len(brain.candidates),
-                reviewed=reviewed if reviewed is not None else len(evidenced),
+                reviewed=len(brain.attempted_candidates),
                 evidenced=len(evidenced),
                 judged=len(ranked),
                 actionable=sum(
@@ -122,4 +149,6 @@ class CandidateResearchService:
             ),
             workspaces=ranked,
             candidates={candidate.symbol: candidate for candidate in brain.candidates},
+            unevidenced=unevidenced,
+            not_reviewed=not_reviewed,
         )

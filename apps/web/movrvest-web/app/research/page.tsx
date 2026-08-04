@@ -14,6 +14,7 @@ import { getResearchPipeline } from "@/lib/api/research";
 import type {
   ResearchCandidateViewModel,
   ResearchFunnelViewModel,
+  WatchedCandidateViewModel,
 } from "@/lib/view-models/research";
 
 export const dynamic = "force-dynamic";
@@ -159,6 +160,90 @@ function Funnel({ funnel }: { funnel: ResearchFunnelViewModel }) {
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * The watched securities this cycle could not judge, named.
+ *
+ * The funnel above counts them; this section says which they are. Every
+ * symbol here is one the investor chose to watch, so leaving it silently
+ * off the page would read as considered-and-dismissed.
+ */
+function LeftOut({
+  unevidenced,
+  notReviewed,
+}: {
+  unevidenced: readonly WatchedCandidateViewModel[];
+  notReviewed: readonly WatchedCandidateViewModel[];
+}) {
+  if (unevidenced.length === 0 && notReviewed.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-7 grid gap-4 lg:grid-cols-2">
+      {unevidenced.length > 0 ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
+          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-amber-900">
+            <CircleAlert className="h-4 w-4" />
+            Reviewed, but nothing could be evidenced
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-amber-950">
+            A fundamentals request was spent on each of these, and no
+            evidence came back. They were deliberately not judged — a
+            verdict without security-level evidence would only be
+            describing your portfolio.
+          </p>
+
+          <ul className="mt-4 space-y-2">
+            {unevidenced.map((candidate) => (
+              <li
+                className="flex flex-wrap items-baseline gap-x-2 text-sm text-amber-950"
+                key={candidate.symbol}
+              >
+                <span className="font-semibold">{candidate.symbol}</span>
+                <span>{candidate.name}</span>
+                <span className="text-xs text-amber-800">
+                  named by {candidate.source}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {notReviewed.length > 0 ? (
+        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+          <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-600">
+            Not reviewed this cycle
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            Each review costs a request against a rate-limited provider, so
+            a cycle covers a capped number of securities. These were outside
+            this cycle&apos;s budget — nobody looked, and nothing was
+            decided about them.
+          </p>
+
+          <ul className="mt-4 space-y-2">
+            {notReviewed.map((candidate) => (
+              <li
+                className="flex flex-wrap items-baseline gap-x-2 text-sm text-neutral-800"
+                key={candidate.symbol}
+              >
+                <span className="font-semibold">{candidate.symbol}</span>
+                <span>{candidate.name}</span>
+                <span className="text-xs text-neutral-500">
+                  named by {candidate.source}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -382,6 +467,13 @@ export default async function ResearchPage() {
                   } therefore not judged — a verdict without security-level evidence would only be describing your portfolio.`
                 : ""}
             </p>
+
+            {pipeline ? (
+              <LeftOut
+                unevidenced={pipeline.unevidenced}
+                notReviewed={pipeline.notReviewed}
+              />
+            ) : null}
           </section>
         ) : null}
 
