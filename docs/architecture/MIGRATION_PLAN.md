@@ -226,6 +226,95 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
    target, concentration room from the single-position limit. VOW3.DE and
    NOVO-B.CO are the platform's first RECOMMENDs.
 
+## Settled: the market does not gate a decision, and must not yet
+
+`DecisionEvidence` carries no market score, and this is the decision not to
+add one. It was examined because the market currently reaches the Artificial
+CIO only as one third of an evidence-confidence average and as context
+strings that are identical under every symbol.
+
+**What the market evidence actually is.** `MarketAnalyst` produces two
+scores from one day's `change_percent` across the nine instruments
+`YahooMarketProvider` prices. `momentum_score` is that day's average move
+rescaled linearly, −5% to 0.0 and +5% to 1.0; `volatility_score` is the
+average *absolute* move over 5%. There is no window and no baseline: a
+broad −3% day scores 0.200 momentum, a flat day 0.500. Neither score
+reaches `DecisionEvidence` at all — both are consumed inside the analyst to
+pick a `trend` and a `regime`.
+
+**The route that does reach the CIO carries no market information.**
+`MarketAssessment.confidence` is one third of the cognitive average inside
+`DecisionEvidenceBuilder._evidence_score`, and `evidence_score` is gated
+three times, at 30, 60 and 75. But that confidence is
+`sample_confidence × 0.60 + consistency × 0.40`, where consistency is
+`1 − | |momentum − 0.5| × 2 − volatility |` — which is exactly 1 whenever
+the instruments all move together, whatever they do. A flat market and a
+market in which every instrument fell 8% both produce confidence 0.940.
+Across 200,000 sampled dispersed nine-instrument days the whole term spans
+0.549 to 0.940, which moves the cognitive average by 13.0 points and
+`evidence_score` by at most 6.5. So the market already moves a gate, by a
+route nobody chose, in proportion to how *uniformly* the instruments moved
+rather than to what the market did.
+
+*(Those figures are computed from this repository's own code, not observed
+against a live account.)*
+
+**Why no market score should be added on this evidence.**
+
+1. **It cannot separate one security from another.** Any market score is
+   the same for every symbol in a cycle. Every gate the CIO holds today
+   rests on a per-security measurement — quality, valuation, risk, fit —
+   and this repository has spent commit after commit removing scores that
+   were constant under every symbol: fit was `mean(9 positions / 20, policy
+   alignment 0.50)`, a constant 47; quality fell back to the portfolio's
+   health score; risk *was* the portfolio's risk score. A market gate
+   reintroduces exactly that shape under a name that sounds per-security.
+2. **What would make it per-security is not measured.** A market gate is
+   only about *this* security if the platform knows how exposed this
+   security is to the corner of the market that moved. Nothing measures
+   that. `MarketBreadthService` classifies corners and `AssetClass`
+   classifies securities, but sharing a label is not exposure — no beta, no
+   correlation, nothing regressed against anything.
+3. **The evidence is one day deep.** Both scores come from a single day's
+   change. The market archive has only just started recording, so there is
+   no history to calibrate against yet — and note the analyst does not use
+   `MarketQuote.realized_volatility`, which the platform already measures
+   over a year per instrument and which is the honest volatility figure it
+   holds.
+4. **No threshold could be justified.** Every existing gate number is a
+   judgement, but each sits on a measurement whose meaning is established:
+   an annualised volatility band, a valuation band, room against a stated
+   policy limit. For "the market must read at least X before this security
+   may be recommended", nothing establishes X. No decision has yet been
+   scored against its outcome, so there is no evidence base to calibrate
+   one — the number would decide real recommendations with nothing behind
+   it.
+5. **It is market timing, and that is outside the stated purpose.** A score
+   identical for every symbol cannot rank securities. It can only move
+   every case up or down together, which is a judgement about *when* to
+   act rather than about *what is worth owning*. "Its purpose is not to
+   predict markets."
+
+**What has to exist first, in this order.**
+
+- [ ] Make `MarketAssessment.confidence` mean how well evidenced the market
+      reading is — or take it out of `evidence_score`. Today it measures
+      cross-sectional dispersion and quote count, and it is the only market
+      input that moves a gate. This is the first thing to fix, and it
+      changes live decisions, so it wants a live account to verify against
+- [ ] Measure a security's exposure to the market, from the year of daily
+      closes the quote request already fetches. Without it, no market
+      reading can be said to bear on one security more than another
+- [ ] Accumulate market history, now that `MarketSnapshotArchive` records
+      it, so a market reading can be placed against its own past rather
+      than read as a single day
+- [ ] Score decisions against their outcomes, so any proposed threshold can
+      be calibrated rather than asserted
+
+Until all four hold, the market stays what it honestly is: context stated
+beside the decision, and a movement reported in the change feed. It does
+not gate.
+
 ## Evidence quality
 
 - [ ] Portfolio-level drawdown needs position history, which nothing
@@ -324,8 +413,12 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 - [ ] API routes construct services directly, so they cannot be tested
       without network access
-- [ ] The change feed covers recorded decision changes only. Market and macro
-      movements are not recorded anywhere, so they are absent from it
+- [x] The change feed reports market and macro movements. Every observation
+      is recorded through the same `VersionedSnapshotStore` the eToro
+      responses go to, and `MarketChangeService` reports the mood, the
+      volatility band and the sentiment label that moved between the last
+      two. An individual instrument's move is not reported: deciding which
+      moves matter needs a threshold nothing measures
 - [ ] `ExecutivePipeline` recomputes symbol-independent reasoning per holding
 
 ## Structure

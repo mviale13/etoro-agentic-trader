@@ -1,0 +1,238 @@
+"""What the market did between two recorded observations."""
+
+from datetime import UTC, datetime, timedelta
+
+from app.application.change_feed.market_change_service import (
+    MarketChangeService,
+)
+from app.application.services.market_service import MarketService
+from app.domain.asset_class import AssetClass
+from app.domain.change_feed.change_event import (
+    ChangeCategory,
+    ChangeSeverity,
+)
+from app.domain.market_snapshot import MarketQuote, MarketSnapshot
+from app.domain.provenance import Provenance
+from app.domain.sentiment_snapshot import SentimentSnapshot
+
+BEFORE = datetime(2026, 8, 2, 12, 0, tzinfo=UTC)
+AFTER = BEFORE + timedelta(days=1)
+
+
+def observation(
+    *,
+    change_percent: float = 0.0,
+    vix: float | None = 16.0,
+    timestamp: datetime = BEFORE,
+    sentiment: SentimentSnapshot | None = None,
+) -> MarketSnapshot:
+    return MarketService().build_snapshot(
+        quotes=(
+            MarketQuote(
+                symbol="SPY",
+                name="S&P 500 ETF",
+                price=600.0,
+                change_percent=change_percent,
+                reading=Provenance(source="Yahoo Finance", observed_at=timestamp),
+            ),
+        ),
+        vix=vix,
+        timestamp=timestamp,
+        sentiment=sentiment,
+    )
+
+
+def crypto(score: int, label: str) -> SentimentSnapshot:
+    return SentimentSnapshot(
+        score=score,
+        label=label,
+        subject=AssetClass.CRYPTO,
+        reading=Provenance(source="Alternative.me", observed_at=AFTER),
+    )
+
+
+def equities(score: int, label: str) -> SentimentSnapshot:
+    return SentimentSnapshot(
+        score=score,
+        label=label,
+        subject=AssetClass.STOCK,
+        reading=Provenance(source="Some equity index", observed_at=AFTER),
+    )
+
+
+def test_an_unmoved_market_reports_nothing() -> None:
+    """A quiet feed means nothing moved, not that nothing was looked at."""
+
+    service = MarketChangeService()
+
+    assert service.changes(observation(), observation(timestamp=AFTER)) == ()
+
+
+def test_a_changed_mood_is_reported() -> None:
+    events = MarketChangeService().changes(
+        observation(change_percent=1.5),
+        observation(change_percent=-1.5, timestamp=AFTER),
+    )
+
+    assert len(events) == 1
+
+    event = events[0]
+
+    assert event.title == "Market mood moved from positive to negative"
+    assert event.category is ChangeCategory.MARKET
+    assert event.timestamp == AFTER
+
+    # Two rungs apart on its own ladder — a measured distance, not an
+    # opinion about importance.
+    assert event.severity is ChangeSeverity.MEDIUM
+
+
+def test_a_mood_moving_one_rung_is_the_lowest_severity() -> None:
+    events = MarketChangeService().changes(
+        observation(change_percent=0.0),
+        observation(change_percent=1.5, timestamp=AFTER),
+    )
+
+    assert events[0].severity is ChangeSeverity.LOW
+
+
+def test_a_volatility_band_change_states_both_vix_figures() -> None:
+    events = MarketChangeService().changes(
+        observation(vix=12.0),
+        observation(vix=31.0, timestamp=AFTER),
+    )
+
+    assert len(events) == 1
+
+    event = events[0]
+
+    assert event.title == "Volatility moved from low to high"
+    assert event.description == "The VIX read 12.00, and now reads 31.00."
+    assert event.category is ChangeCategory.MACRO
+    assert event.severity is ChangeSeverity.MEDIUM
+
+
+def test_a_vix_that_moved_inside_its_band_is_not_an_event() -> None:
+    """
+    Reporting it would need a threshold for which move matters.
+
+    Nothing here measures that, and a threshold picked to look sensible
+    would be an invented figure on an investment surface. The readings are
+    recorded, so the measure can be built later on evidence.
+    """
+
+    assert (
+        MarketChangeService().changes(
+            observation(vix=15.5),
+            observation(vix=24.5, timestamp=AFTER),
+        )
+        == ()
+    )
+
+
+def test_a_vix_that_arrived_is_not_volatility_falling() -> None:
+    """
+    Moving out of "unknown" is a change in what could be seen.
+
+    A VIX nobody could read is not a calm market, and reporting the
+    reading's arrival as a movement would tell the investor volatility
+    changed when only the platform's sight did.
+    """
+
+    assert (
+        MarketChangeService().changes(
+            observation(vix=None),
+            observation(vix=16.0, timestamp=AFTER),
+        )
+        == ()
+    )
+
+
+def test_a_sentiment_label_change_is_reported_with_its_subject_named() -> None:
+    events = MarketChangeService().changes(
+        observation(sentiment=crypto(28, "Fear")),
+        observation(sentiment=crypto(62, "Greed"), timestamp=AFTER),
+    )
+
+    assert len(events) == 1
+
+    event = events[0]
+
+    assert event.title == "Crypto sentiment moved from Fear to Greed"
+    assert "Alternative.me read 28, and now reads 62" in event.description
+    assert event.category is ChangeCategory.MARKET
+
+    # 34 points of a 0-to-100 index: over a third of the published range.
+    assert event.severity is ChangeSeverity.HIGH
+
+
+def test_readings_of_different_asset_classes_are_not_one_change() -> None:
+    """
+    This is the whole reason a reading carries its subject.
+
+    Crypto fear turning into equity greed is two indices, not a mood that
+    moved, and the branch has already spent a commit on one index being
+    read as another.
+    """
+
+    assert (
+        MarketChangeService().changes(
+            observation(sentiment=crypto(28, "Fear")),
+            observation(sentiment=equities(62, "Greed"), timestamp=AFTER),
+        )
+        == ()
+    )
+
+
+def test_an_index_read_only_once_leaves_nothing_to_compare() -> None:
+    service = MarketChangeService()
+
+    assert (
+        service.changes(
+            observation(sentiment=None),
+            observation(sentiment=crypto(28, "Fear"), timestamp=AFTER),
+        )
+        == ()
+    )
+    assert (
+        service.changes(
+            observation(sentiment=crypto(28, "Fear")),
+            observation(sentiment=None, timestamp=AFTER),
+        )
+        == ()
+    )
+
+
+def test_several_things_moving_are_several_events() -> None:
+    events = MarketChangeService().changes(
+        observation(change_percent=1.5, vix=12.0, sentiment=crypto(28, "Fear")),
+        observation(
+            change_percent=-1.5,
+            vix=31.0,
+            sentiment=crypto(62, "Greed"),
+            timestamp=AFTER,
+        ),
+    )
+
+    assert [event.category for event in events] == [
+        ChangeCategory.MARKET,
+        ChangeCategory.MACRO,
+        ChangeCategory.MARKET,
+    ]
+
+
+def test_a_market_move_asks_the_investor_for_nothing() -> None:
+    """
+    The market moving is not an instruction.
+
+    `action_required` marks a decision the investor is being asked to make.
+    A mood that moved is context, and flagging it would put the platform in
+    the business of prompting trades on a market reading.
+    """
+
+    events = MarketChangeService().changes(
+        observation(change_percent=1.5),
+        observation(change_percent=-1.5, timestamp=AFTER),
+    )
+
+    assert all(not event.action_required for event in events)

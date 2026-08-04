@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 536 passing |
+| Pytest | 🟢 569 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -74,7 +74,11 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `GET /market/` and the markets page report every instrument the
   platform prices, grouped, with what the average move netted out
 - Every decision is recorded, and the next cycle says what changed
+- Every market observation is recorded, and the next cycle says what the
+  market did — the mood, the volatility band and the sentiment reading,
+  each stated with the figures behind it
 - The dashboard change feed reports the decisions the CIO actually changed
+  and the market movements that were actually recorded
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
@@ -92,6 +96,49 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   scored as calls — they are the platform saying it does not know yet —
   and a security that has barely moved is evidence for nobody, which the
   live run caught: a flat holding was being marked against its own call
+
+- **The market does not gate a decision, and this is the decision not to
+  make it one.** `DecisionEvidence` carries no market score. The question
+  was examined properly rather than answered by adding a field: the two
+  scores that describe the market — momentum and volatility — never reach
+  the Artificial CIO at all, and the one market input that does,
+  `MarketAssessment.confidence`, carries no information about what the
+  market did. It is `1 − | |momentum − 0.5| × 2 − volatility |`, which is
+  exactly 1 whenever the instruments move together, so a flat market and a
+  market where every instrument fell 8% both read 0.940. It is
+  nevertheless one third of the cognitive average inside `evidence_score`,
+  which is gated at 30, 60 and 75 — so the market already moves a gate, by
+  a route nobody chose, in proportion to how uniformly the instruments
+  moved. A market score would also be identical for every symbol, which is
+  the exact shape this branch removed from portfolio fit, from quality and
+  from risk; what would make it per-security — this security's exposure to
+  the corner of the market that moved — is not measured at all. And no
+  decision has yet been scored against its outcome, so no threshold could
+  be calibrated rather than asserted. The reasoning, the figures behind it
+  and the four things that must exist first are in
+  [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md). The
+  code is unchanged. Figures computed from the repository's own code, not
+  observed against a live account
+
+- **The market has a past.** Quotes were fetched, cached for fifteen
+  minutes and discarded, so nothing in the repository ever held two market
+  readings at once and no question about the market beginning "since"
+  could be answered at all. The change feed could only report decisions,
+  because decisions were the only thing anything wrote down.
+  `MarketSnapshotArchive` records each observation through the same
+  `VersionedSnapshotStore` the eToro responses go to — the store was
+  write-only and now reads back, rather than a second archive being
+  invented to hold the same kind of evidence twice. **Facts are stored and
+  the classification is not:** mood, volatility band and summary are
+  derived from the quotes and the VIX, so they are recomputed on the way
+  out by the one service that classifies markets anywhere, and a threshold
+  that changes does not leave stale conclusions behind it. A quote replayed
+  from the cache carries the time its price was actually taken, so a
+  snapshot identical to the last recorded one is not recorded again: a
+  replay is not an observation. `GET /market/` now builds its snapshot
+  through `MarketPerception` rather than assembling a second one from the
+  same three collaborators. Not verified against live data — this was
+  built and tested in a sandbox with no credentials and no network
 
 - **A sentiment reading now says what it is a reading of.** The only index
   the platform reads is Alternative.me's crypto Fear & Greed, and it was
@@ -422,12 +469,25 @@ Named rather than hidden. None of these are estimated away in the product.
   yet demonstrates it separating one security from another
 - Sector rotation and market events are still unmeasured. `/markets` says
   so rather than illustrating them
+- The market gates nothing, deliberately. It reaches the Artificial CIO
+  only through `MarketAssessment.confidence`, one third of the cognitive
+  average inside `evidence_score` — and that term measures how uniformly
+  the instruments moved, not what the market did. Making it mean evidence
+  quality, or removing it from the score, is the first fix and it changes
+  live decisions
+- A security's exposure to the market is not measured. Nothing computes a
+  beta or a correlation, so no market reading can be said to bear on one
+  security more than another — which is why no market gate exists
 - No sentiment index is read for equities. The crypto reading is the only
   one, it is labelled as such everywhere it appears, and the gap is stated
   rather than filled by the index that happens to exist
-- Nothing records what the market did. Quotes are cached for 15 minutes
-  and discarded, so there is no market series, no macro history, and
-  nothing for the change feed to say moved
+- An individual instrument's move is not reported as a change. Every
+  instrument moves between any two readings, so reporting one means
+  deciding which moves matter, and nothing here measures that. A threshold
+  chosen to look sensible would be an invented figure on an investment
+  surface. The quotes are recorded, so the measure can be built on
+  evidence later. The same holds for a VIX that moved without leaving its
+  band
 - Cash transactions are wired but uncalled: the endpoint wants a cash
   account id, and the CID from `/api/v1/me` is rejected as invalid. Which
   route lists those ids has not been established, and none is guessed at
@@ -451,8 +511,10 @@ Named rather than hidden. None of these are estimated away in the product.
 
 - API routes construct services directly, so they cannot be tested without
   network access
-- The change feed reports recorded decision changes only; market and macro
-  movements are not recorded anywhere
+- The change feed reads the market archive, so it reports movements only
+  from the second recorded observation onwards. A fresh clone has no
+  market past and says nothing rather than comparing against an invented
+  first reading
 - `ExecutivePipeline` recomputes symbol-independent reasoning per holding
 - `ClaimEngine.test.ts` has pre-existing TypeScript errors (missing `vitest`)
 
@@ -480,9 +542,10 @@ are still open.
 
 ## Explainability
 
-The change feed reports what the Artificial CIO changed its mind about.
-Extending it to what moved in the market and why it matters to this investor
-needs those movements recorded first.
+The change feed reports what the Artificial CIO changed its mind about and
+what the market did. Why a given movement matters to *this* investor — which
+holding it touches, and how much — is still open, and needs a measure of
+which moves matter before it can be answered honestly.
 
 ---
 

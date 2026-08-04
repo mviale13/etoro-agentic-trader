@@ -32,10 +32,15 @@ class RankedInvestmentCaseResponse(BaseModel):
 
 class ChangeResponse(BaseModel):
     """
-    One decision the Artificial CIO changed since it first recorded it.
+    One thing that measurably changed since the previous cycle.
 
-    The feed covers recorded decisions only. Market and macro movements are
-    not recorded anywhere yet, so they are absent rather than illustrated.
+    A decision the Artificial CIO moved, or a market classification that
+    moved between two recorded observations. Both are read back out of a
+    record; neither is recomputed here, and a quiet feed means nothing
+    moved rather than that nothing was looked at.
+
+    An individual instrument's move is not reported, because deciding
+    which move matters needs a threshold this platform does not measure.
     """
 
     title: str

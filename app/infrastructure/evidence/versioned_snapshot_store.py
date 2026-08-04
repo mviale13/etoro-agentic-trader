@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -22,14 +23,29 @@ class SnapshotReference:
     path: Path
 
 
+@dataclass(frozen=True, slots=True)
+class StoredSnapshot:
+    """One capture read back out of the archive, exactly as it was written."""
+
+    reference: SnapshotReference
+    payload: Any
+    metadata: JsonObject
+
+
 class VersionedSnapshotStore:
     """
-    Immutable filesystem store for raw broker evidence.
+    Immutable filesystem store for raw evidence.
 
-    The store preserves the complete payload exactly as supplied by the broker
-    integration, wrapped with capture metadata.
+    The store preserves the complete payload exactly as supplied by the
+    integration that captured it, wrapped with capture metadata.
 
     Existing snapshots are never overwritten.
+
+    Captures were write-only until now, which made the archive a record
+    nothing could consult: an eToro response could be audited by hand but
+    never compared with the one before it. `recent` reads the newest
+    captures back so a caller can say what changed, without a second
+    archive being invented to hold the same evidence twice.
     """
 
     def __init__(self, root: Path | str = "data/evidence") -> None:
@@ -51,8 +67,7 @@ class VersionedSnapshotStore:
         normalized_environment = self._safe_segment(environment)
         normalized_endpoint = self._safe_segment(endpoint)
 
-        payload_json = self._canonical_json(payload)
-        content_hash = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+        content_hash = self.content_hash(payload)
 
         directory = (
             self._root
@@ -90,6 +105,136 @@ class VersionedSnapshotStore:
             content_hash=content_hash,
             path=destination,
         )
+
+    def recent(
+        self,
+        *,
+        broker: str,
+        environment: str,
+        endpoint: str,
+        limit: int = 1,
+        now: datetime | None = None,
+    ) -> tuple[StoredSnapshot, ...]:
+        """
+        The most recent captures for one endpoint, newest first.
+
+        An endpoint nothing has captured yet returns nothing, which is not
+        an error: an archive with no history says so rather than inventing
+        a first entry to compare against.
+
+        The walk descends the dated directories newest first and stops as
+        soon as `limit` captures have been read, so asking for the last two
+        market observations does not open a year of eToro responses. File
+        names begin with a fixed-width UTC timestamp, so their lexical
+        order is their chronological order.
+
+        `now` bounds the walk to captures at or before that moment; it is
+        for reading history as of a point in time, and defaults to reading
+        everything.
+        """
+
+        if limit <= 0:
+            return ()
+
+        directory = (
+            self._root
+            / self._safe_segment(broker)
+            / self._safe_segment(environment)
+            / self._safe_segment(endpoint)
+        )
+
+        if not directory.is_dir():
+            return ()
+
+        collected: list[StoredSnapshot] = []
+
+        for day in self._days_newest_first(directory):
+            for path in sorted(day.glob("*.json"), reverse=True):
+                if path.name.startswith("."):
+                    continue
+
+                stored = self._read(path)
+
+                if stored is None:
+                    continue
+
+                if now is not None and stored.reference.captured_at > now:
+                    continue
+
+                collected.append(stored)
+
+                if len(collected) >= limit:
+                    return tuple(collected)
+
+        return tuple(collected)
+
+    @staticmethod
+    def _days_newest_first(directory: Path) -> Iterator[Path]:
+        """Walk the year/month/day directories, newest first."""
+
+        def descend(parent: Path) -> list[Path]:
+            return sorted(
+                (child for child in parent.iterdir() if child.is_dir()),
+                key=lambda child: child.name,
+                reverse=True,
+            )
+
+        for year in descend(directory):
+            for month in descend(year):
+                yield from descend(month)
+
+    def _read(self, path: Path) -> StoredSnapshot | None:
+        """
+        One capture, or nothing when the file is not a readable envelope.
+
+        A half-written or hand-edited file is skipped rather than raised
+        on. The archive is evidence; one unreadable entry must not make the
+        rest of it unreachable.
+        """
+
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return None
+
+        if not isinstance(document, dict):
+            return None
+
+        try:
+            captured_at = datetime.fromisoformat(
+                str(document["captured_at"]).replace("Z", "+00:00"),
+            )
+        except (KeyError, ValueError):
+            return None
+
+        metadata = document.get("metadata")
+
+        return StoredSnapshot(
+            reference=SnapshotReference(
+                broker=str(document.get("broker", "")),
+                environment=str(document.get("environment", "")),
+                endpoint=str(document.get("endpoint", "")),
+                captured_at=self._as_utc(captured_at),
+                content_hash=str(document.get("content_hash", "")),
+                path=path,
+            ),
+            payload=document.get("payload"),
+            metadata=metadata if isinstance(metadata, dict) else {},
+        )
+
+    @classmethod
+    def content_hash(cls, payload: Any) -> str:
+        """
+        What this payload hashes to, under the store's own canonical form.
+
+        Public because a caller deciding whether a capture is new must ask
+        that question the same way the store answers it. Two hashing rules
+        for one archive would disagree on exactly the payloads that matter.
+        """
+
+        return hashlib.sha256(
+            cls._canonical_json(payload).encode("utf-8"),
+        ).hexdigest()
 
     @staticmethod
     def _canonical_json(payload: Any) -> str:
