@@ -36,6 +36,11 @@ class BrainContext:
     )
     #: Securities the investor watches but does not hold.
     candidates: tuple[ResearchCandidate, ...] = ()
+    #: Candidate symbols this cycle actually spent a fundamentals request
+    #: on. A fact about what happened, recorded by the component that did
+    #: it — the funnel's "reviewed" is read from here, never reconstructed
+    #: by arithmetic on the budget.
+    attempted_candidates: tuple[str, ...] = ()
     #: What the Artificial CIO decided before, keyed by symbol.
     decision_history: Mapping[str, DecisionHistory] = field(
         default_factory=dict,

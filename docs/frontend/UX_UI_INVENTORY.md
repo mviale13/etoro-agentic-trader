@@ -258,7 +258,20 @@ isolation via `git archive HEAD`:
   the real account exercised the honest paths on its own (an unresolved
   `#1238` row, a 0.2%-unclassified crypto absence with its reason).
 
-Still open, in order: Research/Markets/Track Record refinement per the
-mission's screen responsibilities (research funnel reviewed/unevidenced
-emphasis; markets "informs, does not gate" statement; honest outcome
-maturity), and a future Decisions inbox surface once the contract earns it.
+- **Research slice** (`70847f8`, PR #13) — the funnel now names what it
+  previously only counted. `SecurityPerception.perceive()` records which
+  candidates a fundamentals request was actually spent on; the Brain
+  carries `attempted_candidates` as a fact; the research service derives
+  the "reviewed" count *and* two named groups from that one record —
+  `unevidenced` (request spent, nothing came back, deliberately not
+  judged) and `not_reviewed` (outside the budget, nobody looked). The
+  route stops reconstructing "reviewed" by arithmetic. The page renders
+  both groups with symbol, name and source watchlist; the strict parser
+  requires the new fields and fails loudly against an older backend.
+  Verified live in three states, including a genuine old-contract backend
+  refusing to partially render.
+
+Still open, in order: Markets/Track Record refinement per the mission's
+screen responsibilities (markets "informs, does not gate" statement;
+honest outcome maturity), and a future Decisions inbox surface once the
+contract earns it.

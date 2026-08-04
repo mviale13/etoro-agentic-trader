@@ -2,6 +2,7 @@ import type {
   ResearchCandidateViewModel,
   ResearchFunnelViewModel,
   ResearchPipelineViewModel,
+  WatchedCandidateViewModel,
 } from "@/lib/view-models/research";
 
 const BACKEND_URL =
@@ -129,6 +130,27 @@ function parseCandidate(
   };
 }
 
+function parseWatched(
+  payload: unknown,
+  field: string,
+): readonly WatchedCandidateViewModel[] {
+  if (!Array.isArray(payload)) {
+    throw new Error(`Expected an array at "${field}".`);
+  }
+
+  return payload.map((item, index) => {
+    if (!isRecord(item)) {
+      throw new Error(`${field}[${index}] is not a JSON object.`);
+    }
+
+    return {
+      symbol: requireString(item.symbol, `${field}[${index}].symbol`),
+      name: requireString(item.name, `${field}[${index}].name`),
+      source: requireString(item.source, `${field}[${index}].source`),
+    };
+  });
+}
+
 export async function getResearchPipeline(): Promise<ResearchResult> {
   const endpoint = `${BACKEND_URL}/research/candidates`;
 
@@ -157,6 +179,8 @@ export async function getResearchPipeline(): Promise<ResearchResult> {
       pipeline: {
         funnel: parseFunnel(payload.funnel),
         candidates: candidates.map(parseCandidate),
+        unevidenced: parseWatched(payload.unevidenced, "unevidenced"),
+        notReviewed: parseWatched(payload.not_reviewed, "not_reviewed"),
       },
       backendUrl: endpoint,
     };

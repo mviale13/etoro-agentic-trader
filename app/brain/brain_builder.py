@@ -29,6 +29,7 @@ class BrainBuilder:
     committee_opinions: Mapping[str, tuple[object, ...]] = field(default_factory=dict)
     memory: Mapping[str, object] = field(default_factory=dict)
     candidates: tuple[ResearchCandidate, ...] = ()
+    attempted_candidates: tuple[str, ...] = ()
     decision_history: Mapping[str, DecisionHistory] = field(default_factory=dict)
     alerts: tuple[str, ...] = ()
 
@@ -47,6 +48,7 @@ class BrainBuilder:
             },
             memory=dict(self.memory),
             candidates=tuple(self.candidates),
+            attempted_candidates=tuple(self.attempted_candidates),
             decision_history=dict(self.decision_history),
             alerts=tuple(self.alerts),
         )

@@ -11,6 +11,7 @@ from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_signals import CompanySignals
 from app.domain.momentum_signal import MomentumSignal
 from app.domain.quality_signal import QualitySignal
+from app.domain.research_candidate import ResearchCandidate
 from app.domain.value_signal import ValueSignal
 from app.domain.watchlist_item import WatchlistItem
 from tests.test_brain_context import make_portfolio
@@ -129,3 +130,72 @@ async def test_a_symbol_no_watchlist_names_produces_no_evidence() -> None:
 
     assert await security.execute(make_portfolio(), focus_symbols=("ZZZZ",)) == {}
     assert signals.built == []
+
+
+class FailingSignalStub(SignalStub):
+    """Succeeds for every symbol except the ones told to fail."""
+
+    def __init__(self, *failing: str) -> None:
+        super().__init__()
+        self._failing = set(failing)
+
+    async def build(self, item: WatchlistItem) -> CompanySignals:
+        if item.symbol in self._failing:
+            raise RuntimeError(f"provider refused {item.symbol}")
+
+        return await super().build(item)
+
+
+def make_candidate(instrument_id: int, symbol: str) -> "ResearchCandidate":
+    return ResearchCandidate(
+        symbol=symbol,
+        name=f"{symbol} Inc",
+        source="My Watchlist",
+        instrument_id=instrument_id,
+    )
+
+
+@pytest.mark.anyio
+async def test_perception_records_which_candidates_it_spent_requests_on() -> None:
+    """
+    "Reviewed" is a record made by the component that did the reviewing.
+
+    It used to be reconstructed downstream from the budget, which counted
+    the candidates left out but could not name them.
+    """
+
+    security, _ = perception("AAAA", "BBBB", "CCCC")
+
+    result = await security.perceive(
+        make_portfolio(),
+        candidates=(
+            make_candidate(1, "AAAA"),
+            make_candidate(2, "BBBB"),
+            make_candidate(3, "CCCC"),
+        ),
+        candidate_limit=2,
+    )
+
+    assert result.attempted_candidates == ("AAAA", "BBBB")
+    assert set(result.evidence) == {"AAAA", "BBBB"}
+
+
+@pytest.mark.anyio
+async def test_a_failed_request_is_still_recorded_as_attempted() -> None:
+    """Attempted-and-unreadable is the definition of unevidenced."""
+
+    signals = FailingSignalStub("BBBB")
+
+    security = SecurityPerception(
+        symbol_resolver=ResolverStub("AAAA", "BBBB"),  # type: ignore[arg-type]
+        signal_service=signals,  # type: ignore[arg-type]
+    )
+
+    result = await security.perceive(
+        make_portfolio(),
+        candidates=(make_candidate(1, "AAAA"), make_candidate(2, "BBBB")),
+        candidate_limit=2,
+    )
+
+    assert result.attempted_candidates == ("AAAA", "BBBB")
+    assert set(result.evidence) == {"AAAA"}

@@ -83,6 +83,30 @@ class ResearchCandidateResponse(BaseModel):
     previous_decisions: str | None = None
 
 
+class WatchedCandidateResponse(BaseModel):
+    """
+    A watched security the cycle could not judge, by name.
+
+    The funnel counts these; this names them. A security silently absent
+    from the candidate list reads as considered-and-dismissed, which is a
+    different claim from "nobody looked" or "nothing could be read".
+    """
+
+    symbol: str
+    name: str
+
+    #: The watchlist that names it.
+    source: str
+
+
 class ResearchPipelineResponse(BaseModel):
     funnel: ResearchFunnelResponse
     candidates: list[ResearchCandidateResponse]
+
+    #: Reviewed — a fundamentals request was spent — but no evidence came
+    #: back, so the CIO deliberately did not judge them.
+    unevidenced: list[WatchedCandidateResponse]
+
+    #: Not looked at this cycle: each review costs a rate-limited request,
+    #: and these fell outside the cycle's budget.
+    not_reviewed: list[WatchedCandidateResponse]
