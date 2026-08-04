@@ -261,6 +261,20 @@ def test_executive_brief_route_serves_a_brief_for_the_symbol(
     assert body["symbol"] == "MSFT"
     assert body["headline"]
 
+    # The backend words its own figures; no surface bands them itself.
+    assert body["portfolio_health_label"] in {
+        "Healthy",
+        "Stable",
+        "Needs attention",
+        "At risk",
+    }
+
+    for priority in body["priorities"]:
+        assert priority["urgency_band"] in {"now", "today", "monitor"}
+
+    for case in body["investment_cases"]:
+        assert case["conviction_label"].endswith("Conviction")
+
 
 def test_executive_brief_states_plainly_when_a_symbol_is_not_evidenced(
     client: TestClient,

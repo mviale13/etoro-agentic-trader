@@ -18,6 +18,11 @@ class RankedInvestmentCaseResponse(BaseModel):
     symbol: str
     recommendation: str
     conviction: int
+
+    #: The conviction put into words, e.g. "High Conviction". Worded by the
+    #: backend so no surface invents its own thresholds.
+    conviction_label: str
+
     committee_agreement: int
     risk_level: str
     summary: str
@@ -56,6 +61,11 @@ class PortfolioBriefingResponse(BaseModel):
     summary: str
     confidence: float | None = None
     portfolio_health: float
+
+    #: The health score put into words, e.g. "Healthy". Worded by the
+    #: backend so no surface invents its own thresholds.
+    portfolio_health_label: str
+
     priorities: list[ExecutivePriorityResponse]
     investment_cases: list[RankedInvestmentCaseResponse]
     changes: list[ChangeResponse] = []

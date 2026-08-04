@@ -16,9 +16,13 @@ import type {
   PriorityUrgency,
 } from "@/lib/view-models/executive-workspace";
 
+/**
+ * Rendered only with backend data. When the backend is unreachable the
+ * page shows an explicit unavailable state instead of this component —
+ * there is no demo mode.
+ */
 interface ExecutiveWorkspaceBriefingProps {
   workspace: ExecutiveWorkspaceViewModel;
-  dataSource?: "backend" | "fallback";
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -26,6 +30,11 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
+
+/** A small share keeps its decimal: "0.5%" must not round up to "1%". */
+function formatPercent(pct: number): string {
+  return pct >= 10 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
+}
 
 const changePresentation: Record<
   ChangeSeverity,
@@ -99,47 +108,13 @@ function SnapshotMetric({
   );
 }
 
-function DataSourceBadge({
-  dataSource,
-}: {
-  dataSource: "backend" | "fallback";
-}) {
-  const isBackend = dataSource === "backend";
-
-  return (
-    <div
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-        isBackend
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-amber-200 bg-amber-50 text-amber-700"
-      }`}
-    >
-      <span
-        aria-hidden="true"
-        className={`size-1.5 rounded-full ${
-          isBackend ? "bg-emerald-500" : "bg-amber-500"
-        }`}
-      />
-
-      {isBackend ? "Live backend" : "Demo fallback"}
-    </div>
-  );
-}
-
 function PortfolioSnapshot({
   portfolio,
   reviewedAt,
-  dataSource,
 }: {
   portfolio: PortfolioSnapshotViewModel;
   reviewedAt: string;
-  dataSource: "backend" | "fallback";
 }) {
-  const cashRatio =
-    portfolio.totalEquity > 0
-      ? Math.round((portfolio.availableCash / portfolio.totalEquity) * 100)
-      : 0;
-
   const investedDetail =
     portfolio.unrealizedProfitLoss === null
       ? "Unrealized P&L not reported"
@@ -170,13 +145,7 @@ function PortfolioSnapshot({
               Portfolio snapshot
             </h1>
 
-            {/* Real account figures, unless the backend was unreachable and
-                the demo workspace is standing in. */}
-            {dataSource === "backend" ? (
-              <StatusPill status="live" label="Live account" />
-            ) : (
-              <StatusPill status="placeholder" label="Demo data" />
-            )}
+            <StatusPill status="live" label="Live account" />
           </div>
         </div>
 
@@ -203,7 +172,7 @@ function PortfolioSnapshot({
             <SnapshotMetric
               label="Available cash"
               value={currencyFormatter.format(portfolio.availableCash)}
-              detail={`${cashRatio}% of portfolio`}
+              detail={`${Math.round(portfolio.liquidityPct)}% of portfolio`}
             />
           </div>
 
@@ -241,22 +210,44 @@ function PortfolioSnapshot({
             </span>
           </div>
 
+          {/* The Brain's assessment, in the Brain's words. A risk nobody
+              could measure says so — it is never defaulted to "Low". */}
           <div className="flex items-center gap-3">
             <ShieldCheck aria-hidden="true" className="size-4 text-slate-400" />
             <span className="text-slate-500">Risk</span>
-            <span className="ml-auto font-semibold text-slate-950">
-              {portfolio.riskLevel}
+            <span
+              className={`ml-auto font-semibold ${
+                portfolio.riskLevel === null
+                  ? "text-slate-400"
+                  : "capitalize text-slate-950"
+              }`}
+            >
+              {portfolio.riskLevel ?? "Not measured"}
             </span>
           </div>
 
+          {/* A fact about concentration, not a judgment of it: the largest
+              holding and its share of the account, as measured. */}
           <div className="flex items-center gap-3">
             <BriefcaseBusiness
               aria-hidden="true"
               className="size-4 text-slate-400"
             />
-            <span className="text-slate-500">Diversification</span>
-            <span className="ml-auto font-semibold text-slate-950">
-              {portfolio.diversification}
+            <span className="text-slate-500">Largest position</span>
+            <span
+              className={`ml-auto font-semibold ${
+                portfolio.largestPositionSymbol === null
+                  ? "text-slate-400"
+                  : "text-slate-950"
+              }`}
+            >
+              {portfolio.largestPositionSymbol === null
+                ? "No positions"
+                : portfolio.largestPositionPct === null
+                  ? portfolio.largestPositionSymbol
+                  : `${portfolio.largestPositionSymbol} · ${formatPercent(
+                      portfolio.largestPositionPct,
+                    )}`}
             </span>
           </div>
         </div>
@@ -267,21 +258,13 @@ function PortfolioSnapshot({
 
 export function ExecutiveWorkspaceBriefing({
   workspace,
-  dataSource = "fallback",
 }: ExecutiveWorkspaceBriefingProps) {
   return (
     <div className="space-y-16">
-      <div>
-        <div className="mb-4 flex justify-end">
-          <DataSourceBadge dataSource={dataSource} />
-        </div>
-
-        <PortfolioSnapshot
-          portfolio={workspace.portfolio}
-          reviewedAt={workspace.lastReviewedAt}
-          dataSource={dataSource}
-        />
-      </div>
+      <PortfolioSnapshot
+        portfolio={workspace.portfolio}
+        reviewedAt={workspace.lastReviewedAt}
+      />
 
       <section aria-labelledby="changes-heading">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -303,11 +286,7 @@ export function ExecutiveWorkspaceBriefing({
                   and sentiment — are recorded and reported. Individual
                   instrument moves are not measured yet, so the feed is
                   genuine but partial. */}
-              {dataSource === "backend" ? (
-                <StatusPill status="partial" label="Decisions & market moves" />
-              ) : (
-                <StatusPill status="placeholder" label="Demo data" />
-              )}
+              <StatusPill status="partial" label="Decisions & market moves" />
 
             </div>
           </div>
@@ -400,11 +379,7 @@ export function ExecutiveWorkspaceBriefing({
                 what it decided before. Behavioural consistency still needs a
                 record of the investor's own actions, so this is genuine but
                 incomplete reasoning. */}
-            {dataSource === "backend" ? (
-              <StatusPill status="partial" label="Artificial CIO" />
-            ) : (
-              <StatusPill status="placeholder" label="Demo data" />
-            )}
+            <StatusPill status="partial" label="Artificial CIO" />
           </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
