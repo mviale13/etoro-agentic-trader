@@ -231,6 +231,20 @@ isolation via `git archive HEAD`:
   real page. Verified live in three states (evidenced, unevidenced, backend
   down).
 
-Still open, in order: navigation reshape and the shared `DecisionCard`,
-then Portfolio/Research/Markets/Track Record per the mission's screen
-responsibilities.
+- **Nav + DecisionCard slice** (`148a92e`, PR #11) — navigation maps the
+  product: Overview (renamed from "Executive Workspace" everywhere),
+  Portfolio, Research, Markets, Investor Policy, Settings; Brain demoted to
+  an unadvertised diagnostics route. `components/decisions/DecisionCard.tsx`
+  is the one presentation of a decision's identity (security, state,
+  conviction in the backend's words, recorded history, "Review case"),
+  adopted by the Overview's cases and the Research pipeline; the research
+  contract gained `conviction_label`. Promoting `/strategy` surfaced and
+  fixed two defects: it read `NEXT_PUBLIC_API_URL` (every other client reads
+  `MOVRVEST_API_URL`) and it crashed with a 500 when the backend was away —
+  it now joins the shared layout and fails honestly.
+
+Still open, in order: Portfolio/Research/Markets/Track Record refinement per
+the mission's screen responsibilities (portfolio capacity and measured risk
+decomposition; research funnel reviewed/unevidenced emphasis; markets
+"informs, does not gate" statement; honest outcome maturity), and a future
+Decisions inbox surface once the contract earns it.
