@@ -17,9 +17,9 @@ It helps the investor make a better-informed decision.
 ## Philosophy
 
 Before exploring the code, read the
-**[MOVRvest Manifesto](docs/MANIFESTO.md)**.
-
-It defines the principles that guide every architectural and investment decision.
+**[Engineering Constitution](docs/ENGINEERING_CONSTITUTION.md)**. It holds the
+principles that guide every architectural and investment decision;
+[`docs/README.md`](docs/README.md) indexes the rest.
 
 ## Current status
 

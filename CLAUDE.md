@@ -19,9 +19,11 @@ short, and keep it true — everything here is checkable.
 | What is next, and what is open? | [`docs/architecture/MIGRATION_PLAN.md`](docs/architecture/MIGRATION_PLAN.md) |
 | How does the pipeline work? | [`docs/architecture.md`](docs/architecture.md) — **v5.0 section only** |
 
-**`docs/` also holds ~20 older documents.** Several contradict each other and
-predate the current architecture. Treat anything not listed above as
-historical unless you verify it against the code.
+[`docs/README.md`](docs/README.md) indexes the above and names the one
+reference doc ([`docs/ETORO_API.md`](docs/ETORO_API.md)). The ~20 older
+documents that predated the current architecture — several contradicting each
+other and the code — now live under [`docs/archive/`](docs/archive/). Treat
+anything not listed above as historical unless you verify it against the code.
 
 ---
 

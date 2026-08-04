@@ -470,9 +470,12 @@ change feed. It does not gate.
 - [ ] `ClaimEngine.test.ts` has pre-existing TypeScript errors (`vitest` is
       not installed); excluded from the Next build graph, so it does not
       break the gate
-- [ ] `docs/` holds ~20 documents, several superseded and a few iCloud
-      conflict copies. Consolidate or mark them, as was done for
-      architecture v4.0
+- [x] `docs/` is indexed and the superseded documents are quarantined.
+      [`docs/README.md`](../README.md) names the current set and the one
+      reference doc; the ~20 older documents moved to `docs/archive/` (with
+      its own README mapping each to what replaced it), and the two iCloud
+      `architecture` conflict copies were deleted. `CLAUDE.md` and the root
+      `README.md` point at the index.
 
 ---
 
