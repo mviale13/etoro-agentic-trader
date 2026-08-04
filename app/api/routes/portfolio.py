@@ -1,11 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies import get_account_service
 from app.api.models.portfolio import (
     AllocationResponse,
     PortfolioResponse,
 )
-from app.brokers.etoro_account import EtoroAccountBroker
-from app.config import Settings
 from app.services.account_service import AccountService
 from app.services.portfolio_service import PortfolioService
 
@@ -16,11 +15,10 @@ router = APIRouter(
 
 
 @router.get("/", response_model=PortfolioResponse)
-async def get_portfolio() -> PortfolioResponse:
-    settings = Settings()
-    broker = EtoroAccountBroker(settings)
-
-    account = await AccountService(broker).snapshot()
+async def get_portfolio(
+    account_service: AccountService = Depends(get_account_service),
+) -> PortfolioResponse:
+    account = await account_service.snapshot()
     portfolio = PortfolioService().analyze(account)
 
     return PortfolioResponse(

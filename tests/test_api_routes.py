@@ -13,18 +13,24 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.dependencies import (
+    get_account_service,
     get_brain_builder_service,
     get_brain_snapshot_service,
+    get_brief_service,
 )
 from app.api.main import app
 from app.brain import Brain, BrainBuilder
+from app.domain.account_snapshot import AccountSnapshot
 from app.domain.brain_snapshot import BrainSnapshot
+from app.domain.brief_snapshot import BriefSnapshot
 from app.domain.committee_decision import CommitteeDecision
 from app.domain.investor_dna import InvestorDNA
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.observation import Observation
+from app.domain.portfolio_health import HealthCheck, PortfolioHealth
 from app.domain.recommendation import Recommendation
 from tests.test_brain_context import make_market, make_policy, make_portfolio
+from tests.test_portfolio_service import build_account
 
 
 def make_brain() -> Brain:
@@ -104,6 +110,66 @@ class StubBrainBuilder:
         focus_symbols: Sequence[str] = (),
     ) -> Brain:
         return self._brain
+
+
+class StubAccountService:
+    def __init__(self, account: AccountSnapshot) -> None:
+        self._account = account
+
+    async def snapshot(self) -> AccountSnapshot:
+        return self._account
+
+
+class StubBriefService:
+    def __init__(self, snapshot: BriefSnapshot) -> None:
+        self._snapshot = snapshot
+
+    async def build(self) -> BriefSnapshot:
+        return self._snapshot
+
+
+def make_brief() -> BriefSnapshot:
+    """A morning brief with a health score and a recommendation."""
+
+    portfolio = make_portfolio()
+
+    return BriefSnapshot(
+        greeting="Good morning.",
+        health=PortfolioHealth(
+            overall_score=72,
+            checks=[
+                HealthCheck(
+                    name="Diversification",
+                    score=68,
+                    status="ok",
+                    message="Spread across four positions.",
+                ),
+            ],
+            recommendation="Hold course.",
+        ),
+        recommendation=Recommendation(
+            symbol="MSFT",
+            portfolio=portfolio,
+            intelligence=MarketIntelligence(
+                market=make_market(),
+                sentiment=None,
+                outlook="constructive",
+                confidence=80,
+                summary="Markets are constructive.",
+            ),
+            decision=CommitteeDecision(
+                recommendation="BUY",
+                confidence=87,
+                buy_votes=3,
+                hold_votes=1,
+                sell_votes=0,
+                opinions=(),
+            ),
+        ),
+        changes=("Cash fell to 20%.",),
+        summary="A steady account in a constructive market.",
+        next_action="Review MSFT.",
+    )
 
 
 @pytest.fixture
@@ -209,3 +275,58 @@ def test_portfolio_briefing_is_a_404_when_there_is_nothing_to_explain(
     response = client.get("/executive/portfolio")
 
     assert response.status_code == 404
+
+
+def test_portfolio_route_serves_the_analysed_account(client: TestClient) -> None:
+    """The real PortfolioService runs; only the account fetch is stubbed."""
+
+    app.dependency_overrides[get_account_service] = lambda: StubAccountService(
+        build_account(equity=100_000.0, cash=25_000.0, invested=75_000.0, positions=4)
+    )
+
+    response = client.get("/portfolio/")
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["total_value"] == 100_000.0
+    assert body["available_cash_usd"] == 25_000.0
+    assert body["positions"] == 4
+    assert body["source"] == "eToro Demo"
+
+
+def test_portfolio_route_reports_a_missing_value_honestly(client: TestClient) -> None:
+    """A blank account is not a full one — cash absent is reported as absent.
+
+    `PortfolioService` treats a missing figure as zero for the allocation
+    maths, but the account view still reflects what the broker returned
+    rather than inventing a balance.
+    """
+
+    app.dependency_overrides[get_account_service] = lambda: StubAccountService(
+        build_account(equity=None, cash=None, invested=None)
+    )
+
+    body = client.get("/portfolio/").json()
+
+    assert body["total_value"] == 0
+    assert body["allocation"]["cash"] == 0
+    assert body["allocation"]["unclassified"] == 0
+
+
+def test_today_route_serves_the_morning_brief(client: TestClient) -> None:
+    app.dependency_overrides[get_brief_service] = lambda: StubBriefService(make_brief())
+
+    response = client.get("/api/today")
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["greeting"] == "Good morning."
+    assert body["health"]["score"] == 72
+    assert body["health"]["checks"][0]["name"] == "Diversification"
+    assert body["recommendation"]["symbol"] == "MSFT"
+    assert body["recommendation"]["action"] == "BUY"
+    assert body["next_action"] == "Review MSFT."

@@ -386,7 +386,14 @@ change feed. It does not gate.
       against, and exchange volume is not on-chain volume, so an NVT-style
       ratio would be a metric invented rather than measured. A crypto case
       therefore stops at PREPARE
-- [ ] Holdings absent from every watchlist cannot be named or analysed
+- [ ] Holdings absent from every watchlist cannot be analysed. Naming is
+      handled (the broker's own symbol, else a `#id` placeholder), and an
+      unresolved holding now reaches the brief with the honest "no
+      security-level analysis" line rather than a misleading one. What
+      remains is evidencing it: `SecurityPerception` still needs a
+      `WatchlistItem` for the asset type, so a held instrument no watchlist
+      names is drawn without a signal. Rare in practice — eToro's
+      "RecentlyInvested" watchlist carries held instruments
 - [ ] Research still evidences a capped number of candidates per cycle. With
       the cache warm the cap could rise substantially; the first cycle of a
       day is what costs
@@ -413,10 +420,16 @@ change feed. It does not gate.
       `CommitteeService.review` takes the symbol, `Brain.security_evidence`
       is the single accessor both use, and a committee with nothing to go on
       abstains rather than opining on the account
-- [ ] A security no watchlist names now draws no committee view at all, so
-      `InvestmentThesis.confidence` is None and the brief says agreement was
-      not measured. Correct, but it means `movrvest evaluate` on an unknown
-      symbol reports less than it used to
+- [x] A security no watchlist names is told apart from one that was looked
+      at. It still draws no committee view — `InvestmentThesis.confidence`
+      stays None — but the Artificial CIO no longer says "business quality
+      has not been measured", which promised a reading of a security the
+      platform never fetched. `DecisionEvidence.security_evidenced` is false
+      when the Brain held nothing about the symbol, and the CIO states that
+      plainly: "No security-level analysis is available for X." It asserts
+      the fact, not the cause — a fetch may have failed rather than the
+      symbol being unknown. Analysing an unevidenced symbol from Yahoo alone
+      is a larger, separate step, and this does not attempt it
 - [ ] Signal evidence has no polarity, so favourable and adverse findings
       cannot be told apart. `InvestmentThesis.strengths` and `.risks`
 - [x] Signal evidence carries polarity. `Finding` pairs each statement
@@ -443,15 +456,17 @@ change feed. It does not gate.
 ## Delivery
 
 - [x] API routes can be tested without the network. The network-coupled
-      composition roots (`BrainBuilderService`, `BrainSnapshotService`) are
-      FastAPI dependencies now — `app/api/dependencies.py` — so a test
-      overrides them through `app.dependency_overrides` and exercises the
-      route offline. The seam is proven on the flagship routes in
+      composition roots (`BrainBuilderService`, `BrainSnapshotService`,
+      `AccountService`, `BriefService`) are FastAPI dependencies now —
+      `app/api/dependencies.py` — so a test overrides them through
+      `app.dependency_overrides` and exercises the route offline. Proven in
       `tests/test_api_routes.py`: `/brain/` serialization including the
       null-vs-zero honesty, `/executive/{symbol}` over real offline
-      reasoning, and the `/executive/portfolio` 404 branch that no test could
-      reach before. The remaining routes still construct inline; they follow
-      the same pattern as each is brought under test.
+      reasoning (and its unevidenced-symbol wording), the
+      `/executive/portfolio` 404 branch that no test could reach before,
+      `/portfolio/` over the real `PortfolioService` with only the account
+      fetch stubbed, and `/api/today`. The remaining routes still construct
+      inline; they follow the same pattern as each is brought under test.
 - [x] The change feed reports market and macro movements. Every observation
       is recorded through the same `VersionedSnapshotStore` the eToro
       responses go to, and `MarketChangeService` reports the mood, the

@@ -13,6 +13,10 @@ serialization and its error branches stay in the route, now reachable.
 
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.brain.brain_snapshot_service import BrainSnapshotService
+from app.brokers.etoro_account import EtoroAccountBroker
+from app.config import Settings
+from app.services.account_service import AccountService
+from app.services.brief_service import BriefService
 
 
 def get_brain_builder_service() -> BrainBuilderService:
@@ -25,3 +29,15 @@ def get_brain_snapshot_service() -> BrainSnapshotService:
     """The factual snapshot the dashboard is served from."""
 
     return BrainSnapshotService()
+
+
+def get_account_service() -> AccountService:
+    """The eToro account snapshot behind the portfolio view."""
+
+    return AccountService(EtoroAccountBroker(Settings()))
+
+
+def get_brief_service() -> BriefService:
+    """The morning brief the today route serves."""
+
+    return BriefService()
