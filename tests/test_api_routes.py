@@ -17,8 +17,16 @@ from app.api.dependencies import (
     get_brain_builder_service,
     get_brain_snapshot_service,
     get_brief_service,
+    get_dashboard_service,
+    get_market_perception,
 )
 from app.api.main import app
+from app.api.models.dashboard import DashboardResponse
+from app.api.models.today import (
+    HealthResponse,
+    RecommendationResponse,
+    TodayResponse,
+)
 from app.brain import Brain, BrainBuilder
 from app.domain.account_snapshot import AccountSnapshot
 from app.domain.brain_snapshot import BrainSnapshot
@@ -26,6 +34,7 @@ from app.domain.brief_snapshot import BriefSnapshot
 from app.domain.committee_decision import CommitteeDecision
 from app.domain.investor_dna import InvestorDNA
 from app.domain.market_intelligence import MarketIntelligence
+from app.domain.market_snapshot import MarketSnapshot
 from app.domain.observation import Observation
 from app.domain.portfolio_health import HealthCheck, PortfolioHealth
 from app.domain.recommendation import Recommendation
@@ -108,8 +117,25 @@ class StubBrainBuilder:
     async def build(
         self,
         focus_symbols: Sequence[str] = (),
+        candidate_limit: int | None = None,
     ) -> Brain:
         return self._brain
+
+
+class StubMarketPerception:
+    def __init__(self, market: MarketSnapshot) -> None:
+        self._market = market
+
+    async def execute(self) -> MarketSnapshot:
+        return self._market
+
+
+class StubDashboardService:
+    def __init__(self, dashboard: DashboardResponse) -> None:
+        self._dashboard = dashboard
+
+    async def build(self) -> DashboardResponse:
+        return self._dashboard
 
 
 class StubAccountService:
@@ -330,3 +356,103 @@ def test_today_route_serves_the_morning_brief(client: TestClient) -> None:
     assert body["recommendation"]["symbol"] == "MSFT"
     assert body["recommendation"]["action"] == "BUY"
     assert body["next_action"] == "Review MSFT."
+
+
+def test_market_route_serves_the_snapshot_and_its_breadth(client: TestClient) -> None:
+    """The real MarketBreadthService runs; only the perception is stubbed."""
+
+    app.dependency_overrides[get_market_perception] = lambda: StubMarketPerception(
+        make_market()
+    )
+
+    response = client.get("/market/")
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["mood"] == "constructive"
+    assert body["quotes"][0]["symbol"] == "MSFT"
+    assert "equities" in body["breadth"]
+
+
+def test_market_route_reports_the_unread_as_null(client: TestClient) -> None:
+    """The fixture carries no VIX, no reading and no sentiment index.
+
+    Each is served as null rather than a figure or a flat zero — a market
+    nobody has dated is not a fresh one, and no sentiment is not neutral
+    sentiment.
+    """
+
+    app.dependency_overrides[get_market_perception] = lambda: StubMarketPerception(
+        make_market()
+    )
+
+    body = client.get("/market/").json()
+
+    assert body["vix"] is None
+    assert body["observed"] is None
+    assert body["sentiment"] is None
+
+
+def test_research_route_serves_the_funnel_when_there_are_no_candidates(
+    client: TestClient,
+) -> None:
+    """The fixture brain watches nothing, so the funnel is honestly empty."""
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        make_brain()
+    )
+
+    response = client.get("/research/candidates")
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["funnel"]["candidates"] == 0
+    assert body["candidates"] == []
+
+
+def make_dashboard() -> DashboardResponse:
+    """A dashboard payload with only its required section filled.
+
+    The optional sections are None, which is what the route must pass
+    through as JSON null rather than an empty object dressed as data.
+    """
+
+    return DashboardResponse(
+        today=TodayResponse(
+            greeting="Good morning.",
+            health=HealthResponse(score=70, checks=[]),
+            summary="A steady account.",
+            changes=[],
+            recommendation=RecommendationResponse(
+                symbol="MSFT",
+                action="BUY",
+                confidence=87,
+                opinions=[],
+            ),
+            next_action="Hold course.",
+        ),
+        portfolio=None,
+        observation=None,
+        reflection=None,
+        investor_dna=None,
+    )
+
+
+def test_dashboard_route_passes_the_composite_through(client: TestClient) -> None:
+    app.dependency_overrides[get_dashboard_service] = lambda: StubDashboardService(
+        make_dashboard()
+    )
+
+    response = client.get("/dashboard/")
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["today"]["greeting"] == "Good morning."
+    assert body["portfolio"] is None
+    assert body["investor_dna"] is None

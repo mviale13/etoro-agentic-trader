@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from app.api.dependencies import get_brain_builder_service
 from app.api.models.research import (
     ResearchCandidateResponse,
     ResearchFunnelResponse,
@@ -35,6 +36,7 @@ async def research_candidates(
         le=40,
         description="How many watched securities to evidence this cycle.",
     ),
+    builder: BrainBuilderService = Depends(get_brain_builder_service),
 ) -> ResearchPipelineResponse:
     """
     Judge the securities the investor watches but does not hold.
@@ -42,9 +44,7 @@ async def research_candidates(
     Watchlists → Brain → Reasoning → Executive Committee → Artificial CIO
     """
 
-    brain = await BrainBuilderService(
-        candidate_limit=limit,
-    ).build()
+    brain = await builder.build(candidate_limit=limit)
 
     research = CandidateResearchService(
         pipeline=ExecutivePipeline(

@@ -60,6 +60,7 @@ class BrainBuilderService:
     async def build(
         self,
         focus_symbols: Sequence[str] = (),
+        candidate_limit: int | None = None,
     ) -> Brain:
         """
         Assemble the Brain, evidencing anything the caller names.
@@ -68,7 +69,13 @@ class BrainBuilderService:
         Without it the Artificial CIO judged the security on portfolio and
         market context alone, and reached a different verdict from the one
         the research pipeline reached about the same ticker.
+
+        The candidate budget is a per-cycle concern — the research page sets
+        it from the request — so a caller may override the instance default
+        here rather than building a second service to carry one number.
         """
+
+        budget = self._candidate_limit if candidate_limit is None else candidate_limit
 
         portfolio = await PortfolioPerception().execute()
         market = await MarketPerception().execute()
@@ -85,7 +92,7 @@ class BrainBuilderService:
         evidence = await self._security_perception.execute(
             portfolio,
             candidates=candidates,
-            candidate_limit=self._candidate_limit,
+            candidate_limit=budget,
             focus_symbols=focus_symbols,
         )
 

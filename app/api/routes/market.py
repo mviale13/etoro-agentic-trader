@@ -1,7 +1,8 @@
 """What the platform can say about the market itself."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies import get_market_perception
 from app.application.brain.perception.market_perception import MarketPerception
 from app.domain.market_snapshot import MarketSnapshot
 from app.services.market_breadth_service import MarketBreadthService
@@ -75,7 +76,9 @@ def _payload(
 
 
 @router.get("/")
-async def get_market() -> dict[str, object]:
+async def get_market(
+    perception: MarketPerception = Depends(get_market_perception),
+) -> dict[str, object]:
     """
     The current market snapshot, priced once and shared.
 
@@ -86,4 +89,4 @@ async def get_market() -> dict[str, object]:
     gained anything added to the other.
     """
 
-    return _payload(await MarketPerception().execute())
+    return _payload(await perception.execute())
