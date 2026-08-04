@@ -180,8 +180,36 @@ per-screen responsibilities (§ Portfolio/Research/Markets/Track Record).
 
 ---
 
-## 5. What was NOT changed
+## 5. Execution log
 
-No source files were modified for this inventory. The next action is to review
-this document, then execute Slice 1. Per the working agreement, start a new
-session at each slice boundary.
+The inventory above is the point-in-time audit that preceded the migration.
+Executed since, all on `feature/ux-slice-1-remove-dead-dashboard`, each slice
+pure subtraction with all four gates green and the commit verified in
+isolation via `git archive HEAD`:
+
+- **Slice 1** (`787456b`) — dead dashboard generation: 16 cards, 10
+  dead/orphaned API clients, 2 backups. 28 files, −1,409 lines.
+- **Slice 1b** (`22346e4`) — 17 stray *tracked* files outside `movrvest-web/`
+  discovered during commit verification: `apps/web/movrvest-web-old/`,
+  root-level `lib/` (including a surviving frontend `ClaimEngine.ts`),
+  `mocks/`, `types/`, fragments under `apps/web/components/`, and a
+  `".coverage 2"` iCloud conflict artifact. None buildable — no
+  tsconfig/package.json exists outside `movrvest-web`.
+- **Slice 2.1** (`81257fd`) — reachable fabricated data: `/briefs/[symbol]` +
+  `microsoftExecutiveBrief` + the orphaned `components/brief/*` stack
+  (recoverable at `3551ab1` for the Dossier slice), and `/investor`, whose
+  client fabricated per-field defaults ("78%", "27 days", "Moderate" risk
+  tolerance) even on successful backend responses under a green "Connected"
+  banner — worse than the labeled-fallback pattern this inventory recorded.
+- **Slice 2.2** (`952711b`) — the frontend reasoning engine: `lib/acio/*`,
+  `lib/investor/*`, and the unreachable onboarding prototype (28 files).
+  Inspection proved no caller to migrate: zero external references, no
+  dynamic imports, no mounting route.
+
+Still open, in order: labeled Executive Workspace fallback (unresolved —
+revisit in the Overview contract slice), de-calculating the Overview
+(`riskLevel`/`diversification`/liquidity % to the backend), the real Dossier
+composed from canonical backend outputs (`ExecutiveDecision`,
+`InvestmentThesis`, `DecisionEvidence`, `CommitteeOpinion`, `Provenance` — no
+second frontend dossier model), then navigation reshape and the shared
+`DecisionCard`.
