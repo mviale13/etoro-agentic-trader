@@ -10,6 +10,7 @@ import yfinance as yf
 
 from app.domain.asset_class import AssetClass
 from app.domain.drawdown import deepest_drawdown
+from app.domain.market_sensitivity import MarketSensitivity, measure_sensitivity
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
 
@@ -100,6 +101,14 @@ class YahooMarketProvider:
 
     VIX_SYMBOL = "^VIX"
 
+    #: The market every security's sensitivity is measured against.
+    #:
+    #: One broad index stands for "the market" here, so a beta is a single,
+    #: comparable number across the book rather than one measured against a
+    #: different yardstick per holding. It is named on the measurement so a
+    #: reader always knows which market the security was found to move with.
+    BENCHMARK_SYMBOL = "SPY"
+
     #: How much price history one quote request carries.
     #:
     #: Five days priced the instrument and told us nothing else. A year costs
@@ -138,10 +147,19 @@ class YahooMarketProvider:
     ) -> tuple[MarketQuote, ...]:
         selected = instruments or self.DEFAULT_INSTRUMENTS
 
+        # Read once, for the whole batch, before anything is priced against
+        # it. Every quote is measured for its sensitivity to the same market,
+        # so downloading that market's history per instrument would spend the
+        # rate limit on the same series over and over. A benchmark that could
+        # not be read leaves every sensitivity absent rather than failing the
+        # batch — the prices still stand.
+        benchmark_closes = await asyncio.to_thread(self._benchmark_closes)
+
         tasks = [
             asyncio.to_thread(
                 self._fetch_quote,
                 instrument,
+                benchmark_closes,
             )
             for instrument in selected
         ]
@@ -179,29 +197,9 @@ class YahooMarketProvider:
     @staticmethod
     def _fetch_quote(
         instrument: YahooInstrument,
+        benchmark_closes: Any | None = None,
     ) -> MarketQuote:
-        history = yf.download(
-            instrument.yahoo_symbol,
-            period=YahooMarketProvider.HISTORY_PERIOD,
-            interval="1d",
-            auto_adjust=True,
-            progress=False,
-            threads=False,
-            timeout=15,
-            multi_level_index=False,
-        )
-
-        if history is None or history.empty:
-            raise RuntimeError(
-                f"No Yahoo Finance data returned for {instrument.yahoo_symbol}"
-            )
-
-        closes = history["Close"].dropna()
-
-        if closes.empty:
-            raise RuntimeError(
-                f"No closing prices returned for {instrument.yahoo_symbol}"
-            )
+        closes = YahooMarketProvider._download_closes(instrument.yahoo_symbol)
 
         latest = float(closes.iloc[-1])
 
@@ -225,10 +223,92 @@ class YahooMarketProvider:
             currency="USD",
             realized_volatility=YahooMarketProvider._realized_volatility(closes),
             max_drawdown=YahooMarketProvider._max_drawdown(closes),
+            market_sensitivity=YahooMarketProvider._market_sensitivity(
+                closes,
+                benchmark_closes,
+            ),
             reading=Provenance(
                 source=YahooMarketProvider.SOURCE,
                 observed_at=datetime.now(UTC),
             ),
+        )
+
+    @staticmethod
+    def _download_closes(yahoo_symbol: str) -> Any:
+        """
+        A year of daily closing prices for one symbol, dropna'd.
+
+        Extracted because two readings now come off the same download — the
+        security's own history and the benchmark it is measured against — and
+        one place to ask for closes keeps the two asking the same way.
+        """
+
+        history = yf.download(
+            yahoo_symbol,
+            period=YahooMarketProvider.HISTORY_PERIOD,
+            interval="1d",
+            auto_adjust=True,
+            progress=False,
+            threads=False,
+            timeout=15,
+            multi_level_index=False,
+        )
+
+        if history is None or history.empty:
+            raise RuntimeError(f"No Yahoo Finance data returned for {yahoo_symbol}")
+
+        closes = history["Close"].dropna()
+
+        if closes.empty:
+            raise RuntimeError(f"No closing prices returned for {yahoo_symbol}")
+
+        return closes
+
+    @classmethod
+    def _benchmark_closes(cls) -> Any | None:
+        """The market's own history, or nothing when it could not be read."""
+
+        try:
+            return cls._download_closes(cls.BENCHMARK_SYMBOL)
+        except Exception:
+            return None
+
+    @classmethod
+    def _market_sensitivity(
+        cls,
+        closes: Any,
+        benchmark_closes: Any | None,
+    ) -> MarketSensitivity | None:
+        """
+        How much this security moved with the benchmark over the window.
+
+        The two return series are aligned to their common dates before
+        anything is measured: a crypto that trades on weekends and an index
+        that does not are only comparable on the days both were priced, and
+        pairing them any other way would correlate Monday's move with
+        Sunday's. A benchmark that was not read, or a window with nothing in
+        common, leaves the sensitivity absent.
+        """
+
+        if benchmark_closes is None:
+            return None
+
+        security_returns = closes.pct_change().dropna()
+        benchmark_returns = benchmark_closes.pct_change().dropna()
+
+        aligned_security, aligned_benchmark = security_returns.align(
+            benchmark_returns,
+            join="inner",
+        )
+
+        if aligned_security.empty:
+            return None
+
+        return measure_sensitivity(
+            [float(value) for value in aligned_security],
+            [float(value) for value in aligned_benchmark],
+            benchmark=cls.BENCHMARK_SYMBOL,
+            minimum_observations=cls.MINIMUM_OBSERVATIONS,
         )
 
     @classmethod

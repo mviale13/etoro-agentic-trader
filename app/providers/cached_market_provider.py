@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import JsonCache
@@ -162,6 +163,12 @@ class CachedMarketProvider:
             "currency": quote.currency,
             "realized_volatility": quote.realized_volatility,
             "max_drawdown": quote.max_drawdown,
+            # Measured off a year of history that a replayed quote does not
+            # carry, so it is kept whole here rather than recomputed against
+            # a benchmark this fast path never fetched.
+            "market_sensitivity": CachedMarketProvider._encode_sensitivity(
+                quote.market_sensitivity
+            ),
             # The time the price was taken, not the time it was written.
             # A replayed quote that redated itself would report a
             # fifteen-minute-old price as current, which is the thing this
@@ -199,7 +206,51 @@ class CachedMarketProvider:
             currency=str(value.get("currency", "USD")),
             realized_volatility=ratio("realized_volatility"),
             max_drawdown=ratio("max_drawdown"),
+            market_sensitivity=CachedMarketProvider._restore_sensitivity(
+                value.get("market_sensitivity")
+            ),
             reading=CachedMarketProvider._reading(value),
+        )
+
+    @staticmethod
+    def _encode_sensitivity(
+        sensitivity: MarketSensitivity | None,
+    ) -> dict[str, object] | None:
+        if sensitivity is None:
+            return None
+
+        return {
+            "beta": sensitivity.beta,
+            "correlation": sensitivity.correlation,
+            "observations": sensitivity.observations,
+            "benchmark": sensitivity.benchmark,
+        }
+
+    @staticmethod
+    def _restore_sensitivity(
+        value: object,
+    ) -> MarketSensitivity | None:
+        if not isinstance(value, dict):
+            return None
+
+        beta = value.get("beta")
+        correlation = value.get("correlation")
+        observations = value.get("observations")
+        benchmark = value.get("benchmark")
+
+        if not isinstance(beta, (int, float)) or not isinstance(
+            correlation, (int, float)
+        ):
+            return None
+
+        if not isinstance(observations, int) or not isinstance(benchmark, str):
+            return None
+
+        return MarketSensitivity(
+            beta=float(beta),
+            correlation=float(correlation),
+            observations=observations,
+            benchmark=benchmark,
         )
 
     @staticmethod

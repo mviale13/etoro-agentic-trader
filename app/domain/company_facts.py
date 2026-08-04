@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance, oldest
 
 
@@ -50,6 +51,11 @@ class CompanyFacts:
     realized_volatility: float | None = None
     #: Deepest peak-to-trough fall observed, as a positive ratio.
     max_drawdown: float | None = None
+
+    #: How much this security moves with the market, measured against a
+    #: benchmark rather than inferred from its asset class. None where the
+    #: price history was too short, or the benchmark could not be read.
+    market_sensitivity: MarketSensitivity | None = None
 
     #: What a token has in place of company fundamentals. None for a
     #: company, which has a balance sheet instead.

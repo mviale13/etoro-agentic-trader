@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
@@ -347,3 +348,41 @@ def test_a_replayed_quote_keeps_the_time_the_price_was_taken(tmp_path) -> None:
     assert replayed[0].reading is not None
     assert replayed[0].reading.observed_at == taken_at
     assert replayed[0].reading.source == "Yahoo Finance"
+
+
+def test_a_replayed_quote_keeps_its_measured_market_sensitivity(tmp_path) -> None:
+    """
+    Sensitivity is measured off a year of history the cache never holds.
+
+    A replayed quote cannot recompute it — the benchmark series it was
+    regressed on is long gone — so dropping it on a cache hit would make a
+    beta blink out fifteen minutes after every fetch.
+    """
+
+    measured = MarketSensitivity(
+        beta=1.35,
+        correlation=0.68,
+        observations=240,
+        benchmark="SPY",
+    )
+
+    class SensitiveProvider(CountingMarketProvider):
+        async def quotes(
+            self,
+            instruments: tuple[YahooInstrument, ...] | None = None,
+        ) -> tuple[MarketQuote, ...]:
+            fetched = await super().quotes(instruments)
+
+            return tuple(
+                replace(quote, market_sensitivity=measured) for quote in fetched
+            )
+
+    provider = CachedMarketProvider(
+        provider=SensitiveProvider(),  # type: ignore[arg-type]
+        cache=JsonCache(str(tmp_path)),
+    )
+
+    asyncio.run(provider.quotes())
+    replayed = asyncio.run(provider.quotes())
+
+    assert replayed[0].market_sensitivity == measured

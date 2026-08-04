@@ -87,6 +87,9 @@ class CompanyFactsService:
                 quote.realized_volatility if quote is not None else None
             ),
             max_drawdown=(quote.max_drawdown if quote is not None else None),
+            market_sensitivity=(
+                quote.market_sensitivity if quote is not None else None
+            ),
             # What a token has. Absent for a company, which has the
             # balance-sheet fields below instead.
             circulating_supply=(valuation.circulating_supply if is_token else None),

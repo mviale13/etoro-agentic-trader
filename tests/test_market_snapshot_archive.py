@@ -9,6 +9,7 @@ from app.application.market.market_snapshot_archive import (
 )
 from app.application.services.market_service import MarketService
 from app.domain.asset_class import AssetClass
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
@@ -37,6 +38,12 @@ def quote(
         change_percent=change_percent,
         realized_volatility=0.18,
         max_drawdown=0.34,
+        market_sensitivity=MarketSensitivity(
+            beta=1.1,
+            correlation=0.83,
+            observations=240,
+            benchmark="SPY",
+        ),
         reading=Provenance(
             source="Yahoo Finance",
             observed_at=observed_at,
@@ -98,6 +105,12 @@ def test_an_observation_is_recorded_and_read_back(tmp_path: Path) -> None:
     assert first.quotes[0].symbol == "SPY"
     assert first.quotes[0].price == 600.0
     assert first.quotes[0].realized_volatility == 0.18
+
+    restored_sensitivity = first.quotes[0].market_sensitivity
+    assert restored_sensitivity is not None
+    assert restored_sensitivity.beta == 1.1
+    assert restored_sensitivity.correlation == 0.83
+    assert restored_sensitivity.benchmark == "SPY"
     assert first.sentiment is not None
     assert first.sentiment.score == 28
     assert first.sentiment.subject is AssetClass.CRYPTO

@@ -1,5 +1,6 @@
 from app.domain.company_facts import CompanyFacts
 from app.domain.finding import Finding
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.risk_signal import RiskSignal
 
 
@@ -28,8 +29,13 @@ class RiskSignalService:
     ) -> RiskSignal:
         volatility = company.realized_volatility
         drawdown = company.max_drawdown
+        sensitivity = company.market_sensitivity
 
         if volatility is None and drawdown is None:
+            # Sensitivity can still be present when volatility and drawdown
+            # are not — it needs only thirty aligned returns against the
+            # benchmark, not the same series these two are banded from — so
+            # it is reported here rather than lost with the band.
             return RiskSignal(
                 level="UNKNOWN",
                 volatility=None,
@@ -40,7 +46,9 @@ class RiskSignalService:
                         f"No usable price history for {company.symbol}, so its "
                         "risk is not measured."
                     ),
+                    *self._sensitivity_findings(sensitivity),
                 ),
+                market_sensitivity=sensitivity,
             )
 
         # A measurement's sense is the band it lands in. 12% volatility and
@@ -65,13 +73,34 @@ class RiskSignalService:
                 )
             )
 
+        evidence.extend(self._sensitivity_findings(sensitivity))
+
         return RiskSignal(
             level=self._level(volatility, drawdown),
             volatility=volatility,
             max_drawdown=drawdown,
             confidence=90 if volatility is not None and drawdown is not None else 60,
             evidence=tuple(evidence),
+            market_sensitivity=sensitivity,
         )
+
+    @staticmethod
+    def _sensitivity_findings(
+        sensitivity: MarketSensitivity | None,
+    ) -> list[Finding]:
+        """
+        The security's market sensitivity, reported without a verdict.
+
+        Neutral on purpose: a high beta is neither good nor bad on its own,
+        because whether moving hard with the market helps or hurts depends on
+        which way the market is going — a call the Artificial CIO makes with
+        the market in front of it, not one this reading should pre-empt.
+        """
+
+        if sensitivity is None:
+            return []
+
+        return [Finding.neutral(sensitivity.stated())]
 
     @staticmethod
     def _finding(

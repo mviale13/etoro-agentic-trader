@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 
@@ -20,6 +21,12 @@ class MarketQuote:
     #: Deepest peak-to-trough fall over the observed window, as a positive
     #: ratio (0.34 is a 34% fall). None when unmeasured.
     max_drawdown: float | None = None
+
+    #: How much this security moves with the market, measured against a
+    #: benchmark from the same price history the two figures above are read
+    #: off. None when the window was too short, or the benchmark could not
+    #: be read to measure against. An asset-class label is not this.
+    market_sensitivity: MarketSensitivity | None = None
 
     #: When this price was read, and from where.
     #:

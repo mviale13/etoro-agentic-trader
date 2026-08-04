@@ -7,6 +7,7 @@ from typing import Any
 
 from app.application.services.market_service import MarketService
 from app.domain.asset_class import AssetClass
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
@@ -158,11 +159,32 @@ class MarketSnapshotArchive:
             "currency": quote.currency,
             "realized_volatility": quote.realized_volatility,
             "max_drawdown": quote.max_drawdown,
+            # A measurement of the observed window, kept with the other two.
+            # It is stored, not derived on the way out, because the year of
+            # history it was taken from is not in the archive to derive it
+            # from again.
+            "market_sensitivity": MarketSnapshotArchive._encode_sensitivity(
+                quote.market_sensitivity
+            ),
             # The reading travels into the archive with the price. A
             # recorded quote that could not say when its price was taken
             # would date itself by the moment it was filed, which is the
             # substitution `Provenance` exists to stop.
             "reading": MarketSnapshotArchive._encode_reading(quote.reading),
+        }
+
+    @staticmethod
+    def _encode_sensitivity(
+        sensitivity: MarketSensitivity | None,
+    ) -> JsonObject | None:
+        if sensitivity is None:
+            return None
+
+        return {
+            "beta": sensitivity.beta,
+            "correlation": sensitivity.correlation,
+            "observations": sensitivity.observations,
+            "benchmark": sensitivity.benchmark,
         }
 
     @staticmethod
@@ -267,7 +289,37 @@ class MarketSnapshotArchive:
             currency=str(value.get("currency", "USD")),
             realized_volatility=ratio("realized_volatility"),
             max_drawdown=ratio("max_drawdown"),
+            market_sensitivity=cls._restore_sensitivity(
+                value.get("market_sensitivity")
+            ),
             reading=cls._restore_reading(value.get("reading")),
+        )
+
+    @staticmethod
+    def _restore_sensitivity(
+        value: object,
+    ) -> MarketSensitivity | None:
+        if not isinstance(value, dict):
+            return None
+
+        beta = value.get("beta")
+        correlation = value.get("correlation")
+        observations = value.get("observations")
+        benchmark = value.get("benchmark")
+
+        if not isinstance(beta, (int, float)) or not isinstance(
+            correlation, (int, float)
+        ):
+            return None
+
+        if not isinstance(observations, int) or not isinstance(benchmark, str):
+            return None
+
+        return MarketSensitivity(
+            beta=float(beta),
+            correlation=float(correlation),
+            observations=observations,
+            benchmark=benchmark,
         )
 
     @classmethod
