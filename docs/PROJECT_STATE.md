@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 525 passing |
+| Pytest | 🟢 536 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -60,6 +60,8 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 - `movrvest evaluate SYMBOL` — the Artificial CIO's decision and reasoning
 - `movrvest brain` — what the Brain currently knows
+- `movrvest record` — what each decision's security did next, or why it
+  cannot be measured yet
 - `GET /executive/portfolio` — every holding, ranked by conviction
 - `GET /executive/{symbol}` — one investment case
 - `GET /brain/` — portfolio facts, investor observation and DNA
@@ -76,6 +78,20 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **The CIO can be scored against its own decisions.** `movrvest record`
+  joins the decision journal to a year of daily closes and reports what
+  each security did after the call. Today it reads 61 decisions and 0
+  outcomes, because every one of them is a day or two old and a decision
+  must stand 30 days before its price move says anything — a record that
+  measured yesterday's noise would report judgement it has not
+  demonstrated. Verified end to end by moving the clock forward against
+  live prices: 58 of 61 priced, `BTC` resolved through `BTC-USD`,
+  `UMI.BR` through the Brussels listing, and `#1238` and `ZZZZ` reported
+  unpriceable rather than skipped. MONITOR and INVESTIGATE are never
+  scored as calls — they are the platform saying it does not know yet —
+  and a security that has barely moved is evidence for nobody, which the
+  live run caught: a flat holding was being marked against its own call
 
 - **A sentiment reading now says what it is a reading of.** The only index
   the platform reads is Alternative.me's crypto Fear & Greed, and it was
@@ -419,8 +435,15 @@ Named rather than hidden. None of these are estimated away in the product.
 - `consistency_score` measures the investor's own consistency. The journal
   records what the CIO decided, not what the investor did about it, so the
   score still reports the neutral midpoint
-- No decision is scored against its outcome; the journal is a record, not a
-  track record
+- The track record is measurable but empty. Every recorded decision is
+  younger than the 30 days a price move needs to say anything, so
+  `movrvest record` reports 61 decisions and 0 outcomes. It stays that way
+  until the start of September, and no hit rate is reported before 10
+  measured calls
+- Closed trades cannot score anything on this account: the trade history
+  returns an empty list back to January 2025. A closed trade is also the
+  *investor's* action rather than the CIO's, so it answers the
+  `consistency_score` question, not this one
 - `app/analysts` holds real per-security fundamental analysis the canonical
   reasoning layer does not yet own
 

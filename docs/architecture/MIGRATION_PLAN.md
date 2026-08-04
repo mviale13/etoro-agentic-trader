@@ -311,8 +311,12 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 - [ ] `consistency_score` needs a record of the investor's own actions. The
       decision journal records the CIO's decisions, not what the investor did
       with them
-- [ ] No decision is scored against its outcome; the journal is a record, not
-      a track record
+- [x] Decisions are scored against what the security did next.
+      `DecisionOutcomeService` joins the journal to a year of daily closes;
+      a decision must stand 30 days before its move counts, MONITOR and
+      INVESTIGATE are not calls and are never scored as ones, and a hit
+      rate is withheld below 10 measured calls. The journal is young, so
+      the honest reading today is 61 decisions and 0 outcomes
 - [ ] `app/analysts` holds real per-security fundamental analysis that the
       canonical reasoning layer does not yet own
 

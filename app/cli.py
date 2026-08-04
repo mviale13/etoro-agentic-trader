@@ -17,6 +17,7 @@ from app.commands import (
     market,
     morning,
     policy,
+    record,
     status,
     today,
     watchlist,
@@ -76,6 +77,10 @@ COMMANDS: dict[str, tuple[str, CommandHandler]] = {
     "credentials": (
         "Show what the configured eToro credentials can reach",
         credentials.run,
+    ),
+    "record": (
+        "Score past decisions against what the securities did next",
+        record.run,
     ),
 }
 
