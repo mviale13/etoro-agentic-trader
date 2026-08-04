@@ -457,16 +457,20 @@ change feed. It does not gate.
 
 - [x] API routes can be tested without the network. The network-coupled
       composition roots (`BrainBuilderService`, `BrainSnapshotService`,
-      `AccountService`, `BriefService`) are FastAPI dependencies now —
+      `AccountService`, `BriefService`, `MarketPerception`,
+      `DashboardService`) are FastAPI dependencies now —
       `app/api/dependencies.py` — so a test overrides them through
       `app.dependency_overrides` and exercises the route offline. Proven in
       `tests/test_api_routes.py`: `/brain/` serialization including the
       null-vs-zero honesty, `/executive/{symbol}` over real offline
       reasoning (and its unevidenced-symbol wording), the
       `/executive/portfolio` 404 branch that no test could reach before,
-      `/portfolio/` over the real `PortfolioService` with only the account
-      fetch stubbed, and `/api/today`. The remaining routes still construct
-      inline; they follow the same pattern as each is brought under test.
+      `/portfolio/` over the real `PortfolioService`, `/api/today`,
+      `/market/` over the real `MarketBreadthService` (with the VIX,
+      reading and sentiment served as null when unread), `/research/candidates`,
+      and `/dashboard/`. Every route that reached for the network is now
+      injectable; `BrainBuilderService.build` takes the candidate budget as
+      a per-call argument so the research route needs no second service.
 - [x] The change feed reports market and macro movements. Every observation
       is recorded through the same `VersionedSnapshotStore` the eToro
       responses go to, and `MarketChangeService` reports the mood, the
@@ -493,9 +497,12 @@ change feed. It does not gate.
       `app.domain.market_context.MarketContext` and the unused
       `CommitteeMember` protocol deleted — the domain `BrainContext` was
       never constructed, only ever accepted as a type
-- [ ] `ClaimEngine.test.ts` has pre-existing TypeScript errors (`vitest` is
-      not installed); excluded from the Next build graph, so it does not
-      break the gate
+- [x] `ClaimEngine` and its test are deleted. The test carried pre-existing
+      TypeScript errors (`vitest` was never installed), and `ClaimEngine.ts`
+      was imported by nothing but that test — a dead module. The honest fix
+      was to remove the pair, not install a runner to test code the app does
+      not use. The rest of `lib/acio` stays: its ontology, reasoning and
+      `knowledge/types` are used by `lib/investor`.
 - [x] `docs/` is indexed and the superseded documents are quarantined.
       [`docs/README.md`](../README.md) names the current set and the one
       reference doc; the ~20 older documents moved to `docs/archive/` (with
