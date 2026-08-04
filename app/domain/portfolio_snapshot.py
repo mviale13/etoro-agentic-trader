@@ -47,3 +47,15 @@ class PortfolioSnapshot:
     @property
     def total_value_usd(self) -> float:
         return self.total_value
+
+    def weight_pct(self, holding: PortfolioPosition) -> float | None:
+        """
+        The holding's share of the account, or None when the account
+        reports no value to take a share of. A weight nobody can compute
+        is absent, not zero.
+        """
+
+        if self.total_value <= 0.0:
+            return None
+
+        return holding.market_value_usd / self.total_value * 100.0
