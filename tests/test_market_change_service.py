@@ -236,3 +236,104 @@ def test_a_market_move_asks_the_investor_for_nothing() -> None:
     )
 
     assert all(not event.action_required for event in events)
+
+
+# ------------------------------------------------------------------
+# Individual instrument moves, judged against the instrument's own scale.
+# ------------------------------------------------------------------
+
+#: An annualised volatility whose daily standard deviation is exactly 1%, so a
+#: change of N% is a move of N of the instrument's own daily sigmas.
+DAILY_SIGMA_1PCT = 0.01 * (252**0.5)
+
+
+def moving(
+    change_percent: float,
+    *,
+    realized_volatility: float | None = DAILY_SIGMA_1PCT,
+    timestamp: datetime = BEFORE,
+) -> MarketSnapshot:
+    return MarketService().build_snapshot(
+        quotes=(
+            MarketQuote(
+                symbol="WTI",
+                name="WTI Crude Oil",
+                price=70.0,
+                change_percent=change_percent,
+                realized_volatility=realized_volatility,
+                reading=Provenance(source="Yahoo Finance", observed_at=timestamp),
+            ),
+        ),
+        vix=16.0,
+        timestamp=timestamp,
+    )
+
+
+def instrument_events(events):
+    return [event for event in events if event.title.startswith("WTI")]
+
+
+def test_a_move_large_for_the_instrument_is_reported() -> None:
+    events = MarketChangeService().changes(
+        moving(0.5),
+        moving(3.5, timestamp=AFTER),
+    )
+
+    named = instrument_events(events)
+
+    assert len(named) == 1
+    assert named[0].title == "WTI rose 3.5%"
+    assert "3.5×" in named[0].description
+    assert "typical daily move of 1.0%" in named[0].description
+    assert named[0].category is ChangeCategory.MARKET
+    assert named[0].severity is ChangeSeverity.MEDIUM
+
+
+def test_a_small_move_for_the_instrument_is_not_reported() -> None:
+    """A day-and-a-half sigma is inside what this instrument usually does."""
+
+    events = MarketChangeService().changes(moving(0.0), moving(1.5, timestamp=AFTER))
+
+    assert instrument_events(events) == []
+
+
+def test_a_move_already_large_last_reading_is_not_named_again() -> None:
+    """The same move is not news twice; only crossing the threshold is."""
+
+    events = MarketChangeService().changes(
+        moving(3.5),
+        moving(2.5, timestamp=AFTER),
+    )
+
+    assert instrument_events(events) == []
+
+
+def test_the_direction_of_the_move_is_named() -> None:
+    events = MarketChangeService().changes(moving(0.0), moving(-3.5, timestamp=AFTER))
+
+    named = instrument_events(events)
+
+    assert named[0].title == "WTI fell 3.5%"
+
+
+def test_severity_scales_with_how_far_past_its_own_scale_it_moved() -> None:
+    low = instrument_events(
+        MarketChangeService().changes(moving(0.0), moving(2.5, timestamp=AFTER))
+    )
+    high = instrument_events(
+        MarketChangeService().changes(moving(0.0), moving(4.5, timestamp=AFTER))
+    )
+
+    assert low[0].severity is ChangeSeverity.LOW
+    assert high[0].severity is ChangeSeverity.HIGH
+
+
+def test_a_move_without_a_measured_typical_is_not_reported() -> None:
+    """No year of history, no scale to judge the day against."""
+
+    events = MarketChangeService().changes(
+        moving(0.0, realized_volatility=None),
+        moving(6.0, realized_volatility=None, timestamp=AFTER),
+    )
+
+    assert instrument_events(events) == []

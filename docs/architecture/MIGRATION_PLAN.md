@@ -445,8 +445,12 @@ change feed. It does not gate.
       is recorded through the same `VersionedSnapshotStore` the eToro
       responses go to, and `MarketChangeService` reports the mood, the
       volatility band and the sentiment label that moved between the last
-      two. An individual instrument's move is not reported: deciding which
-      moves matter needs a threshold nothing measures
+      two. An individual instrument's move is reported now as well, where it
+      is large *for that instrument*: each quote carries a year of realised
+      volatility, so a day's move is judged in multiples of the instrument's
+      own typical daily move rather than against a threshold nothing measured.
+      A move on an instrument whose history was too short to measure a typical
+      one for is still not reported — there is no scale to judge it against
 - [x] `ExecutivePipeline` reasons the account once per cycle. The portfolio,
       market and risk assessments do not depend on the security being judged,
       so `execute_all` reasons them once and shares the one `ReasoningSnapshot`

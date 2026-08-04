@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
+from math import sqrt
 
 from app.domain.change_feed.change_event import (
     ChangeCategory,
     ChangeEvent,
     ChangeSeverity,
 )
-from app.domain.market_snapshot import MarketSnapshot
+from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 
 
 @dataclass(slots=True)
@@ -27,14 +29,21 @@ class MarketChangeService:
     rose" without the VIX is an adjective, and the branch has already spent
     a commit on adjectives that could not be compared with yesterday's.
 
-    **What is not reported, and why.** An individual instrument moving is
-    not an event here. Every instrument moves between any two readings, so
-    reporting one means deciding which moves matter, and this platform has
-    no measure of that — a threshold picked to look sensible would be an
-    invented figure sitting on an investment surface, which is the thing
-    the archive was built to stop. The same holds for a VIX that moved
-    without leaving its band. The quotes and the figures are recorded, so
-    the measure can be built later on evidence rather than on a guess.
+    An individual instrument's move is reported too, but only where it is
+    large *for that instrument*. Every instrument moves between any two
+    readings, so reporting one used to mean deciding which moves matter, and
+    the platform once had no measure of that. It does now: each quote carries
+    a year of realised volatility, so a day's move can be judged against the
+    instrument's own typical daily move rather than against a figure picked
+    to look sensible. A quarter-percent day for the dollar and a five-percent
+    day for oil are read on the same scale — each in multiples of what that
+    instrument usually does — and only the moves past the threshold are named.
+
+    **What is still not reported.** A move on an instrument whose history was
+    too short to measure a typical move for: without that figure there is no
+    scale to judge the day against, and one guessed would be the invented
+    number the archive was built to stop. A VIX that moved without leaving
+    its band is not an event either; its move is the volatility band above.
 
     A snapshot's classification is derived from its own figures on the way
     out of the archive, so both sides of a comparison are classified by the
@@ -49,6 +58,16 @@ class MarketChangeService:
     #: The volatility ladder, as `MarketService` bands the VIX.
     VOLATILITY_LADDER = ("low", "medium", "high")
 
+    #: Trading days in a year, to turn an annualised volatility back into the
+    #: daily standard deviation it was built from.
+    TRADING_DAYS = 252
+
+    #: How many of an instrument's own daily standard deviations a move must
+    #: cross before it is named. Two is a move in the top few percent of that
+    #: instrument's days — notable for it, whatever its usual size. It is this
+    #: platform's band, stated here, on a figure that is the instrument's own.
+    SIGNIFICANT_MOVE = 2.0
+
     def changes(
         self,
         previous: MarketSnapshot,
@@ -56,13 +75,114 @@ class MarketChangeService:
     ) -> tuple[ChangeEvent, ...]:
         """Everything that measurably moved between these two observations."""
 
-        events = (
+        classifications = (
             self._mood_change(previous, current),
             self._volatility_change(previous, current),
             self._sentiment_change(previous, current),
         )
 
-        return tuple(event for event in events if event is not None)
+        return (
+            *(event for event in classifications if event is not None),
+            *self._instrument_moves(previous, current),
+        )
+
+    def _instrument_moves(
+        self,
+        previous: MarketSnapshot,
+        current: MarketSnapshot,
+    ) -> tuple[ChangeEvent, ...]:
+        """
+        Each instrument whose day was large for it, and newly so.
+
+        Judged in multiples of the instrument's own typical daily move, so
+        the scale is the instrument's and only the threshold is this
+        platform's. A move already past the threshold in the previous reading
+        is not named again — it is the same move, not a new one — which is
+        why a still market's feed stays quiet where a turning one does not.
+        """
+
+        events: list[ChangeEvent] = []
+
+        for quote in current.quotes:
+            multiple = self._move_in_sigmas(quote)
+
+            if multiple is None or multiple < self.SIGNIFICANT_MOVE:
+                continue
+
+            already = self._move_in_sigmas(previous.quote(quote.symbol))
+
+            if already is not None and already >= self.SIGNIFICANT_MOVE:
+                continue
+
+            events.append(self._instrument_event(quote, multiple, current.timestamp))
+
+        return tuple(events)
+
+    @classmethod
+    def _move_in_sigmas(
+        cls,
+        quote: MarketQuote | None,
+    ) -> float | None:
+        """
+        A day's move as a multiple of the instrument's typical daily one.
+
+        None where the instrument was not read, or its history was too short
+        to have a typical move to judge against. The annualised volatility is
+        turned back into a daily standard deviation — the figure it was built
+        from — and the day's change measured against that.
+        """
+
+        if quote is None or quote.realized_volatility is None:
+            return None
+
+        daily_sigma = quote.realized_volatility / sqrt(cls.TRADING_DAYS)
+
+        if daily_sigma <= 0:
+            return None
+
+        return abs(quote.change_percent / 100.0) / daily_sigma
+
+    def _instrument_event(
+        self,
+        quote: MarketQuote,
+        multiple: float,
+        moment: datetime,
+    ) -> ChangeEvent:
+        verb = "rose" if quote.change_percent >= 0 else "fell"
+        typical_daily = (
+            (quote.realized_volatility or 0.0) / sqrt(self.TRADING_DAYS) * 100.0
+        )
+
+        return ChangeEvent(
+            title=f"{quote.symbol} {verb} {abs(quote.change_percent):.1f}%",
+            description=(
+                f"{quote.name} {verb} {abs(quote.change_percent):.1f}% — "
+                f"{multiple:.1f}× its typical daily move of {typical_daily:.1f}%."
+            ),
+            category=ChangeCategory.MARKET,
+            severity=self._move_severity(multiple),
+            # The observation's own time, as the mood and volatility events
+            # use, so the whole feed sorts on one clock.
+            timestamp=moment,
+        )
+
+    @staticmethod
+    def _move_severity(multiple: float) -> ChangeSeverity:
+        """
+        How far past its own scale the instrument moved.
+
+        Banded like every other severity here: a measured distance, not an
+        opinion about importance. Four of the instrument's own daily standard
+        deviations is a rare day for it; three is an unusual one.
+        """
+
+        if multiple >= 4.0:
+            return ChangeSeverity.HIGH
+
+        if multiple >= 3.0:
+            return ChangeSeverity.MEDIUM
+
+        return ChangeSeverity.LOW
 
     def _mood_change(
         self,
