@@ -94,6 +94,22 @@ class ArtificialCIO:
                 "A specialist analyst identified a veto-level risk.",
             )
 
+        # Nothing about the security itself was gathered — the symbol names
+        # nothing the platform could describe. Said plainly, and kept apart
+        # from "quality has not been measured", which promises a reading of
+        # a security we do not have. What is true here is only that there is
+        # no security-level analysis, not why; the platform does not claim
+        # the symbol is unknown when a fetch may simply have failed.
+        if not evidence.security_evidenced:
+            return (
+                DecisionState.INVESTIGATE,
+                (
+                    f"No security-level analysis is available for "
+                    f"{evidence.symbol}, so there is nothing to base a "
+                    "decision on."
+                ),
+            )
+
         # An unmeasured score is never a reason to reject: not knowing
         # something is not the same as knowing it is bad. It is, further
         # down, a reason not to progress.

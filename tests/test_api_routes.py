@@ -170,6 +170,29 @@ def test_executive_brief_route_serves_a_brief_for_the_symbol(
     assert body["headline"]
 
 
+def test_executive_brief_states_plainly_when_a_symbol_is_not_evidenced(
+    client: TestClient,
+) -> None:
+    """A symbol the platform holds nothing about says so, at the API too.
+
+    The fixture brain carries no security evidence, so any symbol reaches
+    the route unevidenced — and the brief must state that plainly rather
+    than report its quality as unmeasured.
+    """
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        make_brain()
+    )
+
+    body = client.get("/executive/WHATEVER").json()
+
+    assert body["summary"] == (
+        "No security-level analysis is available for WHATEVER, so there is "
+        "nothing to base a decision on."
+    )
+    assert body["investment_cases"][0]["recommendation"] == "INVESTIGATE"
+
+
 def test_portfolio_briefing_is_a_404_when_there_is_nothing_to_explain(
     client: TestClient,
 ) -> None:

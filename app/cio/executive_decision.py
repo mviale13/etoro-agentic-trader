@@ -42,6 +42,17 @@ class DecisionEvidence(BaseModel):
     #: the whole case.
     evidence_as_of: Provenance | None = None
 
+    #: Whether the Brain held any security-level evidence for this symbol.
+    #:
+    #: False when nothing about the security itself was gathered — the
+    #: symbol names nothing the platform could describe, so the quote and
+    #: fundamentals were never fetched. This is a different situation from a
+    #: security that was looked at and whose quality simply could not be
+    #: measured, and the two must not share a rationale: one says "we have
+    #: no analysis of this"; the other says "we analysed it and this part
+    #: was unavailable".
+    security_evidenced: bool = True
+
     #: What kind of asset this is. The Artificial CIO needs it to tell a
     #: measurement that has not arrived from a question that does not
     #: apply: a token has no business quality, and never will.
