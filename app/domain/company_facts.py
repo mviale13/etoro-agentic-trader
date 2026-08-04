@@ -39,6 +39,11 @@ class CompanyFacts:
     #: The fundamentals: valuation, size, earnings, supply.
     fundamentals_reading: Provenance | None = None
 
+    #: The identity: symbol and name, read from the watchlist that named
+    #: this instrument — a different source, on a different cadence, from
+    #: the two above.
+    identity_reading: Provenance | None = None
+
     currency: str | None = None
 
     # Market
@@ -105,6 +110,10 @@ class CompanyFacts:
         same as this being fresh.
         """
 
-        reading = oldest(self.price_reading, self.fundamentals_reading)
+        reading = oldest(
+            self.price_reading,
+            self.fundamentals_reading,
+            self.identity_reading,
+        )
 
         return reading.observed_at if reading is not None else None

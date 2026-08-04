@@ -360,9 +360,12 @@ change feed. It does not gate.
       lacks. `Provenance.is_older_than` lets a caller set its own limit;
       no gate rejects on age yet, and none should until a real one is
       identified
-- [ ] eToro identity carries no reading, because the watchlist fetch
-      records no time. Plumbing that is the other half of two-source
-      provenance
+- [x] eToro identity carries a reading. The watchlist fetch stamps the
+      moment it returns, `WatchlistItem` carries that `Provenance`, and
+      `CompanyFacts.identity_reading` holds it beside the price and
+      fundamentals — the other half of two-source provenance. A stale
+      identity ages the whole object, since `observed_at` now takes the
+      oldest of all three
 - [x] A degraded source is named. `Provenance.last_known` marks a reading
       served because its source failed, and `least_reliable` surfaces it
       ahead of a merely older one — a last-known reading keeps its original

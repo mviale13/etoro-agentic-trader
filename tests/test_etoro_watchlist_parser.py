@@ -1,3 +1,6 @@
+from datetime import UTC, datetime
+
+from app.domain.provenance import Provenance
 from app.services.etoro_watchlist_parser import EtoroWatchlistParser
 
 
@@ -85,3 +88,55 @@ def test_parser_ignores_non_instrument_and_invalid_items() -> None:
 
 def test_parser_returns_empty_tuple_for_missing_watchlists() -> None:
     assert EtoroWatchlistParser.parse({}) == ()
+
+
+def test_parser_stamps_each_item_with_the_identity_reading() -> None:
+    reading = Provenance(
+        source="eToro",
+        observed_at=datetime(2026, 8, 4, 9, 30, tzinfo=UTC),
+    )
+    body = {
+        "watchlists": [
+            {
+                "watchlistId": "watchlist-1",
+                "name": "Recently Invested",
+                "items": [
+                    {
+                        "itemId": 1004,
+                        "itemType": "Instrument",
+                        "market": {
+                            "symbolName": "MSFT",
+                            "displayName": "Microsoft",
+                        },
+                    }
+                ],
+            }
+        ],
+    }
+
+    watchlists = EtoroWatchlistParser.parse(body, reading)
+
+    assert watchlists[0].items[0].reading is reading
+
+
+def test_parser_leaves_the_reading_absent_when_none_is_given() -> None:
+    body = {
+        "watchlists": [
+            {
+                "items": [
+                    {
+                        "itemId": 1004,
+                        "itemType": "Instrument",
+                        "market": {
+                            "symbolName": "MSFT",
+                            "displayName": "Microsoft",
+                        },
+                    }
+                ],
+            }
+        ],
+    }
+
+    watchlists = EtoroWatchlistParser.parse(body)
+
+    assert watchlists[0].items[0].reading is None

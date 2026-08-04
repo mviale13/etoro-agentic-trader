@@ -137,6 +137,72 @@ def test_facts_are_never_dated_fresher_than_the_evidence() -> None:
     assert facts.observed_at == observed_at
 
 
+def test_identity_reading_is_carried_from_the_watchlist_item() -> None:
+    """The symbol and name are dated by the fetch that named them."""
+
+    identity = Provenance(
+        source="eToro",
+        observed_at=datetime(2026, 8, 4, 9, 30, tzinfo=UTC),
+    )
+    item = WatchlistItem(
+        instrument_id=1,
+        symbol="MSFT",
+        name="Microsoft",
+        asset_type_id=5,
+        asset_type_subcategory_id=0,
+        exchange_id=4,
+        rank=1,
+        avatar_url=None,
+        reading=identity,
+    )
+
+    service = CompanyFactsService(
+        market_provider=StubMarketProvider(),  # type: ignore[arg-type]
+        valuation_provider=StubValuationProvider(make_snapshot()),  # type: ignore[arg-type]
+    )
+
+    facts = asyncio.run(service.build(item))
+
+    assert facts.identity_reading is identity
+
+
+def test_a_stale_identity_ages_the_whole_object() -> None:
+    """
+    A last-known identity is part of the evidence, and dates it.
+
+    The object can only honestly claim the age of its stalest part, and once
+    the watchlist is running on memory that part can be the identity.
+    """
+
+    stale_identity = Provenance(
+        source="eToro",
+        observed_at=datetime(2026, 7, 30, 9, 0, tzinfo=UTC),
+        last_known=True,
+    )
+    item = WatchlistItem(
+        instrument_id=1,
+        symbol="MSFT",
+        name="Microsoft",
+        asset_type_id=5,
+        asset_type_subcategory_id=0,
+        exchange_id=4,
+        rank=1,
+        avatar_url=None,
+        reading=stale_identity,
+    )
+
+    service = CompanyFactsService(
+        market_provider=StubMarketProvider(),  # type: ignore[arg-type]
+        valuation_provider=StubValuationProvider(  # type: ignore[arg-type]
+            make_snapshot(observed_at=datetime(2026, 8, 4, 9, 0, tzinfo=UTC)),
+        ),
+    )
+
+    facts = asyncio.run(service.build(item))
+
+    assert facts.observed_at == stale_identity.observed_at
+
+
 class RecordingMarketProvider:
     """A provider that remembers which ticker it was asked about."""
 

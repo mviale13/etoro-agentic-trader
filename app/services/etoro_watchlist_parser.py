@@ -1,12 +1,17 @@
 from typing import Any
 
+from app.domain.provenance import Provenance
 from app.domain.watchlist import Watchlist
 from app.domain.watchlist_item import WatchlistItem
 
 
 class EtoroWatchlistParser:
     @classmethod
-    def parse(cls, body: dict[str, Any]) -> tuple[Watchlist, ...]:
+    def parse(
+        cls,
+        body: dict[str, Any],
+        reading: Provenance | None = None,
+    ) -> tuple[Watchlist, ...]:
         raw_watchlists = body.get("watchlists")
 
         if not isinstance(raw_watchlists, list):
@@ -25,14 +30,18 @@ class EtoroWatchlistParser:
                     watchlist_type=str(raw_watchlist.get("watchlistType", "")),
                     is_default=bool(raw_watchlist.get("isDefault", False)),
                     rank=cls._integer(raw_watchlist.get("watchlistRank")),
-                    items=cls._parse_items(raw_watchlist.get("items")),
+                    items=cls._parse_items(raw_watchlist.get("items"), reading),
                 )
             )
 
         return tuple(watchlists)
 
     @classmethod
-    def _parse_items(cls, raw_items: Any) -> tuple[WatchlistItem, ...]:
+    def _parse_items(
+        cls,
+        raw_items: Any,
+        reading: Provenance | None = None,
+    ) -> tuple[WatchlistItem, ...]:
         if not isinstance(raw_items, list):
             return ()
 
@@ -68,6 +77,7 @@ class EtoroWatchlistParser:
                     exchange_id=cls._integer(market.get("exchangeId")),
                     rank=cls._integer(raw_item.get("itemRank")),
                     avatar_url=cls._avatar_url(market.get("avatar")),
+                    reading=reading,
                 )
             )
 

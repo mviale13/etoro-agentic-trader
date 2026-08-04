@@ -1,7 +1,9 @@
+from datetime import UTC, datetime
 from typing import Any, Protocol
 
 from app.brokers.etoro_watchlist import EtoroWatchlistBroker
 from app.config import Settings
+from app.domain.provenance import Provenance
 from app.domain.recommendation import Recommendation
 from app.domain.watchlist import Watchlist
 from app.domain.watchlist_item import WatchlistItem
@@ -14,6 +16,9 @@ class WatchlistProvider(Protocol):
 
 
 class WatchlistService:
+    #: The identity's source, named as the investor would see it.
+    SOURCE = "eToro"
+
     WATCHLIST = [
         "MSFT",
         "ASML",
@@ -31,8 +36,14 @@ class WatchlistService:
         )
 
     async def get(self) -> tuple[Watchlist, ...]:
+        # The watchlist fetch is the only observation of an instrument's
+        # identity, so the moment it returns is the moment that identity was
+        # read. Stamp it here and carry it onto every item, rather than
+        # discarding it and leaving the symbol and name undated.
         body = await self._broker.fetch()
-        return EtoroWatchlistParser.parse(body)
+        reading = Provenance(source=self.SOURCE, observed_at=datetime.now(UTC))
+
+        return EtoroWatchlistParser.parse(body, reading)
 
     async def find_symbol(
         self,

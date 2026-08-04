@@ -79,6 +79,10 @@ class CompanyFactsService:
             # good for fifteen minutes, fundamentals for a day.
             price_reading=quote.reading if quote is not None else None,
             fundamentals_reading=valuation.reading,
+            # The identity's own reading, carried from the watchlist fetch
+            # that named this instrument. It ages on its own cadence, apart
+            # from the quote and the fundamentals beside it.
+            identity_reading=item.reading,
             # Market
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
