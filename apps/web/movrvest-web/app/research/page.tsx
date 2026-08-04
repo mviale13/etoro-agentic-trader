@@ -1,6 +1,4 @@
-import Link from "next/link";
 import {
-  ArrowRight,
   Binoculars,
   CircleAlert,
   Search,
@@ -8,6 +6,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { DecisionCard } from "@/components/decisions/DecisionCard";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
@@ -170,156 +169,95 @@ function CandidateCard({
   candidate: ResearchCandidateViewModel;
 }) {
   return (
-    <article className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
-      <div className="grid lg:grid-cols-[92px_1fr]">
-        <div className="border-b border-neutral-200 bg-neutral-50 p-6 lg:border-b-0 lg:border-r">
-          <span className="block text-xs uppercase tracking-widest text-neutral-400">
-            Rank
-          </span>
+    <DecisionCard
+      rank={candidate.rank}
+      symbol={candidate.symbol}
+      name={candidate.name}
+      decisionState={candidate.recommendation}
+      conviction={candidate.conviction}
+      convictionLabel={candidate.convictionLabel}
+      tags={candidate.source ? [candidate.source] : []}
+      previousDecisions={candidate.previousDecisions}
+      reviewHref={candidate.dossierHref}
+    >
+      <Lifecycle state={candidate.recommendation} />
 
-          <strong className="mt-2 block font-serif text-3xl font-normal text-emerald-950">
-            {String(candidate.rank).padStart(2, "0")}
-          </strong>
-        </div>
+      <div className="mt-7 grid gap-4 border-y border-neutral-200 py-6 lg:grid-cols-2">
+        {candidate.evidenceWeighed.length > 0 ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
+            <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-emerald-900">
+              <TrendingUp className="h-4 w-4" />
+              Evidence weighed
+            </h4>
 
-        <div className="p-6 md:p-8">
-          <div className="flex flex-col justify-between gap-5 md:flex-row">
-            <div>
-              <div className="flex flex-wrap items-baseline gap-3">
-                <h3 className="font-serif text-3xl tracking-[-0.03em] text-neutral-950">
-                  {candidate.name}
-                </h3>
-
-                <span className="text-xs font-bold tracking-wider text-neutral-500">
-                  {candidate.symbol}
-                </span>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {[candidate.source, candidate.recommendation].map((tag) => (
-                  <span
-                    className="rounded-full border border-neutral-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500"
-                    key={tag}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:text-right">
-              <strong className="block font-serif text-4xl font-normal text-neutral-950">
-                {candidate.conviction}%
-              </strong>
-
-              <span className="text-xs text-neutral-500">
-                executive conviction
-              </span>
-            </div>
-          </div>
-
-          <Lifecycle state={candidate.recommendation} />
-
-          <div className="mt-7 grid gap-4 border-y border-neutral-200 py-6 lg:grid-cols-2">
-            {candidate.evidenceWeighed.length > 0 ? (
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
-                <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-emerald-900">
-                  <TrendingUp className="h-4 w-4" />
-                  Evidence weighed
-                </h4>
-
-                {/* How old these readings are. A judgement is exactly as
-                    current as the facts under it, and the investor could
-                    not previously tell whether they were minutes or a day
-                    old. */}
-                {candidate.evidenceAsOf ? (
-                  <p className="mt-1 text-xs font-medium text-emerald-800">
-                    {candidate.evidenceAsOf}
-                  </p>
-                ) : null}
-
-                <ul className="mt-3 space-y-2">
-                  {candidate.evidenceWeighed.map((line) => (
-                    <li
-                      className="text-sm font-medium leading-6 text-emerald-950"
-                      key={line}
-                    >
-                      {line}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* How old these readings are. A judgement is exactly as
+                current as the facts under it, and the investor could
+                not previously tell whether they were minutes or a day
+                old. */}
+            {candidate.evidenceAsOf ? (
+              <p className="mt-1 text-xs font-medium text-emerald-800">
+                {candidate.evidenceAsOf}
+              </p>
             ) : null}
 
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
-              <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-amber-900">
-                <CircleAlert className="h-4 w-4" />
-                Why not buy yet
-              </h4>
-
-              <p className="mt-3 text-sm font-medium leading-6 text-amber-950">
-                {candidate.whyNotYet}
-              </p>
-            </div>
+            <ul className="mt-3 space-y-2">
+              {candidate.evidenceWeighed.map((line) => (
+                <li
+                  className="text-sm font-medium leading-6 text-emerald-950"
+                  key={line}
+                >
+                  {line}
+                </li>
+              ))}
+            </ul>
           </div>
+        ) : null}
 
-          {/* Every score here is measured about this security. Risk comes
-              from its own price history, and fit from the room this
-              portfolio has for it under the investor's own policy — see the
-              evidence above for the numbers behind them. */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Score label="Quality" value={candidate.qualityScore} />
-            <Score label="Valuation" value={candidate.valuationScore} />
-            <Score label="Risk" value={candidate.riskScore} />
-            <Score
-              label="Fit with your portfolio"
-              value={candidate.portfolioFitScore}
-            />
-          </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
+          <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-amber-900">
+            <CircleAlert className="h-4 w-4" />
+            Why not buy yet
+          </h4>
 
-          <div className="mt-3">
-            <Metric label="Evidence" value={String(candidate.evidenceScore)} />
-          </div>
-
-          <ReasonList title="Still missing" reasons={candidate.missingEvidence} />
-          <ReasonList title="Catalysts" reasons={candidate.catalysts} />
-
-          {candidate.previousDecisions ? (
-            <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                Previously
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-neutral-700">
-                {candidate.previousDecisions}
-              </p>
-            </div>
-          ) : null}
-
-          {candidate.nextTrigger ? (
-            <p className="mt-6 text-sm leading-6 text-neutral-700">
-              <span className="font-semibold">Next trigger:</span>{" "}
-              {candidate.nextTrigger}
-            </p>
-          ) : null}
-
-          <div className="mt-7 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            <p className="text-xs text-neutral-500">
-              Research candidate only. No capital deployment is currently
-              recommended.
-            </p>
-
-            <Link
-              className="inline-flex items-center justify-center gap-3 rounded-xl bg-emerald-950 px-5 py-3 text-sm font-semibold !text-white shadow-sm transition hover:bg-emerald-800 hover:!text-white"
-              href={candidate.dossierHref}
-            >
-              Open investment dossier
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <p className="mt-3 text-sm font-medium leading-6 text-amber-950">
+            {candidate.whyNotYet}
+          </p>
         </div>
       </div>
-    </article>
+
+      {/* Every score here is measured about this security. Risk comes
+          from its own price history, and fit from the room this
+          portfolio has for it under the investor's own policy — see the
+          evidence above for the numbers behind them. */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Score label="Quality" value={candidate.qualityScore} />
+        <Score label="Valuation" value={candidate.valuationScore} />
+        <Score label="Risk" value={candidate.riskScore} />
+        <Score
+          label="Fit with your portfolio"
+          value={candidate.portfolioFitScore}
+        />
+      </div>
+
+      <div className="mt-3">
+        <Metric label="Evidence" value={String(candidate.evidenceScore)} />
+      </div>
+
+      <ReasonList title="Still missing" reasons={candidate.missingEvidence} />
+      <ReasonList title="Catalysts" reasons={candidate.catalysts} />
+
+      {candidate.nextTrigger ? (
+        <p className="mt-6 text-sm leading-6 text-neutral-700">
+          <span className="font-semibold">Next trigger:</span>{" "}
+          {candidate.nextTrigger}
+        </p>
+      ) : null}
+
+      <p className="mt-6 text-xs text-neutral-500">
+        Research candidate only. No capital deployment is currently
+        recommended.
+      </p>
+    </DecisionCard>
   );
 }
 

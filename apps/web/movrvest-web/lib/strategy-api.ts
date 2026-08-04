@@ -1,4 +1,7 @@
+// The same backend variable every other client reads. NEXT_PUBLIC_API_URL
+// is kept as a fallback for environments that still set it.
 const API_URL =
+  process.env.MOVRVEST_API_URL?.replace(/\/$/, "") ??
   process.env.NEXT_PUBLIC_API_URL ??
   "http://127.0.0.1:8000";
 

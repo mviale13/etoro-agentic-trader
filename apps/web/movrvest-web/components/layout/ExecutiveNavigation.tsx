@@ -3,20 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Brain,
   BriefcaseBusiness,
   ChartNoAxesCombined,
   FlaskConical,
   LayoutDashboard,
+  ScrollText,
   Settings,
 } from "lucide-react";
 
+/**
+ * The investor's map of the product, not the system's map of itself.
+ *
+ * Internal concepts — the Brain, committees, evidence stores — are not
+ * primary navigation. They are exposed inside investment cases through
+ * progressive disclosure; `/brain` remains reachable as a diagnostics
+ * route without being advertised here.
+ */
 const navigation = [
-  { href: "/", label: "Executive Workspace", icon: LayoutDashboard },
+  { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
   { href: "/research", label: "Research", icon: FlaskConical },
   { href: "/markets", label: "Markets", icon: ChartNoAxesCombined },
-  { href: "/brain", label: "Brain", icon: Brain },
+  { href: "/strategy", label: "Investor Policy", icon: ScrollText },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

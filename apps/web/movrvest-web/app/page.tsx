@@ -31,7 +31,7 @@ export default async function HomePage() {
         ) : (
           <section className="rounded-[28px] border border-amber-200 bg-amber-50 px-8 py-10">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
-              Executive Workspace
+              Overview
             </p>
 
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-amber-950">

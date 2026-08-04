@@ -52,7 +52,7 @@ export default async function DossierPage({ params }: DossierPageProps) {
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-950"
         >
           <ArrowLeft aria-hidden="true" className="size-4" />
-          Executive Workspace
+          Overview
         </Link>
 
         {result.dossier ? (

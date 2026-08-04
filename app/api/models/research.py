@@ -42,6 +42,10 @@ class ResearchCandidateResponse(BaseModel):
     recommendation: str
     conviction: int
 
+    #: The conviction put into words, e.g. "High Conviction". Worded by the
+    #: backend so no surface invents its own thresholds.
+    conviction_label: str
+
     #: Null where the platform did not measure it. Never zero, never
     #: substituted from something else.
     quality_score: int | None = None
