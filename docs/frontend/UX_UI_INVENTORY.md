@@ -220,9 +220,17 @@ isolation via `git archive HEAD`:
   an explicit unavailable state with no figures at all. Verified live in
   both states.
 
-Still open, in order: the real Dossier composed from canonical backend
-outputs (`ExecutiveDecision`, `InvestmentThesis`, `DecisionEvidence`,
-`CommitteeOpinion`, `Provenance` — no second frontend dossier model), then
-navigation reshape and the shared `DecisionCard`, then
-Portfolio/Research/Markets/Track Record per the mission's screen
+- **Dossier slice** (`930c08f`, PR #10) — `GET /executive/{symbol}/dossier`
+  composes `ExecutiveDecision`, `InvestmentThesis`, `DecisionEvidence`,
+  `CommitteeOpinion` and `Provenance`; nothing derived at the API layer.
+  `/dossiers/[symbol]` replaces its placeholder with the five-question case:
+  recorded history only, recommendation + rationale, investor context kept
+  apart from security evidence, scores with "Not measured" nulls, committee
+  opinions with abstentions marked (never rendered as opposition), and
+  domain-worded provenance. The homepage's "review case" CTA now lands on a
+  real page. Verified live in three states (evidenced, unevidenced, backend
+  down).
+
+Still open, in order: navigation reshape and the shared `DecisionCard`,
+then Portfolio/Research/Markets/Track Record per the mission's screen
 responsibilities.

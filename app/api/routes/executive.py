@@ -1,6 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_brain_builder_service
+from app.api.models.dossier import (
+    CommitteeEvidenceResponse,
+    CommitteeOpinionResponse,
+    DossierResponse,
+    EvidenceScoresResponse,
+    ProvenanceResponse,
+)
 from app.api.models.executive_brief import (
     ExecutiveBriefResponse,
     ExecutivePriorityResponse,
@@ -21,6 +28,7 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.domain.provenance import Provenance
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
     conviction_label,
@@ -215,4 +223,111 @@ async def executive_brief(
             )
             for case in view.investment_cases
         ],
+    )
+
+
+def _provenance(
+    provenance: Provenance | None,
+) -> ProvenanceResponse | None:
+    """Null stays null: undated evidence is reported as undated."""
+
+    if provenance is None:
+        return None
+
+    return ProvenanceResponse(
+        source=provenance.source,
+        observed_at=provenance.observed_at,
+        age=provenance.stated(),
+        last_known=provenance.last_known,
+    )
+
+
+@router.get(
+    "/{symbol}/dossier",
+    response_model=DossierResponse,
+)
+async def dossier(
+    symbol: str,
+    builder: BrainBuilderService = Depends(get_brain_builder_service),
+) -> DossierResponse:
+    """
+    The complete investment case for one security.
+
+    Composed from the canonical pipeline outputs — ExecutiveDecision,
+    InvestmentThesis, DecisionEvidence, CommitteeOpinion, Provenance —
+    and from nothing else. Nothing here is derived at the API layer.
+    """
+
+    normalized_symbol = symbol.upper().strip()
+
+    brain = await builder.build(
+        focus_symbols=(normalized_symbol,),
+    )
+
+    workspace = ExecutivePipeline.with_memory().execute(
+        symbol=normalized_symbol,
+        brain=brain,
+    )
+
+    decision = workspace.decision
+    thesis = workspace.thesis
+    evidence = workspace.evidence
+
+    if decision is None or thesis is None or evidence is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"The Artificial CIO could not produce a decision for "
+                f"{normalized_symbol}."
+            ),
+        )
+
+    return DossierResponse(
+        symbol=normalized_symbol,
+        decision_state=decision.state.value,
+        conviction=decision.conviction,
+        conviction_label=conviction_label(decision.conviction),
+        committee_agreement=thesis.confidence,
+        rationale=decision.rationale,
+        previous_decisions=thesis.previous_decisions,
+        decided_at=decision.decided_at,
+        summary=thesis.summary,
+        expected_holding_period=thesis.expected_holding_period,
+        catalysts=list(thesis.catalysts),
+        invalidation_conditions=list(thesis.invalidation_conditions),
+        next_trigger=decision.next_trigger,
+        security_evidenced=evidence.security_evidenced,
+        evidence_weighed=list(decision.evidence_weighed),
+        strengths=list(decision.key_strengths),
+        risks=list(decision.key_risks),
+        missing_evidence=list(decision.missing_evidence),
+        scores=EvidenceScoresResponse(
+            quality=evidence.quality_score,
+            evidence=evidence.evidence_score,
+            valuation=evidence.valuation_score,
+            risk=evidence.risk_score,
+            portfolio_fit=evidence.portfolio_fit_score,
+        ),
+        context_strengths=list(thesis.context_strengths),
+        context_risks=list(decision.context_risks),
+        committees=[
+            CommitteeOpinionResponse(
+                committee=opinion.committee,
+                recommendation=opinion.recommendation.value,
+                confidence=opinion.confidence,
+                # An abstention is not opposition, and is marked so no
+                # surface has to infer the difference from a null.
+                abstained=opinion.confidence is None,
+                summary=opinion.summary,
+                evidence=[
+                    CommitteeEvidenceResponse(
+                        statement=item.description,
+                        source=item.source,
+                    )
+                    for item in opinion.evidence
+                ],
+            )
+            for opinion in workspace.committee_opinions
+        ],
+        evidence_as_of=_provenance(decision.evidence_as_of),
     )
