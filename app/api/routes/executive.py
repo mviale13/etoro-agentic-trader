@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies import get_brain_builder_service
 from app.api.models.executive_brief import (
     ExecutiveBriefResponse,
     ExecutivePriorityResponse,
@@ -51,7 +52,9 @@ def _committee_agreement(
     "/portfolio",
     response_model=PortfolioBriefingResponse,
 )
-async def portfolio_briefing() -> PortfolioBriefingResponse:
+async def portfolio_briefing(
+    builder: BrainBuilderService = Depends(get_brain_builder_service),
+) -> PortfolioBriefingResponse:
     """
     Explain every holding in the portfolio, ranked by conviction.
 
@@ -62,7 +65,7 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
         repository=JsonEventRepository(),
     )
 
-    brain = await BrainBuilderService().build()
+    brain = await builder.build()
 
     briefing = PortfolioBriefingService(
         pipeline=ExecutivePipeline(journal=journal),
@@ -151,6 +154,7 @@ async def portfolio_briefing() -> PortfolioBriefingResponse:
 )
 async def executive_brief(
     symbol: str,
+    builder: BrainBuilderService = Depends(get_brain_builder_service),
 ) -> ExecutiveBriefResponse:
     """
     Explain the Artificial CIO decision for one symbol.
@@ -160,7 +164,7 @@ async def executive_brief(
 
     normalized_symbol = symbol.upper().strip()
 
-    brain = await BrainBuilderService().build(
+    brain = await builder.build(
         focus_symbols=(normalized_symbol,),
     )
 

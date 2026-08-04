@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies import get_brain_snapshot_service
 from app.application.brain.brain_snapshot_service import (
     BrainSnapshotService,
 )
@@ -73,8 +74,10 @@ def _risk(
 
 
 @router.get("/")
-async def get_brain() -> dict[str, object]:
-    brain = await BrainSnapshotService().build()
+async def get_brain(
+    service: BrainSnapshotService = Depends(get_brain_snapshot_service),
+) -> dict[str, object]:
+    brain = await service.build()
 
     executive_brief: dict[str, object] | None = None
 

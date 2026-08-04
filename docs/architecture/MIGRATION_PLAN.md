@@ -442,8 +442,16 @@ change feed. It does not gate.
 
 ## Delivery
 
-- [ ] API routes construct services directly, so they cannot be tested
-      without network access
+- [x] API routes can be tested without the network. The network-coupled
+      composition roots (`BrainBuilderService`, `BrainSnapshotService`) are
+      FastAPI dependencies now — `app/api/dependencies.py` — so a test
+      overrides them through `app.dependency_overrides` and exercises the
+      route offline. The seam is proven on the flagship routes in
+      `tests/test_api_routes.py`: `/brain/` serialization including the
+      null-vs-zero honesty, `/executive/{symbol}` over real offline
+      reasoning, and the `/executive/portfolio` 404 branch that no test could
+      reach before. The remaining routes still construct inline; they follow
+      the same pattern as each is brought under test.
 - [x] The change feed reports market and macro movements. Every observation
       is recorded through the same `VersionedSnapshotStore` the eToro
       responses go to, and `MarketChangeService` reports the mood, the
