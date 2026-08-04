@@ -460,8 +460,13 @@ change feed. It does not gate.
 
 - [ ] `app/services` (66 modules) still mixes load-bearing and incidental
       code
-- [ ] Analysts accept `Brain | BrainContext`; narrowing them retires the
-      legacy `BrainContext`
+- [x] Analysts reason over a `Brain` and nothing else. The portfolio,
+      market, risk and behaviour analysts were narrowed from
+      `Brain | BrainContext` to `Brain`, their dead `BrainContext` branches
+      removed, and the legacy `app.domain.brain_context.BrainContext`,
+      `app.domain.market_context.MarketContext` and the unused
+      `CommitteeMember` protocol deleted — the domain `BrainContext` was
+      never constructed, only ever accepted as a type
 - [ ] `ClaimEngine.test.ts` has pre-existing TypeScript errors (`vitest` is
       not installed); excluded from the Next build graph, so it does not
       break the gate

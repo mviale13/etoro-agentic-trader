@@ -8,23 +8,17 @@ from app.application.brain.reasoning.models.portfolio_assessment import (
     PortfolioAssessment,
 )
 from app.brain import Brain
-from app.domain.brain_context import BrainContext
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 
 class PortfolioAnalyst(Analyst[PortfolioAssessment]):
-    """
-    Transform the Brain's portfolio knowledge into a structured assessment.
-
-    New callers should provide a Brain. BrainContext remains temporarily
-    supported while the existing application pipeline is migrated.
-    """
+    """Transform the Brain's portfolio knowledge into a structured assessment."""
 
     def assess(
         self,
-        source: Brain | BrainContext,
+        source: Brain,
     ) -> PortfolioAssessment:
-        portfolio = self._portfolio_from(source)
+        portfolio = source.portfolio
 
         diversification = self._diversification_score(portfolio)
         concentration = self._concentration_risk(portfolio)
@@ -83,15 +77,6 @@ class PortfolioAnalyst(Analyst[PortfolioAssessment]):
             weaknesses=tuple(weaknesses),
             evidence=tuple(evidence),
         )
-
-    def _portfolio_from(
-        self,
-        source: Brain | BrainContext,
-    ) -> PortfolioSnapshot:
-        if isinstance(source, Brain):
-            return source.portfolio
-
-        return source.portfolio
 
     def _diversification_score(
         self,

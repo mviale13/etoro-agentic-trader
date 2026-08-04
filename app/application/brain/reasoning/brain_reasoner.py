@@ -2,29 +2,13 @@
 Canonical reasoning contract for the MOVRvest Artificial CIO.
 
 The Brain bounded context exposes a single immutable cognitive model
-(`Brain`). Implementations of this protocol analyze that model and
-produce a `ReasoningSnapshot`.
+(`Brain`). Implementations of this protocol analyse that model and produce
+a `ReasoningSnapshot`:
 
-This protocol intentionally coexists with the legacy `ReasoningEngine`
-contract during the migration.
+    Brain -> BrainReasoner -> ReasoningSnapshot
 
-Migration roadmap:
-
-    Legacy
-    ------
-    BrainContext
-        ↓
-    ReasoningEngine
-        ↓
-    list[Insight]
-
-    Canonical
-    ---------
-    Brain
-        ↓
-    BrainReasoner
-        ↓
-    ReasoningSnapshot
+The legacy `BrainContext` this once coexisted with is gone; every analyst
+now reasons over a `Brain` and nothing else.
 """
 
 from typing import Protocol

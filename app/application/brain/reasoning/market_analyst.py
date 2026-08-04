@@ -12,19 +12,11 @@ from app.application.brain.reasoning.models.market_assessment import (
     MarketTrend,
 )
 from app.brain import Brain
-from app.domain.brain_context import BrainContext
-from app.domain.market_context import MarketContext
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 
 
 class MarketAnalyst(Analyst[MarketAssessment]):
-    """
-    Transform market knowledge into a structured assessment.
-
-    The current Brain exposes a MarketSnapshot. Legacy BrainContext callers
-    may still expose MarketContext, so both representations are supported
-    during the architecture migration.
-    """
+    """Transform the Brain's market snapshot into a structured assessment."""
 
     #: The market panel a full reading prices; see
     #: `YahooMarketProvider.DEFAULT_INSTRUMENTS`. Confidence is measured
@@ -36,14 +28,9 @@ class MarketAnalyst(Analyst[MarketAssessment]):
 
     def assess(
         self,
-        source: Brain | BrainContext,
+        source: Brain,
     ) -> MarketAssessment:
-        market = source.market
-
-        if isinstance(market, MarketSnapshot):
-            return self._assess_snapshot(market)
-
-        return self._assess_context(market)
+        return self._assess_snapshot(source.market)
 
     def _assess_snapshot(
         self,
@@ -131,62 +118,6 @@ class MarketAnalyst(Analyst[MarketAssessment]):
             evidence=evidence,
         )
 
-    def _assess_context(
-        self,
-        market: MarketContext,
-    ) -> MarketAssessment:
-        momentum = self._context_momentum_score(market)
-        volatility = self._context_volatility_score(market)
-
-        trend = self._trend(momentum)
-        regime = self._regime(momentum, volatility)
-        confidence = max(
-            0.50,
-            1.0 - abs(momentum - volatility) * 0.50,
-        )
-
-        opportunities: list[str] = []
-        risks: list[str] = []
-
-        if momentum >= 0.70:
-            opportunities.append("Positive market momentum")
-        elif momentum <= 0.30:
-            risks.append("Weak market momentum")
-
-        if volatility >= 0.70:
-            risks.append("Elevated market volatility")
-        elif volatility <= 0.30:
-            opportunities.append("Stable market conditions")
-
-        evidence = (
-            Evidence(
-                description=f"Market regime is '{market.regime}'.",
-                source="MarketContext",
-                strength=0.90,
-            ),
-            Evidence(
-                description=f"Market sentiment is '{market.sentiment}'.",
-                source="MarketContext",
-                strength=0.90,
-            ),
-            Evidence(
-                description=market.headline,
-                source="MarketContext",
-                strength=0.80,
-            ),
-        )
-
-        return MarketAssessment(
-            trend=trend,
-            regime=regime,
-            volatility_score=volatility,
-            momentum_score=momentum,
-            confidence=confidence,
-            opportunities=tuple(opportunities),
-            risks=tuple(risks),
-            evidence=evidence,
-        )
-
     def _snapshot_momentum_score(
         self,
         average_change: float,
@@ -255,37 +186,6 @@ class MarketAnalyst(Analyst[MarketAssessment]):
         depth = measured / priced
 
         return round(breadth * 0.5 + depth * 0.5, 4)
-
-    def _context_momentum_score(
-        self,
-        market: MarketContext,
-    ) -> float:
-        sentiment = market.sentiment.lower()
-
-        mapping = {
-            "very bullish": 1.0,
-            "bullish": 0.8,
-            "positive": 0.7,
-            "neutral": 0.5,
-            "negative": 0.3,
-            "bearish": 0.2,
-            "very bearish": 0.0,
-        }
-
-        return mapping.get(sentiment, 0.5)
-
-    def _context_volatility_score(
-        self,
-        market: MarketContext,
-    ) -> float:
-        mapping = {
-            "low": 0.2,
-            "medium": 0.5,
-            "high": 0.8,
-            "extreme": 1.0,
-        }
-
-        return mapping.get(market.volatility.lower(), 0.5)
 
     def _trend(
         self,

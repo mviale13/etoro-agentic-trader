@@ -7,7 +7,6 @@ from app.application.brain.reasoning.models.behavior_assessment import (
     BehaviorAssessment,
 )
 from app.brain import Brain
-from app.domain.brain_context import BrainContext
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
@@ -17,10 +16,10 @@ class BehaviorAnalyst:
 
     def assess(
         self,
-        source: Brain | BrainContext,
+        source: Brain,
     ) -> BehaviorAssessment:
         portfolio = source.portfolio
-        policy = getattr(source, "investment_policy", None)
+        policy = source.investment_policy
 
         discipline = self._discipline_score(portfolio)
         emotional_risk = self._emotional_risk(portfolio)

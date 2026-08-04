@@ -7,9 +7,7 @@ from app.application.brain.reasoning.models.risk_assessment import (
     RiskAssessment,
 )
 from app.brain import Brain
-from app.domain.brain_context import BrainContext
 from app.domain.market_risk import MarketRisk
-from app.domain.market_snapshot import MarketSnapshot
 from app.domain.portfolio_drawdown import PortfolioDrawdown
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.services.market_risk_service import MarketRiskService
@@ -27,7 +25,7 @@ class RiskAnalyst:
 
     def assess(
         self,
-        source: Brain | BrainContext,
+        source: Brain,
     ) -> RiskAssessment:
         portfolio = source.portfolio
         policy = source.investment_policy
@@ -38,15 +36,10 @@ class RiskAnalyst:
         tolerance = policy.constraints.max_drawdown if policy is not None else None
         drawdown = self._drawdown_risk(portfolio.drawdown, tolerance)
 
-        # The legacy `BrainContext` carries a `MarketContext`, which holds
-        # a mood and a headline and no volatility series. There is nothing
-        # there to measure, and saying so is better than reading a number
-        # off an adjective.
-        exposure = (
-            self._market_risk_service.measure(source.market, portfolio)
-            if isinstance(source.market, MarketSnapshot)
-            else None
-        )
+        # Measured from the market this account is actually exposed to. None
+        # where too little of the account could be assigned a benchmark, which
+        # is reported as unmeasured rather than as calm.
+        exposure = self._market_risk_service.measure(source.market, portfolio)
 
         market = (
             MarketRiskService.risk_score(exposure) if exposure is not None else None
