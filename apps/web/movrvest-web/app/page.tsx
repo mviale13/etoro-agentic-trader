@@ -20,7 +20,7 @@ export default async function HomePage() {
         }
         description={
           result.source === "backend"
-            ? "Portfolio, executive decisions and recorded decision changes are live. The change feed does not yet cover market or macro movements."
+            ? "Portfolio, executive decisions and market movements — mood, volatility and sentiment — are live in the change feed. Individual instrument moves are not tracked yet."
             : `Backend unreachable, showing demo data. ${result.error ?? ""}`
         }
       />

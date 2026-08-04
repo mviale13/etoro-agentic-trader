@@ -299,11 +299,12 @@ export function ExecutiveWorkspaceBriefing({
                 What changed
               </h2>
 
-              {/* Recorded decision changes are real. Market and macro
-                  movements are not recorded anywhere yet, so the feed is
+              {/* Decision changes and market movements — mood, volatility
+                  and sentiment — are recorded and reported. Individual
+                  instrument moves are not measured yet, so the feed is
                   genuine but partial. */}
               {dataSource === "backend" ? (
-                <StatusPill status="partial" label="Decision changes" />
+                <StatusPill status="partial" label="Decisions & market moves" />
               ) : (
                 <StatusPill status="placeholder" label="Demo data" />
               )}
@@ -312,8 +313,9 @@ export function ExecutiveWorkspaceBriefing({
           </div>
 
           <p className="max-w-lg text-sm leading-6 text-slate-500">
-            Every decision the Artificial CIO changed about a holding, newest
-            first. Market and macro movements are not tracked here yet.
+            Every decision the Artificial CIO changed about a holding, and how
+            the market moved — mood, volatility and sentiment — newest first.
+            Individual instrument moves are not tracked here yet.
           </p>
         </div>
 

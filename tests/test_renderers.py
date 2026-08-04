@@ -1,6 +1,11 @@
 from datetime import UTC, datetime
 
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.change_feed.change_event import (
+    ChangeCategory,
+    ChangeEvent,
+    ChangeSeverity,
+)
 from app.domain.decision import Decision
 from app.domain.investment_policy import (
     AllocationTarget,
@@ -85,6 +90,67 @@ def test_market_renderer(capsys):
     assert "SPY" in output
     assert "+0.50%" in output
     assert "Positive" in output
+
+
+def _market_snapshot() -> MarketSnapshot:
+    return MarketSnapshot(
+        quotes=(
+            MarketQuote(
+                symbol="SPY",
+                name="S&P 500 ETF",
+                price=600,
+                change_percent=0.5,
+            ),
+        ),
+        market_mood="negative",
+        volatility="medium",
+        summary="Markets are broadly negative today.",
+        timestamp=datetime.now(UTC),
+    )
+
+
+def test_market_renderer_first_observation_has_nothing_to_compare(capsys):
+    MarketRenderer.render(_market_snapshot())
+
+    output = capsys.readouterr().out
+
+    assert "Since the last reading" in output
+    assert "First recorded observation" in output
+
+
+def test_market_renderer_reports_a_quiet_feed_as_unchanged(capsys):
+    MarketRenderer.render(
+        _market_snapshot(),
+        changes=(),
+        previous_at=datetime(2026, 8, 3, 7, 0, tzinfo=UTC),
+    )
+
+    output = capsys.readouterr().out
+
+    assert "Nothing in the market's classification moved since" in output
+    assert "Aug 03, 07:00 UTC" in output
+
+
+def test_market_renderer_lists_what_moved(capsys):
+    change = ChangeEvent(
+        title="Market mood moved from neutral to negative",
+        description="Markets are broadly negative today.",
+        category=ChangeCategory.MARKET,
+        severity=ChangeSeverity.LOW,
+        timestamp=datetime(2026, 8, 4, 7, 0, tzinfo=UTC),
+    )
+
+    MarketRenderer.render(
+        _market_snapshot(),
+        changes=(change,),
+        previous_at=datetime(2026, 8, 3, 7, 0, tzinfo=UTC),
+    )
+
+    output = capsys.readouterr().out
+
+    assert "Market mood moved from neutral to negative" in output
+    assert "Markets are broadly negative today." in output
+    assert "First recorded observation" not in output
 
 
 def test_policy_renderer(capsys):
