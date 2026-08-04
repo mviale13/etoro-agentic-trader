@@ -5,6 +5,17 @@ from dataclasses import dataclass
 from app.domain.asset_class import AssetClass
 from app.domain.provenance import Provenance
 
+#: What every surface says where an equity reader looks for sentiment.
+#:
+#: The only index read anywhere is Alternative.me's crypto Fear & Greed, so
+#: this is a constant fact of the platform, not a reading that happened to
+#: fail. It is stated in the same words the markets page uses, wherever
+#: sentiment is surfaced and whether or not the crypto reading came back —
+#: so a crypto score is never mistaken for the mood of the equities the
+#: investor mostly holds, and the gap does not vanish on the days the one
+#: index the platform has goes quiet.
+NO_EQUITY_SENTIMENT = "No sentiment index is read for equities."
+
 
 @dataclass(frozen=True, slots=True)
 class SentimentSnapshot:

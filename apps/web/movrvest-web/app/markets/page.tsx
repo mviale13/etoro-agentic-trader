@@ -216,7 +216,19 @@ function MarketContent({ market }: { market: MarketOverview }) {
             </span>
           </div>
         </section>
-      ) : null}
+      ) : (
+        // The crypto index could not be read this cycle. The equity absence
+        // is a constant fact of the platform, not a reading that failed, so
+        // it must not vanish with the one index MOVRvest has.
+        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+          <p className="text-sm font-medium text-slate-500">Sentiment</p>
+
+          <p className="mt-3 max-w-2xl leading-7 text-slate-600">
+            The crypto sentiment index could not be read this cycle. No
+            sentiment index is read for equities.
+          </p>
+        </section>
+      )}
 
       <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
         <h2 className="text-xl font-semibold tracking-tight text-slate-950">

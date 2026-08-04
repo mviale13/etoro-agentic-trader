@@ -1,6 +1,7 @@
 from app.domain.committee_decision import CommitteeDecision
 from app.domain.market_intelligence import MarketIntelligence
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.sentiment_snapshot import NO_EQUITY_SENTIMENT
 
 
 class DailyRenderer:
@@ -40,6 +41,7 @@ class DailyRenderer:
                 else f"{sentiment.score} ({sentiment.label})"
             )
         )
+        print(NO_EQUITY_SENTIMENT)
 
         print()
 

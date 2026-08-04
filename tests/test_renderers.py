@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.asset_class import AssetClass
 from app.domain.change_feed.change_event import (
     ChangeCategory,
     ChangeEvent,
@@ -14,6 +15,8 @@ from app.domain.investment_policy import (
 )
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 from app.domain.morning_brief import MorningBrief
+from app.domain.provenance import Provenance
+from app.domain.sentiment_snapshot import SentimentSnapshot
 from app.renderers.decision_renderer import DecisionRenderer
 from app.renderers.market_renderer import MarketRenderer
 from app.renderers.morning_renderer import MorningRenderer
@@ -90,6 +93,36 @@ def test_market_renderer(capsys):
     assert "SPY" in output
     assert "+0.50%" in output
     assert "Positive" in output
+    # No crypto reading was supplied, but the equity absence is stated anyway.
+    assert "Crypto sentiment : not read" in output
+    assert "No sentiment index is read for equities." in output
+
+
+def test_market_renderer_names_the_crypto_reading_and_the_equity_absence(capsys):
+    snapshot = MarketSnapshot(
+        quotes=(
+            MarketQuote(
+                symbol="SPY", name="S&P 500 ETF", price=600, change_percent=0.5
+            ),
+        ),
+        market_mood="negative",
+        volatility="medium",
+        summary="Markets are broadly negative today.",
+        timestamp=datetime.now(UTC),
+        sentiment=SentimentSnapshot(
+            score=25,
+            label="Extreme Fear",
+            subject=AssetClass.CRYPTO,
+            reading=Provenance(source="Alternative.me", observed_at=datetime.now(UTC)),
+        ),
+    )
+
+    MarketRenderer.render(snapshot)
+
+    output = capsys.readouterr().out
+
+    assert "Crypto sentiment : 25 (Extreme Fear)" in output
+    assert "No sentiment index is read for equities." in output
 
 
 def _market_snapshot() -> MarketSnapshot:

@@ -1,4 +1,5 @@
 from app.domain.market_intelligence import MarketIntelligence
+from app.domain.sentiment_snapshot import NO_EQUITY_SENTIMENT
 
 
 class IntelligenceRenderer:
@@ -35,6 +36,10 @@ class IntelligenceRenderer:
             print(
                 f"{'Published':<16}: {sentiment.reading.observed_at.date().isoformat()}"
             )
+
+        # Stated whether the crypto index above was read or not: the equities
+        # the investor mostly holds have no sentiment index either way.
+        print(NO_EQUITY_SENTIMENT)
 
         print()
         print(f"{'Outlook':<16}: {intelligence.outlook}")

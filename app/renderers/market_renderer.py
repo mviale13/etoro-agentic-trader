@@ -5,6 +5,7 @@ from datetime import datetime
 
 from app.domain.change_feed.change_event import ChangeEvent
 from app.domain.market_snapshot import MarketSnapshot
+from app.domain.sentiment_snapshot import NO_EQUITY_SENTIMENT, SentimentSnapshot
 
 
 class MarketRenderer:
@@ -38,7 +39,30 @@ class MarketRenderer:
         print(snapshot.summary)
         print()
 
+        MarketRenderer._render_sentiment(snapshot.sentiment)
         MarketRenderer._render_changes(changes, previous_at)
+
+    @staticmethod
+    def _render_sentiment(
+        sentiment: SentimentSnapshot | None,
+    ) -> None:
+        """
+        The one sentiment index the platform reads, and what it does not.
+
+        The reading is labelled by the asset class it was taken of, never as
+        "market sentiment", and the equity absence is stated beneath it every
+        time — including the cycle the crypto index could not be read, when
+        the score is gone but the gap it leaves for equities is not.
+        """
+
+        if sentiment is None:
+            print("Crypto sentiment : not read")
+        else:
+            label = f"{sentiment.subject.value.capitalize()} sentiment"
+            print(f"{label} : {sentiment.score} ({sentiment.label})")
+
+        print(NO_EQUITY_SENTIMENT)
+        print()
 
     @staticmethod
     def _render_changes(
