@@ -1,0 +1,228 @@
+# MOVRvest Engineering Constitution
+
+> The working agreement for building MOVRvest. Design reviews, code reviews
+> and architectural decisions are measured against these principles.
+
+---
+
+## 1. Product first
+
+MOVRvest is an Artificial Chief Investment Officer.
+
+Every engineering decision must improve one of:
+
+**Perception · Understanding · Reasoning · Judgment · Explainability**
+
+If it improves none of them, question whether it belongs.
+
+---
+
+## 2. The architecture is settled
+
+The canonical pipeline is:
+
+```
+Reality → Evidence → Perception → Brain → Reasoning →
+Executive Committee → Artificial CIO → Communication →
+Executive Brief → Dashboard
+```
+
+No new execution pipelines. No duplicate architectures.
+
+---
+
+## 3. Single responsibility
+
+Every component answers exactly one question.
+
+| Layer | Question |
+|---|---|
+| Evidence | What happened? |
+| Perception | What is true? |
+| Brain | What do we know? |
+| Reasoning | What does it mean? |
+| Executive Committee | What are the trade-offs? |
+| Artificial CIO | What should we do? |
+| Communication | How do we explain it? |
+| Dashboard | What does the investor see? |
+
+---
+
+## 4. Engineering workflow
+
+```
+Inspect → Understand → Design → Code → Test → Commit
+```
+
+Never skip inspection. Never guess APIs.
+
+---
+
+## 5. Reuse before create
+
+Before writing code, ask: does this already exist? Can we extend it? Can we
+simplify it?
+
+The best code is reused. The second best is deleted.
+
+---
+
+## 6. One business concept, one model
+
+Do not duplicate domain concepts. `Brain`, `BrainContext`, `BrainSnapshot`
+and `BrainState` should not coexist unless they genuinely represent
+different business concepts.
+
+---
+
+## 7. Evidence before inference
+
+Everything starts from evidence. Never invent facts. Never infer before
+observing.
+
+---
+
+## 8. The Brain never lies
+
+The Brain stores portfolio, market, macro, investor, policy, memory,
+evidence and timeline.
+
+It stores **facts** — never recommendations, never UI, never presentation.
+
+---
+
+## 9. Analysts never decide
+
+Analysts produce assessments, confidence, evidence and uncertainty.
+
+They never produce BUY, SELL, PREPARE or RECOMMEND. Those belong to the
+Artificial CIO.
+
+---
+
+## 10. The Artificial CIO owns judgment
+
+One component makes investment decisions.
+
+Input: assessments, committee opinions, policy.
+Output: `REJECT · INVESTIGATE · MONITOR · PREPARE · RECOMMEND`
+
+---
+
+## 11. Communication never thinks
+
+Communication explains; it never decides.
+
+Every Executive Brief answers:
+
+1. What changed?
+2. Why does it matter?
+3. Why does it matter for me?
+4. What should I do?
+5. Why should I trust this?
+
+---
+
+## 12. The UI never reasons
+
+The dashboard presents, visualises and navigates. It never calculates,
+reasons, ranks or decides. Financial calculation belongs in the backend.
+
+---
+
+## 13. Keep the repository green
+
+Every meaningful change preserves `ruff`, `mypy`, `pytest` and
+`npm run build`. No accumulating technical debt.
+
+---
+
+## 14. Vertical slices
+
+Ship one complete capability, fully integrated and fully tested, rather than
+five incomplete ones.
+
+```
+Analyst → Reasoning → Executive Brief → Dashboard
+```
+
+One slice. Then continue.
+
+---
+
+## 15. Delete legacy carefully
+
+Never delete first:
+
+```
+Replace → No callers → Tests pass → Delete
+```
+
+Dead code should disappear naturally.
+
+---
+
+## 16. Documentation follows reality
+
+Architecture documents describe what exists. Project state describes where
+we are going. Never let documentation drift from the implementation.
+
+---
+
+## 17. Explainability is a feature
+
+Every recommendation must be evidence-based, explainable, transparent,
+auditable and consistent. Trust is part of the product.
+
+---
+
+## 18. Measure the right things
+
+Do not celebrate lines of code, service count or agent count.
+
+Celebrate legacy removed, reasoning improved, explainability increased,
+investor trust strengthened.
+
+---
+
+## 19. Challenge complexity
+
+Before adding anything: is it simpler? Clearer? More reusable? Does it make
+the Artificial CIO smarter?
+
+If not, do not build it.
+
+---
+
+## 20. The North Star
+
+Every change should improve at least one of:
+
+```
+Observe better → Understand better → Reason better →
+Judge better → Explain better
+```
+
+---
+
+## 21. Absent evidence is reported as absent
+
+*Added in practice, and load-bearing.*
+
+A plausible figure on an investment dashboard reads as a measurement. Where
+the platform cannot evidence something — a price target, a conviction
+trend, an asset class — it says so rather than estimating.
+
+This is why investment cases carry no upside projections, why
+`consistency_score` reports a neutral midpoint, and why an unnameable
+holding keeps a visible `#id` rather than a guess.
+
+---
+
+## The final principle
+
+We are not building a trading bot. We are not building a dashboard.
+
+We are building an Artificial Chief Investment Officer that helps investors
+make better decisions through evidence, reasoning, judgment and transparent
+explanation — while the investor always remains in control.

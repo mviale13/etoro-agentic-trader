@@ -1,0 +1,304 @@
+cat > app/api/templates/index.html <<'HTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>MOVRvest Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                Inter,
+                Arial,
+                sans-serif;
+            color: #111827;
+            background: #f3f4f6;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .header {
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #6b7280;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            padding: 24px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow:
+                0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .card h2 {
+            margin: 0 0 18px;
+            font-size: 18px;
+        }
+
+        .label {
+            color: #6b7280;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .buy {
+            background: #16a34a;
+        }
+
+        .hold {
+            background: #ca8a04;
+        }
+
+        .sell {
+            background: #dc2626;
+        }
+
+        .confidence {
+            margin-top: 18px;
+            font-size: 16px;
+        }
+
+        .regime {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .weight-row {
+            margin-top: 16px;
+        }
+
+        .weight-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 7px;
+        }
+
+        .bar {
+            height: 9px;
+            overflow: hidden;
+            background: #e5e7eb;
+            border-radius: 999px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 999px;
+        }
+
+        .empty {
+            margin-top: 18px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .error {
+            padding: 12px;
+            color: #b91c1c;
+            background: #fef2f2;
+            border-radius: 8px;
+        }
+
+        .loading {
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <h1>🚀 MOVRvest Dashboard</h1>
+            <p>Explainable adaptive investment intelligence</p>
+        </header>
+
+        <section class="grid">
+            <article class="card">
+                <h2>Current Recommendation</h2>
+
+                <div
+                    id="recommendation"
+                    class="loading"
+                >
+                    Loading...
+                </div>
+            </article>
+
+            <article class="card">
+                <h2>Committee Weights</h2>
+
+                <p>
+                    <span class="label">Market regime</span>
+                </p>
+
+                <p>
+                    <span
+                        id="regime"
+                        class="regime"
+                    >
+                        Loading...
+                    </span>
+                </p>
+
+                <div id="weights"></div>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        fetch("/recommendations/latest")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(
+                        `Recommendation unavailable (${response.status})`
+                    );
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                const action = data.recommendation;
+                const cssClass = action.toLowerCase();
+
+                document.getElementById(
+                    "recommendation"
+                ).innerHTML = `
+                    <div class="label">${data.symbol}</div>
+
+                    <div class="badge ${cssClass}">
+                        ${action}
+                    </div>
+
+                    <div class="confidence">
+                        Confidence:
+                        <strong>${data.confidence}%</strong>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                document.getElementById(
+                    "recommendation"
+                ).innerHTML = `
+                    <div class="error">
+                        ${error.message}
+                    </div>
+                `;
+            });
+
+        fetch("/committee/weights")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(
+                        `Weights unavailable (${response.status})`
+                    );
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById(
+                    "regime"
+                ).textContent = data.regime;
+
+                const container =
+                    document.getElementById("weights");
+
+                const entries =
+                    Object.entries(data.weights);
+
+                if (entries.length === 0) {
+                    container.innerHTML = `
+                        <p class="empty">
+                            No historical weights available yet.
+                        </p>
+                    `;
+
+                    return;
+                }
+
+                container.innerHTML = entries
+                    .map(([member, weight]) => {
+                        const percentage =
+                            Math.round(weight * 100);
+
+                        return `
+                            <div class="weight-row">
+                                <div class="weight-header">
+                                    <span>${member}</span>
+                                    <strong>${percentage}%</strong>
+                                </div>
+
+                                <div class="bar">
+                                    <div
+                                        class="bar-fill"
+                                        style="width: ${percentage}%"
+                                    ></div>
+                                </div>
+                            </div>
+                        `;
+                    })
+                    .join("");
+            })
+            .catch(error => {
+                document.getElementById(
+                    "regime"
+                ).textContent = "Unavailable";
+
+                document.getElementById(
+                    "weights"
+                ).innerHTML = `
+                    <div class="error">
+                        ${error.message}
+                    </div>
+                `;
+            });
+    </script>
+</body>
+</html>
+HTML

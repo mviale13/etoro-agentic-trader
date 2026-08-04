@@ -1,0 +1,93 @@
+from argparse import Namespace
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from app import cli
+
+
+@pytest.fixture
+def anyio_backend() -> str:
+    return "asyncio"
+
+
+def test_parser_accepts_brain_command() -> None:
+    parser = cli.build_parser()
+
+    args = parser.parse_args(["brain"])
+
+    assert args.command == "brain"
+
+
+def test_parser_accepts_company_symbol() -> None:
+    parser = cli.build_parser()
+
+    args = parser.parse_args(["company", "NVDA"])
+
+    assert args.command == "company"
+    assert args.symbol == "NVDA"
+
+
+def test_parser_uses_default_explain_symbol() -> None:
+    parser = cli.build_parser()
+
+    args = parser.parse_args(["explain"])
+
+    assert args.command == "explain"
+    assert args.symbol == "SPY"
+
+
+@pytest.mark.anyio
+async def test_dispatches_brain_command() -> None:
+    args = Namespace(command="brain")
+    run = AsyncMock(return_value=0)
+
+    with patch.dict(
+        cli.COMMANDS,
+        {
+            "brain": (
+                "Run the complete MOVRvest Artificial CIO pipeline",
+                run,
+            )
+        },
+    ):
+        exit_code = await cli.dispatch(args)
+
+    assert exit_code == 0
+    run.assert_awaited_once_with()
+
+
+@pytest.mark.anyio
+async def test_dispatches_company_with_symbol() -> None:
+    args = Namespace(
+        command="company",
+        symbol="MSFT",
+    )
+
+    with patch.object(
+        cli.company,
+        "run",
+        new=AsyncMock(return_value=0),
+    ) as run:
+        exit_code = await cli.dispatch(args)
+
+    assert exit_code == 0
+    run.assert_awaited_once_with("MSFT")
+
+
+@pytest.mark.anyio
+async def test_dispatches_explain_with_symbol() -> None:
+    args = Namespace(
+        command="explain",
+        symbol="ASML",
+    )
+
+    with patch.object(
+        cli.explain,
+        "run",
+        new=AsyncMock(return_value=0),
+    ) as run:
+        exit_code = await cli.dispatch(args)
+
+    assert exit_code == 0
+    run.assert_awaited_once_with("ASML")

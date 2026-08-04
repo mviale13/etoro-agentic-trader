@@ -13,7 +13,13 @@ dependencies = [
   "httpx==0.28.1",
   "pydantic==2.11.7",
   "pydantic-settings==2.10.1",
-  "sqlalchemy==2.0.41"
+  "sqlalchemy==2.0.41",
+  "yfinance==1.5.2",
+  "PyYAML==6.0.3",
+  "rich==15.0.0",
+  # The home route renders a Jinja template at import time, so a fresh
+  # install that omits this cannot even construct the app.
+  "Jinja2==3.1.6",
 ]
 
 [project.scripts]
@@ -21,3 +27,50 @@ movrvest = "app.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+# `Depends()` in a parameter default is FastAPI's dependency-injection idiom,
+# not the mutable-default hazard B008 exists to catch. The seam it declares is
+# what lets the routes be tested offline.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends"]
+
+[tool.mypy]
+exclude = ["^tests/"]
+python_version = "3.12"
+
+strict = true
+
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+check_untyped_defs = true
+
+no_implicit_optional = true
+
+pretty = true
+
+[tool.coverage.run]
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 60
+
+[[tool.mypy.overrides]]
+module = "yfinance.*"
+ignore_missing_imports = true
+
+
+
+

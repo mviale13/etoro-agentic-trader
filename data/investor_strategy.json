@@ -1,0 +1,41 @@
+{
+  "status": "draft",
+  "strategy": {
+    "name": "My Investment Strategy",
+    "description": "Personal investment objectives, portfolio limits and decision rules."
+  },
+  "profile": {
+    "name": "Marcos",
+    "base_currency": "EUR"
+  },
+  "objectives": {
+    "primary_goal": "Grow capital, diversify but be opportunistic whenever there's a high volatility period",
+    "time_horizon_years": 5,
+    "target_annual_return_pct": 20,
+    "maximum_acceptable_drawdown_pct": 20
+  },
+  "portfolio_policy": {
+    "target_cash_pct": 5,
+    "minimum_cash_pct": 40,
+    "maximum_single_position_pct": 20,
+    "maximum_crypto_pct": 65
+  },
+  "investment_preferences": {
+    "style": [
+      "value"
+    ],
+    "preferred_assets": [
+      "crypto"
+    ],
+    "excluded_assets": [],
+    "allow_crypto": true,
+    "allow_leverage": true,
+    "investor_type": "long_term"
+  },
+  "decision_rules": {
+    "minimum_committee_confidence_to_buy": 70,
+    "require_human_approval": true,
+    "automatic_trading_enabled": false
+  },
+  "notes": []
+}

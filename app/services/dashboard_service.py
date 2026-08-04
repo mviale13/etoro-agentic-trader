@@ -1,0 +1,166 @@
+from app.api.models.dashboard import DashboardResponse
+from app.api.models.investor_dna import InvestorDNAResponse
+from app.api.models.observation import ObservationResponse
+from app.api.models.portfolio import (
+    AllocationResponse,
+    PortfolioResponse,
+)
+from app.api.models.reflection import ReflectionResponse
+from app.api.models.today import (
+    HealthCheckResponse,
+    HealthResponse,
+    OpinionResponse,
+    RecommendationResponse,
+    TodayResponse,
+)
+from app.brokers.etoro_account import EtoroAccountBroker
+from app.config import Settings
+from app.repositories.json_event_repository import JsonEventRepository
+from app.services.account_service import AccountService
+from app.services.brief_service import BriefService
+from app.services.daily_reflection_service import (
+    DailyReflectionService,
+)
+from app.services.investor_dna_service import (
+    InvestorDNAService,
+)
+from app.services.investor_observation_service import (
+    InvestorObservationService,
+)
+from app.services.memory_builder import MemoryBuilder
+from app.services.memory_service import MemoryService
+from app.services.pattern_engine import PatternEngine
+from app.services.portfolio_service import PortfolioService
+from app.services.signal_service import SignalService
+
+
+class DashboardService:
+    async def build(self) -> DashboardResponse:
+        today = await self._build_today()
+        portfolio, observation = await self._build_portfolio_sections()
+
+        reflection = DailyReflectionService().today()
+
+        memory_service = MemoryService(JsonEventRepository())
+        memories = memory_service.history()
+        patterns = PatternEngine().analyze(memories)
+        dna = InvestorDNAService().analyze(patterns)
+
+        understanding = dna.confidence
+
+        if understanding < 25:
+            dna_message = "I'm just getting to know your investment style."
+        elif understanding < 50:
+            dna_message = "I'm starting to recognize patterns in your decisions."
+        elif understanding < 75:
+            dna_message = "I can personalize many recommendations."
+        else:
+            dna_message = "I understand your long-term investment philosophy well."
+
+        return DashboardResponse(
+            today=today,
+            portfolio=portfolio,
+            observation=observation,
+            reflection=ReflectionResponse(
+                title=reflection.title,
+                message=reflection.message,
+                source=reflection.source,
+            ),
+            investor_dna=InvestorDNAResponse(
+                understanding=understanding,
+                message=dna_message,
+            ),
+        )
+
+    async def _build_today(
+        self,
+    ) -> TodayResponse:
+        snapshot = await BriefService().build()
+
+        return TodayResponse(
+            greeting=snapshot.greeting,
+            health=HealthResponse(
+                score=snapshot.health.overall_score,
+                checks=[
+                    HealthCheckResponse(
+                        name=check.name,
+                        score=check.score,
+                        status=check.status,
+                        message=check.message,
+                    )
+                    for check in snapshot.health.checks
+                ],
+            ),
+            summary=snapshot.summary,
+            changes=list(snapshot.changes),
+            recommendation=RecommendationResponse(
+                symbol=snapshot.recommendation.symbol,
+                action=(snapshot.recommendation.decision.recommendation),
+                confidence=(snapshot.recommendation.decision.confidence),
+                opinions=[
+                    OpinionResponse(
+                        member=opinion.member,
+                        vote=opinion.vote,
+                        confidence=opinion.confidence,
+                        rationale=opinion.rationale,
+                    )
+                    for opinion in (snapshot.recommendation.decision.opinions)
+                ],
+            ),
+            next_action=snapshot.next_action,
+        )
+
+    async def _build_portfolio_sections(
+        self,
+    ) -> tuple[
+        PortfolioResponse | None,
+        ObservationResponse | None,
+    ]:
+        try:
+            settings = Settings()
+            broker = EtoroAccountBroker(settings)
+            account = await AccountService(broker).snapshot()
+            snapshot = PortfolioService().analyze(account)
+        except Exception:
+            return None, None
+
+        portfolio = PortfolioResponse(
+            total_value=snapshot.total_value,
+            total_value_eur=snapshot.total_value_eur,
+            available_cash_usd=snapshot.available_cash_usd,
+            available_cash_eur=snapshot.available_cash_eur,
+            invested_usd=snapshot.invested_usd,
+            invested_eur=snapshot.invested_eur,
+            liquidity_pct=snapshot.liquidity_pct,
+            positions=snapshot.positions,
+            allocation=AllocationResponse(
+                cash=snapshot.allocation.cash,
+                stocks=snapshot.allocation.stocks,
+                etfs=snapshot.allocation.etfs,
+                crypto=snapshot.allocation.crypto,
+                unclassified=snapshot.allocation.unclassified,
+            ),
+            risk_flags=list(snapshot.risk_flags),
+            last_sync=snapshot.last_sync,
+            source=f"{account.broker} {account.mode.title()}",
+        )
+
+        signals = SignalService().analyze(
+            current=snapshot,
+            previous=None,
+        )
+
+        memory_service = MemoryService(JsonEventRepository())
+
+        for memory in MemoryBuilder().build(signals):
+            memory_service.remember(memory)
+
+        result = InvestorObservationService().observe(signals)
+
+        observation = ObservationResponse(
+            title=result.title,
+            message=result.message,
+            category=result.category,
+        )
+
+        return portfolio, observation

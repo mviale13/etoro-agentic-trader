@@ -1,0 +1,106 @@
+"""What the Artificial CIO decided before.
+
+These are facts about decisions that were actually made and recorded. They
+carry no judgement about whether those decisions were right: outcome
+analysis is a separate concern, and nothing here estimates it.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import datetime
+
+from app.cio.decision_state import DecisionState
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionRecord:
+    """One decision the Artificial CIO made, as it was recorded."""
+
+    symbol: str
+    state: DecisionState
+    conviction: int
+    rationale: str
+    decided_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionHistory:
+    """Every recorded decision for one symbol, oldest first."""
+
+    symbol: str
+    records: tuple[DecisionRecord, ...] = field(default_factory=tuple)
+
+    @property
+    def is_empty(self) -> bool:
+        return not self.records
+
+    @property
+    def total(self) -> int:
+        return len(self.records)
+
+    @property
+    def first(self) -> DecisionRecord | None:
+        return self.records[0] if self.records else None
+
+    @property
+    def latest(self) -> DecisionRecord | None:
+        return self.records[-1] if self.records else None
+
+    @property
+    def current_state(self) -> DecisionState | None:
+        latest = self.latest
+
+        return latest.state if latest is not None else None
+
+    @property
+    def current_run(self) -> tuple[DecisionRecord, ...]:
+        """The unbroken run of records ending in the current state."""
+
+        state = self.current_state
+
+        if state is None:
+            return ()
+
+        run: list[DecisionRecord] = []
+
+        for record in reversed(self.records):
+            if record.state is not state:
+                break
+
+            run.append(record)
+
+        return tuple(reversed(run))
+
+    @property
+    def current_state_since(self) -> datetime | None:
+        """When the current state was first recorded."""
+
+        run = self.current_run
+
+        return run[0].decided_at if run else None
+
+    @property
+    def previous_state(self) -> DecisionState | None:
+        """The state held immediately before the current one."""
+
+        run_length = len(self.current_run)
+
+        if run_length == 0 or run_length == len(self.records):
+            return None
+
+        return self.records[-run_length - 1].state
+
+    @property
+    def state_changes(self) -> int:
+        """How many times the recorded state changed."""
+
+        return sum(
+            1
+            for previous, current in zip(
+                self.records,
+                self.records[1:],
+                strict=False,
+            )
+            if previous.state is not current.state
+        )

@@ -1,0 +1,45 @@
+from app.application.brain.brain_builder_service import BrainBuilderService
+from app.application.executive.executive_service import ExecutiveService
+from app.application.workspace.executive_pipeline import ExecutivePipeline
+from app.renderers.executive_brief_console_renderer import (
+    ExecutiveBriefConsoleRenderer,
+)
+
+
+class EvaluateCommand:
+    """
+    Run the canonical Artificial CIO pipeline for one symbol.
+
+    Brain → Reasoning → Executive Committee → Artificial CIO → Executive Brief
+    """
+
+    async def run(
+        self,
+        symbol: str,
+    ) -> int:
+        normalized_symbol = symbol.upper().strip()
+
+        brain = await BrainBuilderService().build(
+            focus_symbols=(normalized_symbol,),
+        )
+
+        brief = ExecutiveService(
+            pipeline=ExecutivePipeline.with_memory(),
+        ).brief(
+            symbol=normalized_symbol,
+            brain=brain,
+        )
+
+        ExecutiveBriefConsoleRenderer.render(
+            brief,
+        )
+
+        return 0
+
+
+async def run(
+    symbol: str,
+) -> int:
+    return await EvaluateCommand().run(
+        symbol,
+    )

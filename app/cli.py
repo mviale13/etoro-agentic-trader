@@ -1,67 +1,166 @@
 import argparse
 import asyncio
-from typing import NoReturn
+from collections.abc import Callable, Coroutine
+from typing import Any, NoReturn
 
-import httpx
+from app.commands import (
+    brain,
+    committee,
+    company,
+    credentials,
+    daily,
+    decision,
+    doctor,
+    evaluate,
+    explain,
+    intelligence,
+    market,
+    morning,
+    policy,
+    record,
+    status,
+    today,
+    watchlist,
+)
 
-from app.brokers.etoro_account import EtoroAccountBroker
-from app.config import get_settings
-from app.domain.account_snapshot import AccountSnapshot
-from app.services.account_service import AccountService
+CommandHandler = Callable[[], Coroutine[Any, Any, int]]
+
+COMMANDS: dict[str, tuple[str, CommandHandler]] = {
+    "status": (
+        "Show the live eToro account status",
+        status.run,
+    ),
+    "morning": (
+        "Show the deterministic morning brief",
+        morning.run,
+    ),
+    "market": (
+        "Show the current market snapshot",
+        market.run,
+    ),
+    "policy": (
+        "Show the configured investment policy",
+        policy.run,
+    ),
+    "decision": (
+        "Generate a deterministic investment decision",
+        decision.run,
+    ),
+    "intelligence": (
+        "Show the current market intelligence",
+        intelligence.run,
+    ),
+    "committee": (
+        "Run the investment committee",
+        committee.run,
+    ),
+    "daily": (
+        "Show the daily investment briefing",
+        daily.run,
+    ),
+    "doctor": (
+        "Analyze your portfolio health",
+        doctor.run,
+    ),
+    "watchlist": (
+        "Analyze your watchlist",
+        watchlist.run,
+    ),
+    "today": (
+        "Show the MOVRvest Morning Brief",
+        today.run,
+    ),
+    "brain": (
+        "Run the complete MOVRvest Artificial CIO pipeline",
+        brain.run,
+    ),
+    "credentials": (
+        "Show what the configured eToro credentials can reach",
+        credentials.run,
+    ),
+    "record": (
+        "Score past decisions against what the securities did next",
+        record.run,
+    ),
+}
 
 
-def _money(value: float | None) -> str:
-    return "Unavailable" if value is None else f"${value:,.2f}"
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="movrvest",
+        description="MOVRvest — Invest with intelligence.",
+    )
+
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+    )
+
+    for name, (help_text, _) in COMMANDS.items():
+        subparsers.add_parser(
+            name,
+            help=help_text,
+            description=help_text,
+        )
+
+    explain_parser = subparsers.add_parser(
+        "explain",
+        help="Explain an investment decision",
+        description="Explain an investment decision",
+    )
+    explain_parser.add_argument(
+        "symbol",
+        nargs="?",
+        default="SPY",
+        help="Ticker symbol, for example MSFT, ASML or BTC-USD",
+    )
+
+    company_parser = subparsers.add_parser(
+        "company",
+        help="Analyze a company from your eToro watchlists",
+        description="Analyze a company from your eToro watchlists",
+    )
+    company_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example MSFT, NVDA or BTC",
+    )
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate",
+        help="Run the Artificial CIO pipeline and explain the decision",
+        description="Run the Artificial CIO pipeline and explain the decision",
+    )
+    evaluate_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example MSFT, ASML or BTC-USD",
+    )
+
+    return parser
 
 
-def _print_status(snapshot: AccountSnapshot) -> None:
-    print()
-    print("MOVRvest")
-    print("Invest with intelligence.")
-    print()
-    print(f"Broker:          {snapshot.broker} {snapshot.mode.title()}")
-    print("Status:          Connected")
-    print(f"Latency:         {snapshot.latency_ms:.1f} ms")
-    print(f"Last sync:       {snapshot.timestamp.astimezone():%Y-%m-%d %H:%M:%S %Z}")
-    print()
-    print(f"Equity:          {_money(snapshot.equity_usd)}")
-    print(f"Available cash:  {_money(snapshot.cash_usd)}")
-    print(f"Invested:        {_money(snapshot.invested_usd)}")
-    print(f"Unrealized P&L:  {_money(snapshot.unrealized_pnl_usd)}")
-    print(f"Positions:       {snapshot.positions}")
-    print(f"Pending orders:  {snapshot.pending_orders}")
-    print(f"Copy portfolios: {snapshot.copy_portfolios}")
-    print()
+async def dispatch(args: argparse.Namespace) -> int:
+    if args.command == "explain":
+        return await explain.run(args.symbol)
 
+    if args.command == "company":
+        return await company.run(args.symbol)
 
-async def _status() -> int:
-    settings = get_settings()
-    service = AccountService(EtoroAccountBroker(settings))
-    try:
-        snapshot = await service.snapshot()
-    except httpx.HTTPStatusError as exc:
-        status = exc.response.status_code
-        body = exc.response.text[:400]
-        print(f"MOVRvest could not connect to eToro (HTTP {status}).")
-        print(body)
-        return 1
-    except Exception as exc:
-        print(f"MOVRvest status failed: {exc}")
-        return 1
+    if args.command == "evaluate":
+        return await evaluate.run(args.symbol)
 
-    _print_status(snapshot)
-    return 0
+    _, command_handler = COMMANDS[args.command]
+    return await command_handler()
 
 
 def main() -> NoReturn:
-    parser = argparse.ArgumentParser(prog="movrvest")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("status", help="Show the live eToro account status")
+    parser = build_parser()
     args = parser.parse_args()
 
-    if args.command == "status":
-        raise SystemExit(asyncio.run(_status()))
-    raise SystemExit(2)
+    raise SystemExit(
+        asyncio.run(
+            dispatch(args),
+        )
+    )
 
 
 if __name__ == "__main__":

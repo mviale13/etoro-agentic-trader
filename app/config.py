@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
     @field_validator("allowed_symbols", "crypto_symbols", mode="before")
     @classmethod
-    def split_csv(cls, value):
+    def split_csv(cls, value: Any) -> Any:
         if isinstance(value, str):
             return [item.strip().upper() for item in value.split(",") if item.strip()]
         return value
