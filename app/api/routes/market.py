@@ -66,6 +66,12 @@ def _payload(
                 # a series too short to measure is not a calm one.
                 "realized_volatility": quote.realized_volatility,
                 "max_drawdown": quote.max_drawdown,
+                # Today against this instrument's own ordinary day — the
+                # comparison a raw percentage cannot make. Null where the
+                # instrument's history could not be read: unknown, not calm.
+                "typical_daily_move_pct": quote.typical_daily_move_pct,
+                "move_ratio": quote.move_ratio,
+                "unusual": quote.moved_unusually,
                 "observed": (
                     quote.reading.stated() if quote.reading is not None else None
                 ),

@@ -1,9 +1,19 @@
+import math
 from dataclasses import dataclass
 from datetime import datetime
 
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
+
+#: A day at least this many times the instrument's own typical day is
+#: reported as unusual. Two typical days' worth of movement in one day is
+#: the same statement about an index fund and about Bitcoin, which is the
+#: point: raw percentages are not.
+UNUSUAL_MOVE_RATIO = 2.0
+
+#: Trading days in a year, for de-annualising realized volatility.
+TRADING_DAYS = 252
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +44,53 @@ class MarketQuote:
     #: price is a claim about now, and without this a fifteen-minute-old
     #: one was indistinguishable from a live one to everything downstream.
     reading: Provenance | None = None
+
+    @property
+    def typical_daily_move_pct(self) -> float | None:
+        """
+        The size of this instrument's ordinary day, in percent.
+
+        De-annualised from its own measured volatility. None where the
+        volatility is unmeasured — an instrument whose history nobody
+        could read does not have a known ordinary day.
+        """
+
+        if self.realized_volatility is None or self.realized_volatility <= 0:
+            return None
+
+        return self.realized_volatility / math.sqrt(TRADING_DAYS) * 100
+
+    @property
+    def move_ratio(self) -> float | None:
+        """
+        Today's move as a multiple of this instrument's typical day.
+
+        The comparison raw percentages cannot make: a 2% day is routine
+        for Bitcoin and remarkable for a bond index, and only the
+        instrument's own history can say which.
+        """
+
+        typical = self.typical_daily_move_pct
+
+        if typical is None:
+            return None
+
+        return abs(self.change_percent) / typical
+
+    @property
+    def moved_unusually(self) -> bool | None:
+        """
+        Whether today was at least twice this instrument's typical day.
+
+        None where the typical day is unmeasured: unknown is not calm.
+        """
+
+        ratio = self.move_ratio
+
+        if ratio is None:
+            return None
+
+        return ratio >= UNUSUAL_MOVE_RATIO
 
 
 @dataclass(frozen=True, slots=True)
