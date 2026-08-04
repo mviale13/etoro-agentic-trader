@@ -12,6 +12,7 @@ from app.application.workspace.candidate_research_service import (
     CandidateResearchService,
 )
 from app.application.workspace.executive_pipeline import ExecutivePipeline
+from app.renderers.brief_language import conviction_label  # noqa: I001
 from app.repositories.json_event_repository import JsonEventRepository
 
 router = APIRouter(
@@ -77,6 +78,7 @@ async def research_candidates(
                 source=candidate.source if candidate else "",
                 recommendation=decision.state.value,
                 conviction=decision.conviction,
+                conviction_label=conviction_label(decision.conviction),
                 quality_score=evidence.quality_score,
                 valuation_score=evidence.valuation_score,
                 risk_score=evidence.risk_score,

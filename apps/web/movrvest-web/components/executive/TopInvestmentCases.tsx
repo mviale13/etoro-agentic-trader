@@ -1,14 +1,9 @@
-import Link from "next/link";
-
+import { DecisionCard } from "@/components/decisions/DecisionCard";
 import { StatusPill } from "@/components/ui/StatusPill";
 import type { RankedInvestmentCaseViewModel } from "@/lib/view-models/investment-case";
 
 interface TopInvestmentCasesProps {
   cases: readonly RankedInvestmentCaseViewModel[];
-}
-
-function rankMarker(rank: number): string {
-  return String(rank).padStart(2, "0");
 }
 
 function ReasonList({
@@ -51,99 +46,43 @@ function InvestmentCaseCard({
   investmentCase: RankedInvestmentCaseViewModel;
 }) {
   return (
-    <article className="group relative overflow-hidden rounded-[28px] border border-zinc-200/80 bg-white p-6 shadow-[0_18px_60px_-36px_rgba(24,24,27,0.45)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_-34px_rgba(24,24,27,0.5)] dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="flex items-start justify-between gap-5">
-        <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-full border border-zinc-200 text-sm font-semibold text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
-            {rankMarker(investmentCase.rank)}
-          </span>
-
-          <div>
-            <h3 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">
-              {investmentCase.symbol}
-            </h3>
-            <p className="mt-0.5 text-sm text-zinc-500">
-              Horizon: {investmentCase.expectedHoldingPeriod}
-            </p>
-          </div>
-        </div>
-
-        <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
-          {investmentCase.recommendation}
-        </span>
-      </div>
-
-      <div className="mt-8">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-zinc-500">
-              Executive conviction
-            </p>
-            <span className="mt-1 block text-5xl font-semibold tracking-[-0.06em] text-zinc-950 dark:text-white">
-              {investmentCase.conviction}%
-            </span>
-          </div>
-
-          <p className="max-w-32 text-right text-sm font-medium leading-5 text-zinc-600 dark:text-zinc-400">
-            {investmentCase.convictionLevel}
-          </p>
-        </div>
-
-        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900">
-          <div
-            className="h-full rounded-full bg-zinc-950 dark:bg-white"
-            style={{ width: `${investmentCase.conviction}%` }}
-          />
-        </div>
-      </div>
-
-      <dl className="mt-7 grid grid-cols-2 gap-3 border-y border-zinc-100 py-5 dark:border-zinc-900">
+    <DecisionCard
+      rank={investmentCase.rank}
+      symbol={investmentCase.symbol}
+      decisionState={investmentCase.recommendation}
+      conviction={investmentCase.conviction}
+      convictionLabel={investmentCase.convictionLevel}
+      previousDecisions={investmentCase.previousDecisions}
+      reviewHref={investmentCase.dossierHref}
+    >
+      <dl className="mt-7 grid grid-cols-2 gap-3 border-y border-slate-100 py-5">
         <div>
-          <dt className="text-xs leading-4 text-zinc-500">
+          <dt className="text-xs leading-4 text-slate-500">
             Committee agreement
           </dt>
-          <dd className="mt-1 text-lg font-semibold text-zinc-950 dark:text-white">
+          <dd className="mt-1 text-lg font-semibold text-slate-950">
             {investmentCase.committeeAgreement}%
           </dd>
         </div>
         <div>
-          <dt className="text-xs leading-4 text-zinc-500">Risk</dt>
-          <dd className="mt-1 text-lg font-semibold text-zinc-950 dark:text-white">
+          <dt className="text-xs leading-4 text-slate-500">Risk</dt>
+          <dd className="mt-1 text-lg font-semibold text-slate-950">
             {investmentCase.riskLevel}
           </dd>
         </div>
       </dl>
 
-      <p className="mt-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+      <p className="mt-6 text-sm leading-6 text-slate-600">
         {investmentCase.summary}
+      </p>
+
+      <p className="mt-3 text-sm text-slate-500">
+        Horizon: {investmentCase.expectedHoldingPeriod}
       </p>
 
       <ReasonList title="Why now" reasons={investmentCase.whyNow} />
       <ReasonList title="Risks" reasons={investmentCase.risks} />
-
-      {/* Absent until the CIO has judged this holding at least once before.
-          A first decision says nothing here rather than "no change". */}
-      {investmentCase.previousDecisions ? (
-        <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-            Previously
-          </p>
-          <p className="mt-3 text-sm leading-5 text-zinc-700 dark:text-zinc-300">
-            {investmentCase.previousDecisions}
-          </p>
-        </div>
-      ) : null}
-
-      <div className="mt-7 flex items-center justify-end">
-        <Link
-          href={investmentCase.dossierHref}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-950 transition group-hover:gap-3 dark:text-white"
-        >
-          Open investment case
-          <span aria-hidden="true">→</span>
-        </Link>
-      </div>
-    </article>
+    </DecisionCard>
   );
 }
 

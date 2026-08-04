@@ -134,7 +134,7 @@ function PortfolioSnapshot({
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-            Executive Workspace · {reviewedAt}
+            Overview · {reviewedAt}
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">

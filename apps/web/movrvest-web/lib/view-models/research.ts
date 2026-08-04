@@ -29,6 +29,8 @@ export interface ResearchCandidateViewModel {
   /** Decision state: REJECT, MONITOR, INVESTIGATE, PREPARE, RECOMMEND. */
   recommendation: string;
   conviction: number;
+  /** The conviction put into words by the backend, e.g. "High Conviction". */
+  convictionLabel: string;
 
   /** Null where the platform did not measure it. Never zero. */
   qualityScore: number | null;
