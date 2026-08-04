@@ -271,7 +271,19 @@ isolation via `git archive HEAD`:
   Verified live in three states, including a genuine old-contract backend
   refusing to partially render.
 
-Still open, in order: Markets/Track Record refinement per the mission's
-screen responsibilities (markets "informs, does not gate" statement;
-honest outcome maturity), and a future Decisions inbox surface once the
-contract earns it.
+- **Markets slice** (`d778bbb`, PR #14) — the market's role stated and
+  checkable (the CIO reads no market mood; market context reaches a
+  decision only as measured per-security evidence), and unusual movement
+  measured rather than eyeballed: `MarketQuote` derives its own ordinary
+  day from its own volatility and today's move as a multiple of it;
+  `/market/` serves `typical_daily_move_pct` / `move_ratio` / `unusual`
+  (null when history unreadable — unknown, not calm). Page: "Unusual
+  today" names the instruments whose day was unusual *for them*, a
+  "vs typical day" table column, and the informs-not-gates statement.
+  Live data made the case: SPY +1.8% flagged at 2.2× its day; WTI −6.4%
+  not flagged (1.9× of oil's wild ordinary day).
+
+Still open, in order: Track Record per the mission's screen
+responsibilities (honest outcome maturity — decisions recorded, zero
+mature outcomes until the window passes), and a future Decisions inbox
+surface once the contract earns it.
