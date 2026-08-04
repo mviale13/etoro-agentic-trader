@@ -299,6 +299,69 @@ def test_executive_brief_states_plainly_when_a_symbol_is_not_evidenced(
     assert body["investment_cases"][0]["recommendation"] == "INVESTIGATE"
 
 
+def test_dossier_route_serves_the_complete_case_for_a_symbol(
+    client: TestClient,
+) -> None:
+    """One dossier, composed only from canonical pipeline outputs."""
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        make_brain()
+    )
+
+    response = client.get("/executive/MSFT/dossier")
+
+    assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["symbol"] == "MSFT"
+    assert body["decision_state"]
+    assert body["conviction_label"].endswith("Conviction")
+    assert body["rationale"]
+
+    # The scores the decision was made on: measured or null, never filled.
+    assert set(body["scores"]) == {
+        "quality",
+        "evidence",
+        "valuation",
+        "risk",
+        "portfolio_fit",
+    }
+
+    # An abstention is marked as such, never inferred from a null.
+    for opinion in body["committees"]:
+        assert opinion["abstained"] == (opinion["confidence"] is None)
+
+    # Context stays apart from security evidence — different keys entirely.
+    assert "context_risks" in body
+    assert "context_strengths" in body
+
+
+def test_dossier_reports_an_unevidenced_symbol_as_unevidenced(
+    client: TestClient,
+) -> None:
+    """A symbol the platform holds nothing about says so, not "low quality".
+
+    The fixture brain carries no security evidence, so any symbol arrives
+    unevidenced. The dossier must carry that flag — the page renders "no
+    analysis exists" rather than a case with poor scores.
+    """
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        make_brain()
+    )
+
+    body = client.get("/executive/WHATEVER/dossier").json()
+
+    assert body["security_evidenced"] is False
+    assert body["decision_state"] == "INVESTIGATE"
+
+    # No previous decision is a null, never an invented history.
+    assert body["previous_decisions"] is None or isinstance(
+        body["previous_decisions"], str
+    )
+
+
 def test_portfolio_briefing_is_a_404_when_there_is_nothing_to_explain(
     client: TestClient,
 ) -> None:
