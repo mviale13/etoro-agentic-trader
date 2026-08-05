@@ -139,6 +139,11 @@ reintroduces them.
 | `app/page.tsx` | `apps/web/movrvest-web` |
 | Python reasoning inside `apps/web/movrvest-web` | `app/application/brain/reasoning` |
 | `OpportunityService`, `OpportunityDiscoveryService`, `GET /opportunities/` | `CandidateResearchService`, `GET /research/candidates` |
+| `components/dashboard/*` (18 cards) and their 10 one-consumer API clients | `components/executive/*`, `components/decisions/DecisionCard`, typed `lib/api/*` clients |
+| `lib/acio/*`, `lib/investor/*` (frontend reasoning engine, mock-fed) | `app/application/brain/reasoning` — the backend owns investment meaning |
+| `/briefs/[symbol]` (hardcoded MSFT mock) and `components/brief/*` | `/dossiers/[symbol]` ← `GET /executive/{symbol}/dossier` |
+| Frontend banding (`riskLevel`, `diversification`, liquidity recompute, conviction thresholds) | Backend-worded labels (`app/renderers/brief_language.py`) and measured fields |
+| `/events/[slug]` placeholder | Nothing — removed until an event concept is evidenced |
 
 ---
 
