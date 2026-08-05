@@ -44,6 +44,30 @@ class RankedInvestmentCaseResponse(BaseModel):
     previous_decisions: str | None = None
 
 
+class BriefingLineResponse(BaseModel):
+    """One counted fact about today."""
+
+    statement: str
+
+    #: True where the line is news, false where it is the reassurance
+    #: that there is none. Both are printed; only one is styled as news.
+    notable: bool
+
+
+class TodayBriefingResponse(BaseModel):
+    """
+    The first thing the investor reads, and on most days the only thing.
+
+    Counted facts, worded by the backend. `headline` is null on a day
+    where nothing asks for attention — the most common answer, and one
+    the page shows as itself rather than filling the space.
+    """
+
+    lines: list[BriefingLineResponse]
+    headline: str | None
+    is_quiet: bool
+
+
 class ChangeResponse(BaseModel):
     """
     One thing that measurably changed since the previous cycle.
@@ -66,6 +90,11 @@ class ChangeResponse(BaseModel):
 
 
 class PortfolioBriefingResponse(BaseModel):
+    #: What the investor needs to know today, before anything else. The
+    #: page leads with this; the portfolio's own statistics sit below it,
+    #: because "what do I own" is not the question a morning starts with.
+    today: TodayBriefingResponse
+
     headline: str
     summary: str
     confidence: float | None = None

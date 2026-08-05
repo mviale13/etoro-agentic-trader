@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_brain_builder_service
@@ -18,11 +20,14 @@ from app.api.models.executive_brief import (
     InvestmentCaseResponse,
 )
 from app.api.models.portfolio_briefing import (
+    BriefingLineResponse,
     ChangeResponse,
     PortfolioBriefingResponse,
     RankedInvestmentCaseResponse,
+    TodayBriefingResponse,
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
+from app.application.brief.today_briefing_builder import TodayBriefingBuilder
 from app.application.change_feed.change_feed_service import ChangeFeedService
 from app.application.change_feed.holding_exposures import holding_exposures
 from app.application.executive.executive_service import ExecutiveService
@@ -147,7 +152,27 @@ async def portfolio_briefing(
         symbols=[workspace.symbol for workspace in briefing.workspaces],
     )
 
+    # Composed from the same cycle: the decisions it changed and the
+    # earnings schedules it already read per security. Nothing is fetched
+    # twice, so the dashboard and the dossiers cannot disagree.
+    today = TodayBriefingBuilder().build(
+        brain,
+        changes.events,
+        datetime.now(UTC).date(),
+    )
+
     return PortfolioBriefingResponse(
+        today=TodayBriefingResponse(
+            lines=[
+                BriefingLineResponse(
+                    statement=line.statement,
+                    notable=line.notable,
+                )
+                for line in today.lines
+            ],
+            headline=today.headline,
+            is_quiet=today.is_quiet,
+        ),
         headline=brief.headline,
         summary=brief.summary,
         confidence=brief.confidence,

@@ -92,7 +92,14 @@ interface ChangePayload {
   action_required: boolean;
 }
 
+interface TodayBriefingPayload {
+  lines: readonly { statement: string; notable: boolean }[];
+  headline: string | null;
+  is_quiet: boolean;
+}
+
 interface PortfolioBriefingPayload {
+  today: TodayBriefingPayload;
   headline: string;
   summary: string;
   confidence: number | null;
@@ -209,7 +216,23 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
     : [];
   const changes = Array.isArray(payload.changes) ? payload.changes : [];
 
+  const today = payload.today;
+
+  if (!isRecord(today)) {
+    throw new Error("The /executive/portfolio response has no today briefing.");
+  }
+
+  const lines = Array.isArray(today.lines) ? today.lines : [];
+
   return {
+    today: {
+      lines: lines.filter(isRecord).map((line, index) => ({
+        statement: requireString(line.statement, `today.lines[${index}]`),
+        notable: line.notable === true,
+      })),
+      headline: optionalString(today.headline, "today.headline"),
+      is_quiet: today.is_quiet === true,
+    },
     headline: requireString(payload.headline, "headline"),
     summary: requireString(payload.summary, "summary"),
     confidence: optionalNumber(payload.confidence),
@@ -465,6 +488,11 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
           minute: "2-digit",
         }).format(new Date()),
         situation: "stable",
+        today: {
+          lines: briefing.today.lines,
+          headline: briefing.today.headline,
+          isQuiet: briefing.today.is_quiet,
+        },
         portfolio: mapPortfolio(brain, briefing),
         brief: mapBrief(briefing),
         // Decision changes the Artificial CIO actually recorded. An empty

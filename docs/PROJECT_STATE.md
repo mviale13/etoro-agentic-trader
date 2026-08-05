@@ -93,6 +93,36 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The dashboard opens with today, not with what you own** (August 2026).
+  A Chief Investment Officer does not open a dashboard to ask what they
+  hold; they ask what changed and what deserves attention. The page now
+  leads with a `TodayBriefing`: the highest-priority change as the
+  headline, over counted lines — "6 recommendations changed", "1 company
+  reports earnings today: DIS". Every line is a count of something the
+  cycle recorded, checkable against the feed beneath it, and composed in
+  the backend. Holdings are counted rather than changes, because the feed
+  really does hold three moves on one security in a week and counting
+  those would overstate how much of the book moved. Earnings are read
+  from the schedules the cycle already gathered per security, so the
+  dashboard and the dossiers cannot disagree about when a company
+  reports. A quiet day says so and shows no headline at all: a page that
+  manufactures a highest priority every morning teaches its reader that a
+  highest priority means nothing. Nothing is claimed about executed
+  trades — the platform recommends and keeps no record of what the
+  investor did, so it does not report on it. The portfolio's own
+  statistics moved below the fold as supporting information.
+
+- **Each investment case shows its own security's safety** (August 2026).
+  Every card on the dashboard printed the *account's* risk level under a
+  security's name, labelled "Risk". The account has one risk level, so
+  ten cards read "Low" together — including BTC at 35.9% volatility and a
+  53.1% fall, ETH at 54.4% and 67.6%, SOL at 58.0% and 74.9%. The risk
+  engine was never wrong about them; every dossier stated it correctly.
+  The card now carries the security's own safety, and the ten read 55,
+  55, 35, 55, 35, 35, 35, 35, 35, 15. This was the fourth and last
+  instance on this surface of one defect: an account-level figure printed
+  as though it described a security.
+
 - **Every score runs the same way, and says what kind of number it is**
   (August 2026). Risk was the one dimension where a high number was bad,
   which made the set unreadable and unsafe to aggregate: four nineties do

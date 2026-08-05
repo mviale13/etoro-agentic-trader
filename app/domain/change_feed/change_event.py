@@ -37,3 +37,11 @@ class ChangeEvent:
     timestamp: datetime
 
     action_required: bool = False
+
+    #: The security this change is about, where it is about one.
+    #:
+    #: The symbol was known when the change was described and then lived
+    #: only inside the title, so nothing downstream could tell three
+    #: changes to one holding from three holdings changing. None for a
+    #: change about the market rather than about a security.
+    symbol: str | None = None

@@ -168,4 +168,5 @@ class ChangeFeedService:
             severity=severity,
             timestamp=current.decided_at,
             action_required=current.state.asks_for_action,
+            symbol=symbol,
         )
