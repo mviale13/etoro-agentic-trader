@@ -35,6 +35,15 @@ export interface MarketQuote {
   changePercent: number;
   realizedVolatility: number | null;
   maxDrawdown: number | null;
+
+  /**
+   * Today against this instrument's own ordinary day, measured in the
+   * backend off its own volatility. Null where the history could not be
+   * read — unknown, not calm.
+   */
+  typicalDailyMovePct: number | null;
+  moveRatio: number | null;
+  unusual: boolean | null;
 }
 
 /**
@@ -114,6 +123,9 @@ function quotes(value: unknown): MarketQuote[] {
         changePercent: numberOrNull(item.change_percent) ?? 0,
         realizedVolatility: numberOrNull(item.realized_volatility),
         maxDrawdown: numberOrNull(item.max_drawdown),
+        typicalDailyMovePct: numberOrNull(item.typical_daily_move_pct),
+        moveRatio: numberOrNull(item.move_ratio),
+        unusual: typeof item.unusual === "boolean" ? item.unusual : null,
       },
     ];
   });

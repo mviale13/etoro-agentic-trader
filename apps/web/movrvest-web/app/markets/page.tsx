@@ -1,4 +1,12 @@
-import { Activity, Database, Minus, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  Activity,
+  Compass,
+  Database,
+  Minus,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
@@ -83,6 +91,120 @@ function BreadthCard({
   );
 }
 
+/**
+ * What this page is allowed to mean.
+ *
+ * The claim is checkable: the Artificial CIO's decision policy reads no
+ * market mood. Market context reaches a decision only as measured
+ * evidence about the security itself — its sensitivity to this market,
+ * its own volatility and falls.
+ */
+function InformsNotGates() {
+  return (
+    <section className="mt-6 rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white sm:p-8">
+      <div className="flex gap-4">
+        <Compass
+          aria-hidden="true"
+          className="mt-1 h-5 w-5 shrink-0 text-slate-300"
+        />
+
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">
+            The market informs decisions. It does not gate them.
+          </h2>
+
+          <p className="mt-3 max-w-3xl leading-7 text-slate-300">
+            Nothing on this page blocks or approves an investment. The
+            Artificial CIO never reads the market&apos;s mood when it judges a
+            security — market context reaches a decision only as measured
+            evidence about that security: how much it moves with this market,
+            its own volatility, its own deepest falls. A red day here is
+            context for your attention, not a signal the platform trades on.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * The instruments whose day was unusual for them.
+ *
+ * "Unusual" is measured in the backend: at least twice the instrument's
+ * own typical day, read off its own volatility. A raw percentage cannot
+ * make that call — a 2% day is routine for Bitcoin and remarkable for a
+ * bond index.
+ */
+function UnusualMoves({ quotes: allQuotes }: { quotes: MarketQuote[] }) {
+  const unusual = allQuotes.filter((quote) => quote.unusual === true);
+  const unmeasured = allQuotes.filter((quote) => quote.unusual === null);
+
+  return (
+    <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="flex items-start gap-3">
+        <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+          <Zap aria-hidden="true" className="h-5 w-5" />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+            Unusual today
+          </h2>
+
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Moves of at least twice the instrument&apos;s own typical day,
+            measured off its own year of closes.
+          </p>
+        </div>
+      </div>
+
+      {unusual.length === 0 ? (
+        <p className="mt-5 leading-7 text-slate-600">
+          No instrument moved unusually for itself today
+          {unmeasured.length > 0
+            ? ` — among the ${
+                allQuotes.length - unmeasured.length
+              } whose ordinary day is measured. For ${unmeasured.length} ${
+                unmeasured.length === 1 ? "instrument" : "instruments"
+              } the comparison is not measurable, which is not the same as calm.`
+            : "."}
+        </p>
+      ) : (
+        <ul className="mt-5 space-y-3">
+          {unusual.map((quote) => (
+            <li
+              className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3"
+              key={quote.symbol}
+            >
+              <span className="font-semibold text-amber-950">
+                {quote.symbol}
+              </span>
+
+              <span className="text-sm text-amber-950">
+                {quote.changePercent > 0 ? "+" : ""}
+                {quote.changePercent.toFixed(2)}% today
+              </span>
+
+              {quote.moveRatio !== null ? (
+                <span className="text-sm font-medium text-amber-900">
+                  {quote.moveRatio.toFixed(1)}× its typical day
+                </span>
+              ) : null}
+
+              {quote.typicalDailyMovePct !== null ? (
+                <span className="text-xs text-amber-800">
+                  an ordinary day for {quote.name} is about{" "}
+                  {quote.typicalDailyMovePct.toFixed(1)}%
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function QuoteRow({ quote }: { quote: MarketQuote }) {
   const up = quote.changePercent > 0;
 
@@ -110,11 +232,23 @@ function QuoteRow({ quote }: { quote: MarketQuote }) {
         {quote.changePercent.toFixed(2)}%
       </td>
 
-      <td className="py-3 text-right tabular-nums text-slate-600">
+      <td className="py-3 pr-4 text-right tabular-nums text-slate-600">
         {/* Absent, not zero: a series too short to measure is not a calm one. */}
         {quote.realizedVolatility === null
           ? "Not measured"
           : `${(quote.realizedVolatility * 100).toFixed(1)}%`}
+      </td>
+
+      <td
+        className={`py-3 text-right tabular-nums ${
+          quote.unusual === true
+            ? "font-semibold text-amber-800"
+            : "text-slate-600"
+        }`}
+      >
+        {quote.moveRatio === null
+          ? "Not measured"
+          : `${quote.moveRatio.toFixed(1)}×`}
       </td>
     </tr>
   );
@@ -188,6 +322,10 @@ function MarketContent({ market }: { market: MarketOverview }) {
         </div>
       </section>
 
+      <UnusualMoves quotes={market.quotes} />
+
+      <InformsNotGates />
+
       {market.sentiment ? (
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -246,7 +384,8 @@ function MarketContent({ market }: { market: MarketOverview }) {
                 <th className="pb-3 pr-4 font-medium">Instrument</th>
                 <th className="pb-3 pr-4 text-right font-medium">Price</th>
                 <th className="pb-3 pr-4 text-right font-medium">Today</th>
-                <th className="pb-3 text-right font-medium">Volatility</th>
+                <th className="pb-3 pr-4 text-right font-medium">Volatility</th>
+                <th className="pb-3 text-right font-medium">vs typical day</th>
               </tr>
             </thead>
 
