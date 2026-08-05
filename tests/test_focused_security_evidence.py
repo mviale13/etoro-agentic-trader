@@ -40,6 +40,9 @@ class ResolverStub:
     async def items(self) -> dict[int, WatchlistItem]:
         return self._items
 
+    async def items_for(self, instrument_ids) -> dict[int, WatchlistItem]:
+        return self._items
+
 
 class SignalStub:
     def __init__(self) -> None:

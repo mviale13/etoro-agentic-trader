@@ -433,6 +433,9 @@ async def test_security_perception_skips_unresolved_holdings() -> None:
         async def items(self) -> dict[int, WatchlistItem]:
             return {}
 
+        async def items_for(self, instrument_ids) -> dict[int, WatchlistItem]:
+            return {}
+
     from dataclasses import replace
 
     portfolio = replace(
