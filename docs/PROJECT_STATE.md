@@ -83,6 +83,20 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The UX/UI Alignment mission is complete** (PRs #8–#15, August 2026).
+  The web product now matches the mission's model end to end: Overview,
+  Portfolio, Research, Markets, Track Record and Investor Policy in
+  primary nav; the five-question Dossier behind every "review case" CTA;
+  one shared `DecisionCard`. The frontend no longer calculates investment
+  meaning anywhere — capacity, risk bands, labels, weights, typical-day
+  moves and verdicts all arrive worded or measured from the backend — and
+  every absence is stated with its reason: unevidenced and unbudgeted
+  research candidates are named, unmeasured risk components refuse to be
+  zeros, and `/track-record` reports 99 recorded decisions with zero old
+  enough to measure rather than inventing a hit rate. The audit that
+  preceded this and the slice-by-slice log live in
+  `docs/frontend/UX_UI_INVENTORY.md`
+
 - **The CIO can be scored against its own decisions.** `movrvest record`
   joins the decision journal to a year of daily closes and reports what
   each security did after the call. Today it reads 61 decisions and 0
@@ -475,9 +489,11 @@ Named rather than hidden. None of these are estimated away in the product.
   the instruments moved, not what the market did. Making it mean evidence
   quality, or removing it from the score, is the first fix and it changes
   live decisions
-- A security's exposure to the market is not measured. Nothing computes a
-  beta or a correlation, so no market reading can be said to bear on one
-  security more than another — which is why no market gate exists
+- A security's exposure to the market is measured. `MarketSensitivity`
+  computes beta and correlation against a benchmark from the same price
+  history the volatility is read off, and it reaches decisions as
+  per-security evidence. The market still gates nothing — deliberately,
+  and `/markets` now states that on the page
 - No sentiment index is read for equities. The crypto reading is the only
   one, it is labelled as such everywhere it appears, and the gap is stated
   rather than filled by the index that happens to exist
