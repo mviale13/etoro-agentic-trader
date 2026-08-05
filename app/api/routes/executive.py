@@ -6,6 +6,9 @@ from app.api.models.dossier import (
     CommitteeOpinionResponse,
     DossierResponse,
     EvidenceScoresResponse,
+    NarrativeFindingResponse,
+    NarrativeResponse,
+    NarrativeSectionResponse,
     ProvenanceResponse,
 )
 from app.api.models.executive_brief import (
@@ -28,6 +31,7 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.provenance import Provenance
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
@@ -36,6 +40,7 @@ from app.renderers.brief_language import (
     urgency_band,
 )
 from app.repositories.json_event_repository import JsonEventRepository
+from app.services.executive_writer_service import ExecutiveWriterService
 
 router = APIRouter(
     prefix="/executive",
@@ -282,6 +287,16 @@ async def dossier(
             ),
         )
 
+    # Communication only, and strictly after the judgment: the writer
+    # receives the finished canonical objects and cannot change them.
+    outcome = await ExecutiveWriterService().narrate(
+        symbol=normalized_symbol,
+        decision=decision,
+        thesis=thesis,
+        evidence=evidence,
+        opinions=workspace.committee_opinions,
+    )
+
     return DossierResponse(
         symbol=normalized_symbol,
         decision_state=decision.state.value,
@@ -330,4 +345,38 @@ async def dossier(
             for opinion in workspace.committee_opinions
         ],
         evidence_as_of=_provenance(decision.evidence_as_of),
+        narrative=_narrative(outcome.narrative),
+        narrative_absent=outcome.absent_reason,
+    )
+
+
+def _narrative(
+    narrative: ExecutiveNarrative | None,
+) -> NarrativeResponse | None:
+    """The narrative over the wire, citations and provenance intact."""
+
+    if narrative is None:
+        return None
+
+    return NarrativeResponse(
+        headline=narrative.headline,
+        recommendation=narrative.recommendation,
+        sections=[
+            NarrativeSectionResponse(
+                section=section.section,
+                text=section.text,
+                finding_ids=list(section.finding_ids),
+            )
+            for section in narrative.sections
+        ],
+        findings=[
+            NarrativeFindingResponse(
+                id=finding.id,
+                statement=finding.statement,
+                source=finding.source,
+            )
+            for finding in narrative.findings
+        ],
+        model=narrative.model,
+        written=narrative.reading.stated(),
     )

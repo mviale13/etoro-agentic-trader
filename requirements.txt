@@ -56,3 +56,4 @@ pytest-cov==7.1.0
 # installed by hand on this machine and absent from a fresh checkout,
 # which is where a green tree here would have failed there.
 types-PyYAML==6.0.12.20260724
+anthropic==0.120.2
