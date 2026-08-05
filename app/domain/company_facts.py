@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.earnings_schedule import EarningsSchedule
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance, oldest
 
@@ -61,6 +62,14 @@ class CompanyFacts:
     #: benchmark rather than inferred from its asset class. None where the
     #: price history was too short, or the benchmark could not be read.
     market_sensitivity: MarketSensitivity | None = None
+
+    #: When this company next reports, read from its own published
+    #: calendar. None for anything that does not report — a fund, a token
+    #: — which is never asked. A company that was asked always carries a
+    #: schedule, even when it says nothing was published or nothing could
+    #: be read: those two absences mean different things and are kept
+    #: apart inside it.
+    earnings: EarningsSchedule | None = None
 
     #: What a token has in place of company fundamentals. None for a
     #: company, which has a balance sheet instead.

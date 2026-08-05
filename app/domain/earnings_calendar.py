@@ -3,37 +3,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
 
-from app.domain.provenance import Provenance
+from app.domain.earnings_schedule import EarningsWindow
 
 
 @dataclass(frozen=True, slots=True)
 class EarningsDate:
     """
-    One company's next published report window.
+    One company's place in the book's calendar.
 
-    The window is what the provider publishes: usually a single expected
-    day, sometimes a first-to-last pair when the company has not fixed
-    the date. It is scheduling fact, not prediction — nothing here says
-    what the report will contain, only when it is expected.
+    The window itself is an `EarningsWindow` — the same object the
+    security's own investment case carries, so "when does this company
+    report" has one implementation whether it is asked of the book or of
+    a single holding.
     """
 
     symbol: str
     name: str
-
-    #: The published day, or the window's first day.
-    starts_on: date
-
-    #: The window's last day, or None when a single day was published.
-    ends_on: date | None
 
     #: Whether the account holds this company, as opposed to only
     #: watching it. Stated so the page can say which is which rather
     #: than leaving the reader to remember their own book.
     held: bool
 
-    reading: Provenance
+    #: When this company is expected to report, and where that was read.
+    window: EarningsWindow
 
 
 @dataclass(frozen=True, slots=True)

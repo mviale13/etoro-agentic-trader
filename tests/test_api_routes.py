@@ -479,6 +479,7 @@ def test_earnings_route_serves_dates_and_both_absences(client: TestClient) -> No
     from datetime import UTC, datetime
 
     from app.domain.earnings_calendar import EarningsCalendar, EarningsDate
+    from app.domain.earnings_schedule import EarningsWindow
     from app.domain.provenance import Provenance
 
     report_day = datetime.now(UTC).date()
@@ -490,12 +491,14 @@ def test_earnings_route_serves_dates_and_both_absences(client: TestClient) -> No
                     EarningsDate(
                         symbol="DIS",
                         name="Walt Disney",
-                        starts_on=report_day,
-                        ends_on=None,
                         held=True,
-                        reading=Provenance(
-                            source="Yahoo Finance",
-                            observed_at=datetime.now(UTC),
+                        window=EarningsWindow(
+                            starts_on=report_day,
+                            ends_on=None,
+                            reading=Provenance(
+                                source="Yahoo Finance",
+                                observed_at=datetime.now(UTC),
+                            ),
                         ),
                     ),
                 ),

@@ -3,11 +3,13 @@ from typing import Protocol
 
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
+from app.domain.earnings_schedule import EarningsSchedule
 from app.domain.market_snapshot import MarketQuote
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
+from app.providers.earnings_provider import CachedEarningsProvider, ReadDates
 from app.providers.yahoo_market_provider import YahooInstrument
 
 
@@ -25,14 +27,23 @@ class ValuationProvider(Protocol):
     ) -> ValuationSnapshot: ...
 
 
+class EarningsProvider(Protocol):
+    def read(
+        self,
+        symbol: str,
+    ) -> ReadDates: ...
+
+
 class CompanyFactsService:
     def __init__(
         self,
         market_provider: MarketQuoteProvider | None = None,
         valuation_provider: ValuationProvider | None = None,
+        earnings_provider: EarningsProvider | None = None,
     ) -> None:
         self._market_provider = market_provider or CachedMarketProvider()
         self._valuation_provider = valuation_provider or CachedValueProvider()
+        self._earnings_provider = earnings_provider or CachedEarningsProvider()
 
     async def build(
         self,
@@ -52,9 +63,10 @@ class CompanyFactsService:
         # from the fundamentals endpoint for the same reason it returns
         # nothing from the quote one; this path only escaped it while
         # crypto fundamentals were being skipped altogether.
-        quotes, valuation = await asyncio.gather(
+        quotes, valuation, earnings = await asyncio.gather(
             quotes_task,
             self._valuation(instrument.yahoo_symbol),
+            self._earnings(item.symbol, asset_class),
         )
 
         quote = self._find_quote(
@@ -94,6 +106,9 @@ class CompanyFactsService:
             market_sensitivity=(
                 quote.market_sensitivity if quote is not None else None
             ),
+            # When this company next reports. Absent entirely for anything
+            # that does not report, because it was never asked.
+            earnings=earnings,
             # What a token has. Absent for a company, which has the
             # balance-sheet fields below instead.
             circulating_supply=(valuation.circulating_supply if is_token else None),
@@ -152,6 +167,37 @@ class CompanyFactsService:
             self._valuation_provider.snapshot,
             yahoo_symbol,
         )
+
+    async def _earnings(
+        self,
+        symbol: str,
+        asset_class: AssetClass,
+    ) -> EarningsSchedule | None:
+        """
+        When this company next reports, or nothing where the question
+        does not apply.
+
+        Only a company is asked. A fund or a token has no earnings call,
+        and asking would manufacture an absence for an instrument the
+        question was never valid for — the same reason the book's calendar
+        asks companies only.
+
+        The read is the one the book's calendar already takes, from the
+        same daily cache under the same key, so a company that appears on
+        both the Markets page and its own dossier reports on one date.
+        """
+
+        if asset_class is not AssetClass.STOCK:
+            return None
+
+        try:
+            read = await asyncio.to_thread(self._earnings_provider.read, symbol)
+        except Exception:
+            # A calendar that could not be read is not a company with no
+            # date out. The investment case says which of the two it is.
+            return EarningsSchedule(unread=True)
+
+        return EarningsSchedule(window=read.window())
 
     @staticmethod
     def _find_quote(

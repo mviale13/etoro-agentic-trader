@@ -59,6 +59,9 @@ Rules:
 - Never change the recommendation.
 - Never introduce unsupported conclusions.
 - Never predict or speculate.
+- A scheduled event is a date, not an outcome. Where a finding says a
+  company reports on a date, you may say the date is coming; you may
+  never suggest what the report will contain.
 - Never contradict the decision you are given.
 - Every section must be supported by the supplied findings, and must
   list the ids of the findings it rests on.
@@ -139,10 +142,6 @@ def build_findings(
     ]
 
     thesis_statements.extend(
-        (f"Catalyst: {line}", "InvestmentThesis") for line in thesis.catalysts
-    )
-
-    thesis_statements.extend(
         (f"Invalidation condition: {line}", "InvestmentThesis")
         for line in thesis.invalidation_conditions
     )
@@ -156,6 +155,22 @@ def build_findings(
         )
 
     add("T", thesis_statements)
+
+    # Scheduled events belonging to this security, dated — what "why now"
+    # is entitled to rest on. They are kept out of the thesis group above
+    # and given their own source line because of what they are not: a
+    # catalyst is a date on a calendar, and the writer must not read a
+    # scheduled report as an expectation about the report.
+    add(
+        "W",
+        [
+            (
+                f"Scheduled: {line}",
+                "InvestmentThesis — a dated event, not a view on its outcome",
+            )
+            for line in thesis.catalysts
+        ],
+    )
 
     add(
         "X",

@@ -52,12 +52,16 @@ class InvestmentThesisBuilder:
             (
                 *portfolio.strengths,
                 *market.opportunities,
+                *reasoning.opportunity.opportunities,
             )
         )
 
-        catalysts = self._unique(
-            market.opportunities,
-        )
+        # The security's own, dated, as the Artificial CIO carried them.
+        # These used to be the market's opportunities, which are the same
+        # under every symbol — so "Stable market conditions" was offered as
+        # the reason to act on MSFT, and on everything else. Those are
+        # context, and they are stated as context above.
+        catalysts = self._unique(decision.catalysts)
 
         invalidation_conditions = self._unique(
             (
