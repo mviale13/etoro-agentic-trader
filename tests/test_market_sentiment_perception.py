@@ -134,3 +134,100 @@ def brain(market: MarketSnapshot):
         market=market,
         investment_policy=make_policy(),
     ).build()
+
+
+def test_the_reading_names_its_subject_as_data_not_only_in_prose() -> None:
+    """
+    A caption cannot be filtered on.
+
+    "which describes crypto only" told the reader the fact did not apply;
+    nothing downstream could act on that, so the fact went on being listed
+    among those weighed about a software company.
+    """
+
+    assessment = MarketAnalyst().assess(brain(perceive(SentimentStub(reading()))))
+
+    stated = next(
+        item for item in assessment.evidence if "sentiment" in item.description
+    )
+
+    assert stated.subject is AssetClass.CRYPTO
+
+    # The facts that describe the whole market carry no subject, and so
+    # reach every case.
+    assert all(
+        item.subject is None
+        for item in assessment.evidence
+        if "sentiment" not in item.description
+    )
+
+
+def committee_evidence(asset_class: str | None) -> tuple[str, ...]:
+    """The facts the Investment Committee weighed about one holding."""
+
+    from dataclasses import replace
+
+    from app.application.brain.reasoning import ReasoningService
+    from app.application.committees.investment_committee import (
+        InvestmentCommittee,
+    )
+    from app.domain.portfolio_position import PortfolioPosition
+    from tests.test_security_evidence import make_company
+
+    holding = PortfolioPosition(
+        symbol="MSFT",
+        quantity=1.0,
+        invested_usd=100.0,
+        market_value_usd=100.0,
+        unrealized_pnl_usd=0.0,
+        asset_class=asset_class,
+        instrument_id=1,
+    )
+
+    market = perceive(SentimentStub(reading()))
+
+    knowledge = BrainBuilder(
+        portfolio=replace(make_portfolio(), holdings=(holding,)),
+        market=market,
+        investment_policy=make_policy(),
+        evidence={"MSFT": (make_company("MSFT"),)},
+    ).build()
+
+    opinion = InvestmentCommittee().review(
+        knowledge,
+        ReasoningService().reason(knowledge),
+        "MSFT",
+    )
+
+    return tuple(item.description for item in opinion.evidence)
+
+
+def test_a_stock_is_never_judged_beside_the_crypto_fear_index() -> None:
+    """
+    The bug, stated: crypto sentiment among the facts weighed about MSFT.
+
+    It was captioned honestly and it was still irrelevant — a fact that
+    cannot bear on the decision in front of you is noise wherever it is
+    printed, and noise on an investment case reads as something considered.
+    """
+
+    weighed = committee_evidence("stock")
+
+    assert not any("sentiment" in line for line in weighed)
+
+    # The conditions that do describe a stock are untouched.
+    assert any("Average market move" in line for line in weighed)
+
+
+def test_a_crypto_holding_is_judged_beside_it_because_it_describes_them() -> None:
+    weighed = committee_evidence("crypto")
+
+    assert any("Crypto sentiment reads 28 (Fear)" in line for line in weighed)
+
+
+def test_an_unclassified_holding_is_not_assumed_to_be_the_class_that_fits() -> None:
+    """Guessing the class is the substitution the subject exists to stop."""
+
+    weighed = committee_evidence(None)
+
+    assert not any("sentiment" in line for line in weighed)

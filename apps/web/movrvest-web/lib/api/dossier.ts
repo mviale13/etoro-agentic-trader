@@ -34,13 +34,25 @@ export interface DossierCommitteeOpinion {
   evidence: readonly DossierCommitteeEvidence[];
 }
 
-/** Null means the platform did not measure it — never zero. */
+/**
+ * One score, and the backend's own account of why it is that number.
+ *
+ * `value` null means the platform did not measure it — never zero, and
+ * `basis` then says which measurement was missing. The basis is written
+ * where the score is computed; nothing on this side composes it.
+ */
+export interface DossierScore {
+  value: number | null;
+  basis: string;
+  evidence: readonly string[];
+}
+
 export interface DossierScores {
-  quality: number | null;
-  evidence: number;
-  valuation: number | null;
-  risk: number | null;
-  portfolioFit: number | null;
+  quality: DossierScore;
+  evidence: DossierScore;
+  valuation: DossierScore;
+  risk: DossierScore;
+  portfolioFit: DossierScore;
 }
 
 export interface NarrativeFinding {
@@ -177,6 +189,24 @@ function stringList(value: unknown): readonly string[] {
   }
 
   return value.filter((item): item is string => typeof item === "string");
+}
+
+/**
+ * One score with its reasoning, or a refusal to render it half-formed.
+ *
+ * A score arriving without its basis would be exactly the bare figure the
+ * basis exists to prevent, so it is an error rather than a silent blank.
+ */
+function parseScore(value: unknown, field: string): DossierScore {
+  if (!isRecord(value)) {
+    throw new Error(`Expected a score object at "${field}".`);
+  }
+
+  return {
+    value: optionalNumber(value.value),
+    basis: requireString(value.basis, `${field}.basis`),
+    evidence: stringList(value.evidence),
+  };
 }
 
 function parseProvenance(
@@ -325,11 +355,11 @@ function parseDossier(payload: unknown): DossierViewModel {
     risks: stringList(payload.risks),
     missingEvidence: stringList(payload.missing_evidence),
     scores: {
-      quality: optionalNumber(scores.quality),
-      evidence: requireNumber(scores.evidence, "scores.evidence"),
-      valuation: optionalNumber(scores.valuation),
-      risk: optionalNumber(scores.risk),
-      portfolioFit: optionalNumber(scores.portfolio_fit),
+      quality: parseScore(scores.quality, "scores.quality"),
+      evidence: parseScore(scores.evidence, "scores.evidence"),
+      valuation: parseScore(scores.valuation, "scores.valuation"),
+      risk: parseScore(scores.risk, "scores.risk"),
+      portfolioFit: parseScore(scores.portfolio_fit, "scores.portfolio_fit"),
     },
     contextStrengths: stringList(payload.context_strengths),
     contextRisks: stringList(payload.context_risks),

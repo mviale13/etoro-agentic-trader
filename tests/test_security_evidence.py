@@ -1,5 +1,6 @@
 """Per-security evidence and its effect on executive decisions."""
 
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
@@ -609,3 +610,156 @@ def test_a_security_with_no_evidence_at_all_has_no_catalyst() -> None:
     """Nothing gathered means nothing scheduled that anyone can state."""
 
     assert build_evidence(make_brain({}), "MSFT").catalysts == ()
+
+
+# ── Why each score is the number it is ───────────────────────────────
+
+
+def bases(brain: Brain, symbol: str):
+    evidence = build_evidence(brain, symbol)
+
+    assert evidence.score_bases is not None
+
+    return evidence, evidence.score_bases
+
+
+def test_a_quality_score_states_the_band_that_produced_it() -> None:
+    """
+    80 of 100 is not an observation about the business; it is HIGH, priced.
+
+    A reader shown the number alone cannot tell a measurement from a house
+    rule, so the whole scale travels with it and the findings the reading
+    was taken from travel underneath.
+    """
+
+    company = make_company("MSFT", quality="HIGH")
+
+    company = replace(
+        company,
+        signals=replace(
+            company.signals,
+            quality=QualitySignal(
+                quality="HIGH",
+                confidence=80,
+                evidence=(
+                    Finding.favourable("Large-cap company."),
+                    Finding.favourable("Positive earnings."),
+                ),
+            ),
+        ),
+    )
+
+    evidence, explained = bases(make_brain({"MSFT": (company,)}), "MSFT")
+
+    assert evidence.quality_score == 80
+    assert "Quality reads HIGH" in explained.quality.basis
+    assert "HIGH at 80, MEDIUM at 62 and LOW at 40" in explained.quality.basis
+    assert explained.quality.evidence == (
+        "Large-cap company.",
+        "Positive earnings.",
+    )
+
+
+def test_a_score_nobody_measured_says_why_rather_than_reading_zero() -> None:
+    """The absence is worded where the score would have been."""
+
+    company = make_company("MSFT", quality="UNKNOWN", valuation="UNKNOWN")
+
+    evidence, explained = bases(make_brain({"MSFT": (company,)}), "MSFT")
+
+    assert evidence.quality_score is None
+    assert "no score was given" in explained.quality.basis
+
+    assert evidence.valuation_score is None
+    assert "no score was given" in explained.valuation.basis
+
+
+def test_an_unevidenced_security_says_what_was_never_gathered() -> None:
+    """
+    Not "quality is unknown" — nothing about the security was collected.
+
+    The basis also states what the score is never filled in from, because
+    both of these once fell back to a number about the account.
+    """
+
+    _, explained = bases(make_brain({}), "MSFT")
+
+    assert "No security-level analysis was gathered" in explained.quality.basis
+    assert "the account's own health" in explained.quality.basis
+
+    assert "price history was not read" in explained.risk.basis
+    assert "The account's risk is never used in its place" in explained.risk.basis
+
+
+def test_the_risk_scale_is_read_off_the_signal_that_set_it() -> None:
+    """
+    The bands shown are the bands scored on, not a second copy of them.
+
+    A dashboard that restates a scale is a dashboard that will one day
+    show the wrong one, so the sentence is built from `RiskSignal`'s own
+    severities.
+    """
+
+    facts = CompanyFacts(
+        instrument_id=1,
+        symbol="MSFT",
+        name="Microsoft",
+        asset_type="stock",
+        exchange="NASDAQ",
+        realized_volatility=0.32,
+        max_drawdown=0.345,
+    )
+
+    company = make_company("MSFT", risk=RiskSignalService().build(facts))
+
+    evidence, explained = bases(make_brain({"MSFT": (company,)}), "MSFT")
+
+    assert evidence.risk_score == 45
+    assert "higher number is a riskier security" in explained.risk.basis
+
+    for level, severity in RiskSignal.SEVERITIES.items():
+        assert f"{level} at {round(severity * 100)}" in explained.risk.basis
+
+    assert "Annualised volatility is 32.0% over the past year." in (
+        explained.risk.evidence
+    )
+
+
+def test_the_evidence_score_names_both_terms_it_averaged() -> None:
+    """It measures the reading, not the business, and says which readings."""
+
+    company = make_company("MSFT", confidence=93)
+
+    evidence, explained = bases(make_brain({"MSFT": (company,)}), "MSFT")
+
+    assert "the security committee is" in explained.evidence.basis
+    assert "93 of 100" in explained.evidence.basis
+
+    assert any("Portfolio reasoning is" in line for line in explained.evidence.evidence)
+    assert any("Market reasoning is" in line for line in explained.evidence.evidence)
+    assert evidence.evidence_score > 0
+
+
+def test_portfolio_fit_lists_every_term_including_the_unmeasured_ones() -> None:
+    """
+    An average of two terms presented as an average of three overstates it.
+
+    So the term the policy could not answer is stated as unmeasured rather
+    than dropped, and the basis says how many of how many were used.
+    """
+
+    brain = make_brain(
+        {"MSFT": (make_company("MSFT"),)},
+        holdings=(make_holding("MSFT", 1000.0),),
+    )
+
+    _, explained = bases(brain, "MSFT")
+
+    assert "2 of 3 terms" in explained.portfolio_fit.basis
+    assert "more room, not a better business" in explained.portfolio_fit.basis
+
+    assert len(explained.portfolio_fit.evidence) == 3
+    assert any(
+        "Asset-class room is not measured" in line
+        for line in explained.portfolio_fit.evidence
+    )

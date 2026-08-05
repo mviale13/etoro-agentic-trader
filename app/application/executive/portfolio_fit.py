@@ -2,9 +2,45 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from app.domain.asset_class import AssetClass
 from app.domain.investment_policy import InvestmentPolicy
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+
+
+@dataclass(frozen=True, slots=True)
+class FitTerm:
+    """
+    One kind of room the policy leaves, as a share and as a sentence.
+
+    Every term words itself, including when there is nothing to measure it
+    against. A term that simply vanished from the list would leave the
+    average looking like the whole answer, and the reader with no way to
+    know which of three questions the policy could actually answer.
+    """
+
+    #: The share of that room still free, from 0.0 to 1.0. None where the
+    #: policy states nothing this could be measured against.
+    room: float | None
+
+    #: The term as the investor reads it, figures included.
+    stated: str
+
+
+@dataclass(frozen=True, slots=True)
+class PortfolioFitMeasure:
+    """How much room this portfolio has for this security, and on what."""
+
+    #: 0-100, or None when no term could be measured at all.
+    score: int | None
+
+    #: Every term the measure considered, measured or not, in order.
+    terms: tuple[FitTerm, ...]
+
+    @property
+    def stated_terms(self) -> tuple[str, ...]:
+        return tuple(term.stated for term in self.terms)
 
 
 class PortfolioFit:
@@ -46,76 +82,132 @@ class PortfolioFit:
         portfolio: PortfolioSnapshot,
         policy: InvestmentPolicy,
         asset_class: AssetClass | None = None,
-    ) -> int | None:
-        """Fit as a 0-100 score, or None when no term can be measured."""
+    ) -> PortfolioFitMeasure:
+        """Fit as a 0-100 score, with every term it was averaged from."""
 
-        rooms = [
-            room
-            for room in (
-                self._funding_room(portfolio, policy),
-                self._concentration_room(symbol, portfolio, policy),
-                self._asset_class_room(asset_class, portfolio, policy),
-            )
-            if room is not None
-        ]
+        terms = (
+            self._funding_room(portfolio, policy),
+            self._concentration_room(symbol, portfolio, policy),
+            self._asset_class_room(asset_class, portfolio, policy),
+        )
 
-        if not rooms:
-            return None
+        rooms = [term.room for term in terms if term.room is not None]
 
-        return round(sum(rooms) / len(rooms) * 100)
+        return PortfolioFitMeasure(
+            score=round(sum(rooms) / len(rooms) * 100) if rooms else None,
+            terms=terms,
+        )
 
     @staticmethod
     def _funding_room(
         portfolio: PortfolioSnapshot,
         policy: InvestmentPolicy,
-    ) -> float | None:
+    ) -> FitTerm:
         """The share of the account that is cash the policy wants deployed."""
 
         target = policy.target.cash
 
         if not 0.0 <= target < 100.0:
-            return None
+            return FitTerm(
+                room=None,
+                stated=(
+                    "Funding room is not measured: the policy states no cash "
+                    "target to deploy against."
+                ),
+            )
 
-        spare = portfolio.allocation.cash - target
+        cash = portfolio.allocation.cash
 
-        return max(0.0, min(spare / (100.0 - target), 1.0))
+        room = max(0.0, min((cash - target) / (100.0 - target), 1.0))
+
+        return FitTerm(
+            room=room,
+            stated=(
+                f"Funding room {room:.0%} — cash is {cash:.1f}% of the account "
+                f"against a {target:.1f}% target."
+            ),
+        )
 
     @staticmethod
     def _asset_class_room(
         asset_class: AssetClass | None,
         portfolio: PortfolioSnapshot,
         policy: InvestmentPolicy,
-    ) -> float | None:
+    ) -> FitTerm:
         """How much of the policy's ceiling for this asset class is left."""
 
         if asset_class is not AssetClass.CRYPTO:
             # Crypto is the only class the policy puts a ceiling on. The
             # others have targets, and a target is something to rebalance
             # towards rather than a limit a new position can breach.
-            return None
+            return FitTerm(
+                room=None,
+                stated=(
+                    "Asset-class room is not measured: the policy caps crypto "
+                    "only, and the other classes carry targets rather than "
+                    "limits a new position could breach."
+                ),
+            )
 
         limit = policy.constraints.max_crypto
 
-        if limit <= 0 or portfolio.allocation.unclassified > 0:
-            return None
+        if limit <= 0:
+            return FitTerm(
+                room=None,
+                stated="Crypto room is not measured: the policy states no ceiling.",
+            )
 
-        return max(0.0, min((limit - portfolio.allocation.crypto) / limit, 1.0))
+        unclassified = portfolio.allocation.unclassified
+
+        if unclassified > 0:
+            return FitTerm(
+                room=None,
+                stated=(
+                    f"Crypto room is not measured: {unclassified:.1f}% of the "
+                    "account is unclassified, so what is already held cannot "
+                    "be compared against the ceiling."
+                ),
+            )
+
+        crypto = portfolio.allocation.crypto
+
+        room = max(0.0, min((limit - crypto) / limit, 1.0))
+
+        return FitTerm(
+            room=room,
+            stated=(
+                f"Crypto room {room:.0%} — crypto is {crypto:.1f}% of the "
+                f"account against a {limit:.1f}% ceiling."
+            ),
+        )
 
     @staticmethod
     def _concentration_room(
         symbol: str,
         portfolio: PortfolioSnapshot,
         policy: InvestmentPolicy,
-    ) -> float | None:
+    ) -> FitTerm:
         """How much of the single-position limit this security has left."""
 
         limit = policy.constraints.max_single_position
 
         if limit <= 0.0:
-            return None
+            return FitTerm(
+                room=None,
+                stated=(
+                    "Concentration room is not measured: the policy states no "
+                    "single-position limit."
+                ),
+            )
 
         if portfolio.total_value <= 0.0:
-            return None
+            return FitTerm(
+                room=None,
+                stated=(
+                    "Concentration room is not measured: the account has no "
+                    "value to weigh a position against."
+                ),
+            )
 
         normalized = symbol.upper().strip()
 
@@ -127,4 +219,12 @@ class PortfolioFit:
 
         weight = held / portfolio.total_value * 100.0
 
-        return max(0.0, min((limit - weight) / limit, 1.0))
+        room = max(0.0, min((limit - weight) / limit, 1.0))
+
+        return FitTerm(
+            room=room,
+            stated=(
+                f"Concentration room {room:.0%} — {normalized} is {weight:.1f}% "
+                f"of the account against a {limit:.1f}% single-position limit."
+            ),
+        )

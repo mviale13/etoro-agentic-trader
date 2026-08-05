@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowLeft,
+  ChevronDown,
   CircleAlert,
   PenLine,
   Scale,
@@ -14,6 +15,7 @@ import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierCommitteeOpinion,
   DossierNarrative,
+  DossierScore,
   DossierViewModel,
 } from "@/lib/api/dossier";
 
@@ -479,14 +481,14 @@ function InvestorContext({ dossier }: { dossier: DossierViewModel }) {
 
         <p
           className={`mt-2 ${
-            dossier.scores.portfolioFit === null
+            dossier.scores.portfolioFit.value === null
               ? "text-slate-400"
               : "text-slate-800"
           }`}
         >
-          {dossier.scores.portfolioFit === null
+          {dossier.scores.portfolioFit.value === null
             ? "Not measured — your policy states no limit this could be measured against"
-            : `${dossier.scores.portfolioFit} / 100 under your investment policy`}
+            : `${dossier.scores.portfolioFit.value} / 100 under your investment policy`}
         </p>
       </div>
     </section>
@@ -550,13 +552,23 @@ function WhyTrustThis({ dossier }: { dossier: DossierViewModel }) {
   );
 }
 
+/**
+ * The five scores, each opening onto the backend's account of itself.
+ *
+ * A score is the most measurement-looking thing on the page and the least
+ * measured: most are a band this platform chose, applied to a reading it
+ * took. Every row therefore expands to the sentence that produced the
+ * number and the findings underneath it — both written by the pipeline
+ * that scored it. Nothing here explains a score; it only discloses the
+ * explanation.
+ */
 function Scores({ dossier }: { dossier: DossierViewModel }) {
-  const rows: readonly { label: string; value: number | null }[] = [
-    { label: "Business quality", value: dossier.scores.quality },
-    { label: "Evidence", value: dossier.scores.evidence },
-    { label: "Valuation", value: dossier.scores.valuation },
-    { label: "Risk", value: dossier.scores.risk },
-    { label: "Portfolio fit", value: dossier.scores.portfolioFit },
+  const rows: readonly { label: string; score: DossierScore }[] = [
+    { label: "Business quality", score: dossier.scores.quality },
+    { label: "Evidence", score: dossier.scores.evidence },
+    { label: "Valuation", score: dossier.scores.valuation },
+    { label: "Risk", score: dossier.scores.risk },
+    { label: "Portfolio fit", score: dossier.scores.portfolioFit },
   ];
 
   return (
@@ -565,27 +577,57 @@ function Scores({ dossier }: { dossier: DossierViewModel }) {
         The scores the decision was made on
       </p>
 
-      <dl className="divide-y divide-slate-100 bg-white">
+      <div className="divide-y divide-slate-100 bg-white">
         {rows.map((row) => (
-          <div
-            key={row.label}
-            className="flex items-center justify-between px-5 py-3 text-sm"
-          >
-            <dt className="text-slate-600">{row.label}</dt>
+          <details key={row.label} className="group">
+            <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-3 text-sm hover:bg-slate-50">
+              <span className="flex items-center gap-2 text-slate-600">
+                {row.label}
 
-            {/* Null is not zero: a score nobody measured says so. */}
-            <dd
-              className={
-                row.value === null
-                  ? "font-medium text-slate-400"
-                  : "font-semibold text-slate-950"
-              }
-            >
-              {row.value === null ? "Not measured" : `${row.value} / 100`}
-            </dd>
-          </div>
+                <ChevronDown
+                  aria-hidden
+                  className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-180"
+                />
+
+                <span className="sr-only">Why this score</span>
+              </span>
+
+              {/* Null is not zero: a score nobody measured says so. */}
+              <span
+                className={
+                  row.score.value === null
+                    ? "font-medium text-slate-400"
+                    : "font-semibold text-slate-950"
+                }
+              >
+                {row.score.value === null
+                  ? "Not measured"
+                  : `${row.score.value} / 100`}
+              </span>
+            </summary>
+
+            <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-4">
+              <p className="max-w-3xl text-sm leading-6 text-slate-600">
+                {row.score.basis}
+              </p>
+
+              {row.score.evidence.length > 0 ? (
+                <ul className="mt-3 space-y-1.5 text-sm leading-6 text-slate-600">
+                  {row.score.evidence.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span aria-hidden className="text-slate-300">
+                        —
+                      </span>
+
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </details>
         ))}
-      </dl>
+      </div>
     </div>
   );
 }

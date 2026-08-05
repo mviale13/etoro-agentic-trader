@@ -51,22 +51,39 @@ class CommitteeOpinionResponse(BaseModel):
     evidence: list[CommitteeEvidenceResponse]
 
 
-class EvidenceScoresResponse(BaseModel):
-    """The scores the decision was actually made on.
+class ScoreResponse(BaseModel):
+    """One score the decision was made on, and why it is that number.
 
-    None means the platform did not measure that score. It never means
-    zero, and it is never filled in from something else.
+    `value` is None where the platform did not measure it. That never
+    means zero and is never filled in from something else — and `basis`
+    then says which measurement was missing.
+
+    The basis travels with the value because most of these scores are a
+    band this platform chose applied to a reading it took. A number shown
+    without its band reads as an observation about the business.
     """
 
-    quality: int | None
-    evidence: int
-    valuation: int | None
-    risk: int | None
+    value: int | None
+
+    #: The one sentence that turns the reading into the number, worded
+    #: where the score is computed. Never assembled here.
+    basis: str
+
+    #: The findings the reading itself rests on.
+    evidence: list[str]
+
+
+class EvidenceScoresResponse(BaseModel):
+    """The scores the decision was actually made on, each explained."""
+
+    quality: ScoreResponse
+    evidence: ScoreResponse
+    valuation: ScoreResponse
+    risk: ScoreResponse
 
     #: How much room the portfolio has for this security under the
-    #: investor's own policy. None when the policy states no limit this
-    #: could be measured against.
-    portfolio_fit: int | None
+    #: investor's own policy.
+    portfolio_fit: ScoreResponse
 
 
 class NarrativeFindingResponse(BaseModel):

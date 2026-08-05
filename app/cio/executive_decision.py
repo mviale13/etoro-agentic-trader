@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.cio.decision_state import DecisionState
 from app.domain.asset_class import AssetClass
 from app.domain.provenance import Provenance
+from app.domain.score_basis import ScoreBases
 
 
 class DecisionEvidence(BaseModel):
@@ -33,6 +34,17 @@ class DecisionEvidence(BaseModel):
     #: investor's own policy. None when the policy states no limit this
     #: could be measured against.
     portfolio_fit_score: int | None = Field(default=None, ge=0, le=100)
+
+    #: Why each score above is the number it is: the reading under it, the
+    #: band this platform applied, and the findings the reading rests on.
+    #:
+    #: The Artificial CIO does not read this — it gates on the scores. It
+    #: rides here because the score and the reason for it must travel
+    #: together: a band is a house rule, and a rule the investor cannot
+    #: see is indistinguishable from a measurement.
+    #:
+    #: None only where a caller built evidence without stating one.
+    score_bases: ScoreBases | None = None
 
     #: When the security's own evidence was read.
     #:
