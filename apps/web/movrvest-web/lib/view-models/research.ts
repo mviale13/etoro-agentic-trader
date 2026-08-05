@@ -36,7 +36,7 @@ export interface ResearchCandidateViewModel {
   qualityScore: number | null;
   valuationScore: number | null;
   /** From this security's own volatility and deepest observed fall. */
-  riskScore: number | null;
+  safetyScore: number | null;
   evidenceScore: number;
 
   /** Room the portfolio has for this security, under the investor's policy. */

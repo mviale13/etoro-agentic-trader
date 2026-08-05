@@ -46,6 +46,30 @@ class DecisionEvidence(BaseModel):
     #: None only where a caller built evidence without stating one.
     score_bases: ScoreBases | None = None
 
+    @property
+    def safety_score(self) -> int | None:
+        """
+        The risk score, turned the way every other score here runs.
+
+        Risk is the one measurement on this platform where a high number is
+        bad, and a dashboard that mixes directions cannot be read: four
+        nineties do not average to anything meaningful if one of them means
+        the opposite of the other three. The Artificial CIO already knew
+        this — it inverted risk before averaging into conviction — but it
+        did so inline, so the concept existed without a name and every
+        other surface went on showing the raw, inverted figure.
+
+        The gates still read `risk_score`. A ceiling on risk is the natural
+        way to write "this is too dangerous", and rewriting it as a floor
+        on safety would restate one policy in two directions.
+
+        None stays None. A risk nobody measured is not a safe security, and
+        `100 - nothing` would be the most dangerous number this platform
+        could print.
+        """
+
+        return None if self.risk_score is None else 100 - self.risk_score
+
     #: When the security's own evidence was read.
     #:
     #: The portfolio and market readings behind this case are not dated —

@@ -269,6 +269,8 @@ def _score(
         value=value,
         basis=basis.basis,
         evidence=list(basis.evidence),
+        kind=basis.kind.value,
+        kind_stated=basis.kind.stated,
     )
 
 
@@ -349,7 +351,9 @@ async def dossier(
             quality=_score(evidence.quality_score, bases.quality),
             evidence=_score(evidence.evidence_score, bases.evidence),
             valuation=_score(evidence.valuation_score, bases.valuation),
-            risk=_score(evidence.risk_score, bases.risk),
+            # Safety, not risk: the same reading, turned once, so every
+            # score on the page runs the same way.
+            safety=_score(evidence.safety_score, bases.safety),
             portfolio_fit=_score(
                 evidence.portfolio_fit_score,
                 bases.portfolio_fit,

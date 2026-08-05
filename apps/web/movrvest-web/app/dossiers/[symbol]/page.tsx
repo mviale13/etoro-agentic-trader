@@ -565,17 +565,27 @@ function WhyTrustThis({ dossier }: { dossier: DossierViewModel }) {
 function Scores({ dossier }: { dossier: DossierViewModel }) {
   const rows: readonly { label: string; score: DossierScore }[] = [
     { label: "Business quality", score: dossier.scores.quality },
-    { label: "Evidence", score: dossier.scores.evidence },
-    { label: "Valuation", score: dossier.scores.valuation },
-    { label: "Risk", score: dossier.scores.risk },
+    { label: "Evidence strength", score: dossier.scores.evidence },
+    { label: "Valuation attractiveness", score: dossier.scores.valuation },
+    { label: "Safety", score: dossier.scores.safety },
     { label: "Portfolio fit", score: dossier.scores.portfolioFit },
   ];
 
   return (
     <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
-      <p className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
-        The scores the decision was made on
-      </p>
+      <div className="border-b border-slate-200 bg-slate-50 px-5 py-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          The scores the decision was made on
+        </p>
+
+        {/* Said once, at the top, because it is the property that makes
+            the set readable at all: risk is shown as safety so that no
+            single dimension runs against the others. */}
+        <p className="mt-1 text-xs text-slate-500">
+          Every score runs the same way — a higher number is better for the
+          case. Open one to see what produced it.
+        </p>
+      </div>
 
       <div className="divide-y divide-slate-100 bg-white">
         {rows.map((row) => (
@@ -607,7 +617,14 @@ function Scores({ dossier }: { dossier: DossierViewModel }) {
             </summary>
 
             <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-4">
-              <p className="max-w-3xl text-sm leading-6 text-slate-600">
+              {/* Measured, policy-derived and assessed numbers look alike
+                  at two significant figures, and the assessment borrows
+                  the measurement's authority unless it is labelled. */}
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+                {row.score.kindStated}
+              </p>
+
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                 {row.score.basis}
               </p>
 

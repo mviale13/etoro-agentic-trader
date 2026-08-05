@@ -687,17 +687,19 @@ def test_an_unevidenced_security_says_what_was_never_gathered() -> None:
     assert "No security-level analysis was gathered" in explained.quality.basis
     assert "the account's own health" in explained.quality.basis
 
-    assert "price history was not read" in explained.risk.basis
-    assert "The account's risk is never used in its place" in explained.risk.basis
+    assert "price history was not read" in explained.safety.basis
+    assert "The account's risk is never used" in explained.safety.basis
 
 
-def test_the_risk_scale_is_read_off_the_signal_that_set_it() -> None:
+def test_safety_is_the_risk_reading_turned_once_and_said_to_be() -> None:
     """
-    The bands shown are the bands scored on, not a second copy of them.
+    Every score here runs the same way, so risk is reported as safety.
 
-    A dashboard that restates a scale is a dashboard that will one day
-    show the wrong one, so the sentence is built from `RiskSignal`'s own
-    severities.
+    The bands shown are the bands scored on, turned by the same arithmetic
+    that turns the number — a dashboard that restates a scale is one that
+    will eventually show the wrong one. The inversion is stated outright,
+    because a reader who remembers "Risk 45" must be able to see this is
+    the same reading.
     """
 
     facts = CompanyFacts(
@@ -715,14 +717,32 @@ def test_the_risk_scale_is_read_off_the_signal_that_set_it() -> None:
     evidence, explained = bases(make_brain({"MSFT": (company,)}), "MSFT")
 
     assert evidence.risk_score == 45
-    assert "higher number is a riskier security" in explained.risk.basis
+    assert evidence.safety_score == 55
+
+    assert "higher is safer" in explained.safety.basis
 
     for level, severity in RiskSignal.SEVERITIES.items():
-        assert f"{level} at {round(severity * 100)}" in explained.risk.basis
+        assert f"{level} at {100 - round(severity * 100)}" in explained.safety.basis
 
     assert "Annualised volatility is 32.0% over the past year." in (
-        explained.risk.evidence
+        explained.safety.evidence
     )
+
+
+def test_an_unmeasured_risk_is_never_reported_as_a_safe_security() -> None:
+    """
+    The one arithmetic this inversion must never do: 100 minus nothing.
+
+    A security whose price history was too short to read is not safe. It
+    is unmeasured, and on a dashboard where higher is better, filling that
+    in would print the most dangerous number this platform could produce.
+    """
+
+    evidence, explained = bases(make_brain({"MSFT": (make_company("MSFT"),)}), "MSFT")
+
+    assert evidence.risk_score is None
+    assert evidence.safety_score is None
+    assert "never" in explained.safety.basis
 
 
 def test_the_evidence_score_names_both_terms_it_averaged() -> None:

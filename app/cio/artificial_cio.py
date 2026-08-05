@@ -297,11 +297,17 @@ class ArtificialCIO:
         state: DecisionState,
     ) -> int:
         """
-        Average the scores that exist.
+        Average the scores that exist, all pointing the same way.
 
         An unmeasured score is left out rather than counted as zero or
         filled in. The state reached already caps conviction, and a case
         resting on fewer measurements cannot reach the higher states.
+
+        Risk enters as safety, because an average is only meaningful over
+        scores that agree on which direction is good. That inversion used
+        to be written here, in the one place that happened to need it;
+        it is now `DecisionEvidence.safety_score`, and every surface shows
+        the same number this arithmetic uses.
         """
 
         measured = [
@@ -311,7 +317,7 @@ class ArtificialCIO:
                 evidence.evidence_score,
                 evidence.valuation_score,
                 evidence.portfolio_fit_score,
-                None if evidence.risk_score is None else 100 - evidence.risk_score,
+                evidence.safety_score,
             )
             if score is not None
         ]

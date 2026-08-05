@@ -321,21 +321,35 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
     assert body["rationale"]
 
     # The scores the decision was made on: measured or null, never filled.
+    # Safety, never risk: every score served here runs the same way, so
+    # the set can be compared or averaged without one dimension meaning
+    # the opposite of the others.
     assert set(body["scores"]) == {
         "quality",
         "evidence",
         "valuation",
-        "risk",
+        "safety",
         "portfolio_fit",
     }
 
-    # Every score travels with the reasoning that produced it. A bare
-    # number is the thing on this page most likely to be mistaken for a
-    # measurement, so none of them is served alone.
+    # Every score travels with the reasoning that produced it, and with
+    # what kind of number it is. A bare figure is the thing on this page
+    # most likely to be mistaken for a measurement, so none is served
+    # alone.
     for name, score in body["scores"].items():
-        assert set(score) == {"value", "basis", "evidence"}, name
+        assert set(score) == {
+            "value",
+            "basis",
+            "evidence",
+            "kind",
+            "kind_stated",
+        }, name
         assert score["basis"], name
+        assert score["kind_stated"], name
         assert isinstance(score["evidence"], list), name
+
+    assert body["scores"]["portfolio_fit"]["kind"] == "policy"
+    assert body["scores"]["quality"]["kind"] == "assessment"
 
     # An abstention is marked as such, never inferred from a null.
     for opinion in body["committees"]:

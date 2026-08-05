@@ -110,7 +110,7 @@ function parseCandidate(
       payload.valuation_score,
       at("valuation_score"),
     ),
-    riskScore: optionalNumber(payload.risk_score, at("risk_score")),
+    safetyScore: optionalNumber(payload.safety_score, at("safety_score")),
     evidenceScore: requireNumber(payload.evidence_score, at("evidence_score")),
     portfolioFitScore: optionalNumber(
       payload.portfolio_fit_score,

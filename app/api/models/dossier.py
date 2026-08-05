@@ -72,14 +72,32 @@ class ScoreResponse(BaseModel):
     #: The findings the reading itself rests on.
     evidence: list[str]
 
+    #: What kind of number this is — measured, derived from the investor's
+    #: policy, or assessed against this platform's bands. Printed side by
+    #: side these look alike, and the assessment borrows the measurement's
+    #: authority unless the difference is stated.
+    kind: str
+
+    #: The same, worded for a reader.
+    kind_stated: str
+
 
 class EvidenceScoresResponse(BaseModel):
-    """The scores the decision was actually made on, each explained."""
+    """
+    The scores the decision was actually made on, each explained.
+
+    Every one of them runs the same way: a higher number is better for the
+    investment case. Risk is therefore reported as safety — the same
+    reading, turned once, so the set can be compared, averaged or ranked
+    without one dimension quietly meaning the opposite of the others.
+    """
 
     quality: ScoreResponse
     evidence: ScoreResponse
     valuation: ScoreResponse
-    risk: ScoreResponse
+
+    #: How calm the security's own record is. Higher is safer.
+    safety: ScoreResponse
 
     #: How much room the portfolio has for this security under the
     #: investor's own policy.
