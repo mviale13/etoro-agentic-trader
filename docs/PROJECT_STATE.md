@@ -103,7 +103,13 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   and cost at stated prices beside each narrative — language quality is
   deliberately not scored; judging it is the reader's. First live
   generation verified on MSFT: a fully grounded five-section narrative,
-  every citation resolving, in 13.1s for $0.0006 at stated prices.
+  every citation resolving, in 13.1s for $0.0006 at stated prices. The
+  dossier page needed no change to render the new providers' narratives
+  — the API contract is unchanged, and the writing model was already
+  stated in the narrative's provenance line — but it silently dropped
+  the worded absence when there was no narrative; it now presents the
+  backend's own sentence (flag off, missing credentials, discarded
+  draft) instead of rendering nothing.
 
 - **The Communication layer gained an Executive Writer** (August 2026).
   An LLM language specialist — never a decision maker — that words the
