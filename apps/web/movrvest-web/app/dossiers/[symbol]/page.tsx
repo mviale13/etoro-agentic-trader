@@ -388,9 +388,15 @@ function Recommendation({ dossier }: { dossier: DossierViewModel }) {
       <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-6">
         <p className="text-sm leading-7 text-slate-800">{dossier.summary}</p>
 
-        <p className="mt-4 border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600">
-          {dossier.rationale}
-        </p>
+        {/* The thesis summary is built from the decision rationale, so
+            the two are often the identical sentence. Saying it twice
+            reads as a bug, not as emphasis — the rationale is shown
+            only where it adds words the summary does not have. */}
+        {dossier.rationale !== dossier.summary ? (
+          <p className="mt-4 border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600">
+            {dossier.rationale}
+          </p>
+        ) : null}
       </div>
 
       <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">

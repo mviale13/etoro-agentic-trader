@@ -62,6 +62,10 @@ Rules:
 - Never contradict the decision you are given.
 - Every section must be supported by the supplied findings, and must
   list the ids of the findings it rests on.
+- Cite finding ids only in the finding_ids field — never write ids,
+  citation lists or "Findings:" trailers inside the section text. The
+  reader sees the citations beside each paragraph already; repeating
+  them in prose says everything twice.
 - Mention both supporting and opposing evidence.
 - Explain trade-offs plainly.
 - Prefer institutional investment language, in complete sentences.
