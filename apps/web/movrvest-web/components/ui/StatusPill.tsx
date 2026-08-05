@@ -3,6 +3,11 @@ type Status = "live" | "partial" | "placeholder";
 type StatusPillProps = {
   status: Status;
   label?: string;
+  /**
+   * Why the pill says what it says, shown on hover. An amber pill with
+   * no reason reads as an unexplained warning; the reason is the honesty.
+   */
+  explanation?: string;
 };
 
 const styles: Record<
@@ -38,12 +43,14 @@ const styles: Record<
 export function StatusPill({
   status,
   label,
+  explanation,
 }: StatusPillProps) {
   const config = styles[status];
 
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-semibold ${config.container}`}
+      title={explanation}
     >
       <span
         aria-hidden="true"

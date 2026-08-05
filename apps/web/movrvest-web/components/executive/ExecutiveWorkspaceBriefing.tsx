@@ -379,7 +379,11 @@ export function ExecutiveWorkspaceBriefing({
                 what it decided before. Behavioural consistency still needs a
                 record of the investor's own actions, so this is genuine but
                 incomplete reasoning. */}
-            <StatusPill status="partial" label="Artificial CIO" />
+            <StatusPill
+              status="partial"
+              label="Artificial CIO"
+              explanation="Partial, honestly: these are the Artificial CIO's real decisions, but its reasoning is incomplete — it has no record of your own actions yet, so behavioural consistency cannot be weighed."
+            />
           </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
