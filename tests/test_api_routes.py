@@ -329,6 +329,14 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
         "portfolio_fit",
     }
 
+    # Every score travels with the reasoning that produced it. A bare
+    # number is the thing on this page most likely to be mistaken for a
+    # measurement, so none of them is served alone.
+    for name, score in body["scores"].items():
+        assert set(score) == {"value", "basis", "evidence"}, name
+        assert score["basis"], name
+        assert isinstance(score["evidence"], list), name
+
     # An abstention is marked as such, never inferred from a null.
     for opinion in body["committees"]:
         assert opinion["abstained"] == (opinion["confidence"] is None)

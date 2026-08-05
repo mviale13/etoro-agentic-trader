@@ -10,6 +10,7 @@ from app.api.models.dossier import (
     NarrativeResponse,
     NarrativeSectionResponse,
     ProvenanceResponse,
+    ScoreResponse,
 )
 from app.api.models.executive_brief import (
     ExecutiveBriefResponse,
@@ -34,6 +35,7 @@ from app.application.workspace.portfolio_briefing_service import (
 )
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.provenance import Provenance
+from app.domain.score_basis import ScoreBases, ScoreBasis
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
     conviction_label,
@@ -252,6 +254,24 @@ def _provenance(
     )
 
 
+def _score(
+    value: int | None,
+    basis: ScoreBasis,
+) -> ScoreResponse:
+    """
+    Pair a score with the reasoning the pipeline already worded for it.
+
+    Nothing is derived here and no sentence is written here: both come
+    from where the score was computed.
+    """
+
+    return ScoreResponse(
+        value=value,
+        basis=basis.basis,
+        evidence=list(basis.evidence),
+    )
+
+
 @router.get(
     "/{symbol}/dossier",
     response_model=DossierResponse,
@@ -292,6 +312,10 @@ async def dossier(
             ),
         )
 
+    # Why each score is the number it is, as the pipeline worded it. A
+    # path that stated none says so rather than leaving the scores bare.
+    bases = evidence.score_bases or ScoreBases.unrecorded()
+
     # Communication only, and strictly after the judgment: the writer
     # receives the finished canonical objects and cannot change them.
     outcome = await ExecutiveWriterService().narrate(
@@ -322,11 +346,14 @@ async def dossier(
         risks=list(decision.key_risks),
         missing_evidence=list(decision.missing_evidence),
         scores=EvidenceScoresResponse(
-            quality=evidence.quality_score,
-            evidence=evidence.evidence_score,
-            valuation=evidence.valuation_score,
-            risk=evidence.risk_score,
-            portfolio_fit=evidence.portfolio_fit_score,
+            quality=_score(evidence.quality_score, bases.quality),
+            evidence=_score(evidence.evidence_score, bases.evidence),
+            valuation=_score(evidence.valuation_score, bases.valuation),
+            risk=_score(evidence.risk_score, bases.risk),
+            portfolio_fit=_score(
+                evidence.portfolio_fit_score,
+                bases.portfolio_fit,
+            ),
         ),
         context_strengths=list(thesis.context_strengths),
         context_risks=list(decision.context_risks),

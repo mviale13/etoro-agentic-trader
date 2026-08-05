@@ -93,6 +93,22 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Every score on the dossier opens onto its own reasoning** (August
+  2026). "Business quality 80 / 100" was the most measurement-looking
+  figure on the page and the least measured: HIGH quality, priced by a
+  band this platform chose and never showed. Each of the five scores now
+  expands to the sentence that produced it — the reading, and the whole
+  scale it was priced against ("HIGH at 80, MEDIUM at 62 and LOW at 40")
+  — over the findings the reading rests on. Risk states that a higher
+  number is worse and reads its bands off `RiskSignal`'s own severities,
+  so the scale shown cannot drift from the scale scored on. Portfolio fit
+  lists every term including the ones the policy could not answer, and
+  says how many of how many it averaged. A score nobody measured says
+  which measurement was missing instead of reading as zero. Written where
+  each score is computed (`DecisionEvidenceBuilder`, `PortfolioFit`),
+  carried on `DecisionEvidence.score_bases`, and only disclosed by the
+  page — the dashboard still presents and never calculates.
+
 - **A security's catalyst is its own next earnings date** (August 2026).
   The investment case's catalysts were the market's opportunities, which
   are identical under every symbol — "Stable market conditions" was

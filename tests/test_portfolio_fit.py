@@ -74,8 +74,8 @@ def test_fit_distinguishes_two_securities_in_the_same_portfolio() -> None:
 
     portfolio = make_portfolio(holdings=(holding("CROWDED", 19_000.0),))
 
-    crowded = PortfolioFit().measure("CROWDED", portfolio, make_policy())
-    fresh = PortfolioFit().measure("ROOMY", portfolio, make_policy())
+    crowded = PortfolioFit().measure("CROWDED", portfolio, make_policy()).score
+    fresh = PortfolioFit().measure("ROOMY", portfolio, make_policy()).score
 
     assert crowded is not None and fresh is not None
     assert crowded < fresh
@@ -84,7 +84,7 @@ def test_fit_distinguishes_two_securities_in_the_same_portfolio() -> None:
 def test_a_security_at_the_position_limit_has_no_room_left() -> None:
     portfolio = make_portfolio(holdings=(holding("FULL", 20_000.0),))
 
-    fit = PortfolioFit().measure("FULL", portfolio, make_policy())
+    fit = PortfolioFit().measure("FULL", portfolio, make_policy()).score
 
     assert fit is not None
     assert fit < 60
@@ -97,7 +97,7 @@ def test_an_unheld_security_has_the_whole_limit_available() -> None:
         make_policy(),
     )
 
-    assert fit == 100
+    assert fit.score == 100
 
 
 def test_cash_above_its_target_is_room_to_act_not_a_reason_to_refuse() -> None:
@@ -112,8 +112,8 @@ def test_cash_above_its_target_is_room_to_act_not_a_reason_to_refuse() -> None:
     deployed = PortfolioFit().measure("NEW", make_portfolio(cash=5.0), make_policy())
     sitting = PortfolioFit().measure("NEW", make_portfolio(cash=97.0), make_policy())
 
-    assert deployed is not None and sitting is not None
-    assert sitting > deployed
+    assert deployed.score is not None and sitting.score is not None
+    assert sitting.score > deployed.score
 
 
 def test_an_account_at_its_cash_target_has_nothing_spare_to_fund_with() -> None:
@@ -121,7 +121,7 @@ def test_an_account_at_its_cash_target_has_nothing_spare_to_fund_with() -> None:
 
     portfolio = make_portfolio(cash=5.0)
 
-    assert PortfolioFit()._funding_room(portfolio, make_policy()) == 0.0
+    assert PortfolioFit()._funding_room(portfolio, make_policy()).room == 0.0
 
 
 def test_fit_is_absent_rather_than_guessed_when_the_policy_states_no_limits() -> None:
@@ -135,13 +135,15 @@ def test_fit_is_absent_rather_than_guessed_when_the_policy_states_no_limits() ->
         ),
     )
 
-    assert PortfolioFit().measure("ANY", make_portfolio(), policy) is None
+    assert PortfolioFit().measure("ANY", make_portfolio(), policy).score is None
 
 
 def test_an_empty_account_cannot_be_measured_for_concentration() -> None:
     portfolio = replace(make_portfolio(), total_value=0.0)
 
-    assert PortfolioFit()._concentration_room("ANY", portfolio, make_policy()) is None
+    assert (
+        PortfolioFit()._concentration_room("ANY", portfolio, make_policy()).room is None
+    )
 
 
 def test_crypto_fit_narrows_as_the_policy_ceiling_fills() -> None:
@@ -161,8 +163,8 @@ def test_crypto_fit_narrows_as_the_policy_ceiling_fills() -> None:
         allocation=replace(empty.allocation, crypto=60.0, unclassified=0.0),
     )
 
-    room = PortfolioFit().measure("BTC", loaded, make_policy(), AssetClass.CRYPTO)
-    without = PortfolioFit().measure("BTC", loaded, make_policy())
+    room = PortfolioFit().measure("BTC", loaded, make_policy(), AssetClass.CRYPTO).score
+    without = PortfolioFit().measure("BTC", loaded, make_policy()).score
 
     assert room is not None and without is not None
     assert room < without
@@ -175,10 +177,51 @@ def test_an_unclassified_account_is_not_scored_against_the_crypto_ceiling() -> N
 
     assert portfolio.allocation.unclassified > 0
     assert (
-        PortfolioFit()._asset_class_room(
+        PortfolioFit()
+        ._asset_class_room(
             AssetClass.CRYPTO,
             portfolio,
             make_policy(),
         )
+        .room
         is None
     )
+
+
+def test_every_term_words_itself_with_the_figures_behind_it() -> None:
+    """
+    Fit is an average, and an average alone cannot be examined.
+
+    Each term states the room it found and the two figures it found it
+    from, so a reader can check the arithmetic rather than accept it.
+    """
+
+    portfolio = make_portfolio(cash=20.0, holdings=(holding("MSFT", 10_000.0),))
+
+    measure = PortfolioFit().measure("MSFT", portfolio, make_policy())
+
+    funding, concentration, asset_class = measure.terms
+
+    assert "Funding room" in funding.stated
+    assert "cash is 20.0% of the account against a 5.0% target" in funding.stated
+
+    assert "MSFT is 10.0% of the account" in concentration.stated
+    assert "20.0% single-position limit" in concentration.stated
+
+    # The term the policy could not answer is stated, not dropped: an
+    # average of two shown as an average of three overstates what was asked.
+    assert asset_class.room is None
+    assert "not measured" in asset_class.stated
+    assert len(measure.terms) == 3
+
+
+def test_an_unmeasurable_term_says_which_question_the_policy_left_open() -> None:
+    policy = replace(
+        make_policy(),
+        target=AllocationTarget(stocks=50.0, etfs=25.0, crypto=20.0, cash=100.0),
+    )
+
+    funding = PortfolioFit()._funding_room(make_portfolio(), policy)
+
+    assert funding.room is None
+    assert "no cash target to deploy against" in funding.stated

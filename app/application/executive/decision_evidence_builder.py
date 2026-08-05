@@ -13,7 +13,10 @@ from app.application.committees.models.committee_opinion import (
     CommitteeOpinion,
     Recommendation,
 )
-from app.application.executive.portfolio_fit import PortfolioFit
+from app.application.executive.portfolio_fit import (
+    PortfolioFit,
+    PortfolioFitMeasure,
+)
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
 from app.domain.company_recommendation import CompanyRecommendation
@@ -21,6 +24,8 @@ from app.domain.company_research import CompanyResearch
 from app.domain.executive_decision import DecisionEvidence
 from app.domain.finding import Finding, Sense, statements, statements_where
 from app.domain.opinion import Opinion
+from app.domain.risk_signal import RiskSignal
+from app.domain.score_basis import ScoreBases, ScoreBasis
 
 
 @dataclass(slots=True)
@@ -91,10 +96,11 @@ class DecisionEvidenceBuilder:
 
         quality = self._quality_score(company)
 
-        evidence_score = self._evidence_score(
-            company,
-            (portfolio.confidence + market.confidence + risk.confidence) / 3.0,
-        )
+        cognitive_confidence = (
+            portfolio.confidence + market.confidence + risk.confidence
+        ) / 3.0
+
+        evidence_score = self._evidence_score(company, cognitive_confidence)
 
         valuation = self._valuation_score(company)
 
@@ -151,7 +157,22 @@ class DecisionEvidenceBuilder:
             evidence_score=evidence_score,
             valuation_score=valuation,
             risk_score=self._risk_score(company),
-            portfolio_fit_score=portfolio_fit,
+            portfolio_fit_score=portfolio_fit.score,
+            # Each score's own reasoning, worded where the score is
+            # computed. A band is this platform's policy, not a
+            # measurement, and a reader who cannot see it cannot tell the
+            # two apart.
+            score_bases=ScoreBases(
+                quality=self._quality_basis(company),
+                evidence=self._evidence_basis(
+                    company,
+                    reasoning,
+                    cognitive_confidence,
+                ),
+                valuation=self._valuation_basis(company),
+                risk=self._risk_basis(company),
+                portfolio_fit=self._portfolio_fit_basis(portfolio_fit),
+            ),
             evidence_as_of=company.reading if company is not None else None,
             # A known security always leaves a recommendation here, even an
             # unpriceable one; nothing at all means the symbol named nothing
@@ -243,6 +264,240 @@ class DecisionEvidenceBuilder:
             return int(cognitive * 0.6)
 
         return int((cognitive + company.confidence) / 2)
+
+    # ── Why each score is the number it is ──────────────────────────
+    #
+    # Every basis below asks the method above for the number rather than
+    # reading the band a second time. Two readings of one band is how a
+    # dashboard comes to explain a score it does not have.
+
+    @staticmethod
+    def _banded(scores: dict[str, int]) -> str:
+        """The whole scale, as a sentence, so the reader sees the ruler."""
+
+        bands = [f"{name} at {value}" for name, value in scores.items()]
+
+        if len(bands) < 2:
+            return "".join(bands)
+
+        return f"{', '.join(bands[:-1])} and {bands[-1]}"
+
+    @staticmethod
+    def _severity_bands() -> dict[str, int]:
+        """
+        The risk bands on the 0-100 scale the score is reported on.
+
+        Read from the signal's own severities rather than restated here,
+        so the scale a reader is shown is the scale the score came off.
+        """
+
+        return {
+            level: round(severity * 100)
+            for level, severity in RiskSignal.SEVERITIES.items()
+        }
+
+    @classmethod
+    def _quality_basis(
+        cls,
+        company: CompanyRecommendation | None,
+    ) -> ScoreBasis:
+        """How good the business is, and by whose ruler."""
+
+        if company is None:
+            return ScoreBasis(
+                basis=(
+                    "No security-level analysis was gathered, so business "
+                    "quality was not scored. It is never filled in from the "
+                    "account's own health."
+                ),
+            )
+
+        signal = company.signals.quality
+
+        evidence = statements(signal.evidence)
+
+        if cls._quality_score(company) is None:
+            return ScoreBasis(
+                basis=(
+                    f"Quality reads {signal.quality} — the figures a business "
+                    "is judged on could not be read — so no score was given."
+                ),
+                evidence=evidence,
+            )
+
+        return ScoreBasis(
+            basis=(
+                f"Quality reads {signal.quality}, from the findings below. "
+                f"This platform scores {cls._banded(cls.QUALITY_SCORES)}."
+            ),
+            evidence=evidence,
+        )
+
+    @classmethod
+    def _valuation_basis(
+        cls,
+        company: CompanyRecommendation | None,
+    ) -> ScoreBasis:
+        """How attractive the price is, and by whose ruler."""
+
+        if company is None:
+            return ScoreBasis(
+                basis=(
+                    "No security-level analysis was gathered, so the price "
+                    "was not scored. Market momentum is never used in its "
+                    "place: it says nothing about whether this company is "
+                    "cheap."
+                ),
+            )
+
+        signal = company.signals.value
+
+        evidence = statements(signal.evidence)
+
+        if cls._valuation_score(company) is None:
+            return ScoreBasis(
+                basis=(
+                    f"Valuation reads {signal.valuation} — the figures a price "
+                    "is judged against could not be read — so no score was "
+                    "given."
+                ),
+                evidence=evidence,
+            )
+
+        return ScoreBasis(
+            basis=(
+                f"Valuation reads {signal.valuation}, from the findings below. "
+                f"This platform scores {cls._banded(cls.VALUATION_SCORES)}."
+            ),
+            evidence=evidence,
+        )
+
+    @classmethod
+    def _risk_basis(
+        cls,
+        company: CompanyRecommendation | None,
+    ) -> ScoreBasis:
+        """
+        How violently this security has moved, and by whose ruler.
+
+        The one score where a higher number is worse, which is stated
+        rather than left to be inferred from the company it keeps.
+        """
+
+        if company is None or company.signals.risk is None:
+            return ScoreBasis(
+                basis=(
+                    "This security's price history was not read, so its own "
+                    "risk was not scored. The account's risk is never used in "
+                    "its place."
+                ),
+            )
+
+        signal = company.signals.risk
+
+        evidence = statements(signal.evidence)
+
+        if cls._risk_score(company) is None:
+            return ScoreBasis(
+                basis=(
+                    f"Risk reads {signal.level} — the price history was too "
+                    "short to measure — so no score was given."
+                ),
+                evidence=evidence,
+            )
+
+        return ScoreBasis(
+            basis=(
+                f"Risk reads {signal.level}, from the findings below, and here "
+                f"a higher number is a riskier security. This platform's "
+                f"severity is {cls._banded(cls._severity_bands())}."
+            ),
+            evidence=evidence,
+        )
+
+    @classmethod
+    def _evidence_basis(
+        cls,
+        company: CompanyRecommendation | None,
+        reasoning: ReasoningSnapshot,
+        cognitive_confidence: float,
+    ) -> ScoreBasis:
+        """
+        How well evidenced this case is — the one score about the platform.
+
+        It measures the reading, not the security: a low number says this
+        case rests on less than the platform can normally see, never that
+        the business is worse.
+        """
+
+        cognitive = int(cognitive_confidence * 100)
+
+        evidence = [
+            f"Portfolio reasoning is {reasoning.portfolio.confidence:.0%} "
+            "confident in what it could read.",
+            f"Market reasoning is {reasoning.market.confidence:.0%} confident "
+            "in what it could read.",
+            f"Risk reasoning is {reasoning.risk.confidence:.0%} confident in "
+            "what it could read.",
+        ]
+
+        if company is None:
+            return ScoreBasis(
+                basis=(
+                    "Nothing about the security itself was gathered, so this "
+                    "case rests on portfolio and market reasoning alone. Its "
+                    f"{cognitive} of 100 is discounted to 60% for standing on "
+                    "the account rather than on the security."
+                ),
+                evidence=tuple(evidence),
+            )
+
+        evidence.append(
+            f"The security committee is {company.confidence} of 100 sure of "
+            f"its own {company.recommendation} read."
+        )
+
+        return ScoreBasis(
+            basis=(
+                f"The average of how well the reasoning was evidenced "
+                f"({cognitive} of 100) and how sure the security committee is "
+                f"of its own read ({company.confidence} of 100)."
+            ),
+            evidence=tuple(evidence),
+        )
+
+    @staticmethod
+    def _portfolio_fit_basis(
+        measure: PortfolioFitMeasure,
+    ) -> ScoreBasis:
+        """
+        How much room the investor's own policy leaves for this security.
+
+        Every term is listed, including the ones the policy gave nothing to
+        measure against — an average of two terms presented as an average of
+        three is a number that overstates what was asked.
+        """
+
+        measured = sum(1 for term in measure.terms if term.room is not None)
+
+        if measured == 0:
+            return ScoreBasis(
+                basis=(
+                    "The investor's policy states no limit this security could "
+                    "be measured against, so fit was not scored."
+                ),
+                evidence=measure.stated_terms,
+            )
+
+        return ScoreBasis(
+            basis=(
+                f"The average of the room the investor's own policy leaves, "
+                f"across the {measured} of {len(measure.terms)} terms it could "
+                f"be measured on. A higher number is more room, not a better "
+                f"business."
+            ),
+            evidence=measure.stated_terms,
+        )
 
     @staticmethod
     def _actionable_now(
