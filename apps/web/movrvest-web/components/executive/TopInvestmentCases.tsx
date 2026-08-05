@@ -65,9 +65,19 @@ function InvestmentCaseCard({
           </dd>
         </div>
         <div>
-          <dt className="text-xs leading-4 text-slate-500">Risk</dt>
-          <dd className="mt-1 text-lg font-semibold text-slate-950">
-            {investmentCase.riskLevel}
+          {/* This security's own, not the account's — and higher is safer,
+              the way every score on this platform now runs. */}
+          <dt className="text-xs leading-4 text-slate-500">Safety</dt>
+          <dd
+            className={`mt-1 text-lg font-semibold ${
+              investmentCase.safetyScore === null
+                ? "text-slate-400"
+                : "text-slate-950"
+            }`}
+          >
+            {investmentCase.safetyScore === null
+              ? "Not measured"
+              : `${investmentCase.safetyScore} / 100`}
           </dd>
         </div>
       </dl>

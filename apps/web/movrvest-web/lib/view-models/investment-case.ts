@@ -22,7 +22,9 @@ export interface RankedInvestmentCaseViewModel {
   conviction: number;
   convictionLevel: ConvictionLevel;
   committeeAgreement: number;
-  riskLevel: string;
+  /** This security's own safety, higher being safer. Null where its
+   *  price history was too short to measure — never the same as safe. */
+  safetyScore: number | null;
   summary: string;
   whyNow: readonly string[];
   risks: readonly string[];

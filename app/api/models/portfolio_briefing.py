@@ -24,7 +24,16 @@ class RankedInvestmentCaseResponse(BaseModel):
     conviction_label: str
 
     committee_agreement: int
-    risk_level: str
+
+    #: How calm this security's own price history is, higher being safer.
+    #:
+    #: This was the *account's* risk level, printed under a security's name
+    #: and labelled "Risk" — so ten cards read "Low" together while the
+    #: crypto among them was running 58% volatility and a 75% fall. Null
+    #: where the security's own history was too short to measure, which is
+    #: never the same as safe.
+    safety_score: int | None
+
     summary: str
     why_now: list[str]
     risks: list[str]

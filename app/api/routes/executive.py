@@ -106,6 +106,7 @@ async def portfolio_briefing(
         decision = workspace.decision
         thesis = workspace.thesis
         reasoning = workspace.reasoning
+        evidence = workspace.evidence
 
         if decision is None or thesis is None or reasoning is None:
             continue
@@ -118,11 +119,11 @@ async def portfolio_briefing(
                 conviction=decision.conviction,
                 conviction_label=conviction_label(decision.conviction),
                 committee_agreement=_committee_agreement(workspace),
-                risk_level=(
-                    reasoning.risk.risk_level.value
-                    if reasoning.risk.risk_level is not None
-                    else "Not measured"
-                ),
+                # This security's own, not the account's. The account's
+                # risk level is identical under every symbol, so ten cards
+                # read "Low" together — including the ones running 58%
+                # volatility.
+                safety_score=(evidence.safety_score if evidence is not None else None),
                 summary=thesis.summary,
                 why_now=list(thesis.catalysts),
                 risks=list(thesis.risks),

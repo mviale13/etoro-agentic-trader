@@ -75,7 +75,7 @@ interface RankedCasePayload {
   conviction: number;
   conviction_label: string;
   committee_agreement: number;
-  risk_level: string;
+  safety_score: number | null;
   summary: string;
   why_now: readonly string[];
   risks: readonly string[];
@@ -252,10 +252,7 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.committee_agreement,
         `investment_cases[${index}].committee_agreement`,
       ),
-      risk_level: requireString(
-        item.risk_level,
-        `investment_cases[${index}].risk_level`,
-      ),
+      safety_score: optionalNumber(item.safety_score),
       summary: requireString(item.summary, `investment_cases[${index}].summary`),
       why_now: Array.isArray(item.why_now)
         ? item.why_now.filter((value): value is string => typeof value === "string")
@@ -325,7 +322,7 @@ function mapInvestmentCases(
       `investment_cases[${index}].conviction_label`,
     ),
     committeeAgreement: item.committee_agreement,
-    riskLevel: titleCase(item.risk_level.replace(/_/g, " ")),
+    safetyScore: item.safety_score,
     summary: item.summary,
     whyNow: item.why_now,
     risks: item.risks,
