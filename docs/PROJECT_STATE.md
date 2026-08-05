@@ -40,7 +40,7 @@ for the package-by-package mapping, verified against the import graph.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 569 passing |
+| Pytest | 🟢 848 passing |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -850,6 +850,77 @@ Named rather than hidden. None of these are estimated away in the product.
 ---
 
 # Next Priorities
+
+## Company Knowledge
+
+The active line of work. What a business *is*, read from the document the
+company is legally answerable for.
+
+**Delivered**
+
+- The Company Knowledge layer — structural facts about a business, kept
+  apart from evidence because they turn over across years, not minutes
+- The `PrimarySourceProvider` abstraction — acquisition behind a seam, so a
+  regulator, an ESEF filing and a company's own report reach extraction,
+  storage and reuse identically
+- Cache-first acquisition — resolve the current document, serve stored
+  knowledge if its key is known, otherwise acquire, validate and store;
+  knowledge refreshes only when the authoritative document changes
+- Grounded extraction — every segment carries a verbatim span checked
+  against the document, and an extraction quoting words that are not there
+  is discarded in full
+- Schema versioning — the source is immutable, the reading of it is not, so
+  an entry written under an older extraction is treated as absent and read
+  again rather than upgraded in place
+- Reporting-period support — the business period the filing covers, kept
+  apart from the date it was published
+
+**Next**
+
+1. **ESEF provider.** European filings behind the same seam. The canonical
+   `PrimarySource` was built for this; coverage should be an adapter, not a
+   rewrite
+2. **Official Investor Relations provider.** The company's own published
+   report, for businesses no regulator index resolves
+3. **Manual document ingestion.** A document handed to the platform
+   directly, carrying the same identity and the same grounding contract as
+   one it fetched itself
+4. **Investment Archetype rules.** Deterministic rules over the facts now
+   being read. No archetype is decided anywhere in the knowledge work — the
+   layer stores facts, and the rules that read them come next
+5. **Company Knowledge / Coverage UI.** Which companies the platform has
+   read, from which document, as of which period — and, stated apart, which
+   it could not read and why
+
+## Open decision — is `data/knowledge/` a cache or a canonical artifact?
+
+Deliberately unresolved, and deliberately not gitignored in the meantime.
+
+Everything else the platform writes to `data/` has a settled answer.
+`data/cache/` is ignored because it is re-fetchable and never source of
+truth. `data/evidence/` and `data/events/` are ignored because they are one
+machine's own record and a fresh clone should not replay someone else's.
+Knowledge is neither: it is derived, but it is not reproducible on demand.
+A cache entry can be rebuilt byte-identically from its provider; a knowledge
+entry cannot, because extraction chooses which verbatim span to quote and is
+retried under the grounding contract until one survives. Two honest readings
+of the same immutable filing can differ in their quotes.
+
+That is the technical reason the question is open, and the reasons to keep
+the corpus follow from it: deterministic regression testing, replaying new
+analyst logic against identical knowledge, auditing what a schema change
+did to a reading, avoiding model calls, and accumulating the platform's own
+intelligence rather than re-deriving it.
+
+Against that sits the operational cost of tracking generated artifacts as
+the corpus grows — and this repository lives in iCloud Drive, which has put
+tracked generated directories in the path of conflict copies twice.
+
+**The decision is deferred until enough companies have been extracted to
+evaluate repository size, workflow and long-term maintenance against real
+numbers rather than against a projection.** Until then `data/knowledge/` is
+tracked, which is the reversible option: untracking later loses nothing,
+while never having tracked it loses the corpus.
 
 ## Trustworthy evidence
 
