@@ -93,6 +93,17 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The holdings became a ranking rather than ten reports** (August 2026).
+  Ten cards repeated the same five sections — risk, why now, risks,
+  previously, review case — so finding the one that mattered meant reading
+  ten of everything. The Executive Committee is now one compact list: rank,
+  symbol, which way the case is moving, what to consider doing, the
+  decision state and the conviction. A row opens onto the full case, which
+  is unchanged. Nothing was removed; it stopped being shown all at once.
+  The expansion also stopped printing the CIO's rationale twice — the
+  action's reason is shown only where it says something the summary does
+  not, which for a case short of evidence is the missing figure itself.
+
 - **Every case says what to consider, and which way it is moving**
   (August 2026). Each card's action read "Monitor" — including the ones
   the Artificial CIO had moved to RECOMMEND — because it was derived from
