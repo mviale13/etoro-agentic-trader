@@ -93,6 +93,24 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A conviction that moves says how far, and what moved under it**
+  (August 2026). The dashboard was static: a case's conviction was a
+  number with no yesterday. Each row now carries the move — **↑1**, **↓2**
+  — as arithmetic on two recorded convictions, and opening it names the
+  scores that differed: *"Business quality improved, 62 → 80"*,
+  *"Safety fell, 55 → 35"*. Every reason is a score that measurably
+  changed between the two decisions; a score missing on either side is
+  passed over rather than guessed at.
+
+  This needed the journal to record what a decision was decided on, not
+  only what was decided — so it now stores the five scores beside each
+  decision. Decisions recorded before that cannot be explained, and the
+  platform says exactly that rather than showing an empty list as
+  "nothing changed": *"The earlier decision was recorded before this
+  platform kept its scores, so what moved underneath cannot be said."*
+  Live, every case reads that today; the reasons fill in from the next
+  cycle in which a conviction moves.
+
 - **The holdings became a ranking rather than ten reports** (August 2026).
   Ten cards repeated the same five sections — risk, why now, risks,
   previously, review case — so finding the one that mattered meant reading

@@ -1,4 +1,5 @@
 import type {
+  ConvictionChangeViewModel,
   DecisionTrendViewModel,
   ExecutiveActionViewModel,
 } from "@/lib/view-models/investment-case";
@@ -112,6 +113,7 @@ export interface DossierViewModel {
   /** Null when the CIO has no recorded history for this symbol. */
   trend: DecisionTrendViewModel | null;
   action: ExecutiveActionViewModel | null;
+  convictionChange: ConvictionChangeViewModel | null;
 
   summary: string;
   expectedHoldingPeriod: string;
@@ -357,6 +359,24 @@ function parseDossier(payload: unknown): DossierViewModel {
       ? {
           direction: requireString(payload.trend.direction, "trend.direction"),
           stated: requireString(payload.trend.stated, "trend.stated"),
+        }
+      : null,
+    convictionChange: isRecord(payload.conviction_change)
+      ? {
+          previous: requireNumber(
+            payload.conviction_change.previous,
+            "conviction_change.previous",
+          ),
+          delta: requireNumber(
+            payload.conviction_change.delta,
+            "conviction_change.delta",
+          ),
+          stated: requireString(
+            payload.conviction_change.stated,
+            "conviction_change.stated",
+          ),
+          because: stringList(payload.conviction_change.because),
+          unexplained: payload.conviction_change.unexplained === true,
         }
       : null,
     action: isRecord(payload.action)

@@ -10,7 +10,11 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.api.models.portfolio_briefing import ActionResponse, TrendResponse
+from app.api.models.portfolio_briefing import (
+    ActionResponse,
+    ConvictionChangeResponse,
+    TrendResponse,
+)
 
 
 class ProvenanceResponse(BaseModel):
@@ -166,6 +170,9 @@ class DossierResponse(BaseModel):
 
     #: What to consider doing about this security.
     action: ActionResponse | None
+
+    #: How far conviction moved since the last decision, and why.
+    conviction_change: ConvictionChangeResponse | None
 
     decided_at: datetime
 

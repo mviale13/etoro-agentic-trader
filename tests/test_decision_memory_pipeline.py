@@ -141,3 +141,72 @@ def test_a_changed_decision_says_what_it_changed_from(tmp_path: Path) -> None:
     )
 
     assert trend.direction is expected
+
+
+def test_the_scores_a_decision_was_made_on_are_recorded_with_it(
+    tmp_path: Path,
+) -> None:
+    """
+    Without them a later cycle can say the conviction moved, never why.
+
+    That is exactly what every decision recorded before this could say,
+    and the reason the journal now writes the scores down.
+    """
+
+    repository = JsonEventRepository(tmp_path)
+    pipeline = ExecutivePipeline(journal=DecisionJournal(repository))
+
+    workspace = pipeline.execute(symbol="MSFT", brain=make_brain())
+
+    assert workspace.evidence is not None
+
+    recorded = DecisionJournal(repository).history("MSFT").latest
+
+    assert recorded is not None
+    assert recorded.scores.is_empty is False
+    assert recorded.scores.evidence == workspace.evidence.evidence_score
+    assert recorded.scores.safety == workspace.evidence.safety_score
+
+
+def test_a_conviction_that_moved_says_which_scores_moved_under_it(
+    tmp_path: Path,
+) -> None:
+    """The whole point: the dashboard stops being static."""
+
+    from app.cio.executive_decision import DecisionEvidence
+
+    repository = JsonEventRepository(tmp_path)
+
+    # An earlier decision, recorded with the scores it stood on — which is
+    # what makes the next one able to say what moved.
+    DecisionJournal(repository).record(
+        make_decision(
+            symbol="MSFT",
+            state=DecisionState.PREPARE,
+            decided_at=datetime(2026, 7, 28, 9, 0, tzinfo=UTC),
+        ),
+        DecisionEvidence(
+            symbol="MSFT",
+            quality_score=40,
+            evidence_score=50,
+            valuation_score=25,
+            risk_score=65,
+            portfolio_fit_score=60,
+        ),
+    )
+
+    workspace = ExecutivePipeline().execute(
+        symbol="MSFT",
+        brain=make_brain(repository),
+    )
+
+    assert workspace.thesis is not None
+
+    change = workspace.thesis.conviction_change
+
+    assert change is not None
+    assert change.unexplained is False
+
+    # Every reason names a score and quotes both ends of its move.
+    assert change.because
+    assert all("→" in line for line in change.because)

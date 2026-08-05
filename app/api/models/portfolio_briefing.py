@@ -5,6 +5,27 @@ from pydantic import BaseModel
 from app.api.models.executive_brief import ExecutivePriorityResponse
 
 
+class ConvictionChangeResponse(BaseModel):
+    """How far conviction moved since the last decision, and why.
+
+    `because` is empty when no score measurably moved, and also when the
+    earlier decision predates the scores being recorded — `unexplained`
+    tells those two apart, so an honest silence is never rendered as
+    "nothing changed".
+    """
+
+    previous: int
+
+    #: Signed, and never zero: an unchanged conviction is no change.
+    delta: int
+
+    #: The movement as the investor reads it, e.g. "+8 conviction".
+    stated: str
+
+    because: list[str]
+    unexplained: bool
+
+
 class TrendResponse(BaseModel):
     """Which way this investment case has been moving."""
 
@@ -81,6 +102,10 @@ class RankedInvestmentCaseResponse(BaseModel):
 
     #: What to consider doing about this holding.
     action: ActionResponse | None = None
+
+    #: How far conviction moved since the last decision, and what moved
+    #: underneath it. Null when it did not move.
+    conviction_change: ConvictionChangeResponse | None = None
 
 
 class BriefingLineResponse(BaseModel):

@@ -113,8 +113,25 @@ function CaseRow({
             {investmentCase.recommendation}
           </span>
 
-          <span className="text-sm font-semibold tabular-nums text-slate-950">
-            {investmentCase.conviction}
+          <span className="flex items-baseline gap-1.5">
+            {/* The move, where there was one. Arithmetic on two recorded
+                convictions — nothing here is estimated. */}
+            {investmentCase.convictionChange ? (
+              <span
+                className={`text-xs font-semibold tabular-nums ${
+                  investmentCase.convictionChange.delta > 0
+                    ? "text-emerald-600"
+                    : "text-amber-600"
+                }`}
+              >
+                {investmentCase.convictionChange.delta > 0 ? "↑" : "↓"}
+                {Math.abs(investmentCase.convictionChange.delta)}
+              </span>
+            ) : null}
+
+            <span className="text-sm font-semibold tabular-nums text-slate-950">
+              {investmentCase.conviction}
+            </span>
           </span>
 
           <ChevronDown
@@ -167,6 +184,47 @@ function CaseRow({
 
           <Figure label="Horizon" value={investmentCase.expectedHoldingPeriod} />
         </dl>
+
+        {/* Why the conviction moved: each line is a score that measurably
+            differed between the two decisions. A decision recorded before
+            the platform kept its scores says so, rather than showing an
+            empty list as though nothing had moved. */}
+        {investmentCase.convictionChange ? (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              {investmentCase.convictionChange.stated}, from{" "}
+              {investmentCase.convictionChange.previous}
+            </p>
+
+            {investmentCase.convictionChange.unexplained ? (
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                The earlier decision was recorded before this platform kept
+                its scores, so what moved underneath cannot be said.
+              </p>
+            ) : investmentCase.convictionChange.because.length > 0 ? (
+              <ul className="mt-2 space-y-1.5">
+                {investmentCase.convictionChange.because.map((line) => (
+                  <li
+                    key={line}
+                    className="flex gap-2.5 text-sm leading-6 text-slate-700"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-2.5 size-1 shrink-0 rounded-full bg-slate-400"
+                    />
+
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                No individual score moved; the conviction reflects the case
+                as a whole.
+              </p>
+            )}
+          </div>
+        ) : null}
 
         <ReasonList title="Why now" reasons={investmentCase.whyNow} />
         <ReasonList title="Risks" reasons={investmentCase.risks} />

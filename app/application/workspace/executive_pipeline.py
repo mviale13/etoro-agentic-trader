@@ -153,6 +153,9 @@ class ExecutivePipeline:
             committee_opinions=workspace.committee_opinions,
             decision=workspace.decision,
             history=brain.decision_history_for(symbol),
+            # The scores today's decision was made on, so the thesis can
+            # say what moved since the last one — not merely that it did.
+            evidence=workspace.evidence,
         )
 
         # What to consider doing about it. Not the decision restated: a
@@ -169,7 +172,9 @@ class ExecutivePipeline:
         )
 
         if self.journal is not None:
-            self.journal.record(workspace.decision)
+            # Recorded with its scores: a later cycle can only explain a
+            # conviction move if this one wrote down what it moved from.
+            self.journal.record(workspace.decision, workspace.evidence)
 
         workspace.brief = self.brief_builder.build(
             workspace,

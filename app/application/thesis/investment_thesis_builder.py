@@ -11,8 +11,8 @@ from app.application.brain.reasoning.reasoning_snapshot import (
 from app.application.committees.models.committee_opinion import (
     CommitteeOpinion,
 )
-from app.domain.decision_history import DecisionHistory
-from app.domain.executive_decision import ExecutiveDecision
+from app.domain.decision_history import DecisionHistory, RecordedScores
+from app.domain.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.domain.thesis.investment_thesis import InvestmentThesis
 
 
@@ -29,6 +29,7 @@ class InvestmentThesisBuilder:
         committee_opinions: tuple[CommitteeOpinion, ...],
         decision: ExecutiveDecision,
         history: DecisionHistory | None = None,
+        evidence: DecisionEvidence | None = None,
     ) -> InvestmentThesis:
         portfolio = reasoning.portfolio
         market = reasoning.market
@@ -90,6 +91,29 @@ class InvestmentThesisBuilder:
             trend=(
                 history.trend_against(decision.state) if history is not None else None
             ),
+            conviction_change=(
+                history.conviction_change_against(
+                    decision.conviction,
+                    self._scores(evidence),
+                )
+                if history is not None
+                else None
+            ),
+        )
+
+    @staticmethod
+    def _scores(evidence: DecisionEvidence | None) -> RecordedScores:
+        """Today's scores in the shape the record keeps them."""
+
+        if evidence is None:
+            return RecordedScores()
+
+        return RecordedScores(
+            quality=evidence.quality_score,
+            evidence=evidence.evidence_score,
+            valuation=evidence.valuation_score,
+            safety=evidence.safety_score,
+            portfolio_fit=evidence.portfolio_fit_score,
         )
 
     @staticmethod

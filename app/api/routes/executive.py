@@ -23,6 +23,7 @@ from app.api.models.portfolio_briefing import (
     ActionResponse,
     BriefingLineResponse,
     ChangeResponse,
+    ConvictionChangeResponse,
     PortfolioBriefingResponse,
     RankedInvestmentCaseResponse,
     TodayBriefingResponse,
@@ -40,7 +41,7 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
-from app.domain.decision_history import DecisionTrend
+from app.domain.decision_history import ConvictionChange, DecisionTrend
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.provenance import Provenance
@@ -139,6 +140,7 @@ async def portfolio_briefing(
                 expected_holding_period=thesis.expected_holding_period,
                 trend=_trend(thesis.trend),
                 action=_action(workspace.action),
+                conviction_change=_conviction_change(thesis.conviction_change),
             )
         )
 
@@ -281,6 +283,23 @@ def _trend(trend: DecisionTrend | None) -> TrendResponse | None:
     )
 
 
+def _conviction_change(
+    change: ConvictionChange | None,
+) -> ConvictionChangeResponse | None:
+    """Null stays null: a conviction that did not move is not a change."""
+
+    if change is None:
+        return None
+
+    return ConvictionChangeResponse(
+        previous=change.previous,
+        delta=change.delta,
+        stated=change.stated,
+        because=list(change.because),
+        unexplained=change.unexplained,
+    )
+
+
 def _action(action: ExecutiveAction | None) -> ActionResponse | None:
     """The consideration the pipeline built, carried without rewording."""
 
@@ -394,6 +413,7 @@ async def dossier(
         rationale=decision.rationale,
         trend=_trend(thesis.trend),
         action=_action(workspace.action),
+        conviction_change=_conviction_change(thesis.conviction_change),
         decided_at=decision.decided_at,
         summary=thesis.summary,
         expected_holding_period=thesis.expected_holding_period,

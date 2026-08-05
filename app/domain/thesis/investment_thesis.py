@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-from app.domain.decision_history import DecisionTrend
+from app.domain.decision_history import ConvictionChange, DecisionTrend
 from app.domain.provenance import Provenance
 
 
@@ -62,3 +62,8 @@ class InvestmentThesis:
     #: recorded: the CIO does not claim a history it does not have, and a
     #: first review is not a stable one.
     trend: DecisionTrend | None = None
+
+    #: How far conviction moved since the CIO last judged this security,
+    #: and which scores moved underneath it. None when it did not move, or
+    #: when nothing was recorded to move from.
+    conviction_change: ConvictionChange | None = None

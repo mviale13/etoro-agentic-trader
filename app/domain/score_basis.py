@@ -43,6 +43,21 @@ _KINDS = {
 }
 
 
+#: What each score is called, in the order the decision weighs them.
+#:
+#: Stated here because this is where the scores are described. Anything
+#: that words a movement in one of them — "Valuation attractiveness
+#: improved, 55 → 80" — reads the name from here rather than choosing its
+#: own, so two surfaces cannot call the same score different things.
+SCORE_LABELS: dict[str, str] = {
+    "quality": "Business quality",
+    "evidence": "Evidence strength",
+    "valuation": "Valuation attractiveness",
+    "safety": "Safety",
+    "portfolio_fit": "Portfolio fit",
+}
+
+
 @dataclass(frozen=True, slots=True)
 class ScoreBasis:
     """

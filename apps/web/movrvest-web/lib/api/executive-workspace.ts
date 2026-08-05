@@ -87,6 +87,13 @@ interface RankedCasePayload {
     because: string;
     checkpoint: string | null;
   } | null;
+  conviction_change: {
+    previous: number;
+    delta: number;
+    stated: string;
+    because: readonly string[];
+    unexplained: boolean;
+  } | null;
 }
 
 interface ChangePayload {
@@ -305,6 +312,28 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
             ),
           }
         : null,
+      conviction_change: isRecord(item.conviction_change)
+        ? {
+            previous: requireNumber(
+              item.conviction_change.previous,
+              `investment_cases[${index}].conviction_change.previous`,
+            ),
+            delta: requireNumber(
+              item.conviction_change.delta,
+              `investment_cases[${index}].conviction_change.delta`,
+            ),
+            stated: requireString(
+              item.conviction_change.stated,
+              `investment_cases[${index}].conviction_change.stated`,
+            ),
+            because: Array.isArray(item.conviction_change.because)
+              ? item.conviction_change.because.filter(
+                  (value): value is string => typeof value === "string",
+                )
+              : [],
+            unexplained: item.conviction_change.unexplained === true,
+          }
+        : null,
       action: isRecord(item.action)
         ? {
             kind: requireString(
@@ -386,6 +415,7 @@ function mapInvestmentCases(
     expectedHoldingPeriod: item.expected_holding_period,
     trend: item.trend,
     action: item.action,
+    convictionChange: item.conviction_change,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
   }));
 }

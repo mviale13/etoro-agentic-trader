@@ -383,6 +383,53 @@ function WhatChanged({ dossier }: { dossier: DossierViewModel }) {
         </p>
       )}
 
+      {/* Why the conviction moved. Each line is a score that measurably
+          differed between the two recorded decisions; an earlier decision
+          predating the scores says so rather than showing nothing. */}
+      {dossier.convictionChange ? (
+        <div className="mt-5 max-w-3xl">
+          <p
+            className={`text-sm font-semibold ${
+              dossier.convictionChange.delta > 0
+                ? "text-emerald-700"
+                : "text-amber-700"
+            }`}
+          >
+            {dossier.convictionChange.delta > 0 ? "↑" : "↓"}{" "}
+            {dossier.convictionChange.stated}, from{" "}
+            {dossier.convictionChange.previous}
+          </p>
+
+          {dossier.convictionChange.unexplained ? (
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              The earlier decision was recorded before this platform kept its
+              scores, so what moved underneath cannot be said.
+            </p>
+          ) : dossier.convictionChange.because.length > 0 ? (
+            <ul className="mt-2 space-y-1.5">
+              {dossier.convictionChange.because.map((line) => (
+                <li
+                  key={line}
+                  className="flex gap-2.5 text-sm leading-6 text-slate-700"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-2.5 size-1 shrink-0 rounded-full bg-slate-400"
+                  />
+
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              No individual score moved; the conviction reflects the case as a
+              whole.
+            </p>
+          )}
+        </div>
+      ) : null}
+
       {/* What to consider doing about it — a consideration, never an
           instruction. The investor decides. */}
       {dossier.action ? (
