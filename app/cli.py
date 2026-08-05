@@ -21,6 +21,7 @@ from app.commands import (
     status,
     today,
     watchlist,
+    writer_compare,
 )
 
 CommandHandler = Callable[[], Coroutine[Any, Any, int]]
@@ -135,6 +136,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, ASML or BTC-USD",
     )
 
+    writer_compare_parser = subparsers.add_parser(
+        "writer-compare",
+        help="Word one dossier with every writing provider and compare",
+        description=(
+            "Run the identical investment case through every configured "
+            "writing provider and compare narrative, latency and cost"
+        ),
+    )
+    writer_compare_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example MSFT, ASML or BTC-USD",
+    )
+
     return parser
 
 
@@ -147,6 +161,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "evaluate":
         return await evaluate.run(args.symbol)
+
+    if args.command == "writer-compare":
+        return await writer_compare.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

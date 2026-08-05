@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     etoro_base_url: str = "https://public-api.etoro.com"
     database_url: str = "sqlite:///./trader.db"
 
+    # The Communication layer's writing providers, read from .env like
+    # the broker keys. A process environment variable of the same name
+    # wins, which is pydantic-settings' own precedence.
+    anthropic_api_key: str = ""
+    anthropic_auth_token: str = ""
+    openai_api_key: str = ""
+
     allowed_symbols: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["BTC", "ETH", "SOL", "SPY", "QQQ"]
     )

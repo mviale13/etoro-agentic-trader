@@ -62,6 +62,9 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `movrvest brain` — what the Brain currently knows
 - `movrvest record` — what each decision's security did next, or why it
   cannot be measured yet
+- `movrvest writer-compare SYMBOL` — the identical investment case worded
+  by every configured writing provider, with measured latency, reported
+  token usage and cost at stated prices beside each narrative
 - `GET /executive/portfolio` — every holding, ranked by conviction
 - `GET /executive/{symbol}` — one investment case
 - `GET /brain/` — portfolio facts, investor observation and DNA
@@ -83,6 +86,25 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The Executive Writer speaks through a provider seam** (August 2026).
+  The model call sits behind `NarrativeProvider`: the writer builds the
+  prompts and one shared JSON schema, a provider carries them over its
+  own wire, and every draft — whoever wrote it — passes through the one
+  validator. Anthropic is the seam's first implementation (the wire call
+  moved verbatim); OpenAI is the second, holding the identical schema
+  through strict structured outputs. The configured default is OpenAI's
+  `gpt-5-nano` at low reasoning effort — wording a finished case is
+  formatting, not deep reasoning, and default effort measurably starved
+  the draft budget to an empty draft. `MOVRVEST_WRITER_PROVIDER` and
+  `MOVRVEST_WRITER_MODEL` switch provider and model; keys are read from
+  the environment first and the same `.env` the broker keys live in
+  second. `movrvest writer-compare SYMBOL` runs the identical dossier
+  through every provider and reports measured latency, reported tokens
+  and cost at stated prices beside each narrative — language quality is
+  deliberately not scored; judging it is the reader's. First live
+  generation verified on MSFT: a fully grounded five-section narrative,
+  every citation resolving, in 13.1s for $0.0006 at stated prices.
+
 - **The Communication layer gained an Executive Writer** (August 2026).
   An LLM language specialist — never a decision maker — that words the
   finished investment case as an investment-committee narrative. It
@@ -93,10 +115,10 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   rejected, and a draft that changes the recommendation is discarded —
   the echo is validated against the `ExecutiveDecision`. Off by default
   behind `MOVRVEST_EXECUTIVE_WRITER`; every failure path (flag off, no
-  credentials, model declined, ungrounded draft) is a worded absence on
-  the dossier, never a fabricated narrative. The deterministic
-  renderers remain canonical. Reasoning stays deterministic; only the
-  language is generated.
+  credentials, model declined, ungrounded or empty draft) is a worded
+  absence on the dossier, never a fabricated narrative. The
+  deterministic renderers remain canonical. Reasoning stays
+  deterministic; only the language is generated.
 
 - **The UX/UI Alignment mission is complete** (PRs #8–#15, August 2026).
   The web product now matches the mission's model end to end: Overview,

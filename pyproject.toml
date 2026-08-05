@@ -21,8 +21,11 @@ dependencies = [
   # install that omits this cannot even construct the app.
   "Jinja2==3.1.6",
   # The Executive Writer (Communication layer). CI installs pyproject
-  # only, so this must be declared here as well as in requirements.txt.
+  # only, so these must be declared here as well as in requirements.txt.
+  # Two providers, one draft contract; each is only imported when the
+  # configuration selects it.
   "anthropic==0.120.2",
+  "openai==2.53.0",
 ]
 
 [project.scripts]
