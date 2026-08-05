@@ -87,6 +87,11 @@ class FilingReference:
 
     url: str
 
+    #: The last day of the period this filing accounts for, as the index
+    #: states it. None where the index states none — a filing date minus
+    #: a year is not a reporting period.
+    period_ends_on: date | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class Filing:
@@ -253,12 +258,15 @@ class EdgarFilings:
                 document=document,
             )
 
+            reported = str(recent.get("reportDate", [])[index] or "")
+
             return FilingReference(
                 company=str(submissions.get("name", ticker)),
                 form=form,
                 filed_on=date.fromisoformat(str(recent["filingDate"][index])),
                 accession=accession,
                 url=url,
+                period_ends_on=date.fromisoformat(reported) if reported else None,
             )
 
         raise FilingUnavailable(

@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 from app.domain.company_knowledge import CompanyKnowledge
-from app.domain.primary_source import PrimarySourceUnavailable
+from app.domain.primary_source import (
+    PrimarySourceProviderError,
+    PrimarySourceUnavailable,
+)
 from app.providers.primary_source_provider import PrimarySourceResolver
 from app.repositories.company_knowledge_store import (
     CompanyKnowledgeStore,
@@ -17,16 +21,60 @@ from app.services.company_knowledge_extractor import (
 )
 
 
-@dataclass(frozen=True, slots=True)
-class KnowledgeOutcome:
-    """What is known about a business, or why nothing is.
+class KnowledgeState(StrEnum):
+    """How the knowledge in hand was — or was not — obtained.
 
-    Exactly one of the two is meaningful. An absence always carries its
-    reason, because "this platform has not read a filing for BNP Paribas"
-    and "BNP Paribas describes no segments" are different facts and a
-    reader must not have to guess which one they are looking at.
+    Operationally and semantically different situations that a single
+    "no knowledge" would flatten into one. Each calls for something
+    different:
+
+    - `AVAILABLE_CACHED` — read from a document already extracted. The
+      normal path, and free.
+    - `AVAILABLE_ACQUIRED` — a new document was fetched and read this
+      cycle. Costs a fetch and two model calls, once per document.
+    - `UNAVAILABLE` — no provider holds a source for this security. A
+      gap in coverage: try another provider, not the same one again.
+    - `PROVIDER_ERROR` — a provider could not be reached. Retrying may
+      help, which is exactly what makes it different from a gap.
+    - `INVALID_EXTRACTION` — a document was read and failed grounding
+      validation. Nothing from it is trusted or partly stored.
     """
 
+    AVAILABLE_CACHED = "available_cached"
+    AVAILABLE_ACQUIRED = "available_acquired"
+    UNAVAILABLE = "unavailable"
+    PROVIDER_ERROR = "provider_error"
+    INVALID_EXTRACTION = "invalid_extraction"
+
+    @property
+    def is_available(self) -> bool:
+        return self in (
+            KnowledgeState.AVAILABLE_CACHED,
+            KnowledgeState.AVAILABLE_ACQUIRED,
+        )
+
+    @property
+    def may_succeed_later(self) -> bool:
+        """Whether asking again could plausibly produce a different answer."""
+
+        return self is KnowledgeState.PROVIDER_ERROR
+
+
+@dataclass(frozen=True, slots=True)
+class KnowledgeOutcome:
+    """What is known about a business, how it was obtained, and why not.
+
+    An absence always carries its reason, because "this platform has not
+    read a filing for BNP Paribas" and "BNP Paribas describes no
+    segments" are different facts and a reader must not have to guess
+    which one they are looking at.
+
+    Knowledge and a non-available state can both be present: last year's
+    filing still describes the business when today's lookup fails, and
+    the state says the reading is the older one.
+    """
+
+    state: KnowledgeState
     knowledge: CompanyKnowledge | None = None
     absent_because: str | None = None
 
@@ -72,23 +120,30 @@ class CompanyKnowledgeService:
         try:
             source, provider = self._sources.resolve(symbol)
         except PrimarySourceUnavailable as unavailable:
-            # No source any provider could resolve is a fact about this
-            # platform's reach, and it is reported as one. Whatever the
-            # store already holds from an earlier document still stands.
-            known = self._store.latest(symbol)
-
+            # An outage and a gap in coverage are different answers, and
+            # only one is worth asking about again. Whatever the store
+            # already holds from an earlier document still stands.
             return KnowledgeOutcome(
-                knowledge=known,
-                absent_because=None if known is not None else str(unavailable),
+                state=(
+                    KnowledgeState.PROVIDER_ERROR
+                    if isinstance(unavailable, PrimarySourceProviderError)
+                    else KnowledgeState.UNAVAILABLE
+                ),
+                knowledge=self._store.latest(symbol),
+                absent_because=str(unavailable),
             )
 
         stored = self._store.read(symbol, source.key)
 
         if stored is not None:
-            return KnowledgeOutcome(knowledge=stored)
+            return KnowledgeOutcome(
+                state=KnowledgeState.AVAILABLE_CACHED,
+                knowledge=stored,
+            )
 
         if self._extractor is None:
             return KnowledgeOutcome(
+                state=KnowledgeState.UNAVAILABLE,
                 knowledge=self._store.latest(symbol),
                 absent_because=(
                     f"{source.stated()} has not been read, and no reader is "
@@ -98,13 +153,31 @@ class CompanyKnowledgeService:
 
         try:
             document = provider.fetch(source)
-            extracted = await self._extractor.extract(symbol, document)
-        except (PrimarySourceUnavailable, ExtractionRejected) as failure:
+        except PrimarySourceUnavailable as failure:
             return KnowledgeOutcome(
+                state=(
+                    KnowledgeState.PROVIDER_ERROR
+                    if isinstance(failure, PrimarySourceProviderError)
+                    else KnowledgeState.UNAVAILABLE
+                ),
                 knowledge=self._store.latest(symbol),
                 absent_because=str(failure),
             )
 
+        try:
+            extracted = await self._extractor.extract(symbol, document)
+        except ExtractionRejected as rejected:
+            # Nothing from a reading that failed its grounding contract
+            # is stored, in part or at all.
+            return KnowledgeOutcome(
+                state=KnowledgeState.INVALID_EXTRACTION,
+                knowledge=self._store.latest(symbol),
+                absent_because=str(rejected),
+            )
+
         self._store.write(extracted)
 
-        return KnowledgeOutcome(knowledge=extracted)
+        return KnowledgeOutcome(
+            state=KnowledgeState.AVAILABLE_ACQUIRED,
+            knowledge=extracted,
+        )

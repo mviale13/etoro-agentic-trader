@@ -93,6 +93,42 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Knowledge acquisition wired into the pipeline, cache-first** (August
+  2026). `CompanyResearchService` now asks `CompanyKnowledgeService` for
+  a company's own account of itself, and nothing in the research pipeline
+  reaches a regulator or a model directly. The policy is cache-first and
+  on demand: resolve the current document, return stored knowledge if its
+  key is known, otherwise acquire, validate and store. Knowledge refreshes
+  only when the authoritative document changes. Live: Disney cold 48.0s,
+  warm 0.6s.
+
+  `reporting_period` is populated from the filing index and kept apart
+  from the publication date — Disney's latest 10-K was published
+  2025-11-13 for a period ended 2025-09-27, and comparing the wrong one
+  would compare documents rather than business periods.
+
+  Acquisition state is explicit: `available_cached`, `available_acquired`,
+  `unavailable`, `provider_error`, `invalid_extraction`. A gap in coverage
+  and an outage are different answers and only one is worth retrying,
+  which `may_succeed_later` says outright.
+
+  Two bugs the live run found. `BTC` resolves against the SEC to a trust
+  issuing shares that track Bitcoin — a real business filing a real
+  report — so a token was about to be described by a fund's segments;
+  knowledge is now asked for only where the playbook expects company
+  accounts. And extraction was not repeatable: one attempt in three
+  survived grounding, the rest paraphrasing across a table boundary. The
+  contract was not relaxed. Quotes are now asked for short — five to
+  fifteen words from one run of prose — and a rejected reading is asked
+  again up to three times under the identical rule. Three of three now
+  pass with identical figures.
+
+  The store gained a schema version. A source is immutable; the reading
+  of it is not, so an entry written before the extraction captured
+  reporting periods is treated as absent and read again rather than
+  upgraded in place — filling in what a reading never captured would be
+  inventing it.
+
 - **A Company Knowledge layer, behind a primary-source seam** (August
   2026). Structural facts about a business — its segments, what each
   sells, how large each is — read from the document the company is

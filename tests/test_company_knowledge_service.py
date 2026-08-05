@@ -11,13 +11,17 @@ from app.domain.company_knowledge import (
 )
 from app.domain.primary_source import (
     PrimarySource,
+    PrimarySourceProviderError,
     PrimarySourceUnavailable,
     SourceDocument,
     SourceType,
 )
 from app.domain.provenance import Provenance
 from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
-from app.services.company_knowledge_service import CompanyKnowledgeService
+from app.services.company_knowledge_service import (
+    CompanyKnowledgeService,
+    KnowledgeState,
+)
 
 ACCESSION = "0001744489-25-000155"
 
@@ -60,8 +64,13 @@ class ProviderStub:
 
     name = "Stub source"
 
-    def __init__(self, unavailable: str | None = None) -> None:
+    def __init__(
+        self,
+        unavailable: str | None = None,
+        outage: bool = False,
+    ) -> None:
         self.unavailable = unavailable
+        self.outage = outage
         self.lookups = 0
         self.documents_read = 0
         self.current = source()
@@ -70,6 +79,9 @@ class ProviderStub:
         self.lookups += 1
 
         if self.unavailable is not None:
+            if self.outage:
+                raise PrimarySourceProviderError(self.unavailable)
+
             raise PrimarySourceUnavailable(self.unavailable)
 
         return self.current
@@ -135,6 +147,10 @@ def test_a_filing_is_read_and_extracted_once_ever(tmp_path: Path) -> None:
     assert filings.documents_read == 1
     assert extractor.extractions == 1
 
+    # And the states say which cycle paid for it.
+    assert first.state is KnowledgeState.AVAILABLE_ACQUIRED
+    assert second.state is KnowledgeState.AVAILABLE_CACHED
+
 
 def test_a_newer_filing_is_read_because_it_is_a_different_document(
     tmp_path: Path,
@@ -170,6 +186,11 @@ def test_a_company_with_no_readable_filing_says_so(tmp_path: Path) -> None:
     )
 
     assert outcome.knowledge is None
+    assert outcome.state is KnowledgeState.UNAVAILABLE
+
+    # A gap in coverage, not an outage: asking the same provider again
+    # will produce the same answer, and a different one might not.
+    assert outcome.state.may_succeed_later is False
     assert outcome.absent_because == "BNP.PA is not listed with the SEC."
 
 
@@ -183,13 +204,21 @@ def test_what_was_already_known_survives_a_provider_that_stops_answering(
 
     JsonCompanyKnowledgeStore(tmp_path).write(knowledge())
 
-    filings = ProviderStub(unavailable="The SEC index could not be read.")
+    filings = ProviderStub(
+        unavailable="The SEC index could not be read.",
+        outage=True,
+    )
 
     outcome = asyncio.run(service(tmp_path, filings, ExtractorStub()).knowledge("DIS"))
 
     assert outcome.knowledge is not None
     assert outcome.knowledge.source.key == ACCESSION
-    assert outcome.absent_because is None
+
+    # The reading stands and the state says it is the older one, so a
+    # surface can report coverage without pretending the lookup worked.
+    assert outcome.state is KnowledgeState.PROVIDER_ERROR
+    assert outcome.state.may_succeed_later is True
+    assert outcome.absent_because == "The SEC index could not be read."
 
 
 def test_the_store_returns_the_latest_filing_by_when_it_was_filed(

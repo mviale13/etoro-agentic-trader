@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from app.domain.company_knowledge import CompanyKnowledge
 from app.domain.playbook import InvestmentPlaybook
 from app.domain.research_plan import AnalystKey
 
@@ -29,6 +30,17 @@ class CompanyResearch:
     playbook: InvestmentPlaybook
 
     opinions: Mapping[AnalystKey, Any] = field(default_factory=dict)
+
+    #: What this company structurally is, read from its own published
+    #: account of itself. None where no authoritative source could be
+    #: reached — which `knowledge_state` distinguishes from a source that
+    #: was read and failed validation.
+    knowledge: CompanyKnowledge | None = None
+
+    #: How that knowledge was obtained, or why it was not. Carried so a
+    #: surface can report analysis coverage honestly rather than showing
+    #: a company with no segments beside one nobody looked for.
+    knowledge_state: str | None = None
 
     def opinion(self, key: AnalystKey) -> Any | None:
         """One analyst's verdict, or nothing where it was not asked."""

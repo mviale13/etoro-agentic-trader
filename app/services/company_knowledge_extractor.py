@@ -25,6 +25,16 @@ from app.providers.narrative_provider import (
 #: of thousands of characters and the answer is a short structured list.
 MAX_TOKENS = 8000
 
+#: How many times a reading may be asked for before the failure stands.
+#:
+#: Quoting a filing verbatim is not reliably repeatable: measured over
+#: Disney's 10-K, one attempt in three produced a span that survived the
+#: grounding check, the others paraphrasing across a table boundary. The
+#: contract is not what should give way — a retry asks the same question
+#: again and holds the answer to the same rule, where relaxing the check
+#: would let the paraphrase through.
+MAX_ATTEMPTS = 3
+
 #: Shares are read to the nearest percent, so a set that sums a little
 #: past 1.0 is rounding. One that sums well past it is a segment counted
 #: twice, and the extraction is refused rather than normalised — a
@@ -43,9 +53,11 @@ Rules:
 - Report `revenue_share` only where the discussion states revenue for that
   segment and you can read it. Where it does not, omit the segment
   entirely. Never apportion, estimate, or infer a share from a total.
-- Every share must include `quoted`: a verbatim span copied from the
-  discussion text showing that segment's revenue. Copy it exactly. An
-  answer whose quotes are not found in the text is discarded in full.
+- Every share must include `quoted`: a SHORT verbatim span copied from
+  the discussion text — between five and fifteen words, from a single
+  run of prose — showing that segment's revenue. Copy it exactly. Do not
+  join text across a table cell or a line break. An answer whose quotes
+  are not found in the text is discarded in full.
 - Shares are fractions of total revenue, between 0 and 1.
 """
 
@@ -56,10 +68,13 @@ analyse the company, rate it, or classify it.
 Rules:
 - Use only the filing text supplied. Never use anything you know about
   the company from elsewhere.
-- Every segment you report must include `quoted`: a verbatim span copied
-  from the filing text that names or describes that segment. Copy it
-  exactly, character for character. An answer whose quotes are not found
-  in the filing is discarded in full.
+- Every segment you report must include `quoted`: a SHORT verbatim span
+  copied from the filing text — between five and fifteen words, taken
+  from a single run of prose. Copy it exactly, character for character.
+  Do not join text across a table cell, a bullet or a line break, and do
+  not tidy the wording. A short exact span is always better than a long
+  approximate one: an answer whose quotes are not found in the filing is
+  discarded in full, including the segments that were right.
 - Report `revenue_share` only where the filing gives a figure you can
   read for that segment. Where it does not, use null. Do not estimate,
   apportion, or infer a share from anything.
@@ -224,6 +239,32 @@ class CompanyKnowledgeExtractor:
         self._provider = provider
 
     async def extract(self, symbol: str, document: SourceDocument) -> CompanyKnowledge:
+        """
+        Read this document, asking again where the reading is not grounded.
+
+        A rejection is not necessarily a fact about the document: a model
+        asked to copy from a filing sometimes paraphrases, and the same
+        question put again is usually answered exactly. So the request is
+        repeated, and every attempt is held to the identical contract.
+        The last failure's wording is what survives, because that is what
+        a reader is owed when nothing could be read.
+        """
+
+        rejection: ExtractionRejected | None = None
+
+        for _ in range(MAX_ATTEMPTS):
+            try:
+                return await self._attempt(symbol, document)
+            except ExtractionRejected as rejected:
+                rejection = rejected
+
+        raise rejection or ExtractionRejected("The document could not be read.")
+
+    async def _attempt(
+        self,
+        symbol: str,
+        document: SourceDocument,
+    ) -> CompanyKnowledge:
         request = DraftRequest(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt(document),

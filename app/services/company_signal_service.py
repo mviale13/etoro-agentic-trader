@@ -45,7 +45,7 @@ class CompanySignalService:
             momentum=MomentumSignalService().build(facts),
             quality=self._quality(item, facts),
             risk=RiskSignalService().build(facts),
-            research=self._research(asset_class, facts),
+            research=await self._research(asset_class, facts),
             # Carried, not judged: the investment case reads a security
             # through its signals, and this is the only object that
             # reaches it.
@@ -57,7 +57,7 @@ class CompanySignalService:
         )
 
     @staticmethod
-    def _research(
+    async def _research(
         asset_class: AssetClass,
         facts: CompanyFacts,
     ) -> CompanyResearch | None:
@@ -76,7 +76,7 @@ class CompanySignalService:
         research package that says so rather than none at all.
         """
 
-        return CompanyResearchService().analyze(facts)
+        return await CompanyResearchService().analyze(facts)
 
     @staticmethod
     def _quality(

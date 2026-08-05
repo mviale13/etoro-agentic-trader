@@ -1,13 +1,14 @@
 {
-  "description": "The Walt Disney Company, together with the subsidiaries through which businesses are conducted (the Company), is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+  "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
   "reading": {
-    "observed_at": "2026-08-05T22:11:35.785657+00:00",
+    "observed_at": "2026-08-05T22:32:10.529080+00:00",
     "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
   },
+  "schema_version": 2,
   "segments": [
     {
       "name": "Entertainment",
-      "quoted": "The Entertainment segment generally encompasses the Company\u2019s non-sports focused global film and episodic content production and distribution activities.",
+      "quoted": "encompasses the Company\u2019s non-sports focused global film and episodic content production and distribution activities",
       "revenue_models": [
         "subscription",
         "advertising",
@@ -15,11 +16,11 @@
         "transaction",
         "services"
       ],
-      "revenue_share": 0.449733
+      "revenue_share": 0.449732
     },
     {
       "name": "Sports",
-      "quoted": "The Sports segment generally encompasses the Company\u2019s sports-focused global television and DTC video streaming content production and distribution activities.",
+      "quoted": "sports-focused global television and DTC video streaming content production and distribution",
       "revenue_models": [
         "subscription",
         "advertising",
@@ -27,18 +28,18 @@
         "transaction",
         "services"
       ],
-      "revenue_share": 0.187254
+      "revenue_share": 0.187154
     },
     {
       "name": "Experiences",
-      "quoted": "EXPERIENCES The lines of business within Experiences along with their significant business activities include the following:",
+      "quoted": "The lines of business within Experiences along with their significant business activities include the following:",
       "revenue_models": [
         "transaction",
-        "services",
         "retail",
-        "licensing"
+        "licensing",
+        "services"
       ],
-      "revenue_share": 0.383085
+      "revenue_share": 0.382907
     }
   ],
   "source": {
@@ -50,7 +51,10 @@
     "location": "https://www.sec.gov/Archives/edgar/data/1744489/000174448925000155/dis-20250927.htm",
     "provider": "SEC EDGAR",
     "published_on": "2025-11-13",
-    "reporting_period": null,
+    "reporting_period": {
+      "ends_on": "2025-09-27",
+      "starts_on": null
+    },
     "source_type": "annual_report",
     "symbol": "DIS"
   },

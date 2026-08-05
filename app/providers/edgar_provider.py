@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from app.domain.primary_source import (
     PrimarySource,
+    PrimarySourceProviderError,
     PrimarySourceUnavailable,
+    ReportingPeriod,
     SourceDocument,
     SourceType,
 )
@@ -47,10 +49,13 @@ class EdgarProvider:
             # never revised in place, so nothing needs hashing here.
             key=reference.accession,
             published_on=reference.filed_on,
-            # EDGAR states the period a filing covers in its index, which
-            # this platform does not read yet. Absent rather than derived
-            # from the filing date, which is not the same thing.
-            reporting_period=None,
+            # The index states the period end; it states no start, and a
+            # year subtracted from the end would be an inference.
+            reporting_period=(
+                ReportingPeriod(ends_on=reference.period_ends_on)
+                if reference.period_ends_on is not None
+                else None
+            ),
             document_format="html",
             language="en",
             location=reference.url,
@@ -61,7 +66,9 @@ class EdgarProvider:
         try:
             filing = self._filings.read_url(source.location)
         except Exception as error:
-            raise PrimarySourceUnavailable(
+            # Reaching a document that the index says exists failed, which
+            # is an outage rather than a gap in coverage.
+            raise PrimarySourceProviderError(
                 f"{source.stated()} could not be read."
             ) from error
 

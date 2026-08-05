@@ -13,8 +13,26 @@ from app.domain.company_knowledge import (
     CompanyKnowledge,
     RevenueModel,
 )
-from app.domain.primary_source import PrimarySource, SourceType
+from app.domain.primary_source import (
+    PrimarySource,
+    ReportingPeriod,
+    SourceType,
+)
 from app.domain.provenance import Provenance
+
+#: What this platform reads out of a primary source, as a version.
+#:
+#: The source is immutable; the reading is not. When the extraction
+#: starts capturing something it did not before — a reporting period, a
+#: geography, a customer type — entries written under an older reading
+#: are missing it, and they will never be refreshed on their own because
+#: the document behind them has not changed.
+#:
+#: So a stored entry from an older reading is treated as absent, and the
+#: document is read again under the current one. Immutable source,
+#: versioned reading: the two are different things and only one of them
+#: is fixed.
+KNOWLEDGE_SCHEMA_VERSION = 2
 
 
 class CompanyKnowledgeStore(ABC):
@@ -109,6 +127,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
     @staticmethod
     def _encode(knowledge: CompanyKnowledge) -> dict[str, Any]:
         return {
+            "schema_version": KNOWLEDGE_SCHEMA_VERSION,
             "symbol": knowledge.symbol,
             "description": knowledge.description,
             "segments": [
@@ -127,7 +146,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                 "identifier": knowledge.source.identifier,
                 "key": knowledge.source.key,
                 "published_on": knowledge.source.published_on.isoformat(),
-                "reporting_period": knowledge.source.reporting_period,
+                "reporting_period": _encode_period(knowledge.source.reporting_period),
                 "document_format": knowledge.source.document_format,
                 "language": knowledge.source.language,
                 "location": knowledge.source.location,
@@ -146,11 +165,21 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
         An entry that cannot be read is not repaired. A guessed knowledge
         record would be indistinguishable from one taken off a filing,
         which is the one thing this store exists to keep apart.
+
+        Nor is an entry written by an older extraction upgraded in place.
+        Filling in what that reading never captured would be inventing
+        it; the document is immutable and still available, so it is read
+        again instead.
         """
 
         try:
             stored = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
+            return None
+
+        if stored.get("schema_version") != KNOWLEDGE_SCHEMA_VERSION:
+            # Read under an older extraction. Absent rather than partly
+            # filled: the document is still there and can be read again.
             return None
 
         try:
@@ -181,11 +210,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                     identifier=str(stored["source"]["identifier"]),
                     key=str(stored["source"]["key"]),
                     published_on=date.fromisoformat(stored["source"]["published_on"]),
-                    reporting_period=(
-                        str(stored["source"]["reporting_period"])
-                        if stored["source"].get("reporting_period") is not None
-                        else None
-                    ),
+                    reporting_period=_period(stored["source"].get("reporting_period")),
                     document_format=str(stored["source"]["document_format"]),
                     language=str(stored["source"]["language"]),
                     location=str(stored["source"]["location"]),
@@ -200,3 +225,31 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
             )
         except (KeyError, TypeError, ValueError):
             return None
+
+
+def _encode_period(period: ReportingPeriod | None) -> dict[str, Any] | None:
+    """The business period as stored, or nothing where none was."""
+
+    if period is None:
+        return None
+
+    return {
+        "ends_on": period.ends_on.isoformat(),
+        "starts_on": (
+            period.starts_on.isoformat() if period.starts_on is not None else None
+        ),
+    }
+
+
+def _period(stored: Any) -> ReportingPeriod | None:
+    """The business period as stored, or nothing where none was."""
+
+    if not isinstance(stored, dict):
+        return None
+
+    starts = stored.get("starts_on")
+
+    return ReportingPeriod(
+        ends_on=date.fromisoformat(str(stored["ends_on"])),
+        starts_on=date.fromisoformat(str(starts)) if starts is not None else None,
+    )
