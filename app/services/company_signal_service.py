@@ -62,17 +62,19 @@ class CompanySignalService:
         facts: CompanyFacts,
     ) -> CompanyResearch | None:
         """
-        The fundamental analysts' read of the business, for a company.
+        The security read the way its own playbook says it should be.
 
-        Growth, profitability, a balance sheet and cash flow are questions
-        only a company can answer: a fund has no margins and a token no
-        balance sheet. The analysts already handle a fact they cannot read as
-        an unknown, so a company whose fundamentals did not come back gets a
+        Every security gets one, including the ones no company analyst is
+        asked about. This used to return nothing at all for a fund or a
+        token — correct in that neither has margins, and silent about why,
+        so their dossiers simply had less on them than a company's with no
+        explanation for the difference. The playbook is that explanation,
+        and a security whose playbook runs no analysts now carries it.
+
+        The analysts already handle a figure they cannot read as an
+        unknown, so a company whose fundamentals did not come back gets a
         research package that says so rather than none at all.
         """
-
-        if asset_class is not AssetClass.STOCK:
-            return None
 
         return CompanyResearchService().analyze(facts)
 

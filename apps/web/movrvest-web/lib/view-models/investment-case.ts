@@ -72,5 +72,8 @@ export interface RankedInvestmentCaseViewModel {
   trend: DecisionTrendViewModel | null;
   action: ExecutiveActionViewModel | null;
   convictionChange: ConvictionChangeViewModel | null;
+  /** What kind of investment the CIO reads this as. Null where nothing
+   *  about the security itself could be gathered. */
+  playbookName: string | null;
   dossierHref: string;
 }

@@ -86,18 +86,28 @@ function CaseRow({
           {String(investmentCase.rank).padStart(2, "0")}
         </span>
 
-        <span className="flex items-center gap-2">
-          <span className="font-semibold text-slate-950">
-            {investmentCase.symbol}
+        <span className="flex flex-col">
+          <span className="flex items-center gap-2">
+            <span className="font-semibold text-slate-950">
+              {investmentCase.symbol}
+            </span>
+
+            {trend ? (
+              <span
+                aria-label={trend.stated}
+                title={trend.stated}
+                className={`text-sm ${TREND_TONE[trend.direction] ?? "text-slate-400"}`}
+              >
+                {TREND_MARK[trend.direction] ?? "•"}
+              </span>
+            ) : null}
           </span>
 
-          {trend ? (
-            <span
-              aria-label={trend.stated}
-              title={trend.stated}
-              className={`text-sm ${TREND_TONE[trend.direction] ?? "text-slate-400"}`}
-            >
-              {TREND_MARK[trend.direction] ?? "•"}
+          {/* What kind of investment this is read as — the thing that
+              determines how it was analysed. */}
+          {investmentCase.playbookName ? (
+            <span className="text-xs text-slate-500">
+              {investmentCase.playbookName}
             </span>
           ) : null}
         </span>

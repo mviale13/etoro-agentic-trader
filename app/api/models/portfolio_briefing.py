@@ -103,6 +103,10 @@ class RankedInvestmentCaseResponse(BaseModel):
     #: What to consider doing about this holding.
     action: ActionResponse | None = None
 
+    #: What kind of investment the Artificial CIO reads this as. Null
+    #: where nothing about the security itself could be gathered.
+    playbook_name: str | None = None
+
     #: How far conviction moved since the last decision, and what moved
     #: underneath it. Null when it did not move.
     conviction_change: ConvictionChangeResponse | None = None

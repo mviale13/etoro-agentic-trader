@@ -93,6 +93,33 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A security is read with a playbook, and the dossier says which**
+  (August 2026). The pipeline already had the shape — profile → strategy
+  → plan → analysts — and it did nothing: `CompanyProfiler` returned
+  `business_model=STANDARD_CORPORATE, lifecycle=MATURE` as literal
+  constants for every company, the factory raised for anything else, and
+  `CompanyResearch` had four named fields so a security read any other
+  way could not be represented. Every security was analysed identically
+  whatever its kind.
+
+  `InvestmentPlaybook` is now the explanation and the instruction both:
+  the dossier shows the framework, its priorities and its coverage, and
+  the `ResearchPlan` the executor runs is built from the same object, so
+  what the investor is told and what the analysts were asked cannot
+  drift. Coverage lists every analysis, including the declined ones with
+  their reason — a question this platform chose not to ask and one that
+  failed to read mean opposite things about a case. Bitcoin's absent
+  valuation is now the Digital Asset playbook saying a token publishes no
+  financial statements, rather than an unexplained gap.
+
+  The classification is structural only: asset class and the industry the
+  provider reports. Live, that settles Digital Asset, Fund, Software,
+  Platform, Aerospace & Defence and Asset Manager — and leaves four of
+  eight stocks on the general default, with the book's one bank reporting
+  no industry at all and stated as not classified rather than defaulted
+  silently. What kind of *business* this is beyond its industry is the
+  next question, and it needs evidence this platform does not yet read.
+
 - **A conviction that moves says how far, and what moved under it**
   (August 2026). The dashboard was static: a case's conviction was a
   number with no yesterday. Each row now carries the move — **↑1**, **↓2**

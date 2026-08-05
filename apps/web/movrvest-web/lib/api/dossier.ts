@@ -101,6 +101,31 @@ export interface DossierNarrative {
   written: string;
 }
 
+export interface PlaybookCoverage {
+  analyst: string;
+  label: string;
+  covered: boolean;
+  /** Why it was not asked. Null where it was. */
+  reason: string | null;
+}
+
+/**
+ * The framework this security is read with, and what it covers.
+ *
+ * A sector says what a company sells. This says how it is read, which is
+ * what actually determines the analysis — and therefore what a reader
+ * needs in order to understand why one dossier looks unlike another.
+ */
+export interface DossierPlaybook {
+  kind: string;
+  name: string;
+  explanation: string;
+  priorities: readonly string[];
+  coverage: readonly PlaybookCoverage[];
+  /** False when no industry was reported, so nothing was chosen on evidence. */
+  classified: boolean;
+}
+
 export interface DossierViewModel {
   symbol: string;
 
@@ -114,6 +139,7 @@ export interface DossierViewModel {
   trend: DecisionTrendViewModel | null;
   action: ExecutiveActionViewModel | null;
   convictionChange: ConvictionChangeViewModel | null;
+  playbook: DossierPlaybook | null;
 
   summary: string;
   expectedHoldingPeriod: string;
@@ -359,6 +385,38 @@ function parseDossier(payload: unknown): DossierViewModel {
       ? {
           direction: requireString(payload.trend.direction, "trend.direction"),
           stated: requireString(payload.trend.stated, "trend.stated"),
+        }
+      : null,
+    playbook: isRecord(payload.playbook)
+      ? {
+          kind: requireString(payload.playbook.kind, "playbook.kind"),
+          name: requireString(payload.playbook.name, "playbook.name"),
+          explanation: requireString(
+            payload.playbook.explanation,
+            "playbook.explanation",
+          ),
+          priorities: stringList(payload.playbook.priorities),
+          coverage: (Array.isArray(payload.playbook.coverage)
+            ? payload.playbook.coverage
+            : []
+          )
+            .filter(isRecord)
+            .map((item, index) => ({
+              analyst: requireString(
+                item.analyst,
+                `playbook.coverage[${index}].analyst`,
+              ),
+              label: requireString(
+                item.label,
+                `playbook.coverage[${index}].label`,
+              ),
+              covered: item.covered === true,
+              reason: optionalString(
+                item.reason,
+                `playbook.coverage[${index}].reason`,
+              ),
+            })),
+          classified: payload.playbook.classified === true,
         }
       : null,
     convictionChange: isRecord(payload.conviction_change)

@@ -56,22 +56,29 @@ class CompanyResearchService:
         self,
         company: CompanyFacts,
     ) -> CompanyResearch:
+        """
+        Read this security the way its own playbook says it should be read.
+
+        Security → profile → playbook → plan → analysts, in that order and
+        with nothing skipped. A security whose playbook asks for no company
+        analysts still produces research: the playbook explaining why none
+        were asked is the answer, and it is a better one than silence.
+        """
+
         profile = self._profiler.profile(company)
+
+        playbook = self._strategy_factory.playbook(profile)
 
         context = CompanyResearchContext(
             facts=company,
             profile=profile,
         )
 
-        strategy = self._strategy_factory.create(profile)
-        plan = strategy.create_plan()
-        opinions = self._executor.execute(plan, context)
+        plan = self._strategy_factory.create(profile).create_plan()
 
-        opinions_by_key = dict(zip(plan.analyst_keys, opinions, strict=True))
+        opinions = self._executor.execute(plan, context) if plan.analyst_keys else ()
 
         return CompanyResearch(
-            growth=opinions_by_key[AnalystKey.GROWTH],
-            profitability=opinions_by_key[AnalystKey.PROFITABILITY],
-            balance_sheet=opinions_by_key[AnalystKey.BALANCE_SHEET],
-            cash_flow=opinions_by_key[AnalystKey.CASH_FLOW],
+            playbook=playbook,
+            opinions=dict(zip(plan.analyst_keys, opinions, strict=True)),
         )

@@ -11,6 +11,21 @@ class AnalystKey(StrEnum):
     CASH_FLOW = "cash_flow"
     TREND = "trend"
 
+    @property
+    def label(self) -> str:
+        """What this analyst is called, wherever it is named."""
+
+        return _LABELS[self]
+
+
+_LABELS = {
+    AnalystKey.GROWTH: "Growth",
+    AnalystKey.PROFITABILITY: "Profitability",
+    AnalystKey.BALANCE_SHEET: "Balance sheet",
+    AnalystKey.CASH_FLOW: "Cash flow",
+    AnalystKey.TREND: "Trend",
+}
+
 
 @dataclass(frozen=True, slots=True)
 class ResearchPlan:
@@ -37,8 +52,9 @@ class ResearchPlan:
         if any(not question.strip() for question in self.questions):
             raise ValueError("Research plan questions must not be blank")
 
-        if not self.analyst_keys:
-            raise ValueError("Research plan must assign at least one analyst")
+        # A plan with no analysts is legitimate: a digital asset and a
+        # fund publish no company accounts, and their playbooks say so
+        # rather than running analysts over figures that do not exist.
 
         if len(set(self.analyst_keys)) != len(self.analyst_keys):
             raise ValueError("Research plan must not assign duplicate analysts")
