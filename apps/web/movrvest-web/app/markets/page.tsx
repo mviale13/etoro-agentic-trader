@@ -1,5 +1,6 @@
 import {
   Activity,
+  CalendarDays,
   Compass,
   Database,
   Minus,
@@ -11,6 +12,11 @@ import {
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
+import {
+  getEarnings,
+  type EarningsEntry,
+  type EarningsResult,
+} from "@/lib/api/earnings";
 import {
   getMarket,
   type Direction,
@@ -401,8 +407,166 @@ function MarketContent({ market }: { market: MarketOverview }) {
   );
 }
 
+/** The backend measured the distance; this only words it. */
+function reportsWhen(days: number): string {
+  if (days === 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  if (days > 1) return `In ${days} days`;
+  if (days === -1) return "Yesterday";
+  return `${-days} days ago`;
+}
+
+function reportDay(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function EarningsRow({ entry }: { entry: EarningsEntry }) {
+  const window =
+    entry.endsOn === null
+      ? reportDay(entry.startsOn)
+      : `${reportDay(entry.startsOn)} – ${reportDay(entry.endsOn)}`;
+
+  return (
+    <li className="flex items-center justify-between gap-4 py-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="font-semibold text-slate-950">{entry.symbol}</span>
+
+        <span className="truncate text-sm text-slate-500">{entry.name}</span>
+
+        <span
+          className={`rounded-full border px-2 py-0.5 text-xs font-medium ${
+            entry.held
+              ? "border-slate-300 bg-slate-100 text-slate-700"
+              : "border-slate-200 bg-white text-slate-500"
+          }`}
+        >
+          {entry.held ? "Held" : "Watched"}
+        </span>
+      </div>
+
+      <div className="flex shrink-0 items-baseline gap-3 text-right">
+        <span
+          className={`text-sm font-semibold ${
+            entry.startsInDays === 0 ? "text-amber-800" : "text-slate-800"
+          }`}
+        >
+          {reportsWhen(entry.startsInDays)}
+        </span>
+
+        <span className="text-sm tabular-nums text-slate-500">{window}</span>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * The book's own earnings calendar — deliberately not the market's.
+ *
+ * Thousands of companies report every week; the ones that can bear on a
+ * decision here are the ones held or watched. Dates are scheduling fact
+ * read from the provider that already prices these companies, and the
+ * two absences are stated apart: no published date is not a failed read.
+ */
+function EarningsAhead({ result }: { result: EarningsResult }) {
+  const calendar = result.calendar;
+
+  return (
+    <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="flex items-center gap-2 text-sm font-medium text-slate-500">
+            <CalendarDays aria-hidden="true" className="h-4 w-4" />
+            Earnings ahead
+          </p>
+
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            When the companies you hold or watch report next
+          </h2>
+
+          <p className="mt-3 max-w-2xl leading-7 text-slate-600">
+            Scheduling, not prediction: the published date of each next
+            report, for your book only. What a report will say is not
+            measured here.
+          </p>
+        </div>
+
+        <StatusPill
+          status={
+            calendar === null
+              ? "placeholder"
+              : calendar.unread.length > 0
+                ? "partial"
+                : "live"
+          }
+          label={
+            calendar === null
+              ? "Unavailable"
+              : calendar.unread.length > 0
+                ? `${calendar.unread.length} not read`
+                : "All calendars read"
+          }
+        />
+      </div>
+
+      {calendar === null ? (
+        <p className="mt-6 text-slate-600">
+          The earnings calendar could not be read this cycle.
+        </p>
+      ) : (
+        <>
+          {calendar.upcoming.length > 0 ? (
+            <ul className="mt-5 divide-y divide-slate-100">
+              {calendar.upcoming.map((entry) => (
+                <EarningsRow entry={entry} key={entry.symbol} />
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-6 text-slate-600">
+              No company in your book has a published upcoming report.
+            </p>
+          )}
+
+          {calendar.reported.length > 0 ? (
+            <div className="mt-6 border-t border-slate-100 pt-4">
+              {/* The provider keeps publishing a window for a while
+                  after the report ran. That is the last report, not the
+                  next one, and it is labelled as what it is. */}
+              <p className="text-sm font-medium text-slate-500">
+                Recently reported — next date not yet published
+              </p>
+
+              <ul className="mt-1 divide-y divide-slate-100">
+                {calendar.reported.map((entry) => (
+                  <EarningsRow entry={entry} key={entry.symbol} />
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {calendar.unscheduled.length > 0 ? (
+            <p className="mt-4 text-sm text-slate-500">
+              No upcoming date published for{" "}
+              {calendar.unscheduled.join(", ")}.
+            </p>
+          ) : null}
+
+          {calendar.unread.length > 0 ? (
+            <p className="mt-1 text-sm text-slate-500">
+              Could not be read this cycle: {calendar.unread.join(", ")}.
+            </p>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
 export default async function MarketsPage() {
-  const result = await getMarket();
+  const [result, earnings] = await Promise.all([getMarket(), getEarnings()]);
 
   return (
     <DashboardLayout>
@@ -436,9 +600,10 @@ export default async function MarketsPage() {
             </div>
 
             <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-              This page reports the instruments MOVRvest actually prices. Sector
-              rotation and market events are not measured yet, and are absent
-              rather than illustrated.
+              This page reports the instruments MOVRvest actually prices, and
+              when the companies in your book report earnings next. Sector
+              rotation is not measured yet, and is absent rather than
+              illustrated.
             </p>
           </div>
 
@@ -450,7 +615,10 @@ export default async function MarketsPage() {
         </header>
 
         {result.market ? (
-          <MarketContent market={result.market} />
+          <>
+            <MarketContent market={result.market} />
+            <EarningsAhead result={earnings} />
+          </>
         ) : (
           <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
             <h2 className="font-semibold">Unable to load the market</h2>

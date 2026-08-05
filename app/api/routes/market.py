@@ -1,10 +1,17 @@
 """What the platform can say about the market itself."""
 
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends
 
-from app.api.dependencies import get_market_perception
+from app.api.dependencies import (
+    get_earnings_calendar_service,
+    get_market_perception,
+)
 from app.application.brain.perception.market_perception import MarketPerception
+from app.domain.earnings_calendar import EarningsDate
 from app.domain.market_snapshot import MarketSnapshot
+from app.services.earnings_calendar_service import EarningsCalendarService
 from app.services.market_breadth_service import MarketBreadthService
 
 router = APIRouter(
@@ -96,3 +103,47 @@ async def get_market(
     """
 
     return _payload(await perception.execute())
+
+
+@router.get("/earnings")
+async def get_earnings(
+    service: EarningsCalendarService = Depends(get_earnings_calendar_service),
+) -> dict[str, object]:
+    """
+    The book's own earnings calendar: held and watched companies only.
+
+    Scheduling fact, not prediction — when each company is expected to
+    report, from the provider the platform already trusts for prices and
+    fundamentals. The two absences stay apart so a provider failure is
+    never reported as a quiet quarter.
+    """
+
+    calendar = await service.upcoming()
+
+    today = datetime.now(UTC).date()
+
+    def encoded(entries: tuple[EarningsDate, ...]) -> list[dict[str, object]]:
+        return [
+            {
+                "symbol": entry.symbol,
+                "name": entry.name,
+                "starts_on": entry.starts_on.isoformat(),
+                "ends_on": (
+                    entry.ends_on.isoformat() if entry.ends_on is not None else None
+                ),
+                # Measured against today's UTC date here, so the page
+                # renders "today" or "in 6 days" without doing calendar
+                # arithmetic of its own.
+                "starts_in_days": (entry.starts_on - today).days,
+                "held": entry.held,
+                "observed": entry.reading.stated(),
+            }
+            for entry in entries
+        ]
+
+    return {
+        "upcoming": encoded(calendar.upcoming),
+        "reported": encoded(calendar.reported),
+        "unscheduled": list(calendar.unscheduled),
+        "unread": list(calendar.unread),
+    }
