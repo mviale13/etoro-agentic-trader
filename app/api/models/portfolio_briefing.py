@@ -5,6 +5,40 @@ from pydantic import BaseModel
 from app.api.models.executive_brief import ExecutivePriorityResponse
 
 
+class TrendResponse(BaseModel):
+    """Which way this investment case has been moving."""
+
+    #: "stable" | "improving" | "deteriorating" — for styling, so no
+    #: surface has to read the sentence to know which way it points.
+    direction: str
+
+    #: The trend as the investor reads it, worded by the backend.
+    stated: str
+
+
+class ActionResponse(BaseModel):
+    """What the Artificial CIO asks the investor to consider.
+
+    Deliberately not the recommendation. A RECOMMEND on a security
+    already held and one on a security the investor does not own are the
+    same judgement and different considerations, and only the portfolio
+    knows which case this is.
+
+    A consideration, never an instruction: MOVRvest recommends and the
+    investor decides. No size, price or quantity is ever suggested.
+    """
+
+    kind: str
+    statement: str
+
+    #: The Artificial CIO's own reason, carried rather than rewritten.
+    because: str
+
+    #: The next dated thing bearing on this case, or null when nothing is
+    #: scheduled — which is not the same as nothing being expected.
+    checkpoint: str | None
+
+
 class RankedInvestmentCaseResponse(BaseModel):
     """
     One holding, as judged by the Artificial CIO.
@@ -39,9 +73,14 @@ class RankedInvestmentCaseResponse(BaseModel):
     risks: list[str]
     expected_holding_period: str
 
-    #: What the Artificial CIO decided about this holding before. Null until
-    #: a decision has been recorded for it.
-    previous_decisions: str | None = None
+    #: Which way this case has been moving across recorded decisions.
+    #: Null until one has been recorded — a first review is not a stable
+    #: one, and calling it stable would claim a history that does not
+    #: exist.
+    trend: TrendResponse | None = None
+
+    #: What to consider doing about this holding.
+    action: ActionResponse | None = None
 
 
 class BriefingLineResponse(BaseModel):

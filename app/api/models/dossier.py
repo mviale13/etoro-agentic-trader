@@ -10,6 +10,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.api.models.portfolio_briefing import ActionResponse, TrendResponse
+
 
 class ProvenanceResponse(BaseModel):
     """Where a reading came from, and how old it is."""
@@ -157,10 +159,13 @@ class DossierResponse(BaseModel):
 
     rationale: str
 
-    #: What the Artificial CIO decided about this symbol before, stated as
-    #: fact. None when nothing was recorded — no history is claimed that
-    #: does not exist.
-    previous_decisions: str | None
+    #: Which way this case has been moving across recorded decisions.
+    #: None when nothing was recorded — no history is claimed that does
+    #: not exist, and a first review is not a stable one.
+    trend: TrendResponse | None
+
+    #: What to consider doing about this security.
+    action: ActionResponse | None
 
     decided_at: datetime
 

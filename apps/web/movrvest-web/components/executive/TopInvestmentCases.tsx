@@ -52,7 +52,8 @@ function InvestmentCaseCard({
       decisionState={investmentCase.recommendation}
       conviction={investmentCase.conviction}
       convictionLabel={investmentCase.convictionLevel}
-      previousDecisions={investmentCase.previousDecisions}
+      trend={investmentCase.trend}
+      action={investmentCase.action}
       reviewHref={investmentCase.dossierHref}
     >
       <dl className="mt-7 grid grid-cols-2 gap-3 border-y border-slate-100 py-5">

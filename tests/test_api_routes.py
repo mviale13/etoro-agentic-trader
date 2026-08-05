@@ -380,9 +380,7 @@ def test_dossier_reports_an_unevidenced_symbol_as_unevidenced(
     assert body["decision_state"] == "INVESTIGATE"
 
     # No previous decision is a null, never an invented history.
-    assert body["previous_decisions"] is None or isinstance(
-        body["previous_decisions"], str
-    )
+    assert body["trend"] is None or set(body["trend"]) == {"direction", "stated"}
 
 
 def test_portfolio_briefing_is_a_404_when_there_is_nothing_to_explain(

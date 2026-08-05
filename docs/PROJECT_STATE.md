@@ -93,6 +93,27 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Every case says what to consider, and which way it is moving**
+  (August 2026). Each card's action read "Monitor" — including the ones
+  the Artificial CIO had moved to RECOMMEND — because it was derived from
+  nothing. It cannot be the decision state renamed either: RECOMMEND on a
+  security already held and RECOMMEND on one the investor does not own
+  are the same judgement and different questions, and only the portfolio
+  knows which case this is. `ExecutiveAction` now carries the
+  consideration ("Consider opening a position in VOW3.DE", "Continue
+  holding BNP.PA", "Research ETOR before the thesis can progress",
+  "Review whether to keep holding SPCX"), the CIO's own reason for it,
+  and the next dated thing bearing on it. Nothing is worded as an
+  instruction and no size, price or quantity is ever named: this platform
+  recommends and the investor decides.
+
+  "PREPARE was also the previous decision, recorded on August 4" asked
+  the reader to do the comparison. `DecisionTrend` does it once, off the
+  lifecycle ranks the states already carry: **Stable — 4 consecutive
+  reviews since 2026-08-03**, **Improving — PREPARE → RECOMMEND**,
+  **Deteriorating — RECOMMEND → INVESTIGATE**. A first review has no
+  trend at all, because a run of one is not a settled view.
+
 - **The dashboard opens with today, not with what you own** (August 2026).
   A Chief Investment Officer does not open a dashboard to ask what they
   hold; they ask what changed and what deserves attention. The page now

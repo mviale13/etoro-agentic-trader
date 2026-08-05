@@ -80,7 +80,13 @@ interface RankedCasePayload {
   why_now: readonly string[];
   risks: readonly string[];
   expected_holding_period: string;
-  previous_decisions: string | null;
+  trend: { direction: string; stated: string } | null;
+  action: {
+    kind: string;
+    statement: string;
+    because: string;
+    checkpoint: string | null;
+  } | null;
 }
 
 interface ChangePayload {
@@ -287,10 +293,38 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.expected_holding_period,
         `investment_cases[${index}].expected_holding_period`,
       ),
-      previous_decisions: optionalString(
-        item.previous_decisions,
-        `investment_cases[${index}].previous_decisions`,
-      ),
+      trend: isRecord(item.trend)
+        ? {
+            direction: requireString(
+              item.trend.direction,
+              `investment_cases[${index}].trend.direction`,
+            ),
+            stated: requireString(
+              item.trend.stated,
+              `investment_cases[${index}].trend.stated`,
+            ),
+          }
+        : null,
+      action: isRecord(item.action)
+        ? {
+            kind: requireString(
+              item.action.kind,
+              `investment_cases[${index}].action.kind`,
+            ),
+            statement: requireString(
+              item.action.statement,
+              `investment_cases[${index}].action.statement`,
+            ),
+            because: requireString(
+              item.action.because,
+              `investment_cases[${index}].action.because`,
+            ),
+            checkpoint: optionalString(
+              item.action.checkpoint,
+              `investment_cases[${index}].action.checkpoint`,
+            ),
+          }
+        : null,
     })),
     changes: changes.filter(isRecord).map((change, index) => ({
       title: requireString(change.title, `changes[${index}].title`),
@@ -350,7 +384,8 @@ function mapInvestmentCases(
     whyNow: item.why_now,
     risks: item.risks,
     expectedHoldingPeriod: item.expected_holding_period,
-    previousDecisions: item.previous_decisions,
+    trend: item.trend,
+    action: item.action,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
   }));
 }

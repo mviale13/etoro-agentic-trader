@@ -1,3 +1,5 @@
+import type { DecisionTrendViewModel } from "@/lib/view-models/investment-case";
+
 /**
  * The opportunity pipeline, as the Artificial CIO reports it.
  *
@@ -51,7 +53,8 @@ export interface ResearchCandidateViewModel {
   missingEvidence: readonly string[];
   catalysts: readonly string[];
   nextTrigger: string | null;
-  previousDecisions: string | null;
+  /** Which way the case has been moving, worded by the backend. */
+  trend: DecisionTrendViewModel | null;
 
   dossierHref: string;
 }

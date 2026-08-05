@@ -100,8 +100,8 @@ class ExecutiveBriefConsoleRenderer:
 
             console.print(f"Expected holding period: {case.expected_holding_period}")
 
-            if case.previous_decisions:
-                console.print(f"Previously: {case.previous_decisions}")
+            if case.trend is not None:
+                console.print(f"Trend: {case.trend.stated}")
 
             console.print()
 

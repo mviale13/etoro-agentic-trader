@@ -20,11 +20,13 @@ from app.api.models.executive_brief import (
     InvestmentCaseResponse,
 )
 from app.api.models.portfolio_briefing import (
+    ActionResponse,
     BriefingLineResponse,
     ChangeResponse,
     PortfolioBriefingResponse,
     RankedInvestmentCaseResponse,
     TodayBriefingResponse,
+    TrendResponse,
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.brief.today_briefing_builder import TodayBriefingBuilder
@@ -38,6 +40,8 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.domain.decision_history import DecisionTrend
+from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.provenance import Provenance
 from app.domain.score_basis import ScoreBases, ScoreBasis
@@ -133,7 +137,8 @@ async def portfolio_briefing(
                 why_now=list(thesis.catalysts),
                 risks=list(thesis.risks),
                 expected_holding_period=thesis.expected_holding_period,
-                previous_decisions=thesis.previous_decisions,
+                trend=_trend(thesis.trend),
+                action=_action(workspace.action),
             )
         )
 
@@ -257,10 +262,36 @@ async def executive_brief(
                 conviction=case.conviction,
                 conviction_label=conviction_label(case.conviction),
                 summary=case.summary,
-                previous_decisions=case.previous_decisions,
+                trend=case.trend,
             )
             for case in view.investment_cases
         ],
+    )
+
+
+def _trend(trend: DecisionTrend | None) -> TrendResponse | None:
+    """Null stays null: a first review has no trend to report."""
+
+    if trend is None:
+        return None
+
+    return TrendResponse(
+        direction=trend.direction.value,
+        stated=trend.stated,
+    )
+
+
+def _action(action: ExecutiveAction | None) -> ActionResponse | None:
+    """The consideration the pipeline built, carried without rewording."""
+
+    if action is None:
+        return None
+
+    return ActionResponse(
+        kind=action.kind.value,
+        statement=action.statement,
+        because=action.because,
+        checkpoint=action.checkpoint,
     )
 
 
@@ -361,7 +392,8 @@ async def dossier(
         conviction_label=conviction_label(decision.conviction),
         committee_agreement=thesis.confidence,
         rationale=decision.rationale,
-        previous_decisions=thesis.previous_decisions,
+        trend=_trend(thesis.trend),
+        action=_action(workspace.action),
         decided_at=decision.decided_at,
         summary=thesis.summary,
         expected_holding_period=thesis.expected_holding_period,

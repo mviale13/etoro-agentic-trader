@@ -29,7 +29,9 @@ class InvestmentCaseResponse(BaseModel):
 
     #: What the Artificial CIO decided about this symbol before. Null when
     #: nothing was recorded, which is reported as absent rather than filled.
-    previous_decisions: str | None = None
+    #: Which way this case has been moving across recorded decisions.
+    #: Null until one has been recorded.
+    trend: str | None = None
 
 
 class ExecutiveBriefResponse(BaseModel):

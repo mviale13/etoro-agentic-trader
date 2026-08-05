@@ -122,10 +122,12 @@ function parseCandidate(
     missingEvidence: stringList(payload.missing_evidence),
     catalysts: stringList(payload.catalysts),
     nextTrigger: optionalString(payload.next_trigger, at("next_trigger")),
-    previousDecisions: optionalString(
-      payload.previous_decisions,
-      at("previous_decisions"),
-    ),
+    trend: isRecord(payload.trend)
+      ? {
+          direction: requireString(payload.trend.direction, at("trend.direction")),
+          stated: requireString(payload.trend.stated, at("trend.stated")),
+        }
+      : null,
     dossierHref: `/dossiers/${encodeURIComponent(symbol)}`,
   };
 }

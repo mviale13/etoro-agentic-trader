@@ -14,6 +14,28 @@ export type ConvictionLevel =
  * `previousDecisions` is recorded, not inferred. A holding the CIO is judging
  * for the first time reports null rather than "no change".
  */
+/** Which way a case has been moving across recorded decisions. */
+export interface DecisionTrendViewModel {
+  /** "stable" | "improving" | "deteriorating" — styled, never parsed. */
+  direction: string;
+  /** The trend as the investor reads it, worded by the backend. */
+  stated: string;
+}
+
+/**
+ * What the Artificial CIO asks the investor to consider.
+ *
+ * Not the recommendation renamed: the same judgement asks a different
+ * thing of someone who already holds the security. A consideration,
+ * never an instruction — MOVRvest recommends and the investor decides.
+ */
+export interface ExecutiveActionViewModel {
+  kind: string;
+  statement: string;
+  because: string;
+  checkpoint: string | null;
+}
+
 export interface RankedInvestmentCaseViewModel {
   rank: number;
   symbol: string;
@@ -30,6 +52,7 @@ export interface RankedInvestmentCaseViewModel {
   risks: readonly string[];
   expectedHoldingPeriod: string;
   /** What the CIO decided about this holding before, or null if never. */
-  previousDecisions: string | null;
+  trend: DecisionTrendViewModel | null;
+  action: ExecutiveActionViewModel | null;
   dossierHref: string;
 }

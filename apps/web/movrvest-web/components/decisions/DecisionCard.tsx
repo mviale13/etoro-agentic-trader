@@ -1,6 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import type {
+  DecisionTrendViewModel,
+  ExecutiveActionViewModel,
+} from "@/lib/view-models/investment-case";
+
 /**
  * The one way an Artificial CIO decision presents itself.
  *
@@ -28,13 +33,23 @@ interface DecisionCardProps {
   /** Short labels such as the watchlist that names this security. */
   tags?: readonly string[];
   /**
-   * What the CIO decided before, as recorded. Null renders nothing at
-   * all: a first decision claims no history.
+   * Which way the case has been moving, as recorded. Null renders
+   * nothing at all: a first decision claims no history, and a first
+   * review is not a stable one.
    */
-  previousDecisions: string | null;
+  trend: DecisionTrendViewModel | null;
+  /** What to consider doing. Null renders nothing. */
+  action?: ExecutiveActionViewModel | null;
   reviewHref: string;
   children?: ReactNode;
 }
+
+/** Direction as a mark, so the eye reads it before the sentence. */
+const TREND_MARK: Record<string, string> = {
+  stable: "→",
+  improving: "↑",
+  deteriorating: "↓",
+};
 
 export function DecisionCard({
   rank,
@@ -44,7 +59,8 @@ export function DecisionCard({
   conviction,
   convictionLabel,
   tags = [],
-  previousDecisions,
+  trend,
+  action = null,
   reviewHref,
   children,
 }: DecisionCardProps) {
@@ -114,18 +130,37 @@ export function DecisionCard({
 
       {children}
 
-      {/* Absent until the CIO has judged this security at least once
-          before. A first decision says nothing here, never "no change". */}
-      {previousDecisions ? (
-        <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Previously
+      {/* What to consider doing — not the decision state renamed. A
+          RECOMMEND on something already held asks a different question
+          from a RECOMMEND on something the investor does not own. */}
+      {action ? (
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-950">
+            {action.statement}
           </p>
 
-          <p className="mt-2 text-sm leading-6 text-slate-700">
-            {previousDecisions}
+          <p className="mt-1.5 text-sm leading-6 text-slate-600">
+            {action.because}
           </p>
+
+          {action.checkpoint ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Next: {action.checkpoint}
+            </p>
+          ) : null}
         </div>
+      ) : null}
+
+      {/* Absent until the CIO has judged this security at least once
+          before. A first decision says nothing here, never "no change". */}
+      {trend ? (
+        <p className="mt-4 text-sm font-medium text-slate-600">
+          <span aria-hidden className="mr-1.5">
+            {TREND_MARK[trend.direction] ?? "•"}
+          </span>
+
+          {trend.stated}
+        </p>
       ) : null}
 
       <div className="mt-auto flex items-center justify-end pt-7">

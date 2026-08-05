@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from app.api.models.portfolio_briefing import TrendResponse
+
 
 class ResearchFunnelResponse(BaseModel):
     """How the watchlist narrowed to the candidates the CIO judged."""
@@ -82,7 +84,9 @@ class ResearchCandidateResponse(BaseModel):
     next_trigger: str | None = None
 
     #: What the CIO decided about this security before, or null if never.
-    previous_decisions: str | None = None
+    #: Which way this case has been moving across recorded decisions.
+    #: Null until one has been recorded.
+    trend: TrendResponse | None = None
 
 
 class WatchedCandidateResponse(BaseModel):

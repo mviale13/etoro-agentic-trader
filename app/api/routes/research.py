@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.api.dependencies import get_brain_builder_service
+from app.api.models.portfolio_briefing import TrendResponse
 from app.api.models.research import (
     ResearchCandidateResponse,
     ResearchFunnelResponse,
@@ -92,7 +93,14 @@ async def research_candidates(
                 missing_evidence=list(decision.missing_evidence),
                 catalysts=list(decision.catalysts),
                 next_trigger=decision.next_trigger,
-                previous_decisions=thesis.previous_decisions,
+                trend=(
+                    TrendResponse(
+                        direction=thesis.trend.direction.value,
+                        stated=thesis.trend.stated,
+                    )
+                    if thesis.trend is not None
+                    else None
+                ),
             )
         )
 

@@ -8,6 +8,7 @@ from app.application.learning.decision_journal import DecisionJournal
 from app.application.workspace.executive_pipeline import ExecutivePipeline
 from app.brain import Brain, BrainBuilder
 from app.cio.decision_state import DecisionState
+from app.domain.decision_history import TrendDirection
 from app.repositories.json_event_repository import JsonEventRepository
 from tests.test_brain_context import (
     make_market,
@@ -65,7 +66,10 @@ def test_a_first_decision_claims_no_history(tmp_path: Path) -> None:
     )
 
     assert workspace.thesis is not None
-    assert workspace.thesis.previous_decisions is None
+
+    # A first review is not a stable one: with nothing recorded there is
+    # no direction to report, and claiming one would invent a history.
+    assert workspace.thesis.trend is None
 
 
 def test_the_next_cycle_states_what_was_decided_before(tmp_path: Path) -> None:
@@ -85,8 +89,12 @@ def test_the_next_cycle_states_what_was_decided_before(tmp_path: Path) -> None:
     )
 
     assert second.thesis is not None
-    assert second.thesis.previous_decisions is not None
-    assert first.decision.state.value in second.thesis.previous_decisions
+    assert second.thesis.trend is not None
+
+    # Same decision twice running: the case is holding, and the count
+    # includes today's — the cycle records it after the thesis is built.
+    assert second.thesis.trend.direction is TrendDirection.STABLE
+    assert "2 consecutive reviews" in second.thesis.trend.stated
 
 
 def test_a_changed_decision_says_what_it_changed_from(tmp_path: Path) -> None:
@@ -119,8 +127,17 @@ def test_a_changed_decision_says_what_it_changed_from(tmp_path: Path) -> None:
     )
 
     assert workspace.thesis is not None
-    assert workspace.thesis.previous_decisions is not None
-    assert workspace.thesis.previous_decisions.startswith(
-        f"Changed from {superseded.value} to {decided.state.value}."
+
+    trend = workspace.thesis.trend
+
+    assert trend is not None
+    assert f"{superseded.value} → {decided.state.value}" in trend.stated
+
+    # Which way it moved is read off the lifecycle ranks, not judged.
+    expected = (
+        TrendDirection.IMPROVING
+        if decided.state.lifecycle_rank > superseded.lifecycle_rank
+        else TrendDirection.DETERIORATING
     )
-    assert "2026-07-28" in workspace.thesis.previous_decisions
+
+    assert trend.direction is expected

@@ -1,3 +1,8 @@
+import type {
+  DecisionTrendViewModel,
+  ExecutiveActionViewModel,
+} from "@/lib/view-models/investment-case";
+
 /**
  * Client for GET /executive/{symbol}/dossier.
  *
@@ -105,7 +110,8 @@ export interface DossierViewModel {
   committeeAgreement: number | null;
   rationale: string;
   /** Null when the CIO has no recorded history for this symbol. */
-  previousDecisions: string | null;
+  trend: DecisionTrendViewModel | null;
+  action: ExecutiveActionViewModel | null;
 
   summary: string;
   expectedHoldingPeriod: string;
@@ -347,10 +353,20 @@ function parseDossier(payload: unknown): DossierViewModel {
     ),
     committeeAgreement: optionalNumber(payload.committee_agreement),
     rationale: requireString(payload.rationale, "rationale"),
-    previousDecisions: optionalString(
-      payload.previous_decisions,
-      "previous_decisions",
-    ),
+    trend: isRecord(payload.trend)
+      ? {
+          direction: requireString(payload.trend.direction, "trend.direction"),
+          stated: requireString(payload.trend.stated, "trend.stated"),
+        }
+      : null,
+    action: isRecord(payload.action)
+      ? {
+          kind: requireString(payload.action.kind, "action.kind"),
+          statement: requireString(payload.action.statement, "action.statement"),
+          because: requireString(payload.action.because, "action.because"),
+          checkpoint: optionalString(payload.action.checkpoint, "action.checkpoint"),
+        }
+      : null,
     summary: requireString(payload.summary, "summary"),
     expectedHoldingPeriod: requireString(
       payload.expected_holding_period,

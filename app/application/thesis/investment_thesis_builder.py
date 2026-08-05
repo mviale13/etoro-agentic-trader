@@ -87,54 +87,9 @@ class InvestmentThesisBuilder:
             context_strengths=context_strengths,
             context_risks=context_risks,
             evidence_as_of=decision.evidence_as_of,
-            previous_decisions=self._previous_decisions(
-                history,
-                decision,
+            trend=(
+                history.trend_against(decision.state) if history is not None else None
             ),
-        )
-
-    @staticmethod
-    def _previous_decisions(
-        history: DecisionHistory | None,
-        decision: ExecutiveDecision,
-    ) -> str | None:
-        """
-        State what the Artificial CIO decided about this symbol before.
-
-        Returns None when nothing was ever recorded. A symbol the CIO is
-        judging for the first time has no history, and inventing one — "no
-        change" — would report an observation that was never made.
-        """
-
-        if history is None or history.is_empty:
-            return None
-
-        run = history.current_run
-        previous_state = run[-1].state
-        since = run[0].decided_at.date().isoformat()
-        occurrences = len(run)
-
-        if previous_state is decision.state:
-            if occurrences == 1:
-                return (
-                    f"{decision.state.value} was also the previous decision, "
-                    f"recorded on {since}."
-                )
-
-            return (
-                f"{decision.state.value} has been the decision since {since}, "
-                f"across {occurrences} recorded decisions."
-            )
-
-        held = (
-            f"recorded once, on {since}"
-            if occurrences == 1
-            else f"the decision since {since}, across {occurrences} recorded decisions"
-        )
-
-        return (
-            f"Changed from {previous_state.value} to {decision.state.value}. "
-            f"{previous_state.value} was {held}."
         )
 
     @staticmethod

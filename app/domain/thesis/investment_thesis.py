@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.decision_history import DecisionTrend
 from app.domain.provenance import Provenance
 
 
@@ -56,7 +57,8 @@ class InvestmentThesis:
     #: When the security's evidence was read. None where none was read.
     evidence_as_of: Provenance | None = None
 
-    #: What the Artificial CIO decided about this symbol before, stated as
-    #: fact. None when nothing was ever recorded — the CIO does not claim a
-    #: history it does not have.
-    previous_decisions: str | None = None
+    #: Which way this case has been moving across recorded decisions —
+    #: stable, improving or deteriorating. None when nothing was ever
+    #: recorded: the CIO does not claim a history it does not have, and a
+    #: first review is not a stable one.
+    trend: DecisionTrend | None = None

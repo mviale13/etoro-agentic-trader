@@ -16,6 +16,9 @@ from app.application.committees.committee_service import CommitteeService
 from app.application.executive.decision_evidence_builder import (
     DecisionEvidenceBuilder,
 )
+from app.application.executive.executive_action_builder import (
+    ExecutiveActionBuilder,
+)
 from app.application.executive.executive_evaluation import (
     ExecutiveEvaluation,
 )
@@ -52,6 +55,10 @@ class ExecutivePipeline:
 
     thesis_builder: InvestmentThesisBuilder = field(
         default_factory=InvestmentThesisBuilder,
+    )
+
+    action_builder: ExecutiveActionBuilder = field(
+        default_factory=ExecutiveActionBuilder,
     )
 
     brief_builder: ExecutiveBriefBuilder = field(
@@ -146,6 +153,19 @@ class ExecutivePipeline:
             committee_opinions=workspace.committee_opinions,
             decision=workspace.decision,
             history=brain.decision_history_for(symbol),
+        )
+
+        # What to consider doing about it. Not the decision restated: a
+        # RECOMMEND on something already held asks a different question
+        # from a RECOMMEND on something the investor does not own, and
+        # only the portfolio knows which this is.
+        workspace.action = self.action_builder.build(
+            decision=workspace.decision,
+            held=any(
+                holding.symbol.upper().strip() == symbol.upper().strip()
+                for holding in brain.portfolio.holdings
+            ),
+            catalysts=workspace.thesis.catalysts,
         )
 
         if self.journal is not None:

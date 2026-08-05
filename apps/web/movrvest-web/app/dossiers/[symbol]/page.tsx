@@ -371,10 +371,41 @@ function WhatChanged({ dossier }: { dossier: DossierViewModel }) {
     <section aria-labelledby="changed-heading">
       <SectionHeading id="changed-heading">What changed</SectionHeading>
 
-      <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-700">
-        {dossier.previousDecisions ??
-          "This is the first decision the Artificial CIO has recorded for this symbol. No earlier history is claimed."}
-      </p>
+      {dossier.trend ? (
+        <p className="mt-4 max-w-3xl text-lg font-medium leading-7 text-slate-900">
+          {dossier.trend.stated}
+        </p>
+      ) : (
+        <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-500">
+          This is the first decision the Artificial CIO has recorded for this
+          symbol. No earlier history is claimed, and a first review is not a
+          stable one.
+        </p>
+      )}
+
+      {/* What to consider doing about it — a consideration, never an
+          instruction. The investor decides. */}
+      {dossier.action ? (
+        <div className="mt-5 max-w-3xl rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            What to consider
+          </p>
+
+          <p className="mt-2 text-base font-semibold text-slate-950">
+            {dossier.action.statement}
+          </p>
+
+          <p className="mt-1.5 text-sm leading-6 text-slate-600">
+            {dossier.action.because}
+          </p>
+
+          {dossier.action.checkpoint ? (
+            <p className="mt-2 text-sm text-slate-500">
+              Next: {dossier.action.checkpoint}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

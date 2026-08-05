@@ -11,6 +11,7 @@ from app.application.committees.models.committee_opinion import (
     CommitteeOpinion,
 )
 from app.brain.brain import Brain
+from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive.executive_brief import ExecutiveBrief
 from app.domain.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.domain.thesis import InvestmentThesis
@@ -32,4 +33,10 @@ class ExecutiveWorkspace:
     evidence: DecisionEvidence | None = None
     decision: ExecutiveDecision | None = None
     thesis: InvestmentThesis | None = None
+
+    #: What the Artificial CIO is asking the investor to consider about
+    #: this security — which the decision state alone cannot say, because
+    #: it does not know whether the security is already held.
+    action: ExecutiveAction | None = None
+
     brief: ExecutiveBrief | None = None
