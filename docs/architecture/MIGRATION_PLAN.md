@@ -481,6 +481,16 @@ change feed. It does not gate.
       own typical daily move rather than against a threshold nothing measured.
       A move on an instrument whose history was too short to measure a typical
       one for is still not reported — there is no scale to judge it against
+- [x] A benchmark move says which holdings it touches, and how much. The
+      `/executive/portfolio` feed carries each holding's measured
+      `market_sensitivity` beside its share of the account, so a named SPY
+      move states who rides it — ordered by weight × |beta|, correlation
+      shown so a line fitted through noise is visible — and counts the
+      holdings nothing was measured for, so the line never reads as "the
+      rest are untouched". Any other instrument's move says nothing about
+      holdings: a beta to SPY says nothing about an oil move, and a book
+      with no measured sensitivity anywhere gets no holdings line at all,
+      because even which instrument it would move with is unmeasured
 - [x] `ExecutivePipeline` reasons the account once per cycle. The portfolio,
       market and risk assessments do not depend on the security being judged,
       so `execute_all` reasons them once and shares the one `ReasoningSnapshot`

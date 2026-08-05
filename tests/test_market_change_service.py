@@ -11,6 +11,8 @@ from app.domain.change_feed.change_event import (
     ChangeCategory,
     ChangeSeverity,
 )
+from app.domain.holding_exposure import HoldingExposure
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
@@ -337,3 +339,180 @@ def test_a_move_without_a_measured_typical_is_not_reported() -> None:
     )
 
     assert instrument_events(events) == []
+
+
+# ------------------------------------------------------------------
+# Which holdings a benchmark move touches, on measured exposure alone.
+# ------------------------------------------------------------------
+
+
+def benchmark_moving(
+    change_percent: float,
+    *,
+    timestamp: datetime = BEFORE,
+) -> MarketSnapshot:
+    return MarketService().build_snapshot(
+        quotes=(
+            MarketQuote(
+                symbol="SPY",
+                name="S&P 500 ETF",
+                price=600.0,
+                change_percent=change_percent,
+                realized_volatility=DAILY_SIGMA_1PCT,
+                reading=Provenance(source="Yahoo Finance", observed_at=timestamp),
+            ),
+        ),
+        vix=16.0,
+        timestamp=timestamp,
+    )
+
+
+def exposure(
+    symbol: str,
+    *,
+    weight: float | None = None,
+    beta: float | None = None,
+    correlation: float = 0.80,
+    benchmark: str = "SPY",
+) -> HoldingExposure:
+    return HoldingExposure(
+        symbol=symbol,
+        weight_pct=weight,
+        sensitivity=(
+            MarketSensitivity(
+                beta=beta,
+                correlation=correlation,
+                observations=250,
+                benchmark=benchmark,
+            )
+            if beta is not None
+            else None
+        ),
+    )
+
+
+def benchmark_events(events):
+    return [event for event in events if event.title.startswith("SPY")]
+
+
+def touched(exposures: tuple[HoldingExposure, ...]) -> str:
+    events = benchmark_events(
+        MarketChangeService().changes(
+            benchmark_moving(0.0),
+            benchmark_moving(3.5, timestamp=AFTER),
+            exposures,
+        )
+    )
+
+    assert len(events) == 1
+
+    return events[0].description
+
+
+def test_a_benchmark_move_names_the_holdings_it_touches() -> None:
+    description = touched(
+        (
+            exposure("NVDA", weight=12.3, beta=1.84, correlation=0.78),
+            exposure("AAPL", weight=8.1, beta=1.12, correlation=0.65),
+        )
+    )
+
+    assert (
+        "Among the holdings, NVDA (12.3% of the account) moves 1.84× "
+        "with it (correlation +0.78) and AAPL (8.1% of the account) "
+        "1.12× (+0.65)." in description
+    )
+
+
+def test_holdings_are_ordered_by_how_much_of_the_account_moves() -> None:
+    """Weight × |beta| ranks them, because both factors were measured."""
+
+    description = touched(
+        (
+            # 5% at 2.0× is a tenth of the account moving; 20% at 1.0× a
+            # fifth. The larger measured movement is named first.
+            exposure("SMALL", weight=5.0, beta=2.0),
+            exposure("LARGE", weight=20.0, beta=1.0),
+        )
+    )
+
+    assert description.index("LARGE") < description.index("SMALL")
+
+
+def test_more_measured_holdings_than_named_are_counted() -> None:
+    description = touched(
+        tuple(exposure(f"HOLD{n}", weight=10.0, beta=1.0) for n in range(5))
+    )
+
+    assert "2 more holdings carry a measured sensitivity to it." in description
+
+
+def test_unmeasured_holdings_are_counted_not_dropped() -> None:
+    """Naming only the measured would read as "the rest are untouched"."""
+
+    description = touched(
+        (
+            exposure("NVDA", weight=12.3, beta=1.84),
+            exposure("UUUU"),
+            exposure("TAO"),
+        )
+    )
+
+    assert (
+        "No sensitivity is measured for the other 2 holdings, so what "
+        "this move means for them is not stated." in description
+    )
+
+
+def test_a_book_with_nothing_measured_gets_no_holdings_line() -> None:
+    """
+    With no sensitivity measured anywhere, even the benchmark is unnamed.
+
+    Which instrument these holdings would move with is itself unmeasured —
+    the "SPY is the benchmark" fact lives in the provider that regresses,
+    not in the exposures — so saying "none moves with SPY" would borrow a
+    fact this evidence does not carry. The event tells the market's own
+    story alone.
+    """
+
+    description = touched((exposure("UUUU"), exposure("TAO")))
+
+    assert "UUUU" not in description
+    assert "TAO" not in description
+    assert description.endswith("typical daily move of 1.0%.")
+
+
+def test_no_holdings_context_leaves_the_event_as_it_was() -> None:
+    """A caller without an account gets the market's own story alone."""
+
+    description = touched(())
+
+    assert description.endswith("typical daily move of 1.0%.")
+
+
+def test_a_non_benchmark_move_says_nothing_about_holdings() -> None:
+    """
+    A beta to SPY says nothing about an oil move.
+
+    The absence of a holdings line is the absence of a claim, not a claim
+    of no effect — connecting the two would need a sensitivity to WTI that
+    was never measured.
+    """
+
+    events = instrument_events(
+        MarketChangeService().changes(
+            moving(0.0),
+            moving(3.5, timestamp=AFTER),
+            (exposure("NVDA", weight=12.3, beta=1.84),),
+        )
+    )
+
+    assert len(events) == 1
+    assert "NVDA" not in events[0].description
+    assert events[0].description.endswith("typical daily move of 1.0%.")
+
+
+def test_a_holding_whose_weight_could_not_be_read_says_so() -> None:
+    description = touched((exposure("NVDA", weight=None, beta=1.84),))
+
+    assert "NVDA (share of account unmeasured)" in description

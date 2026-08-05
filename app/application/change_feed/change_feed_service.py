@@ -17,6 +17,7 @@ from app.domain.change_feed.change_event import (
 )
 from app.domain.change_feed.change_feed import ChangeFeed
 from app.domain.decision_history import DecisionHistory, DecisionRecord
+from app.domain.holding_exposure import HoldingExposure
 from app.domain.market_snapshot import MarketSnapshot
 
 
@@ -49,6 +50,12 @@ class ChangeFeedService:
     #: market history is available to this caller, not that the market did
     #: not move.
     market: MarketHistory | None = None
+
+    #: The account's holdings with whatever market sensitivity each carries,
+    #: so a benchmark move can say which holdings it touches. Empty means
+    #: this caller supplied no holdings context — the feed then reports the
+    #: market's own story alone, as it always did.
+    exposures: tuple[HoldingExposure, ...] = ()
 
     market_changes: MarketChangeService = field(
         default_factory=MarketChangeService,
@@ -113,7 +120,7 @@ class ChangeFeedService:
 
         current, previous = recorded[0], recorded[1]
 
-        return self.market_changes.changes(previous, current)
+        return self.market_changes.changes(previous, current, self.exposures)
 
     def _changes_in(
         self,

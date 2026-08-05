@@ -9,6 +9,8 @@ from app.domain.change_feed.change_event import (
     ChangeCategory,
     ChangeSeverity,
 )
+from app.domain.holding_exposure import HoldingExposure
+from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 from app.domain.provenance import Provenance
 from app.repositories.json_event_repository import JsonEventRepository
@@ -195,6 +197,7 @@ def market_at(
     *,
     change_percent: float = 0.0,
     vix: float | None = 16.0,
+    realized_volatility: float | None = None,
 ) -> MarketSnapshot:
     return MarketService().build_snapshot(
         quotes=(
@@ -203,6 +206,7 @@ def market_at(
                 name="S&P 500 ETF",
                 price=600.0,
                 change_percent=change_percent,
+                realized_volatility=realized_volatility,
                 reading=Provenance(source="Yahoo Finance", observed_at=moment),
             ),
         ),
@@ -326,3 +330,45 @@ def test_narrowing_to_held_symbols_does_not_narrow_the_market(
     events = service.build(symbols=["MSFT"]).events
 
     assert [event.category for event in events] == [ChangeCategory.MACRO]
+
+
+def test_supplied_exposures_reach_the_benchmark_move(tmp_path: Path) -> None:
+    """The feed passes the account's exposures through to the market story."""
+
+    journal = DecisionJournal(JsonEventRepository(tmp_path))
+
+    # An annualised volatility whose daily standard deviation is 1%, so a
+    # 3.5% day is 3.5 of the benchmark's own daily sigmas — a named move.
+    daily_sigma_1pct = 0.01 * (252**0.5)
+
+    service = ChangeFeedService(
+        journal=journal,
+        market=RecordedMarket(
+            market_at(
+                datetime(2026, 7, 30, 9, 0, tzinfo=UTC),
+                change_percent=3.5,
+                realized_volatility=daily_sigma_1pct,
+            ),
+            market_at(
+                datetime(2026, 7, 29, 9, 0, tzinfo=UTC),
+                realized_volatility=daily_sigma_1pct,
+            ),
+        ),
+        exposures=(
+            HoldingExposure(
+                symbol="NVDA",
+                weight_pct=12.3,
+                sensitivity=MarketSensitivity(
+                    beta=1.84,
+                    correlation=0.78,
+                    observations=250,
+                    benchmark="SPY",
+                ),
+            ),
+        ),
+    )
+
+    moves = [event for event in service.build().events if event.title.startswith("SPY")]
+
+    assert len(moves) == 1
+    assert "NVDA (12.3% of the account) moves 1.84× with it" in moves[0].description

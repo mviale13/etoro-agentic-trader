@@ -23,6 +23,7 @@ from app.api.models.portfolio_briefing import (
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.change_feed.change_feed_service import ChangeFeedService
+from app.application.change_feed.holding_exposures import holding_exposures
 from app.application.executive.executive_service import ExecutiveService
 from app.application.learning.decision_journal import DecisionJournal
 from app.application.market import MarketSnapshotArchive
@@ -135,6 +136,10 @@ async def portfolio_briefing(
     changes = ChangeFeedService(
         journal=journal,
         market=MarketSnapshotArchive(),
+        # What each holding is measured to move with, so a benchmark move
+        # in the feed can say which holdings it touches — and for how much
+        # of the account nothing is measured.
+        exposures=holding_exposures(brain),
     ).build(
         symbols=[workspace.symbol for workspace in briefing.workspaces],
     )

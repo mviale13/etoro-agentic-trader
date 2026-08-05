@@ -574,9 +574,12 @@ are still open.
 ## Explainability
 
 The change feed reports what the Artificial CIO changed its mind about and
-what the market did. Why a given movement matters to *this* investor — which
-holding it touches, and how much — is still open, and needs a measure of
-which moves matter before it can be answered honestly.
+what the market did. A benchmark move now also says which holdings it
+touches and how much, from each holding's measured `market_sensitivity` and
+its share of the account — and counts the holdings nothing was measured
+for. What remains open is the same connection for moves that are not the
+benchmark's: a beta to SPY says nothing about an oil move, and connecting
+one honestly needs a sensitivity to that instrument nobody has measured.
 
 ---
 
