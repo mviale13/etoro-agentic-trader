@@ -57,6 +57,46 @@ class CommitteeOpinionResponse(BaseModel):
     evidence: list[CommitteeEvidenceResponse]
 
 
+class PlaybookCoverageResponse(BaseModel):
+    """One analysis, and whether this playbook asks for it."""
+
+    analyst: str
+
+    #: What it is called, worded by the backend.
+    label: str
+
+    covered: bool
+
+    #: Why it is not asked for, where it is not. Null where it is.
+    #: An analysis declined and an analysis that failed mean opposite
+    #: things about a case, and a reader cannot tell them apart from a
+    #: shorter list alone.
+    reason: str | None
+
+
+class PlaybookResponse(BaseModel):
+    """The framework this security is evaluated with, and what it covers.
+
+    A sector says what a company sells. This says how it is read — which
+    is what actually determines the analysis, and therefore what a reader
+    needs in order to understand why one dossier looks unlike another.
+    """
+
+    kind: str
+    name: str
+    explanation: str
+    priorities: list[str]
+
+    #: Every analysis this platform can run, each marked as asked for or
+    #: declined-with-reason. Never only the ones that ran.
+    coverage: list[PlaybookCoverageResponse]
+
+    #: False when the provider reported no industry at all, so no
+    #: playbook was chosen on evidence and the default is not presented
+    #: as a decision.
+    classified: bool
+
+
 class ScoreResponse(BaseModel):
     """One score the decision was made on, and why it is that number.
 
@@ -170,6 +210,10 @@ class DossierResponse(BaseModel):
 
     #: What to consider doing about this security.
     action: ActionResponse | None
+
+    #: How this security is read, and what that framework covers. Null
+    #: where nothing about the security itself could be gathered.
+    playbook: PlaybookResponse | None
 
     #: How far conviction moved since the last decision, and why.
     conviction_change: ConvictionChangeResponse | None

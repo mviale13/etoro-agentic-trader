@@ -75,6 +75,7 @@ interface RankedCasePayload {
   conviction: number;
   conviction_label: string;
   committee_agreement: number;
+  playbook_name: string | null;
   safety_score: number | null;
   summary: string;
   why_now: readonly string[];
@@ -288,6 +289,10 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.committee_agreement,
         `investment_cases[${index}].committee_agreement`,
       ),
+      playbook_name: optionalString(
+        item.playbook_name,
+        `investment_cases[${index}].playbook_name`,
+      ),
       safety_score: optionalNumber(item.safety_score),
       summary: requireString(item.summary, `investment_cases[${index}].summary`),
       why_now: Array.isArray(item.why_now)
@@ -416,6 +421,7 @@ function mapInvestmentCases(
     trend: item.trend,
     action: item.action,
     convictionChange: item.conviction_change,
+    playbookName: item.playbook_name,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
   }));
 }

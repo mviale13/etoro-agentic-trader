@@ -1,7 +1,6 @@
+from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.company_profile import (
-    BusinessModel,
-    CompanyLifecycle,
     CompanyProfile,
     Sector,
 )
@@ -36,8 +35,7 @@ def make_context() -> CompanyResearchContext:
     )
 
     profile = CompanyProfile(
-        business_model=BusinessModel.STANDARD_CORPORATE,
-        lifecycle=CompanyLifecycle.MATURE,
+        asset_class=AssetClass.STOCK,
         sector=Sector.TECHNOLOGY,
         industry="Software",
     )

@@ -1,7 +1,6 @@
+from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.company_profile import (
-    BusinessModel,
-    CompanyLifecycle,
     CompanyProfile,
     Sector,
 )
@@ -22,8 +21,7 @@ def test_company_research_context_groups_facts_and_profile() -> None:
     )
 
     profile = CompanyProfile(
-        business_model=BusinessModel.BANK,
-        lifecycle=CompanyLifecycle.MATURE,
+        asset_class=AssetClass.STOCK,
         sector=Sector.FINANCIALS,
         industry="diversified_bank",
     )

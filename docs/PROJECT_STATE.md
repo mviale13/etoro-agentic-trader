@@ -93,6 +93,103 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Knowledge acquisition wired into the pipeline, cache-first** (August
+  2026). `CompanyResearchService` now asks `CompanyKnowledgeService` for
+  a company's own account of itself, and nothing in the research pipeline
+  reaches a regulator or a model directly. The policy is cache-first and
+  on demand: resolve the current document, return stored knowledge if its
+  key is known, otherwise acquire, validate and store. Knowledge refreshes
+  only when the authoritative document changes. Live: Disney cold 48.0s,
+  warm 0.6s.
+
+  `reporting_period` is populated from the filing index and kept apart
+  from the publication date — Disney's latest 10-K was published
+  2025-11-13 for a period ended 2025-09-27, and comparing the wrong one
+  would compare documents rather than business periods.
+
+  Acquisition state is explicit: `available_cached`, `available_acquired`,
+  `unavailable`, `provider_error`, `invalid_extraction`. A gap in coverage
+  and an outage are different answers and only one is worth retrying,
+  which `may_succeed_later` says outright.
+
+  Two bugs the live run found. `BTC` resolves against the SEC to a trust
+  issuing shares that track Bitcoin — a real business filing a real
+  report — so a token was about to be described by a fund's segments;
+  knowledge is now asked for only where the playbook expects company
+  accounts. And extraction was not repeatable: one attempt in three
+  survived grounding, the rest paraphrasing across a table boundary. The
+  contract was not relaxed. Quotes are now asked for short — five to
+  fifteen words from one run of prose — and a rejected reading is asked
+  again up to three times under the identical rule. Three of three now
+  pass with identical figures.
+
+  The store gained a schema version. A source is immutable; the reading
+  of it is not, so an entry written before the extraction captured
+  reporting periods is treated as absent and read again rather than
+  upgraded in place — filling in what a reading never captured would be
+  inventing it.
+
+- **A Company Knowledge layer, behind a primary-source seam** (August
+  2026). Structural facts about a business — its segments, what each
+  sells, how large each is — read from the document the company is
+  legally answerable for, and kept.
+
+  Two stores, deliberately. Evidence is dynamic and expires: a price at
+  fifteen minutes, fundamentals at a day. Knowledge is structural and
+  changes when the company changes, so it is keyed by the document's
+  immutable identity and never expires at all. Reading Disney's 10-K
+  costs 44 seconds and two model calls once; every cycle after that is
+  half a second and no model call.
+
+  The LLM reads and never decides. Every segment carries a verbatim span
+  and the span is checked against the document — an extraction quoting
+  words that are not there is discarded in full, not in part. Revenue
+  shares are read from the performance discussion, never apportioned: a
+  set summing past tolerance is refused rather than rescaled. Disney's
+  10-K filed 2025-11-13 yields Entertainment 45.0%, Experiences 38.3%,
+  Sports 18.7% — the revenue mix an industry code cannot express, from
+  the filing rather than from assumption.
+
+  Acquisition sits behind `PrimarySourceProvider`, with EDGAR as the
+  first adapter. The canonical `PrimarySource` carries identity, type,
+  identifier, publication date, reporting period, format, language,
+  location and the immutable key that makes knowledge permanent — so
+  extraction, storage and reuse are identical whether a document came
+  from a regulator, an ESEF filing or a company's own report. European
+  coverage becomes another adapter rather than a rewrite. Where no
+  provider can resolve a source, every provider's reason is carried:
+  "not listed" and "could not be reached" call for opposite responses.
+
+  No archetype is decided anywhere in this work. These are facts; the
+  deterministic rules that read them come next.
+
+- **A security is read with a playbook, and the dossier says which**
+  (August 2026). The pipeline already had the shape — profile → strategy
+  → plan → analysts — and it did nothing: `CompanyProfiler` returned
+  `business_model=STANDARD_CORPORATE, lifecycle=MATURE` as literal
+  constants for every company, the factory raised for anything else, and
+  `CompanyResearch` had four named fields so a security read any other
+  way could not be represented. Every security was analysed identically
+  whatever its kind.
+
+  `InvestmentPlaybook` is now the explanation and the instruction both:
+  the dossier shows the framework, its priorities and its coverage, and
+  the `ResearchPlan` the executor runs is built from the same object, so
+  what the investor is told and what the analysts were asked cannot
+  drift. Coverage lists every analysis, including the declined ones with
+  their reason — a question this platform chose not to ask and one that
+  failed to read mean opposite things about a case. Bitcoin's absent
+  valuation is now the Digital Asset playbook saying a token publishes no
+  financial statements, rather than an unexplained gap.
+
+  The classification is structural only: asset class and the industry the
+  provider reports. Live, that settles Digital Asset, Fund, Software,
+  Platform, Aerospace & Defence and Asset Manager — and leaves four of
+  eight stocks on the general default, with the book's one bank reporting
+  no industry at all and stated as not classified rather than defaulted
+  silently. What kind of *business* this is beyond its industry is the
+  next question, and it needs evidence this platform does not yet read.
+
 - **A conviction that moves says how far, and what moved under it**
   (August 2026). The dashboard was static: a case's conviction was a
   number with no yesterday. Each row now carries the move — **↑1**, **↓2**

@@ -43,13 +43,20 @@ def test_research_plan_requires_at_least_one_question() -> None:
         )
 
 
-def test_research_plan_requires_at_least_one_analyst() -> None:
-    with pytest.raises(
-        ValueError,
-        match="Research plan must assign at least one analyst",
-    ):
-        ResearchPlan(
-            objective="Evaluate the company.",
-            questions=("Can the company grow?",),
-            analyst_keys=(),
-        )
+def test_a_plan_may_ask_for_no_analyst_at_all() -> None:
+    """
+    A digital asset and a fund publish no accounts to analyse.
+
+    This used to raise: a plan was required to name at least one analyst,
+    so a security with nothing to analyse could not be described and was
+    skipped instead — which left its dossier quietly thinner than a
+    company's, with no explanation for the difference.
+    """
+
+    plan = ResearchPlan(
+        objective="Evaluated as a digital asset.",
+        questions=("Network scale and supply",),
+        analyst_keys=(),
+    )
+
+    assert plan.analyst_keys == ()

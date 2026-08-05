@@ -11,6 +11,8 @@ from app.api.models.dossier import (
     NarrativeFindingResponse,
     NarrativeResponse,
     NarrativeSectionResponse,
+    PlaybookCoverageResponse,
+    PlaybookResponse,
     ProvenanceResponse,
     ScoreResponse,
 )
@@ -41,10 +43,13 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.brain import Brain
 from app.domain.decision_history import ConvictionChange, DecisionTrend
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
+from app.domain.playbook import InvestmentPlaybook
 from app.domain.provenance import Provenance
+from app.domain.research_plan import AnalystKey
 from app.domain.score_basis import ScoreBases, ScoreBasis
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
@@ -141,6 +146,7 @@ async def portfolio_briefing(
                 trend=_trend(thesis.trend),
                 action=_action(workspace.action),
                 conviction_change=_conviction_change(thesis.conviction_change),
+                playbook_name=_playbook_name(brain, workspace.symbol),
             )
         )
 
@@ -283,6 +289,50 @@ def _trend(trend: DecisionTrend | None) -> TrendResponse | None:
     )
 
 
+def _playbook_name(brain: Brain, symbol: str) -> str | None:
+    """What kind of investment this is read as, or nothing gathered."""
+
+    company = brain.security_evidence(symbol)
+
+    if company is None or company.signals.research is None:
+        return None
+
+    return company.signals.research.playbook.name
+
+
+def _playbook(playbook: InvestmentPlaybook | None) -> PlaybookResponse | None:
+    """
+    The framework, with every analysis marked asked-for or declined.
+
+    Coverage is built from the whole set of analysts this platform has,
+    not from the ones that ran — a reader comparing two dossiers must be
+    able to see that a question was declined rather than merely absent.
+    """
+
+    if playbook is None:
+        return None
+
+    declined = {item.analyst: item.reason for item in playbook.excluded}
+
+    return PlaybookResponse(
+        kind=playbook.kind.value,
+        name=playbook.name,
+        explanation=playbook.explanation,
+        priorities=list(playbook.priorities),
+        coverage=[
+            PlaybookCoverageResponse(
+                analyst=analyst.value,
+                label=analyst.label,
+                covered=analyst in playbook.analysts,
+                reason=declined.get(analyst),
+            )
+            for analyst in AnalystKey
+            if analyst in playbook.analysts or analyst in declined
+        ],
+        classified=playbook.is_classified,
+    )
+
+
 def _conviction_change(
     change: ConvictionChange | None,
 ) -> ConvictionChangeResponse | None:
@@ -414,6 +464,12 @@ async def dossier(
         trend=_trend(thesis.trend),
         action=_action(workspace.action),
         conviction_change=_conviction_change(thesis.conviction_change),
+        playbook=_playbook(
+            company.signals.research.playbook
+            if (company := brain.security_evidence(normalized_symbol)) is not None
+            and company.signals.research is not None
+            else None
+        ),
         decided_at=decision.decided_at,
         summary=thesis.summary,
         expected_holding_period=thesis.expected_holding_period,

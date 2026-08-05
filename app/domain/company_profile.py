@@ -1,25 +1,7 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
-
-class BusinessModel(StrEnum):
-    """The economic structure through which a company creates value."""
-
-    STANDARD_CORPORATE = "standard_corporate"
-    BANK = "bank"
-    INSURER = "insurer"
-    REIT = "reit"
-    ASSET_MANAGER = "asset_manager"
-    EARLY_STAGE = "early_stage"
-
-
-class CompanyLifecycle(StrEnum):
-    """The company's current stage of economic development."""
-
-    EARLY_STAGE = "early_stage"
-    GROWTH = "growth"
-    MATURE = "mature"
-    DECLINING = "declining"
+from app.domain.asset_class import AssetClass
 
 
 class Sector(StrEnum):
@@ -46,10 +28,18 @@ class CompanyProfile:
     represents the structural characteristics of a business that determine
     how it should be analyzed.
 
-    It is the bridge between raw facts and the research strategy.
+    It is the bridge between raw facts and the playbook chosen for them.
+
+    It once carried a `business_model` and a `lifecycle` as well. Both were
+    literal constants — every company in existence was a mature standard
+    corporate — and nothing read either of them. The question they were
+    meant to answer belongs to the playbook, and it is answered there from
+    evidence rather than asserted here.
     """
 
-    business_model: BusinessModel
-    lifecycle: CompanyLifecycle
+    #: What kind of security this is. It outranks the industry: a token
+    #: filed under "financial services" is still a token.
+    asset_class: AssetClass
+
     sector: Sector
     industry: str | None = None

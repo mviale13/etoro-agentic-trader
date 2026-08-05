@@ -172,6 +172,8 @@ def test_fundamental_research_reaches_the_decision_as_weighed_evidence() -> None
     the risk and sensitivity readings are.
     """
 
+    import asyncio
+
     from app.services.company_research_service import CompanyResearchService
 
     facts = CompanyFacts(
@@ -190,7 +192,9 @@ def test_fundamental_research_reaches_the_decision_as_weighed_evidence() -> None
         current_ratio=1.5,
     )
 
-    research = CompanyResearchService().analyze(facts)
+    research = asyncio.run(
+        CompanyResearchService(knowledge_service=_NoKnowledge()).analyze(facts)
+    )
     company = make_company("GOOD", research=research)
     brain = make_brain(evidence={"GOOD": (company,)})
 
@@ -783,3 +787,15 @@ def test_portfolio_fit_lists_every_term_including_the_unmeasured_ones() -> None:
         "Asset-class room is not measured" in line
         for line in explained.portfolio_fit.evidence
     )
+
+
+class _NoKnowledge:
+    """A unit test reads no filings and calls no model."""
+
+    async def knowledge(self, symbol: str):
+        from app.services.company_knowledge_service import (
+            KnowledgeOutcome,
+            KnowledgeState,
+        )
+
+        return KnowledgeOutcome(state=KnowledgeState.UNAVAILABLE)

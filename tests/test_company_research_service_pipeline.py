@@ -1,15 +1,20 @@
+import asyncio
 from datetime import UTC, datetime
 
+from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.company_profile import (
-    BusinessModel,
-    CompanyLifecycle,
     CompanyProfile,
     Sector,
 )
 from app.domain.company_research_context import CompanyResearchContext
+from app.domain.playbook import PLAYBOOKS, InvestmentPlaybook, PlaybookKind
 from app.domain.provenance import Provenance
 from app.domain.research_plan import AnalystKey, ResearchPlan
+from app.services.company_knowledge_service import (
+    KnowledgeOutcome,
+    KnowledgeState,
+)
 from app.services.company_research_service import CompanyResearchService
 from app.services.research_strategy import ResearchStrategy
 
@@ -37,6 +42,10 @@ class FakeStrategyFactory:
         self.strategy = strategy
         self.received: CompanyProfile | None = None
 
+    def playbook(self, profile: CompanyProfile) -> InvestmentPlaybook:
+        self.received = profile
+        return PLAYBOOKS[PlaybookKind.SOFTWARE]
+
     def create(self, profile: CompanyProfile) -> ResearchStrategy:
         self.received = profile
         return self.strategy
@@ -56,6 +65,18 @@ class FakeExecutor:
         self.received_plan = plan
         self.received_context = context
         return self.opinions
+
+
+class KnowledgeStub:
+    """No document is fetched and no model is called in a unit test."""
+
+    def __init__(self) -> None:
+        self.asked: list[str] = []
+
+    async def knowledge(self, symbol: str) -> KnowledgeOutcome:
+        self.asked.append(symbol)
+
+        return KnowledgeOutcome(state=KnowledgeState.UNAVAILABLE)
 
 
 def make_company() -> CompanyFacts:
@@ -80,8 +101,7 @@ def test_company_research_service_uses_research_pipeline() -> None:
     company = make_company()
 
     profile = CompanyProfile(
-        business_model=BusinessModel.STANDARD_CORPORATE,
-        lifecycle=CompanyLifecycle.MATURE,
+        asset_class=AssetClass.STOCK,
         sector=Sector.TECHNOLOGY,
         industry="Software",
     )
@@ -114,13 +134,16 @@ def test_company_research_service_uses_research_pipeline() -> None:
         ]
     )
 
+    knowledge = KnowledgeStub()
+
     service = CompanyResearchService(
         profiler=profiler,
         strategy_factory=strategy_factory,
         executor=executor,
+        knowledge_service=knowledge,
     )
 
-    result = service.analyze(company)
+    result = asyncio.run(service.analyze(company))
 
     assert profiler.received is company
     assert strategy_factory.received is profile
@@ -130,7 +153,18 @@ def test_company_research_service_uses_research_pipeline() -> None:
         profile=profile,
     )
 
-    assert result.growth is growth
-    assert result.profitability is profitability
-    assert result.balance_sheet is balance_sheet
-    assert result.cash_flow is cash_flow
+    # Keyed by the analyst that produced it, in the order the plan asked.
+    # Named fields could not express a security read any other way, which
+    # is why every security was read the same way.
+    assert result.opinion(AnalystKey.GROWTH) is growth
+    assert result.opinion(AnalystKey.PROFITABILITY) is profitability
+    assert result.opinion(AnalystKey.BALANCE_SHEET) is balance_sheet
+    assert result.opinion(AnalystKey.CASH_FLOW) is cash_flow
+
+    # And it carries the playbook that chose them.
+    assert result.playbook.kind is PlaybookKind.SOFTWARE
+
+    # Structural knowledge is asked for through its own service, so
+    # nothing in the research pipeline reaches a regulator or a model.
+    assert knowledge.asked == ["TEST"]
+    assert result.knowledge_state == KnowledgeState.UNAVAILABLE.value

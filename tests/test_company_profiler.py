@@ -1,7 +1,5 @@
 from app.domain.company_facts import CompanyFacts
 from app.domain.company_profile import (
-    BusinessModel,
-    CompanyLifecycle,
     Sector,
 )
 from app.services.company_profiler import CompanyProfiler
@@ -35,8 +33,6 @@ def test_profiler_normalizes_known_sector() -> None:
 
     profile = CompanyProfiler().profile(company)
 
-    assert profile.business_model is BusinessModel.STANDARD_CORPORATE
-    assert profile.lifecycle is CompanyLifecycle.MATURE
     assert profile.sector is Sector.TECHNOLOGY
     assert profile.industry == "Software"
 
@@ -49,8 +45,6 @@ def test_profiler_uses_other_for_unknown_sector() -> None:
 
     profile = CompanyProfiler().profile(company)
 
-    assert profile.business_model is BusinessModel.STANDARD_CORPORATE
-    assert profile.lifecycle is CompanyLifecycle.MATURE
     assert profile.sector is Sector.OTHER
     assert profile.industry is None
 

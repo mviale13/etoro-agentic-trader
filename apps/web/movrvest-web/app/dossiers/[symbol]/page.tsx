@@ -14,6 +14,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierCommitteeOpinion,
+  DossierPlaybook,
   DossierNarrative,
   DossierScore,
   DossierViewModel,
@@ -114,6 +115,105 @@ function Unavailable({
   );
 }
 
+/**
+ * What kind of investment this is, and what that means for the analysis.
+ *
+ * The reason one dossier looks unlike another. A reader who cannot see
+ * the framework cannot tell a question this platform declined to ask
+ * from one it failed to answer — so coverage lists every analysis,
+ * including the ones the playbook does not run, each with its reason.
+ */
+function Playbook({ playbook }: { playbook: DossierPlaybook }) {
+  return (
+    <section
+      aria-labelledby="playbook-heading"
+      className="rounded-[28px] border border-slate-200 bg-white p-8"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        Company type
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <h2
+          id="playbook-heading"
+          className="text-3xl font-semibold tracking-[-0.03em] text-slate-950"
+        >
+          {playbook.name}
+        </h2>
+
+        {/* Not classified is not a kind of company: it is the absence of
+            evidence for one, and it is labelled rather than defaulted. */}
+        {playbook.classified ? null : (
+          <StatusPill status="partial" label="No industry reported" />
+        )}
+      </div>
+
+      <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-700">
+        {playbook.explanation}
+      </p>
+
+      {playbook.priorities.length > 0 ? (
+        <div className="mt-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Analysed primarily for
+          </p>
+
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {playbook.priorities.map((item) => (
+              <li
+                key={item}
+                className="flex gap-2.5 text-sm leading-6 text-slate-700"
+              >
+                <span
+                  aria-hidden="true"
+                  className="mt-2.5 size-1 shrink-0 rounded-full bg-slate-400"
+                />
+
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {playbook.coverage.length > 0 ? (
+        <div className="mt-6 border-t border-slate-100 pt-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Playbook coverage
+          </p>
+
+          <ul className="mt-3 space-y-2">
+            {playbook.coverage.map((item) => (
+              <li key={item.analyst} className="flex gap-2.5 text-sm leading-6">
+                <span
+                  aria-hidden="true"
+                  className={
+                    item.covered ? "text-emerald-600" : "text-slate-300"
+                  }
+                >
+                  {item.covered ? "✓" : "○"}
+                </span>
+
+                <span
+                  className={item.covered ? "text-slate-800" : "text-slate-500"}
+                >
+                  {item.label}
+
+                  {item.reason ? (
+                    <span className="block text-slate-500">
+                      Not applicable — {item.reason}
+                    </span>
+                  ) : null}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
@@ -126,6 +226,8 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       ) : dossier.narrativeAbsent ? (
         <NarrativeAbsence reason={dossier.narrativeAbsent} />
       ) : null}
+
+      {dossier.playbook ? <Playbook playbook={dossier.playbook} /> : null}
 
       <WhatChanged dossier={dossier} />
       <Recommendation dossier={dossier} />

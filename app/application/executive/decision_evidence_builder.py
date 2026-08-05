@@ -634,15 +634,13 @@ class DecisionEvidenceBuilder:
         if research is None:
             return ()
 
+        # Whichever analysts this security's playbook asked for, in the
+        # order it asked them. An analyst the playbook declined leaves no
+        # finding here and is explained on the playbook itself, so a
+        # missing verdict never has to be read as a failed one.
         findings = (
-            DecisionEvidenceBuilder._opinion_finding(
-                "Profitability", research.profitability
-            ),
-            DecisionEvidenceBuilder._opinion_finding("Growth", research.growth),
-            DecisionEvidenceBuilder._opinion_finding(
-                "Balance sheet", research.balance_sheet
-            ),
-            DecisionEvidenceBuilder._opinion_finding("Cash flow", research.cash_flow),
+            DecisionEvidenceBuilder._opinion_finding(key.label, opinion)
+            for key, opinion in research.opinions.items()
         )
 
         return tuple(finding for finding in findings if finding is not None)
