@@ -80,6 +80,9 @@ class ResolverStub:
     async def items(self) -> dict[int, WatchlistItem]:
         return self._instruments
 
+    async def items_for(self, instrument_ids) -> dict[int, WatchlistItem]:
+        return self._instruments
+
     @staticmethod
     def placeholder(instrument_id: int) -> str:
         return f"#{instrument_id}"

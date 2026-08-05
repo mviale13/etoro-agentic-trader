@@ -386,14 +386,19 @@ change feed. It does not gate.
       against, and exchange volume is not on-chain volume, so an NVT-style
       ratio would be a metric invented rather than measured. A crypto case
       therefore stops at PREPARE
-- [ ] Holdings absent from every watchlist cannot be analysed. Naming is
-      handled (the broker's own symbol, else a `#id` placeholder), and an
-      unresolved holding now reaches the brief with the honest "no
-      security-level analysis" line rather than a misleading one. What
-      remains is evidencing it: `SecurityPerception` still needs a
-      `WatchlistItem` for the asset type, so a held instrument no watchlist
-      names is drawn without a signal. Rare in practice — eToro's
-      "RecentlyInvested" watchlist carries held instruments
+- [x] Holdings absent from every watchlist are described by the broker's
+      own catalog. `/api/v1/market-data/instruments?instrumentIds=…` is
+      the same source the position comes from, so asking it for the
+      symbol, name and type of a held-but-unwatched instrument is a
+      measurement, not a guess. `InstrumentSymbolResolver.items_for`
+      asks it once per cycle, only about the ids the watchlists miss;
+      both perceptions use it, so such a holding is now named,
+      classified and evidenced like any other (proven live: eToro id
+      1238 was `#1238`, 0.2% unclassifiable — it is now BNP.PA, a
+      stock, evaluated by the CIO on its own Yahoo record). An id the
+      catalog does not return, or a catalog that cannot be reached,
+      degrades to the placeholder and the worded "cannot classify"
+      line — the same honest absence as before the fallback existed
 - [ ] Research still evidences a capped number of candidates per cycle. With
       the cache warm the cap could rise substantially; the first cycle of a
       day is what costs

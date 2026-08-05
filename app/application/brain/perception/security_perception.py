@@ -98,7 +98,9 @@ class SecurityPerception:
         if not portfolio.holdings and not candidates and not focus_symbols:
             return SecurityEvidence()
 
-        instruments = await self._symbol_resolver.items()
+        instruments = await self._symbol_resolver.items_for(
+            tuple(holding.instrument_id for holding in portfolio.holdings)
+        )
 
         targets = [
             (holding.symbol, instruments[holding.instrument_id])

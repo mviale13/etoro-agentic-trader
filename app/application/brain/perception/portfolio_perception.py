@@ -102,7 +102,9 @@ class PortfolioPerception:
         if not snapshot.holdings:
             return snapshot
 
-        instruments = await self._symbol_resolver.items()
+        instruments = await self._symbol_resolver.items_for(
+            tuple(holding.instrument_id for holding in snapshot.holdings)
+        )
 
         holdings = tuple(
             replace(

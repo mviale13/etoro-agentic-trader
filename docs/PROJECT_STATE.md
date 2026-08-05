@@ -86,6 +86,16 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Held-but-unwatched instruments resolve from the broker's catalog**
+  (August 2026). A position on no watchlist used to be a `#id`
+  placeholder and a "cannot classify" line. The resolver now asks
+  eToro's own instruments endpoint — the same source the position
+  comes from — to describe the ids the watchlists miss, once per
+  cycle. Proven live: instrument 1238 (`#1238`, 0.2% unclassifiable)
+  is BNP.PA, a stock, now named, classified and fully evaluated by the
+  CIO on its own record. An id the catalog cannot describe keeps the
+  placeholder and the worded absence.
+
 - **The Executive Writer speaks through a provider seam** (August 2026).
   The model call sits behind `NarrativeProvider`: the writer builds the
   prompts and one shared JSON schema, a provider carries them over its
