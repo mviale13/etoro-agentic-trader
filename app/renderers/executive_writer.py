@@ -10,13 +10,20 @@ failure — no credentials, a declined request, an ungrounded draft —
 produces an honest absence, never a fabricated narrative. The
 deterministic renderers remain the canonical presentation; this layer
 only adds language on top of a judgment that is already made.
+
+The model call itself sits behind `NarrativeProvider`: the writer builds
+the prompts and the schema, the provider carries them over its own wire,
+and every draft — whoever wrote it — passes through the one validator
+here. A provider can therefore never loosen the grounding contract; it
+can only fail it.
 """
 
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from app.application.committees.models.committee_opinion import CommitteeOpinion
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
@@ -28,9 +35,12 @@ from app.domain.executive_narrative import (
 )
 from app.domain.provenance import Provenance
 from app.domain.thesis.investment_thesis import InvestmentThesis
-
-if TYPE_CHECKING:
-    from anthropic import AsyncAnthropic
+from app.domain.token_usage import TokenUsage
+from app.providers.narrative_provider import (
+    DraftRequest,
+    NarrativeDeclined,
+    NarrativeProvider,
+)
 
 #: Words per section beyond which a draft is rejected. The prompt asks
 #: for at most 120; the validator allows headroom for connectives but
@@ -345,16 +355,33 @@ def narrative_from_payload(
     )
 
 
+#: How much room a draft gets. A narrative is five short sections, but
+#: both providers' current models spend reasoning tokens out of this
+#: same budget, so the ceiling leaves room to think and to write.
+MAX_DRAFT_TOKENS = 16000
+
+
+@dataclass(frozen=True, slots=True)
+class WriterResult:
+    """A validated narrative and what the draft measurably cost.
+
+    `usage` is the provider's own report, or None where it reported
+    none. It rides beside the narrative rather than inside it because
+    token spend is a fact about the call, not about the case.
+    """
+
+    narrative: ExecutiveNarrative
+    usage: TokenUsage | None
+
+
 class ExecutiveWriter:
-    """Call the model, then trust only what survives validation."""
+    """Ask a provider for language, then trust only what survives validation."""
 
     def __init__(
         self,
-        client: AsyncAnthropic,
-        model: str,
+        provider: NarrativeProvider,
     ) -> None:
-        self._client = client
-        self._model = model
+        self.provider = provider
 
     async def write(
         self,
@@ -364,51 +391,70 @@ class ExecutiveWriter:
         evidence: DecisionEvidence,
         opinions: tuple[CommitteeOpinion, ...],
     ) -> ExecutiveNarrative:
-        findings = build_findings(decision, thesis, evidence, opinions)
-
-        response = await self._client.messages.create(
-            model=self._model,
-            max_tokens=8000,
-            system=SYSTEM_PROMPT,
-            output_config={
-                "format": {
-                    "type": "json_schema",
-                    "schema": narrative_schema(),
-                }
-            },
-            messages=[
-                {
-                    "role": "user",
-                    "content": user_prompt(
-                        symbol,
-                        decision.state.value,
-                        findings,
-                    ),
-                }
-            ],
+        result = await self.write_measured(
+            symbol=symbol,
+            decision=decision,
+            thesis=thesis,
+            evidence=evidence,
+            opinions=opinions,
         )
 
-        if response.stop_reason == "refusal":
-            raise NarrativeRejected(
-                "The writing model declined the request, so no narrative was produced."
-            )
+        return result.narrative
 
-        text = next(
-            (block.text for block in response.content if block.type == "text"),
-            "",
+    async def write_measured(
+        self,
+        symbol: str,
+        decision: ExecutiveDecision,
+        thesis: InvestmentThesis,
+        evidence: DecisionEvidence,
+        opinions: tuple[CommitteeOpinion, ...],
+    ) -> WriterResult:
+        """Write the narrative and keep the provider's usage report beside it."""
+
+        findings = build_findings(decision, thesis, evidence, opinions)
+
+        request = DraftRequest(
+            system_prompt=SYSTEM_PROMPT,
+            user_prompt=user_prompt(
+                symbol,
+                decision.state.value,
+                findings,
+            ),
+            schema=narrative_schema(),
+            max_tokens=MAX_DRAFT_TOKENS,
         )
 
         try:
-            payload = json.loads(text)
+            draft = await self.provider.draft(request)
+        except NarrativeDeclined as declined:
+            # The decline keeps its wording: a provider states why there
+            # is no draft, and the rejection carries that statement.
+            raise NarrativeRejected(str(declined)) from declined
+
+        if not draft.text.strip():
+            # Distinct from unparseable: an empty draft usually means the
+            # model spent its whole budget before writing, and the absence
+            # should say so rather than blame the parser.
+            raise NarrativeRejected(
+                "The writer returned an empty draft, so no narrative was produced."
+            )
+
+        try:
+            payload = json.loads(draft.text)
         except json.JSONDecodeError as error:
             raise NarrativeRejected(
                 "The writer returned unparseable output."
             ) from error
 
-        return narrative_from_payload(
+        narrative = narrative_from_payload(
             payload,
             symbol=symbol,
             decision_state=decision.state.value,
             findings=findings,
-            model=self._model,
+            model=draft.model,
+        )
+
+        return WriterResult(
+            narrative=narrative,
+            usage=draft.usage,
         )

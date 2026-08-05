@@ -1,7 +1,6 @@
 """The Executive Writer: language only, grounded or absent."""
 
 from datetime import UTC, datetime
-from types import SimpleNamespace
 
 import pytest
 
@@ -12,14 +11,22 @@ from app.application.committees.models.committee_opinion import (
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.domain.thesis.investment_thesis import InvestmentThesis
+from app.providers.narrative_provider import (
+    Draft,
+    DraftRequest,
+    NarrativeDeclined,
+)
 from app.renderers.executive_writer import (
     ExecutiveWriter,
     NarrativeRejected,
     build_findings,
     narrative_from_payload,
+    narrative_schema,
 )
 from app.services.executive_writer_service import (
     FLAG,
+    MODEL_ENV,
+    PROVIDER_ENV,
     ExecutiveWriterService,
 )
 
@@ -202,36 +209,41 @@ def test_an_unknown_section_rejects_the_draft() -> None:
         )
 
 
-class StubMessages:
-    def __init__(self, response) -> None:
-        self._response = response
-        self.last_kwargs: dict = {}
+class StubProvider:
+    """A provider that returns a canned draft and remembers the request."""
 
-    async def create(self, **kwargs):
-        self.last_kwargs = kwargs
-        return self._response
+    name = "Stub"
 
+    def __init__(
+        self,
+        text: str,
+        model: str = "claude-opus-5",
+        declines: bool = False,
+    ) -> None:
+        self.model = model
+        self._text = text
+        self._declines = declines
+        self.last_request: DraftRequest | None = None
 
-class StubClient:
-    def __init__(self, response) -> None:
-        self.messages = StubMessages(response)
+    async def draft(self, request: DraftRequest) -> Draft:
+        self.last_request = request
 
+        if self._declines:
+            raise NarrativeDeclined(
+                "The writing model declined the request, so no narrative was produced."
+            )
 
-def stub_response(text: str, stop_reason: str = "end_turn"):
-    return SimpleNamespace(
-        stop_reason=stop_reason,
-        content=[SimpleNamespace(type="text", text=text)],
-    )
+        return Draft(text=self._text, model=self.model, usage=None)
 
 
 @pytest.mark.anyio
-async def test_the_writer_calls_the_model_and_validates_the_draft() -> None:
+async def test_the_writer_calls_the_provider_and_validates_the_draft() -> None:
     import json
 
     findings = make_findings()
-    client = StubClient(stub_response(json.dumps(valid_payload(findings))))
+    provider = StubProvider(json.dumps(valid_payload(findings)))
 
-    writer = ExecutiveWriter(client=client, model="claude-opus-5")  # type: ignore[arg-type]
+    writer = ExecutiveWriter(provider=provider)
 
     narrative = await writer.write(
         symbol="MSFT",
@@ -242,18 +254,38 @@ async def test_the_writer_calls_the_model_and_validates_the_draft() -> None:
     )
 
     assert narrative.headline == "Quality worth waiting on."
+    # The narrative names the model the provider actually used.
+    assert narrative.model == "claude-opus-5"
 
-    sent = client.messages.last_kwargs
-    assert sent["model"] == "claude-opus-5"
-    assert "communication specialist" in sent["system"]
-    # The grounding contract rides on structured output.
-    assert sent["output_config"]["format"]["type"] == "json_schema"
+    sent = provider.last_request
+    assert sent is not None
+    assert "communication specialist" in sent.system_prompt
+    assert "[D1]" in sent.user_prompt
+    # The grounding contract rides on one shared schema, whichever
+    # provider carries it.
+    assert sent.schema == narrative_schema()
+
+
+@pytest.mark.anyio
+async def test_an_empty_draft_states_its_own_absence() -> None:
+    """A budget-starved draft is empty, and the absence says so rather
+    than blaming the parser."""
+
+    writer = ExecutiveWriter(provider=StubProvider(""))
+
+    with pytest.raises(NarrativeRejected, match="empty draft"):
+        await writer.write(
+            symbol="MSFT",
+            decision=make_decision(),
+            thesis=make_thesis(),
+            evidence=make_evidence(),
+            opinions=make_opinions(),
+        )
 
 
 @pytest.mark.anyio
 async def test_a_declined_request_is_an_absence_not_a_narrative() -> None:
-    client = StubClient(stub_response("", stop_reason="refusal"))
-    writer = ExecutiveWriter(client=client, model="claude-opus-5")  # type: ignore[arg-type]
+    writer = ExecutiveWriter(provider=StubProvider("", declines=True))
 
     with pytest.raises(NarrativeRejected, match="declined"):
         await writer.write(
@@ -282,9 +314,46 @@ async def test_the_flag_off_is_an_honest_absence(monkeypatch) -> None:
     assert "off" in outcome.absent_reason
 
 
+@pytest.fixture
+def no_env_file(monkeypatch):
+    """Keys live in `.env` as well as the environment; a test asserting
+    their absence must silence both sources, not just the one
+    `monkeypatch.delenv` reaches."""
+
+    from app.config import Settings
+
+    monkeypatch.setattr(
+        "app.services.executive_writer_service.get_settings",
+        lambda: Settings(_env_file=None),
+    )
+
+
 @pytest.mark.anyio
-async def test_flag_on_without_credentials_states_why(monkeypatch) -> None:
+async def test_flag_on_without_credentials_states_why(monkeypatch, no_env_file) -> None:
+    """The default provider is OpenAI; its missing key is named."""
+
     monkeypatch.setenv(FLAG, "on")
+    monkeypatch.delenv(PROVIDER_ENV, raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    outcome = await ExecutiveWriterService().narrate(
+        symbol="MSFT",
+        decision=make_decision(),
+        thesis=make_thesis(),
+        evidence=make_evidence(),
+        opinions=make_opinions(),
+    )
+
+    assert outcome.narrative is None
+    assert "OpenAI credentials" in (outcome.absent_reason or "")
+
+
+@pytest.mark.anyio
+async def test_anthropic_selected_without_credentials_states_why(
+    monkeypatch, no_env_file
+) -> None:
+    monkeypatch.setenv(FLAG, "on")
+    monkeypatch.setenv(PROVIDER_ENV, "anthropic")
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
 
@@ -297,7 +366,45 @@ async def test_flag_on_without_credentials_states_why(monkeypatch) -> None:
     )
 
     assert outcome.narrative is None
-    assert "credentials" in (outcome.absent_reason or "")
+    assert "Anthropic credentials" in (outcome.absent_reason or "")
+
+
+@pytest.mark.anyio
+async def test_an_unknown_provider_is_a_worded_absence(monkeypatch) -> None:
+    """Never a silent fallback: swapping models is configuration, stated."""
+
+    monkeypatch.setenv(FLAG, "on")
+    monkeypatch.setenv(PROVIDER_ENV, "mystery")
+
+    outcome = await ExecutiveWriterService().narrate(
+        symbol="MSFT",
+        decision=make_decision(),
+        thesis=make_thesis(),
+        evidence=make_evidence(),
+        opinions=make_opinions(),
+    )
+
+    assert outcome.narrative is None
+    assert "does not know the provider" in (outcome.absent_reason or "")
+
+
+def test_the_model_override_pins_only_the_configured_provider(monkeypatch) -> None:
+    """One env names one model; the other provider keeps its own default."""
+
+    from app.services.executive_writer_service import resolve_provider
+
+    monkeypatch.delenv(PROVIDER_ENV, raising=False)  # default: openai
+    monkeypatch.setenv(MODEL_ENV, "gpt-5-mini")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+    openai_provider = resolve_provider("openai")
+    anthropic_provider = resolve_provider("anthropic")
+
+    assert not isinstance(openai_provider, str)
+    assert not isinstance(anthropic_provider, str)
+    assert openai_provider.model == "gpt-5-mini"
+    assert anthropic_provider.model == "claude-opus-5"
 
 
 @pytest.mark.anyio
@@ -310,8 +417,7 @@ async def test_a_rejected_draft_surfaces_its_reason(monkeypatch) -> None:
     payload = valid_payload(findings)
     payload["recommendation"] = "RECOMMEND"
 
-    client = StubClient(stub_response(json.dumps(payload)))
-    writer = ExecutiveWriter(client=client, model="claude-opus-5")  # type: ignore[arg-type]
+    writer = ExecutiveWriter(provider=StubProvider(json.dumps(payload)))
 
     outcome = await ExecutiveWriterService(writer=writer).narrate(
         symbol="MSFT",
