@@ -93,6 +93,40 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A Company Knowledge layer, behind a primary-source seam** (August
+  2026). Structural facts about a business — its segments, what each
+  sells, how large each is — read from the document the company is
+  legally answerable for, and kept.
+
+  Two stores, deliberately. Evidence is dynamic and expires: a price at
+  fifteen minutes, fundamentals at a day. Knowledge is structural and
+  changes when the company changes, so it is keyed by the document's
+  immutable identity and never expires at all. Reading Disney's 10-K
+  costs 44 seconds and two model calls once; every cycle after that is
+  half a second and no model call.
+
+  The LLM reads and never decides. Every segment carries a verbatim span
+  and the span is checked against the document — an extraction quoting
+  words that are not there is discarded in full, not in part. Revenue
+  shares are read from the performance discussion, never apportioned: a
+  set summing past tolerance is refused rather than rescaled. Disney's
+  10-K filed 2025-11-13 yields Entertainment 45.0%, Experiences 38.3%,
+  Sports 18.7% — the revenue mix an industry code cannot express, from
+  the filing rather than from assumption.
+
+  Acquisition sits behind `PrimarySourceProvider`, with EDGAR as the
+  first adapter. The canonical `PrimarySource` carries identity, type,
+  identifier, publication date, reporting period, format, language,
+  location and the immutable key that makes knowledge permanent — so
+  extraction, storage and reuse are identical whether a document came
+  from a regulator, an ESEF filing or a company's own report. European
+  coverage becomes another adapter rather than a rewrite. Where no
+  provider can resolve a source, every provider's reason is carried:
+  "not listed" and "could not be reached" call for opposite responses.
+
+  No archetype is decided anywhere in this work. These are facts; the
+  deterministic rules that read them come next.
+
 - **A security is read with a playbook, and the dossier says which**
   (August 2026). The pipeline already had the shape — profile → strategy
   → plan → analysts — and it did nothing: `CompanyProfiler` returned

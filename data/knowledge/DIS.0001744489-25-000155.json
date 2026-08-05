@@ -1,0 +1,58 @@
+{
+  "description": "The Walt Disney Company, together with the subsidiaries through which businesses are conducted (the Company), is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+  "reading": {
+    "observed_at": "2026-08-05T22:11:35.785657+00:00",
+    "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+  },
+  "segments": [
+    {
+      "name": "Entertainment",
+      "quoted": "The Entertainment segment generally encompasses the Company\u2019s non-sports focused global film and episodic content production and distribution activities.",
+      "revenue_models": [
+        "subscription",
+        "advertising",
+        "licensing",
+        "transaction",
+        "services"
+      ],
+      "revenue_share": 0.449733
+    },
+    {
+      "name": "Sports",
+      "quoted": "The Sports segment generally encompasses the Company\u2019s sports-focused global television and DTC video streaming content production and distribution activities.",
+      "revenue_models": [
+        "subscription",
+        "advertising",
+        "licensing",
+        "transaction",
+        "services"
+      ],
+      "revenue_share": 0.187254
+    },
+    {
+      "name": "Experiences",
+      "quoted": "EXPERIENCES The lines of business within Experiences along with their significant business activities include the following:",
+      "revenue_models": [
+        "transaction",
+        "services",
+        "retail",
+        "licensing"
+      ],
+      "revenue_share": 0.383085
+    }
+  ],
+  "source": {
+    "company": "Walt Disney Co",
+    "document_format": "html",
+    "identifier": "10-K 0001744489-25-000155",
+    "key": "0001744489-25-000155",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1744489/000174448925000155/dis-20250927.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2025-11-13",
+    "reporting_period": null,
+    "source_type": "annual_report",
+    "symbol": "DIS"
+  },
+  "symbol": "DIS"
+}

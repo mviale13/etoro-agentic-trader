@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.primary_source import PrimarySource
 from app.domain.provenance import Provenance
 
 
@@ -73,12 +74,9 @@ class CompanyKnowledge:
 
     segments: tuple[BusinessSegment, ...]
 
-    #: The filing this was read from — form, date and the regulator's
-    #: own accession number, which identifies the document exactly.
-    source_form: str
-    source_filed_on: str
-    source_accession: str
-    source_url: str
+    #: The document this was read from, whoever published it. Canonical:
+    #: nothing downstream needs to know which regulator received it.
+    source: PrimarySource
 
     reading: Provenance
 
@@ -99,6 +97,6 @@ class CompanyKnowledge:
         )
 
     def stated_source(self) -> str:
-        """The filing as an investor would cite it."""
+        """The document as an investor would cite it."""
 
-        return f"{self.source_form} filed {self.source_filed_on}"
+        return self.source.stated()

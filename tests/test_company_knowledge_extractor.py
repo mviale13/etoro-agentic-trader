@@ -7,7 +7,7 @@ from datetime import date
 import pytest
 
 from app.domain.company_knowledge import RevenueModel
-from app.providers.edgar_filings import Filing, FilingReference
+from app.domain.primary_source import PrimarySource, SourceDocument, SourceType
 from app.providers.narrative_provider import Draft, DraftRequest, NarrativeDeclined
 from app.services.company_knowledge_extractor import (
     CompanyKnowledgeExtractor,
@@ -23,16 +23,22 @@ FILING_TEXT = (
 )
 
 
-def filing() -> Filing:
-    return Filing(
-        reference=FilingReference(
+def filing() -> SourceDocument:
+    return SourceDocument(
+        source=PrimarySource(
+            symbol="DIS",
             company="Example Co",
-            form="10-K",
-            filed_on=date(2025, 11, 13),
-            accession="0001744489-25-000155",
-            url="https://www.sec.gov/Archives/example",
+            source_type=SourceType.ANNUAL_REPORT,
+            identifier="10-K 0001744489-25-000155",
+            key="0001744489-25-000155",
+            published_on=date(2025, 11, 13),
+            reporting_period=None,
+            document_format="html",
+            language="en",
+            location="https://www.sec.gov/Archives/example",
+            provider="SEC EDGAR",
         ),
-        business_text=FILING_TEXT,
+        business_description=FILING_TEXT,
     )
 
 
@@ -88,8 +94,10 @@ def test_facts_the_filing_actually_contains_are_read() -> None:
     )
 
     # Traceable to the exact document, not merely to "a filing".
-    assert knowledge.source_accession == "0001744489-25-000155"
-    assert knowledge.stated_source() == "10-K filed 2025-11-13"
+    assert knowledge.source.key == "0001744489-25-000155"
+    assert knowledge.stated_source() == (
+        "10-K 0001744489-25-000155 published 2025-11-13, via SEC EDGAR"
+    )
 
 
 def test_a_segment_the_filing_never_described_is_refused() -> None:

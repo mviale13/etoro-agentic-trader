@@ -25,7 +25,33 @@ ANNUAL_FORMS = ("10-K", "20-F")
 
 #: Where Item 1 ends: the risk factors that follow it, or Item 2 where a
 #: filer omits them.
+#: A section ends at the next item's heading — or, where the filer does
+#: not repeat that heading in the body, at the title of the section that
+#: follows it. Disney's latest 10-K prints "ITEM 7A" only in its table of
+#: contents, so a search for the heading alone found the contents entry
+#: and read ninety-seven characters as the whole discussion.
+#:
+#: A title used as an anchor has to be long enough to be unambiguous. A
+#: short one appears inside the section it is meant to close: "risk
+#: factors" is written a dozen times inside Item 1 as a cross-reference,
+#: and anchoring on it truncated the business description mid-way. The
+#: extractor's grounding check is what caught that — a segment it had
+#: read from the filing was suddenly not in the text it was given.
+_ITEM_1 = ("item 1.", "item 1 ", "item 1:")
 _ITEM_1A = ("item 1a.", "item 1a ", "item 2.", "item 2 ")
+
+#: Item 7 is Management's Discussion and Analysis, which is where a filer
+#: states what each segment actually earned. Item 1 describes the
+#: segments and reports no figures for them.
+_ITEM_7 = ("item 7.", "item 7 ", "item 7:")
+_ITEM_7A = (
+    "item 7a.",
+    "item 7a ",
+    "item 8.",
+    "item 8 ",
+    "quantitative and qualitative disclosures about market risk",
+    "report of independent registered public accounting firm",
+)
 
 _TAGS = re.compile(r"<[^>]+>")
 _WHITESPACE = re.compile(r"[ \t\r\f\v]+")
@@ -64,13 +90,19 @@ class FilingReference:
 
 @dataclass(frozen=True, slots=True)
 class Filing:
-    """One annual report, and the part of it this platform read."""
+    """One annual report, and the parts of it this platform read."""
 
     reference: FilingReference
 
     #: The business description as plain text — the section a reader
     #: would turn to for what the company actually does.
     business_text: str
+
+    #: Management's discussion, where the filer states what each segment
+    #: earned. Empty where the section could not be found, which leaves
+    #: the segments described and their sizes unstated rather than
+    #: apportioned.
+    discussion_text: str = ""
 
 
 class EdgarFilings:
@@ -95,19 +127,61 @@ class EdgarFilings:
         self._client = client
         self._timeout = timeout
 
-    def latest_annual_report(self, symbol: str) -> Filing:
-        """The most recent 10-K or 20-F this company filed."""
+    def latest_reference(self, symbol: str) -> FilingReference:
+        """
+        Which filing is this company's latest word, without reading it.
+
+        Cheap on purpose, and separate from reading the document. The
+        accession names the filing exactly, so a caller holding knowledge
+        already read from it can stop here — the expensive parts, the
+        megabytes of markup and the model call over them, are only worth
+        paying once per filing.
+        """
 
         ticker = symbol.upper().strip()
 
-        cik = self._cik(ticker)
+        return self._latest_reference(self._cik(ticker), ticker)
 
-        reference, document = self._latest_filing(cik, ticker)
+    def read(self, reference: FilingReference) -> Filing:
+        """The sections of one filing this platform reads."""
 
         return Filing(
             reference=reference,
-            business_text=self._business_section(document),
+            **self._sections(self._get(reference.url).text),
         )
+
+    def read_url(self, url: str) -> Filing:
+        """
+        The sections of the filing at this address.
+
+        For a caller holding a canonical primary source rather than an
+        EDGAR reference: everything needed to read the document is in its
+        location, and the identity travels on the source itself.
+        """
+
+        document = self._get(url).text
+
+        return Filing(
+            reference=FilingReference(
+                company="",
+                form="",
+                filed_on=date.min,
+                accession="",
+                url=url,
+            ),
+            **self._sections(document),
+        )
+
+    def _sections(self, document: str) -> dict[str, str]:
+        return {
+            "business_text": self._section(document, _ITEM_1, _ITEM_1A),
+            "discussion_text": self._section(document, _ITEM_7, _ITEM_7A),
+        }
+
+    def latest_annual_report(self, symbol: str) -> Filing:
+        """The most recent 10-K or 20-F this company filed, read in full."""
+
+        return self.read(self.latest_reference(symbol))
 
     # ── the wire ────────────────────────────────────────────────────
 
@@ -150,11 +224,11 @@ class EdgarFilings:
             "yet read."
         )
 
-    def _latest_filing(
+    def _latest_reference(
         self,
         cik: int,
         ticker: str,
-    ) -> tuple[FilingReference, str]:
+    ) -> FilingReference:
         try:
             submissions = self._get(SUBMISSIONS_URL.format(cik=cik)).json()
         except Exception as error:
@@ -179,15 +253,13 @@ class EdgarFilings:
                 document=document,
             )
 
-            reference = FilingReference(
+            return FilingReference(
                 company=str(submissions.get("name", ticker)),
                 form=form,
                 filed_on=date.fromisoformat(str(recent["filingDate"][index])),
                 accession=accession,
                 url=url,
             )
-
-            return reference, self._get(url).text
 
         raise FilingUnavailable(
             f"{ticker} is listed with the SEC but has filed no annual "
@@ -197,25 +269,29 @@ class EdgarFilings:
     # ── the document ────────────────────────────────────────────────
 
     @staticmethod
-    def _business_section(document: str) -> str:
+    def _section(
+        document: str,
+        opening: tuple[str, ...],
+        closing: tuple[str, ...],
+    ) -> str:
         """
-        The business description, as plain text.
+        One numbered item of the filing, as plain text.
 
-        An annual report is megabytes of markup, most of it financial
-        statements. What describes the business — its segments, what each
-        one sells, how it earns — is Item 1, and taking that alone is what
-        makes the document small enough to read carefully.
+        An annual report is megabytes of markup. The two sections this
+        platform reads — what the business is, and what each part of it
+        earned — are a small fraction of it, and taking them alone is
+        what makes the document small enough to read carefully.
 
-        The heading appears at least twice: once in the table of contents
-        and once over the section itself. Taking the first occurrence
-        returns the contents line and nothing else, so every Item 1 is
-        paired with the Item 1A that follows it and the widest pair wins.
-        A contents entry is a few characters from its neighbour; the real
-        section is tens of thousands.
+        Every heading appears at least twice: once in the table of
+        contents and once over the section itself. So every opening is
+        paired with the closing that follows it and the widest pair wins.
+        A contents entry sits a few characters from its neighbour; the
+        real section runs to tens of thousands.
 
-        Where no such pair can be found the whole document is returned. A
-        truncated read is worse than a large one: it would silently drop
-        the segments this exists to find.
+        An empty string where no such pair exists. A section that could
+        not be found leaves what it would have said unstated, which is
+        the honest outcome — the alternative is returning the wrong part
+        of the document and reading it as though it were the right one.
         """
 
         text = html.unescape(_TAGS.sub(" ", document))
@@ -226,8 +302,8 @@ class EdgarFilings:
 
         widest: tuple[int, int] | None = None
 
-        for start in _occurrences(lowered, ("item 1.", "item 1 ", "item 1:")):
-            end = _first_heading(lowered, _ITEM_1A, after=start + 1)
+        for start in _occurrences(lowered, opening):
+            end = _first_heading(lowered, closing, after=start + 1)
 
             if end is None:
                 continue
@@ -236,7 +312,7 @@ class EdgarFilings:
                 widest = (start, end)
 
         if widest is None:
-            return text.strip()
+            return ""
 
         return text[widest[0] : widest[1]].strip()
 

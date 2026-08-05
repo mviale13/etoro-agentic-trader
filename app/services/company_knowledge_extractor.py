@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -12,8 +13,8 @@ from app.domain.company_knowledge import (
     CompanyKnowledge,
     RevenueModel,
 )
+from app.domain.primary_source import SourceDocument
 from app.domain.provenance import Provenance
-from app.providers.edgar_filings import Filing
 from app.providers.narrative_provider import (
     DraftRequest,
     NarrativeDeclined,
@@ -31,6 +32,22 @@ MAX_TOKENS = 8000
 SHARE_TOLERANCE = 1.05
 
 _NOISE = re.compile(r"[^a-z0-9]+")
+
+MIX_SYSTEM_PROMPT = """\
+You read one number per segment out of a company's management discussion.
+You do not analyse the company and you do not classify it.
+
+Rules:
+- Report a share only for the segment names you are given. Never invent a
+  segment, rename one, or merge two.
+- Report `revenue_share` only where the discussion states revenue for that
+  segment and you can read it. Where it does not, omit the segment
+  entirely. Never apportion, estimate, or infer a share from a total.
+- Every share must include `quoted`: a verbatim span copied from the
+  discussion text showing that segment's revenue. Copy it exactly. An
+  answer whose quotes are not found in the text is discarded in full.
+- Shares are fractions of total revenue, between 0 and 1.
+"""
 
 SYSTEM_PROMPT = """\
 You extract structural facts from a company's annual report. You do not
@@ -111,20 +128,20 @@ def extraction_schema() -> dict[str, Any]:
     }
 
 
-def user_prompt(filing: Filing) -> str:
-    reference = filing.reference
+def user_prompt(document: SourceDocument) -> str:
+    source = document.source
 
     return "\n".join(
         (
-            f"Company: {reference.company}",
-            f"Filing: {reference.form} filed {reference.filed_on.isoformat()}",
+            f"Company: {source.company}",
+            f"Document: {source.stated()}",
             "",
-            "Report the operating segments this filing describes, what each "
-            "one sells, and the share of revenue where the filing states it.",
+            "Report the operating segments this document describes and what "
+            "each one sells.",
             "",
-            "--- FILING TEXT BEGINS ---",
-            filing.business_text,
-            "--- FILING TEXT ENDS ---",
+            "--- DOCUMENT TEXT BEGINS ---",
+            document.business_description,
+            "--- DOCUMENT TEXT ENDS ---",
         )
     )
 
@@ -141,6 +158,50 @@ def _normalised(text: str) -> str:
     """
 
     return _NOISE.sub("", text.casefold())
+
+
+def mix_schema() -> dict[str, Any]:
+    """The contract a revenue-mix reading must fill."""
+
+    return {
+        "type": "object",
+        "properties": {
+            "shares": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "segment": {"type": "string"},
+                        "revenue_share": {"type": "number"},
+                        "quoted": {"type": "string"},
+                    },
+                    "required": ["segment", "revenue_share", "quoted"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["shares"],
+        "additionalProperties": False,
+    }
+
+
+def mix_prompt(document: SourceDocument, segments: tuple[str, ...]) -> str:
+    return "\n".join(
+        (
+            f"Company: {document.source.company}",
+            "",
+            "Segments, exactly as reported. Use these names and no others:",
+            *(f"- {name}" for name in segments),
+            "",
+            "For each segment the discussion states revenue for, report its "
+            "share of total revenue. Omit any segment whose revenue you "
+            "cannot read.",
+            "",
+            "--- DISCUSSION TEXT BEGINS ---",
+            document.performance_discussion,
+            "--- DISCUSSION TEXT ENDS ---",
+        )
+    )
 
 
 class CompanyKnowledgeExtractor:
@@ -162,10 +223,10 @@ class CompanyKnowledgeExtractor:
     def __init__(self, provider: NarrativeProvider) -> None:
         self._provider = provider
 
-    async def extract(self, symbol: str, filing: Filing) -> CompanyKnowledge:
+    async def extract(self, symbol: str, document: SourceDocument) -> CompanyKnowledge:
         request = DraftRequest(
             system_prompt=SYSTEM_PROMPT,
-            user_prompt=user_prompt(filing),
+            user_prompt=user_prompt(document),
             schema=extraction_schema(),
             max_tokens=MAX_TOKENS,
         )
@@ -187,12 +248,108 @@ class CompanyKnowledgeExtractor:
                 "The extractor returned unreadable output."
             ) from error
 
-        return self._validated(symbol, filing, payload, draft.model)
+        knowledge = self._validated(symbol, document, payload, draft.model)
+
+        return await self._with_revenue_mix(knowledge, document)
+
+    async def _with_revenue_mix(
+        self,
+        knowledge: CompanyKnowledge,
+        document: SourceDocument,
+    ) -> CompanyKnowledge:
+        """
+        How large each segment is, read from the discussion that states it.
+
+        A second reading, of a second section, because the two facts live
+        apart: Item 1 describes the segments and reports no figures, and
+        the discussion reports the figures against names it assumes you
+        already have. Knowing that a company sells subscriptions, tickets
+        and licences is directional; knowing which of them is most of the
+        revenue is the fact a classification can rest on.
+
+        A filing whose discussion could not be found, or whose figures
+        could not be read, keeps its segments and leaves their sizes
+        absent. That is the honest outcome and the shares are never
+        apportioned from what is left over.
+        """
+
+        if not knowledge.segments or not document.performance_discussion:
+            return knowledge
+
+        request = DraftRequest(
+            system_prompt=MIX_SYSTEM_PROMPT,
+            user_prompt=mix_prompt(
+                document,
+                tuple(segment.name for segment in knowledge.segments),
+            ),
+            schema=mix_schema(),
+            max_tokens=MAX_TOKENS,
+        )
+
+        try:
+            draft = await self._provider.draft(request)
+            payload = json.loads(draft.text)
+        except (NarrativeDeclined, json.JSONDecodeError):
+            # The segments stand; only their sizes are unread.
+            return knowledge
+
+        discussion = _normalised(document.performance_discussion)
+
+        shares: dict[str, float] = {}
+
+        for raw in payload.get("shares") or ():
+            name = str(raw.get("segment") or "").strip()
+            quoted = str(raw.get("quoted") or "").strip()
+            share = raw.get("revenue_share")
+
+            known = {segment.name.casefold() for segment in knowledge.segments}
+
+            if name.casefold() not in known:
+                raise ExtractionRejected(
+                    f"The revenue mix names a segment, {name!r}, that the "
+                    "filing's business description never reported."
+                )
+
+            if not quoted or _normalised(quoted) not in discussion:
+                raise ExtractionRejected(
+                    f"The revenue share for {name!r} quotes words that are "
+                    "not in the discussion, so the mix was discarded."
+                )
+
+            if share is None or not 0.0 <= float(share) <= 1.0:
+                raise ExtractionRejected(
+                    f"The revenue share for {name!r} is {share}, which is not a share."
+                )
+
+            shares[name.casefold()] = float(share)
+
+        total = sum(shares.values())
+
+        if total > SHARE_TOLERANCE:
+            raise ExtractionRejected(
+                f"The revenue shares sum to {total:.0%}, which cannot be a "
+                "share of one company's revenue. The mix was discarded "
+                "rather than rescaled."
+            )
+
+        return replace(
+            knowledge,
+            segments=tuple(
+                replace(
+                    segment,
+                    revenue_share=shares.get(
+                        segment.name.casefold(),
+                        segment.revenue_share,
+                    ),
+                )
+                for segment in knowledge.segments
+            ),
+        )
 
     def _validated(
         self,
         symbol: str,
-        filing: Filing,
+        document: SourceDocument,
         payload: dict[str, Any],
         model: str,
     ) -> CompanyKnowledge:
@@ -203,10 +360,10 @@ class CompanyKnowledgeExtractor:
                 "The extractor described no business, so nothing was read."
             )
 
-        document = _normalised(filing.business_text)
+        text = _normalised(document.business_description)
 
         segments = tuple(
-            self._segment(raw, document) for raw in payload.get("segments") or ()
+            self._segment(raw, text) for raw in payload.get("segments") or ()
         )
 
         stated = sum(
@@ -222,24 +379,21 @@ class CompanyKnowledgeExtractor:
                 "was discarded rather than rescaled."
             )
 
-        reference = filing.reference
+        source = document.source
 
         return CompanyKnowledge(
             symbol=symbol.upper().strip(),
             description=description,
             segments=segments,
-            source_form=reference.form,
-            source_filed_on=reference.filed_on.isoformat(),
-            source_accession=reference.accession,
-            source_url=reference.url,
+            source=source,
             reading=Provenance(
-                source=f"{reference.form} via SEC EDGAR, read by {model}",
+                source=f"{source.identifier} via {source.provider}, read by {model}",
                 observed_at=datetime.now(UTC),
             ),
         )
 
     @staticmethod
-    def _segment(raw: dict[str, Any], document: str) -> BusinessSegment:
+    def _segment(raw: dict[str, Any], text: str) -> BusinessSegment:
         name = str(raw.get("name") or "").strip()
         quoted = str(raw.get("quoted") or "").strip()
 
@@ -254,7 +408,7 @@ class CompanyKnowledgeExtractor:
 
         # The grounding contract, enforced against the document rather
         # than trusted. This is what makes the model an extractor.
-        if _normalised(quoted) not in document:
+        if _normalised(quoted) not in text:
             raise ExtractionRejected(
                 f"The segment {name!r} quotes words that are not in the "
                 "filing, so the whole reading was discarded."
