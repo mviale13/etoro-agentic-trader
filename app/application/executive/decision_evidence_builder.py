@@ -25,7 +25,7 @@ from app.domain.executive_decision import DecisionEvidence
 from app.domain.finding import Finding, Sense, statements, statements_where
 from app.domain.opinion import Opinion
 from app.domain.risk_signal import RiskSignal
-from app.domain.score_basis import ScoreBases, ScoreBasis
+from app.domain.score_basis import ScoreBases, ScoreBasis, ScoreKind
 
 
 @dataclass(slots=True)
@@ -170,7 +170,7 @@ class DecisionEvidenceBuilder:
                     cognitive_confidence,
                 ),
                 valuation=self._valuation_basis(company),
-                risk=self._risk_basis(company),
+                safety=self._safety_basis(company),
                 portfolio_fit=self._portfolio_fit_basis(portfolio_fit),
             ),
             evidence_as_of=company.reading if company is not None else None,
@@ -283,16 +283,18 @@ class DecisionEvidenceBuilder:
         return f"{', '.join(bands[:-1])} and {bands[-1]}"
 
     @staticmethod
-    def _severity_bands() -> dict[str, int]:
+    def _safety_bands() -> dict[str, int]:
         """
-        The risk bands on the 0-100 scale the score is reported on.
+        The risk bands as safety, on the scale the score is reported on.
 
         Read from the signal's own severities rather than restated here,
-        so the scale a reader is shown is the scale the score came off.
+        so the scale a reader is shown is the scale the score came off —
+        turned once, the same way `DecisionEvidence.safety_score` turns
+        the number itself.
         """
 
         return {
-            level: round(severity * 100)
+            level: 100 - round(severity * 100)
             for level, severity in RiskSignal.SEVERITIES.items()
         }
 
@@ -373,23 +375,26 @@ class DecisionEvidenceBuilder:
         )
 
     @classmethod
-    def _risk_basis(
+    def _safety_basis(
         cls,
         company: CompanyRecommendation | None,
     ) -> ScoreBasis:
         """
-        How violently this security has moved, and by whose ruler.
+        How calm this security's own record is, and by whose ruler.
 
-        The one score where a higher number is worse, which is stated
-        rather than left to be inferred from the company it keeps.
+        Shown as safety rather than risk so that every score on the page
+        runs the same way. The inversion is stated outright, because a
+        reader who has seen "Risk 45" before must be able to see that this
+        is the same reading and not a different one.
         """
 
         if company is None or company.signals.risk is None:
             return ScoreBasis(
                 basis=(
                     "This security's price history was not read, so its own "
-                    "risk was not scored. The account's risk is never used in "
-                    "its place."
+                    "safety was not scored. The account's risk is never used "
+                    "in its place, and an unmeasured risk is never shown as "
+                    "a safe security."
                 ),
             )
 
@@ -401,16 +406,17 @@ class DecisionEvidenceBuilder:
             return ScoreBasis(
                 basis=(
                     f"Risk reads {signal.level} — the price history was too "
-                    "short to measure — so no score was given."
+                    "short to measure — so no score was given. An unmeasured "
+                    "risk is never reported as safety."
                 ),
                 evidence=evidence,
             )
 
         return ScoreBasis(
             basis=(
-                f"Risk reads {signal.level}, from the findings below, and here "
-                f"a higher number is a riskier security. This platform's "
-                f"severity is {cls._banded(cls._severity_bands())}."
+                f"Risk reads {signal.level}, from the findings below, and "
+                f"safety is what is left of 100 — higher is safer. The risk "
+                f"bands, as safety: {cls._banded(cls._safety_bands())}."
             ),
             evidence=evidence,
         )
@@ -487,6 +493,7 @@ class DecisionEvidenceBuilder:
                     "be measured against, so fit was not scored."
                 ),
                 evidence=measure.stated_terms,
+                kind=ScoreKind.POLICY,
             )
 
         return ScoreBasis(
@@ -497,6 +504,9 @@ class DecisionEvidenceBuilder:
                 f"business."
             ),
             evidence=measure.stated_terms,
+            # Not an assessment of anything: it moves when the policy
+            # changes, not when the market does.
+            kind=ScoreKind.POLICY,
         )
 
     @staticmethod

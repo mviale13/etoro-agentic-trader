@@ -310,14 +310,15 @@ function CandidateCard({
         </div>
       </div>
 
-      {/* Every score here is measured about this security. Risk comes
-          from its own price history, and fit from the room this
-          portfolio has for it under the investor's own policy — see the
-          evidence above for the numbers behind them. */}
+      {/* Every score here is about this security, and every one runs the
+          same way: higher is better for the case. Safety comes from its
+          own price history, and fit from the room this portfolio has for
+          it under the investor's own policy — see the evidence above for
+          the numbers behind them. */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Score label="Quality" value={candidate.qualityScore} />
         <Score label="Valuation" value={candidate.valuationScore} />
-        <Score label="Risk" value={candidate.riskScore} />
+        <Score label="Safety" value={candidate.safetyScore} />
         <Score
           label="Fit with your portfolio"
           value={candidate.portfolioFitScore}

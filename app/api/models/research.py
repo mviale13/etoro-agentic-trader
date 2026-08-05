@@ -51,9 +51,11 @@ class ResearchCandidateResponse(BaseModel):
     quality_score: int | None = None
     valuation_score: int | None = None
 
-    #: Measured from this security's own price history — its volatility and
-    #: its deepest observed fall. Null when that history is too short.
-    risk_score: int | None = None
+    #: How calm this security's own price history is — its volatility and
+    #: its deepest observed fall, turned so that higher is safer, the way
+    #: every other score here runs. Null when that history is too short:
+    #: an unmeasured risk is never reported as a safe security.
+    safety_score: int | None = None
 
     evidence_score: int
 

@@ -79,7 +79,7 @@ async def research_candidates(
                 conviction_label=conviction_label(decision.conviction),
                 quality_score=evidence.quality_score,
                 valuation_score=evidence.valuation_score,
-                risk_score=evidence.risk_score,
+                safety_score=evidence.safety_score,
                 portfolio_fit_score=evidence.portfolio_fit_score,
                 evidence_score=evidence.evidence_score,
                 evidence_as_of=(

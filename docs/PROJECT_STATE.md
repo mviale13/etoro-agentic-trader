@@ -93,6 +93,27 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Every score runs the same way, and says what kind of number it is**
+  (August 2026). Risk was the one dimension where a high number was bad,
+  which made the set unreadable and unsafe to aggregate: four nineties do
+  not average to anything if one of them means the opposite of the other
+  three. The Artificial CIO already knew this — it inverted risk before
+  averaging into conviction — but inline, so the concept had no name and
+  every surface went on showing the raw figure. It is now
+  `DecisionEvidence.safety_score`, used by that same arithmetic and shown
+  everywhere: **Safety**, higher is safer, with the inversion stated in
+  the score's own basis. `None` stays `None` — an unmeasured risk is never
+  reported as a safe security. The gates still read `risk_score`: a
+  ceiling on risk is the natural way to write "too dangerous", and
+  restating one policy in two directions would be the duplication this
+  platform avoids. "Valuation" is now "Valuation attractiveness" and
+  "Evidence" is "Evidence strength". Each score also declares its kind —
+  measured from data, derived from your policy, or assessed against this
+  platform's bands — because at two significant figures an interpretation
+  is indistinguishable from a measurement, and borrows its authority.
+  Portfolio fit is the one policy-derived score; the measurements are the
+  evidence listed beneath each one.
+
 - **A fact about one asset class reaches only cases about that class**
   (August 2026). The single sentiment index this platform reads is
   crypto's, and it was listed among the facts the Investment Committee

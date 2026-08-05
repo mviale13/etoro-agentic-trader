@@ -45,13 +45,24 @@ export interface DossierScore {
   value: number | null;
   basis: string;
   evidence: readonly string[];
+  /** "measurement" | "policy" | "assessment" — the backend's own word. */
+  kind: string;
+  /** The same, worded for a reader. Never composed on this side. */
+  kindStated: string;
 }
 
+/**
+ * Every score runs the same way: a higher number is better for the case.
+ *
+ * Risk arrives as safety for that reason — the same reading, turned once
+ * by the backend, so the set can be compared or averaged without one
+ * dimension quietly meaning the opposite of the others.
+ */
 export interface DossierScores {
   quality: DossierScore;
   evidence: DossierScore;
   valuation: DossierScore;
-  risk: DossierScore;
+  safety: DossierScore;
   portfolioFit: DossierScore;
 }
 
@@ -206,6 +217,8 @@ function parseScore(value: unknown, field: string): DossierScore {
     value: optionalNumber(value.value),
     basis: requireString(value.basis, `${field}.basis`),
     evidence: stringList(value.evidence),
+    kind: requireString(value.kind, `${field}.kind`),
+    kindStated: requireString(value.kind_stated, `${field}.kind_stated`),
   };
 }
 
@@ -358,7 +371,7 @@ function parseDossier(payload: unknown): DossierViewModel {
       quality: parseScore(scores.quality, "scores.quality"),
       evidence: parseScore(scores.evidence, "scores.evidence"),
       valuation: parseScore(scores.valuation, "scores.valuation"),
-      risk: parseScore(scores.risk, "scores.risk"),
+      safety: parseScore(scores.safety, "scores.safety"),
       portfolioFit: parseScore(scores.portfolio_fit, "scores.portfolio_fit"),
     },
     contextStrengths: stringList(payload.context_strengths),
