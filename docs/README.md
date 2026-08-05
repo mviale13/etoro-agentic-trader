@@ -20,6 +20,7 @@ These are the documents a new session should read first. They are the same set
 | What is built, what is missing? | [`PROJECT_STATE.md`](PROJECT_STATE.md) |
 | What is next, and what is open? | [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md) |
 | How does the pipeline work? | [`architecture.md`](architecture.md) — **v5.0 section only** |
+| What state is the frontend in? | [`frontend/UX_UI_INVENTORY.md`](frontend/UX_UI_INVENTORY.md) — the pre-migration audit and the slice-by-slice execution log of the UX/UI Alignment mission (complete, PRs #8–#16) |
 
 ## Reference
 

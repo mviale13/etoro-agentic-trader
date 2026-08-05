@@ -501,8 +501,17 @@ change feed. It does not gate.
       TypeScript errors (`vitest` was never installed), and `ClaimEngine.ts`
       was imported by nothing but that test — a dead module. The honest fix
       was to remove the pair, not install a runner to test code the app does
-      not use. The rest of `lib/acio` stays: its ontology, reasoning and
-      `knowledge/types` are used by `lib/investor`.
+      not use. (The rest of `lib/acio` and `lib/investor` outlived this note
+      by one mission: the UX migration proved the whole frontend reasoning
+      engine reachable only through an unmounted onboarding mock and deleted
+      it — see below.)
+- [x] The frontend UX/UI Alignment mission is complete (PRs #8–#16, August
+      2026). The dead dashboard generation, the fabricated `/briefs` route,
+      the frontend reasoning engine (`lib/acio`, `lib/investor`) and every
+      frontend banding function are gone; navigation matches the product
+      model with `/track-record` as its last screen; the frontend calculates
+      no investment meaning. The audit and slice-by-slice log live in
+      [`docs/frontend/UX_UI_INVENTORY.md`](../frontend/UX_UI_INVENTORY.md).
 - [x] `docs/` is indexed and the superseded documents are quarantined.
       [`docs/README.md`](../README.md) names the current set and the one
       reference doc; the ~20 older documents moved to `docs/archive/` (with
