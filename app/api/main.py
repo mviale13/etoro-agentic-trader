@@ -31,6 +31,7 @@ from app.api.routes.reflection import router as reflection_router
 from app.api.routes.research import router as research_router
 from app.api.routes.strategy import router as strategy_router
 from app.api.routes.today import router as today_router
+from app.api.routes.track_record import router as track_record_router
 
 app = FastAPI(
     title="MOVRvest API",
@@ -67,6 +68,7 @@ app.include_router(executive_router)
 app.include_router(recommendation_router)
 app.include_router(committee_weights_router)
 app.include_router(home_router)
+app.include_router(track_record_router)
 app.include_router(brain_router)
 app.include_router(market_router)
 
