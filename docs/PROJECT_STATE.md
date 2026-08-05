@@ -83,6 +83,21 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The Communication layer gained an Executive Writer** (August 2026).
+  An LLM language specialist — never a decision maker — that words the
+  finished investment case as an investment-committee narrative. It
+  receives only canonical objects (`ExecutiveDecision`,
+  `InvestmentThesis`, `DecisionEvidence`, `CommitteeOpinion`), rendered
+  as numbered findings; every paragraph it returns must cite the
+  findings it rests on, citations to findings that do not exist are
+  rejected, and a draft that changes the recommendation is discarded —
+  the echo is validated against the `ExecutiveDecision`. Off by default
+  behind `MOVRVEST_EXECUTIVE_WRITER`; every failure path (flag off, no
+  credentials, model declined, ungrounded draft) is a worded absence on
+  the dossier, never a fabricated narrative. The deterministic
+  renderers remain canonical. Reasoning stays deterministic; only the
+  language is generated.
+
 - **The UX/UI Alignment mission is complete** (PRs #8–#15, August 2026).
   The web product now matches the mission's model end to end: Overview,
   Portfolio, Research, Markets, Track Record and Investor Policy in

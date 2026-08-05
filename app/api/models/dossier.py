@@ -69,6 +69,40 @@ class EvidenceScoresResponse(BaseModel):
     portfolio_fit: int | None
 
 
+class NarrativeFindingResponse(BaseModel):
+    """One canonical fact the narrative's citations resolve to."""
+
+    id: str
+    statement: str
+    source: str
+
+
+class NarrativeSectionResponse(BaseModel):
+    """One paragraph, and the finding ids it rests on."""
+
+    section: str
+    text: str
+    finding_ids: list[str]
+
+
+class NarrativeResponse(BaseModel):
+    """
+    The case in institutional language — communication only.
+
+    Written by the Executive Writer from the canonical objects and from
+    nothing else; every section cites its findings, the recommendation
+    is a validated echo of the decision, and the model that wrote it is
+    named. The structured dossier above it remains canonical.
+    """
+
+    headline: str
+    recommendation: str
+    sections: list[NarrativeSectionResponse]
+    findings: list[NarrativeFindingResponse]
+    model: str
+    written: str
+
+
 class DossierResponse(BaseModel):
     """One complete investment case, as the Artificial CIO holds it."""
 
@@ -134,3 +168,10 @@ class DossierResponse(BaseModel):
     # ── Provenance ──────────────────────────────────────────────────
     #: When the security's own evidence was read. None where none was.
     evidence_as_of: ProvenanceResponse | None
+
+    # ── The narrative (Communication layer, optional) ───────────────
+    #: The case in words, or null with the reason beside it. Exactly one
+    #: of the two is meaningful: a narrative carries no absent reason,
+    #: and an absence always says why.
+    narrative: NarrativeResponse | None = None
+    narrative_absent: str | None = None

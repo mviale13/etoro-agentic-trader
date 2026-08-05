@@ -43,6 +43,35 @@ export interface DossierScores {
   portfolioFit: number | null;
 }
 
+export interface NarrativeFinding {
+  id: string;
+  statement: string;
+  source: string;
+}
+
+export interface NarrativeSection {
+  section: string;
+  text: string;
+  findingIds: readonly string[];
+}
+
+/**
+ * The case in institutional language — communication only.
+ *
+ * Written by the Executive Writer from the canonical objects; every
+ * section cites the findings it rests on, and the recommendation is a
+ * backend-validated echo of the decision. The structured dossier remains
+ * canonical; this is language on top of a finished judgment.
+ */
+export interface DossierNarrative {
+  headline: string;
+  recommendation: string;
+  sections: readonly NarrativeSection[];
+  findings: readonly NarrativeFinding[];
+  model: string;
+  written: string;
+}
+
 export interface DossierViewModel {
   symbol: string;
 
@@ -77,6 +106,10 @@ export interface DossierViewModel {
 
   /** When the security's evidence was read. Null where none was. */
   evidenceAsOf: DossierProvenance | null;
+
+  /** The narrative, or null with the backend-worded reason beside it. */
+  narrative: DossierNarrative | null;
+  narrativeAbsent: string | null;
 }
 
 export interface DossierResult {
@@ -196,6 +229,60 @@ function parseCommittees(
   }));
 }
 
+function parseNarrative(value: unknown): DossierNarrative | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("narrative is not a JSON object.");
+  }
+
+  const sections = Array.isArray(value.sections) ? value.sections : [];
+  const findings = Array.isArray(value.findings) ? value.findings : [];
+
+  return {
+    headline: requireString(value.headline, "narrative.headline"),
+    recommendation: requireString(
+      value.recommendation,
+      "narrative.recommendation",
+    ),
+    sections: sections.map((section, index) => {
+      if (!isRecord(section)) {
+        throw new Error(`narrative.sections[${index}] is not an object.`);
+      }
+
+      return {
+        section: requireString(
+          section.section,
+          `narrative.sections[${index}].section`,
+        ),
+        text: requireString(section.text, `narrative.sections[${index}].text`),
+        findingIds: stringList(section.finding_ids),
+      };
+    }),
+    findings: findings.map((finding, index) => {
+      if (!isRecord(finding)) {
+        throw new Error(`narrative.findings[${index}] is not an object.`);
+      }
+
+      return {
+        id: requireString(finding.id, `narrative.findings[${index}].id`),
+        statement: requireString(
+          finding.statement,
+          `narrative.findings[${index}].statement`,
+        ),
+        source: requireString(
+          finding.source,
+          `narrative.findings[${index}].source`,
+        ),
+      };
+    }),
+    model: requireString(value.model, "narrative.model"),
+    written: requireString(value.written, "narrative.written"),
+  };
+}
+
 function parseDossier(payload: unknown): DossierViewModel {
   if (!isRecord(payload)) {
     throw new Error("The dossier response is not a JSON object.");
@@ -248,6 +335,11 @@ function parseDossier(payload: unknown): DossierViewModel {
     contextRisks: stringList(payload.context_risks),
     committees: parseCommittees(payload.committees),
     evidenceAsOf: parseProvenance(payload.evidence_as_of, "evidence_as_of"),
+    narrative: parseNarrative(payload.narrative),
+    narrativeAbsent: optionalString(
+      payload.narrative_absent,
+      "narrative_absent",
+    ),
   };
 }
 
