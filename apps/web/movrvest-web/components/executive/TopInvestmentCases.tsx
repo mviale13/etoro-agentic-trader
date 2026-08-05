@@ -26,7 +26,7 @@ function ReasonList({
         {reasons.map((reason) => (
           <li
             key={reason}
-            className="flex gap-3 text-sm leading-5 text-zinc-700 dark:text-zinc-300"
+            className="flex gap-3 text-sm leading-5 text-zinc-700"
           >
             <span
               aria-hidden="true"
@@ -98,7 +98,7 @@ export function TopInvestmentCases({ cases }: TopInvestmentCasesProps) {
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <h2
               id="top-investment-cases-heading"
-              className="max-w-3xl text-4xl font-semibold tracking-[-0.045em] text-zinc-950 sm:text-5xl dark:text-white"
+              className="max-w-3xl text-4xl font-semibold tracking-[-0.045em] text-zinc-950 sm:text-5xl"
             >
               {cases.length === 0
                 ? "No holdings to review."
@@ -111,12 +111,16 @@ export function TopInvestmentCases({ cases }: TopInvestmentCasesProps) {
             {cases.length === 0 ? (
               <StatusPill status="placeholder" label="No data" />
             ) : (
-              <StatusPill status="partial" label="Artificial CIO" />
+              <StatusPill
+                status="partial"
+                label="Artificial CIO"
+                explanation="Partial, honestly: real decisions on your real holdings, each with its recorded history — but price targets are not measured, so no target or expected upside appears here."
+              />
             )}
           </div>
         </div>
 
-        <p className="max-w-md text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+        <p className="max-w-md text-sm leading-6 text-zinc-600">
           Ranked by the conviction the Artificial CIO assigned each holding.
           The ranking expresses priority—not certainty.
         </p>

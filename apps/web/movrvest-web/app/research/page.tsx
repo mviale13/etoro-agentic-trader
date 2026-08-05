@@ -390,7 +390,11 @@ export default async function ResearchPage() {
               </h1>
 
               {pipeline ? (
-                <StatusPill status="partial" label="Artificial CIO" />
+                <StatusPill
+                  status="partial"
+                  label="Artificial CIO"
+                  explanation="Partial, honestly: every candidate is judged on real per-security evidence, but each cycle reviews a capped number of them, and no upside, price target or sector is estimated."
+                />
               ) : (
                 <StatusPill status="placeholder" label="Not connected" />
               )}
