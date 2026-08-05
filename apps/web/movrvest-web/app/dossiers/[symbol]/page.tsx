@@ -121,6 +121,8 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
 
       {dossier.narrative ? (
         <Narrative narrative={dossier.narrative} />
+      ) : dossier.narrativeAbsent ? (
+        <NarrativeAbsence reason={dossier.narrativeAbsent} />
       ) : null}
 
       <WhatChanged dossier={dossier} />
@@ -219,6 +221,22 @@ function Narrative({ narrative }: { narrative: DossierNarrative }) {
         canonical, and the Artificial CIO owns every judgment in it.
       </p>
     </section>
+  );
+}
+
+/**
+ * The backend-worded reason there is no narrative.
+ *
+ * The Executive Writer words every failure path — flag off, missing
+ * credentials, a declined request, a discarded draft — precisely so a
+ * surface can state it. Presenting that sentence is this page's whole
+ * job here; it adds nothing and hides nothing.
+ */
+function NarrativeAbsence({ reason }: { reason: string }) {
+  return (
+    <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-500">
+      {reason}
+    </p>
   );
 }
 
