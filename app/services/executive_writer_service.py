@@ -62,7 +62,22 @@ def resolve_provider(name: str | None = None) -> NarrativeProvider | str:
     worded as configuration.
     """
 
-    configured = os.environ.get(PROVIDER_ENV, DEFAULT_PROVIDER).strip().lower()
+    # Configuration comes from the process environment first and the
+    # same `.env` the broker keys live in second — pydantic-settings'
+    # own precedence, restated here because the SDK clients and this
+    # module would otherwise read only the process environment and
+    # silently miss `.env`.
+    settings = get_settings()
+
+    configured = (
+        (
+            os.environ.get(PROVIDER_ENV)
+            or settings.movrvest_writer_provider
+            or DEFAULT_PROVIDER
+        )
+        .strip()
+        .lower()
+    )
     name = (name or configured).strip().lower()
 
     if name not in DEFAULT_MODELS:
@@ -71,14 +86,8 @@ def resolve_provider(name: str | None = None) -> NarrativeProvider | str:
             "so no narrative was generated."
         )
 
-    override = os.environ.get(MODEL_ENV, "").strip()
+    override = (os.environ.get(MODEL_ENV) or settings.movrvest_writer_model).strip()
     model = override if override and name == configured else DEFAULT_MODELS[name]
-
-    # Keys come from the process environment first and the same `.env`
-    # the broker keys live in second — pydantic-settings' own
-    # precedence, restated here because the SDK clients would otherwise
-    # read only the process environment and silently miss `.env`.
-    settings = get_settings()
 
     if name == "anthropic":
         api_key = os.environ.get("ANTHROPIC_API_KEY") or settings.anthropic_api_key
@@ -147,7 +156,9 @@ class ExecutiveWriterService:
 
     @staticmethod
     def enabled() -> bool:
-        return os.environ.get(FLAG, "").strip().lower() in {"on", "1", "true"}
+        flag = os.environ.get(FLAG) or get_settings().movrvest_executive_writer
+
+        return flag.strip().lower() in {"on", "1", "true"}
 
     async def narrate(
         self,

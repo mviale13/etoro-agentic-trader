@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     anthropic_auth_token: str = ""
     openai_api_key: str = ""
+    movrvest_executive_writer: str = ""
+    movrvest_writer_provider: str = ""
+    movrvest_writer_model: str = ""
 
     allowed_symbols: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["BTC", "ETH", "SOL", "SPY", "QQQ"]
