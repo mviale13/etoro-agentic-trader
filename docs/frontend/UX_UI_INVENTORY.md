@@ -294,5 +294,13 @@ isolation via `git archive HEAD`:
   journal: 99 recorded, 0 old enough to measure, no hit rate, three age
   reasons counted — the mission's exact honest-maturity example.
 
-Still open: a future Decisions inbox surface once the contract earns it,
-and the `/events/[slug]` placeholder's keep-or-remove decision.
+- **Closeout** (PR #16) — the `/events/[slug]` placeholder removed: an
+  orphan reachable only by typed URL, rendering an invented title from
+  its own slug under a promise no backend concept backs. The tracked
+  `.coverage` artifact untracked and ignored. `PROJECT_STATE.md` updated:
+  the mission recorded as complete, and its stale claim that no
+  beta/correlation is measured corrected (`MarketSensitivity` measures
+  both; the market still gates nothing, now stated on `/markets`).
+
+The mission's screens are all shipped. Still open: a future Decisions
+inbox surface once the contract earns it.
