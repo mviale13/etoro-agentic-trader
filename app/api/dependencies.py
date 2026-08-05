@@ -19,6 +19,7 @@ from app.config import Settings
 from app.services.account_service import AccountService
 from app.services.brief_service import BriefService
 from app.services.dashboard_service import DashboardService
+from app.services.earnings_calendar_service import EarningsCalendarService
 
 
 def get_brain_builder_service() -> BrainBuilderService:
@@ -49,6 +50,12 @@ def get_market_perception() -> MarketPerception:
     """The one place a market snapshot is assembled, behind the market route."""
 
     return MarketPerception()
+
+
+def get_earnings_calendar_service() -> EarningsCalendarService:
+    """The book's earnings calendar — network-coupled, so injectable."""
+
+    return EarningsCalendarService()
 
 
 def get_dashboard_service() -> DashboardService:

@@ -76,6 +76,13 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   components, each with the evidence behind it
 - `GET /market/` and the markets page report every instrument the
   platform prices, grouped, with what the average move netted out
+- `GET /market/earnings` and the markets page report when each company
+  the investor holds or watches reports next — the book's own earnings
+  calendar, read once a day from the provider that already prices those
+  companies, with "no date published" and "could not be read" stated
+  apart, and a window the provider still publishes after the report ran
+  filed as "recently reported" rather than sorted ahead of what is
+  actually coming
 - Every decision is recorded, and the next cycle says what changed
 - Every market observation is recorded, and the next cycle says what the
   market did — the mood, the volatility band and the sentiment reading,

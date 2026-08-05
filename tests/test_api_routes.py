@@ -18,6 +18,7 @@ from app.api.dependencies import (
     get_brain_snapshot_service,
     get_brief_service,
     get_dashboard_service,
+    get_earnings_calendar_service,
     get_market_perception,
 )
 from app.api.main import app
@@ -470,6 +471,51 @@ def test_market_route_reports_the_unread_as_null(client: TestClient) -> None:
     assert body["vix"] is None
     assert body["observed"] is None
     assert body["sentiment"] is None
+
+
+def test_earnings_route_serves_dates_and_both_absences(client: TestClient) -> None:
+    """Scheduling fact per company, with the two absences kept apart."""
+
+    from datetime import UTC, datetime
+
+    from app.domain.earnings_calendar import EarningsCalendar, EarningsDate
+    from app.domain.provenance import Provenance
+
+    report_day = datetime.now(UTC).date()
+
+    class StubEarningsService:
+        async def upcoming(self) -> EarningsCalendar:
+            return EarningsCalendar(
+                upcoming=(
+                    EarningsDate(
+                        symbol="DIS",
+                        name="Walt Disney",
+                        starts_on=report_day,
+                        ends_on=None,
+                        held=True,
+                        reading=Provenance(
+                            source="Yahoo Finance",
+                            observed_at=datetime.now(UTC),
+                        ),
+                    ),
+                ),
+                reported=(),
+                unscheduled=("META",),
+                unread=("BNP.PA",),
+            )
+
+    app.dependency_overrides[get_earnings_calendar_service] = StubEarningsService
+
+    body = client.get("/market/earnings").json()
+
+    assert body["upcoming"][0]["symbol"] == "DIS"
+    assert body["upcoming"][0]["starts_on"] == report_day.isoformat()
+    assert body["upcoming"][0]["starts_in_days"] == 0
+    assert body["upcoming"][0]["ends_on"] is None
+    assert body["upcoming"][0]["held"] is True
+    assert body["reported"] == []
+    assert body["unscheduled"] == ["META"]
+    assert body["unread"] == ["BNP.PA"]
 
 
 def test_research_route_serves_the_funnel_when_there_are_no_candidates(
