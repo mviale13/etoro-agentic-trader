@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.application.brain.reasoning.models.assessment import evidence_about
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
@@ -79,9 +80,14 @@ class InvestmentCommittee:
         else:
             recommendation = Recommendation.SELL
 
-        evidence = (
-            *portfolio.evidence,
-            *market.evidence,
+        # The conditions this security would be bought into — and only the
+        # ones that describe it. The single sentiment index the platform
+        # reads is crypto's, and it was appearing among the facts weighed
+        # about a software company, correctly captioned and entirely
+        # irrelevant.
+        evidence = evidence_about(
+            (*portfolio.evidence, *market.evidence),
+            brain.asset_class_for(symbol),
         )
 
         # The score decides what to recommend. It is not how sure the

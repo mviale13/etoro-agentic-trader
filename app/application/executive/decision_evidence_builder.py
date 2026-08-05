@@ -108,7 +108,7 @@ class DecisionEvidenceBuilder:
         # OpportunityAnalyst's number described only the account, so it was
         # the same for every candidate and could never say whether one of
         # them fitted better than another.
-        asset_class = self._asset_class(brain, symbol)
+        asset_class = brain.asset_class_for(symbol)
 
         portfolio_fit = self.portfolio_fit.measure(
             symbol,
@@ -511,31 +511,6 @@ class DecisionEvidenceBuilder:
             Recommendation.BUY,
             Recommendation.STRONG_BUY,
         )
-
-    @staticmethod
-    def _asset_class(
-        brain: Brain,
-        symbol: str,
-    ) -> AssetClass | None:
-        """
-        What kind of asset this is, from whichever side already knows.
-
-        A holding carries its class; so does a watched candidate. A symbol
-        that is neither returns nothing, and the policy limits that depend
-        on the class are simply not applied.
-        """
-
-        normalized = symbol.upper().strip()
-
-        for holding in brain.portfolio.holdings:
-            if holding.symbol.upper().strip() == normalized and holding.asset_class:
-                return AssetClass(holding.asset_class)
-
-        for candidate in brain.candidates:
-            if candidate.symbol.upper().strip() == normalized and candidate.asset_class:
-                return AssetClass(candidate.asset_class)
-
-        return None
 
     @staticmethod
     def _catalysts(

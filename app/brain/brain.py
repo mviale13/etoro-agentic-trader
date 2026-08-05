@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.brain.brain_context import BrainContext
 from app.cio.investment_case import InvestmentCase
+from app.domain.asset_class import AssetClass
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.decision_history import DecisionHistory
 from app.domain.investment_policy import InvestmentPolicy
@@ -99,6 +100,28 @@ class Brain:
             ),
             None,
         )
+
+    def asset_class_for(self, symbol: str) -> AssetClass | None:
+        """
+        What kind of asset this is, from whichever side already knows.
+
+        A holding carries its class; so does a watched candidate. A symbol
+        that is neither returns nothing, and everything that depends on the
+        class — the policy limits, and which facts about a market even
+        apply — is simply not applied rather than guessed.
+        """
+
+        normalized = symbol.upper().strip()
+
+        for holding in self.portfolio.holdings:
+            if holding.symbol.upper().strip() == normalized and holding.asset_class:
+                return AssetClass(holding.asset_class)
+
+        for candidate in self.candidates:
+            if candidate.symbol.upper().strip() == normalized and candidate.asset_class:
+                return AssetClass(candidate.asset_class)
+
+        return None
 
     def opinions_for(self, symbol: str) -> tuple[object, ...]:
         """Return all committee opinions available for a symbol."""

@@ -104,6 +104,11 @@ class MarketAnalyst(Analyst[MarketAssessment]):
                     ),
                     source=sentiment.reading.stated(),
                     strength=0.70,
+                    # Named, not merely said in the sentence. The market
+                    # assessment is shared by every security in the cycle,
+                    # and a per-security case can only leave this out if it
+                    # can tell which class the fact is about.
+                    subject=sentiment.subject,
                 ),
             )
 

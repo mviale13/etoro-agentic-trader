@@ -93,6 +93,20 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A fact about one asset class reaches only cases about that class**
+  (August 2026). The single sentiment index this platform reads is
+  crypto's, and it was listed among the facts the Investment Committee
+  weighed about a software company — correctly captioned "which describes
+  crypto only", and entirely irrelevant. A caption cannot be filtered on,
+  so `Evidence` now names its `subject` as data: no subject means the fact
+  describes the conditions every security faces, and a named subject
+  reaches only a case about that class. A security whose class nobody
+  established keeps the unsubjected evidence only, rather than being
+  assumed into the class that happens to fit. `Brain.asset_class_for()`
+  is now the one place that answers what kind of asset a symbol is.
+  Verified live: MSFT's committee no longer sees the Fear & Greed index;
+  BTC's still does.
+
 - **Every score on the dossier opens onto its own reasoning** (August
   2026). "Business quality 80 / 100" was the most measurement-looking
   figure on the page and the least measured: HIGH quality, priced by a
