@@ -283,7 +283,16 @@ isolation via `git archive HEAD`:
   Live data made the case: SPY +1.8% flagged at 2.2× its day; WTI −6.4%
   not flagged (1.9× of oil's wild ordinary day).
 
-Still open, in order: Track Record per the mission's screen
-responsibilities (honest outcome maturity — decisions recorded, zero
-mature outcomes until the window passes), and a future Decisions inbox
-surface once the contract earns it.
+- **Track Record slice** (`b81d246`, PR #15) — the domain already knew
+  how to be honest (no scoring of MONITOR/INVESTIGATE or flat moves, no
+  hit rate below ten calls, unscored carried with reasons) but only the
+  CLI read it. `GET /track-record/` now serves outcomes (provenance on
+  every row), counts, `hit_rate` (null with the minimum stated beside
+  the absence) and unscored reasons counted; the verdict is worded once
+  in the route. `/track-record` joined the primary nav — the mission's
+  product model is now fully present. Verified live on the real
+  journal: 99 recorded, 0 old enough to measure, no hit rate, three age
+  reasons counted — the mission's exact honest-maturity example.
+
+Still open: a future Decisions inbox surface once the contract earns it,
+and the `/events/[slug]` placeholder's keep-or-remove decision.

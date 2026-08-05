@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   ChartNoAxesCombined,
   FlaskConical,
+  History,
   LayoutDashboard,
   ScrollText,
   Settings,
@@ -24,6 +25,7 @@ const navigation = [
   { href: "/portfolio", label: "Portfolio", icon: BriefcaseBusiness },
   { href: "/research", label: "Research", icon: FlaskConical },
   { href: "/markets", label: "Markets", icon: ChartNoAxesCombined },
+  { href: "/track-record", label: "Track Record", icon: History },
   { href: "/strategy", label: "Investor Policy", icon: ScrollText },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
