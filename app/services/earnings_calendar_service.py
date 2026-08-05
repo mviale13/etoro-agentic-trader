@@ -65,7 +65,9 @@ class EarningsCalendarService:
                 unread.append(symbol)
                 continue
 
-            if not read.dates:
+            window = read.window()
+
+            if window is None:
                 unscheduled.append(symbol)
                 continue
 
@@ -74,21 +76,17 @@ class EarningsCalendarService:
             entry = EarningsDate(
                 symbol=symbol,
                 name=name,
-                starts_on=read.dates[0],
-                ends_on=read.dates[-1] if len(read.dates) > 1 else None,
                 held=held,
-                reading=read.reading,
+                window=window,
             )
 
             # The provider keeps publishing a window for a while after
             # the report ran. That is the last report, not the next one,
             # and it is filed as what it is.
-            last_day = entry.ends_on or entry.starts_on
+            (upcoming if window.is_ahead_of(today) else reported).append(entry)
 
-            (upcoming if last_day >= today else reported).append(entry)
-
-        upcoming.sort(key=lambda entry: (entry.starts_on, entry.symbol))
-        reported.sort(key=lambda entry: (entry.starts_on, entry.symbol))
+        upcoming.sort(key=lambda entry: (entry.window.starts_on, entry.symbol))
+        reported.sort(key=lambda entry: (entry.window.starts_on, entry.symbol))
         reported.reverse()
 
         return EarningsCalendar(

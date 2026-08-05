@@ -6,6 +6,7 @@ from datetime import UTC, date, datetime
 
 import yfinance as yf
 
+from app.domain.earnings_schedule import EarningsWindow
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 
@@ -41,6 +42,25 @@ class ReadDates:
     ) -> None:
         self.dates = dates
         self.reading = reading
+
+    def window(self) -> EarningsWindow | None:
+        """
+        The published window, or nothing where no date was published.
+
+        The one place raw dates become a window. Both callers — the book's
+        calendar and a single security's investment case — read the same
+        provider, and reading it two ways would let the same company report
+        on two different days depending on which page asked.
+        """
+
+        if not self.dates:
+            return None
+
+        return EarningsWindow(
+            starts_on=self.dates[0],
+            ends_on=self.dates[-1] if len(self.dates) > 1 else None,
+            reading=self.reading,
+        )
 
 
 class CachedEarningsProvider:

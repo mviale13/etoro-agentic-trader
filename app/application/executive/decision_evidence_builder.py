@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, date, datetime
 from typing import Any
 
 from app.application.brain.reasoning.reasoning_snapshot import (
@@ -75,6 +76,10 @@ class DecisionEvidenceBuilder:
 
         company = brain.security_evidence(symbol)
 
+        # Scheduling is measured against a day, and the day is read once
+        # here so every sentence in this case counts from the same one.
+        today = datetime.now(UTC).date()
+
         investment = next(
             (
                 opinion
@@ -115,7 +120,7 @@ class DecisionEvidenceBuilder:
         # reader nothing about the one in front of them. They are still
         # weighed — as scores, and as the context the case is set in — but
         # they are not evidence about a security.
-        findings = tuple(dict.fromkeys(self._company_findings(company)))
+        findings = tuple(dict.fromkeys(self._company_findings(company, today)))
 
         evidence_weighed = statements(findings)
 
@@ -138,14 +143,7 @@ class DecisionEvidenceBuilder:
             )
         )
 
-        catalysts = tuple(
-            dict.fromkeys(
-                (
-                    *market.opportunities,
-                    *reasoning.opportunity.opportunities,
-                )
-            )
-        )
+        catalysts = self._catalysts(company, today)
 
         return DecisionEvidence(
             symbol=symbol,
@@ -285,8 +283,39 @@ class DecisionEvidenceBuilder:
         return None
 
     @staticmethod
+    def _catalysts(
+        company: CompanyRecommendation | None,
+        today: date,
+    ) -> tuple[str, ...]:
+        """
+        What is scheduled to happen to this security, dated.
+
+        These used to be the market's opportunities and the account's, which
+        are identical under every symbol: "Stable market conditions" was
+        MSFT's catalyst and everything else's, so the one line meant to say
+        why this security now said nothing about this security at all. Those
+        remain weighed, as the context they are.
+
+        What belongs here is something dated that is scheduled to happen to
+        this security — today, the company's own next earnings report. It is
+        a date and only a date. Nothing here says the report will be good,
+        because nothing knows: a catalyst is an event on a calendar, not a
+        forecast of its content.
+        """
+
+        schedule = company.signals.earnings if company is not None else None
+
+        window = schedule.window if schedule is not None else None
+
+        if window is None or not window.is_ahead_of(today):
+            return ()
+
+        return (window.stated(today),)
+
+    @staticmethod
     def _company_findings(
         company: CompanyRecommendation | None,
+        today: date,
     ) -> tuple[Finding, ...]:
         """Everything the signals found about this security, with its sense."""
 
@@ -299,6 +328,51 @@ class DecisionEvidenceBuilder:
             *company.evidence,
             *(risk.evidence if risk is not None else ()),
             *DecisionEvidenceBuilder._research_findings(company.signals.research),
+            *DecisionEvidenceBuilder._earnings_findings(company, today),
+        )
+
+    @staticmethod
+    def _earnings_findings(
+        company: CompanyRecommendation,
+        today: date,
+    ) -> tuple[Finding, ...]:
+        """
+        What the company's calendar says, where it is not a catalyst.
+
+        A report still ahead is a catalyst and is stated there, once. What
+        is left is the two ways there is no report ahead, and they are worth
+        stating because silence would read as nobody having looked:
+
+        - the last window the provider still publishes, which is the quarter
+          just reported rather than the next one;
+        - no date published at all.
+
+        Neutral, always. A company reporting soon is neither a reason to buy
+        it nor a reason to sell it, and a scheduling fact that carried a
+        sense would be a view on a report nobody has read. A calendar that
+        could not be read is not here at all — that is a gap in the
+        platform, and it is reported as missing evidence.
+        """
+
+        schedule = company.signals.earnings
+
+        if schedule is None or schedule.unread:
+            return ()
+
+        if schedule.window is None:
+            return (
+                Finding.neutral(
+                    f"No upcoming earnings date is published for {company.symbol}."
+                ),
+            )
+
+        if schedule.window.is_ahead_of(today):
+            return ()
+
+        return (
+            Finding.neutral(
+                f"{schedule.window.stated(today)} No next date is published yet."
+            ),
         )
 
     @staticmethod
@@ -403,5 +477,14 @@ class DecisionEvidenceBuilder:
 
         if company.signals.risk is None or company.signals.risk.level == "UNKNOWN":
             missing.append(f"Price history for {symbol} is too short to measure risk.")
+
+        # A calendar nobody could read, said as that. A company between
+        # reports says so among its findings instead: no date published is
+        # something known about the company, not something the platform
+        # failed to fetch.
+        if company.signals.earnings is not None and company.signals.earnings.unread:
+            missing.append(
+                f"The earnings calendar for {symbol} could not be read this cycle."
+            )
 
         return tuple(missing)

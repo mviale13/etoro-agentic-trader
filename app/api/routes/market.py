@@ -127,16 +127,18 @@ async def get_earnings(
             {
                 "symbol": entry.symbol,
                 "name": entry.name,
-                "starts_on": entry.starts_on.isoformat(),
+                "starts_on": entry.window.starts_on.isoformat(),
                 "ends_on": (
-                    entry.ends_on.isoformat() if entry.ends_on is not None else None
+                    entry.window.ends_on.isoformat()
+                    if entry.window.ends_on is not None
+                    else None
                 ),
                 # Measured against today's UTC date here, so the page
                 # renders "today" or "in 6 days" without doing calendar
                 # arithmetic of its own.
-                "starts_in_days": (entry.starts_on - today).days,
+                "starts_in_days": entry.window.starts_in_days(today),
                 "held": entry.held,
-                "observed": entry.reading.stated(),
+                "observed": entry.window.reading.stated(),
             }
             for entry in entries
         ]

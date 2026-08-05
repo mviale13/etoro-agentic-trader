@@ -124,8 +124,8 @@ async def test_reports_are_sorted_soonest_first_with_held_stated() -> None:
     disney, meta = calendar.upcoming
 
     assert disney.held is True
-    assert disney.starts_on == TODAY
-    assert disney.ends_on is None
+    assert disney.window.starts_on == TODAY
+    assert disney.window.ends_on is None
     assert meta.held is False
 
 
@@ -216,8 +216,8 @@ async def test_a_window_keeps_both_of_its_ends() -> None:
 
     calendar = await calendar_service.upcoming()
 
-    assert calendar.upcoming[0].starts_on == TODAY + timedelta(days=3)
-    assert calendar.upcoming[0].ends_on == TODAY + timedelta(days=7)
+    assert calendar.upcoming[0].window.starts_on == TODAY + timedelta(days=3)
+    assert calendar.upcoming[0].window.ends_on == TODAY + timedelta(days=7)
 
 
 @pytest.mark.anyio

@@ -56,7 +56,7 @@ def make_thesis() -> InvestmentThesis:
         summary="A quality business held back by its price.",
         strengths=("Strong profitability.",),
         risks=("Valuation reads expensive.",),
-        catalysts=("Next earnings report.",),
+        catalysts=("Reports earnings in 6 days (Aug 11).",),
         invalidation_conditions=("Margins compress two quarters running.",),
         expected_holding_period="3-5 years",
         created_at=datetime(2026, 8, 5, tzinfo=UTC),
@@ -118,6 +118,27 @@ def valid_payload(findings) -> dict:
             }
         ],
     }
+
+
+def test_a_dated_catalyst_reaches_the_writer_as_its_own_finding() -> None:
+    """
+    "Why now" is entitled to rest on a date, and to be told it is only a date.
+
+    The catalyst used to arrive among the thesis statements, where it was
+    the market's mood under every symbol. It now arrives as a scheduled
+    event about this security, sourced as an event rather than a view — the
+    writer may say the report is coming, never what it will say.
+    """
+
+    findings = make_findings()
+
+    scheduled = next(f for f in findings if f.id.startswith("W"))
+
+    assert scheduled.statement == "Scheduled: Reports earnings in 6 days (Aug 11)."
+    assert "not a view on its outcome" in scheduled.source
+
+    # Once, not twice: it is no longer restated among the thesis findings.
+    assert sum("Reports earnings" in f.statement for f in findings) == 1
 
 
 def test_findings_word_the_canonical_objects_with_stable_ids() -> None:

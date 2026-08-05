@@ -1,5 +1,7 @@
 """Per-security evidence and its effect on executive decisions."""
 
+from datetime import UTC, date, datetime, timedelta
+
 import pytest
 
 from app.application.brain.perception.security_perception import (
@@ -18,10 +20,16 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_research import CompanyResearch
 from app.domain.company_signals import CompanySignals
+from app.domain.earnings_schedule import (
+    EarningsSchedule,
+    EarningsWindow,
+    written,
+)
 from app.domain.finding import Finding
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.momentum_signal import MomentumSignal
 from app.domain.portfolio_position import PortfolioPosition
+from app.domain.provenance import Provenance
 from app.domain.quality_signal import QualitySignal
 from app.domain.risk_signal import RiskSignal
 from app.domain.value_signal import ValueSignal
@@ -33,6 +41,10 @@ from tests.test_brain_context import (
     make_portfolio,
 )
 
+#: The suite's "today" is the real one: a case is dated against the current
+#: UTC date, and a pinned date would rot overnight.
+TODAY = datetime.now(UTC).date()
+
 
 def make_company(
     symbol: str,
@@ -43,6 +55,7 @@ def make_company(
     trend: str = "BULLISH",
     risk: RiskSignal | None = None,
     research: CompanyResearch | None = None,
+    earnings: EarningsSchedule | None = None,
 ) -> CompanyRecommendation:
     return CompanyRecommendation(
         symbol=symbol,
@@ -68,6 +81,7 @@ def make_company(
             ),
             risk=risk,
             research=research,
+            earnings=earnings,
         ),
         evidence=(Finding.neutral(f"{symbol} evidence."),),
     )
@@ -455,3 +469,143 @@ async def test_security_perception_skips_unresolved_holdings() -> None:
     perception = SecurityPerception(symbol_resolver=ResolverStub())  # type: ignore[arg-type]
 
     assert await perception.execute(portfolio) == {}
+
+
+# ── The next earnings date as a per-security catalyst ────────────────
+
+
+def schedule(
+    starts_on: date | None = None,
+    ends_on: date | None = None,
+    unread: bool = False,
+) -> EarningsSchedule:
+    if starts_on is None:
+        return EarningsSchedule(unread=unread)
+
+    return EarningsSchedule(
+        window=EarningsWindow(
+            starts_on=starts_on,
+            ends_on=ends_on,
+            reading=Provenance(
+                source="Yahoo Finance",
+                observed_at=datetime.now(UTC),
+            ),
+        )
+    )
+
+
+def test_the_catalyst_is_this_securitys_own_dated_report() -> None:
+    """
+    Not the market's conditions, which are the same under every symbol.
+
+    "Stable market conditions" was MSFT's catalyst, and everything else's,
+    so the one line meant to say why this security now said nothing about
+    this security at all.
+    """
+
+    report_day = TODAY + timedelta(days=6)
+
+    brain = make_brain(
+        {"MSFT": (make_company("MSFT", earnings=schedule(report_day)),)},
+    )
+
+    evidence = build_evidence(brain, "MSFT")
+
+    assert evidence.catalysts == (
+        f"Reports earnings in 6 days ({written(report_day, TODAY)}).",
+    )
+    assert "Stable market conditions" not in evidence.catalysts
+
+
+def test_two_securities_no_longer_share_one_catalyst() -> None:
+    """The whole defect, stated as a test: they differ, or they say nothing."""
+
+    brain = make_brain(
+        {
+            "MSFT": (
+                make_company("MSFT", earnings=schedule(TODAY + timedelta(days=6))),
+            ),
+            "AAPL": (
+                make_company("AAPL", earnings=schedule(TODAY + timedelta(days=20))),
+            ),
+        },
+    )
+
+    msft = build_evidence(brain, "MSFT").catalysts
+    aapl = build_evidence(brain, "AAPL").catalysts
+
+    assert msft != aapl
+    assert "6 days" in msft[0]
+    assert "20 days" in aapl[0]
+
+
+def test_a_company_with_no_published_date_offers_no_catalyst() -> None:
+    """Absent, and said to be absent — never filled in with context."""
+
+    brain = make_brain({"MSFT": (make_company("MSFT", earnings=schedule()),)})
+
+    evidence = build_evidence(brain, "MSFT")
+
+    assert evidence.catalysts == ()
+    assert (
+        "No upcoming earnings date is published for MSFT." in evidence.evidence_weighed
+    )
+
+
+def test_a_report_already_given_is_not_offered_as_a_reason_to_act() -> None:
+    """A date that has passed is stated as past, and is not a catalyst."""
+
+    reported_on = TODAY - timedelta(days=4)
+
+    brain = make_brain(
+        {"MSFT": (make_company("MSFT", earnings=schedule(reported_on)),)}
+    )
+
+    evidence = build_evidence(brain, "MSFT")
+
+    assert evidence.catalysts == ()
+    assert (
+        f"Reported earnings on {written(reported_on, TODAY)}. "
+        "No next date is published yet." in evidence.evidence_weighed
+    )
+
+
+def test_a_calendar_that_could_not_be_read_is_reported_as_missing() -> None:
+    """A provider failure is a gap in the platform, not news about the company."""
+
+    brain = make_brain(
+        {"MSFT": (make_company("MSFT", earnings=schedule(unread=True)),)}
+    )
+
+    evidence = build_evidence(brain, "MSFT")
+
+    assert evidence.catalysts == ()
+    assert (
+        "The earnings calendar for MSFT could not be read this cycle."
+        in evidence.missing_evidence
+    )
+    assert not any("published" in line for line in evidence.evidence_weighed)
+
+
+def test_a_scheduled_report_argues_neither_for_nor_against_the_security() -> None:
+    """
+    A catalyst is a date, and a date is not an opinion.
+
+    Landing among the strengths would make "reports soon" a reason to buy,
+    which is a view on a report nobody has read.
+    """
+
+    brain = make_brain(
+        {"MSFT": (make_company("MSFT", earnings=schedule(TODAY - timedelta(days=2))),)},
+    )
+
+    evidence = build_evidence(brain, "MSFT")
+
+    assert not any("earnings" in line for line in evidence.strengths)
+    assert not any("earnings" in line for line in evidence.risks)
+
+
+def test_a_security_with_no_evidence_at_all_has_no_catalyst() -> None:
+    """Nothing gathered means nothing scheduled that anyone can state."""
+
+    assert build_evidence(make_brain({}), "MSFT").catalysts == ()

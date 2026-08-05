@@ -46,6 +46,10 @@ class CompanySignalService:
             quality=self._quality(item, facts),
             risk=RiskSignalService().build(facts),
             research=self._research(asset_class, facts),
+            # Carried, not judged: the investment case reads a security
+            # through its signals, and this is the only object that
+            # reaches it.
+            earnings=facts.earnings,
             reading=least_reliable(
                 facts.price_reading,
                 facts.fundamentals_reading,

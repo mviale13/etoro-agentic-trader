@@ -1,7 +1,7 @@
 """What the platform knows about a company after one provider call."""
 
 import asyncio
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from app.domain.company_facts import CompanyFacts
 from app.domain.finding import statements
@@ -9,9 +9,41 @@ from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
+from app.providers.earnings_provider import ReadDates
 from app.providers.yahoo_market_provider import YahooInstrument
 from app.services.company_facts_service import CompanyFactsService
 from app.services.quality_signal_service import QualitySignalService
+
+#: The suite's "today" is the real one: the facts are read against the
+#: current UTC date, and a pinned date would rot overnight.
+TODAY = datetime.now(UTC).date()
+
+
+class StubEarningsProvider:
+    """
+    A canned calendar read, remembering who it was asked about.
+
+    `dates=None` is a provider that cannot be reached, which is a different
+    answer from a company with no date published and is tested as one.
+    """
+
+    def __init__(self, dates: tuple[date, ...] | None = ()) -> None:
+        self._dates = dates
+        self.asked: list[str] = []
+
+    def read(self, symbol: str) -> ReadDates:
+        self.asked.append(symbol)
+
+        if self._dates is None:
+            raise RuntimeError("provider unreachable")
+
+        return ReadDates(
+            dates=self._dates,
+            reading=Provenance(
+                source="Yahoo Finance",
+                observed_at=datetime.now(UTC),
+            ),
+        )
 
 
 class StubMarketProvider:
@@ -70,6 +102,7 @@ def make_facts(snapshot: ValuationSnapshot) -> CompanyFacts:
     service = CompanyFactsService(
         market_provider=StubMarketProvider(),  # type: ignore[arg-type]
         valuation_provider=StubValuationProvider(snapshot),  # type: ignore[arg-type]
+        earnings_provider=StubEarningsProvider(),  # type: ignore[arg-type]
     )
 
     return asyncio.run(service.build(item))
@@ -159,6 +192,7 @@ def test_identity_reading_is_carried_from_the_watchlist_item() -> None:
     service = CompanyFactsService(
         market_provider=StubMarketProvider(),  # type: ignore[arg-type]
         valuation_provider=StubValuationProvider(make_snapshot()),  # type: ignore[arg-type]
+        earnings_provider=StubEarningsProvider(),  # type: ignore[arg-type]
     )
 
     facts = asyncio.run(service.build(item))
@@ -196,6 +230,7 @@ def test_a_stale_identity_ages_the_whole_object() -> None:
         valuation_provider=StubValuationProvider(  # type: ignore[arg-type]
             make_snapshot(observed_at=datetime(2026, 8, 4, 9, 0, tzinfo=UTC)),
         ),
+        earnings_provider=StubEarningsProvider(),  # type: ignore[arg-type]
     )
 
     facts = asyncio.run(service.build(item))
@@ -255,7 +290,9 @@ BITCOIN = WatchlistItem(
 )
 
 
-def build_crypto_facts() -> tuple[
+def build_crypto_facts(
+    earnings: StubEarningsProvider | None = None,
+) -> tuple[
     CompanyFacts,
     RecordingMarketProvider,
     RecordingValuationProvider,
@@ -276,6 +313,7 @@ def build_crypto_facts() -> tuple[
     service = CompanyFactsService(
         market_provider=market,  # type: ignore[arg-type]
         valuation_provider=valuation,  # type: ignore[arg-type]
+        earnings_provider=earnings or StubEarningsProvider(),  # type: ignore[arg-type]
     )
 
     return asyncio.run(service.build(BITCOIN)), market, valuation
@@ -358,3 +396,85 @@ def test_facts_carry_the_asset_class_rather_than_a_broker_id() -> None:
     facts, _, _ = build_crypto_facts()
 
     assert facts.asset_type == "crypto"
+
+
+# ── When the company next reports ───────────────────────────────────
+
+
+def company_facts(
+    earnings: StubEarningsProvider,
+) -> CompanyFacts:
+    item = WatchlistItem(
+        instrument_id=1,
+        symbol="MSFT",
+        name="Microsoft",
+        asset_type_id=5,
+        asset_type_subcategory_id=0,
+        exchange_id=4,
+        rank=1,
+        avatar_url=None,
+    )
+
+    service = CompanyFactsService(
+        market_provider=StubMarketProvider(),  # type: ignore[arg-type]
+        valuation_provider=StubValuationProvider(make_snapshot()),  # type: ignore[arg-type]
+        earnings_provider=earnings,  # type: ignore[arg-type]
+    )
+
+    return asyncio.run(service.build(item))
+
+
+def test_a_companys_published_report_window_reaches_its_facts() -> None:
+    """The date the case's catalyst is built from, read once, per company."""
+
+    report_day = TODAY + timedelta(days=6)
+
+    facts = company_facts(StubEarningsProvider(dates=(report_day,)))
+
+    assert facts.earnings is not None
+    assert facts.earnings.unread is False
+    assert facts.earnings.window is not None
+    assert facts.earnings.window.starts_on == report_day
+    assert facts.earnings.window.ends_on is None
+
+
+def test_a_company_with_no_date_published_says_so_rather_than_nothing() -> None:
+    """
+    Asked, and the answer was that nothing is scheduled.
+
+    A schedule is still present: the company was asked and it answered. It
+    is the window inside it that is absent, which is what stops "no report
+    is scheduled" being confused with "nobody looked".
+    """
+
+    facts = company_facts(StubEarningsProvider(dates=()))
+
+    assert facts.earnings is not None
+    assert facts.earnings.window is None
+    assert facts.earnings.unread is False
+
+
+def test_a_calendar_that_could_not_be_read_is_never_a_quiet_quarter() -> None:
+    """A provider failure is stated as one, not as an absence of news."""
+
+    facts = company_facts(StubEarningsProvider(dates=None))
+
+    assert facts.earnings is not None
+    assert facts.earnings.unread is True
+    assert facts.earnings.window is None
+
+
+def test_a_token_is_never_asked_when_it_next_reports() -> None:
+    """
+    A cryptocurrency has no earnings call, so the question is not put.
+
+    Asking would manufacture an absence for an instrument the question was
+    never valid for — and an absence on a dashboard reads as a finding.
+    """
+
+    earnings = StubEarningsProvider(dates=(TODAY,))
+
+    facts, _, _ = build_crypto_facts(earnings)
+
+    assert earnings.asked == []
+    assert facts.earnings is None

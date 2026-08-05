@@ -93,6 +93,25 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A security's catalyst is its own next earnings date** (August 2026).
+  The investment case's catalysts were the market's opportunities, which
+  are identical under every symbol — "Stable market conditions" was
+  MSFT's reason to act, and everything else's. The company's published
+  report window now reaches the case the way risk and market sensitivity
+  do: read by `CompanyFactsService` from the same daily cache the book's
+  calendar uses, carried on `CompanyFacts` and `CompanySignals`, and
+  worded once by `EarningsWindow.stated()`. A holding's catalyst reads
+  "Reports earnings in 84 days (Oct 28)" — dated, per security, and
+  absent when no date is published. Proven live on MSFT. The wording is
+  scheduling and nothing else: nothing anywhere says what the report will
+  contain. A company between reports says so among its findings, a
+  calendar that could not be read is reported as missing evidence, and
+  the two are never merged. The account and market opportunities are
+  still weighed — as the context they always were. The Executive Writer
+  receives the catalyst as its own finding, sourced "a dated event, not a
+  view on its outcome", so "why now" rests on a date rather than on the
+  market's mood.
+
 - **Held-but-unwatched instruments resolve from the broker's catalog**
   (August 2026). A position on no watchlist used to be a `#id`
   placeholder and a "cannot classify" line. The resolver now asks
