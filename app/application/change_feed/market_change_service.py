@@ -11,6 +11,7 @@ from app.domain.change_feed.change_event import (
     ChangeEvent,
     ChangeSeverity,
 )
+from app.domain.holding_exposure import HoldingExposure
 from app.domain.market_snapshot import MarketQuote, MarketSnapshot
 
 
@@ -68,12 +69,28 @@ class MarketChangeService:
     #: platform's band, stated here, on a figure that is the instrument's own.
     SIGNIFICANT_MOVE = 2.0
 
+    #: How many touched holdings a feed line names before counting the rest.
+    #: A feed entry is a sentence, not a table; the holdings with the most of
+    #: the account moving with the benchmark are named, and the remainder is
+    #: counted rather than silently dropped.
+    NAMED_HOLDINGS = 3
+
     def changes(
         self,
         previous: MarketSnapshot,
         current: MarketSnapshot,
+        exposures: tuple[HoldingExposure, ...] = (),
     ) -> tuple[ChangeEvent, ...]:
-        """Everything that measurably moved between these two observations."""
+        """
+        Everything that measurably moved between these two observations.
+
+        `exposures` is the account's holdings with whatever market
+        sensitivity was measured for each. Where the instrument that moved
+        is the benchmark those sensitivities were regressed against, the
+        move's event says which holdings it touches and how much — and how
+        many holdings it cannot speak for. A caller with no holdings
+        context passes nothing and gets the market's own story alone.
+        """
 
         classifications = (
             self._mood_change(previous, current),
@@ -83,13 +100,14 @@ class MarketChangeService:
 
         return (
             *(event for event in classifications if event is not None),
-            *self._instrument_moves(previous, current),
+            *self._instrument_moves(previous, current, exposures),
         )
 
     def _instrument_moves(
         self,
         previous: MarketSnapshot,
         current: MarketSnapshot,
+        exposures: tuple[HoldingExposure, ...],
     ) -> tuple[ChangeEvent, ...]:
         """
         Each instrument whose day was large for it, and newly so.
@@ -114,7 +132,14 @@ class MarketChangeService:
             if already is not None and already >= self.SIGNIFICANT_MOVE:
                 continue
 
-            events.append(self._instrument_event(quote, multiple, current.timestamp))
+            events.append(
+                self._instrument_event(
+                    quote,
+                    multiple,
+                    current.timestamp,
+                    exposures,
+                )
+            )
 
         return tuple(events)
 
@@ -147,24 +172,126 @@ class MarketChangeService:
         quote: MarketQuote,
         multiple: float,
         moment: datetime,
+        exposures: tuple[HoldingExposure, ...],
     ) -> ChangeEvent:
         verb = "rose" if quote.change_percent >= 0 else "fell"
         typical_daily = (
             (quote.realized_volatility or 0.0) / sqrt(self.TRADING_DAYS) * 100.0
         )
 
+        description = (
+            f"{quote.name} {verb} {abs(quote.change_percent):.1f}% — "
+            f"{multiple:.1f}× its typical daily move of {typical_daily:.1f}%."
+        )
+
+        touched = self._holdings_touched(quote.symbol, exposures)
+
+        if touched is not None:
+            description = f"{description} {touched}"
+
         return ChangeEvent(
             title=f"{quote.symbol} {verb} {abs(quote.change_percent):.1f}%",
-            description=(
-                f"{quote.name} {verb} {abs(quote.change_percent):.1f}% — "
-                f"{multiple:.1f}× its typical daily move of {typical_daily:.1f}%."
-            ),
+            description=description,
             category=ChangeCategory.MARKET,
+            # Severity stays the instrument's own distance. What the move
+            # means for a holding is stated, not scored — scoring it would
+            # need a threshold nothing has calibrated.
             severity=self._move_severity(multiple),
             # The observation's own time, as the mood and volatility events
             # use, so the whole feed sorts on one clock.
             timestamp=moment,
         )
+
+    def _holdings_touched(
+        self,
+        symbol: str,
+        exposures: tuple[HoldingExposure, ...],
+    ) -> str | None:
+        """
+        Which holdings this instrument's move touches, on measured evidence.
+
+        Only an instrument some holding was actually regressed against can
+        carry this line: a beta to SPY says nothing about an oil move, so
+        every other instrument's event says nothing about holdings at all —
+        absence of a claim, not a claim of no effect. That includes a book
+        with no measured sensitivity anywhere: which instrument those
+        holdings would move with is itself unmeasured, and naming one would
+        borrow a fact the exposures do not carry.
+
+        The measured holdings are ordered by how much of the account moves
+        with the benchmark — weight × |beta| — because that is the reader's
+        question, and both factors were measured. Holdings whose weight
+        could not be read sort last rather than being guessed a size.
+        Whatever was not measured is counted, so the line never reads as
+        "the rest are untouched".
+        """
+
+        measured = [
+            (item, item.sensitivity)
+            for item in exposures
+            if item.sensitivity is not None and item.sensitivity.benchmark == symbol
+        ]
+
+        if not measured:
+            return None
+
+        measured.sort(
+            key=lambda pair: (pair[0].weight_pct or 0.0) * abs(pair[1].beta),
+            reverse=True,
+        )
+
+        named = measured[: self.NAMED_HOLDINGS]
+
+        parts: list[str] = []
+
+        for position, (item, sensitivity) in enumerate(named):
+            share = (
+                f"{item.weight_pct:.1f}% of the account"
+                if item.weight_pct is not None
+                else "share of account unmeasured"
+            )
+
+            if position == 0:
+                parts.append(
+                    f"{item.symbol} ({share}) moves "
+                    f"{sensitivity.beta:.2f}× with it "
+                    f"(correlation {sensitivity.correlation:+.2f})"
+                )
+            else:
+                parts.append(
+                    f"{item.symbol} ({share}) "
+                    f"{sensitivity.beta:.2f}× "
+                    f"({sensitivity.correlation:+.2f})"
+                )
+
+        sentence = f"Among the holdings, {' and '.join(parts)}."
+
+        remainder: list[str] = []
+
+        more = len(measured) - len(named)
+
+        if more > 0:
+            remainder.append(
+                f"{more} more {self._holdings_word(more)} "
+                f"{'carries' if more == 1 else 'carry'} a measured "
+                f"sensitivity to it."
+            )
+
+        unmeasured = len(exposures) - len(measured)
+
+        if unmeasured > 0:
+            remainder.append(
+                f"No sensitivity is measured for the other {unmeasured} "
+                f"{self._holdings_word(unmeasured)}, so what this move "
+                f"means for {'it' if unmeasured == 1 else 'them'} is not "
+                f"stated."
+            )
+
+        return " ".join([sentence, *remainder])
+
+    @staticmethod
+    def _holdings_word(count: int) -> str:
+        return "holding" if count == 1 else "holdings"
 
     @staticmethod
     def _move_severity(multiple: float) -> ChangeSeverity:
