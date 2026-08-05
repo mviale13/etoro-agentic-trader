@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_brain_builder_service
@@ -18,11 +20,17 @@ from app.api.models.executive_brief import (
     InvestmentCaseResponse,
 )
 from app.api.models.portfolio_briefing import (
+    ActionResponse,
+    BriefingLineResponse,
     ChangeResponse,
+    ConvictionChangeResponse,
     PortfolioBriefingResponse,
     RankedInvestmentCaseResponse,
+    TodayBriefingResponse,
+    TrendResponse,
 )
 from app.application.brain.brain_builder_service import BrainBuilderService
+from app.application.brief.today_briefing_builder import TodayBriefingBuilder
 from app.application.change_feed.change_feed_service import ChangeFeedService
 from app.application.change_feed.holding_exposures import holding_exposures
 from app.application.executive.executive_service import ExecutiveService
@@ -33,6 +41,8 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.domain.decision_history import ConvictionChange, DecisionTrend
+from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.provenance import Provenance
 from app.domain.score_basis import ScoreBases, ScoreBasis
@@ -106,6 +116,7 @@ async def portfolio_briefing(
         decision = workspace.decision
         thesis = workspace.thesis
         reasoning = workspace.reasoning
+        evidence = workspace.evidence
 
         if decision is None or thesis is None or reasoning is None:
             continue
@@ -118,16 +129,18 @@ async def portfolio_briefing(
                 conviction=decision.conviction,
                 conviction_label=conviction_label(decision.conviction),
                 committee_agreement=_committee_agreement(workspace),
-                risk_level=(
-                    reasoning.risk.risk_level.value
-                    if reasoning.risk.risk_level is not None
-                    else "Not measured"
-                ),
+                # This security's own, not the account's. The account's
+                # risk level is identical under every symbol, so ten cards
+                # read "Low" together — including the ones running 58%
+                # volatility.
+                safety_score=(evidence.safety_score if evidence is not None else None),
                 summary=thesis.summary,
                 why_now=list(thesis.catalysts),
                 risks=list(thesis.risks),
                 expected_holding_period=thesis.expected_holding_period,
-                previous_decisions=thesis.previous_decisions,
+                trend=_trend(thesis.trend),
+                action=_action(workspace.action),
+                conviction_change=_conviction_change(thesis.conviction_change),
             )
         )
 
@@ -146,7 +159,27 @@ async def portfolio_briefing(
         symbols=[workspace.symbol for workspace in briefing.workspaces],
     )
 
+    # Composed from the same cycle: the decisions it changed and the
+    # earnings schedules it already read per security. Nothing is fetched
+    # twice, so the dashboard and the dossiers cannot disagree.
+    today = TodayBriefingBuilder().build(
+        brain,
+        changes.events,
+        datetime.now(UTC).date(),
+    )
+
     return PortfolioBriefingResponse(
+        today=TodayBriefingResponse(
+            lines=[
+                BriefingLineResponse(
+                    statement=line.statement,
+                    notable=line.notable,
+                )
+                for line in today.lines
+            ],
+            headline=today.headline,
+            is_quiet=today.is_quiet,
+        ),
         headline=brief.headline,
         summary=brief.summary,
         confidence=brief.confidence,
@@ -231,10 +264,53 @@ async def executive_brief(
                 conviction=case.conviction,
                 conviction_label=conviction_label(case.conviction),
                 summary=case.summary,
-                previous_decisions=case.previous_decisions,
+                trend=case.trend,
             )
             for case in view.investment_cases
         ],
+    )
+
+
+def _trend(trend: DecisionTrend | None) -> TrendResponse | None:
+    """Null stays null: a first review has no trend to report."""
+
+    if trend is None:
+        return None
+
+    return TrendResponse(
+        direction=trend.direction.value,
+        stated=trend.stated,
+    )
+
+
+def _conviction_change(
+    change: ConvictionChange | None,
+) -> ConvictionChangeResponse | None:
+    """Null stays null: a conviction that did not move is not a change."""
+
+    if change is None:
+        return None
+
+    return ConvictionChangeResponse(
+        previous=change.previous,
+        delta=change.delta,
+        stated=change.stated,
+        because=list(change.because),
+        unexplained=change.unexplained,
+    )
+
+
+def _action(action: ExecutiveAction | None) -> ActionResponse | None:
+    """The consideration the pipeline built, carried without rewording."""
+
+    if action is None:
+        return None
+
+    return ActionResponse(
+        kind=action.kind.value,
+        statement=action.statement,
+        because=action.because,
+        checkpoint=action.checkpoint,
     )
 
 
@@ -335,7 +411,9 @@ async def dossier(
         conviction_label=conviction_label(decision.conviction),
         committee_agreement=thesis.confidence,
         rationale=decision.rationale,
-        previous_decisions=thesis.previous_decisions,
+        trend=_trend(thesis.trend),
+        action=_action(workspace.action),
+        conviction_change=_conviction_change(thesis.conviction_change),
         decided_at=decision.decided_at,
         summary=thesis.summary,
         expected_holding_period=thesis.expected_holding_period,

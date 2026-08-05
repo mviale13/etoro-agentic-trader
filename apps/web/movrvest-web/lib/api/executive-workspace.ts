@@ -75,12 +75,25 @@ interface RankedCasePayload {
   conviction: number;
   conviction_label: string;
   committee_agreement: number;
-  risk_level: string;
+  safety_score: number | null;
   summary: string;
   why_now: readonly string[];
   risks: readonly string[];
   expected_holding_period: string;
-  previous_decisions: string | null;
+  trend: { direction: string; stated: string } | null;
+  action: {
+    kind: string;
+    statement: string;
+    because: string;
+    checkpoint: string | null;
+  } | null;
+  conviction_change: {
+    previous: number;
+    delta: number;
+    stated: string;
+    because: readonly string[];
+    unexplained: boolean;
+  } | null;
 }
 
 interface ChangePayload {
@@ -92,7 +105,14 @@ interface ChangePayload {
   action_required: boolean;
 }
 
+interface TodayBriefingPayload {
+  lines: readonly { statement: string; notable: boolean }[];
+  headline: string | null;
+  is_quiet: boolean;
+}
+
 interface PortfolioBriefingPayload {
+  today: TodayBriefingPayload;
   headline: string;
   summary: string;
   confidence: number | null;
@@ -209,7 +229,23 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
     : [];
   const changes = Array.isArray(payload.changes) ? payload.changes : [];
 
+  const today = payload.today;
+
+  if (!isRecord(today)) {
+    throw new Error("The /executive/portfolio response has no today briefing.");
+  }
+
+  const lines = Array.isArray(today.lines) ? today.lines : [];
+
   return {
+    today: {
+      lines: lines.filter(isRecord).map((line, index) => ({
+        statement: requireString(line.statement, `today.lines[${index}]`),
+        notable: line.notable === true,
+      })),
+      headline: optionalString(today.headline, "today.headline"),
+      is_quiet: today.is_quiet === true,
+    },
     headline: requireString(payload.headline, "headline"),
     summary: requireString(payload.summary, "summary"),
     confidence: optionalNumber(payload.confidence),
@@ -252,10 +288,7 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.committee_agreement,
         `investment_cases[${index}].committee_agreement`,
       ),
-      risk_level: requireString(
-        item.risk_level,
-        `investment_cases[${index}].risk_level`,
-      ),
+      safety_score: optionalNumber(item.safety_score),
       summary: requireString(item.summary, `investment_cases[${index}].summary`),
       why_now: Array.isArray(item.why_now)
         ? item.why_now.filter((value): value is string => typeof value === "string")
@@ -267,10 +300,60 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.expected_holding_period,
         `investment_cases[${index}].expected_holding_period`,
       ),
-      previous_decisions: optionalString(
-        item.previous_decisions,
-        `investment_cases[${index}].previous_decisions`,
-      ),
+      trend: isRecord(item.trend)
+        ? {
+            direction: requireString(
+              item.trend.direction,
+              `investment_cases[${index}].trend.direction`,
+            ),
+            stated: requireString(
+              item.trend.stated,
+              `investment_cases[${index}].trend.stated`,
+            ),
+          }
+        : null,
+      conviction_change: isRecord(item.conviction_change)
+        ? {
+            previous: requireNumber(
+              item.conviction_change.previous,
+              `investment_cases[${index}].conviction_change.previous`,
+            ),
+            delta: requireNumber(
+              item.conviction_change.delta,
+              `investment_cases[${index}].conviction_change.delta`,
+            ),
+            stated: requireString(
+              item.conviction_change.stated,
+              `investment_cases[${index}].conviction_change.stated`,
+            ),
+            because: Array.isArray(item.conviction_change.because)
+              ? item.conviction_change.because.filter(
+                  (value): value is string => typeof value === "string",
+                )
+              : [],
+            unexplained: item.conviction_change.unexplained === true,
+          }
+        : null,
+      action: isRecord(item.action)
+        ? {
+            kind: requireString(
+              item.action.kind,
+              `investment_cases[${index}].action.kind`,
+            ),
+            statement: requireString(
+              item.action.statement,
+              `investment_cases[${index}].action.statement`,
+            ),
+            because: requireString(
+              item.action.because,
+              `investment_cases[${index}].action.because`,
+            ),
+            checkpoint: optionalString(
+              item.action.checkpoint,
+              `investment_cases[${index}].action.checkpoint`,
+            ),
+          }
+        : null,
     })),
     changes: changes.filter(isRecord).map((change, index) => ({
       title: requireString(change.title, `changes[${index}].title`),
@@ -325,12 +408,14 @@ function mapInvestmentCases(
       `investment_cases[${index}].conviction_label`,
     ),
     committeeAgreement: item.committee_agreement,
-    riskLevel: titleCase(item.risk_level.replace(/_/g, " ")),
+    safetyScore: item.safety_score,
     summary: item.summary,
     whyNow: item.why_now,
     risks: item.risks,
     expectedHoldingPeriod: item.expected_holding_period,
-    previousDecisions: item.previous_decisions,
+    trend: item.trend,
+    action: item.action,
+    convictionChange: item.conviction_change,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,
   }));
 }
@@ -468,6 +553,11 @@ export async function getExecutiveWorkspace(): Promise<ExecutiveWorkspaceResult>
           minute: "2-digit",
         }).format(new Date()),
         situation: "stable",
+        today: {
+          lines: briefing.today.lines,
+          headline: briefing.today.headline,
+          isQuiet: briefing.today.is_quiet,
+        },
         portfolio: mapPortfolio(brain, briefing),
         brief: mapBrief(briefing),
         // Decision changes the Artificial CIO actually recorded. An empty

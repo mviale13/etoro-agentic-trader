@@ -380,9 +380,7 @@ def test_dossier_reports_an_unevidenced_symbol_as_unevidenced(
     assert body["decision_state"] == "INVESTIGATE"
 
     # No previous decision is a null, never an invented history.
-    assert body["previous_decisions"] is None or isinstance(
-        body["previous_decisions"], str
-    )
+    assert body["trend"] is None or set(body["trend"]) == {"direction", "stated"}
 
 
 def test_portfolio_briefing_is_a_404_when_there_is_nothing_to_explain(
@@ -604,3 +602,63 @@ def test_dashboard_route_passes_the_composite_through(client: TestClient) -> Non
     assert body["today"]["greeting"] == "Good morning."
     assert body["portfolio"] is None
     assert body["investor_dna"] is None
+
+
+def test_each_investment_case_carries_that_securitys_own_safety(
+    client: TestClient,
+) -> None:
+    """
+    The card used to print the account's risk level under a security's name.
+
+    It was labelled "Risk", and the account has one risk level, so ten
+    cards read "Low" together — including the crypto among them running
+    58% annualised volatility and a 75% fall. A number that is the same
+    under every symbol tells the reader nothing about the one they are
+    looking at, and this one actively misled them.
+    """
+
+    from dataclasses import replace
+
+    from app.domain.company_facts import CompanyFacts
+    from app.services.risk_signal_service import RiskSignalService
+    from tests.test_security_evidence import make_company, make_holding
+
+    def risk(volatility: float, drawdown: float):
+        return RiskSignalService().build(
+            CompanyFacts(
+                instrument_id=1,
+                symbol="X",
+                name="X",
+                asset_type="stock",
+                exchange="NASDAQ",
+                realized_volatility=volatility,
+                max_drawdown=drawdown,
+            )
+        )
+
+    brain = BrainBuilder(
+        portfolio=replace(
+            make_portfolio(),
+            holdings=(make_holding("CALM"), make_holding("WILD")),
+        ),
+        market=make_market(),
+        investment_policy=make_policy(),
+        evidence={
+            "CALM": (make_company("CALM", risk=risk(0.12, 0.08)),),
+            "WILD": (make_company("WILD", risk=risk(0.58, 0.75)),),
+        },
+    ).build()
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        brain
+    )
+
+    cases = client.get("/executive/portfolio").json()["investment_cases"]
+
+    safety = {case["symbol"]: case["safety_score"] for case in cases}
+
+    assert safety["CALM"] == 80
+    assert safety["WILD"] == 35
+
+    # The whole defect, in one assertion: they are no longer the same.
+    assert safety["CALM"] != safety["WILD"]

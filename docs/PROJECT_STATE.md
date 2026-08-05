@@ -93,6 +93,86 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A conviction that moves says how far, and what moved under it**
+  (August 2026). The dashboard was static: a case's conviction was a
+  number with no yesterday. Each row now carries the move — **↑1**, **↓2**
+  — as arithmetic on two recorded convictions, and opening it names the
+  scores that differed: *"Business quality improved, 62 → 80"*,
+  *"Safety fell, 55 → 35"*. Every reason is a score that measurably
+  changed between the two decisions; a score missing on either side is
+  passed over rather than guessed at.
+
+  This needed the journal to record what a decision was decided on, not
+  only what was decided — so it now stores the five scores beside each
+  decision. Decisions recorded before that cannot be explained, and the
+  platform says exactly that rather than showing an empty list as
+  "nothing changed": *"The earlier decision was recorded before this
+  platform kept its scores, so what moved underneath cannot be said."*
+  Live, every case reads that today; the reasons fill in from the next
+  cycle in which a conviction moves.
+
+- **The holdings became a ranking rather than ten reports** (August 2026).
+  Ten cards repeated the same five sections — risk, why now, risks,
+  previously, review case — so finding the one that mattered meant reading
+  ten of everything. The Executive Committee is now one compact list: rank,
+  symbol, which way the case is moving, what to consider doing, the
+  decision state and the conviction. A row opens onto the full case, which
+  is unchanged. Nothing was removed; it stopped being shown all at once.
+  The expansion also stopped printing the CIO's rationale twice — the
+  action's reason is shown only where it says something the summary does
+  not, which for a case short of evidence is the missing figure itself.
+
+- **Every case says what to consider, and which way it is moving**
+  (August 2026). Each card's action read "Monitor" — including the ones
+  the Artificial CIO had moved to RECOMMEND — because it was derived from
+  nothing. It cannot be the decision state renamed either: RECOMMEND on a
+  security already held and RECOMMEND on one the investor does not own
+  are the same judgement and different questions, and only the portfolio
+  knows which case this is. `ExecutiveAction` now carries the
+  consideration ("Consider opening a position in VOW3.DE", "Continue
+  holding BNP.PA", "Research ETOR before the thesis can progress",
+  "Review whether to keep holding SPCX"), the CIO's own reason for it,
+  and the next dated thing bearing on it. Nothing is worded as an
+  instruction and no size, price or quantity is ever named: this platform
+  recommends and the investor decides.
+
+  "PREPARE was also the previous decision, recorded on August 4" asked
+  the reader to do the comparison. `DecisionTrend` does it once, off the
+  lifecycle ranks the states already carry: **Stable — 4 consecutive
+  reviews since 2026-08-03**, **Improving — PREPARE → RECOMMEND**,
+  **Deteriorating — RECOMMEND → INVESTIGATE**. A first review has no
+  trend at all, because a run of one is not a settled view.
+
+- **The dashboard opens with today, not with what you own** (August 2026).
+  A Chief Investment Officer does not open a dashboard to ask what they
+  hold; they ask what changed and what deserves attention. The page now
+  leads with a `TodayBriefing`: the highest-priority change as the
+  headline, over counted lines — "6 recommendations changed", "1 company
+  reports earnings today: DIS". Every line is a count of something the
+  cycle recorded, checkable against the feed beneath it, and composed in
+  the backend. Holdings are counted rather than changes, because the feed
+  really does hold three moves on one security in a week and counting
+  those would overstate how much of the book moved. Earnings are read
+  from the schedules the cycle already gathered per security, so the
+  dashboard and the dossiers cannot disagree about when a company
+  reports. A quiet day says so and shows no headline at all: a page that
+  manufactures a highest priority every morning teaches its reader that a
+  highest priority means nothing. Nothing is claimed about executed
+  trades — the platform recommends and keeps no record of what the
+  investor did, so it does not report on it. The portfolio's own
+  statistics moved below the fold as supporting information.
+
+- **Each investment case shows its own security's safety** (August 2026).
+  Every card on the dashboard printed the *account's* risk level under a
+  security's name, labelled "Risk". The account has one risk level, so
+  ten cards read "Low" together — including BTC at 35.9% volatility and a
+  53.1% fall, ETH at 54.4% and 67.6%, SOL at 58.0% and 74.9%. The risk
+  engine was never wrong about them; every dossier stated it correctly.
+  The card now carries the security's own safety, and the ten read 55,
+  55, 35, 55, 35, 35, 35, 35, 35, 15. This was the fourth and last
+  instance on this surface of one defect: an account-level figure printed
+  as though it described a security.
+
 - **Every score runs the same way, and says what kind of number it is**
   (August 2026). Risk was the one dimension where a high number was bad,
   which made the set unreadable and unsafe to aggregate: four nineties do

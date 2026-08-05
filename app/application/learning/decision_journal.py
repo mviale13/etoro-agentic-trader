@@ -5,10 +5,15 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from app.cio.decision_state import DecisionState
-from app.cio.executive_decision import ExecutiveDecision
-from app.domain.decision_history import DecisionHistory, DecisionRecord
+from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.decision_history import (
+    DecisionHistory,
+    DecisionRecord,
+    RecordedScores,
+)
 from app.domain.event import Event
 from app.domain.event_type import EventType
+from app.domain.score_basis import SCORE_LABELS
 from app.repositories.event_repository import EventRepository
 
 
@@ -34,24 +39,46 @@ class DecisionJournal:
     def record(
         self,
         decision: ExecutiveDecision,
+        evidence: DecisionEvidence | None = None,
     ) -> bool:
-        """Remember a decision. Returns False when it was already recorded."""
+        """
+        Remember a decision. Returns False when it was already recorded.
+
+        The scores it was decided on are recorded beside it, where the
+        caller has them. Without them a later cycle can say the conviction
+        moved but not what moved underneath — which is exactly what every
+        decision recorded before this said, and why it is stored now.
+        """
 
         symbol = self._normalize(decision.symbol)
 
         if self._already_recorded(decision, symbol):
             return False
 
+        payload: dict[str, object] = {
+            "state": decision.state.value,
+            "conviction": decision.conviction,
+            "rationale": decision.rationale,
+        }
+
+        if evidence is not None:
+            payload["scores"] = {
+                "quality": evidence.quality_score,
+                "evidence": evidence.evidence_score,
+                "valuation": evidence.valuation_score,
+                # Stored the way every surface shows it, so a later
+                # comparison does not have to remember which one runs
+                # backwards.
+                "safety": evidence.safety_score,
+                "portfolio_fit": evidence.portfolio_fit_score,
+            }
+
         self._repository.save(
             Event(
                 timestamp=decision.decided_at,
                 event_type=EventType.EXECUTIVE_DECISION_RECORDED,
                 symbol=symbol,
-                payload={
-                    "state": decision.state.value,
-                    "conviction": decision.conviction,
-                    "rationale": decision.rationale,
-                },
+                payload=payload,
             )
         )
 
@@ -135,7 +162,29 @@ class DecisionJournal:
             conviction=int(event.payload.get("conviction", 0)),
             rationale=str(event.payload.get("rationale", "")),
             decided_at=event.timestamp,
+            scores=DecisionJournal._to_scores(event.payload.get("scores")),
         )
+
+    @staticmethod
+    def _to_scores(raw: object) -> RecordedScores:
+        """
+        The scores as recorded, or an empty set for an older decision.
+
+        A record written before the journal kept them carries no scores at
+        all, which is why the absence is a distinct state rather than five
+        zeroes: a decision made at zero conviction in every dimension is a
+        thing that could happen, and this is not it.
+        """
+
+        if not isinstance(raw, dict):
+            return RecordedScores()
+
+        def value(name: str) -> int | None:
+            recorded = raw.get(name)
+
+            return int(recorded) if isinstance(recorded, int | float) else None
+
+        return RecordedScores(**{name: value(name) for name in SCORE_LABELS})
 
     @staticmethod
     def _normalize(

@@ -11,8 +11,8 @@ from app.application.brain.reasoning.reasoning_snapshot import (
 from app.application.committees.models.committee_opinion import (
     CommitteeOpinion,
 )
-from app.domain.decision_history import DecisionHistory
-from app.domain.executive_decision import ExecutiveDecision
+from app.domain.decision_history import DecisionHistory, RecordedScores
+from app.domain.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.domain.thesis.investment_thesis import InvestmentThesis
 
 
@@ -29,6 +29,7 @@ class InvestmentThesisBuilder:
         committee_opinions: tuple[CommitteeOpinion, ...],
         decision: ExecutiveDecision,
         history: DecisionHistory | None = None,
+        evidence: DecisionEvidence | None = None,
     ) -> InvestmentThesis:
         portfolio = reasoning.portfolio
         market = reasoning.market
@@ -87,54 +88,32 @@ class InvestmentThesisBuilder:
             context_strengths=context_strengths,
             context_risks=context_risks,
             evidence_as_of=decision.evidence_as_of,
-            previous_decisions=self._previous_decisions(
-                history,
-                decision,
+            trend=(
+                history.trend_against(decision.state) if history is not None else None
+            ),
+            conviction_change=(
+                history.conviction_change_against(
+                    decision.conviction,
+                    self._scores(evidence),
+                )
+                if history is not None
+                else None
             ),
         )
 
     @staticmethod
-    def _previous_decisions(
-        history: DecisionHistory | None,
-        decision: ExecutiveDecision,
-    ) -> str | None:
-        """
-        State what the Artificial CIO decided about this symbol before.
+    def _scores(evidence: DecisionEvidence | None) -> RecordedScores:
+        """Today's scores in the shape the record keeps them."""
 
-        Returns None when nothing was ever recorded. A symbol the CIO is
-        judging for the first time has no history, and inventing one — "no
-        change" — would report an observation that was never made.
-        """
+        if evidence is None:
+            return RecordedScores()
 
-        if history is None or history.is_empty:
-            return None
-
-        run = history.current_run
-        previous_state = run[-1].state
-        since = run[0].decided_at.date().isoformat()
-        occurrences = len(run)
-
-        if previous_state is decision.state:
-            if occurrences == 1:
-                return (
-                    f"{decision.state.value} was also the previous decision, "
-                    f"recorded on {since}."
-                )
-
-            return (
-                f"{decision.state.value} has been the decision since {since}, "
-                f"across {occurrences} recorded decisions."
-            )
-
-        held = (
-            f"recorded once, on {since}"
-            if occurrences == 1
-            else f"the decision since {since}, across {occurrences} recorded decisions"
-        )
-
-        return (
-            f"Changed from {previous_state.value} to {decision.state.value}. "
-            f"{previous_state.value} was {held}."
+        return RecordedScores(
+            quality=evidence.quality_score,
+            evidence=evidence.evidence_score,
+            valuation=evidence.valuation_score,
+            safety=evidence.safety_score,
+            portfolio_fit=evidence.portfolio_fit_score,
         )
 
     @staticmethod

@@ -146,10 +146,10 @@ def build_findings(
         for line in thesis.invalidation_conditions
     )
 
-    if thesis.previous_decisions:
+    if thesis.trend is not None:
         thesis_statements.append(
             (
-                f"Recorded history: {thesis.previous_decisions}",
+                f"Recorded history: {thesis.trend.stated}",
                 "DecisionJournal",
             )
         )

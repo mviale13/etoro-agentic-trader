@@ -10,6 +10,7 @@ from app.application.committees.models.committee_opinion import (
 )
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.decision_history import DecisionTrend, TrendDirection
 from app.domain.thesis.investment_thesis import InvestmentThesis
 from app.providers.narrative_provider import (
     Draft,
@@ -63,7 +64,10 @@ def make_thesis() -> InvestmentThesis:
         evidence_weighed=("Strong profitability.",),
         context_strengths=("Healthy liquidity.",),
         context_risks=("Cash concentration.",),
-        previous_decisions="PREPARE on August 4.",
+        trend=DecisionTrend(
+            direction=TrendDirection.STABLE,
+            stated="Stable — 3 consecutive reviews since 2026-08-02",
+        ),
     )
 
 

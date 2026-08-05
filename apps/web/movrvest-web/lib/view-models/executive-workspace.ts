@@ -59,9 +59,31 @@ export interface ExecutiveBriefViewModel {
   confidence: number | null;
 }
 
+/** One counted fact about today, worded by the backend. */
+export interface BriefingLineViewModel {
+  statement: string;
+  /** True where the line is news, false where it is the absence of news. */
+  notable: boolean;
+}
+
+/**
+ * What the investor needs to know today, before anything else.
+ *
+ * `headline` is null on a day where nothing asks for attention. The page
+ * shows that as itself — it never promotes the least uneventful fact to
+ * fill the space.
+ */
+export interface TodayBriefingViewModel {
+  lines: readonly BriefingLineViewModel[];
+  headline: string | null;
+  isQuiet: boolean;
+}
+
 export interface ExecutiveWorkspaceViewModel {
   lastReviewedAt: string;
   situation: "stable" | "attention" | "important";
+
+  today: TodayBriefingViewModel;
 
   portfolio: PortfolioSnapshotViewModel;
 

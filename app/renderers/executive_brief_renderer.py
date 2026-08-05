@@ -44,7 +44,7 @@ class ExecutiveBriefRenderer:
                 confidence=case.confidence,
                 conviction=case.conviction,
                 summary=case.summary,
-                previous_decisions=case.previous_decisions,
+                trend=case.trend.stated if case.trend is not None else None,
             )
             for case in brief.investment_cases
         )

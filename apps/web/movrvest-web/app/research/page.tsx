@@ -262,7 +262,7 @@ function CandidateCard({
       conviction={candidate.conviction}
       convictionLabel={candidate.convictionLabel}
       tags={candidate.source ? [candidate.source] : []}
-      previousDecisions={candidate.previousDecisions}
+      trend={candidate.trend}
       reviewHref={candidate.dossierHref}
     >
       <Lifecycle state={candidate.recommendation} />

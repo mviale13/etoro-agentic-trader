@@ -14,6 +14,7 @@ import type {
   ExecutiveWorkspaceViewModel,
   PortfolioSnapshotViewModel,
   PriorityUrgency,
+  TodayBriefingViewModel,
 } from "@/lib/view-models/executive-workspace";
 
 /**
@@ -256,13 +257,80 @@ function PortfolioSnapshot({
   );
 }
 
+/**
+ * Today, before anything else.
+ *
+ * A Chief Investment Officer does not open a dashboard to ask what they
+ * own. They ask what changed and what deserves attention — so this leads,
+ * and the account's own statistics sit below it.
+ *
+ * Every line is counted by the backend and checkable against the feed
+ * beneath. On a day where nothing asks anything, the briefing says so
+ * plainly and shows no headline: a page that manufactures urgency every
+ * morning teaches its reader that urgency means nothing.
+ */
+function TodaysBriefing({
+  today,
+  reviewedAt,
+}: {
+  today: TodayBriefingViewModel;
+  reviewedAt: string;
+}) {
+  return (
+    <section aria-labelledby="today-heading" className="pt-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+        {reviewedAt}
+      </p>
+
+      <h1
+        id="today-heading"
+        className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl"
+      >
+        {today.headline ?? "Nothing needs your attention today."}
+      </h1>
+
+      {today.headline ? (
+        <p className="mt-3 text-sm font-medium uppercase tracking-[0.15em] text-slate-500">
+          Highest priority
+        </p>
+      ) : (
+        <p className="mt-3 max-w-2xl text-base leading-7 text-slate-500">
+          A quiet day is information. The Artificial CIO changed no decision
+          you need to act on.
+        </p>
+      )}
+
+      <ul className="mt-7 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+        {today.lines.map((line) => (
+          <li key={line.statement} className="flex items-start gap-3">
+            <span
+              aria-hidden
+              className={`mt-2 size-1.5 shrink-0 rounded-full ${
+                line.notable ? "bg-slate-900" : "bg-slate-300"
+              }`}
+            />
+
+            <span
+              className={`text-base leading-7 ${
+                line.notable ? "font-medium text-slate-900" : "text-slate-500"
+              }`}
+            >
+              {line.statement}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function ExecutiveWorkspaceBriefing({
   workspace,
 }: ExecutiveWorkspaceBriefingProps) {
   return (
     <div className="space-y-16">
-      <PortfolioSnapshot
-        portfolio={workspace.portfolio}
+      <TodaysBriefing
+        today={workspace.today}
         reviewedAt={workspace.lastReviewedAt}
       />
 
@@ -477,6 +545,14 @@ export function ExecutiveWorkspaceBriefing({
           })}
         </div>
       </section>
+
+      {/* What the investor owns, below what they need to know. It is
+          supporting information: true, checkable, and not the question a
+          morning starts with. */}
+      <PortfolioSnapshot
+        portfolio={workspace.portfolio}
+        reviewedAt={workspace.lastReviewedAt}
+      />
     </div>
   );
 }

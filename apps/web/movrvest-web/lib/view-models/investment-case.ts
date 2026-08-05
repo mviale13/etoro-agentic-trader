@@ -14,6 +14,45 @@ export type ConvictionLevel =
  * `previousDecisions` is recorded, not inferred. A holding the CIO is judging
  * for the first time reports null rather than "no change".
  */
+/**
+ * How far conviction moved since the last decision, and what moved under it.
+ *
+ * `because` is empty when no score moved and also when the earlier
+ * decision predates the scores being recorded — `unexplained` tells those
+ * apart, so a silence is never rendered as "nothing changed".
+ */
+export interface ConvictionChangeViewModel {
+  previous: number;
+  /** Signed, never zero. */
+  delta: number;
+  /** The movement as the investor reads it, worded by the backend. */
+  stated: string;
+  because: readonly string[];
+  unexplained: boolean;
+}
+
+/** Which way a case has been moving across recorded decisions. */
+export interface DecisionTrendViewModel {
+  /** "stable" | "improving" | "deteriorating" — styled, never parsed. */
+  direction: string;
+  /** The trend as the investor reads it, worded by the backend. */
+  stated: string;
+}
+
+/**
+ * What the Artificial CIO asks the investor to consider.
+ *
+ * Not the recommendation renamed: the same judgement asks a different
+ * thing of someone who already holds the security. A consideration,
+ * never an instruction — MOVRvest recommends and the investor decides.
+ */
+export interface ExecutiveActionViewModel {
+  kind: string;
+  statement: string;
+  because: string;
+  checkpoint: string | null;
+}
+
 export interface RankedInvestmentCaseViewModel {
   rank: number;
   symbol: string;
@@ -22,12 +61,16 @@ export interface RankedInvestmentCaseViewModel {
   conviction: number;
   convictionLevel: ConvictionLevel;
   committeeAgreement: number;
-  riskLevel: string;
+  /** This security's own safety, higher being safer. Null where its
+   *  price history was too short to measure — never the same as safe. */
+  safetyScore: number | null;
   summary: string;
   whyNow: readonly string[];
   risks: readonly string[];
   expectedHoldingPeriod: string;
   /** What the CIO decided about this holding before, or null if never. */
-  previousDecisions: string | null;
+  trend: DecisionTrendViewModel | null;
+  action: ExecutiveActionViewModel | null;
+  convictionChange: ConvictionChangeViewModel | null;
   dossierHref: string;
 }

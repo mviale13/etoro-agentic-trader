@@ -23,7 +23,9 @@ class DashboardInvestmentCase:
     confidence: float | None
     conviction: int
     summary: str
-    previous_decisions: str | None = None
+    #: Which way the case has been moving across recorded decisions.
+    #: None when nothing was ever recorded.
+    trend: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

@@ -371,10 +371,88 @@ function WhatChanged({ dossier }: { dossier: DossierViewModel }) {
     <section aria-labelledby="changed-heading">
       <SectionHeading id="changed-heading">What changed</SectionHeading>
 
-      <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-700">
-        {dossier.previousDecisions ??
-          "This is the first decision the Artificial CIO has recorded for this symbol. No earlier history is claimed."}
-      </p>
+      {dossier.trend ? (
+        <p className="mt-4 max-w-3xl text-lg font-medium leading-7 text-slate-900">
+          {dossier.trend.stated}
+        </p>
+      ) : (
+        <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-500">
+          This is the first decision the Artificial CIO has recorded for this
+          symbol. No earlier history is claimed, and a first review is not a
+          stable one.
+        </p>
+      )}
+
+      {/* Why the conviction moved. Each line is a score that measurably
+          differed between the two recorded decisions; an earlier decision
+          predating the scores says so rather than showing nothing. */}
+      {dossier.convictionChange ? (
+        <div className="mt-5 max-w-3xl">
+          <p
+            className={`text-sm font-semibold ${
+              dossier.convictionChange.delta > 0
+                ? "text-emerald-700"
+                : "text-amber-700"
+            }`}
+          >
+            {dossier.convictionChange.delta > 0 ? "↑" : "↓"}{" "}
+            {dossier.convictionChange.stated}, from{" "}
+            {dossier.convictionChange.previous}
+          </p>
+
+          {dossier.convictionChange.unexplained ? (
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              The earlier decision was recorded before this platform kept its
+              scores, so what moved underneath cannot be said.
+            </p>
+          ) : dossier.convictionChange.because.length > 0 ? (
+            <ul className="mt-2 space-y-1.5">
+              {dossier.convictionChange.because.map((line) => (
+                <li
+                  key={line}
+                  className="flex gap-2.5 text-sm leading-6 text-slate-700"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-2.5 size-1 shrink-0 rounded-full bg-slate-400"
+                  />
+
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              No individual score moved; the conviction reflects the case as a
+              whole.
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      {/* What to consider doing about it — a consideration, never an
+          instruction. The investor decides. */}
+      {dossier.action ? (
+        <div className="mt-5 max-w-3xl rounded-2xl border border-slate-200 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            What to consider
+          </p>
+
+          <p className="mt-2 text-base font-semibold text-slate-950">
+            {dossier.action.statement}
+          </p>
+
+          <p className="mt-1.5 text-sm leading-6 text-slate-600">
+            {dossier.action.because}
+          </p>
+
+          {dossier.action.checkpoint ? (
+            <p className="mt-2 text-sm text-slate-500">
+              Next: {dossier.action.checkpoint}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }
