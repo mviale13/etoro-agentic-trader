@@ -1191,14 +1191,33 @@ is.
 
 ### The acquisition principle
 
-> **Always prefer the strongest structural evidence the document
-> actually offers.**
+> **Acquire evidence from the smallest authoritative context capable of
+> establishing the claim.**
 
-In practice, and in this order:
+Every word of that carries weight, and each rules out a different way of
+getting it wrong:
+
+- **smallest** — a reader given the whole filing will answer from
+  wherever the words are easiest to find, which is not the same place as
+  where they are owned.
+- **authoritative** — the context is computed by this platform from the
+  document. A reader that chooses its own context has decided the
+  ownership question it was supposed to be answering inside.
+- **capable of establishing the claim** — the floor. A context trimmed
+  past what the claim needs does not produce a careful answer; it
+  produces an absence, which is honest and useless.
+
+**The strength ordering is what this principle produces on the
+validation side.** Prefer the strongest structural evidence the document
+actually offers — in practice, and in this order:
 
 - a **table coordinate** before a numeric span
 - a **document region** before positional proximity
 - **positional proximity** before an unsupported absence
+
+Each is the smallest authoritative context for its kind of claim: a cell
+for a number, a section for a description. That is not a coincidence; it
+is the same principle read from the other end.
 
 This is not a tenth invariant. The invariants say what a claim must
 establish; this says how the platform should go about establishing it,
@@ -1206,6 +1225,26 @@ and it is a matter of acquisition rather than of truth. A weaker
 mechanism is not wrong — proximity is sound evidence on a document that
 offers nothing better — it is simply what to fall back to, never what to
 reach for first.
+
+**Where the platform does not yet honour it**, stated because a
+principle a document claims and the code does not is worse than no
+principle. Structural ownership computes the owning region of every
+segment description and then hands the reader the whole flattened
+section anyway. Measured on Meta's 10-K: the region `Family of Apps
+Products` opens with *"Facebook helps give people the power to build
+community…"* and the reading quotes none of it, reaching instead for
+*"selling advertising placements on our family of apps to marketers,
+which is reflected in FoA"* — a sentence under `Revenue and
+Investments`, correctly refused as outside the owning section. The
+ownership model is right and the acquisition is not.
+
+The open question is what the smallest *capable* context is, and it is
+deliberately not settled here. The owning region alone may be too
+little: a description can need the segment's naming, or a definition the
+filer wrote once in an overview. The whole section is demonstrably too
+much. Somewhere between sits the region plus the immediately relevant
+structural context, and which structure counts as relevant is a
+measurement rather than a preference.
 
 The corollary is what keeps it honest: **preferring stronger evidence
 must never mean accepting more**. Every mechanism, strong or weak,
