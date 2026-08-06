@@ -1160,3 +1160,106 @@ any new `PrimarySourceProvider` inherits the same obligation. A provider
 that resolves the wrong issuer produces perfectly grounded knowledge about
 the wrong business.
 
+## How the ESEF provider discharges it
+
+The first provider to inherit the obligation, and the one that shows what
+discharging it costs. Europe indexes filers by LEI rather than by ticker,
+so `EsefProvider` cannot ask its register anything until it knows who the
+security belongs to. Identity is therefore established in three steps,
+none of which is a resemblance:
+
+```text
+symbol  →  ISIN            →  LEI       →  the filing  →  the filing's own LEI
+          reviewed list       GLEIF        the index       checked before reading
+```
+
+Only the first step is written down, because only the first step has no
+authority to ask, and that step is a reviewed list rather than a lookup
+for a demonstrated reason. `yfinance` will answer `Ticker("ASML.AS").isin`
+with `AR0725224551` — an Argentine CEDEAR that tracks ASML rather than
+ASML — and `Ticker("BNP.PA").isin` with nothing. The first answer is the
+dangerous one: it is a real security of a real issuer that files real
+reports, so every downstream check passes and the reading is confidently
+about the wrong company.
+
+The last step is the same invariant enforced a second time, on the other
+side of the fetch. ESEF requires a filer to identify itself by LEI in
+every context of its own document, so the document can be asked whether
+it belongs to the issuer it was fetched for — and a register that served
+the wrong file is caught before a single word of it is read. Cheap, and
+worth doing precisely because the failure it catches is the one nothing
+downstream can see.
+
+---
+
+# The Primary Source Ecosystem
+
+The platform no longer has "a filings provider". It has an ecosystem, and
+the shape of it is what makes the next jurisdiction cheap:
+
+```text
+Security
+        ↓
+Identity Resolution
+        ↓
+Primary Source Resolver
+        ↓
+Primary Source Providers
+        ├── EDGAR                 the SEC's own record                      built
+        ├── ESEF                  Europe's mechanisms, via filings.xbrl.org built
+        ├── Investor Relations    the company's own published report        next
+        └── Manual Documents      a document handed to the platform         next
+        ↓
+Grounded Knowledge Extraction
+        ↓
+Company Knowledge Store
+```
+
+**New jurisdictions should require new providers, not new reasoning.**
+
+That is a claim the repository can now be checked against rather than an
+intention. ESEF is a genuinely different regulatory ecosystem from EDGAR —
+no single regulator, no ticker index, no `Item 1`, a separate national
+mechanism per member state, and documents in any EEA language. Adding it
+changed nothing downstream of `PrimarySourceResolver`, and changed
+`PrimarySourceResolver` itself only by naming a second provider in its
+default order. The canonical `PrimarySource`, the extraction, the
+grounding contract, the schema versioning, the store and the cache-first
+policy were all untouched. `PrimarySourceResolver` still builds its
+default providers in a single small block, and that block is the whole of
+what a jurisdiction costs the pipeline.
+
+What a provider owes the ecosystem is therefore small and fixed:
+
+| Obligation | Why it belongs to the provider |
+|---|---|
+| Establish the security's identity | Ticker namespaces are not global, and only the provider knows what its register indexes by |
+| Resolve which document is current, cheaply | Knowledge is kept against a document's key, so a caller already holding it must not pay to discover that |
+| Produce an immutable key | The same key must always mean the same bytes, or permanent knowledge is not permanent |
+| Divide the document into the two passages read | Where those passages live is jurisdiction-specific; that there are two is not |
+| Report a gap and an outage as different answers | Only one of them is worth asking about again |
+
+Nothing on that list is about *meaning*. A provider is acquisition, never
+interpretation, which is why SEDAR+, Companies House or the ASX should be
+routine additions: each has a different index, a different identifier and
+a different document convention, and none of them has a different idea of
+what a business is.
+
+## The backbone
+
+Primary sources are one link in a longer chain, and the chain is the
+Artificial CIO:
+
+```text
+Identity  →  Primary Source Resolution  →  Grounding  →  Knowledge
+                                                              ↓
+       Communication  ←  Decision  ←  Reasoning  ←────────────┘
+```
+
+Each arrow is a narrowing of what the next stage is allowed to assume,
+and every stage exists because the one before it can fail in a way the
+one after it cannot detect. New capabilities — providers, analysts,
+playbooks, committees — belong somewhere on this chain. A capability that
+bypasses a link is not a shortcut; it is a claim made without the check
+that link performs.
+

@@ -81,6 +81,10 @@ Orchestration lives in `app/application/workspace`:
 | `app/api`, `app/commands` | Delivery |
 | `app/domain` | Shared domain models |
 | `app/providers` | Provider access, cached: `CachedValueProvider`, `CachedMarketProvider` |
+| `app/providers/primary_source_provider.py` | The acquisition seam: `PrimarySourceResolver`, EDGAR first, ESEF second |
+| `app/providers/edgar_provider.py`, `edgar_filings.py` | SEC filings — the regulator's own record |
+| `app/providers/esef_provider.py`, `esef_filings.py` | European filings, read from the filer's IFRS tagging |
+| `app/providers/issuer_identity.py`, `european_issuers.py` | Which company a European ticker means, before anything is read for it |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
 | `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |

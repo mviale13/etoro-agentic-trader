@@ -98,6 +98,66 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A European company is read from the report it filed at home** (August
+  2026). The seam was built for this and it held: `EsefProvider` is an
+  adapter, and nothing downstream of it changed. Europe has no EDGAR —
+  every EEA issuer files its annual financial report as Inline XBRL with
+  its own national mechanism under ESEF, and XBRL International indexes
+  those filings at filings.xbrl.org by the filer's LEI.
+
+  Two things are genuinely different from EDGAR, and both are in the
+  adapter.
+
+  **Identity has to be established before anything can be asked for.**
+  Europe indexes by LEI, not by ticker, and a ticker is not an identity:
+  `SAN` is Sanofi in Paris and Banco Santander in Madrid. The chain is
+  symbol → ISIN → LEI → filing, and only the first link is written down,
+  because only the first link has no authority to ask. Deriving it was
+  tried and is exactly the failure the architecture warns about:
+  `yfinance` answers `ASML.AS` with `AR0725224551`, an Argentine CEDEAR
+  that tracks ASML rather than ASML, and answers `BNP.PA` with nothing.
+  A wrong ISIN resolves to a real company filing real reports, and the
+  knowledge read from them is grounded, cited and about the wrong
+  business. So `european_issuers.py` is a reviewed list of 43 issuers
+  whose ISINs were each checked against GLEIF, the legal name GLEIF
+  returned is recorded and re-checked on every lookup, and a symbol that
+  is not on it is reported as one this platform has not identified. The
+  boundary is held again at the last moment it can be: an ESEF filing
+  carries its filer's LEI in its own contexts, and a document that
+  identifies itself as somebody else is refused unread.
+
+  **The document says which passage is which.** A 10-K is sectioned by
+  convention and has to be found by looking for "Item 1"; an ESEF filing
+  is *tagged*, and a national regulator validated the tagging. The two
+  passages are therefore asked for by name from the IFRS taxonomy —
+  `DescriptionOfNatureOfEntitysOperationsAndPrincipalActivities`,
+  `DisclosureOfEntitysReportableSegmentsExplanatory`,
+  `DisclosureOfOperatingSegmentsExplanatory` — which means the reading
+  does not depend on the language the report was written in. That
+  matters: heading anchors were tried against ASML's report and matched
+  its running page header on every page.
+
+  Live: BNP Paribas' 2025 registration document reads as CIB 37%, CPBS
+  52%, IPS 14% and Other Activities unstated, every span verbatim;
+  ASML's reads as one reportable segment, which is what ASML reports.
+
+  Selecting *which* filing is the annual report is where the index needed
+  care, and both rules came from the index rather than from imagination.
+  A period that has not ended cannot have been reported on — the register
+  carries a Hermès filing stated as ending December 2026 whose document
+  is the report for 2025. And an interim report is not an annual one:
+  Novo Nordisk files ESEF quarterly, so the oldest filing on record
+  establishes where the financial year ends and the annual reports are
+  the ones landing on that anniversary, within a tolerance wide enough
+  for Ahold Delhaize's 52-week calendar.
+
+  Coverage is stated rather than implied. `filings.xbrl.org` does not
+  carry Germany: every German issuer resolves to a real company and to no
+  filing, which is reported as a gap in what the index reaches rather
+  than as a company without an annual report. `VOW3.DE`, one of the two
+  securities the platform currently recommends, is exactly that case.
+  `NOVO-B.CO`, the other, is read.
+
 - **Knowledge acquisition wired into the pipeline, cache-first** (August
   2026). `CompanyResearchService` now asks `CompanyKnowledgeService` for
   a company's own account of itself, and nothing in the research pipeline
@@ -879,24 +939,36 @@ company is legally answerable for.
   again rather than upgraded in place
 - Reporting-period support — the business period the filing covers, kept
   apart from the date it was published
+- The ESEF provider — European filings behind the same seam, read from the
+  filer's own IFRS tagging rather than from section headings, with the
+  issuer's identity established from GLEIF and checked again against the
+  document's own LEI
 
 **Next**
 
-1. **ESEF provider.** European filings behind the same seam. The canonical
-   `PrimarySource` was built for this; coverage should be an adapter, not a
-   rewrite
-2. **Official Investor Relations provider.** The company's own published
-   report, for businesses no regulator index resolves
-3. **Manual document ingestion.** A document handed to the platform
+1. **Official Investor Relations provider.** The company's own published
+   report, for businesses no regulator index resolves — starting with
+   Germany, whose mechanism does not publish to `filings.xbrl.org` and
+   which is therefore the largest remaining hole in European coverage
+2. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-4. **Investment Archetype rules.** Deterministic rules over the facts now
+3. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-5. **Dossier transparency for company knowledge, coverage and playbook
+4. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; why a security drew the playbook it did; and, stated
    apart, what could not be read and why
+
+**Open, and deliberately so**
+
+- Symbol-to-ISIN is a reviewed list, not a lookup. It has to be: no free
+  authority maps a ticker to an ISIN, and the one library that offers to
+  returns another instrument entirely. Coverage grows by verifying an
+  entry, and an unlisted symbol is reported as unidentified rather than
+  guessed at. If a licensed reference feed ever enters the platform, this
+  is the first thing it should replace
 
 ## Policy — `data/knowledge/` is tracked, and is not a cache
 
