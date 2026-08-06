@@ -70,11 +70,20 @@ These are not style preferences. Breaking them damages the product.
 1. **Absent evidence is reported as absent, never estimated.** A plausible
    number on an investment dashboard reads as a measurement. If the platform
    cannot evidence a figure, it says so.
-2. **The Brain stores facts, never conclusions.**
-3. **Analysts assess; only the Artificial CIO decides.**
-4. **Communication explains decisions; it never makes them.**
-5. **The dashboard presents; it never calculates.**
-6. **One business concept, one implementation.**
+2. **Identity and grounding are independent invariants.** Grounding proves
+   that extracted knowledge is supported by the primary source it cites.
+   Identity proves that the primary source belongs to the intended
+   security. Neither substitutes for the other, and identity is enforced
+   *before* the reading — a perfectly grounded, exactly cited reading of a
+   genuine filing is still wrong when the filing is another company's, and
+   nothing downstream can see that it happened. Learned twice, from `BTC`
+   resolving against the SEC to a Bitcoin trust and from a ticker-to-ISIN
+   lookup returning an Argentine CEDEAR for `ASML.AS`.
+3. **The Brain stores facts, never conclusions.**
+4. **Analysts assess; only the Artificial CIO decides.**
+5. **Communication explains decisions; it never makes them.**
+6. **The dashboard presents; it never calculates.**
+7. **One business concept, one implementation.**
 
 The UI labels its own honesty: every page declares its data provenance via
 `<PageIntegrity>`, and cards carry a live / partial / placeholder pill. If
