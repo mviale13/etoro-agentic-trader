@@ -1106,3 +1106,57 @@ Principle 11 is load-bearing, so the gaps are named rather than filled:
 - Unrealized P&L, pending orders and the change feed are reported as absent
   when the backend does not publish them
 
+---
+
+# Two Validation Boundaries: Identity and Grounding
+
+Reading a primary source has two independent failure modes, and they need
+two independent guarantees. Conflating them is easy, because a failure of
+either one produces a confident, well-cited, wrong answer.
+
+```text
+                    IDENTITY VALIDATION
+        Does this document belong to the intended security?
+                            ↓
+                    GROUNDING VALIDATION
+        Do these facts belong to this document?
+```
+
+**Grounding validation** proves that extracted facts belong to the document.
+Every segment carries a verbatim span, the span is checked against the
+source text, and an extraction quoting words that are not there is discarded
+in full rather than in part. This is enforced in
+`CompanyKnowledgeExtractor`.
+
+**Identity validation** proves that the document belongs to the security.
+Nothing about grounding can establish this: the quotes can be exact, the
+document genuine, the citations correct, and the whole reading still be
+about a different company. It is enforced *before* extraction begins, by
+asking for structural knowledge only where the security's playbook expects
+company accounts (`CompanyResearchService._structural_knowledge`).
+
+The boundaries are complementary rather than overlapping, and each was
+demonstrated by a distinct live failure:
+
+| | Identity failure | Grounding failure |
+|---|---|---|
+| Live case | `BTC` resolved against the SEC to a trust issuing shares that track Bitcoin | Extraction paraphrased across a table boundary, reading text on either side of a cell edge as continuous prose |
+| Document | Genuine | Genuine |
+| Extraction | Grounded, citations correct | Ungrounded |
+| Subject | **Wrong** | Correct |
+| Detected by | Nothing downstream — the answer looks correct | The grounding contract, which rejected it |
+| Fix | Structural: never ask a token or a fund for company accounts | Contract held, question narrowed: five to fifteen words from one run of prose, retried under the identical rule |
+
+The identity failure is the more instructive of the two, because **no
+amount of better prompting would ever solve it.** The model was asked to
+read a real annual report and read it correctly; the error was in which
+document it was handed. A validation layer that only checks the reading
+cannot catch an error in the subject, so the invariant has to be enforced
+upstream of the reading — which is why it lives in the seam that resolves
+sources, not in the extractor.
+
+Ticker namespaces are not global, and this generalises past the one case:
+any new `PrimarySourceProvider` inherits the same obligation. A provider
+that resolves the wrong issuer produces perfectly grounded knowledge about
+the wrong business.
+
