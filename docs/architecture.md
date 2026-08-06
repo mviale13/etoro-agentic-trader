@@ -1108,23 +1108,62 @@ Principle 11 is load-bearing, so the gaps are named rather than filled:
 
 ---
 
-# Three Validation Boundaries: Identity, Grounding, Applicability
+# The Evidence Pipeline
 
-Reading a primary source has three independent failure modes, and they
-need three independent guarantees. Conflating them is easy, because a
-failure of any one of them produces a confident, well-cited, wrong
-answer.
+Reading a primary source has independent failure modes, and each needs
+its own guarantee. Conflating them is easy, because a failure of any one
+of them produces a confident, well-cited, wrong answer — and every one of
+these was found in production, not in design.
+
+Each boundary answers one question, prevents one class of failure, and
+**assumes the boundary above it has already discharged its own**. That is
+what lets each stage be simple: grounding never asks whose company this
+is, and applicability never asks whether the words are really there.
 
 ```text
-                    IDENTITY VALIDATION
-        Does this document belong to the intended security?
-                            ↓
-                    GROUNDING VALIDATION
-        Do these facts belong to this document?
-                            ↓
-                  APPLICABILITY VALIDATION
-        Does the cited content support the fact it is cited for?
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ IDENTITY          Does this document belong to the security?    │
+  │                   Prevents: a perfect reading of the wrong      │
+  │                   company. Nothing downstream can detect it.    │
+  └─────────────────────────────────────────────────────────────────┘
+                                  ↓
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ GROUNDING         Do these facts come from this document?       │
+  │                   Prevents: assertion dressed as extraction —   │
+  │                   words the document never printed.             │
+  └─────────────────────────────────────────────────────────────────┘
+                                  ↓
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ APPLICABILITY     Does the cited content support the claim it   │
+  │                   was cited for?                                │
+  │                                                                 │
+  │   quantitative    Prevents: a column header cited as a          │
+  │                   segment's revenue. Real words, real number,   │
+  │                   no relationship between them.                 │
+  │                                                                 │
+  │   narrative       Prevents: one sentence about restated figures │
+  │                   cited as three segments' business.            │
+  └─────────────────────────────────────────────────────────────────┘
+                                  ↓
+                             KNOWLEDGE
+                    Facts, each carrying its own evidence
+                                  ↓
+                     TRANSLATION  →  COMMUNICATION
 ```
+
+**Why the platform prefers explicit absence.** Each boundary can only
+refuse; none can repair. A refused claim leaves an absence with its
+reason attached, and every surface reports that absence rather than
+filling it — because the alternative is a plausible figure or a fluent
+description that reads exactly like a measurement and is not one. An
+absence is a fact about this platform's reach. A plausible substitute is
+a claim about a company.
+
+The boundaries are also **independent**, which is why they are separate
+stages rather than one validator. A reading can be perfectly grounded and
+about the wrong company; perfectly applicable and quoting words the
+document never printed; identified, grounded, and attached to a number it
+does not support. Passing one says nothing about the others.
 
 **Grounding validation** proves that extracted facts belong to the document.
 Every segment carries a verbatim span, the span is checked against the
@@ -1289,22 +1328,35 @@ Berichtsstruktur"*, the prior-year figures correspond to the changed
 reporting structure. Exactly present, about accounting, describing no
 segment at all.
 
-What a table gives a number, prose gives a description: **position**. A
-figure belongs to the row whose label leads it; a description belongs to
-the segment whose name most recently precedes it. **The document's own
-naming of its segments partitions the prose the way row labels partition
-a table**, and that partition is something this platform computes rather
-than accepts.
+**The invariant is unambiguous ownership: a narrative citation must
+establish that the cited text belongs to the claim it supports.** That
+is what the boundary requires, and it is deliberately stated without
+naming a mechanism — position is the best evidence available today, and
+structural section boundaries, document markup or the filer's own tagging
+may be better evidence tomorrow. An architecture document that named the
+mechanism as the invariant would have to be weakened to accept its own
+improvement.
 
-Two rules, both measured rather than chosen:
+**Position is the current mechanism.** What a table gives a number, prose
+gives a description: a figure belongs to the row whose label leads it, so
+a description belongs to the segment whose name most recently precedes
+it. The document's own naming of its segments partitions the prose the
+way row labels partition a table, and that partition is something this
+platform computes rather than accepts.
 
-- **Ownership** — the span sits under this segment's name and no
-  other's. On Volkswagen this refuses two of three outright.
+Two positional rules discharge it, both measured rather than chosen:
+
+- **Ownership by naming** — the span sits under this segment's name and
+  no other's. On Volkswagen this refuses two of three outright.
 - **Proximity** — it sits within `NEARBY` characters of that naming.
-  This refuses the third, which passes ownership *by accident* because
-  the footnote follows the last segment the document names. Sound
-  citations measured 0, 23 and 51 characters from their naming; the
-  boilerplate measured 814 and 1474.
+  This refuses the third, which passes the naming rule *by accident*
+  because the footnote follows the last segment the document names.
+  Sound citations measured 0, 23 and 51 characters from their naming;
+  the boilerplate measured 814 and 1474.
+
+Both are implementation. Replacing them with something that establishes
+ownership more directly is an improvement to this section, not a
+contradiction of it.
 
 What is deliberately **not** a rule is that the span contain the
 segment's name. Two of Disney's three sound citations do not — the name
@@ -1346,12 +1398,21 @@ discarded the entire reading — identity, sizes and all.
 
 ### What this does not close
 
-Ownership and proximity are positional, so they cannot tell a description
-from a note that happens to sit exactly where a description would.
+The current mechanism is positional, so it cannot tell a description from
+a note that happens to sit exactly where a description would.
 Volkswagen's footnote was caught at 814 characters; the same sentence one
 line below a segment's description would pass. Closing that means judging
-what a sentence is *about*, which is a different kind of check from where
-it sits.
+what a sentence is *about*, which is a different kind of evidence for the
+same invariant — and the reason the invariant is worded as ownership
+rather than as distance.
+
+Nor is a description retried. An inapplicable span is an absence rather
+than a rejection, so it does not trigger the reread that a failed
+grounding contract does — and that is deliberate. Reading again until
+something passes would change the reader's objective from *read this
+document* to *find something acceptable*, which are not the same
+activity. If coverage proves unacceptable in production, the answer is a
+better evidence model, not more attempts under this one.
 
 ---
 

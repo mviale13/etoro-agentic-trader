@@ -93,11 +93,13 @@ These are not style preferences. Breaking them damages the product.
    claim beside them, and prompting cannot close that. So a quantitative
    citation is an address into a table this platform parsed, checked
    against the cell it names, and a share is arithmetic the platform
-   performs over two checked figures. A prose citation must sit under
-   the segment's own name in the document, close to it — position is to
-   prose what a row is to a number. Learned from one reading that cited
-   a *column header* and got the shares right anyway, and another that
-   cited one sentence about restated figures as three segments' business.
+   performs over two checked figures. A narrative citation must
+   establish **unambiguous ownership** between the cited text and the
+   claim it supports; position under the segment's own naming is today's
+   mechanism for that, not the invariant. Learned from one reading that
+   cited a *column header* and got the shares right anyway, and another
+   that cited one sentence about restated figures as three segments'
+   business.
 4. **A segment is three claims, evidenced apart.** Identity, size and
    description fail independently: an inapplicable description leaves
    the segment named and measured, and says nothing about what it does.

@@ -11,24 +11,31 @@ The prior-year figures correspond to the changed reporting structure. It
 is genuinely in the document, it is genuinely about accounting, and it
 describes no segment whatsoever. Grounding passes on all three.
 
-What a table gives a number, prose gives a description: **position**. A
-figure belongs to the row whose label leads it; a description belongs to
-the segment whose name most recently precedes it. The document's own
-naming of its segments partitions the prose the way row labels partition
-a table, and that partition is something this platform can compute for
-itself rather than take from a reading.
+The invariant this module serves is **unambiguous ownership**: a
+narrative citation must establish that the cited text belongs to the
+claim it supports. What follows is the mechanism, not the invariant.
+Structural section boundaries, document markup or a filer's own tagging
+may establish ownership more directly one day, and replacing this with
+one of them is an improvement rather than a contradiction.
 
-Two rules, and the measurements that set them. Across Disney's 10-K and
-Volkswagen's annual report:
+The mechanism is **position**. What a table gives a number, prose gives a
+description: a figure belongs to the row whose label leads it, so a
+description belongs to the segment whose name most recently precedes it.
+The document's own naming of its segments partitions the prose the way
+row labels partition a table, and that partition is something this
+platform can compute for itself rather than take from a reading.
 
-- **Ownership.** The span must sit under this segment's name and no
-  other's. On Volkswagen this refuses two of the three citations
+Two positional rules, and the measurements that set them. Across Disney's
+10-K and Volkswagen's annual report:
+
+- **Ownership by naming.** The span must sit under this segment's name
+  and no other's. On Volkswagen this refuses two of the three citations
   outright, because the footnote sits in a third segment's region.
 - **Proximity.** It must sit close enough to that naming to be part of
   what the document says about it. This is what refuses Volkswagen's
-  third citation, which passes ownership *by accident* — the footnote
-  happens to follow the last segment named, so that segment would
-  otherwise claim it.
+  third citation, which passes the naming rule *by accident* — the
+  footnote happens to follow the last segment named, so that segment
+  would otherwise claim it.
 
 What is deliberately **not** a rule: that the span contain the segment's
 name. Two of Disney's three good citations do not — the name is the
