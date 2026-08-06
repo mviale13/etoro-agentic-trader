@@ -55,6 +55,11 @@ class PrimarySourceResolver:
     a company without an annual report — it is one filed somewhere this
     platform reaches next, or not yet at all.
 
+    ESEF follows it, and closes exactly that gap for Europe. The order
+    matters for the issuers that are in both: a European group listed in
+    New York files a 20-F with the SEC and an annual financial report at
+    home, and EDGAR's is the one already proven to read well.
+
     Where nothing resolves, every provider's reason is carried into the
     failure. "Not listed with the SEC" and "the SEC could not be reached"
     are different situations, and a caller that only learned "no source"
@@ -67,8 +72,9 @@ class PrimarySourceResolver:
     ) -> None:
         if providers is None:
             from app.providers.edgar_provider import EdgarProvider
+            from app.providers.esef_provider import EsefProvider
 
-            providers = (EdgarProvider(),)
+            providers = (EdgarProvider(), EsefProvider())
 
         self._providers = tuple(providers)
 

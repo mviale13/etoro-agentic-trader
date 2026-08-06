@@ -1160,3 +1160,33 @@ any new `PrimarySourceProvider` inherits the same obligation. A provider
 that resolves the wrong issuer produces perfectly grounded knowledge about
 the wrong business.
 
+## How the ESEF provider discharges it
+
+The first provider to inherit the obligation, and the one that shows what
+discharging it costs. Europe indexes filers by LEI rather than by ticker,
+so `EsefProvider` cannot ask its register anything until it knows who the
+security belongs to. Identity is therefore established in three steps,
+none of which is a resemblance:
+
+```text
+symbol  →  ISIN            →  LEI       →  the filing  →  the filing's own LEI
+          reviewed list       GLEIF        the index       checked before reading
+```
+
+Only the first step is written down, because only the first step has no
+authority to ask, and that step is a reviewed list rather than a lookup
+for a demonstrated reason. `yfinance` will answer `Ticker("ASML.AS").isin`
+with `AR0725224551` — an Argentine CEDEAR that tracks ASML rather than
+ASML — and `Ticker("BNP.PA").isin` with nothing. The first answer is the
+dangerous one: it is a real security of a real issuer that files real
+reports, so every downstream check passes and the reading is confidently
+about the wrong company.
+
+The last step is the same invariant enforced a second time, on the other
+side of the fetch. ESEF requires a filer to identify itself by LEI in
+every context of its own document, so the document can be asked whether
+it belongs to the issuer it was fetched for — and a register that served
+the wrong file is caught before a single word of it is read. Cheap, and
+worth doing precisely because the failure it catches is the one nothing
+downstream can see.
+
