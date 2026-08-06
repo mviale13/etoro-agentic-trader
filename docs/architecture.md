@@ -1423,8 +1423,19 @@ new factual content — and accepts an explicit absence as an answer. It
 cannot drift into *find something acceptable*, because it is not
 permitted to change what is being claimed, only to evidence it or fail.
 A repaired span records that it came from a repair, so a reader never
-sees a second attempt presented as a first reading. Designed, not built:
-`PROJECT_STATE.md` carries it as the next slice.
+sees a second attempt presented as a first reading.
+
+Built, and it recovered nothing. Across every filing holding a refused
+citation to repair, each repair was either refused again on identical
+grounds or answered honestly that the document contains no such words.
+That is the mechanism working and the boundary holding — and it is also
+the measurement that names the real defect. Meta's 10-K introduces both
+segments together and then describes them in order, so the description
+of the first falls after the naming of the second, and Reality Labs'
+own sits 402 characters from its naming against a `NEARBY` of 300. The
+citation was never the problem; the partition was. A second request
+cannot repair an ownership model, which is why what follows replaces the
+model rather than asking a third time.
 
 ---
 
