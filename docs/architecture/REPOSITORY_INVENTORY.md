@@ -86,6 +86,10 @@ Orchestration lives in `app/application/workspace`:
 | `app/providers/esef_provider.py`, `esef_filings.py` | European filings, read from the filer's IFRS tagging |
 | `app/providers/issuer_identity.py`, `european_issuers.py` | Which company a European ticker means, before anything is read for it |
 | `app/providers/investor_relations_provider.py`, `investor_relations_sources.py` | The company's own published report, from a reviewed location and a reviewed hash |
+| `app/providers/document_text.py` | One reduction of a filing's markup, shared by every provider: the words as they were always read, plus the tables as a grid |
+| `app/domain/tabular_evidence.py` | Applicability: a number's address in a table, the cell read back out of the document, and the share computed from two checked figures |
+| `app/services/narrative_providers.py` | Building a model client, once, for both seams that use one |
+| `app/services/company_knowledge_reader.py` | Which model reads a filing — configured apart from the one that words a case |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
 | `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |

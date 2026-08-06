@@ -86,4 +86,5 @@ class EdgarProvider:
             source=source,
             business_description=filing.business_text,
             performance_discussion=filing.discussion_text,
+            performance_tables=filing.discussion_tables,
         )

@@ -12,6 +12,7 @@ from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.thesis.investment_thesis import InvestmentThesis
 from app.providers.narrative_provider import NarrativeProvider
 from app.renderers.executive_writer import ExecutiveWriter, NarrativeRejected
+from app.services.narrative_providers import build_provider
 
 #: The flag that turns the writer on. Off by default: the deterministic
 #: renderers are canonical, and language generation is opt-in.
@@ -89,55 +90,11 @@ def resolve_provider(name: str | None = None) -> NarrativeProvider | str:
     override = (os.environ.get(MODEL_ENV) or settings.movrvest_writer_model).strip()
     model = override if override and name == configured else DEFAULT_MODELS[name]
 
-    if name == "anthropic":
-        api_key = os.environ.get("ANTHROPIC_API_KEY") or settings.anthropic_api_key
-        auth_token = (
-            os.environ.get("ANTHROPIC_AUTH_TOKEN") or settings.anthropic_auth_token
-        )
-
-        if not (api_key or auth_token):
-            return (
-                "The Executive Writer is on but no Anthropic "
-                "credentials are configured, so no narrative was "
-                "generated."
-            )
-
-        from anthropic import AsyncAnthropic
-
-        from app.providers.anthropic_narrative_provider import (
-            AnthropicNarrativeProvider,
-        )
-
-        return AnthropicNarrativeProvider(
-            client=(
-                AsyncAnthropic(api_key=api_key, timeout=DRAFT_TIMEOUT)
-                if api_key
-                else AsyncAnthropic(auth_token=auth_token, timeout=DRAFT_TIMEOUT)
-            ),
-            model=model,
-        )
-
-    openai_key = os.environ.get("OPENAI_API_KEY") or settings.openai_api_key
-
-    if not openai_key:
-        return (
-            "The Executive Writer is on but no OpenAI credentials "
-            "are configured, so no narrative was generated."
-        )
-
-    try:
-        from openai import AsyncOpenAI
-    except ImportError:
-        return (
-            "The Executive Writer is set to OpenAI but the OpenAI SDK "
-            "is not installed, so no narrative was generated."
-        )
-
-    from app.providers.openai_narrative_provider import OpenAINarrativeProvider
-
-    return OpenAINarrativeProvider(
-        client=AsyncOpenAI(api_key=openai_key, timeout=DRAFT_TIMEOUT),
+    return build_provider(
+        name=name,
         model=model,
+        timeout=DRAFT_TIMEOUT,
+        purpose="The Executive Writer",
     )
 
 

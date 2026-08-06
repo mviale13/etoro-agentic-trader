@@ -25,10 +25,13 @@ import io
 import re
 import zipfile
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 
 import httpx
+
+from app.domain.tabular_evidence import SourceTable
+from app.providers.document_text import read_tables
 
 INDEX = "https://filings.xbrl.org"
 ENTITY_FILINGS_URL = INDEX + "/api/entities/{lei}/filings"
@@ -151,6 +154,12 @@ class EsefReport:
     business_text: str
 
     discussion_text: str = ""
+
+    #: The tables inside that discussion, with their rows and columns
+    #: kept. An IFRS 8 segment note is mostly table: the prose says which
+    #: segments there are and the table says what each one earned, and
+    #: only one of those two survives being flattened.
+    discussion_tables: tuple[SourceTable, ...] = ()
 
     #: The latest period end among the document's own XBRL contexts, and
     #: therefore the period it accounts for. None where it declares none.
@@ -395,6 +404,7 @@ def read_report(document: str) -> EsefReport:
         language=language,
         business_text=_passage(body, BUSINESS_ELEMENTS, continuations),
         discussion_text=_passage(body, DISCUSSION_ELEMENTS, continuations),
+        discussion_tables=_tables(body, DISCUSSION_ELEMENTS, continuations),
         period_ends_on=period_ends_on,
     )
 
@@ -454,6 +464,7 @@ def read_package(archive: bytes) -> EsefReport:
         language=_first(report.language for report in identified),
         business_text=_joined(report.business_text for report in reports),
         discussion_text=_joined(report.discussion_text for report in reports),
+        discussion_tables=_gathered(report.discussion_tables for report in reports),
         period_ends_on=max(
             (
                 report.period_ends_on
@@ -623,6 +634,50 @@ def _passage(
             found.append(text)
 
     return "\n\n".join(found)
+
+
+def _tables(
+    document: str,
+    elements: tuple[str, ...],
+    continuations: dict[str, int],
+) -> tuple[SourceTable, ...]:
+    """
+    Every table inside these tagged passages, structure kept.
+
+    The same passages `_passage` reduces to prose, read a second way. A
+    segment note is mostly table, and the two readings answer different
+    questions of it: the prose says which segments the filer reports, and
+    the table says what each of them earned — which is a claim about a
+    row and a column and cannot survive being flattened into a sentence.
+    """
+
+    markup: list[str] = []
+
+    for element in elements:
+        content = _fact(document, element, continuations)
+
+        if content and content not in markup:
+            markup.append(content)
+
+    return read_tables("\n".join(markup))
+
+
+def _gathered(groups: Iterable[tuple[SourceTable, ...]]) -> tuple[SourceTable, ...]:
+    """
+    Several documents' tables as one set a citation can address.
+
+    Each member of a package numbers its tables from zero, and a citation
+    names a table by number. Renumbering across the package is what keeps
+    one number meaning one table.
+    """
+
+    merged: list[SourceTable] = []
+
+    for group in groups:
+        for table in group:
+            merged.append(replace(table, index=len(merged)))
+
+    return tuple(merged)
 
 
 def _plain(fragment: str) -> str:

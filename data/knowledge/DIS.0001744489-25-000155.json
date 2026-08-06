@@ -1,48 +1,124 @@
 {
-  "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+  "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in Entertainment, Sports and Experiences.",
   "reading": {
-    "observed_at": "2026-08-05T22:32:10.529080+00:00",
+    "observed_at": "2026-08-06T11:42:01.023519+00:00",
     "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 2,
+  "schema_version": 4,
   "segments": [
     {
       "name": "Entertainment",
-      "quoted": "encompasses the Company\u2019s non-sports focused global film and episodic content production and distribution activities",
+      "quoted": "non-sports focused global film and episodic content production and distribution activities.",
+      "revenue": {
+        "denominator": {
+          "caption": "The following table presents revenues from our operating segments:",
+          "cell": {
+            "column": 1,
+            "row": 5,
+            "table": 6
+          },
+          "column_header": "2025",
+          "label": "Revenues",
+          "printed": "$ 94,425",
+          "value": 94425.0
+        },
+        "numerator": {
+          "caption": "The following table presents revenues from our operating segments:",
+          "cell": {
+            "column": 1,
+            "row": 1,
+            "table": 6
+          },
+          "column_header": "2025",
+          "label": "Entertainment",
+          "printed": "$ 42,466",
+          "value": 42466.0
+        }
+      },
       "revenue_models": [
         "subscription",
         "advertising",
         "licensing",
         "transaction",
         "services"
-      ],
-      "revenue_share": 0.449732
+      ]
     },
     {
       "name": "Sports",
-      "quoted": "sports-focused global television and DTC video streaming content production and distribution",
+      "quoted": "sports-focused global television and DTC video streaming content production and distribution activities.",
+      "revenue": {
+        "denominator": {
+          "caption": "The following table presents revenues from our operating segments:",
+          "cell": {
+            "column": 1,
+            "row": 5,
+            "table": 6
+          },
+          "column_header": "2025",
+          "label": "Revenues",
+          "printed": "$ 94,425",
+          "value": 94425.0
+        },
+        "numerator": {
+          "caption": "The following table presents revenues from our operating segments:",
+          "cell": {
+            "column": 1,
+            "row": 2,
+            "table": 6
+          },
+          "column_header": "2025",
+          "label": "Sports",
+          "printed": "17,672",
+          "value": 17672.0
+        }
+      },
       "revenue_models": [
         "subscription",
         "advertising",
         "licensing",
         "transaction",
         "services"
-      ],
-      "revenue_share": 0.187154
+      ]
     },
     {
       "name": "Experiences",
-      "quoted": "The lines of business within Experiences along with their significant business activities include the following:",
+      "quoted": "Theme park admissions - Sales of tickets for admission to our theme parks",
+      "revenue": {
+        "denominator": {
+          "caption": "The following table presents revenues from our operating segments:",
+          "cell": {
+            "column": 1,
+            "row": 5,
+            "table": 6
+          },
+          "column_header": "2025",
+          "label": "Revenues",
+          "printed": "$ 94,425",
+          "value": 94425.0
+        },
+        "numerator": {
+          "caption": "The following table presents revenues from our operating segments:",
+          "cell": {
+            "column": 1,
+            "row": 3,
+            "table": 6
+          },
+          "column_header": "2025",
+          "label": "Experiences",
+          "printed": "36,156",
+          "value": 36156.0
+        }
+      },
       "revenue_models": [
         "transaction",
         "retail",
         "licensing",
         "services"
-      ],
-      "revenue_share": 0.382907
+      ]
     }
   ],
   "source": {
+    "authority": "regulator_filed",
     "company": "Walt Disney Co",
     "document_format": "html",
     "identifier": "10-K 0001744489-25-000155",
@@ -56,7 +132,10 @@
       "starts_on": null
     },
     "source_type": "annual_report",
-    "symbol": "DIS"
+    "symbol": "DIS",
+    "verification": [
+      "register_indexed"
+    ]
   },
   "symbol": "DIS"
 }

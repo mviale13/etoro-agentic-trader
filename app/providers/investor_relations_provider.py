@@ -187,6 +187,7 @@ class InvestorRelationsProvider:
             ),
             business_description=document.business_text,
             performance_discussion=document.discussion_text,
+            performance_tables=document.discussion_tables,
         )
 
     # ── the three questions ─────────────────────────────────────────

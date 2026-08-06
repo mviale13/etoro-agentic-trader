@@ -343,14 +343,25 @@ async def test_the_flag_off_is_an_honest_absence(monkeypatch) -> None:
 def no_env_file(monkeypatch):
     """Keys live in `.env` as well as the environment; a test asserting
     their absence must silence both sources, not just the one
-    `monkeypatch.delenv` reaches."""
+    `monkeypatch.delenv` reaches.
+
+    Both modules that read settings are silenced, and that is not
+    belt-and-braces. A test which asserts "no credentials, so it did not
+    run" and whose patch misses one source does not fail — it builds a
+    real client and calls a real model, passing while spending money. So
+    every module that can reach a credential is named here, and adding
+    one means adding it here too."""
 
     from app.config import Settings
 
-    monkeypatch.setattr(
-        "app.services.executive_writer_service.get_settings",
-        lambda: Settings(_env_file=None),
-    )
+    for module in (
+        "app.services.executive_writer_service",
+        "app.services.narrative_providers",
+    ):
+        monkeypatch.setattr(
+            f"{module}.get_settings",
+            lambda: Settings(_env_file=None),
+        )
 
 
 @pytest.mark.anyio

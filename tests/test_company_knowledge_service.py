@@ -20,6 +20,11 @@ from app.domain.primary_source import (
     SourceType,
 )
 from app.domain.provenance import Provenance
+from app.domain.tabular_evidence import (
+    CellReference,
+    MeasuredShare,
+    ReportedFigure,
+)
 from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
 from app.services.company_knowledge_service import (
     CompanyKnowledgeService,
@@ -47,6 +52,25 @@ def source(key: str = ACCESSION, published: str = "2025-11-13") -> PrimarySource
     )
 
 
+def measured_share() -> MeasuredShare:
+    """A segment's size as the two cells it was measured out of."""
+
+    def figure(label: str, printed: str, value: float, row: int) -> ReportedFigure:
+        return ReportedFigure(
+            label=label,
+            column_header="2025",
+            printed=printed,
+            value=value,
+            cell=CellReference(table=6, row=row, column=1),
+            caption="($ in millions)",
+        )
+
+    return MeasuredShare(
+        numerator=figure("Experiences", "36,156", 36156.0, 3),
+        denominator=figure("Revenues", "94,425", 94425.0, 5),
+    )
+
+
 def knowledge(accession: str = ACCESSION, filed: str = "2025-11-13"):
     return CompanyKnowledge(
         symbol="DIS",
@@ -54,7 +78,7 @@ def knowledge(accession: str = ACCESSION, filed: str = "2025-11-13"):
         segments=(
             BusinessSegment(
                 name="Experiences",
-                revenue_share=0.383,
+                revenue=measured_share(),
                 revenue_models=(RevenueModel.TRANSACTION, RevenueModel.RETAIL),
                 quoted="The Experiences segment operates theme parks",
             ),
@@ -251,18 +275,55 @@ def test_knowledge_survives_the_round_trip_to_disk(tmp_path: Path) -> None:
 
     assert restored is not None
     assert restored.segments[0].name == "Experiences"
-    assert restored.segments[0].revenue_share == 0.383
     assert restored.segments[0].revenue_models == (
         RevenueModel.TRANSACTION,
         RevenueModel.RETAIL,
     )
-    assert restored.measured_share == 0.383
+
+    # The size survives as the two figures it was measured from, not as
+    # the answer. A stored share would be a number nothing had checked;
+    # what is kept is the evidence, and the share is worked out again.
+    revenue = restored.segments[0].revenue
+
+    assert revenue is not None
+    assert revenue.numerator.printed == "36,156"
+    assert revenue.numerator.label == "Experiences"
+    assert revenue.denominator.printed == "94,425"
+    assert revenue.numerator.cell == CellReference(table=6, row=3, column=1)
+    assert round(restored.measured_share, 4) == 0.3829
 
     # The audit trail is part of the knowledge, not part of the run that
     # produced it. A reader months later must still be able to see what
     # kind of source this was and which identity checks actually held.
     assert restored.source.authority is SourceAuthority.REGULATOR_FILED
     assert restored.source.verification == (IdentityCheck.REGISTER_INDEXED,)
+
+
+def test_an_entry_holding_a_bare_share_is_read_again(tmp_path: Path) -> None:
+    """
+    A share stored without the figures it was measured from is not upgraded.
+
+    Entries written when a segment's size was a single number carry no
+    cell addresses, no row labels and no total — there is nothing to
+    check them against, which is precisely what the reading version
+    changed. Back-filling would mean inventing the evidence that was
+    never captured, so the entry is absent and the document, which is
+    immutable and still there, is read again.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.write(knowledge())
+
+    stored = next(tmp_path.glob("*.json"))
+    older = json.loads(stored.read_text())
+
+    older["schema_version"] = 3
+    older["segments"][0].pop("revenue")
+    older["segments"][0]["revenue_share"] = 0.383
+
+    stored.write_text(json.dumps(older))
+
+    assert store.read("DIS", ACCESSION) is None
 
 
 def test_an_entry_written_before_the_audit_trail_is_read_again(

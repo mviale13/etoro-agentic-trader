@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import html
-import re
 from dataclasses import dataclass
 from datetime import date
 
 import httpx
+
+from app.domain.tabular_evidence import SourceTable
+from app.providers.document_text import Flattened, flatten, read_tables
 
 #: SEC's fair-access policy requires a request to identify who is making
 #: it. A platform that scraped anonymously would be asking a public
@@ -52,10 +53,6 @@ _ITEM_7A = (
     "quantitative and qualitative disclosures about market risk",
     "report of independent registered public accounting firm",
 )
-
-_TAGS = re.compile(r"<[^>]+>")
-_WHITESPACE = re.compile(r"[ \t\r\f\v]+")
-_BLANK_LINES = re.compile(r"\n{3,}")
 
 
 class FilingUnavailable(Exception):
@@ -109,6 +106,12 @@ class Filing:
     #: apportioned.
     discussion_text: str = ""
 
+    #: The tables printed inside that discussion, with their rows and
+    #: columns kept. `discussion_text` contains the same figures with the
+    #: structure flattened out of them, which is enough to read a
+    #: sentence and not enough to prove which row a number sits on.
+    discussion_tables: tuple[SourceTable, ...] = ()
+
 
 class EdgarFilings:
     """
@@ -150,10 +153,7 @@ class EdgarFilings:
     def read(self, reference: FilingReference) -> Filing:
         """The sections of one filing this platform reads."""
 
-        return Filing(
-            reference=reference,
-            **self._sections(self._get(reference.url).text),
-        )
+        return self._read(reference, self._get(reference.url).text)
 
     def read_url(self, url: str) -> Filing:
         """
@@ -164,24 +164,39 @@ class EdgarFilings:
         location, and the identity travels on the source itself.
         """
 
-        document = self._get(url).text
-
-        return Filing(
-            reference=FilingReference(
+        return self._read(
+            FilingReference(
                 company="",
                 form="",
                 filed_on=date.min,
                 accession="",
                 url=url,
             ),
-            **self._sections(document),
+            self._get(url).text,
         )
 
-    def _sections(self, document: str) -> dict[str, str]:
-        return {
-            "business_text": self._section(document, _ITEM_1, _ITEM_1A),
-            "discussion_text": self._section(document, _ITEM_7, _ITEM_7A),
-        }
+    def _read(self, reference: FilingReference, document: str) -> Filing:
+        """
+        The two sections this platform reads, and the discussion's tables.
+
+        The document is flattened once and both sections are located in
+        that one reduction, which is also what maps each section back to
+        the markup it came from. The prose is read from the reduction and
+        the tables from the markup underneath it, so the same section
+        yields both without being parsed twice or differently.
+        """
+
+        flat = flatten(document)
+
+        business, _ = self._section(document, flat, _ITEM_1, _ITEM_1A)
+        discussion, tables = self._section(document, flat, _ITEM_7, _ITEM_7A)
+
+        return Filing(
+            reference=reference,
+            business_text=business,
+            discussion_text=discussion,
+            discussion_tables=tables,
+        )
 
     def latest_annual_report(self, symbol: str) -> Filing:
         """The most recent 10-K or 20-F this company filed, read in full."""
@@ -279,11 +294,12 @@ class EdgarFilings:
     @staticmethod
     def _section(
         document: str,
+        flat: Flattened,
         opening: tuple[str, ...],
         closing: tuple[str, ...],
-    ) -> str:
+    ) -> tuple[str, tuple[SourceTable, ...]]:
         """
-        One numbered item of the filing, as plain text.
+        One numbered item of the filing, as plain text and as its tables.
 
         An annual report is megabytes of markup. The two sections this
         platform reads — what the business is, and what each part of it
@@ -296,17 +312,13 @@ class EdgarFilings:
         A contents entry sits a few characters from its neighbour; the
         real section runs to tens of thousands.
 
-        An empty string where no such pair exists. A section that could
-        not be found leaves what it would have said unstated, which is
-        the honest outcome — the alternative is returning the wrong part
-        of the document and reading it as though it were the right one.
+        Nothing where no such pair exists. A section that could not be
+        found leaves what it would have said unstated, which is the
+        honest outcome — the alternative is returning the wrong part of
+        the document and reading it as though it were the right one.
         """
 
-        text = html.unescape(_TAGS.sub(" ", document))
-        text = _WHITESPACE.sub(" ", text)
-        text = _BLANK_LINES.sub("\n\n", text)
-
-        lowered = text.casefold()
+        lowered = flat.text.casefold()
 
         widest: tuple[int, int] | None = None
 
@@ -320,9 +332,14 @@ class EdgarFilings:
                 widest = (start, end)
 
         if widest is None:
-            return ""
+            return ("", ())
 
-        return text[widest[0] : widest[1]].strip()
+        opens, closes = flat.markup_span(*widest)
+
+        return (
+            flat.text[widest[0] : widest[1]].strip(),
+            read_tables(document[opens:closes]),
+        )
 
 
 def _occurrences(text: str, headings: tuple[str, ...]) -> list[int]:
