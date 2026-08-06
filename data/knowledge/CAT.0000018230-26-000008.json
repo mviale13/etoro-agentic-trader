@@ -1,19 +1,18 @@
 {
-  "description": "Caterpillar Inc. is shaping the future as the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+  "description": "Caterpillar Inc. is the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives, and also provides financing and insurance services.",
   "reading": {
-    "observed_at": "2026-08-06T12:38:59.092570+00:00",
+    "observed_at": "2026-08-06T14:21:25.324626+00:00",
     "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 5,
+  "schema_version": 6,
   "segments": [
     {
       "description": {
         "distance": 54,
-        "quoted": "supporting customers using machinery in infrastructure and building construction applications.",
+        "quoted": "supporting customers using machinery in infrastructure and building construction",
         "revenue_models": [
           "manufacturing",
-          "services",
-          "transaction"
+          "services"
         ],
         "under": "Construction Industries"
       },
@@ -24,11 +23,10 @@
     {
       "description": {
         "distance": 50,
-        "quoted": "supporting customers using machinery in mining, heavy construction and quarry and aggregates.",
+        "quoted": "supporting customers using machinery in mining, heavy construction",
         "revenue_models": [
           "manufacturing",
-          "services",
-          "transaction"
+          "services"
         ],
         "under": "Resource Industries"
       },
@@ -39,11 +37,10 @@
     {
       "description": {
         "distance": 18,
-        "quoted": "supports customers in oil and gas, power generation, marine, rail and industrial applications",
+        "quoted": "supports customers in oil and gas, power generation, marine",
         "revenue_models": [
           "manufacturing",
-          "services",
-          "transaction"
+          "services"
         ],
         "under": "Power & Energy"
       },

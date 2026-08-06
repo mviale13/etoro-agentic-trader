@@ -1392,11 +1392,65 @@ that do not fit it either — `data/cache/` is ignored as re-fetchable and
 never source of truth, `data/evidence/` and `data/events/` as one machine's
 own record that a fresh clone should not replay.
 
+### Migrating the corpus, and what the first migration measured
+
+A schema bump is not storage housekeeping. It is a **new grounded
+reading** of documents that have not changed, and it can change what the
+platform knows. So a bump is closed the same way every time:
+
+1. Re-read every affected company under the new version.
+2. Review the diffs by meaning — segment identity, measured size, ways
+   of earning, whether a description survived — rather than accepting
+   them.
+3. Commit the new artifacts in the same slice as the bump.
+4. Record material drift, especially changed segment identity or
+   segments that appeared or vanished.
+5. **Never normalise a new reading back to the old one for diff
+   stability.** The new reading is the reading; a corpus tidied to match
+   its predecessor is no longer grounded in anything.
+
+Leaving entries behind at an older version is the alternative and it is
+worse than either extreme: a fresh clone treats them as absent and
+re-reads anyway, so they give neither a stable regression corpus nor a
+warm start, while presenting themselves as current.
+
+**Schema 5 → 6, the first migration, over seven companies.** Every
+measured size was identical to the digit, and every prose fact moved:
+
+| Drift | Where |
+|---|---|
+| Quoted span changed | DIS, NVDA, CAT — same segments, same sizes, different words chosen |
+| A way of earning disappeared | CAT lost `transaction` on all three industrial segments |
+| Segment identity changed | NFLX: `One operating segment` → `one operating segment` |
+| Company description reworded | CAT, NFLX, VOW3.DE |
+| No segment appeared or vanished | every company except the NFLX rename |
+
+Two things follow, and both are load-bearing.
+
+**Cell-addressed evidence is reproducible and span evidence is not.**
+Every size survived two independent readings unchanged, because a size
+is an address into a table this platform reads for itself. Every quote
+moved, because a span is something a reader chooses. That is the
+architecture's own claim, measured rather than asserted, and it is why
+sizes can be trusted across readings in a way descriptions cannot.
+
+**A segment's identity is its name, and a name is fragile.** Netflix's
+"segment" is the phrase *one operating segment*, and a change of case
+made it a different segment to the store. Nothing was lost — the entry
+is keyed by document, so the new reading replaced the old whole — but a
+corpus keyed on model-chosen strings will drift, and the archetype
+engine reads those names. Worth watching before it matters.
+
+The classifications themselves were stable: DIS diversified, NVDA
+manufacturer, CAT and NFLX unclassified, before and after.
+
 ### The policy
 
 - **Keep `data/knowledge/` tracked.** Do not add it to `.gitignore`.
 - **Treat entries as versioned, grounded knowledge artifacts**, not as
   runtime cache files.
+- **Close a schema bump with a reviewed re-read of the whole corpus**,
+  in the slice that bumps it. Never ship a mixed-version corpus.
 - **Reassess only on evidence of an operational problem**, against the
   criteria below.
 

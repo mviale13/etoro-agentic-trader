@@ -1,10 +1,10 @@
 {
-  "description": "Berichtssegmente: Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge, Finanzdienstleistungen.",
+  "description": "Der Volkswagen Konzern berichtet \u00fcber die Segmente Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
   "reading": {
-    "observed_at": "2026-08-06T12:15:24.587429+00:00",
+    "observed_at": "2026-08-06T14:22:00.140549+00:00",
     "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
   },
-  "schema_version": 5,
+  "schema_version": 6,
   "segments": [
     {
       "description": null,
