@@ -1,14 +1,25 @@
 {
-  "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in Entertainment, Sports and Experiences.",
+  "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
   "reading": {
-    "observed_at": "2026-08-06T11:42:01.023519+00:00",
+    "observed_at": "2026-08-06T12:11:29.931177+00:00",
     "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 4,
+  "schema_version": 5,
   "segments": [
     {
+      "description": {
+        "distance": 29,
+        "quoted": "encompasses the Company\u2019s non-sports focused global film and episodic content",
+        "revenue_models": [
+          "subscription",
+          "advertising",
+          "licensing",
+          "transaction",
+          "services"
+        ],
+        "under": "Entertainment"
+      },
       "name": "Entertainment",
-      "quoted": "non-sports focused global film and episodic content production and distribution activities.",
       "revenue": {
         "denominator": {
           "caption": "The following table presents revenues from our operating segments:",
@@ -35,17 +46,22 @@
           "value": 42466.0
         }
       },
-      "revenue_models": [
-        "subscription",
-        "advertising",
-        "licensing",
-        "transaction",
-        "services"
-      ]
+      "undescribed_because": null
     },
     {
+      "description": {
+        "distance": 0,
+        "quoted": "encompasses the Company\u2019s sports-focused global television and DTC video streaming",
+        "revenue_models": [
+          "subscription",
+          "advertising",
+          "licensing",
+          "transaction",
+          "services"
+        ],
+        "under": "Sports"
+      },
       "name": "Sports",
-      "quoted": "sports-focused global television and DTC video streaming content production and distribution activities.",
       "revenue": {
         "denominator": {
           "caption": "The following table presents revenues from our operating segments:",
@@ -72,17 +88,21 @@
           "value": 17672.0
         }
       },
-      "revenue_models": [
-        "subscription",
-        "advertising",
-        "licensing",
-        "transaction",
-        "services"
-      ]
+      "undescribed_because": null
     },
     {
+      "description": {
+        "distance": 0,
+        "quoted": "lines of business within Experiences along with their significant business activities",
+        "revenue_models": [
+          "transaction",
+          "retail",
+          "licensing",
+          "services"
+        ],
+        "under": "Experiences"
+      },
       "name": "Experiences",
-      "quoted": "Theme park admissions - Sales of tickets for admission to our theme parks",
       "revenue": {
         "denominator": {
           "caption": "The following table presents revenues from our operating segments:",
@@ -109,12 +129,7 @@
           "value": 36156.0
         }
       },
-      "revenue_models": [
-        "transaction",
-        "retail",
-        "licensing",
-        "services"
-      ]
+      "undescribed_because": null
     }
   ],
   "source": {

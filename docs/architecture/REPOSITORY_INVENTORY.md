@@ -87,7 +87,9 @@ Orchestration lives in `app/application/workspace`:
 | `app/providers/issuer_identity.py`, `european_issuers.py` | Which company a European ticker means, before anything is read for it |
 | `app/providers/investor_relations_provider.py`, `investor_relations_sources.py` | The company's own published report, from a reviewed location and a reviewed hash |
 | `app/providers/document_text.py` | One reduction of a filing's markup, shared by every provider: the words as they were always read, plus the tables as a grid |
-| `app/domain/tabular_evidence.py` | Applicability: a number's address in a table, the cell read back out of the document, and the share computed from two checked figures |
+| `app/domain/evidence.py` | What every citation is held to: existence, applicability, and the comparison rule both use |
+| `app/domain/tabular_evidence.py` | Applicability for a quantity: a number's address in a table, the cell read back out of the document, and the share computed from two checked figures |
+| `app/domain/prose_evidence.py` | Applicability for a description: the document's own naming of its segments as a partition of the prose, and the span's position within it |
 | `app/services/narrative_providers.py` | Building a model client, once, for both seams that use one |
 | `app/services/company_knowledge_reader.py` | Which model reads a filing — configured apart from the one that words a case |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |

@@ -34,34 +34,18 @@ import re
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.evidence import EvidenceNotApplicable
+
 #: Two numbers are the same number when they agree to within reading
 #: error. The model transcribes a printed cell; it does not compute, so
 #: anything beyond a float's own imprecision is a different cell.
 _SAME_NUMBER = 1e-6
-
-_NOISE = re.compile(r"[^a-z0-9]+")
 
 _NOT_NUMERIC = re.compile(r"[^\d.,\-]")
 
 _HAS_DIGIT = re.compile(r"\d")
 
 _THOUSANDS = re.compile(r"^\d{1,3}(?:([.,])\d{3})+$")
-
-
-def normalised(text: str) -> str:
-    """
-    Text reduced to the characters that carry meaning.
-
-    The comparison rule used wherever this platform checks that something
-    it was told matches something a document printed. A filing's markup
-    leaves stray spacing inside words — "B USINESS" is a real heading —
-    so an exact match would reject content that is genuinely present.
-    Removing everything but letters and digits keeps the check strict
-    about the words and their order while forgiving the typography the
-    document arrived with.
-    """
-
-    return _NOISE.sub("", text.casefold())
 
 
 def read_number(printed: str) -> float | None:
@@ -207,15 +191,6 @@ class CellReference:
 
     def stated(self) -> str:
         return f"table {self.table}, row {self.row}, column {self.column}"
-
-
-class EvidenceNotApplicable(Exception):
-    """The citation is real and does not support the fact it was given for.
-
-    Deliberately not "the evidence is missing". The address resolves, the
-    document prints what it prints, and the relationship claimed over it
-    is untrue — which is the whole failure this module names.
-    """
 
 
 @dataclass(frozen=True, slots=True)

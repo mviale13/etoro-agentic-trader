@@ -113,14 +113,15 @@ def test_facts_the_filing_actually_contains_are_read() -> None:
     )
 
 
-def test_a_segment_the_filing_never_described_is_refused() -> None:
+def test_a_segment_the_filing_never_names_is_refused() -> None:
     """
-    The grounding contract, enforced against the document itself.
+    Identity, enforced against the document itself.
 
     This is what makes the model an extractor rather than a classifier.
     It cannot assert a segment into existence, however confidently,
-    because what is stored is not its assertion — it is the span of the
-    filing the segment was read from, and that span must be there.
+    because a part of a company the company never names is not one — and
+    the naming is something this platform goes and finds rather than
+    something the reading hands over.
     """
 
     with pytest.raises(ExtractionRejected) as rejected:
@@ -136,10 +137,10 @@ def test_a_segment_the_filing_never_described_is_refused() -> None:
             }
         )
 
-    assert "not in the filing" in str(rejected.value)
+    assert "never names" in str(rejected.value)
 
 
-def test_one_ungrounded_segment_discards_the_whole_reading() -> None:
+def test_one_segment_the_filing_never_names_discards_the_whole_reading() -> None:
     """Partly trusting an extraction is trusting the part that lied."""
 
     with pytest.raises(ExtractionRejected):
@@ -152,6 +153,147 @@ def test_one_ungrounded_segment_discards_the_whole_reading() -> None:
                 ],
             }
         )
+
+
+# ── what a segment does ─────────────────────────────────────────────
+#
+# The narrative half of applicability. A span can be exactly present and
+# describe nothing it was attached to, and unlike a size, its failure
+# must not take the segment with it.
+
+
+def test_a_description_the_document_says_of_another_segment_is_absent() -> None:
+    """
+    The live Volkswagen failure, in the shape it actually arrived in.
+
+    All three segments were cited with one sentence about restated
+    prior-year figures. It is genuinely in the document and describes no
+    segment at all. Grounding passes on every one of them; what refuses
+    them is where the document prints those words.
+
+    And the refusal costs the description only. The segment is named by
+    the filing and may well have a measured size, and neither of those
+    was established by this span.
+    """
+
+    knowledge = extract(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [
+                segment(),
+                segment(
+                    name="Experiences",
+                    quoted="The Entertainment segment produces and distributes film",
+                ),
+            ],
+        }
+    )
+
+    entertainment, experiences = knowledge.segments
+
+    assert entertainment.description is not None
+    assert entertainment.revenue_models == (
+        RevenueModel.SUBSCRIPTION,
+        RevenueModel.ADVERTISING,
+    )
+
+    # Named by the filing, so it stands. Described by words the filing
+    # prints under another segment, so it says nothing about itself.
+    assert experiences.name == "Experiences"
+    assert experiences.description is None
+    assert experiences.revenue_models == ()
+    assert experiences.quoted == ""
+
+
+def test_a_description_far_from_where_the_segment_is_named_is_absent() -> None:
+    """
+    Ownership alone lets boilerplate through, so proximity closes it.
+
+    Volkswagen's footnote passes ownership by accident — it happens to
+    follow the last segment the document names, so that segment would
+    otherwise claim it. Measured, sound citations sit 0 to 51 characters
+    from their naming and that footnote sat 814.
+    """
+
+    # Distance is counted in characters that carry meaning, so the filler
+    # has to be words. Whitespace and punctuation are normalised away
+    # before anything is measured, which is what stops a filing's own
+    # typography deciding whether a citation applies.
+    trailing = (
+        FILING_TEXT + " The Company is subject to risks and uncertainties described "
+        "elsewhere in this report, including competition, regulation, "
+        "labour relations, technology change and general economic "
+        "conditions in the markets in which it operates worldwide. "
+        + "Prior-year figures have been restated to the changed structure."
+    )
+
+    document = SourceDocument(
+        source=filing().source,
+        business_description=trailing,
+    )
+
+    provider = StubProvider(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [
+                segment(
+                    name="Experiences",
+                    quoted="Prior-year figures have been restated",
+                )
+            ],
+        }
+    )
+
+    knowledge = asyncio.run(
+        CompanyKnowledgeExtractor(provider).extract("DIS", document)
+    )
+
+    assert knowledge.segments[0].name == "Experiences"
+    assert knowledge.segments[0].description is None
+
+
+def test_a_description_that_names_its_own_segment_first_is_kept() -> None:
+    """
+    The best citation there is opens with the segment's name.
+
+    An earlier rule looked only *behind* a span for the naming it belongs
+    to, and refused exactly the citations that need no looking — the ones
+    whose first three words are "The Entertainment segment". A naming
+    inside the span is the strongest placement, not a missing one.
+    """
+
+    knowledge = extract(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [segment()],
+        }
+    )
+
+    described = knowledge.segments[0].description
+
+    assert described is not None
+    assert described.evidence.distance == 0
+    assert described.evidence.under == "Entertainment"
+
+
+def test_a_segment_reported_without_words_keeps_its_name() -> None:
+    """
+    An empty description is recorded as unknown, not reached for.
+
+    The reading is told to leave it empty rather than borrow a nearby
+    sentence, and doing so must be cheaper than borrowing — otherwise the
+    instruction asks it to lose the segment.
+    """
+
+    knowledge = extract(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [segment(quoted="")],
+        }
+    )
+
+    assert knowledge.segments[0].name == "Entertainment"
+    assert knowledge.segments[0].description is None
 
 
 def test_typography_the_filing_arrived_with_does_not_reject_a_real_quote() -> None:

@@ -9,6 +9,7 @@ from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledge,
     RevenueModel,
+    SegmentDescription,
 )
 from app.domain.primary_source import (
     IdentityCheck,
@@ -19,6 +20,7 @@ from app.domain.primary_source import (
     SourceDocument,
     SourceType,
 )
+from app.domain.prose_evidence import DescribedSegment
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
@@ -79,8 +81,14 @@ def knowledge(accession: str = ACCESSION, filed: str = "2025-11-13"):
             BusinessSegment(
                 name="Experiences",
                 revenue=measured_share(),
-                revenue_models=(RevenueModel.TRANSACTION, RevenueModel.RETAIL),
-                quoted="The Experiences segment operates theme parks",
+                description=SegmentDescription(
+                    evidence=DescribedSegment(
+                        quoted="The Experiences segment operates theme parks",
+                        under="Experiences",
+                        distance=0,
+                    ),
+                    revenue_models=(RevenueModel.TRANSACTION, RevenueModel.RETAIL),
+                ),
             ),
         ),
         source=source(accession, filed),

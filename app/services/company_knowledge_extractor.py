@@ -11,17 +11,18 @@ from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledge,
     RevenueModel,
+    SegmentDescription,
 )
+from app.domain.evidence import EvidenceNotApplicable, normalised
 from app.domain.primary_source import SourceDocument
+from app.domain.prose_evidence import Naming, describes, namings
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
-    EvidenceNotApplicable,
     MeasuredShare,
     ReportedFigure,
     SourceTable,
     figure_at,
-    normalised,
 )
 from app.providers.narrative_provider import (
     DraftRequest,
@@ -99,13 +100,23 @@ analyse the company, rate it, or classify it.
 Rules:
 - Use only the filing text supplied. Never use anything you know about
   the company from elsewhere.
+- Report only segments the filing names. A segment the document never
+  calls by name is not one of this company's, and reporting it discards
+  the whole answer.
 - Every segment you report must include `quoted`: a SHORT verbatim span
   copied from the filing text — between five and fifteen words, taken
   from a single run of prose. Copy it exactly, character for character.
   Do not join text across a table cell, a bullet or a line break, and do
-  not tidy the wording. A short exact span is always better than a long
-  approximate one: an answer whose quotes are not found in the filing is
-  discarded in full, including the segments that were right.
+  not tidy the wording.
+- `quoted` must be what the filing says about THAT segment, taken from
+  where the filing names it. Not a sentence about the company, not a note
+  about accounting or restated figures, and not words that describe a
+  different segment. Each segment needs its own span; the same sentence
+  cannot describe two of them.
+- A segment whose description you cannot find is still worth reporting.
+  Give the name and leave `quoted` empty rather than reaching for a
+  nearby sentence: an empty description is recorded as unknown, and a
+  borrowed one is discarded.
 - Report the revenue models the filing describes for each segment.
 - Report no figures and no sizes. You are reading what the business is,
   not how large its parts are. Anything you could only get by reading a
@@ -525,10 +536,20 @@ class CompanyKnowledgeExtractor:
                 "The extractor described no business, so nothing was read."
             )
 
-        text = normalised(document.business_description)
+        prose = document.business_description
+
+        named = tuple(
+            str(raw.get("name") or "").strip() for raw in payload.get("segments") or ()
+        )
+
+        # The document's own naming of its segments, which partitions the
+        # prose the way row labels partition a table. Computed here, once,
+        # from the document — never taken from the reading.
+        partition = namings(prose, tuple(name for name in named if name))
 
         segments = tuple(
-            self._segment(raw, text) for raw in payload.get("segments") or ()
+            self._segment(raw, prose, partition)
+            for raw in payload.get("segments") or ()
         )
 
         source = document.source
@@ -545,31 +566,39 @@ class CompanyKnowledgeExtractor:
         )
 
     @staticmethod
-    def _segment(raw: dict[str, Any], text: str) -> BusinessSegment:
+    def _segment(
+        raw: dict[str, Any],
+        prose: str,
+        partition: tuple[Naming, ...],
+    ) -> BusinessSegment:
+        """
+        One segment, with each of its claims held to its own contract.
+
+        Identity is checked first and hardest, because everything else
+        hangs off it: a segment the document never names is not a segment
+        of that company, however confidently it was reported, and the
+        whole reading goes rather than one part of it.
+
+        The description is checked next and fails *alone*. It used to be
+        the thing that proved the segment existed, so a citation that did
+        not apply took the segment's name and its measured size with it —
+        facts that had been established by something else entirely. Now
+        an inapplicable description leaves the segment standing and says
+        nothing about what it does.
+        """
+
         name = str(raw.get("name") or "").strip()
-        quoted = str(raw.get("quoted") or "").strip()
 
         if not name:
             raise ExtractionRejected("A segment arrived without a name.")
 
-        if not quoted:
+        # Identity. The document naming it is what makes it a part of
+        # this company — and unlike a span the reading chose, this is
+        # something the platform went and found.
+        if not any(naming.segment == name for naming in partition):
             raise ExtractionRejected(
-                f"The segment {name!r} arrived without the words it was read "
-                "from, so there is nothing to check it against."
-            )
-
-        # The grounding contract, enforced against the document rather
-        # than trusted. This is what makes the model an extractor.
-        #
-        # It proves the filing describes this segment, and it proves
-        # nothing about how large the segment is — which is why no size
-        # is asked for here. A span establishes that content exists; a
-        # quantity needs its row and its column, and this reading has
-        # neither.
-        if normalised(quoted) not in text:
-            raise ExtractionRejected(
-                f"The segment {name!r} quotes words that are not in the "
-                "filing, so the whole reading was discarded."
+                f"The reading reports a segment, {name!r}, that the filing "
+                "never names. The whole reading was discarded."
             )
 
         models = tuple(
@@ -578,11 +607,31 @@ class CompanyKnowledgeExtractor:
             if value in {model.value for model in RevenueModel}
         )
 
+        try:
+            described = describes(
+                prose,
+                partition,
+                name,
+                str(raw.get("quoted") or ""),
+            )
+        except EvidenceNotApplicable as inapplicable:
+            # Absent, not fatal. The segment is real, its size may well be
+            # measured, and what it does is simply not something this
+            # document was shown to say. The reason travels with the
+            # absence, because "the filing says nothing about this" and
+            # "the reading cited another segment's words" are different
+            # facts and only one of them is about the filing.
+            return BusinessSegment(
+                name=name,
+                revenue=None,
+                description=None,
+                undescribed_because=str(inapplicable),
+            )
+
         return BusinessSegment(
             name=name,
             revenue=None,
-            revenue_models=models,
-            quoted=quoted,
+            description=SegmentDescription(evidence=described, revenue_models=models),
         )
 
 

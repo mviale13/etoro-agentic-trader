@@ -56,9 +56,16 @@ def _render_knowledge(knowledge: CompanyKnowledge) -> None:
     for segment in knowledge.segments:
         print(f"  {segment.name}")
 
-        models = ", ".join(model.value for model in segment.revenue_models)
-        print(f"    earns by: {models or 'not stated'}")
-        print(f"    read from: {segment.quoted!r}")
+        if segment.description is None:
+            # Three independent claims, and this one is not established.
+            # The segment stands on the document naming it and on the
+            # cells that measured it; what it does is simply unknown.
+            print("    does: absent")
+            print(f"      because: {segment.undescribed_because or 'not stated'}")
+        else:
+            models = ", ".join(model.value for model in segment.revenue_models)
+            print(f"    earns by: {models or 'not stated'}")
+            print(f"    does: {segment.description.evidence.stated()}")
 
         if segment.revenue is None:
             # Absent is a result, not a blank. A segment the filing

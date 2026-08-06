@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~954 tests, fast
+python -m pytest -q            # ~973 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -88,21 +88,28 @@ These are not style preferences. Breaking them damages the product.
    nothing downstream can see that it happened. Learned twice, from `BTC`
    resolving against the SEC to a Bitcoin trust and from a ticker-to-ISIN
    lookup returning an Argentine CEDEAR for `ASML.AS`.
-3. **A quantity carries the relationship it was read from, or it is
+3. **A citation carries the relationship it was read from, or it is
    absent.** A span proves words exist; it cannot prove they support the
-   number beside them, and prompting cannot close that — the extraction
-   was told not to read across a table cell, in a document whose cell
-   boundaries had been stripped out. So a quantitative citation is an
-   address into a table this platform parsed, checked against the cell it
-   names, and a share is arithmetic the platform performs over two
-   checked figures. There is no way to state a size without them.
-   Learned from a segment reading that cited a *column header* and got
-   the shares right anyway.
-4. **The Brain stores facts, never conclusions.**
-5. **Analysts assess; only the Artificial CIO decides.**
-6. **Communication explains decisions; it never makes them.**
-7. **The dashboard presents; it never calculates.**
-8. **One business concept, one implementation.**
+   claim beside them, and prompting cannot close that. So a quantitative
+   citation is an address into a table this platform parsed, checked
+   against the cell it names, and a share is arithmetic the platform
+   performs over two checked figures. A narrative citation must
+   establish **unambiguous ownership** between the cited text and the
+   claim it supports; position under the segment's own naming is today's
+   mechanism for that, not the invariant. Learned from one reading that
+   cited a *column header* and got the shares right anyway, and another
+   that cited one sentence about restated figures as three segments'
+   business.
+4. **A segment is three claims, evidenced apart.** Identity, size and
+   description fail independently: an inapplicable description leaves
+   the segment named and measured, and says nothing about what it does.
+   One span once proved all three, so a bad citation destroyed facts
+   that something else had established.
+5. **The Brain stores facts, never conclusions.**
+6. **Analysts assess; only the Artificial CIO decides.**
+7. **Communication explains decisions; it never makes them.**
+8. **The dashboard presents; it never calculates.**
+9. **One business concept, one implementation.**
 
 The UI labels its own honesty: every page declares its data provenance via
 `<PageIntegrity>`, and cards carry a live / partial / placeholder pill. If
