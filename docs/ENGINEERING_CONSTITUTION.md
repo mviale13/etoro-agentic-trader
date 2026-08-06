@@ -219,6 +219,45 @@ holding keeps a visible `#id` rather than a guess.
 
 ---
 
+## 22. A test proves the seam cannot activate, not that it did not
+
+*Added in practice, and paid for.*
+
+The platform reaches two kinds of outside world: registers and models.
+Both cost money, both are slow, and a test that touches either has
+stopped being a test. The hard part is that **the failure is a green
+suite**, not a red one.
+
+**A test intending to prove an external seam is disabled must verify the
+seam cannot activate — not merely observe the expected result.** A test
+asserting "no credentials, so it did not run" passes identically whether
+the seam was silenced or whether it woke up, called a live model, and
+happened to produce the asserted shape. The assertion cannot tell the
+two apart, so the silencing has to be structural.
+
+**Disable those seams centrally.** `tests/conftest.py` names every module
+that resolves a credential and every variable that can turn a seam on,
+and silences all of them for every test. A module that grows a
+`get_settings()` call for a key is added there in the same change.
+Scattering the silencing across the tests that happen to need it means
+each one carries a patch target that goes stale silently — which is
+exactly how this was learned, twice in one afternoon.
+
+**Verify a dependency boundary by contract, never by concrete type.** A
+seam that accepts an extractor accepts anything that answers like one.
+Narrowing on `isinstance(value, CompanyKnowledgeExtractor)` rejects every
+stand-in and alternate implementation, which is the whole point of having
+the seam — and production keeps working, so nothing says so.
+
+**Treat a runtime regression as a defect, even with every assertion
+green.** The suite runs in about two seconds. It once went to seventy-two
+because a service had begun reading a 10-K and calling a model, and not
+one assertion noticed. `python -m pytest -q --durations=5` names the
+culprit immediately, and a sudden jump is evidence that a seam meant to
+be dead is live.
+
+---
+
 ## The final principle
 
 We are not building a trading bot. We are not building a dashboard.

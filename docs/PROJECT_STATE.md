@@ -1115,24 +1115,35 @@ company is legally answerable for.
 
 **Next**
 
-Ordered by what a wrong answer costs. The trust problem at the head of
-this list — a citation that supported nothing — is closed; what remains
-below it starts with a usability problem, which is the right order to
-have arrived at rather than the right order to start from.
+Ordered by what a wrong answer costs, which is why the quantitative
+applicability slice moved to the head of this list and why its narrative
+half now takes the same place. Translation was next until reading
+Volkswagen showed what would be translated: a citation that evidences
+nothing would come back polished, and harder to notice.
 
-1. **Multilingual presentation, with the original preserved.** The stored
+1. **Prose evidence applicability.** The same distinction as the
+   quantitative slice, for narrative claims. A span can be exactly
+   present and describe nothing it is attached to — on Volkswagen all
+   three segments were cited with the identical sentence about prior-year
+   figures being restated. The question the slice answers: *what
+   relationship must hold between a grounded span and the narrative fact
+   it is claimed to support?* Begin with the failure model, not the
+   prompt. The invariant to reach: a grounded prose citation must not
+   merely exist in the document, it must be shown to apply to the entity
+   or claim it accompanies
+2. **Multilingual presentation, with the original preserved.** The stored
    grounded span stays in the language it was published in — replacing it
    with a translation severs the evidence chain, which is the one thing
    the store exists to keep intact. Presentation gains a second, clearly
    labelled layer: a translation is a derived communication artifact and
    never the canonical span
-2. **Manual document ingestion.** A document handed to the platform
+3. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-3. **Investment Archetype rules.** Deterministic rules over the facts now
+4. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-4. **Dossier transparency for company knowledge, coverage and playbook
+5. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could
