@@ -22,7 +22,7 @@ from app.domain.primary_source import (
     SourceDocument,
     SourceType,
 )
-from app.domain.prose_evidence import DescribedSegment
+from app.domain.prose_evidence import DescribedSegment, Ownership
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
@@ -307,6 +307,48 @@ def test_knowledge_survives_the_round_trip_to_disk(tmp_path: Path) -> None:
     # kind of source this was and which identity checks actually held.
     assert restored.source.authority is SourceAuthority.REGULATOR_FILED
     assert restored.source.verification == (IdentityCheck.REGISTER_INDEXED,)
+
+
+def test_which_mechanism_owned_a_description_survives_the_round_trip(
+    tmp_path: Path,
+) -> None:
+    """
+    "Inside the section headed Reality Labs Products" and "51 characters
+    after a mention of Reality Labs" are different strengths of proof.
+    An entry that lost the difference would read as the stronger one.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+
+    structural = replace(
+        knowledge(),
+        segments=(
+            replace(
+                knowledge().segments[0],
+                description=SegmentDescription(
+                    evidence=DescribedSegment(
+                        quoted="operates theme parks",
+                        under="Experiences Products",
+                        distance=20,
+                        ownership=Ownership.STRUCTURE,
+                    ),
+                    revenue_models=(RevenueModel.TRANSACTION,),
+                ),
+            ),
+        ),
+    )
+
+    store.write(structural)
+
+    restored = store.read("DIS", ACCESSION)
+
+    assert restored is not None
+
+    description = restored.segments[0].description
+
+    assert description is not None
+    assert description.evidence.ownership is Ownership.STRUCTURE
+    assert "into the section the document heads" in description.evidence.stated()
 
 
 def test_an_entry_holding_a_bare_share_is_read_again(tmp_path: Path) -> None:

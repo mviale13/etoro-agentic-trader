@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
 
+from app.domain.prose_evidence import Region
 from app.domain.tabular_evidence import SourceTable
 
 
@@ -235,6 +236,18 @@ class SourceDocument:
 
     #: What the business is: its parts, what each sells, how it earns.
     business_description: str
+
+    #: The regions that section's own headings introduce, in the
+    #: coordinates of `business_description`.
+    #:
+    #: Structure is what makes a description owned by the part of the
+    #: document it was printed in, rather than by whichever segment the
+    #: prose named most recently. Empty where the publisher offers none
+    #: this platform can read — a report assembled from tagged blocks
+    #: rather than laid out as a section has no headings to find — and
+    #: ownership then falls back to position, which is weaker and still
+    #: honest.
+    business_regions: tuple[Region, ...] = ()
 
     #: How each part of it performed, which is where a publisher states
     #: what each segment earned. Empty where the document has no such

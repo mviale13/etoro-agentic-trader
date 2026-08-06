@@ -14,6 +14,7 @@ from app.domain.primary_source import (
     SourceDocument,
     SourceType,
 )
+from app.domain.prose_evidence import Ownership, Region
 from app.domain.tabular_evidence import SourceTable, TableRow
 from app.providers.narrative_provider import Draft, DraftRequest, NarrativeDeclined
 from app.services.company_knowledge_extractor import (
@@ -712,3 +713,118 @@ def test_the_sizes_reading_is_shown_the_tables_rather_than_the_prose() -> None:
     assert "[table 0]" in mix.user_prompt
     assert 'r1: c0="Entertainment" | c1="42,466" | c2="41,186"' in mix.user_prompt
     assert "Business segment results." not in mix.user_prompt
+
+
+# ── structure decides where the document offers it ──────────────────
+
+#: Meta-shaped: the segments are described in sequence under their own
+#: headings, and the only place the filing uses the names this platform
+#: stores is a summary sentence after all of it.
+STRUCTURED_TEXT = (
+    "ITEM 1. Business Overview "
+    "We build technology that helps people connect. "
+    "Family of Apps Products "
+    "Facebook helps people share moments and build community. "
+    "Reality Labs Products "
+    "We build augmented and virtual reality hardware and software. "
+    "Our reportable segments are Family of Apps (FoA) and Reality Labs (RL)."
+)
+
+
+def structured_filing() -> SourceDocument:
+    headings = ("Overview", "Family of Apps Products", "Reality Labs Products")
+
+    at = [STRUCTURED_TEXT.index(heading) for heading in headings]
+
+    return SourceDocument(
+        source=filing().source,
+        business_description=STRUCTURED_TEXT,
+        business_regions=tuple(
+            Region(
+                heading=heading,
+                at=at[index],
+                ends=(at[index + 1] if index + 1 < len(at) else len(STRUCTURED_TEXT)),
+            )
+            for index, heading in enumerate(headings)
+        ),
+    )
+
+
+def extract_structured(payload: object):
+    provider = StubProvider(payload)
+
+    return asyncio.run(
+        CompanyKnowledgeExtractor(provider).extract("META", structured_filing())
+    )
+
+
+def test_a_description_under_its_own_heading_is_read_though_the_names_come_last() -> (
+    None
+):
+    """
+    The whole slice, end to end.
+
+    Every one of these descriptions sits before the filing uses either
+    stored name, so the positional partition attributes them to nothing
+    at all and both segments come back undescribed. The document's own
+    headings are what recover them.
+    """
+
+    knowledge = extract_structured(
+        {
+            "description": "A social technology company.",
+            "segments": [
+                {
+                    "name": "Family of Apps (FoA)",
+                    "revenue_models": ["advertising"],
+                    "quoted": "Facebook helps people share moments",
+                },
+                {
+                    "name": "Reality Labs (RL)",
+                    "revenue_models": ["manufacturing"],
+                    "quoted": "augmented and virtual reality hardware",
+                },
+            ],
+        }
+    )
+
+    described = {seg.name: seg.description for seg in knowledge.segments}
+
+    assert described["Family of Apps (FoA)"] is not None
+    assert described["Reality Labs (RL)"] is not None
+
+    assert described["Family of Apps (FoA)"].evidence.under == "Family of Apps Products"
+    assert described["Reality Labs (RL)"].evidence.under == "Reality Labs Products"
+
+    assert all(
+        description.evidence.ownership is Ownership.STRUCTURE
+        for description in described.values()
+    )
+
+
+def test_a_segments_description_taken_from_another_section_stays_absent() -> None:
+    """
+    The segment survives; only what it does goes.
+
+    Identity and size are established by something else entirely, and an
+    inapplicable description must not take them with it.
+    """
+
+    knowledge = extract_structured(
+        {
+            "description": "A social technology company.",
+            "segments": [
+                {
+                    "name": "Family of Apps (FoA)",
+                    "revenue_models": ["advertising"],
+                    "quoted": "augmented and virtual reality hardware",
+                },
+            ],
+        }
+    )
+
+    segment_read = knowledge.segments[0]
+
+    assert segment_read.name == "Family of Apps (FoA)"
+    assert segment_read.description is None
+    assert "outside the section it heads" in (segment_read.undescribed_because or "")

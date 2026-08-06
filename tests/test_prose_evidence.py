@@ -2,8 +2,15 @@
 
 import pytest
 
-from app.domain.evidence import EvidenceNotApplicable
-from app.domain.prose_evidence import NEARBY, describes, namings
+from app.domain.evidence import EvidenceNotApplicable, normalised
+from app.domain.prose_evidence import (
+    NEARBY,
+    Ownership,
+    Region,
+    describes,
+    namings,
+    owning,
+)
 
 SEGMENT_PROSE = (
     "The Company operates in three segments. "
@@ -294,3 +301,257 @@ def test_the_distance_is_counted_in_characters_that_carry_meaning() -> None:
 
     assert evidence.distance == 0
     assert NEARBY == 300
+
+
+# ── ownership by structure ──────────────────────────────────────────
+
+#: A filing shaped the way Meta's 10-K is shaped, which is the shape
+#: that inverts a positional partition. The segments are described in
+#: sequence under their own headings, and the only place the document
+#: uses the names this platform stores is a summary sentence *after* all
+#: of it. So "the segment whose name most recently precedes it" attributes
+#: every description to nothing at all, and the last sentence to both.
+META_SHAPED = (
+    "Overview "
+    "We build technology that helps people connect. "
+    "Family of Apps Products "
+    "Facebook helps people share moments and build community. "
+    "Reality Labs Products "
+    "We build augmented and virtual reality hardware and software. "
+    "Revenue and Investments "
+    "We generate substantially all of our revenue from advertising. "
+    "Our reportable segments are Family of Apps (FoA) and Reality Labs (RL)."
+)
+
+META_SEGMENTS = ("Family of Apps (FoA)", "Reality Labs (RL)")
+
+META_HEADINGS = (
+    "Overview",
+    "Family of Apps Products",
+    "Reality Labs Products",
+    "Revenue and Investments",
+)
+
+
+def meta_regions() -> tuple[Region, ...]:
+    """The regions those headings introduce, each running to the next."""
+
+    at = [META_SHAPED.index(heading) for heading in META_HEADINGS]
+
+    return tuple(
+        Region(
+            heading=heading,
+            at=at[index],
+            ends=at[index + 1] if index + 1 < len(at) else len(META_SHAPED),
+        )
+        for index, heading in enumerate(META_HEADINGS)
+    )
+
+
+META_REGIONS = meta_regions()
+META_PARTITION = namings(META_SHAPED, META_SEGMENTS)
+META_OWNERS = owning(META_REGIONS, META_SEGMENTS)
+
+
+def test_a_heading_owns_the_segment_it_names_despite_the_filers_shorthand() -> None:
+    """
+    The matching problem, which is the hard part rather than the detection.
+
+    The heading reads "Family of Apps Products" and the stored name is
+    "Family of Apps (FoA)". Neither string contains the other, and the
+    whole of the difference is an abbreviation the filer defined for its
+    own later use.
+    """
+
+    assert META_OWNERS["Family of Apps (FoA)"].heading == "Family of Apps Products"
+    assert META_OWNERS["Reality Labs (RL)"].heading == "Reality Labs Products"
+
+
+def test_a_description_binds_to_its_own_section_though_it_precedes_the_naming() -> None:
+    """
+    Meta-shaped, and the reason this mechanism exists.
+
+    Position alone refuses this description outright — the document has
+    named no segment at all by the time it prints it. Structure accepts
+    it, because the filer printed it under that segment's own heading.
+    """
+
+    quoted = "Facebook helps people share moments and build community"
+
+    with pytest.raises(EvidenceNotApplicable):
+        describes(META_SHAPED, META_PARTITION, "Family of Apps (FoA)", quoted)
+
+    evidence = describes(
+        META_SHAPED,
+        META_PARTITION,
+        "Family of Apps (FoA)",
+        quoted,
+        META_OWNERS["Family of Apps (FoA)"],
+    )
+
+    assert evidence.ownership is Ownership.STRUCTURE
+    assert evidence.under == "Family of Apps Products"
+
+    # Measured from the head of the section, so the first words after the
+    # heading sit exactly the heading's own length into it.
+    assert evidence.distance == len(normalised("Family of Apps Products"))
+    assert "into the section the document heads" in evidence.stated()
+
+
+def test_each_segment_binds_to_its_own_section_and_not_its_neighbours() -> None:
+    """
+    The inversion, stated as the thing that must not happen again.
+
+    Both descriptions sit before either stored name appears, so a
+    positional partition attributes them to whichever segment that late
+    sentence names last. Structure keeps them apart.
+    """
+
+    for segment, quoted, heading in (
+        (
+            "Family of Apps (FoA)",
+            "Facebook helps people share moments",
+            "Family of Apps Products",
+        ),
+        (
+            "Reality Labs (RL)",
+            "augmented and virtual reality hardware",
+            "Reality Labs Products",
+        ),
+    ):
+        evidence = describes(
+            META_SHAPED, META_PARTITION, segment, quoted, META_OWNERS[segment]
+        )
+
+        assert evidence.under == heading
+
+
+def test_another_sections_words_are_refused_however_near_they_sit() -> None:
+    """
+    A neighbouring segment's sentence is outside the owning region.
+
+    The refusal names the section the words were actually printed
+    outside of, because "these words are elsewhere in the document" is a
+    fact about the filing and the more useful half of the answer.
+    """
+
+    with pytest.raises(EvidenceNotApplicable) as refused:
+        describes(
+            META_SHAPED,
+            META_PARTITION,
+            "Family of Apps (FoA)",
+            "augmented and virtual reality hardware",
+            META_OWNERS["Family of Apps (FoA)"],
+        )
+
+    assert "outside the section it heads 'Family of Apps Products'" in str(
+        refused.value
+    )
+
+
+def test_where_structure_and_position_disagree_structure_decides() -> None:
+    """
+    The same span, accepted by one mechanism and refused by the other.
+
+    The filing's summary sentence names Family of Apps and then stops, so
+    position reads it as that segment's own words at a distance of zero —
+    the strongest citation proximity can recognise. It is still not a
+    description: it is the sentence that lists the segments, printed
+    under a heading about revenue. Structure refuses it, and structure is
+    what the document actually says.
+    """
+
+    quoted = "Our reportable segments are Family of Apps (FoA)"
+
+    by_position = describes(META_SHAPED, META_PARTITION, "Family of Apps (FoA)", quoted)
+
+    assert by_position.ownership is Ownership.PROXIMITY
+    assert by_position.distance == 0
+
+    with pytest.raises(EvidenceNotApplicable):
+        describes(
+            META_SHAPED,
+            META_PARTITION,
+            "Family of Apps (FoA)",
+            quoted,
+            META_OWNERS["Family of Apps (FoA)"],
+        )
+
+
+def test_a_document_with_no_structure_keeps_the_positional_mechanism() -> None:
+    """
+    Volkswagen-shaped. A report assembled from tagged blocks has no
+    headings to divide, so there is nothing to prefer and proximity
+    remains — including its ability to return absence.
+    """
+
+    assert owning((), SEGMENTS) == {}
+
+    evidence = describes(
+        FILING, PARTITION, "Entertainment", "produces and distributes film"
+    )
+
+    assert evidence.ownership is Ownership.PROXIMITY
+
+
+def test_a_segment_two_headings_could_own_has_no_structural_owner() -> None:
+    """
+    Uniqueness is the whole safeguard.
+
+    A filer that heads two sections "Reality Labs Products" and "Reality
+    Labs Financials" has not said which one describes the segment.
+    Choosing by order or by length would be this platform deciding
+    something the document did not, which is the unproven relationship
+    the module exists to refuse.
+    """
+
+    regions = (
+        Region(heading="Reality Labs Products", at=0, ends=50),
+        Region(heading="Reality Labs Financials", at=50, ends=100),
+    )
+
+    assert owning(regions, ("Reality Labs (RL)",)) == {}
+
+
+def test_a_heading_that_names_two_segments_owns_neither() -> None:
+    """A region corresponding uniquely to two claims corresponds to none."""
+
+    regions = (
+        Region(heading="Family of Apps and Reality Labs", at=0, ends=50),
+        Region(heading="Competition", at=50, ends=100),
+    )
+
+    assert owning(regions, META_SEGMENTS) == {}
+
+
+def test_structure_never_admits_words_the_document_does_not_print() -> None:
+    """
+    Preferring the stronger mechanism does not mean accepting more.
+
+    Existence is established first and identically: a span that is not in
+    the filing is refused on that ground, structural owner or not.
+    """
+
+    with pytest.raises(EvidenceNotApplicable) as refused:
+        describes(
+            META_SHAPED,
+            META_PARTITION,
+            "Family of Apps (FoA)",
+            "sells industrial lubricants to shipping fleets",
+            META_OWNERS["Family of Apps (FoA)"],
+        )
+
+    assert "not in the document" in str(refused.value)
+
+
+def test_an_empty_span_is_refused_before_structure_is_consulted() -> None:
+    with pytest.raises(EvidenceNotApplicable) as refused:
+        describes(
+            META_SHAPED,
+            META_PARTITION,
+            "Family of Apps (FoA)",
+            "  ",
+            META_OWNERS["Family of Apps (FoA)"],
+        )
+
+    assert "no words at all" in str(refused.value)
