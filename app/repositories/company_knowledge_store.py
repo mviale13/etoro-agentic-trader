@@ -14,8 +14,10 @@ from app.domain.company_knowledge import (
     RevenueModel,
 )
 from app.domain.primary_source import (
+    IdentityCheck,
     PrimarySource,
     ReportingPeriod,
+    SourceAuthority,
     SourceType,
 )
 from app.domain.provenance import Provenance
@@ -32,7 +34,7 @@ from app.domain.provenance import Provenance
 #: document is read again under the current one. Immutable source,
 #: versioned reading: the two are different things and only one of them
 #: is fixed.
-KNOWLEDGE_SCHEMA_VERSION = 2
+KNOWLEDGE_SCHEMA_VERSION = 3
 
 
 class CompanyKnowledgeStore(ABC):
@@ -151,6 +153,10 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                 "language": knowledge.source.language,
                 "location": knowledge.source.location,
                 "provider": knowledge.source.provider,
+                "authority": knowledge.source.authority.value,
+                "verification": [
+                    check.value for check in knowledge.source.verification
+                ],
             },
             "reading": {
                 "source": knowledge.reading.source,
@@ -215,6 +221,11 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                     language=str(stored["source"]["language"]),
                     location=str(stored["source"]["location"]),
                     provider=str(stored["source"]["provider"]),
+                    authority=SourceAuthority(stored["source"]["authority"]),
+                    verification=tuple(
+                        IdentityCheck(value)
+                        for value in stored["source"].get("verification", ())
+                    ),
                 ),
                 reading=Provenance(
                     source=str(stored["reading"]["source"]),

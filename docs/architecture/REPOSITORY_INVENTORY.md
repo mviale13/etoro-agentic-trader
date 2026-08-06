@@ -85,6 +85,7 @@ Orchestration lives in `app/application/workspace`:
 | `app/providers/edgar_provider.py`, `edgar_filings.py` | SEC filings — the regulator's own record |
 | `app/providers/esef_provider.py`, `esef_filings.py` | European filings, read from the filer's IFRS tagging |
 | `app/providers/issuer_identity.py`, `european_issuers.py` | Which company a European ticker means, before anything is read for it |
+| `app/providers/investor_relations_provider.py`, `investor_relations_sources.py` | The company's own published report, from a reviewed location and a reviewed hash |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
 | `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |

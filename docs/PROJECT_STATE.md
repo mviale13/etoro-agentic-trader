@@ -98,6 +98,50 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A company with no register is read from its own report** (August
+  2026). The first primary source no regulator received, and therefore
+  the first where the platform could delegate nothing. `VOW3.DE` — a
+  security this platform recommends and could describe nothing about —
+  now reads as Pkw und leichte Nutzfahrzeuge 68%, Nutzfahrzeuge 13%,
+  Finanzdienstleistungen 18%.
+
+  The trust model came before the code, and it is three separate
+  questions rather than one: what document is this, who published it, and
+  does that issuer correspond to the security. EDGAR delegates all three
+  to the SEC and ESEF delegates them to the European index and GLEIF. An
+  Investor Relations document delegates none, so each is answered
+  explicitly — a reviewed location and the hash it was reviewed against;
+  the document's own LEI; and the same GLEIF boundary the ESEF provider
+  already uses.
+
+  `PrimarySource` gained `authority` and `verification` alongside its
+  existing provenance. Authority describes the source and is deliberately
+  not ranked — no number, no ordering — because what actually differs
+  between a filed and a published document is written down rather than
+  scored. Verification records which identity checks succeeded, and it is
+  what stops authority being read as a ranking: EDGAR is
+  `REGULATOR_FILED` and offers exactly one check, because a 10-K declares
+  no LEI and so never independently says whose it is. Volkswagen's
+  package, obtained from Volkswagen, is `ISSUER_PUBLISHED` and carries
+  four. Both statements are true and neither survives being flattened.
+
+  **A document that cannot identify its own issuer does not become
+  company knowledge.** That is the hard line, and it cost real coverage
+  immediately: Volkswagen's ESEF package holds three documents and only
+  one is tagged, so the platform reads its segment note and *not* the
+  thirteen-megabyte management report where the narrative account of the
+  business lives. An issuer publishing only a PDF stays honestly
+  unavailable. Coverage may grow later; trust does not contract to speed
+  it up.
+
+  The reviewed location is the platform's second curated trust boundary,
+  and it carries the hash of the reviewed bytes. That makes `resolve`
+  cost nothing but an identity lookup, makes the key honestly the bytes
+  themselves, and turns "the document changed underneath us" from
+  undetectable into an explicit refusal — including when the replacement
+  is a perfectly genuine newer report, because nobody reviewed that one
+  either.
+
 - **A European company is read from the report it filed at home** (August
   2026). The seam was built for this and it held: `EsefProvider` is an
   adapter, and nothing downstream of it changed. Europe has no EDGAR —
@@ -943,23 +987,47 @@ company is legally answerable for.
   filer's own IFRS tagging rather than from section headings, with the
   issuer's identity established from GLEIF and checked again against the
   document's own LEI
+- The Investor Relations provider — a company's own published report,
+  behind a reviewed location and a reviewed hash, admitted only where the
+  document identifies its own issuer
+- `authority`, provenance and `verification` on `PrimarySource` — what
+  kind of source it is, who supplied it, and which identity checks
+  actually held, carried into every citation and stored with the
+  knowledge
 
 **Next**
 
-1. **Official Investor Relations provider.** The company's own published
-   report, for businesses no regulator index resolves — starting with
-   Germany, whose mechanism does not publish to `filings.xbrl.org` and
-   which is therefore the largest remaining hole in European coverage
-2. **Manual document ingestion.** A document handed to the platform
+Ordered by what a wrong answer costs. An unsupported-looking number is a
+trust problem; untranslated German is a usability problem, so the first
+outranks the second even though the second is more visible.
+
+1. **Quantitative evidence grounding.** The contract proves a quoted span
+   is in the document. It does not prove the span *supports the value
+   attached to it*, and a column header can be verbatim and evidence
+   nothing. A citation for a numeric fact must carry, or resolve
+   structurally to, the segment label, the value, the unit or denominator
+   where one applies, and enough table context to establish the
+   relationship between them. Prose-span grounding may not be able to
+   express that: this likely needs table-aware evidence, which is a
+   different evidence model and is to be designed explicitly rather than
+   approximated. **Not to be patched with prompt wording.**
+2. **Multilingual presentation, with the original preserved.** The stored
+   grounded span stays in the language it was published in — replacing it
+   with a translation severs the evidence chain, which is the one thing
+   the store exists to keep intact. Presentation gains a second, clearly
+   labelled layer: a translation is a derived communication artifact and
+   never the canonical span
+3. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-3. **Investment Archetype rules.** Deterministic rules over the facts now
+4. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-4. **Dossier transparency for company knowledge, coverage and playbook
+5. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
-   as of which period; why a security drew the playbook it did; and, stated
-   apart, what could not be read and why
+   as of which period; under which authority and on which identity checks;
+   why a security drew the playbook it did; and, stated apart, what could
+   not be read and why
 
 **Open, and deliberately so**
 
@@ -969,6 +1037,24 @@ company is legally answerable for.
   entry, and an unlisted symbol is reported as unidentified rather than
   guessed at. If a licensed reference feed ever enters the platform, this
   is the first thing it should replace
+- Investor-Relations locations are reviewed, not discovered, for the same
+  reason and with a sharper edge: no authority publishes which website
+  belongs to which company. Each entry also carries the hash of the bytes
+  reviewed, so an entry goes stale the day the company publishes its next
+  report — the platform then keeps serving the reviewed document and
+  states the period it covers, rather than silently following a moving
+  URL. Visible staleness in exchange for invisible staleness
+- Knowledge read from an original-language document is in that language.
+  `VOW3.DE`'s stored description reads "Der Volkswagen Konzern berichtet
+  die Segmente…", because the platform reads the filing rather than a
+  translation of it. That is the correct reading and the surfaces are not
+  yet ready to present it
+- The grounding contract proves a quoted span is in the document; it does
+  not prove the span evidences the number beside it. On Volkswagen's
+  segment table the extraction quoted a column header for two of three
+  segments — shares correct, citations not demonstrative. A quote that
+  must contain the figure it supports is a narrowing of the contract, and
+  its own slice
 
 ## Policy — `data/knowledge/` is tracked, and is not a cache
 

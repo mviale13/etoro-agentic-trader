@@ -21,7 +21,10 @@ depend on the language the report was written in.
 from __future__ import annotations
 
 import html
+import io
 import re
+import zipfile
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 
@@ -60,6 +63,14 @@ _IDENTIFIER = re.compile(
 )
 
 _LANGUAGE = re.compile(r'(?is)<html\b[^>]*?\b(?:xml:)?lang="([^"]+)"')
+
+#: The end of every period the document's contexts describe. Where no
+#: index states the reporting period — which is the situation for any
+#: document not obtained from a register — the document states it, and
+#: the latest period it accounts for is the one it reports on.
+_PERIOD_END = re.compile(
+    r"(?is)<(?:\w+:)?(?:endDate|instant)[^>]*>\s*(\d{4}-\d{2}-\d{2})"
+)
 
 #: What the business is. The filer's own account of what it does, and the
 #: note that says what its reportable segments are and how it arrived at
@@ -140,6 +151,12 @@ class EsefReport:
     business_text: str
 
     discussion_text: str = ""
+
+    #: The latest period end among the document's own XBRL contexts, and
+    #: therefore the period it accounts for. None where it declares none.
+    #: Read from the document rather than from a filename or an index —
+    #: which matters where there is no index to read it from.
+    period_ends_on: date | None = None
 
 
 class EsefFilings:
@@ -324,32 +341,7 @@ class EsefFilings:
     def read_url(self, url: str) -> EsefReport:
         """The parts of the Inline XBRL report at this address."""
 
-        filed = self._get(url).text
-
-        # Who the document says it belongs to is declared in the header,
-        # among the contexts every tagged fact points at — so it is read
-        # before the header is dropped, not after.
-        lei = _declared_lei(filed)
-        language = _declared_language(filed)
-
-        document = _HEADER.sub(" ", filed)
-
-        continuations = _continuations(document)
-
-        return EsefReport(
-            company=_plain(
-                _fact(
-                    document,
-                    "ifrs-full:NameOfReportingEntityOrOtherMeansOfIdentification",
-                    continuations,
-                )
-                or ""
-            ),
-            lei=lei,
-            language=language,
-            business_text=_passage(document, BUSINESS_ELEMENTS, continuations),
-            discussion_text=_passage(document, DISCUSSION_ELEMENTS, continuations),
-        )
+        return read_report(self._get(url).text)
 
     # ── the wire ────────────────────────────────────────────────────
 
@@ -365,6 +357,126 @@ class EsefFilings:
         response.raise_for_status()
 
         return response
+
+
+# ── reading an Inline XBRL report, wherever it came from ────────────
+#
+# Deliberately free functions rather than methods. An ESEF document is
+# the same document whether a register served it or the issuer that
+# wrote it did, and the rules for reading one must not depend on which —
+# so the reading is available to any provider without inheriting a
+# register client along with it.
+
+
+def read_report(document: str) -> EsefReport:
+    """The parts of one Inline XBRL report this platform reads."""
+
+    # Who the document says it belongs to, and what period it accounts
+    # for, are declared in the header among the contexts every tagged
+    # fact points at — so both are read before the header is dropped.
+    lei = _declared_lei(document)
+    language = _declared_language(document)
+    period_ends_on = _declared_period_end(document)
+
+    body = _HEADER.sub(" ", document)
+
+    continuations = _continuations(body)
+
+    return EsefReport(
+        company=_plain(
+            _fact(
+                body,
+                "ifrs-full:NameOfReportingEntityOrOtherMeansOfIdentification",
+                continuations,
+            )
+            or ""
+        ),
+        lei=lei,
+        language=language,
+        business_text=_passage(body, BUSINESS_ELEMENTS, continuations),
+        discussion_text=_passage(body, DISCUSSION_ELEMENTS, continuations),
+        period_ends_on=period_ends_on,
+    )
+
+
+def read_package(archive: bytes) -> EsefReport:
+    """
+    The readable report inside an ESEF package.
+
+    A package is a zip of several documents, and only some of them are
+    tagged. Volkswagen's holds three: the IFRS notes, a list of
+    shareholdings, and a thirteen-megabyte management report — and only
+    the first carries a single XBRL tag or names its own issuer. The
+    other two are XHTML the regulation requires and the taxonomy says
+    nothing about, so reading them would mean hunting German headings,
+    which is the practice this provider exists to avoid.
+
+    So every member is read and the untagged ones simply contribute
+    nothing. What they must not do is contribute a *different issuer*:
+    a package whose documents disagree about whose they are is refused
+    entire rather than resolved in favour of one of them.
+    """
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive)) as package:
+            members = [
+                package.read(name).decode("utf-8", errors="replace")
+                for name in sorted(package.namelist())
+                if name.lower().endswith((".xhtml", ".html")) and "META-INF" not in name
+            ]
+    except (zipfile.BadZipFile, OSError) as error:
+        raise EsefFilingUnavailable(
+            "The package could not be opened, so nothing was read from it."
+        ) from error
+
+    reports = [read_report(member) for member in members]
+
+    identified = [report for report in reports if report.lei]
+
+    declared = {report.lei.upper() for report in identified}
+
+    if len(declared) > 1:
+        raise EsefFilingUnavailable(
+            "The package's documents declare more than one issuer "
+            f"({', '.join(sorted(declared))}), so none of it was read."
+        )
+
+    if not identified:
+        raise EsefFilingUnavailable(
+            "No document in the package identifies its own issuer, so "
+            "nothing in it can be shown to belong to the company it was "
+            "fetched for."
+        )
+
+    return EsefReport(
+        company=_first(report.company for report in identified),
+        lei=identified[0].lei,
+        language=_first(report.language for report in identified),
+        business_text=_joined(report.business_text for report in reports),
+        discussion_text=_joined(report.discussion_text for report in reports),
+        period_ends_on=max(
+            (
+                report.period_ends_on
+                for report in identified
+                if report.period_ends_on is not None
+            ),
+            default=None,
+        ),
+    )
+
+
+def _first(values: Iterable[str]) -> str:
+    return next((value for value in values if value), "")
+
+
+def _joined(passages: Iterable[str]) -> str:
+    found: list[str] = []
+
+    for passage in passages:
+        if passage and passage not in found:
+            found.append(passage)
+
+    return "\n\n".join(found)
 
 
 def _near_anniversary(period_end: date, year_end: date) -> bool:
@@ -529,6 +641,27 @@ def _declared_lei(document: str) -> str:
     stated = _IDENTIFIER.search(document)
 
     return stated.group(1).strip() if stated else ""
+
+
+def _declared_period_end(document: str) -> date | None:
+    """The latest period end the document's own contexts describe.
+
+    A comparative annual report describes two years, and the later of
+    them is the one it reports on. Read from the document because there
+    is not always an index to read it from — and checked against one
+    where there is, since a document and an index disagreeing about
+    which year this is, is worth knowing about.
+    """
+
+    found = []
+
+    for stated in _PERIOD_END.findall(document):
+        try:
+            found.append(date.fromisoformat(stated))
+        except ValueError:
+            continue
+
+    return max(found, default=None)
 
 
 def _declared_language(document: str) -> str:

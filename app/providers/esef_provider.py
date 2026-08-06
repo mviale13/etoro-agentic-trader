@@ -5,10 +5,12 @@ from __future__ import annotations
 from dataclasses import replace
 
 from app.domain.primary_source import (
+    IdentityCheck,
     PrimarySource,
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
     ReportingPeriod,
+    SourceAuthority,
     SourceDocument,
     SourceType,
 )
@@ -89,6 +91,15 @@ class EsefProvider:
             language="",
             location=reference.location,
             provider=NAME,
+            authority=SourceAuthority.REGULATOR_FILED,
+            # What is established before the document is opened. The
+            # third check — the document declaring the expected LEI —
+            # is added by `fetch`, because it is the document's answer
+            # and it has not been asked yet.
+            verification=(
+                IdentityCheck.SECURITY_REGISTRY,
+                IdentityCheck.REGISTER_INDEXED,
+            ),
         )
 
     def fetch(self, source: PrimarySource) -> SourceDocument:
@@ -123,10 +134,24 @@ class EsefProvider:
             )
 
         return SourceDocument(
-            source=self._as_read(source, report.company, report.language),
+            source=self._as_read(
+                source,
+                report.company,
+                report.language,
+                self._checked(source, report.lei),
+            ),
             business_description=report.business_text,
             performance_discussion=report.discussion_text,
         )
+
+    @staticmethod
+    def _checked(source: PrimarySource, report_lei: str) -> tuple[IdentityCheck, ...]:
+        """The checks that stand once the document has answered for itself."""
+
+        if not report_lei:
+            return source.verification
+
+        return (*source.verification, IdentityCheck.DOCUMENT_LEI)
 
     # ── identity ────────────────────────────────────────────────────
 
@@ -160,17 +185,21 @@ class EsefProvider:
         source: PrimarySource,
         company: str,
         language: str,
+        verification: tuple[IdentityCheck, ...],
     ) -> PrimarySource:
         """The source as the document itself describes it.
 
-        Two facts the index does not state and the report does: what the
-        filer calls itself, and which language it published in. Both are
-        stored with the knowledge, so a reader can see that a French
-        group's report was read in English rather than assume it.
+        Three facts the index does not state and the report does: what
+        the filer calls itself, which language it published in, and
+        whether it identified its own issuer. All three are stored with
+        the knowledge, so a reader can see that a French group's report
+        was read in English — and that the document said so itself —
+        rather than assume either.
         """
 
         return replace(
             source,
             company=company or source.company,
             language=language or source.language,
+            verification=verification,
         )

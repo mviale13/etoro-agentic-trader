@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from app.domain.primary_source import (
+    IdentityCheck,
     PrimarySource,
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
     ReportingPeriod,
+    SourceAuthority,
     SourceDocument,
     SourceType,
 )
@@ -60,6 +62,14 @@ class EdgarProvider:
             language="en",
             location=reference.url,
             provider=NAME,
+            authority=SourceAuthority.REGULATOR_FILED,
+            # One check, and it does two jobs: EDGAR's own index names
+            # this filing as this ticker's filer's. The filing itself
+            # declares no LEI, so there is no second, independent
+            # statement of identity from the document — which is a real
+            # difference from an ESEF package and is recorded as one
+            # rather than assumed away because EDGAR is a regulator.
+            verification=(IdentityCheck.REGISTER_INDEXED,),
         )
 
     def fetch(self, source: PrimarySource) -> SourceDocument:

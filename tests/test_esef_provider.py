@@ -5,8 +5,10 @@ from datetime import date
 import pytest
 
 from app.domain.primary_source import (
+    IdentityCheck,
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
+    SourceAuthority,
     SourceType,
 )
 from app.providers.esef_filings import (
@@ -117,6 +119,43 @@ def test_the_canonical_source_carries_what_the_extraction_needs() -> None:
     assert source.reporting_period.fiscal_year == 2025
     assert source.location == REFERENCE.location
     assert source.provider == "ESEF"
+
+
+def test_an_esef_filing_is_regulator_filed_and_says_which_checks_held() -> None:
+    """
+    A register received it, and the document also answered for itself.
+
+    Both are recorded, because they are different guarantees: the index
+    said whose filing this is, and then the filing said so too. EDGAR
+    can only offer the first.
+    """
+
+    source = provider().resolve("BNP.PA")
+
+    assert source.authority is SourceAuthority.REGULATOR_FILED
+    assert source.verification == (
+        IdentityCheck.SECURITY_REGISTRY,
+        IdentityCheck.REGISTER_INDEXED,
+    )
+
+    read = provider().fetch(source)
+
+    assert IdentityCheck.DOCUMENT_LEI in read.source.verification
+
+
+def test_a_filing_that_never_identified_itself_does_not_claim_it_did() -> None:
+    """The check is recorded because it happened, not because it usually does."""
+
+    silent = EsefReport(
+        company="BNP Paribas Group",
+        lei="",
+        language="fr",
+        business_text="The Group is composed of three operating divisions.",
+    )
+
+    read = provider(filings=Filings(report=silent)).fetch(provider().resolve("BNP.PA"))
+
+    assert IdentityCheck.DOCUMENT_LEI not in read.source.verification
 
 
 def test_the_key_is_the_bytes_and_not_a_name_for_them() -> None:
@@ -260,4 +299,4 @@ def test_europe_is_asked_only_where_the_regulator_holds_nothing() -> None:
 
     names = [provider.name for provider in PrimarySourceResolver()._providers]
 
-    assert names == ["SEC EDGAR", "ESEF"]
+    assert names == ["SEC EDGAR", "ESEF", "Official Investor Relations"]

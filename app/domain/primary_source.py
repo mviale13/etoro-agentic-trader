@@ -21,6 +21,62 @@ class SourceType(StrEnum):
     INTERIM_REPORT = "interim_report"
 
 
+class SourceAuthority(StrEnum):
+    """What kind of source this document is, not how much to trust it.
+
+    Descriptive rather than ranked. There is deliberately no number and
+    no ordering: a numeric confidence invites arithmetic on it, and an
+    ordering invites a caller to compare two sources without knowing
+    what actually differs between them. What differs is written down —
+    in `docs/architecture.md`, once per authority — and a reader is
+    owed the fact, not a score derived from it.
+
+    Authority belongs to the *source*, not to the provider that fetched
+    it. One provider can legitimately return both: an Investor Relations
+    page may publish the very ESEF package its issuer filed, and may also
+    publish a PDF nobody received on a dated record.
+    """
+
+    #: A body received it, on a dated record, under a filing obligation.
+    REGULATOR_FILED = "regulator_filed"
+
+    #: The company published it itself. Genuine and unreceived: there is
+    #: no third party who can confirm what was published or when.
+    ISSUER_PUBLISHED = "issuer_published"
+
+
+class IdentityCheck(StrEnum):
+    """An identity check that actually succeeded for this document.
+
+    Not a trust level — a record of what was established, so a reader
+    can see which guarantees a particular document carries rather than
+    inferring them from where it came from. The checks are independent
+    and no source performs all of them: EDGAR's index names a filing for
+    a ticker and the filing declares no LEI; an ESEF package declares its
+    LEI and is also indexed; a document published by its issuer is
+    neither indexed nor accessioned, and answers for itself.
+    """
+
+    #: The symbol was matched to a legal entity through the reviewed
+    #: issuer list and GLEIF's ISIN-to-LEI mapping.
+    SECURITY_REGISTRY = "security_registry"
+
+    #: A register named this document as this filer's, on its own index.
+    REGISTER_INDEXED = "register_indexed"
+
+    #: The bytes came from a location reviewed as this issuer's own.
+    APPROVED_SOURCE = "approved_source"
+
+    #: The document declared the expected issuer's LEI in its own
+    #: contexts. The strongest of these, because it is the document
+    #: answering rather than something said about it.
+    DOCUMENT_LEI = "document_lei"
+
+    #: The document's identity is the hash of the bytes retrieved, and
+    #: they matched the hash the location was reviewed against.
+    CONTENT_HASHED = "content_hashed"
+
+
 @dataclass(frozen=True, slots=True)
 class ReportingPeriod:
     """The business period a document accounts for.
@@ -119,8 +175,19 @@ class PrimarySource:
     #: Where it can be opened.
     location: str
 
-    #: Who supplied it, as a reader would name it: "SEC EDGAR".
+    #: Provenance: who supplied it, as a reader would name it — "SEC
+    #: EDGAR", "ESEF", "Official Investor Relations".
     provider: str
+
+    #: What kind of source this is. Stated by every provider, never
+    #: defaulted, because a provider that did not have to say would
+    #: eventually not know.
+    authority: SourceAuthority
+
+    #: Which identity checks succeeded on the way to this document. The
+    #: audit trail: authority says what the source is, provenance says
+    #: where it came from, and this says what was actually proven.
+    verification: tuple[IdentityCheck, ...]
 
     def stated(self) -> str:
         """The document as an investor would cite it."""
@@ -133,8 +200,23 @@ class PrimarySource:
 
         return (
             f"{self.identifier or self.source_type.value} published "
-            f"{self.published_on.isoformat()}{covering}, via {self.provider}"
+            f"{self.published_on.isoformat()}{covering}, via {self.provider} "
+            f"({self.attested()})"
         )
+
+    def attested(self) -> str:
+        """What kind of source this is, in words a reader can act on.
+
+        Carried in every citation, because "filed with a regulator" and
+        "published by the company" are different claims and a reader who
+        had to infer which one they were looking at would infer wrongly
+        about half the time.
+        """
+
+        if self.authority is SourceAuthority.REGULATOR_FILED:
+            return "filed with a regulator"
+
+        return "published by the issuer"
 
 
 @dataclass(frozen=True, slots=True)

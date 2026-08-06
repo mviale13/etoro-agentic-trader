@@ -1,6 +1,7 @@
 """Structural knowledge is acquired once per filing, and then kept."""
 
 import asyncio
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -10,9 +11,11 @@ from app.domain.company_knowledge import (
     RevenueModel,
 )
 from app.domain.primary_source import (
+    IdentityCheck,
     PrimarySource,
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
+    SourceAuthority,
     SourceDocument,
     SourceType,
 )
@@ -39,6 +42,8 @@ def source(key: str = ACCESSION, published: str = "2025-11-13") -> PrimarySource
         language="en",
         location=f"https://www.sec.gov/Archives/{key}",
         provider="SEC EDGAR",
+        authority=SourceAuthority.REGULATOR_FILED,
+        verification=(IdentityCheck.REGISTER_INDEXED,),
     )
 
 
@@ -252,6 +257,38 @@ def test_knowledge_survives_the_round_trip_to_disk(tmp_path: Path) -> None:
         RevenueModel.RETAIL,
     )
     assert restored.measured_share == 0.383
+
+    # The audit trail is part of the knowledge, not part of the run that
+    # produced it. A reader months later must still be able to see what
+    # kind of source this was and which identity checks actually held.
+    assert restored.source.authority is SourceAuthority.REGULATOR_FILED
+    assert restored.source.verification == (IdentityCheck.REGISTER_INDEXED,)
+
+
+def test_an_entry_written_before_the_audit_trail_is_read_again(
+    tmp_path: Path,
+) -> None:
+    """
+    The source is immutable; the reading of it is not.
+
+    Entries written before authority and verification were captured are
+    missing them, and they will never refresh on their own because the
+    document behind them has not changed. So such an entry is treated as
+    absent and the document is read again — never back-filled with an
+    authority nobody established.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.write(knowledge())
+
+    stored = next(tmp_path.glob("*.json"))
+    older = json.loads(stored.read_text())
+    older["schema_version"] = 2
+    older["source"].pop("authority")
+    older["source"].pop("verification")
+    stored.write_text(json.dumps(older))
+
+    assert store.read("DIS", ACCESSION) is None
 
 
 def test_an_unreadable_entry_is_absent_rather_than_repaired(tmp_path: Path) -> None:

@@ -7,7 +7,13 @@ from datetime import date
 import pytest
 
 from app.domain.company_knowledge import RevenueModel
-from app.domain.primary_source import PrimarySource, SourceDocument, SourceType
+from app.domain.primary_source import (
+    IdentityCheck,
+    PrimarySource,
+    SourceAuthority,
+    SourceDocument,
+    SourceType,
+)
 from app.providers.narrative_provider import Draft, DraftRequest, NarrativeDeclined
 from app.services.company_knowledge_extractor import (
     CompanyKnowledgeExtractor,
@@ -37,6 +43,8 @@ def filing() -> SourceDocument:
             language="en",
             location="https://www.sec.gov/Archives/example",
             provider="SEC EDGAR",
+            authority=SourceAuthority.REGULATOR_FILED,
+            verification=(IdentityCheck.REGISTER_INDEXED,),
         ),
         business_description=FILING_TEXT,
     )
@@ -93,10 +101,14 @@ def test_facts_the_filing_actually_contains_are_read() -> None:
         RevenueModel.ADVERTISING,
     )
 
-    # Traceable to the exact document, not merely to "a filing".
+    # Traceable to the exact document, not merely to "a filing" — and
+    # every citation says what kind of source it was, because "filed
+    # with a regulator" and "published by the company" are different
+    # claims that a reader must not have to infer.
     assert knowledge.source.key == "0001744489-25-000155"
     assert knowledge.stated_source() == (
-        "10-K 0001744489-25-000155 published 2025-11-13, via SEC EDGAR"
+        "10-K 0001744489-25-000155 published 2025-11-13, via SEC EDGAR "
+        "(filed with a regulator)"
     )
 
 
