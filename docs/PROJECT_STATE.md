@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 954 passing (2026-08-06) |
+| Pytest | 🟢 973 passing (2026-08-06) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,55 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A description must be about what it is attached to** (August 2026).
+  The narrative half of applicability, and the same failure in a
+  different shape. Reading Volkswagen's segment note, all three segments
+  were cited with one sentence — *"Die Vorjahreswerte entsprechen der
+  geänderten Berichtsstruktur"* — exactly present, about accounting, and
+  describing no segment at all.
+
+  **What a table gives a number, prose gives a description: position.** A
+  figure belongs to the row whose label leads it; a description belongs
+  to the segment whose name most recently precedes it. The document's own
+  naming of its segments partitions the prose the way row labels
+  partition a table, and this platform computes that partition rather
+  than accepting it.
+
+  Two rules, both measured on real filings rather than chosen.
+  **Ownership** — the span sits under this segment's name and no other's
+  — refuses two of Volkswagen's three outright. **Proximity** refuses the
+  third, which passes ownership by accident because the footnote follows
+  the last segment named. Sound citations measured 0, 23 and 51
+  characters from their naming; the boilerplate measured 814 and 1474.
+
+  Deliberately **not** a rule: that the span contain the segment's name.
+  Two of Disney's three sound citations do not, so requiring it would
+  reject good evidence and drive a reading toward quoting headings.
+
+  **A segment became three claims, evidenced apart.** The rule's first
+  consequence was that Volkswagen lost everything, because one span
+  proved both that a segment existed and what it did. Identity (the
+  document names it), size (two cells of one table) and description (a
+  span printed under that name) now fail independently, and only an
+  identity failure discards a reading. Volkswagen keeps its segments and
+  its measured sizes and reports what they do as absent — with the reason
+  in words, because every absence in this platform carries one.
+
+  **Two defects only a live document exposes**, both silent, because an
+  inapplicable description is an absence rather than an error. Disney's
+  Entertainment section says "non-sports focused global film", which
+  normalised to letters contains "sports" — read as a naming, it opened
+  the Sports region inside Entertainment's and refused Entertainment's own
+  description. And case folding changes a string's length: German "ß"
+  folds to "ss", so folding a document before indexing it shifted every
+  later position, and Volkswagen's report appeared never to name "Pkw und
+  leichte Nutzfahrzeuge" — discarding the whole reading, sizes included.
+
+  Verified live. Disney: three descriptions at 0, 0 and 29 characters,
+  sizes unchanged. Volkswagen: three descriptions absent, three sizes
+  intact at 76 / 13 / 19%, and the reading now leaves the span empty
+  rather than borrowing the footnote. Knowledge schema version 5.
 
 - **The reader is wired into the pipeline** (August 2026). The evidence
   model was sound and nothing used it: `CompanyKnowledgeService` defaulted
@@ -1115,35 +1164,23 @@ company is legally answerable for.
 
 **Next**
 
-Ordered by what a wrong answer costs, which is why the quantitative
-applicability slice moved to the head of this list and why its narrative
-half now takes the same place. Translation was next until reading
-Volkswagen showed what would be translated: a citation that evidences
-nothing would come back polished, and harder to notice.
+Ordered by what a wrong answer costs. Both halves of applicability —
+quantitative and narrative — are closed, so translation now leads: what
+it would translate is evidence that has been shown to apply.
 
-1. **Prose evidence applicability.** The same distinction as the
-   quantitative slice, for narrative claims. A span can be exactly
-   present and describe nothing it is attached to — on Volkswagen all
-   three segments were cited with the identical sentence about prior-year
-   figures being restated. The question the slice answers: *what
-   relationship must hold between a grounded span and the narrative fact
-   it is claimed to support?* Begin with the failure model, not the
-   prompt. The invariant to reach: a grounded prose citation must not
-   merely exist in the document, it must be shown to apply to the entity
-   or claim it accompanies
-2. **Multilingual presentation, with the original preserved.** The stored
+1. **Multilingual presentation, with the original preserved.** The stored
    grounded span stays in the language it was published in — replacing it
    with a translation severs the evidence chain, which is the one thing
    the store exists to keep intact. Presentation gains a second, clearly
    labelled layer: a translation is a derived communication artifact and
    never the canonical span
-3. **Manual document ingestion.** A document handed to the platform
+2. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-4. **Investment Archetype rules.** Deterministic rules over the facts now
+3. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-5. **Dossier transparency for company knowledge, coverage and playbook
+4. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could
@@ -1174,15 +1211,20 @@ nothing would come back polished, and harder to notice.
   whose tables have no total, keeps its segments and leaves their sizes
   absent. That is the honest outcome and the alternative is a plausible
   number, but it is a real coverage limit rather than a solved problem
-- **The same distinction is open one level over, in the prose half.** On
-  Volkswagen's report all three segments were cited with the identical
-  span — "Die Vorjahreswerte entsprechen der geänderten Berichtsstruktur."
-  The words are genuinely in the document, so grounding passes, and they
-  describe none of the three segments. Sizes are now measured; a segment's
-  *description* is still evidenced only by existence. It is visible rather
-  than misleading — the span is printed beside the segment and a reader
-  can see it says nothing — and it is the natural next applicability
-  question rather than part of the one just closed
+- **Applicability is positional, so it cannot judge subject matter.**
+  Ownership and proximity catch a description that sits under another
+  segment or far from its own, and they cannot tell a description from a
+  note that happens to sit exactly where a description would.
+  Volkswagen's footnote was caught at 814 characters; the same sentence
+  one line below a segment's description would pass. Closing that means
+  judging what a sentence is *about*, which is a different kind of check
+  from where it sits — and a different slice
+- **A description is read once and not retried.** An inapplicable span is
+  an absence rather than a rejection, so it does not trigger the reread
+  that a failed grounding contract does. A single sloppy draft therefore
+  costs a description that a second attempt might have evidenced. Left
+  as it is deliberately: retrying until something passes is how a
+  threshold turns into a search for whatever clears it
 - In the layout where segments are columns, the shared row proves the two
   figures measure the same line item and does not prove they cover the
   same period — a table whose columns are segments states its period in

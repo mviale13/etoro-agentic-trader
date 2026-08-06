@@ -1142,9 +1142,11 @@ company accounts (`CompanyResearchService._structural_knowledge`).
 **Applicability validation** proves that the cited content supports the
 specific fact asserted. Nothing about grounding can establish this
 either: the quoted words can be exactly present and say nothing about
-the number attached to them. It is enforced in `app/domain/
-tabular_evidence.py`, and the distinction that names it is worth keeping
-in these words:
+the number attached to them, or about the segment they were attached to.
+It is enforced in `app/domain/tabular_evidence.py` for quantities and
+`app/domain/prose_evidence.py` for descriptions, over the shared
+vocabulary in `app/domain/evidence.py`. The distinction that names it is
+worth keeping in these words:
 
 - **Evidence existence** — the cited content is in the source. What
   grounding establishes.
@@ -1276,6 +1278,80 @@ much business the parts do with one another, which no constant predicts —
 so the sum check is now a backstop against a total that is not a total,
 not the guard it once was. What catches a misread figure is the cell it
 was read from.
+
+## The same boundary for a description
+
+A quantity needs its row and its column. A description needs to be about
+the thing it is attached to, and the failure looks identical: reading
+Volkswagen's segment note, all three segments were cited with one
+sentence — *"Die Vorjahreswerte entsprechen der geänderten
+Berichtsstruktur"*, the prior-year figures correspond to the changed
+reporting structure. Exactly present, about accounting, describing no
+segment at all.
+
+What a table gives a number, prose gives a description: **position**. A
+figure belongs to the row whose label leads it; a description belongs to
+the segment whose name most recently precedes it. **The document's own
+naming of its segments partitions the prose the way row labels partition
+a table**, and that partition is something this platform computes rather
+than accepts.
+
+Two rules, both measured rather than chosen:
+
+- **Ownership** — the span sits under this segment's name and no
+  other's. On Volkswagen this refuses two of three outright.
+- **Proximity** — it sits within `NEARBY` characters of that naming.
+  This refuses the third, which passes ownership *by accident* because
+  the footnote follows the last segment the document names. Sound
+  citations measured 0, 23 and 51 characters from their naming; the
+  boilerplate measured 814 and 1474.
+
+What is deliberately **not** a rule is that the span contain the
+segment's name. Two of Disney's three sound citations do not — the name
+is the sentence's subject and the span its predicate — so requiring it
+would reject good evidence and drive a reading toward quoting headings.
+
+### Three claims, three contracts, degrading apart
+
+The rule's first consequence was that Volkswagen lost everything: one
+span used to prove both that a segment existed and what it did, so an
+inapplicable citation took the segment's identity and its measured size
+with it — facts established by something else entirely. So a segment is
+now three independent claims:
+
+| Claim | Evidenced by | When it fails |
+|---|---|---|
+| **Identity** — the company has a part it calls this | the document naming it, which this platform locates | the whole reading is discarded |
+| **Size** — what it earned, as a share of a printed total | two cells of one table, checked against the document | the size is absent |
+| **Description** — what it does and how it earns | a span the document prints under this segment's name | the description is absent, with its reason |
+
+Volkswagen therefore keeps its three segments and their measured sizes,
+and reports what they do as absent. That is the honest outcome, and it
+is more than the platform could say before the slice rather than less.
+
+### Two defects only a live document exposes
+
+**A name inside another word is not a naming.** Disney's Entertainment
+section contains the phrase "non-sports focused global film". Normalised
+to letters, that phrase contains "sports" — read as a naming it opens the
+Sports region in the middle of Entertainment's, and Entertainment's own
+description is refused as belonging to Sports. Silently, because an
+inapplicable description is an absence rather than an error.
+
+**Case folding changes a string's length.** German "ß" folds to "ss", so
+folding a document before indexing it shifts every position after the
+first one. The boundary check then read the wrong character, concluded
+that Volkswagen's report never names "Pkw und leichte Nutzfahrzeuge", and
+discarded the entire reading — identity, sizes and all.
+
+### What this does not close
+
+Ownership and proximity are positional, so they cannot tell a description
+from a note that happens to sit exactly where a description would.
+Volkswagen's footnote was caught at 814 characters; the same sentence one
+line below a segment's description would pass. Closing that means judging
+what a sentence is *about*, which is a different kind of check from where
+it sits.
 
 ---
 

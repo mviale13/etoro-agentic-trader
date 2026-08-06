@@ -1,14 +1,14 @@
 {
-  "description": "Volkswagen AG reports operating segments for passenger cars and light commercial vehicles, commercial vehicles, and financial services.",
+  "description": "Berichtssegmente: Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge, Finanzdienstleistungen.",
   "reading": {
-    "observed_at": "2026-08-06T11:42:54.801317+00:00",
+    "observed_at": "2026-08-06T12:15:24.587429+00:00",
     "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
   },
-  "schema_version": 4,
+  "schema_version": 5,
   "segments": [
     {
+      "description": null,
       "name": "Pkw und leichte Nutzfahrzeuge",
-      "quoted": "Die Vorjahreswerte entsprechen der ge\u00e4nderten Berichtsstruktur.",
       "revenue": {
         "denominator": {
           "caption": "BERICHTSSEGMENTe 2025",
@@ -35,14 +35,11 @@
           "value": 244484.0
         }
       },
-      "revenue_models": [
-        "manufacturing",
-        "retail"
-      ]
+      "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all."
     },
     {
+      "description": null,
       "name": "Nutzfahrzeuge",
-      "quoted": "Die Vorjahreswerte entsprechen der ge\u00e4nderten Berichtsstruktur.",
       "revenue": {
         "denominator": {
           "caption": "BERICHTSSEGMENTe 2025",
@@ -69,14 +66,11 @@
           "value": 42540.0
         }
       },
-      "revenue_models": [
-        "manufacturing",
-        "retail"
-      ]
+      "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all."
     },
     {
+      "description": null,
       "name": "Finanzdienstleistungen",
-      "quoted": "Die Vorjahreswerte entsprechen der ge\u00e4nderten Berichtsstruktur.",
       "revenue": {
         "denominator": {
           "caption": "BERICHTSSEGMENTe 2025",
@@ -103,10 +97,7 @@
           "value": 62136.0
         }
       },
-      "revenue_models": [
-        "financial_spread",
-        "services"
-      ]
+      "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all."
     }
   ],
   "source": {

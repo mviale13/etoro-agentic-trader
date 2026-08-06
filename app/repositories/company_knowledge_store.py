@@ -12,7 +12,9 @@ from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledge,
     RevenueModel,
+    SegmentDescription,
 )
+from app.domain.evidence import EvidenceNotApplicable
 from app.domain.primary_source import (
     IdentityCheck,
     PrimarySource,
@@ -20,10 +22,10 @@ from app.domain.primary_source import (
     SourceAuthority,
     SourceType,
 )
+from app.domain.prose_evidence import DescribedSegment
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
-    EvidenceNotApplicable,
     MeasuredShare,
     ReportedFigure,
 )
@@ -40,7 +42,7 @@ from app.domain.tabular_evidence import (
 #: document is read again under the current one. Immutable source,
 #: versioned reading: the two are different things and only one of them
 #: is fixed.
-KNOWLEDGE_SCHEMA_VERSION = 4
+KNOWLEDGE_SCHEMA_VERSION = 5
 
 
 class CompanyKnowledgeStore(ABC):
@@ -142,8 +144,8 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                 {
                     "name": segment.name,
                     "revenue": _encode_share(segment.revenue),
-                    "revenue_models": [model.value for model in segment.revenue_models],
-                    "quoted": segment.quoted,
+                    "description": _encode_description(segment.description),
+                    "undescribed_because": segment.undescribed_because,
                 }
                 for segment in knowledge.segments
             ],
@@ -202,12 +204,12 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                     BusinessSegment(
                         name=str(segment["name"]),
                         revenue=_share(segment.get("revenue")),
-                        revenue_models=tuple(
-                            RevenueModel(value)
-                            for value in segment.get("revenue_models", ())
-                            if value in {model.value for model in RevenueModel}
+                        description=_description(segment.get("description")),
+                        undescribed_because=(
+                            str(segment["undescribed_because"])
+                            if segment.get("undescribed_because")
+                            else None
                         ),
-                        quoted=str(segment["quoted"]),
                     )
                     for segment in stored.get("segments", ())
                 ),
@@ -241,6 +243,47 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
             # an entry that cannot be read, not one to be repaired. The
             # document is immutable and still there, so it is read again.
             return None
+
+
+def _encode_description(described: SegmentDescription | None) -> dict[str, Any] | None:
+    """
+    What a segment does, with the proof it is said of that segment.
+
+    The naming and the distance are stored beside the words because they
+    are what makes the words evidence rather than a quotation. An entry
+    holding only the span would be indistinguishable from one written
+    before applicability was checked at all.
+    """
+
+    if described is None:
+        return None
+
+    return {
+        "quoted": described.evidence.quoted,
+        "under": described.evidence.under,
+        "distance": described.evidence.distance,
+        "revenue_models": [model.value for model in described.revenue_models],
+    }
+
+
+def _description(stored: Any) -> SegmentDescription | None:
+    """A segment's description as stored, or nothing where none applied."""
+
+    if not isinstance(stored, dict):
+        return None
+
+    return SegmentDescription(
+        evidence=DescribedSegment(
+            quoted=str(stored["quoted"]),
+            under=str(stored["under"]),
+            distance=int(stored["distance"]),
+        ),
+        revenue_models=tuple(
+            RevenueModel(value)
+            for value in stored.get("revenue_models", ())
+            if value in {model.value for model in RevenueModel}
+        ),
+    )
 
 
 def _encode_share(share: MeasuredShare | None) -> dict[str, Any] | None:
