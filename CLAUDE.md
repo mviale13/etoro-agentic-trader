@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~850 tests, fast
+python -m pytest -q            # ~945 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -70,20 +70,31 @@ These are not style preferences. Breaking them damages the product.
 1. **Absent evidence is reported as absent, never estimated.** A plausible
    number on an investment dashboard reads as a measurement. If the platform
    cannot evidence a figure, it says so.
-2. **Identity and grounding are independent invariants.** Grounding proves
-   that extracted knowledge is supported by the primary source it cites.
-   Identity proves that the primary source belongs to the intended
-   security. Neither substitutes for the other, and identity is enforced
-   *before* the reading — a perfectly grounded, exactly cited reading of a
-   genuine filing is still wrong when the filing is another company's, and
+2. **Identity, grounding and applicability are independent invariants.**
+   Grounding proves that cited content exists in the source. Identity
+   proves that the source belongs to the intended security. Applicability
+   proves that the cited content supports the fact it was cited *for*.
+   None substitutes for another, and identity is enforced *before* the
+   reading — a perfectly grounded, exactly cited reading of a genuine
+   filing is still wrong when the filing is another company's, and
    nothing downstream can see that it happened. Learned twice, from `BTC`
    resolving against the SEC to a Bitcoin trust and from a ticker-to-ISIN
    lookup returning an Argentine CEDEAR for `ASML.AS`.
-3. **The Brain stores facts, never conclusions.**
-4. **Analysts assess; only the Artificial CIO decides.**
-5. **Communication explains decisions; it never makes them.**
-6. **The dashboard presents; it never calculates.**
-7. **One business concept, one implementation.**
+3. **A quantity carries the relationship it was read from, or it is
+   absent.** A span proves words exist; it cannot prove they support the
+   number beside them, and prompting cannot close that — the extraction
+   was told not to read across a table cell, in a document whose cell
+   boundaries had been stripped out. So a quantitative citation is an
+   address into a table this platform parsed, checked against the cell it
+   names, and a share is arithmetic the platform performs over two
+   checked figures. There is no way to state a size without them.
+   Learned from a segment reading that cited a *column header* and got
+   the shares right anyway.
+4. **The Brain stores facts, never conclusions.**
+5. **Analysts assess; only the Artificial CIO decides.**
+6. **Communication explains decisions; it never makes them.**
+7. **The dashboard presents; it never calculates.**
+8. **One business concept, one implementation.**
 
 The UI labels its own honesty: every page declares its data provenance via
 `<PageIntegrity>`, and cards carry a live / partial / placeholder pill. If

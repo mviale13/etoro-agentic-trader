@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from app.domain.primary_source import PrimarySource
 from app.domain.provenance import Provenance
+from app.domain.tabular_evidence import MeasuredShare
 
 
 class RevenueModel(StrEnum):
@@ -40,18 +41,40 @@ class BusinessSegment:
     and the extraction is rejected outright unless those words appear in
     the document — so a segment that was never described cannot reach
     this object however confidently it was asserted.
+
+    Two facts of two different kinds, evidenced two different ways. What
+    a segment *is* is prose, and a span proves the filing described it.
+    How large it is, is a quantity, and no span can prove that: a
+    quantity means nothing without the row it sits on and the column it
+    sits under. So a size arrives as the two printed figures it was
+    computed from, and there is deliberately no way to state one without
+    them.
     """
 
     name: str
 
-    #: The share of revenue this segment produced, 0.0 to 1.0. None where
-    #: the company described the segment without giving a figure for it,
-    #: which is common and is not the same as the segment being small.
-    revenue_share: float | None
+    #: What this segment earned, as a fraction of a total the same table
+    #: printed in the same column. None where the company described the
+    #: segment without a figure this platform could locate in a table —
+    #: which is common, and is not the same as the segment being small.
+    revenue: MeasuredShare | None
 
     revenue_models: tuple[RevenueModel, ...]
 
     quoted: str
+
+    @property
+    def revenue_share(self) -> float | None:
+        """
+        The share of revenue this segment produced, 0.0 to 1.0.
+
+        Derived rather than stored, and that is the point. The number is
+        arithmetic over two figures a filer printed, so it is computed
+        here from evidence that has been checked against the document
+        rather than accepted from whatever read it.
+        """
+
+        return self.revenue.share if self.revenue is not None else None
 
 
 @dataclass(frozen=True, slots=True)

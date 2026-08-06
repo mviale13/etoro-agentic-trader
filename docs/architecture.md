@@ -1108,11 +1108,12 @@ Principle 11 is load-bearing, so the gaps are named rather than filled:
 
 ---
 
-# Two Validation Boundaries: Identity and Grounding
+# Three Validation Boundaries: Identity, Grounding, Applicability
 
-Reading a primary source has two independent failure modes, and they need
-two independent guarantees. Conflating them is easy, because a failure of
-either one produces a confident, well-cited, wrong answer.
+Reading a primary source has three independent failure modes, and they
+need three independent guarantees. Conflating them is easy, because a
+failure of any one of them produces a confident, well-cited, wrong
+answer.
 
 ```text
                     IDENTITY VALIDATION
@@ -1120,6 +1121,9 @@ either one produces a confident, well-cited, wrong answer.
                             ↓
                     GROUNDING VALIDATION
         Do these facts belong to this document?
+                            ↓
+                  APPLICABILITY VALIDATION
+        Does the cited content support the fact it is cited for?
 ```
 
 **Grounding validation** proves that extracted facts belong to the document.
@@ -1135,19 +1139,33 @@ about a different company. It is enforced *before* extraction begins, by
 asking for structural knowledge only where the security's playbook expects
 company accounts (`CompanyResearchService._structural_knowledge`).
 
+**Applicability validation** proves that the cited content supports the
+specific fact asserted. Nothing about grounding can establish this
+either: the quoted words can be exactly present and say nothing about
+the number attached to them. It is enforced in `app/domain/
+tabular_evidence.py`, and the distinction that names it is worth keeping
+in these words:
+
+- **Evidence existence** — the cited content is in the source. What
+  grounding establishes.
+- **Evidence applicability** — the cited content supports the fact it
+  was cited for. What grounding cannot reach.
+
 The boundaries are complementary rather than overlapping, and each was
 demonstrated by a distinct live failure:
 
-| | Identity failure | Grounding failure |
-|---|---|---|
-| Live case | `BTC` resolved against the SEC to a trust issuing shares that track Bitcoin | Extraction paraphrased across a table boundary, reading text on either side of a cell edge as continuous prose |
-| Document | Genuine | Genuine |
-| Extraction | Grounded, citations correct | Ungrounded |
-| Subject | **Wrong** | Correct |
-| Detected by | Nothing downstream — the answer looks correct | The grounding contract, which rejected it |
-| Fix | Structural: never ask a token or a fund for company accounts | Contract held, question narrowed: five to fifteen words from one run of prose, retried under the identical rule |
+| | Identity failure | Grounding failure | Applicability failure |
+|---|---|---|---|
+| Live case | `BTC` resolved against the SEC to a trust issuing shares that track Bitcoin | Extraction paraphrased across a table boundary, reading text on either side of a cell edge as continuous prose | Reading Volkswagen's segment table, the extraction cited a *column header* for two of three segments |
+| Document | Genuine | Genuine | Genuine |
+| Extraction | Grounded, citations correct | Ungrounded | Grounded, citations verbatim |
+| Subject | **Wrong** | Correct | Correct |
+| Number | — | — | Correct |
+| What was proven | Everything except whose company it was | — | That the words exist, and nothing else |
+| Detected by | Nothing downstream — the answer looks correct | The grounding contract, which rejected it | Nothing downstream — the shares were right |
+| Fix | Structural: never ask a token or a fund for company accounts | Contract held, question narrowed: five to fifteen words from one run of prose, retried under the identical rule | Structural: a quantitative citation is an address into a table this platform parsed, not a span a model copied |
 
-The identity failure is the more instructive of the two, because **no
+The identity failure is the more instructive of the three, because **no
 amount of better prompting would ever solve it.** The model was asked to
 read a real annual report and read it correctly; the error was in which
 document it was handed. A validation layer that only checks the reading
@@ -1189,6 +1207,75 @@ it belongs to the issuer it was fetched for — and a register that served
 the wrong file is caught before a single word of it is read. Cheap, and
 worth doing precisely because the failure it catches is the one nothing
 downstream can see.
+
+## How a quantitative fact discharges applicability
+
+The identity boundary is enforced upstream of the reading because no
+prompt could ever fix it. The applicability boundary is the same lesson
+one level down: **no prompt can fix it either**, and the wording was
+tried. The extraction was told, in as many words, not to join text across
+a table cell — and the instruction is unenforceable, because by the time
+the model sees the document the cell boundary has been stripped out of
+it. A rule nothing can check is a wish.
+
+So the evidence changed shape rather than the prompt changing wording.
+Three moves, and each is structural:
+
+**The document keeps its tables.** `SourceDocument` carries
+`performance_tables` alongside the prose, parsed by `app/providers/
+document_text.py` from the same markup, so a filing is read as words
+*and* as the grid it printed. The prose reduction is byte-for-byte the
+one the platform always used — the sections are located by searching it,
+and a different reduction would silently locate different sections.
+
+**A citation is an address, not a span.** The reading names a table, a
+row and a column, and states what it believes is printed there. This
+platform reads that cell itself and compares. A model cannot cite a
+column header for a segment's revenue, because the address resolves to a
+cell whose contents the validator reads for itself — and a header prints
+no number, so the citation is refused before anyone has to notice that
+the number happened to be right.
+
+**A share is arithmetic this platform performs.** A revenue share is not
+a fact a filing states; it is one number over another. Asking a model for
+the share and a quote to go with it asks it to compute and then evidence
+the computation with a span, which no span can do. So both figures are
+cited, both are checked, and `MeasuredShare` divides. `BusinessSegment`
+has no field for a bare share — the size exists only as the two printed
+figures it came from, which makes an unevidenced share unrepresentable
+rather than merely discouraged.
+
+The invariant tying the two figures together is that they sit in one
+table and agree on exactly one coordinate. The shared coordinate is what
+makes them comparable; the coordinate they differ on is what names the
+part and the whole. One table also means one scale, so a numerator in
+millions over a denominator in thousands cannot arise without this
+platform having to parse a caption to discover what the scale was.
+
+**Both layouts are normal, and assuming one of them is a bug.** The first
+design required the two figures to share a *column* — right for Disney's
+10-K, where segments run down the page and the columns are periods, and
+wrong for Volkswagen's IFRS segment note, where the segments run across
+the top and the shared coordinate is the row. Fitting the rule to the
+American layout would have left every European filing's sizes
+permanently unmeasurable, and the failure would have looked like honest
+absence rather than like a bug.
+
+Verified against both, live:
+
+| | Disney 10-K, via EDGAR | Volkswagen annual report, via Investor Relations |
+|---|---|---|
+| Layout | Segments as rows, periods as columns | Segments as columns, line items as rows |
+| Shared coordinate | The column, `"2025"` | The row, `"Umsatzerlöse"` |
+| Measured | 45% / 19% / 38% | 76% / 13% / 19% |
+| Sums to | 102% of consolidated revenue | 108.5% of consolidated revenue |
+
+The sums are above 100% and both are correct: consolidated revenue is the
+segments *less* what they sold each other. How far above depends on how
+much business the parts do with one another, which no constant predicts —
+so the sum check is now a backstop against a total that is not a total,
+not the guard it once was. What catches a misread figure is the cell it
+was read from.
 
 ---
 
@@ -1346,9 +1433,9 @@ contract proves that a quoted span exists in the document; it does not
 prove that the span evidences the number beside it. On a table-heavy
 document the extraction quoted a column header for two of the three
 segments. The shares were right — checked against the segment table by
-hand — and the citations do not demonstrate them. Both are recorded in
-`PROJECT_STATE.md` as gaps rather than fixed here, because neither is a
-weakness in the trust model and both deserve their own slice.
+hand — and the citations do not demonstrate them. The first is recorded
+in `PROJECT_STATE.md` as a gap; the second became its own slice, and is
+the third validation boundary below.
 
 ## The backbone
 
@@ -1356,9 +1443,9 @@ Primary sources are one link in a longer chain, and the chain is the
 Artificial CIO:
 
 ```text
-Identity  →  Primary Source Resolution  →  Grounding  →  Knowledge
-                                                              ↓
-       Communication  ←  Decision  ←  Reasoning  ←────────────┘
+Identity  →  Primary Source Resolution  →  Grounding  →  Applicability  →  Knowledge
+                                                                                ↓
+             Communication  ←  Decision  ←  Reasoning  ←───────────────────────┘
 ```
 
 Each arrow is a narrowing of what the next stage is allowed to assume,

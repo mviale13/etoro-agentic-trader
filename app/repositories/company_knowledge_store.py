@@ -21,6 +21,12 @@ from app.domain.primary_source import (
     SourceType,
 )
 from app.domain.provenance import Provenance
+from app.domain.tabular_evidence import (
+    CellReference,
+    EvidenceNotApplicable,
+    MeasuredShare,
+    ReportedFigure,
+)
 
 #: What this platform reads out of a primary source, as a version.
 #:
@@ -34,7 +40,7 @@ from app.domain.provenance import Provenance
 #: document is read again under the current one. Immutable source,
 #: versioned reading: the two are different things and only one of them
 #: is fixed.
-KNOWLEDGE_SCHEMA_VERSION = 3
+KNOWLEDGE_SCHEMA_VERSION = 4
 
 
 class CompanyKnowledgeStore(ABC):
@@ -135,7 +141,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
             "segments": [
                 {
                     "name": segment.name,
-                    "revenue_share": segment.revenue_share,
+                    "revenue": _encode_share(segment.revenue),
                     "revenue_models": [model.value for model in segment.revenue_models],
                     "quoted": segment.quoted,
                 }
@@ -195,11 +201,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                 segments=tuple(
                     BusinessSegment(
                         name=str(segment["name"]),
-                        revenue_share=(
-                            float(segment["revenue_share"])
-                            if segment.get("revenue_share") is not None
-                            else None
-                        ),
+                        revenue=_share(segment.get("revenue")),
                         revenue_models=tuple(
                             RevenueModel(value)
                             for value in segment.get("revenue_models", ())
@@ -234,8 +236,77 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                     ),
                 ),
             )
-        except (KeyError, TypeError, ValueError):
+        except (KeyError, TypeError, ValueError, EvidenceNotApplicable):
+            # A stored share whose two figures no longer hold together is
+            # an entry that cannot be read, not one to be repaired. The
+            # document is immutable and still there, so it is read again.
             return None
+
+
+def _encode_share(share: MeasuredShare | None) -> dict[str, Any] | None:
+    """
+    A segment's size as the two printed figures it was measured from.
+
+    The share itself is deliberately not written down. It is arithmetic
+    over two figures, and storing the answer beside its inputs would
+    create a second place for it to be true — where a later reader could
+    trust a number nothing had checked. What is kept is the evidence,
+    and the share is worked out from it every time it is asked for.
+    """
+
+    if share is None:
+        return None
+
+    return {
+        "numerator": _encode_figure(share.numerator),
+        "denominator": _encode_figure(share.denominator),
+    }
+
+
+def _encode_figure(figure: ReportedFigure) -> dict[str, Any]:
+    """One printed number, with everything that says what it measures."""
+
+    return {
+        "label": figure.label,
+        "column_header": figure.column_header,
+        "printed": figure.printed,
+        "value": figure.value,
+        "caption": figure.caption,
+        "cell": {
+            "table": figure.cell.table,
+            "row": figure.cell.row,
+            "column": figure.cell.column,
+        },
+    }
+
+
+def _share(stored: Any) -> MeasuredShare | None:
+    """A segment's size as stored, or nothing where none was measured."""
+
+    if not isinstance(stored, dict):
+        return None
+
+    return MeasuredShare(
+        numerator=_figure(stored["numerator"]),
+        denominator=_figure(stored["denominator"]),
+    )
+
+
+def _figure(stored: Any) -> ReportedFigure:
+    """One printed number as stored."""
+
+    return ReportedFigure(
+        label=str(stored["label"]),
+        column_header=str(stored["column_header"]),
+        printed=str(stored["printed"]),
+        value=float(stored["value"]),
+        caption=str(stored.get("caption", "")),
+        cell=CellReference(
+            table=int(stored["cell"]["table"]),
+            row=int(stored["cell"]["row"]),
+            column=int(stored["cell"]["column"]),
+        ),
+    )
 
 
 def _encode_period(period: ReportingPeriod | None) -> dict[str, Any] | None:

@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
 
+from app.domain.tabular_evidence import SourceTable
+
 
 class SourceType(StrEnum):
     """What kind of document this is, apart from who published it.
@@ -239,6 +241,18 @@ class SourceDocument:
     #: section, which leaves the segments described and their sizes
     #: unstated rather than apportioned.
     performance_discussion: str = ""
+
+    #: The tables printed inside that discussion, with their rows and
+    #: columns kept rather than flattened into the prose beside them.
+    #:
+    #: Two sections of prose were enough while the platform only read
+    #: what a business *is*. A quantity is different in kind: it means
+    #: nothing without the row it sits on and the column it sits under,
+    #: and prose that has been stripped of its table structure can no
+    #: longer say which those were. Empty where the publisher printed no
+    #: tables this platform could read, which leaves segment sizes
+    #: unstated rather than read off a flattened row.
+    performance_tables: tuple[SourceTable, ...] = ()
 
 
 class PrimarySourceUnavailable(Exception):

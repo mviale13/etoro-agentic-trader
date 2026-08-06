@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
@@ -15,6 +14,15 @@ from app.domain.company_knowledge import (
 )
 from app.domain.primary_source import SourceDocument
 from app.domain.provenance import Provenance
+from app.domain.tabular_evidence import (
+    CellReference,
+    EvidenceNotApplicable,
+    MeasuredShare,
+    ReportedFigure,
+    SourceTable,
+    figure_at,
+    normalised,
+)
 from app.providers.narrative_provider import (
     DraftRequest,
     NarrativeDeclined,
@@ -35,30 +43,53 @@ MAX_TOKENS = 8000
 #: would let the paraphrase through.
 MAX_ATTEMPTS = 3
 
-#: Shares are read to the nearest percent, so a set that sums a little
-#: past 1.0 is rounding. One that sums well past it is a segment counted
-#: twice, and the extraction is refused rather than normalised — a
-#: silently rescaled revenue mix is a fabricated one.
-SHARE_TOLERANCE = 1.05
-
-_NOISE = re.compile(r"[^a-z0-9]+")
+#: Segments sum past a consolidated total, and legitimately: consolidated
+#: revenue is the segments *less* what they sold each other. Measured,
+#: Disney's three segments are 102% of its group revenue and Volkswagen's
+#: three are 108.5% of its — the difference being how much business the
+#: parts do with each other, which no constant can predict.
+#:
+#: So this is a backstop rather than the guard it once was. What catches
+#: a misread figure now is the cell it was read from: two segments cannot
+#: cite one cell, and a cell whose label does not correspond to the
+#: segment is refused. This only has to separate heavy intersegment trade
+#: from a segment counted twice, which in a three-segment company would
+#: land near 140%. A mix past it is discarded rather than normalised,
+#: because a silently rescaled revenue mix is a fabricated one.
+SHARE_TOLERANCE = 1.25
 
 MIX_SYSTEM_PROMPT = """\
-You read one number per segment out of a company's management discussion.
-You do not analyse the company and you do not classify it.
+You locate numbers in tables a company printed in its annual report. You
+do not analyse the company, and you do not calculate anything at all.
+
+You are given the tables exactly as they were parsed out of the document.
+Every cell is addressed: `[table N]`, then `rR` for the row, then `cC`
+for the column. Row `r0` is the header row, which names the columns.
+
+Tables are laid out one of two ways, and both are normal:
+- Segments as ROWS, periods as columns. Then the total is another row,
+  and every segment cell sits in the SAME COLUMN as the total.
+- Segments as COLUMNS, line items as rows. Then the total is another
+  column — "Group", "Konzern", "Total" — and every segment cell sits in
+  the SAME ROW as the total, the row for revenue.
 
 Rules:
-- Report a share only for the segment names you are given. Never invent a
-  segment, rename one, or merge two.
-- Report `revenue_share` only where the discussion states revenue for that
-  segment and you can read it. Where it does not, omit the segment
-  entirely. Never apportion, estimate, or infer a share from a total.
-- Every share must include `quoted`: a SHORT verbatim span copied from
-  the discussion text — between five and fifteen words, from a single
-  run of prose — showing that segment's revenue. Copy it exactly. Do not
-  join text across a table cell or a line break. An answer whose quotes
-  are not found in the text is discarded in full.
-- Shares are fractions of total revenue, between 0 and 1.
+- First locate `total`: the one cell holding TOTAL revenue for the whole
+  company, for the most recent period the table reports.
+- Then, for each segment name you are given, locate the cell holding THAT
+  SEGMENT's revenue. Use the names you are given and no others.
+- Every segment cell must be in the SAME TABLE as the total, and must
+  share either its row or its column with the total — whichever the
+  table's layout calls for. Omit any segment whose revenue is not there.
+- Never cite row `r0` or column `c0`. They name the rows and columns and
+  measure nothing.
+- Never cite a cell holding a percentage, a change, a margin, an operating
+  income or a label. Revenue only.
+- `value` is the number that cell prints, written plainly: no thousands
+  separators, no currency, no scale applied. 322,284 is 322284.
+- Omit a segment rather than guess at it. Every cell you cite is read back
+  out of the document and compared with what you said is in it, and an
+  answer that disagrees with the document is discarded in full.
 """
 
 SYSTEM_PROMPT = """\
@@ -75,10 +106,10 @@ Rules:
   not tidy the wording. A short exact span is always better than a long
   approximate one: an answer whose quotes are not found in the filing is
   discarded in full, including the segments that were right.
-- Report `revenue_share` only where the filing gives a figure you can
-  read for that segment. Where it does not, use null. Do not estimate,
-  apportion, or infer a share from anything.
 - Report the revenue models the filing describes for each segment.
+- Report no figures and no sizes. You are reading what the business is,
+  not how large its parts are. Anything you could only get by reading a
+  table belongs to a different question and is not asked here.
 - Do not judge the company. Do not say whether a business is good, "high
   quality", durable, moaty, or attractive. You are reading, not deciding.
 """
@@ -106,13 +137,6 @@ def extraction_schema() -> dict[str, Any]:
                     "type": "object",
                     "properties": {
                         "name": {"type": "string"},
-                        "revenue_share": {
-                            "type": ["number", "null"],
-                            "description": (
-                                "Share of total revenue, 0 to 1. Null unless "
-                                "the filing gives a figure you can read."
-                            ),
-                        },
                         "revenue_models": {
                             "type": "array",
                             "items": {
@@ -130,7 +154,6 @@ def extraction_schema() -> dict[str, Any]:
                     },
                     "required": [
                         "name",
-                        "revenue_share",
                         "revenue_models",
                         "quoted",
                     ],
@@ -161,41 +184,68 @@ def user_prompt(document: SourceDocument) -> str:
     )
 
 
-def _normalised(text: str) -> str:
-    """
-    Text reduced to the characters that carry meaning.
+def _cell_schema(described: str) -> dict[str, Any]:
+    """The address of one printed number, and what it is said to print."""
 
-    A filing's markup leaves stray spacing inside words — "B USINESS" is
-    a real heading — so an exact match would reject quotes that are
-    genuinely present. Removing everything but letters and digits keeps
-    the check strict about the words and their order while forgiving the
-    typography the document arrived with.
-    """
-
-    return _NOISE.sub("", text.casefold())
+    return {
+        "type": "object",
+        "description": described,
+        "properties": {
+            "table": {"type": "integer"},
+            "row": {"type": "integer"},
+            "column": {"type": "integer"},
+            "value": {
+                "type": "number",
+                "description": (
+                    "The number this cell prints, with no separators, no "
+                    "currency and no scale applied."
+                ),
+            },
+        },
+        "required": ["table", "row", "column", "value"],
+        "additionalProperties": False,
+    }
 
 
 def mix_schema() -> dict[str, Any]:
-    """The contract a revenue-mix reading must fill."""
+    """
+    The contract a revenue-mix reading must fill.
+
+    Cells, not shares. A share is arithmetic over two figures, and asking
+    a reading for the arithmetic is asking it for something the document
+    does not contain — which is why the old contract's quotes could be
+    exact and prove nothing. Here the reading points at two cells and the
+    platform does the dividing.
+    """
+
+    segment = _cell_schema("The cell holding this segment's revenue.")
+
+    properties = dict(segment["properties"])
+    properties["segment"] = {"type": "string"}
 
     return {
         "type": "object",
         "properties": {
-            "shares": {
+            "total": {
+                "anyOf": [
+                    _cell_schema("The cell holding total revenue."),
+                    {"type": "null"},
+                ],
+                "description": (
+                    "Null where no table reports a total revenue you can read."
+                ),
+            },
+            "segments": {
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "properties": {
-                        "segment": {"type": "string"},
-                        "revenue_share": {"type": "number"},
-                        "quoted": {"type": "string"},
-                    },
-                    "required": ["segment", "revenue_share", "quoted"],
+                    "properties": properties,
+                    "required": [*segment["required"], "segment"],
                     "additionalProperties": False,
                 },
             },
         },
-        "required": ["shares"],
+        "required": ["total", "segments"],
         "additionalProperties": False,
     }
 
@@ -208,13 +258,13 @@ def mix_prompt(document: SourceDocument, segments: tuple[str, ...]) -> str:
             "Segments, exactly as reported. Use these names and no others:",
             *(f"- {name}" for name in segments),
             "",
-            "For each segment the discussion states revenue for, report its "
-            "share of total revenue. Omit any segment whose revenue you "
-            "cannot read.",
+            "Locate total revenue, and each segment's revenue, in the tables "
+            "below. Omit any segment whose revenue does not share a row or a "
+            "column with the total, in the same table.",
             "",
-            "--- DISCUSSION TEXT BEGINS ---",
-            document.performance_discussion,
-            "--- DISCUSSION TEXT ENDS ---",
+            "--- TABLES BEGIN ---",
+            *(table.stated() for table in document.performance_tables),
+            "--- TABLES END ---",
         )
     )
 
@@ -299,7 +349,7 @@ class CompanyKnowledgeExtractor:
         document: SourceDocument,
     ) -> CompanyKnowledge:
         """
-        How large each segment is, read from the discussion that states it.
+        How large each segment is, measured out of the tables that state it.
 
         A second reading, of a second section, because the two facts live
         apart: Item 1 describes the segments and reports no figures, and
@@ -308,13 +358,20 @@ class CompanyKnowledgeExtractor:
         and licences is directional; knowing which of them is most of the
         revenue is the fact a classification can rest on.
 
-        A filing whose discussion could not be found, or whose figures
-        could not be read, keeps its segments and leaves their sizes
-        absent. That is the honest outcome and the shares are never
-        apportioned from what is left over.
+        And it is a reading of the *tables*, not of the prose beside them.
+        A share is not something a filing says; it is arithmetic over two
+        figures a filing prints, and a span quoted from flattened prose
+        cannot show that a number belongs to the row it was found next to.
+        So the reading locates cells, this platform reads those cells back
+        out of the document, and it divides one by the other itself.
+
+        A filing whose tables could not be read, or in which no total was
+        found, keeps its segments and leaves their sizes absent. That is
+        the honest outcome and the shares are never apportioned from what
+        is left over.
         """
 
-        if not knowledge.segments or not document.performance_discussion:
+        if not knowledge.segments or not document.performance_tables:
             return knowledge
 
         request = DraftRequest(
@@ -334,16 +391,50 @@ class CompanyKnowledgeExtractor:
             # The segments stand; only their sizes are unread.
             return knowledge
 
-        discussion = _normalised(document.performance_discussion)
+        measured = self._measured(knowledge, document.performance_tables, payload)
 
-        shares: dict[str, float] = {}
+        if not measured:
+            return knowledge
 
-        for raw in payload.get("shares") or ():
+        return replace(
+            knowledge,
+            segments=tuple(
+                replace(segment, revenue=measured.get(segment.name.casefold()))
+                for segment in knowledge.segments
+            ),
+        )
+
+    def _measured(
+        self,
+        knowledge: CompanyKnowledge,
+        tables: tuple[SourceTable, ...],
+        payload: dict[str, Any],
+    ) -> dict[str, MeasuredShare]:
+        """
+        Each segment's size, checked against the cells it was read from.
+
+        Every one of them is measured against the *same* total cell. A
+        mix whose segments were each divided by a different denominator
+        would not be a mix of anything — the parts would not be parts of
+        one whole — and requiring one denominator makes the shares add up
+        to something a reader can interpret rather than a coincidence.
+        """
+
+        try:
+            total = self._total(tables, payload.get("total"))
+        except EvidenceNotApplicable as inapplicable:
+            raise ExtractionRejected(str(inapplicable)) from inapplicable
+
+        if total is None:
+            return {}
+
+        known = {segment.name.casefold() for segment in knowledge.segments}
+
+        measured: dict[str, MeasuredShare] = {}
+        cited: set[CellReference] = {total.cell}
+
+        for raw in payload.get("segments") or ():
             name = str(raw.get("segment") or "").strip()
-            quoted = str(raw.get("quoted") or "").strip()
-            share = raw.get("revenue_share")
-
-            known = {segment.name.casefold() for segment in knowledge.segments}
 
             if name.casefold() not in known:
                 raise ExtractionRejected(
@@ -351,41 +442,74 @@ class CompanyKnowledgeExtractor:
                     "filing's business description never reported."
                 )
 
-            if not quoted or _normalised(quoted) not in discussion:
-                raise ExtractionRejected(
-                    f"The revenue share for {name!r} quotes words that are "
-                    "not in the discussion, so the mix was discarded."
+            try:
+                figure = figure_at(
+                    tables,
+                    _reference(raw),
+                    _number(raw, "value"),
+                    f"The revenue of {name!r}",
                 )
 
-            if share is None or not 0.0 <= float(share) <= 1.0:
-                raise ExtractionRejected(
-                    f"The revenue share for {name!r} is {share}, which is not a share."
-                )
+                if figure.cell in cited:
+                    raise EvidenceNotApplicable(
+                        f"The revenue of {name!r} cites a cell already read as "
+                        "another figure, so one of the two is not what it "
+                        "was said to be."
+                    )
 
-            shares[name.casefold()] = float(share)
+                share = MeasuredShare(numerator=figure, denominator=total)
 
-        total = sum(shares.values())
+                # Against the coordinate that names the part, which is
+                # the row where the segments run down the page and the
+                # column header where they run across it.
+                if not _corresponds(name, share.part):
+                    raise EvidenceNotApplicable(
+                        f"The revenue of {name!r} cites a cell the filing "
+                        f"labels {share.part!r}, which is a different thing."
+                    )
 
-        if total > SHARE_TOLERANCE:
+                measured[name.casefold()] = share
+            except (EvidenceNotApplicable, TypeError, ValueError) as inapplicable:
+                raise ExtractionRejected(str(inapplicable)) from inapplicable
+
+            cited.add(figure.cell)
+
+        stated = sum(share.share for share in measured.values())
+
+        if stated > SHARE_TOLERANCE:
             raise ExtractionRejected(
-                f"The revenue shares sum to {total:.0%}, which cannot be a "
-                "share of one company's revenue. The mix was discarded "
-                "rather than rescaled."
+                f"The measured revenue shares sum to {stated:.0%} of "
+                f"{total.printed}, which cannot be a share of one company's "
+                "revenue. The mix was discarded rather than rescaled."
             )
 
-        return replace(
-            knowledge,
-            segments=tuple(
-                replace(
-                    segment,
-                    revenue_share=shares.get(
-                        segment.name.casefold(),
-                        segment.revenue_share,
-                    ),
-                )
-                for segment in knowledge.segments
-            ),
-        )
+        return measured
+
+    @staticmethod
+    def _total(
+        tables: tuple[SourceTable, ...],
+        raw: Any,
+    ) -> ReportedFigure | None:
+        """The cell every segment is measured against, or nothing at all."""
+
+        if not isinstance(raw, dict):
+            # No table reported a total this reading could locate. The
+            # segments keep their descriptions and lose their sizes,
+            # which is the honest outcome rather than a failure.
+            return None
+
+        try:
+            return figure_at(
+                tables,
+                _reference(raw),
+                _number(raw, "value"),
+                "The company's total revenue",
+            )
+        except (TypeError, ValueError) as unreadable:
+            raise EvidenceNotApplicable(
+                "The total revenue arrived without a number, so nothing "
+                "could be measured against it."
+            ) from unreadable
 
     def _validated(
         self,
@@ -401,24 +525,11 @@ class CompanyKnowledgeExtractor:
                 "The extractor described no business, so nothing was read."
             )
 
-        text = _normalised(document.business_description)
+        text = normalised(document.business_description)
 
         segments = tuple(
             self._segment(raw, text) for raw in payload.get("segments") or ()
         )
-
-        stated = sum(
-            segment.revenue_share
-            for segment in segments
-            if segment.revenue_share is not None
-        )
-
-        if stated > SHARE_TOLERANCE:
-            raise ExtractionRejected(
-                f"The extracted revenue shares sum to {stated:.0%}, which "
-                "cannot be a share of one company's revenue. The reading "
-                "was discarded rather than rescaled."
-            )
 
         source = document.source
 
@@ -449,18 +560,16 @@ class CompanyKnowledgeExtractor:
 
         # The grounding contract, enforced against the document rather
         # than trusted. This is what makes the model an extractor.
-        if _normalised(quoted) not in text:
+        #
+        # It proves the filing describes this segment, and it proves
+        # nothing about how large the segment is — which is why no size
+        # is asked for here. A span establishes that content exists; a
+        # quantity needs its row and its column, and this reading has
+        # neither.
+        if normalised(quoted) not in text:
             raise ExtractionRejected(
                 f"The segment {name!r} quotes words that are not in the "
                 "filing, so the whole reading was discarded."
-            )
-
-        share = raw.get("revenue_share")
-
-        if share is not None and not 0.0 <= float(share) <= 1.0:
-            raise ExtractionRejected(
-                f"The segment {name!r} reports a revenue share of {share}, "
-                "which is not a share."
             )
 
         models = tuple(
@@ -471,7 +580,51 @@ class CompanyKnowledgeExtractor:
 
         return BusinessSegment(
             name=name,
-            revenue_share=float(share) if share is not None else None,
+            revenue=None,
             revenue_models=models,
             quoted=quoted,
         )
+
+
+def _reference(raw: dict[str, Any]) -> CellReference:
+    """The address a reading gave, as an address."""
+
+    return CellReference(
+        table=int(_number(raw, "table")),
+        row=int(_number(raw, "row")),
+        column=int(_number(raw, "column")),
+    )
+
+
+def _number(raw: dict[str, Any], named: str) -> float:
+    """One number out of a citation, or a refusal to guess at it."""
+
+    value = raw.get(named)
+
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(
+            f"A citation arrived without a {named}, so it points at nothing."
+        )
+
+    return float(value)
+
+
+def _corresponds(name: str, label: str) -> bool:
+    """
+    Whether a filing's own label and a segment name are the same thing.
+
+    The last applicability check, and the one the live failure needed: a
+    cell whose figure is real, in the right table and on the right axis,
+    and about a different part of the company. The two readings are of
+    two sections, so the wording is rarely identical — "Experiences" is
+    labelled "Experiences" in one and "Experiences segment" in the other
+    — and containment either way is what tolerates that without
+    tolerating a different part.
+    """
+
+    segment, printed = normalised(name), normalised(label)
+
+    if not segment or not printed:
+        return False
+
+    return segment in printed or printed in segment

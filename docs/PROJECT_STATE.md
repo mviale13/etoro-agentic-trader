@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 848 passing (2026-08-06) |
+| Pytest | 🟢 945 passing (2026-08-06) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -98,12 +98,77 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A quantity carries the relationship it was read from** (August 2026).
+  The third validation boundary, and the same lesson as identity one level
+  down. Grounding proves cited words exist in a document. It cannot prove
+  those words *support the number attached to them* — and reading
+  Volkswagen's segment table, the extraction cited a **column header** for
+  two of three segments. The shares were right. The citations
+  demonstrated nothing at all.
+
+  The distinction is worth keeping in these words: **evidence existence**
+  was handled, **evidence applicability** was not.
+
+  Prompting cannot close it, and the wording had already been tried: the
+  extraction was told not to read across a table cell, in a document whose
+  cell boundaries had been stripped out before it ever saw them. A rule
+  nothing can check is a wish. So the evidence changed shape.
+
+  **The document keeps its tables.** `SourceDocument` carries
+  `performance_tables` beside the prose, parsed from the same markup by
+  `app/providers/document_text.py`. The prose reduction is byte-for-byte
+  the one the platform always used — the sections are located by searching
+  it, and a different reduction would silently locate different sections.
+
+  **A citation is an address, not a span.** The reading names a table, a
+  row and a column, and states what it believes is printed there. This
+  platform reads that cell itself and compares. A header prints no number,
+  so citing one is refused structurally — before anyone has to notice that
+  the number beside it happened to be right.
+
+  **A share is arithmetic this platform performs.** A revenue share is not
+  a fact a filing states; it is one printed figure over another. Both are
+  cited, both are checked, and `MeasuredShare` divides. `BusinessSegment`
+  has no field for a bare share — a size exists only as the two figures it
+  came from, which makes an unevidenced share unrepresentable rather than
+  discouraged.
+
+  **Assuming one table layout was a bug, caught by running it.** The first
+  design required both figures to share a *column* — right for Disney's
+  10-K, where segments run down the page, and wrong for Volkswagen's IFRS
+  segment note, where they run across the top and the shared coordinate is
+  the row. It would have left every European filing permanently
+  unmeasurable, and the failure would have looked like honest absence. The
+  rule is now: one table, agreeing on exactly one coordinate. The shared
+  coordinate makes the two comparable; the other names the part and the
+  whole.
+
+  Two further alignment defects only a live document exposes. Filings pad
+  tables with wide empty cells, so `colspan` has to be honoured or the
+  same column sits at a different index on every row; and a filer typesets
+  `$ 42,466` as two cells and `17,672` as one on alternating rows of one
+  table, so a lone currency symbol is read as the front of the figure
+  beside it rather than as a value.
+
+  Verified live on both: Disney 45/19/38% under `"2025"`, Volkswagen
+  76/13/19% on `"Umsatzerlöse"` — each naming the exact cells. Both sum
+  above 100%, and correctly: consolidated revenue is the segments less
+  what they sold each other, 102% for Disney and 108.5% for Volkswagen.
+  How far above depends on intersegment trade, which no constant predicts,
+  so the sum ceiling is now a backstop rather than the guard. What catches
+  a misread figure is the cell it was read from.
+
+  Knowledge schema version 4. Nothing stores the share itself — storing an
+  answer beside its inputs creates a second place for it to be true.
+
 - **A company with no register is read from its own report** (August
   2026). The first primary source no regulator received, and therefore
   the first where the platform could delegate nothing. `VOW3.DE` — a
   security this platform recommends and could describe nothing about —
-  now reads as Pkw und leichte Nutzfahrzeuge 68%, Nutzfahrzeuge 13%,
-  Finanzdienstleistungen 18%.
+  now reads as Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge and
+  Finanzdienstleistungen. It read their sizes as 68%, 13% and 18% —
+  figures since re-measured, because nothing stored with them said what
+  total they were shares *of*. See the applicability slice below.
 
   The trust model came before the code, and it is three separate
   questions rather than one: what document is this, who published it, and
@@ -997,33 +1062,24 @@ company is legally answerable for.
 
 **Next**
 
-Ordered by what a wrong answer costs. An unsupported-looking number is a
-trust problem; untranslated German is a usability problem, so the first
-outranks the second even though the second is more visible.
+Ordered by what a wrong answer costs. The trust problem at the head of
+this list — a citation that supported nothing — is closed; what remains
+below it starts with a usability problem, which is the right order to
+have arrived at rather than the right order to start from.
 
-1. **Quantitative evidence grounding.** The contract proves a quoted span
-   is in the document. It does not prove the span *supports the value
-   attached to it*, and a column header can be verbatim and evidence
-   nothing. A citation for a numeric fact must carry, or resolve
-   structurally to, the segment label, the value, the unit or denominator
-   where one applies, and enough table context to establish the
-   relationship between them. Prose-span grounding may not be able to
-   express that: this likely needs table-aware evidence, which is a
-   different evidence model and is to be designed explicitly rather than
-   approximated. **Not to be patched with prompt wording.**
-2. **Multilingual presentation, with the original preserved.** The stored
+1. **Multilingual presentation, with the original preserved.** The stored
    grounded span stays in the language it was published in — replacing it
    with a translation severs the evidence chain, which is the one thing
    the store exists to keep intact. Presentation gains a second, clearly
    labelled layer: a translation is a derived communication artifact and
    never the canonical span
-3. **Manual document ingestion.** A document handed to the platform
+2. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-4. **Investment Archetype rules.** Deterministic rules over the facts now
+3. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-5. **Dossier transparency for company knowledge, coverage and playbook
+4. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could
@@ -1049,12 +1105,17 @@ outranks the second even though the second is more visible.
   die Segmente…", because the platform reads the filing rather than a
   translation of it. That is the correct reading and the surfaces are not
   yet ready to present it
-- The grounding contract proves a quoted span is in the document; it does
-  not prove the span evidences the number beside it. On Volkswagen's
-  segment table the extraction quoted a column header for two of three
-  segments — shares correct, citations not demonstrative. A quote that
-  must contain the figure it supports is a narrowing of the contract, and
-  its own slice
+- A segment's size is measured only where the filing prints it in a table
+  this platform can read as a grid. A report whose discussion is prose, or
+  whose tables have no total, keeps its segments and leaves their sizes
+  absent. That is the honest outcome and the alternative is a plausible
+  number, but it is a real coverage limit rather than a solved problem
+- In the layout where segments are columns, the shared row proves the two
+  figures measure the same line item and does not prove they cover the
+  same period — a table whose columns are segments states its period in
+  its caption, not in its headers. Both figures' headers are recorded so a
+  reader can see what each one is; the platform does not claim the period
+  was established when it was not
 
 ## Policy — `data/knowledge/` is tracked, and is not a cache
 

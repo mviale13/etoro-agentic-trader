@@ -142,6 +142,7 @@ class EsefProvider:
             ),
             business_description=report.business_text,
             performance_discussion=report.discussion_text,
+            performance_tables=report.discussion_tables,
         )
 
     @staticmethod
