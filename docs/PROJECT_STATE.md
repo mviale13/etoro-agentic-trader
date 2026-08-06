@@ -997,13 +997,33 @@ company is legally answerable for.
 
 **Next**
 
-1. **Manual document ingestion.** A document handed to the platform
+Ordered by what a wrong answer costs. An unsupported-looking number is a
+trust problem; untranslated German is a usability problem, so the first
+outranks the second even though the second is more visible.
+
+1. **Quantitative evidence grounding.** The contract proves a quoted span
+   is in the document. It does not prove the span *supports the value
+   attached to it*, and a column header can be verbatim and evidence
+   nothing. A citation for a numeric fact must carry, or resolve
+   structurally to, the segment label, the value, the unit or denominator
+   where one applies, and enough table context to establish the
+   relationship between them. Prose-span grounding may not be able to
+   express that: this likely needs table-aware evidence, which is a
+   different evidence model and is to be designed explicitly rather than
+   approximated. **Not to be patched with prompt wording.**
+2. **Multilingual presentation, with the original preserved.** The stored
+   grounded span stays in the language it was published in — replacing it
+   with a translation severs the evidence chain, which is the one thing
+   the store exists to keep intact. Presentation gains a second, clearly
+   labelled layer: a translation is a derived communication artifact and
+   never the canonical span
+3. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-2. **Investment Archetype rules.** Deterministic rules over the facts now
+4. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-3. **Dossier transparency for company knowledge, coverage and playbook
+5. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could

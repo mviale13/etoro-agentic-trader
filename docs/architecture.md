@@ -1313,6 +1313,16 @@ job asked of them, and `VOW3.DE` reads as Pkw und leichte Nutzfahrzeuge
 68%, Nutzfahrzeuge 13%, Finanzdienstleistungen 18% — a company that
 resolved to a stated gap the day before.
 
+**The reviewed hash turned out to separate two claims that look like one.**
+It is not a cache key and not merely a change detector. It proves that the
+bytes being read are the bytes a person approved — and *authenticity and
+approval are different claims*. When Volkswagen publishes its 2026 report
+at the same address, those bytes will be entirely genuine, correctly
+signed by their own LEI, and still refused, because nobody has reviewed
+them. A provider that treated "authentic" as "approved" would have no way
+to express the difference, and would follow a moving document forever
+without ever being wrong in a way it could detect.
+
 **Requiring a document-declared LEI cost more coverage than expected, and
 was still right.** Volkswagen's ESEF package holds three documents. Only
 one is tagged. The other two are XHTML the regulation requires and the
