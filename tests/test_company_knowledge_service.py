@@ -299,6 +299,33 @@ def test_knowledge_survives_the_round_trip_to_disk(tmp_path: Path) -> None:
     assert restored.source.verification == (IdentityCheck.REGISTER_INDEXED,)
 
 
+def test_an_entry_holding_a_bare_share_is_read_again(tmp_path: Path) -> None:
+    """
+    A share stored without the figures it was measured from is not upgraded.
+
+    Entries written when a segment's size was a single number carry no
+    cell addresses, no row labels and no total — there is nothing to
+    check them against, which is precisely what the reading version
+    changed. Back-filling would mean inventing the evidence that was
+    never captured, so the entry is absent and the document, which is
+    immutable and still there, is read again.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.write(knowledge())
+
+    stored = next(tmp_path.glob("*.json"))
+    older = json.loads(stored.read_text())
+
+    older["schema_version"] = 3
+    older["segments"][0].pop("revenue")
+    older["segments"][0]["revenue_share"] = 0.383
+
+    stored.write_text(json.dumps(older))
+
+    assert store.read("DIS", ACCESSION) is None
+
+
 def test_an_entry_written_before_the_audit_trail_is_read_again(
     tmp_path: Path,
 ) -> None:

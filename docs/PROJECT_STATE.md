@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 945 passing (2026-08-06) |
+| Pytest | 🟢 954 passing (2026-08-06) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -67,6 +67,10 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - `movrvest brain` — what the Brain currently knows
 - `movrvest record` — what each decision's security did next, or why it
   cannot be measured yet
+- `movrvest knowledge SYMBOL` — what was read from a company's own annual
+  report, with the table, row and column behind every measured size so the
+  evidence can be checked against the filing by hand. Developer-level
+  inspection, deliberately: it presents the evidence and decides nothing
 - `movrvest writer-compare SYMBOL` — the identical investment case worded
   by every configured writing provider, with measured latency, reported
   token usage and cost at stated prices beside each narrative
@@ -97,6 +101,55 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **The reader is wired into the pipeline** (August 2026). The evidence
+  model was sound and nothing used it: `CompanyKnowledgeService` defaulted
+  to no reader, so the pipeline had never read a filing on its own. It
+  now composes one from configuration.
+
+  **The reader is configured apart from the writer, and that is not
+  tidiness.** The writer's default is a small model at low reasoning
+  effort, chosen because wording a finished case is formatting. Reading
+  means finding one cell among forty tables in a document that may be in
+  German. A reader inheriting the writer's default would have been
+  quietly downgraded by a decision taken about something else, so it
+  names its own provider, model and timeout (`MOVRVEST_READER_*`). No
+  feature flag: reading is how this platform knows anything structural,
+  and an unconfigured reader already has an honest answer — the reason is
+  worded and travels to the surface as `absent_because`.
+
+  **Two live-money hazards were caught, both of them passing tests.** A
+  test that asserts "no credentials, so it did not run" does not go red
+  when its silencing misses a source — it builds a real client, calls a
+  real model and passes. Moving credential reading into a shared
+  `narrative_providers` broke two writer tests' patch target that way;
+  then the reader becoming a default turned a signal test that had never
+  touched the network into one that read a 10-K, taking the suite from
+  2.2s to 72s. `tests/conftest.py` now names every module that can reach
+  a credential and every variable that can turn a seam on. Adding one
+  means adding it there; the cost of forgetting is invisible.
+
+  A third, smaller: narrowing on `isinstance(..., CompanyKnowledgeExtractor)`
+  rejected every test double that answers the same way, which is the
+  point of the seam. A supplied reader is taken at its word.
+
+  Verified cold and warm, both providers:
+
+  | | cold | warm |
+  |---|---|---|
+  | `DIS` via EDGAR | 22s, read and stored | 1.4s, `available_cached` |
+  | `VOW3.DE` via Investor Relations | 43s, read and stored | 1.9s, `available_cached` |
+
+  The tracked `DIS` entry was schema version 2, holding a bare
+  `revenue_share: 0.449732` and no evidence for it. It was **re-read, not
+  back-filled** — there was nothing to check that number against, which is
+  exactly what the reading version changed. Both entries are now version 4
+  and carry the cell addresses behind every size.
+
+  `movrvest knowledge SYMBOL` shows that evidence. Developer-level and
+  deliberately so: it presents and decides nothing, and the investor-facing
+  question of what these facts add up to belongs to a rule and a page that
+  do not exist yet.
 
 - **A quantity carries the relationship it was read from** (August 2026).
   The third validation boundary, and the same lesson as identity one level
@@ -1110,6 +1163,15 @@ have arrived at rather than the right order to start from.
   whose tables have no total, keeps its segments and leaves their sizes
   absent. That is the honest outcome and the alternative is a plausible
   number, but it is a real coverage limit rather than a solved problem
+- **The same distinction is open one level over, in the prose half.** On
+  Volkswagen's report all three segments were cited with the identical
+  span — "Die Vorjahreswerte entsprechen der geänderten Berichtsstruktur."
+  The words are genuinely in the document, so grounding passes, and they
+  describe none of the three segments. Sizes are now measured; a segment's
+  *description* is still evidenced only by existence. It is visible rather
+  than misleading — the span is printed beside the segment and a reader
+  can see it says nothing — and it is the natural next applicability
+  question rather than part of the one just closed
 - In the layout where segments are columns, the shared row proves the two
   figures measure the same line item and does not prove they cover the
   same period — a table whose columns are segments states its period in

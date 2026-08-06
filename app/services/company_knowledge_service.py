@@ -19,6 +19,7 @@ from app.services.company_knowledge_extractor import (
     CompanyKnowledgeExtractor,
     ExtractionRejected,
 )
+from app.services.company_knowledge_reader import resolve_reader
 
 
 class KnowledgeState(StrEnum):
@@ -112,7 +113,27 @@ class CompanyKnowledgeService:
     ) -> None:
         self._store = store or JsonCompanyKnowledgeStore()
         self._sources = sources or PrimarySourceResolver()
+
+        # The reader is composed from configuration rather than passed
+        # in, so the pipeline reads filings by default. A caller that
+        # supplies one is taken at its word and nothing is resolved:
+        # inspecting what it handed over — asking whether it is really a
+        # `CompanyKnowledgeExtractor` — would reject every stand-in that
+        # answers the same way, which is the whole point of the seam.
+        #
+        # `resolve_reader` returns the worded reason when it cannot be
+        # built, and that sentence is carried to the surface exactly as
+        # an outage or a gap in coverage is.
         self._extractor = extractor
+        self._unreadable: str | None = None
+
+        if extractor is None:
+            resolved = resolve_reader()
+
+            if isinstance(resolved, str):
+                self._unreadable = resolved
+            else:
+                self._extractor = resolved
 
     async def knowledge(self, symbol: str) -> KnowledgeOutcome:
         """What is known about this company, reading a filing only if new."""
@@ -146,8 +167,12 @@ class CompanyKnowledgeService:
                 state=KnowledgeState.UNAVAILABLE,
                 knowledge=self._store.latest(symbol),
                 absent_because=(
-                    f"{source.stated()} has not been read, and no reader is "
-                    "configured to read it."
+                    f"{source.stated()} has not been read. {self._unreadable}"
+                    if self._unreadable
+                    else (
+                        f"{source.stated()} has not been read, and no reader "
+                        "is configured to read it."
+                    )
                 ),
             )
 

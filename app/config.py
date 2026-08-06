@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     movrvest_writer_provider: str = ""
     movrvest_writer_model: str = ""
 
+    # The model that reads a filing, configured apart from the one that
+    # words a case. Reading is evidence and wording is formatting, so a
+    # decision taken about one must not quietly change the other.
+    movrvest_reader_provider: str = ""
+    movrvest_reader_model: str = ""
+
     allowed_symbols: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["BTC", "ETH", "SOL", "SPY", "QQQ"]
     )

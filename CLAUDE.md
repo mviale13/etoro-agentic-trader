@@ -33,14 +33,22 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~945 tests, fast
+python -m pytest -q            # ~954 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
 cd apps/web/movrvest-web && npm run build     # frontend gate
 ```
 
-CLI: `movrvest evaluate SYMBOL`, `movrvest brain`, `movrvest today`.
+CLI: `movrvest evaluate SYMBOL`, `movrvest brain`, `movrvest today`,
+`movrvest knowledge SYMBOL` (what was read from a filing, and from which cell).
+
+Two model seams, configured apart because they are different jobs: the
+Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)
+and the knowledge reader (`MOVRVEST_READER_*`, no flag — reading is how
+the platform knows anything structural, and an unconfigured reader is
+already an honest worded absence). Tests silence both; see
+`tests/conftest.py`, and add any new settings-reading module to it.
 API: `python -m uvicorn app.api.main:app --port 8000 --reload`.
 
 ---

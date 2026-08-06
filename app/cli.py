@@ -14,6 +14,7 @@ from app.commands import (
     evaluate,
     explain,
     intelligence,
+    knowledge,
     market,
     morning,
     policy,
@@ -136,6 +137,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, ASML or BTC-USD",
     )
 
+    knowledge_parser = subparsers.add_parser(
+        "knowledge",
+        help="Show what was read from a company's own report, and from where",
+        description=(
+            "Show the structural facts read from a company's annual report, "
+            "with the table cell behind every measured size so it can be "
+            "checked against the filing by hand"
+        ),
+    )
+    knowledge_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, ASML or VOW3.DE",
+    )
+
     writer_compare_parser = subparsers.add_parser(
         "writer-compare",
         help="Word one dossier with every writing provider and compare",
@@ -161,6 +176,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "evaluate":
         return await evaluate.run(args.symbol)
+
+    if args.command == "knowledge":
+        return await knowledge.run(args.symbol)
 
     if args.command == "writer-compare":
         return await writer_compare.run(args.symbol)

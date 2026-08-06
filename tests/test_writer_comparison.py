@@ -143,11 +143,17 @@ async def test_a_rejected_draft_is_reported_beside_the_accepted_one() -> None:
 async def test_a_provider_that_cannot_be_built_is_a_worded_run(monkeypatch) -> None:
     from app.config import Settings
 
-    # Silence both credential sources: the environment and `.env`.
-    monkeypatch.setattr(
-        "app.services.executive_writer_service.get_settings",
-        lambda: Settings(_env_file=None),
-    )
+    # Silence every credential source: the environment, `.env`, and both
+    # modules that read them. A patch that misses one does not fail this
+    # test — it builds a real client and calls a real model.
+    for module in (
+        "app.services.executive_writer_service",
+        "app.services.narrative_providers",
+    ):
+        monkeypatch.setattr(
+            f"{module}.get_settings",
+            lambda: Settings(_env_file=None),
+        )
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("MOVRVEST_WRITER_PROVIDER", raising=False)
 

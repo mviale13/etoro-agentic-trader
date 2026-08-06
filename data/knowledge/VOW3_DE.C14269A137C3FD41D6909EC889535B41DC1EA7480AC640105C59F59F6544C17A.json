@@ -1,0 +1,136 @@
+{
+  "description": "Volkswagen AG reports operating segments for passenger cars and light commercial vehicles, commercial vehicles, and financial services.",
+  "reading": {
+    "observed_at": "2026-08-06T11:42:54.801317+00:00",
+    "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
+  },
+  "schema_version": 4,
+  "segments": [
+    {
+      "name": "Pkw und leichte Nutzfahrzeuge",
+      "quoted": "Die Vorjahreswerte entsprechen der ge\u00e4nderten Berichtsstruktur.",
+      "revenue": {
+        "denominator": {
+          "caption": "BERICHTSSEGMENTe 2025",
+          "cell": {
+            "column": 7,
+            "row": 3,
+            "table": 0
+          },
+          "column_header": "Volkswagen Konzern",
+          "label": "Umsatzerl\u00f6se",
+          "printed": "321.913",
+          "value": 321913.0
+        },
+        "numerator": {
+          "caption": "BERICHTSSEGMENTe 2025",
+          "cell": {
+            "column": 1,
+            "row": 3,
+            "table": 0
+          },
+          "column_header": "Pkw und leichte Nutzfahrzeuge",
+          "label": "Umsatzerl\u00f6se",
+          "printed": "244.484",
+          "value": 244484.0
+        }
+      },
+      "revenue_models": [
+        "manufacturing",
+        "retail"
+      ]
+    },
+    {
+      "name": "Nutzfahrzeuge",
+      "quoted": "Die Vorjahreswerte entsprechen der ge\u00e4nderten Berichtsstruktur.",
+      "revenue": {
+        "denominator": {
+          "caption": "BERICHTSSEGMENTe 2025",
+          "cell": {
+            "column": 7,
+            "row": 3,
+            "table": 0
+          },
+          "column_header": "Volkswagen Konzern",
+          "label": "Umsatzerl\u00f6se",
+          "printed": "321.913",
+          "value": 321913.0
+        },
+        "numerator": {
+          "caption": "BERICHTSSEGMENTe 2025",
+          "cell": {
+            "column": 2,
+            "row": 3,
+            "table": 0
+          },
+          "column_header": "Nutzfahrzeuge",
+          "label": "Umsatzerl\u00f6se",
+          "printed": "42.540",
+          "value": 42540.0
+        }
+      },
+      "revenue_models": [
+        "manufacturing",
+        "retail"
+      ]
+    },
+    {
+      "name": "Finanzdienstleistungen",
+      "quoted": "Die Vorjahreswerte entsprechen der ge\u00e4nderten Berichtsstruktur.",
+      "revenue": {
+        "denominator": {
+          "caption": "BERICHTSSEGMENTe 2025",
+          "cell": {
+            "column": 7,
+            "row": 3,
+            "table": 0
+          },
+          "column_header": "Volkswagen Konzern",
+          "label": "Umsatzerl\u00f6se",
+          "printed": "321.913",
+          "value": 321913.0
+        },
+        "numerator": {
+          "caption": "BERICHTSSEGMENTe 2025",
+          "cell": {
+            "column": 3,
+            "row": 3,
+            "table": 0
+          },
+          "column_header": "Finanzdienst- leistungen",
+          "label": "Umsatzerl\u00f6se",
+          "printed": "62.136",
+          "value": 62136.0
+        }
+      },
+      "revenue_models": [
+        "financial_spread",
+        "services"
+      ]
+    }
+  ],
+  "source": {
+    "authority": "issuer_published",
+    "company": "Volkswagen AG",
+    "document_format": "xhtml",
+    "identifier": "VWAG_JFB_Konzern-2025-12-31-DE.zip",
+    "key": "c14269a137c3fd41d6909ec889535b41dc1ea7480ac640105c59f59f6544c17a",
+    "language": "de",
+    "location": "https://uploads.vw-mms.de/system/production/files/cws/041/941/file/00d8d2096bb900de99e1115b0bb6a000f60579c0/VWAG_JFB_Konzern-2025-12-31-DE.zip",
+    "provider": "Official Investor Relations",
+    "published_on": "2026-03-10",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "VOW3.DE",
+    "verification": [
+      "security_registry",
+      "approved_source",
+      "content_hashed",
+      "document_lei"
+    ]
+  },
+  "symbol": "VOW3.DE"
+}

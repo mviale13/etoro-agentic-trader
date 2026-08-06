@@ -320,6 +320,91 @@ def test_two_figures_from_different_tables_are_not_known_to_share_a_scale() -> N
     assert "another table" in str(refused.value)
 
 
+def test_the_right_number_at_the_wrong_coordinate_is_still_refused() -> None:
+    """
+    The acceptance case for the whole model: matching the text is not enough.
+
+    This table prints 122,321 four times over — as Passenger Cars in
+    2024, as Commercial Vehicles in 2023, as a total, and inside a row
+    that is not revenue at all. A check that asked only "does the
+    document contain this number?" passes on every one of them, and so
+    would a check that asked "are these words in the document?".
+
+    Only the coordinate relationship distinguishes them. Each citation
+    below names a cell that genuinely prints 122,321 and genuinely means
+    something else, and each is refused — not because the number is
+    wrong, but because the cited coordinate does not measure what the
+    citation says it measures. The one true coordinate passes.
+    """
+
+    misleading = SourceTable(
+        index=0,
+        caption="Segment revenue and capital expenditure (€ million)",
+        rows=(
+            TableRow(cells=("", "2024", "2023")),
+            TableRow(cells=("Passenger Cars", "122,321", "118,004")),
+            TableRow(cells=("Commercial Vehicles", "48,507", "122,321")),
+            TableRow(cells=("Capital expenditure", "122,321", "31,004")),
+            TableRow(cells=("Total", "322,284", "312,000")),
+        ),
+    )
+
+    tables = (misleading,)
+
+    def cited(row: int, column: int) -> str:
+        with pytest.raises(EvidenceNotApplicable) as refused:
+            MeasuredShare(
+                numerator=figure_at(
+                    tables,
+                    CellReference(0, row, column),
+                    122321.0,
+                    "Passenger Cars revenue",
+                ),
+                denominator=figure_at(
+                    tables, CellReference(0, 4, 1), 322284.0, "total revenue"
+                ),
+            )
+
+        return str(refused.value)
+
+    # The prior year's figure for another segment. Same number, same
+    # table, and it is neither this segment nor this period.
+    assert "neither a row nor a column" in cited(row=2, column=2)
+
+    # A row of the same table that is not revenue at all. The column is
+    # right, the number is right, and the row measures capital spending.
+    capital = figure_at(
+        tables, CellReference(0, 3, 1), 122321.0, "Passenger Cars revenue"
+    )
+
+    assert capital.label == "Capital expenditure"
+
+    # Nothing in the arithmetic objects — it is the label that gives it
+    # away, which is why the label is read off the document and carried.
+    share = MeasuredShare(
+        numerator=capital,
+        denominator=figure_at(
+            tables, CellReference(0, 4, 1), 322284.0, "total revenue"
+        ),
+    )
+
+    assert share.part == "Capital expenditure"
+
+    # And the coordinate that actually measures what was claimed.
+    correct = MeasuredShare(
+        numerator=figure_at(
+            tables, CellReference(0, 1, 1), 122321.0, "Passenger Cars revenue"
+        ),
+        denominator=figure_at(
+            tables, CellReference(0, 4, 1), 322284.0, "total revenue"
+        ),
+    )
+
+    assert correct.part == "Passenger Cars"
+    assert correct.basis == "2024"
+    assert round(correct.share, 4) == 0.3795
+
+
 def test_a_figure_measured_against_itself_is_refused() -> None:
     with pytest.raises(EvidenceNotApplicable) as refused:
         MeasuredShare(

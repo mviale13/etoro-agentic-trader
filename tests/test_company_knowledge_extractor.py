@@ -415,6 +415,51 @@ def test_a_figure_read_off_another_row_is_refused() -> None:
     assert "a different thing" in str(rejected.value)
 
 
+def test_the_right_number_read_off_the_wrong_row_is_refused() -> None:
+    """
+    The acceptance case, end to end: matching the number is not enough.
+
+    Here the cited cell prints exactly what a correct citation would
+    print — the same 42,466 that sits on the Entertainment row — and it
+    sits on a row measuring something else entirely. Every check that
+    asks only about the number passes. Only reading the row's own label
+    off the document and comparing it with the segment refuses it.
+    """
+
+    decoy = SourceTable(
+        index=0,
+        caption="Segment revenues and content spend ($ in millions)",
+        rows=(
+            TableRow(cells=("($ in millions)", "2025")),
+            TableRow(cells=("Entertainment", "42,466")),
+            TableRow(cells=("Content spend", "42,466")),
+            TableRow(cells=("Revenues", "94,425")),
+        ),
+    )
+
+    provider = ReadingsStub(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [segment()],
+        },
+        {
+            "total": cell(row=3, value=94425),
+            "segments": [{"segment": "Entertainment", **cell(row=2, value=42466)}],
+        },
+    )
+
+    document = SourceDocument(
+        source=filing().source,
+        business_description=FILING_TEXT,
+        performance_tables=(decoy,),
+    )
+
+    with pytest.raises(ExtractionRejected) as rejected:
+        asyncio.run(CompanyKnowledgeExtractor(provider).extract("DIS", document))
+
+    assert "'Content spend', which is a different thing" in str(rejected.value)
+
+
 def test_a_filing_with_no_total_leaves_the_sizes_absent() -> None:
     """
     Nothing to measure against is not a failure, and not an excuse either.
