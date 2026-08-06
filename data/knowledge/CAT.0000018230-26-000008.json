@@ -1,15 +1,16 @@
 {
-  "description": "Caterpillar Inc. is the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives, and also provides financing and insurance services.",
+  "description": "Caterpillar Inc. manufactures construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives, and provides financing services through Cat Financial.",
   "reading": {
-    "observed_at": "2026-08-06T14:21:25.324626+00:00",
+    "observed_at": "2026-08-06T21:55:58.281936+00:00",
     "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 6,
+  "schema_version": 7,
   "segments": [
     {
       "description": {
-        "distance": 54,
-        "quoted": "supporting customers using machinery in infrastructure and building construction",
+        "distance": 56,
+        "ownership": "structure",
+        "quoted": "primarily responsible for supporting customers using machinery in infrastructure and building construction applications.",
         "revenue_models": [
           "manufacturing",
           "services"
@@ -22,8 +23,9 @@
     },
     {
       "description": {
-        "distance": 50,
-        "quoted": "supporting customers using machinery in mining, heavy construction",
+        "distance": 48,
+        "ownership": "structure",
+        "quoted": "primarily responsible for supporting customers using machinery in mining, heavy construction and quarry and aggregates.",
         "revenue_models": [
           "manufacturing",
           "services"
@@ -36,8 +38,9 @@
     },
     {
       "description": {
-        "distance": 18,
-        "quoted": "supports customers in oil and gas, power generation, marine",
+        "distance": 32,
+        "ownership": "structure",
+        "quoted": "supports customers in oil and gas, power generation, marine, rail and industrial applications",
         "revenue_models": [
           "manufacturing",
           "services"
@@ -50,8 +53,9 @@
     },
     {
       "description": {
-        "distance": 182,
-        "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
+        "distance": 222,
+        "ownership": "structure",
+        "quoted": "provides retail and wholesale financing alternatives to customers and dealers around the world",
         "revenue_models": [
           "financial_spread",
           "premiums"

@@ -1301,22 +1301,49 @@ rest are refused for want of an input, and every one of those refusals
 is a reading that could have gone better rather than a document that
 says nothing:
 
-| | Size measured | Way of earning evidenced |
-|---|---|---|
-| DIS, NVDA | ✅ | ✅ |
-| META, VOW3.DE | ✅ | ✗ |
-| CAT, NFLX | ✗ | ✅ |
-| JPM | ✗ | ✗ |
-| COST | extraction refused outright | |
+**Re-measured 2026-08-06 under schema 7**, every filing read again
+through the full pipeline. Structural ownership changed how six
+descriptions are *owned* and changed the coverage table not at all:
 
-**This table predates structural ownership and has not been re-measured.**
-Meta's row is the one expected to move: its two segments now have owning
-regions, and spans taken from inside them are accepted where every
-mechanism refused them before. That has been verified against the live
-10-K at the evidence boundary, *not* end to end — re-reading a filing
-costs a model call, and no reading has been run since. Re-measure the
-table before drawing anything from it, and treat the classification
-counts as the state of the corpus on disk rather than of the platform.
+| | Size measured | Way of earning evidenced | Classifies |
+|---|---|---|---|
+| DIS, NVDA | ✅ | ✅ | ✅ |
+| META, VOW3.DE | ✅ | ✗ | ✗ |
+| CAT, NFLX | ✗ | ✅ | ✗ |
+| JPM | ✗ | ✗ | ✗ |
+| COST | extraction refused outright | | ✗ |
+
+Two of seven classify, the same two as before. **Coverage did not
+materially improve, so the next work is evidence acquisition rather than
+richer taxonomy.**
+
+**Meta is the finding.** Its segments now have owning regions and the
+regions contain exactly the prose a reader would want — `Family of Apps
+Products` opens with *"Facebook helps give people the power to build
+community…"*. The reading does not quote it. Asked what the segment
+does, the reader reaches for the sentences that contain the segment's
+*stored name*, and on this filing those live under `Revenue and
+Investments`: *"selling advertising placements on our family of apps to
+marketers, which is reflected in FoA"*. Genuinely about FoA, genuinely
+naming it, and outside the section that owns it — so it is refused, and
+the bounded repair returned the same sentence and was refused again.
+
+That is not a regression: proximity refused the same span before, for a
+different reason. It relocates the defect. The ownership model is no
+longer the thing standing in the way — **the reader is not being told
+where the owning section is.** The document's structure is now computed
+before the reading and never reaches the reading, which is the gap to
+close next, and it is acquisition rather than taxonomy.
+
+Two instabilities the re-read exposed, neither caused by this slice:
+
+- **Segment identity is not stable across readings.** JPMorgan came back
+  as `Consumer & Community Banking (CCB)` where the previous reading
+  said `Consumer & Community Banking`. Both are in the filing. A stored
+  entry keyed by the reader's choice of name is a fact that moves.
+- **Ways of earning drift additively.** NVDA's `Graphics` gained
+  `services`, which the previous reading did not report from the same
+  document.
 
 1. **Segment sizes where a table was not found.** Caterpillar and
    JPMorgan describe their segments and neither had a size proven. Both

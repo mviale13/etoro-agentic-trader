@@ -1,14 +1,15 @@
 {
   "description": "Netflix, Inc. is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
   "reading": {
-    "observed_at": "2026-08-06T14:21:00.556732+00:00",
+    "observed_at": "2026-08-06T21:54:17.145275+00:00",
     "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 6,
+  "schema_version": 7,
   "segments": [
     {
       "description": {
         "distance": 0,
+        "ownership": "proximity",
         "quoted": "We operate as one operating segment.",
         "revenue_models": [
           "subscription",
