@@ -5,8 +5,10 @@ from datetime import date
 import pytest
 
 from app.domain.primary_source import (
+    IdentityCheck,
     PrimarySource,
     PrimarySourceUnavailable,
+    SourceAuthority,
     SourceDocument,
     SourceType,
 )
@@ -37,6 +39,8 @@ class ProviderStub:
             language="fr",
             location="https://example.test/ar-2025",
             provider=self.name,
+            authority=SourceAuthority.REGULATOR_FILED,
+            verification=(IdentityCheck.REGISTER_INDEXED,),
         )
 
     def fetch(self, source: PrimarySource) -> SourceDocument:

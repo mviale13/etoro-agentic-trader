@@ -60,6 +60,13 @@ class PrimarySourceResolver:
     New York files a 20-F with the SEC and an annual financial report at
     home, and EDGAR's is the one already proven to read well.
 
+    Investor Relations is last, and last for a reason that is about
+    authority rather than quality. A document a regulator received
+    carries a filing obligation and a dated record; the identical
+    document published by the company that wrote it carries neither. So
+    it is asked only where no register holds the company at all — which
+    today is every German issuer.
+
     Where nothing resolves, every provider's reason is carried into the
     failure. "Not listed with the SEC" and "the SEC could not be reached"
     are different situations, and a caller that only learned "no source"
@@ -73,8 +80,15 @@ class PrimarySourceResolver:
         if providers is None:
             from app.providers.edgar_provider import EdgarProvider
             from app.providers.esef_provider import EsefProvider
+            from app.providers.investor_relations_provider import (
+                InvestorRelationsProvider,
+            )
 
-            providers = (EdgarProvider(), EsefProvider())
+            providers = (
+                EdgarProvider(),
+                EsefProvider(),
+                InvestorRelationsProvider(),
+            )
 
         self._providers = tuple(providers)
 

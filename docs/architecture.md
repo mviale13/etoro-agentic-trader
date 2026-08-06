@@ -1207,7 +1207,7 @@ Primary Source Resolver
 Primary Source Providers
         ├── EDGAR                 the SEC's own record                      built
         ├── ESEF                  Europe's mechanisms, via filings.xbrl.org built
-        ├── Investor Relations    the company's own published report        next
+        ├── Investor Relations    the company's own published report        built
         └── Manual Documents      a document handed to the platform         next
         ↓
 Grounded Knowledge Extraction
@@ -1229,7 +1229,64 @@ policy were all untouched. `PrimarySourceResolver` still builds its
 default providers in a single small block, and that block is the whole of
 what a jurisdiction costs the pipeline.
 
-What a provider owes the ecosystem is therefore small and fixed:
+## Every provider answers three questions
+
+Before extraction begins, and in this order:
+
+```text
+1. Can I retrieve the document?
+2. Can I prove whose document it is?
+3. Can I prove this issuer belongs to the requested security?
+```
+
+Only when all three answer yes does anything get read. **Extraction never
+becomes responsible for identity** — it cannot be, because a reading of
+the wrong company's report is indistinguishable from a reading of the
+right one at the point where extraction happens.
+
+What the three providers show is that the *questions* are constant and the
+*authorities* are not:
+
+| | EDGAR | ESEF | Investor Relations |
+|---|---|---|---|
+| Retrieve | the register's archive | the register's index | a reviewed location, and the hash it was reviewed against |
+| Whose document | the register's index | the index, and the document's own LEI | the document's own LEI, alone |
+| Which security | the register's ticker index | the reviewed issuer list and GLEIF | the reviewed issuer list and GLEIF |
+
+Each cell is delegated where an authority exists and reviewed where none
+does. Nothing is inferred in any of them.
+
+## Authority, provenance, verification
+
+Three separate facts, carried on `PrimarySource`, because collapsing them
+loses information a reader needs:
+
+- **`authority`** — what kind of source this is. `REGULATOR_FILED` or
+  `ISSUER_PUBLISHED`. Descriptive, deliberately *not* ranked: no number,
+  no ordering. A score invites arithmetic on it and an ordering invites
+  comparison without knowing what actually differs. What differs is
+  written down here, once, and a reader is owed the fact rather than a
+  number derived from it.
+- **`provider`** — provenance. Who supplied it: "SEC EDGAR", "ESEF",
+  "Official Investor Relations".
+- **`verification`** — which identity checks actually succeeded on the
+  way to this document.
+
+Authority belongs to the **source**, never to the provider. The Investor
+Relations provider proves why: Volkswagen publishes the very ESEF package
+it filed, so that provider returns a regulated artefact — and could
+equally return a PDF that nobody received on a dated record. One provider,
+two authorities, and the distinction has to live where the difference is.
+
+The three facts are independent, and `verification` is what stops
+`authority` being read as a ranking. EDGAR is `REGULATOR_FILED` and yet
+the only check it can offer is `REGISTER_INDEXED`: a 10-K declares no LEI,
+so the document never independently confirms whose it is. A Volkswagen
+package obtained from Volkswagen is `ISSUER_PUBLISHED` and carries four
+checks including `DOCUMENT_LEI`. Neither statement contradicts the other,
+and neither would survive being flattened into a score.
+
+## What a provider owes the ecosystem
 
 | Obligation | Why it belongs to the provider |
 |---|---|
@@ -1244,6 +1301,44 @@ interpretation, which is why SEDAR+, Companies House or the ASX should be
 routine additions: each has a different index, a different identifier and
 a different document convention, and none of them has a different idea of
 what a business is.
+
+## What production showed
+
+Volkswagen was the first company read without a register, and it exercised
+the model in four ways worth recording.
+
+**The trust model held where it was designed to.** The reviewed hash, the
+approved host, the document's own LEI and the GLEIF boundary all did the
+job asked of them, and `VOW3.DE` reads as Pkw und leichte Nutzfahrzeuge
+68%, Nutzfahrzeuge 13%, Finanzdienstleistungen 18% — a company that
+resolved to a stated gap the day before.
+
+**Requiring a document-declared LEI cost more coverage than expected, and
+was still right.** Volkswagen's ESEF package holds three documents. Only
+one is tagged. The other two are XHTML the regulation requires and the
+taxonomy says nothing about — including a thirteen-megabyte management
+report, which is where the *narrative* account of the business lives. So
+the platform reads Volkswagen's segment note and not its business
+description, because the business description cannot say whose it is.
+That is the invariant working, not failing.
+
+**An identity check found a real neighbour, not a hypothetical one.**
+Volkswagen Financial Services N.V. publishes its own annual reports under
+its own LEI, and its documents are genuine Volkswagen documents. Nothing
+but the LEI comparison distinguishes them from the parent's.
+
+**Two things production challenged, and neither is about trust.** First,
+knowledge extracted from a German document is in German — the description
+stored for `VOW3.DE` reads "Der Volkswagen Konzern berichtet die
+Segmente…". Reading the original rather than a translation is the correct
+behaviour and the surfaces are not yet ready for it. Second, the grounding
+contract proves that a quoted span exists in the document; it does not
+prove that the span evidences the number beside it. On a table-heavy
+document the extraction quoted a column header for two of the three
+segments. The shares were right — checked against the segment table by
+hand — and the citations do not demonstrate them. Both are recorded in
+`PROJECT_STATE.md` as gaps rather than fixed here, because neither is a
+weakness in the trust model and both deserve their own slice.
 
 ## The backbone
 
