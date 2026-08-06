@@ -36,11 +36,16 @@ for the package-by-package mapping, verified against the import graph.
 
 # Repository Health
 
+Green baseline, measured 2026-08-06. A figure here is an observation with a
+date, not a standing claim — refresh it at slice boundaries, and keep the
+test count in [`CLAUDE.md`](../CLAUDE.md) in step, so a later session does
+not inherit a quality state that has silently drifted.
+
 | Area | Status |
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 569 passing |
+| Pytest | 🟢 848 passing (2026-08-06) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -850,6 +855,126 @@ Named rather than hidden. None of these are estimated away in the product.
 ---
 
 # Next Priorities
+
+## Company Knowledge
+
+The active line of work. What a business *is*, read from the document the
+company is legally answerable for.
+
+**Delivered**
+
+- The Company Knowledge layer — structural facts about a business, kept
+  apart from evidence because they turn over across years, not minutes
+- The `PrimarySourceProvider` abstraction — acquisition behind a seam, so a
+  regulator, an ESEF filing and a company's own report reach extraction,
+  storage and reuse identically
+- Cache-first acquisition — resolve the current document, serve stored
+  knowledge if its key is known, otherwise acquire, validate and store;
+  knowledge refreshes only when the authoritative document changes
+- Grounded extraction — every segment carries a verbatim span checked
+  against the document, and an extraction quoting words that are not there
+  is discarded in full
+- Schema versioning — the source is immutable, the reading of it is not, so
+  an entry written under an older extraction is treated as absent and read
+  again rather than upgraded in place
+- Reporting-period support — the business period the filing covers, kept
+  apart from the date it was published
+
+**Next**
+
+1. **ESEF provider.** European filings behind the same seam. The canonical
+   `PrimarySource` was built for this; coverage should be an adapter, not a
+   rewrite
+2. **Official Investor Relations provider.** The company's own published
+   report, for businesses no regulator index resolves
+3. **Manual document ingestion.** A document handed to the platform
+   directly, carrying the same identity and the same grounding contract as
+   one it fetched itself
+4. **Investment Archetype rules.** Deterministic rules over the facts now
+   being read. No archetype is decided anywhere in the knowledge work — the
+   layer stores facts, and the rules that read them come next
+5. **Dossier transparency for company knowledge, coverage and playbook
+   selection.** Which companies the platform has read, from which document,
+   as of which period; why a security drew the playbook it did; and, stated
+   apart, what could not be read and why
+
+## Policy — `data/knowledge/` is tracked, and is not a cache
+
+### What a knowledge entry is
+
+```text
+Immutable primary source
+        ↓
+Versioned grounded reading
+        ↓
+Canonical knowledge artifact for that reading version
+```
+
+Company Knowledge is not universally canonical. It is canonical **for a
+given source and a given reading schema version**, and the middle line is
+where the versioning lives: `KNOWLEDGE_SCHEMA_VERSION` deliberately changes
+what a valid stored reading means. When it changes, the platform does not
+mutate old entries or fill in newly required fields — it performs a new
+grounded reading of a document that never changed.
+
+### Why it is not a cache
+
+The test is reproducibility, not value. A cache entry is rebuildable
+byte-identically from its provider; that is what makes discarding it free.
+A grounded reading is not: extraction chooses which verbatim span to quote
+and is retried under the grounding contract until one survives, so two
+extractions of the same immutable filing can select different spans while
+remaining equally truthful. `data/knowledge/` therefore does not satisfy the
+technical definition of a cache, and the rest of `data/` has settled answers
+that do not fit it either — `data/cache/` is ignored as re-fetchable and
+never source of truth, `data/evidence/` and `data/events/` as one machine's
+own record that a fresh clone should not replay.
+
+### The policy
+
+- **Keep `data/knowledge/` tracked.** Do not add it to `.gitignore`.
+- **Treat entries as versioned, grounded knowledge artifacts**, not as
+  runtime cache files.
+- **Reassess only on evidence of an operational problem**, against the
+  criteria below.
+
+Schema versioning strengthens this rather than weakening it. Because a
+revision produces a new reading instead of an edited one, Git is what
+records which reading schema produced an artifact, what a schema revision
+changed, which grounded spans were selected, and how downstream reasoning
+behaved against a fixed historical corpus. Untracked, that history is
+destroyed every time entries are regenerated.
+
+Tracking is also the reversible option. Untracking later loses nothing;
+never tracking means the historical corpus was never built.
+
+### Reassessment criteria
+
+1. Repository growth and clone performance.
+2. Frequency and readability of generated diffs.
+3. iCloud conflict-copy incidence.
+4. Whether the corpus is still useful for regression and audit.
+5. Whether Git remains the correct long-term storage mechanism at scale.
+
+### The operational risk is iCloud, not size
+
+This repository lives in iCloud Drive, which has put tracked generated
+directories in the path of conflict copies twice. The `.gitignore` rule that
+covers them is load-bearing for this decision and must be retained. Checked
+against real knowledge filenames: `DIS.<accession> 2.json` and
+`DIS.<accession> 2 2.json` are ignored; `DIS.<accession> 10.json` was not,
+because the single-digit rule could not match two digits, so a
+double-digit rule was added alongside it. Verify with `git check-ignore`
+rather than by reading the pattern.
+
+### If Git stops being the right store
+
+At sufficient corpus size, validated artifacts may move to a versioned
+object store or database. That would be a **storage migration, not a
+reclassification** of Company Knowledge as disposable. Any such store must
+preserve immutable source identity, the reading schema version, extraction
+metadata, provenance, content hashes and historical revisions — which is
+the same list Git supplies today.
 
 ## Trustworthy evidence
 

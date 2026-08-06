@@ -17,11 +17,22 @@ etoro-watchlists-response.json
 # Immutable local broker evidence
 data/evidence/
 
-# iCloud Drive sync conflict copies ("reasoning_service 2.py")
+# iCloud Drive sync conflict copies ("reasoning_service 2.py"). The second
+# rule covers a tenth conflict onwards ("... 10.json"), which the first
+# cannot match — it matters because data/knowledge/ is tracked and receives
+# generated files. Check additions with `git check-ignore`, not by eye.
 * [0-9].*
+* [0-9][0-9].*
 
 # Cached provider evidence — re-fetchable, never source of truth
 data/cache/
+
+# data/knowledge/ is deliberately NOT ignored. A knowledge entry is not
+# rebuildable byte-identically — two grounded readings of one immutable
+# filing may quote different spans — so it fails the technical definition
+# of a cache, and Git is what records which reading schema produced it.
+# The decision, its reassessment criteria and the conditions under which
+# this would change are in docs/PROJECT_STATE.md.
 
 # The Artificial CIO's decision journal. Written every cycle, and the
 # memory it feeds belongs to the machine that made those decisions — a
