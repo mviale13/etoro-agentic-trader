@@ -1,0 +1,54 @@
+{
+  "description": "JPMorgan Chase & Co. is a leading financial services firm based in the United States of America (\u201cU.S.\u201d), with operations worldwide.",
+  "reading": {
+    "observed_at": "2026-08-06T12:38:26.175172+00:00",
+    "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+  },
+  "schema_version": 5,
+  "segments": [
+    {
+      "description": {
+        "distance": 0,
+        "quoted": "the Firm has three reportable business segments \u2013 Consumer & Community Banking (\u201cCCB\u201d)",
+        "revenue_models": [],
+        "under": "Consumer & Community Banking (CCB)"
+      },
+      "name": "Consumer & Community Banking (CCB)",
+      "revenue": null,
+      "undescribed_because": null
+    },
+    {
+      "description": null,
+      "name": "Commercial & Investment Bank (CIB)",
+      "revenue": null,
+      "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Commercial & Investment Bank (CIB)'."
+    },
+    {
+      "description": null,
+      "name": "Asset & Wealth Management (AWM)",
+      "revenue": null,
+      "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all."
+    }
+  ],
+  "source": {
+    "authority": "regulator_filed",
+    "company": "JPMORGAN CHASE & CO",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-008131",
+    "key": "0001628280-26-008131",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-13",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "JPM",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "JPM"
+}

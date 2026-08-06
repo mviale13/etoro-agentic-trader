@@ -102,6 +102,50 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A company is classified by what it earns from, not by its industry**
+  (August 2026). The first thing this platform *concludes* rather than
+  reads. `ArchetypeEngine` is a pure function over `CompanyKnowledge`:
+  no model is asked, and none could be, because a model asked "what kind
+  of business is this?" answers from what it knows about the company —
+  which is the outside taxonomy this layer replaces.
+
+  **Coverage, not revenue.** A filing states what each segment earned
+  and which ways of earning it uses; it never splits the one between the
+  others. So a way of earning is weighted by the size of the segments
+  that use it, and the number is called coverage because calling it a
+  revenue share would be read as a measurement nobody printed.
+  Coverages overlap and do not sum to 1.
+
+  **Four regimes, because size and description fail independently.**
+  Ranked (NVIDIA: manufacturing runs through 100% of revenue, licensing
+  through 90% — a manufacturer). Diversified (Disney: licensing,
+  transaction and services each run through all three segments and no
+  arithmetic separates them). Unranked (Caterpillar: four described
+  segments, no size proven, so the ways it earns are known and cannot be
+  ordered). Undecided (Meta: 100% of revenue measured, 0% explained,
+  because both segment descriptions were refused). Diversified and
+  unranked are deliberately different answers — one is a finding about
+  the business, the other is an absence of measurement.
+
+  **The rules refuse to read names.** Volkswagen reports a segment
+  called *Finanzdienstleistungen* worth 19% of revenue and nothing
+  concludes that Volkswagen lends, because no description of it was
+  established. Reading meaning out of a label would be a taxonomy again,
+  this platform's own, in German.
+
+  Calibrated against eight filings read for the purpose — DIS, NVDA,
+  META, NFLX, CAT, JPM, VOW3.DE, and COST, whose extraction was refused
+  outright. The thresholds are reasoned rather than measured, and say so
+  in their own docstrings: unlike `NEARBY`, there is no observed gap
+  between two populations to place them in yet.
+
+  Surfaced by `movrvest archetype SYMBOL`, which prints the answer, then
+  every rule that fired, then the facts each rule read, then what was
+  not established. Nothing consumes it yet: `PlaybookSelector` still
+  reads the provider's industry, and flipping that seam while two thirds
+  of the population is unclassifiable would degrade every holding whose
+  filing has not been read.
+
 - **A description must be about what it is attached to** (August 2026).
   The narrative half of applicability, and the same failure in a
   different shape. Reading Volkswagen's segment note, all three segments
@@ -1164,27 +1208,63 @@ company is legally answerable for.
 
 **Next**
 
-Ordered by what a wrong answer costs. Both halves of applicability —
-quantitative and narrative — are closed, so translation now leads: what
-it would translate is evidence that has been shown to apply.
+Ordered by what a wrong answer costs. The archetype rules are live, and
+running them over eight filings measured where this platform actually
+stops — which is not in the rules. Two of eight companies classify. The
+rest are refused for want of an input, and every one of those refusals
+is a reading that could have gone better rather than a document that
+says nothing:
 
-1. **Multilingual presentation, with the original preserved.** The stored
-   grounded span stays in the language it was published in — replacing it
-   with a translation severs the evidence chain, which is the one thing
-   the store exists to keep intact. Presentation gains a second, clearly
-   labelled layer: a translation is a derived communication artifact and
-   never the canonical span
-2. **Manual document ingestion.** A document handed to the platform
+| | Size measured | Way of earning evidenced |
+|---|---|---|
+| DIS, NVDA | ✅ | ✅ |
+| META, VOW3.DE | ✅ | ✗ |
+| CAT, NFLX | ✗ | ✅ |
+| JPM | ✗ | ✗ |
+| COST | extraction refused outright | |
+
+1. **Ownership by document structure.** The coverage above is what
+   `architecture.md` anticipated when it refused to retry a description:
+   *if coverage proves unacceptable in production, the answer is a better
+   evidence model, not more attempts under this one.* It has, and this is
+   that model. Ownership is established today by the most recent segment
+   naming in flattened prose, with proximity (`NEARBY`) standing in for
+   "inside the part of the document about this segment". A filing's own
+   markup states that directly, and `flatten` already keeps a map back to
+   it (`Flattened.markup_span`), so a span can be owned by the section
+   that contains it rather than by the name that happens to precede it.
+   Both of Meta's refusals are of that kind: one span sits under a
+   neighbouring segment's heading, the other 404 characters from its own
+   naming but plausibly still inside its own section. Proximity then
+   becomes a fallback for documents with no usable structure, not the
+   primary mechanism — the replacement the `prose_evidence` docstring
+   names as an improvement rather than a contradiction. This is what
+   stands between the archetype engine and the portfolio
+2. **Segment sizes where a table was not found.** Caterpillar and
+   JPMorgan describe their segments and neither had a size proven. Both
+   print segment revenue; the mix reading did not locate it. Worth
+   measuring before assuming the cause
+3. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-3. **Investment Archetype rules.** Deterministic rules over the facts now
-   being read. No archetype is decided anywhere in the knowledge work — the
-   layer stores facts, and the rules that read them come next
-4. **Dossier transparency for company knowledge, coverage and playbook
+4. **Playbook selection from the archetype.** The consequence this slice
+   exists to enable, and deliberately not taken yet: `PlaybookSelector`
+   still reads the provider's industry, and flipping it while most of the
+   population is unclassifiable would degrade every holding whose filing
+   has not been read. It follows coverage, not the other way round
+5. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could
    not be read and why
+6. **Multilingual presentation, with the original preserved.** The stored
+   grounded span stays in the language it was published in — replacing it
+   with a translation severs the evidence chain, which is the one thing
+   the store exists to keep intact. Presentation gains a second, clearly
+   labelled layer: a translation is a derived communication artifact and
+   never the canonical span. Downstream of understanding rather than
+   ahead of it: knowledge becomes understanding, and understanding is
+   then communicated in whatever language the investor reads
 
 **Open, and deliberately so**
 

@@ -1,0 +1,90 @@
+{
+  "description": "Caterpillar Inc. is shaping the future as the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+  "reading": {
+    "observed_at": "2026-08-06T12:38:59.092570+00:00",
+    "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
+  },
+  "schema_version": 5,
+  "segments": [
+    {
+      "description": {
+        "distance": 54,
+        "quoted": "supporting customers using machinery in infrastructure and building construction applications.",
+        "revenue_models": [
+          "manufacturing",
+          "services",
+          "transaction"
+        ],
+        "under": "Construction Industries"
+      },
+      "name": "Construction Industries",
+      "revenue": null,
+      "undescribed_because": null
+    },
+    {
+      "description": {
+        "distance": 50,
+        "quoted": "supporting customers using machinery in mining, heavy construction and quarry and aggregates.",
+        "revenue_models": [
+          "manufacturing",
+          "services",
+          "transaction"
+        ],
+        "under": "Resource Industries"
+      },
+      "name": "Resource Industries",
+      "revenue": null,
+      "undescribed_because": null
+    },
+    {
+      "description": {
+        "distance": 18,
+        "quoted": "supports customers in oil and gas, power generation, marine, rail and industrial applications",
+        "revenue_models": [
+          "manufacturing",
+          "services",
+          "transaction"
+        ],
+        "under": "Power & Energy"
+      },
+      "name": "Power & Energy",
+      "revenue": null,
+      "undescribed_because": null
+    },
+    {
+      "description": {
+        "distance": 182,
+        "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
+        "revenue_models": [
+          "financial_spread",
+          "premiums"
+        ],
+        "under": "Financial Products Segment"
+      },
+      "name": "Financial Products Segment",
+      "revenue": null,
+      "undescribed_because": null
+    }
+  ],
+  "source": {
+    "authority": "regulator_filed",
+    "company": "CATERPILLAR INC",
+    "document_format": "html",
+    "identifier": "10-K 0000018230-26-000008",
+    "key": "0000018230-26-000008",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000008/cat-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-13",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "CAT",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "CAT"
+}

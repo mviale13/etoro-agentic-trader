@@ -1,0 +1,45 @@
+{
+  "description": "Netflix is an entertainment service offering TV series, films, games and live programming across a wide variety of genres and languages to members globally.",
+  "reading": {
+    "observed_at": "2026-08-06T12:37:21.192909+00:00",
+    "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
+  },
+  "schema_version": 5,
+  "segments": [
+    {
+      "description": {
+        "distance": 0,
+        "quoted": "We operate as one operating segment.",
+        "revenue_models": [
+          "subscription",
+          "advertising"
+        ],
+        "under": "One operating segment"
+      },
+      "name": "One operating segment",
+      "revenue": null,
+      "undescribed_because": null
+    }
+  ],
+  "source": {
+    "authority": "regulator_filed",
+    "company": "NETFLIX INC",
+    "document_format": "html",
+    "identifier": "10-K 0001065280-26-000034",
+    "key": "0001065280-26-000034",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1065280/000106528026000034/nflx-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-01-23",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "NFLX",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "NFLX"
+}

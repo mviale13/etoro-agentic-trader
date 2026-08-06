@@ -41,7 +41,9 @@ cd apps/web/movrvest-web && npm run build     # frontend gate
 ```
 
 CLI: `movrvest evaluate SYMBOL`, `movrvest brain`, `movrvest today`,
-`movrvest knowledge SYMBOL` (what was read from a filing, and from which cell).
+`movrvest knowledge SYMBOL` (what was read from a filing, and from which cell),
+`movrvest archetype SYMBOL` (what kind of business those facts make it, and
+which rule decided — or why none could).
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)

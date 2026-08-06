@@ -1582,8 +1582,23 @@ Artificial CIO:
 ```text
 Identity  →  Primary Source Resolution  →  Grounding  →  Applicability  →  Knowledge
                                                                                 ↓
+                                                                            Archetype
+                                                                                ↓
              Communication  ←  Decision  ←  Reasoning  ←───────────────────────┘
 ```
+
+**Knowledge → Archetype is where facts become understanding**, and it is
+the only link on the chain that concludes rather than checks. Everything
+above it narrows what may be assumed about a document; the archetype
+rules read what survived and answer a question no document is asked —
+what kind of business is this. They are deterministic and they never ask
+a model, because a model would answer from what it knows about the
+company, and that is the industry taxonomy this link replaces
+(`app/services/archetype_engine.py`).
+
+It concludes but does not decide. What kind of business a company is
+still reaches the Artificial CIO as evidence, exactly as an analyst's
+assessment does.
 
 Each arrow is a narrowing of what the next stage is allowed to assume,
 and every stage exists because the one before it can fail in a way the
