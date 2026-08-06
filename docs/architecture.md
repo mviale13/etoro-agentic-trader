@@ -1414,6 +1414,18 @@ document* to *find something acceptable*, which are not the same
 activity. If coverage proves unacceptable in production, the answer is a
 better evidence model, not more attempts under this one.
 
+Coverage did prove unacceptable — the archetype rules classify two
+companies in eight — and the response holds that line rather than
+crossing it. **Repairing the evidence for a claim already extracted is
+not retrying the reading.** A targeted repair asks one bounded question
+about one existing claim — same segment, same document, same period, no
+new factual content — and accepts an explicit absence as an answer. It
+cannot drift into *find something acceptable*, because it is not
+permitted to change what is being claimed, only to evidence it or fail.
+A repaired span records that it came from a repair, so a reader never
+sees a second attempt presented as a first reading. Designed, not built:
+`PROJECT_STATE.md` carries it as the next slice.
+
 ---
 
 # The Primary Source Ecosystem

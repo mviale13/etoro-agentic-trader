@@ -64,13 +64,18 @@ def _render(archetype: CompanyArchetype) -> None:
         print(archetype.undecided_because)
         print()
 
-    if archetype.mix:
-        print("how this business earns:")
-        for coverage in archetype.mix:
+    if archetype.coverage:
+        # Worded so it cannot be read — or later relabelled — as a split
+        # of revenue between these ways of earning. No filing states one.
+        print("how this business earns, by coverage:")
+        print("  (how much of the business earns this way, among others —")
+        print("   not how much revenue comes from it, which no filing states)")
+        print()
+        for coverage in archetype.coverage:
             covers = (
-                f"{coverage.covers:.0%} of the segment revenue total"
+                f"segments worth {coverage.covers:.0%} of the revenue total"
                 if coverage.covers is not None
-                else "share unmeasured"
+                else "segment sizes unmeasured"
             )
             print(f"  {coverage.model.value}: {covers}")
             print(f"    via {', '.join(coverage.segments)}")

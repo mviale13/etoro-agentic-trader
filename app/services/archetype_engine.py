@@ -99,7 +99,7 @@ def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
         return _undecided(
             knowledge,
             missing=missing,
-            mix=(),
+            coverage=(),
             explained=0.0,
             basis=(
                 Ruling(
@@ -131,7 +131,7 @@ def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
         return _undecided(
             knowledge,
             missing=missing,
-            mix=_mix(measurable),
+            coverage=_coverage(measurable),
             explained=explained,
             basis=(
                 Ruling(
@@ -168,17 +168,17 @@ def _ranked(
 ) -> CompanyArchetype:
     """Sizes and ways of earning both established: order them."""
 
-    mix = _mix(measurable)
-    leading = [coverage for coverage in mix if (coverage.covers or 0.0) >= LEADS]
+    covers = _coverage(measurable)
+    leading = [coverage for coverage in covers if (coverage.covers or 0.0) >= LEADS]
 
     read = ", ".join(
-        f"{coverage.model.value} {_pct(coverage.covers or 0.0)}" for coverage in mix
+        f"{coverage.model.value} {_pct(coverage.covers or 0.0)}" for coverage in covers
     )
 
     if not leading:
         return _diversified(
             knowledge,
-            mix=mix,
+            coverage=covers,
             missing=missing,
             explained=explained,
             rule="no-way-of-earning-leads",
@@ -199,7 +199,7 @@ def _ranked(
     if len(contenders) > 1:
         return _diversified(
             knowledge,
-            mix=mix,
+            coverage=covers,
             missing=missing,
             explained=explained,
             rule="no-single-way-of-earning-leads",
@@ -217,7 +217,7 @@ def _ranked(
         primary=ARCHETYPE_OF[top.model],
         secondary=_secondary(leading),
         candidates=(),
-        mix=mix,
+        coverage=covers,
         measured=knowledge.measured_share,
         explained=explained,
         missing=missing,
@@ -253,15 +253,15 @@ def _unranked(
     as equals, which is the estimate this platform does not make.
     """
 
-    mix = _mix(earning)
-    candidates = tuple(ARCHETYPE_OF[coverage.model] for coverage in mix)
+    covers = _coverage(earning)
+    candidates = tuple(ARCHETYPE_OF[coverage.model] for coverage in covers)
 
     return CompanyArchetype(
         symbol=knowledge.symbol,
         primary=None,
         secondary=None,
         candidates=candidates,
-        mix=mix,
+        coverage=covers,
         measured=knowledge.measured_share,
         explained=0.0,
         missing=missing,
@@ -270,7 +270,7 @@ def _unranked(
                 rule="nothing-measured",
                 read=(
                     f"{len(earning)} segment(s) shown to earn by "
-                    + ", ".join(coverage.model.value for coverage in mix)
+                    + ", ".join(coverage.model.value for coverage in covers)
                     + ", and no segment size proven against a table"
                 ),
                 concluded=(
@@ -293,7 +293,7 @@ def _unranked(
 def _diversified(
     knowledge: CompanyKnowledge,
     *,
-    mix: tuple[ModelCoverage, ...],
+    coverage: tuple[ModelCoverage, ...],
     missing: tuple[Unestablished, ...],
     explained: float,
     rule: str,
@@ -307,7 +307,7 @@ def _diversified(
         primary=Archetype.DIVERSIFIED,
         secondary=None,
         candidates=(),
-        mix=mix,
+        coverage=coverage,
         measured=knowledge.measured_share,
         explained=explained,
         missing=missing,
@@ -322,7 +322,7 @@ def _undecided(
     knowledge: CompanyKnowledge,
     *,
     missing: tuple[Unestablished, ...],
-    mix: tuple[ModelCoverage, ...],
+    coverage: tuple[ModelCoverage, ...],
     explained: float,
     basis: tuple[Ruling, ...],
     because: str,
@@ -334,7 +334,7 @@ def _undecided(
         primary=None,
         secondary=None,
         candidates=(),
-        mix=mix,
+        coverage=coverage,
         measured=knowledge.measured_share,
         explained=explained,
         missing=missing,
@@ -348,7 +348,7 @@ def _undecided(
 # ── the arithmetic ──────────────────────────────────────────────────
 
 
-def _mix(segments: tuple[BusinessSegment, ...]) -> tuple[ModelCoverage, ...]:
+def _coverage(segments: tuple[BusinessSegment, ...]) -> tuple[ModelCoverage, ...]:
     """
     How much of the business earns each way, widest first.
 

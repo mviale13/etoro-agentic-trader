@@ -63,7 +63,7 @@ class Archetype(StrEnum):
     by a rule from several of them weighted by size.
 
     Today every member but `DIVERSIFIED` maps one-to-one from the way of
-    earning that leads the mix, because that is all the current evidence
+    earning that leads the coverage, because that is all the current evidence
     supports. The vocabulary is separate so that it can stop being
     one-to-one — "a manufacturer with a captive lender" is a real
     archetype and Caterpillar is one, but nothing this platform reads
@@ -249,7 +249,12 @@ class CompanyArchetype:
     candidates: tuple[Archetype, ...]
 
     #: Every way of earning the filing evidenced, with its coverage.
-    mix: tuple[ModelCoverage, ...]
+    #:
+    #: Named coverage rather than mix, deliberately. "Revenue mix"
+    #: means a split of revenue between things, which is precisely what
+    #: this is not and what no filing establishes. A surface that
+    #: relabels it would be asserting a measurement nobody printed.
+    coverage: tuple[ModelCoverage, ...]
 
     #: The share of revenue the segments account for with a measured
     #: size. Passed through from the knowledge layer.

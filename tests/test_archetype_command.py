@@ -139,7 +139,7 @@ def test_a_decided_archetype_shows_the_rule_that_decided_it(
     assert exit_code == 0
     assert "NVDA — Manufacturer" in printed
     assert "one-way-of-earning-leads" in printed
-    assert "manufacturing: 100% of the segment revenue total" in printed
+    assert "manufacturing: segments worth 100% of the revenue total" in printed
     assert "via Compute & Networking, Graphics" in printed
 
 
@@ -174,3 +174,45 @@ def test_segment_figures_above_the_consolidated_total_are_explained(
 
     assert "above 100%" in printed
     assert "billed each other" in printed
+
+
+def test_coverage_is_never_worded_as_a_share_of_revenue(
+    _no_reading,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """
+    "Segments worth 90% of revenue license as well as manufacture" is
+    supportable. "90% of revenue comes from licensing" is not, and no
+    filing establishes it.
+
+    The distinction is one relabelling away from being lost — a surface
+    that calls this a revenue mix asserts a measurement nobody printed —
+    so the wording is held by a test rather than by a docstring.
+    """
+
+    _no_reading(
+        KnowledgeOutcome(
+            state=KnowledgeState.AVAILABLE_CACHED,
+            knowledge=company(
+                "NVDA",
+                segment(
+                    "Compute",
+                    share=0.90,
+                    row=1,
+                    earns=(RevenueModel.MANUFACTURING, RevenueModel.LICENSING),
+                ),
+                segment(
+                    "Graphics", share=0.10, row=2, earns=(RevenueModel.MANUFACTURING,)
+                ),
+            ),
+        )
+    )
+
+    asyncio.run(command.run("NVDA"))
+    printed = capsys.readouterr().out.lower()
+
+    assert "coverage" in printed
+    assert "not how much revenue comes from it" in printed
+
+    for forbidden in ("revenue mix", "revenue share", "of revenue comes from"):
+        assert forbidden not in printed

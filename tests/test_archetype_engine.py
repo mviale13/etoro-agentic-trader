@@ -232,7 +232,7 @@ def test_ways_of_earning_without_measured_sizes_are_candidates_not_a_ranking() -
 
     # Unranked, so every coverage is absent rather than zero: nothing was
     # weighed, which is not the same as weighing nothing.
-    assert all(coverage.covers is None for coverage in cat.mix)
+    assert all(coverage.covers is None for coverage in cat.coverage)
     assert cat.undecided_because is not None
 
 
@@ -342,7 +342,7 @@ def test_a_segments_name_is_never_read_as_what_it_does() -> None:
 
     assert vow.primary is None
     assert Archetype.LENDER not in vow.candidates
-    assert vow.mix == ()
+    assert vow.coverage == ()
 
     # The sizes survive: they were proven by cells, and a missing
     # description is not evidence against a measurement.
@@ -391,7 +391,7 @@ def test_coverage_counts_a_segments_whole_size_for_every_way_it_earns() -> None:
             ),
             segment("One", share=0.40, row=2, earns=(RevenueModel.SUBSCRIPTION,)),
         )
-    ).mix
+    ).coverage
 
     covers = {coverage.model: coverage.covers for coverage in mix}
 
@@ -468,7 +468,7 @@ def test_coverages_within_the_tie_tolerance_are_not_ordered() -> None:
         )
     )
 
-    gap = close.mix[0].covers - close.mix[1].covers
+    gap = close.coverage[0].covers - close.coverage[1].covers
     assert gap < TIED
     assert close.primary is Archetype.DIVERSIFIED
 
@@ -586,7 +586,7 @@ def test_a_company_with_no_segments_at_all_is_unclassified_not_empty() -> None:
     none = classify(company("NONE"))
 
     assert none.primary is None
-    assert none.mix == ()
+    assert none.coverage == ()
     assert none.basis[0].rule == "nothing-explained"
 
 
