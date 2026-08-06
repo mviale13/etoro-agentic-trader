@@ -102,6 +102,45 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Evidence is repaired for a claim, never searched for** (August 2026).
+  The knowledge layer's first second chance, and it is deliberately not
+  a retry. A retry asks the same open question again and takes whichever
+  answer passes, which turns the objective from *read this document*
+  into *find something acceptable*. A repair asks a closed question
+  about a claim already made: these words were refused as evidence for
+  it — is there better evidence in this document, or none?
+
+  Four things make that boundary structural rather than instructed:
+
+  - **The claim cannot move.** A repair returns a span and nothing else.
+    `repair_schema` has exactly one field, so a repair that wanted to
+    add a revenue model or rename a segment has no way to say it, and
+    the ways of earning come from the first reading.
+  - **Only a refused citation is repairable.** A segment described with
+    no words at all made no claim, so none is attempted — Volkswagen's
+    three segments are untouched.
+  - **Exactly one attempt.** No loop. A repair that fails is not asked
+    again, and a test counts the requests.
+  - **The same contract applies.** A repaired span goes through the
+    identical applicability check. Coverage improves by asking better,
+    never by accepting more.
+
+  A repaired span carries `DescriptionRepair` — why the first citation
+  was refused, and what performed the repair — through the store and
+  onto the surface, so a second answer is never shown as a first. Schema
+  version 6.
+
+  **It recovered nothing, and that is the finding.** Every repair on the
+  live population was either refused again on identical grounds (Meta)
+  or answered honestly that the filing contains no such words
+  (JPMorgan). The mechanism is correct and the boundary held; the defect
+  is elsewhere, and this measured where. Meta's 10-K introduces both
+  segments together and then describes them in order, so the first
+  segment's description falls after the second's naming — and Reality
+  Labs' own description sits 402 characters from its naming against a
+  `NEARBY` of 300. The citation was never the problem. The partition
+  was.
+
 - **A company is classified by what it earns from, not by its industry**
   (August 2026). The first thing this platform *concludes* rather than
   reads. `ArchetypeEngine` is a pure function over `CompanyKnowledge`:
@@ -1223,52 +1262,31 @@ says nothing:
 | JPM | ✗ | ✗ |
 | COST | extraction refused outright | |
 
-1. **Targeted evidence repair for a claim already extracted.** Not a
-   retry, and the distinction is the whole design. `architecture.md`
-   refuses to reread *until something passes*, because that changes the
-   reader's objective from "read this document" to "find something
-   acceptable" — and that refusal stands. What this adds is a different
-   request with a different objective: **repair the evidence for a claim
-   this reading already made**.
-
-   ```text
-   Initial reading → claim extracted → citation exists, applicability fails
-                                              ↓
-                  one bounded re-ask: "evidence this exact claim, or state
-                                       that none is available"
-   ```
-
-   Constrained by the original claim, or it becomes the thing it is not:
-   same segment, same document, same reporting period, no change to
-   segment identity, no new factual content, **one** attempt, and an
-   explicit absence where applicability still fails. The stored entry
-   records that the applicable span came from a targeted repair —
-   attempt type and reader metadata included — rather than being
-   rewritten in place as though the first reading had produced it.
-
-   Meta's `Family of Apps` is the case: refused for quoting the words
-   printed under `Reality Labs`, which is a citation error rather than a
-   silent document. This is what stands between the archetype engine and
-   the portfolio
-2. **Ownership by document structure.** The deeper form of the same fix,
-   and the "better evidence model" `architecture.md` asks for. Ownership
+1. **Ownership by document structure.** Promoted, and now evidenced
+   rather than suspected. The targeted repair shipped and recovered
+   nothing: every repair was refused again on identical grounds or
+   answered that the filing holds no such words, which locates the
+   defect in the ownership model rather than in the citations. Ownership
    is established today by the most recent segment naming in flattened
-   prose, with proximity (`NEARBY`) standing in for "inside the part of
-   the document about this segment". A filing's own markup states that
-   directly, and `flatten` already keeps a map back to it
-   (`Flattened.markup_span`), so a span could be owned by the section
-   containing it rather than by the name that happens to precede it —
-   which is what Meta's second refusal, 404 characters from its naming,
-   probably needs. Proximity then becomes the fallback for documents
-   with no usable structure, exactly as `prose_evidence` anticipates
-3. **Segment sizes where a table was not found.** Caterpillar and
+   prose, with proximity (`NEARBY = 300`) standing in for "inside the
+   part of the document about this segment". Meta breaks both at once:
+   the 10-K introduces `Family of Apps` and `Reality Labs` together and
+   then describes them in order, so the first segment's description
+   falls after the second's naming, and Reality Labs' own sits 402
+   characters from its naming. A filing's markup states the structure
+   directly and `flatten` already keeps a map back to it
+   (`Flattened.markup_span`), so a span can be owned by the section
+   containing it. Proximity then becomes the fallback for documents with
+   no usable structure, exactly as `prose_evidence` anticipates. This is
+   what stands between the archetype engine and the portfolio
+2. **Segment sizes where a table was not found.** Caterpillar and
    JPMorgan describe their segments and neither had a size proven. Both
    print segment revenue; the mix reading did not locate it. Worth
    measuring before assuming the cause
-4. **Manual document ingestion.** A document handed to the platform
+3. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-5. **Playbook selection from the archetype.** The consequence this slice
+4. **Playbook selection from the archetype.** The consequence this slice
    exists to enable, and deliberately not taken yet: `PlaybookSelector`
    still reads the provider's industry, and flipping it while most of the
    population is unclassifiable would degrade every holding whose filing
@@ -1282,12 +1300,12 @@ says nothing:
 
    An interpretation does not become authoritative merely because it
    exists. It follows coverage, not the other way round
-6. **Dossier transparency for company knowledge, coverage and playbook
+5. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could
    not be read and why
-7. **Multilingual presentation, with the original preserved.** The stored
+6. **Multilingual presentation, with the original preserved.** The stored
    grounded span stays in the language it was published in — replacing it
    with a translation severs the evidence chain, which is the one thing
    the store exists to keep intact. Presentation gains a second, clearly
@@ -1374,11 +1392,65 @@ that do not fit it either — `data/cache/` is ignored as re-fetchable and
 never source of truth, `data/evidence/` and `data/events/` as one machine's
 own record that a fresh clone should not replay.
 
+### Migrating the corpus, and what the first migration measured
+
+A schema bump is not storage housekeeping. It is a **new grounded
+reading** of documents that have not changed, and it can change what the
+platform knows. So a bump is closed the same way every time:
+
+1. Re-read every affected company under the new version.
+2. Review the diffs by meaning — segment identity, measured size, ways
+   of earning, whether a description survived — rather than accepting
+   them.
+3. Commit the new artifacts in the same slice as the bump.
+4. Record material drift, especially changed segment identity or
+   segments that appeared or vanished.
+5. **Never normalise a new reading back to the old one for diff
+   stability.** The new reading is the reading; a corpus tidied to match
+   its predecessor is no longer grounded in anything.
+
+Leaving entries behind at an older version is the alternative and it is
+worse than either extreme: a fresh clone treats them as absent and
+re-reads anyway, so they give neither a stable regression corpus nor a
+warm start, while presenting themselves as current.
+
+**Schema 5 → 6, the first migration, over seven companies.** Every
+measured size was identical to the digit, and every prose fact moved:
+
+| Drift | Where |
+|---|---|
+| Quoted span changed | DIS, NVDA, CAT — same segments, same sizes, different words chosen |
+| A way of earning disappeared | CAT lost `transaction` on all three industrial segments |
+| Segment identity changed | NFLX: `One operating segment` → `one operating segment` |
+| Company description reworded | CAT, NFLX, VOW3.DE |
+| No segment appeared or vanished | every company except the NFLX rename |
+
+Two things follow, and both are load-bearing.
+
+**Cell-addressed evidence is reproducible and span evidence is not.**
+Every size survived two independent readings unchanged, because a size
+is an address into a table this platform reads for itself. Every quote
+moved, because a span is something a reader chooses. That is the
+architecture's own claim, measured rather than asserted, and it is why
+sizes can be trusted across readings in a way descriptions cannot.
+
+**A segment's identity is its name, and a name is fragile.** Netflix's
+"segment" is the phrase *one operating segment*, and a change of case
+made it a different segment to the store. Nothing was lost — the entry
+is keyed by document, so the new reading replaced the old whole — but a
+corpus keyed on model-chosen strings will drift, and the archetype
+engine reads those names. Worth watching before it matters.
+
+The classifications themselves were stable: DIS diversified, NVDA
+manufacturer, CAT and NFLX unclassified, before and after.
+
 ### The policy
 
 - **Keep `data/knowledge/` tracked.** Do not add it to `.gitignore`.
 - **Treat entries as versioned, grounded knowledge artifacts**, not as
   runtime cache files.
+- **Close a schema bump with a reviewed re-read of the whole corpus**,
+  in the slice that bumps it. Never ship a mixed-version corpus.
 - **Reassess only on evidence of an operational problem**, against the
   criteria below.
 

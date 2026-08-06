@@ -11,6 +11,7 @@ from typing import Any
 from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledge,
+    DescriptionRepair,
     RevenueModel,
     SegmentDescription,
 )
@@ -42,7 +43,7 @@ from app.domain.tabular_evidence import (
 #: document is read again under the current one. Immutable source,
 #: versioned reading: the two are different things and only one of them
 #: is fixed.
-KNOWLEDGE_SCHEMA_VERSION = 5
+KNOWLEDGE_SCHEMA_VERSION = 6
 
 
 class CompanyKnowledgeStore(ABC):
@@ -258,12 +259,22 @@ def _encode_description(described: SegmentDescription | None) -> dict[str, Any] 
     if described is None:
         return None
 
-    return {
+    stored: dict[str, Any] = {
         "quoted": described.evidence.quoted,
         "under": described.evidence.under,
         "distance": described.evidence.distance,
         "revenue_models": [model.value for model in described.revenue_models],
     }
+
+    # Absent for a span the first reading got right, which is the
+    # ordinary case and the one worth keeping small on disk.
+    if described.repair is not None:
+        stored["repair"] = {
+            "first_refused_because": described.repair.first_refused_because,
+            "reader": described.repair.reader,
+        }
+
+    return stored
 
 
 def _description(stored: Any) -> SegmentDescription | None:
@@ -283,6 +294,26 @@ def _description(stored: Any) -> SegmentDescription | None:
             for value in stored.get("revenue_models", ())
             if value in {model.value for model in RevenueModel}
         ),
+        repair=_repair(stored.get("repair")),
+    )
+
+
+def _repair(stored: Any) -> DescriptionRepair | None:
+    """How a span was arrived at, where it was not the first answer.
+
+    Kept across the round trip because a repaired reading must never
+    come back off disk looking like a first one. The schema version is
+    what guarantees it: an entry written before repairs existed has no
+    way to say whether its span was repaired, so it is re-read rather
+    than assumed innocent.
+    """
+
+    if not isinstance(stored, dict):
+        return None
+
+    return DescriptionRepair(
+        first_refused_because=str(stored["first_refused_because"]),
+        reader=str(stored["reader"]),
     )
 
 

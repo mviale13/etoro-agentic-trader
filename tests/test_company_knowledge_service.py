@@ -2,12 +2,14 @@
 
 import asyncio
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
 from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledge,
+    DescriptionRepair,
     RevenueModel,
     SegmentDescription,
 )
@@ -371,3 +373,67 @@ def test_an_unreadable_entry_is_absent_rather_than_repaired(tmp_path: Path) -> N
 
     assert store.read("DIS", ACCESSION) is None
     assert store.latest("DIS") is None
+
+
+def test_a_repaired_span_never_comes_back_off_disk_as_a_first_reading(
+    tmp_path: Path,
+) -> None:
+    """
+    Provenance that does not survive the round trip is not provenance.
+
+    A repaired citation is as good as any other evidence — it passed the
+    identical contract — but how the platform arrived at it is part of
+    what a reader is owed, and an entry that forgot would present the
+    second answer as the first.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+
+    original = knowledge()
+    described = original.segments[0].description
+    assert described is not None
+
+    store.write(
+        replace(
+            original,
+            segments=(
+                replace(
+                    original.segments[0],
+                    description=replace(
+                        described,
+                        repair=DescriptionRepair(
+                            first_refused_because=(
+                                "It quotes words printed under 'Entertainment'."
+                            ),
+                            reader="reader-9",
+                        ),
+                    ),
+                ),
+            ),
+        )
+    )
+
+    restored = store.read("DIS", ACCESSION)
+
+    assert restored is not None
+
+    repair = restored.segments[0].description.repair  # type: ignore[union-attr]
+
+    assert repair is not None
+    assert repair.reader == "reader-9"
+    assert "Entertainment" in repair.first_refused_because
+
+
+def test_an_unrepaired_description_stores_nothing_about_repairs(
+    tmp_path: Path,
+) -> None:
+    """The ordinary case stays the ordinary case, on disk as in memory."""
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.write(knowledge())
+
+    restored = store.read("DIS", ACCESSION)
+
+    assert restored is not None
+    assert restored.segments[0].description is not None
+    assert not restored.segments[0].description.was_repaired

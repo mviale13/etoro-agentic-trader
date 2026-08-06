@@ -1,10 +1,10 @@
 {
   "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
   "reading": {
-    "observed_at": "2026-08-06T12:11:29.931177+00:00",
+    "observed_at": "2026-08-06T14:20:07.167559+00:00",
     "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 5,
+  "schema_version": 6,
   "segments": [
     {
       "description": {
@@ -93,12 +93,12 @@
     {
       "description": {
         "distance": 0,
-        "quoted": "lines of business within Experiences along with their significant business activities",
+        "quoted": "The lines of business within Experiences along with their significant business activities include the following:",
         "revenue_models": [
           "transaction",
+          "services",
           "retail",
-          "licensing",
-          "services"
+          "licensing"
         ],
         "under": "Experiences"
       },

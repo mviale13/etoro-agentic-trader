@@ -67,6 +67,15 @@ def _render_knowledge(knowledge: CompanyKnowledge) -> None:
             print(f"    earns by: {models or 'not stated'}")
             print(f"    does: {segment.description.evidence.stated()}")
 
+            repair = segment.description.repair
+
+            if repair is not None:
+                # A repaired span is never shown as though it were the
+                # first answer. What the platform asked twice for is part
+                # of what a reader is owed about how it knows this.
+                print(f"      repaired: second request, by {repair.reader}")
+                print(f"      first citation refused: {repair.first_refused_because}")
+
         if segment.revenue is None:
             # Absent is a result, not a blank. A segment the filing
             # described without a figure this platform could locate in a

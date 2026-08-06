@@ -10,6 +10,7 @@ from typing import Any
 from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledge,
+    DescriptionRepair,
     RevenueModel,
     SegmentDescription,
 )
@@ -91,6 +92,33 @@ Rules:
 - Omit a segment rather than guess at it. Every cell you cite is read back
   out of the document and compared with what you said is in it, and an
   answer that disagrees with the document is discarded in full.
+"""
+
+REPAIR_SYSTEM_PROMPT = """\
+You are given one claim a previous reading of this filing already made,
+and the citation it offered for that claim, which was refused. Your only
+job is to find a better citation for THE SAME claim.
+
+You are not re-reading the document. You are not looking for a different
+claim, a better claim, or another segment. The claim is fixed. The only
+thing in question is which words of the filing evidence it.
+
+Rules:
+- Return one SHORT verbatim span — between five and fifteen words —
+  copied exactly from the filing text, character for character, from a
+  single run of prose. Do not join text across a table cell, a bullet or
+  a line break, and do not tidy the wording.
+- The span must sit where the filing names THIS segment, and must be
+  what the document says about it. Not a sentence about the company as a
+  whole, not a note about accounting or restated figures, and not words
+  the filing prints under a different segment's name. That is why the
+  previous citation was refused.
+- If this filing contains no such span, return an empty `quoted`. That
+  is a complete and correct answer. An honest empty answer is worth more
+  here than a reached-for one, because a span that does not belong to
+  this segment will be refused again and the claim will be recorded as
+  unevidenced either way.
+- You are asked once. There is no further attempt.
 """
 
 SYSTEM_PROMPT = """\
@@ -261,6 +289,65 @@ def mix_schema() -> dict[str, Any]:
     }
 
 
+def repair_schema() -> dict[str, Any]:
+    """
+    The contract a repair fills, and everything it deliberately cannot.
+
+    One field. There is nowhere here to put a segment name, a revenue
+    model, or a correction to the claim — so a repair that wanted to
+    change what is being claimed has no way to express it. The boundary
+    between *evidence this claim* and *find an acceptable claim* is held
+    by the shape of this object rather than by the wording above it.
+    """
+
+    return {
+        "type": "object",
+        "properties": {
+            "quoted": {
+                "type": "string",
+                "description": (
+                    "A verbatim span from the filing that the document "
+                    "prints under this segment's own name, or empty if "
+                    "the filing contains none."
+                ),
+            },
+        },
+        "required": ["quoted"],
+        "additionalProperties": False,
+    }
+
+
+def repair_prompt(
+    document: SourceDocument,
+    segment: str,
+    refused: str,
+    refused_because: str,
+) -> str:
+    """One claim, its refused citation, and the filing it came from."""
+
+    return "\n".join(
+        (
+            f"Company: {document.source.company}",
+            f"Segment: {segment}",
+            "",
+            "The claim, unchanged: this filing describes what "
+            f"{segment!r} does, and the previous reading cited these "
+            "words for it:",
+            f"  {refused!r}",
+            "",
+            "That citation was refused:",
+            f"  {refused_because}",
+            "",
+            f"Find the words this filing prints under {segment!r} that say "
+            "what it does, or return an empty span if it prints none.",
+            "",
+            "--- FILING BEGINS ---",
+            document.business_description,
+            "--- FILING ENDS ---",
+        )
+    )
+
+
 def mix_prompt(document: SourceDocument, segments: tuple[str, ...]) -> str:
     return "\n".join(
         (
@@ -352,7 +439,141 @@ class CompanyKnowledgeExtractor:
 
         knowledge = self._validated(symbol, document, payload, draft.model)
 
-        return await self._with_revenue_mix(knowledge, document)
+        repaired = await self._with_repaired_descriptions(knowledge, document, payload)
+
+        return await self._with_revenue_mix(repaired, document)
+
+    async def _with_repaired_descriptions(
+        self,
+        knowledge: CompanyKnowledge,
+        document: SourceDocument,
+        payload: dict[str, Any],
+    ) -> CompanyKnowledge:
+        """
+        One bounded second request per claim whose citation did not apply.
+
+        **This is not a retry, and the difference is the whole design.**
+        A retry asks the same open question again and takes whichever
+        answer passes, which turns the reader's objective from *read this
+        document* into *find something acceptable*. A repair asks a
+        closed question about a claim that has already been made: these
+        words were refused as evidence for it — is there better evidence
+        in this document, or none?
+
+        What makes that boundary real rather than instructed:
+
+        - **The claim cannot move.** The repair supplies a span and
+          nothing else; the ways of earning come from the first reading,
+          and `repair_schema` has nowhere to put a new one.
+        - **Only a refused citation is repairable.** A segment the
+          reading described with no words at all made no claim, so there
+          is nothing to repair and none is attempted. Volkswagen's three
+          segments are of that kind and are left exactly as they were.
+        - **Exactly one attempt.** No loop, and a repair that fails is
+          not asked again.
+        - **The refusal still stands if it fails.** The span is held to
+          the identical applicability contract, and a repair that cannot
+          meet it leaves the description absent with both reasons.
+
+        Everything else about the segment — its name, its size, the other
+        segments' descriptions — is untouched either way.
+        """
+
+        claimed = {
+            str(raw.get("name") or "").strip(): raw
+            for raw in payload.get("segments") or ()
+        }
+
+        prose = document.business_description
+        partition = namings(prose, tuple(seg.name for seg in knowledge.segments))
+
+        segments = []
+
+        for segment in knowledge.segments:
+            raw = claimed.get(segment.name) or {}
+            refused = str(raw.get("quoted") or "").strip()
+
+            # Described already, or never claimed anything to repair.
+            if segment.description is not None or not refused:
+                segments.append(segment)
+                continue
+
+            segments.append(
+                await self._repaired(segment, document, prose, partition, raw, refused)
+            )
+
+        return replace(knowledge, segments=tuple(segments))
+
+    async def _repaired(
+        self,
+        segment: BusinessSegment,
+        document: SourceDocument,
+        prose: str,
+        partition: tuple[Naming, ...],
+        raw: dict[str, Any],
+        refused: str,
+    ) -> BusinessSegment:
+        """Ask once for better evidence, and hold the answer to the same rule."""
+
+        first_refused_because = segment.undescribed_because or "It did not apply."
+
+        request = DraftRequest(
+            system_prompt=REPAIR_SYSTEM_PROMPT,
+            user_prompt=repair_prompt(
+                document,
+                segment.name,
+                refused,
+                first_refused_because,
+            ),
+            schema=repair_schema(),
+            max_tokens=MAX_TOKENS,
+        )
+
+        try:
+            draft = await self._provider.draft(request)
+            quoted = str(json.loads(draft.text).get("quoted") or "").strip()
+        except (NarrativeDeclined, json.JSONDecodeError, ValueError) as failed:
+            return _unrepaired(
+                segment,
+                first_refused_because,
+                f"A repair was attempted and could not be read: {failed}",
+            )
+
+        if not quoted:
+            return _unrepaired(
+                segment,
+                first_refused_because,
+                "A repair was attempted, and the reader found no words in "
+                "this filing that describe this segment.",
+            )
+
+        try:
+            described = describes(prose, partition, segment.name, quoted)
+        except EvidenceNotApplicable as inapplicable:
+            # The repair is held to the identical contract, so a second
+            # inapplicable span changes nothing except that a reader now
+            # knows the document was asked twice.
+            return _unrepaired(
+                segment,
+                first_refused_because,
+                f"A repair was attempted and was refused too: {inapplicable}",
+            )
+
+        # The claim, unchanged, now evidenced. The ways of earning are the
+        # first reading's — a repair may not add one, and there is nowhere
+        # in its contract to put one.
+        return replace(
+            segment,
+            description=SegmentDescription(
+                evidence=described,
+                revenue_models=_models(raw),
+                repair=DescriptionRepair(
+                    first_refused_because=first_refused_because,
+                    reader=draft.model,
+                ),
+            ),
+            undescribed_because=None,
+        )
 
     async def _with_revenue_mix(
         self,
@@ -601,11 +822,7 @@ class CompanyKnowledgeExtractor:
                 "never names. The whole reading was discarded."
             )
 
-        models = tuple(
-            RevenueModel(value)
-            for value in raw.get("revenue_models") or ()
-            if value in {model.value for model in RevenueModel}
-        )
+        models = _models(raw)
 
         try:
             described = describes(
@@ -633,6 +850,43 @@ class CompanyKnowledgeExtractor:
             revenue=None,
             description=SegmentDescription(evidence=described, revenue_models=models),
         )
+
+
+def _models(raw: dict[str, Any]) -> tuple[RevenueModel, ...]:
+    """The ways of earning a reading claimed, as this platform holds them.
+
+    Shared by the first reading and by a repair, because a repair
+    evidences the *same* claim: the models it ends up carrying must be
+    the ones already asserted, read out of the same payload, rather than
+    anything the second request had a chance to influence.
+    """
+
+    return tuple(
+        RevenueModel(value)
+        for value in raw.get("revenue_models") or ()
+        if value in {model.value for model in RevenueModel}
+    )
+
+
+def _unrepaired(
+    segment: BusinessSegment,
+    first_refused_because: str,
+    outcome: str,
+) -> BusinessSegment:
+    """A claim whose evidence could not be repaired, with both reasons.
+
+    Deliberately two sentences rather than one. Why the first citation
+    was refused is a fact about that citation; that a repair was
+    attempted and did not succeed is a fact about this platform's
+    effort, and a reader deciding whether the gap is worth chasing needs
+    both. Everything else about the segment is untouched.
+    """
+
+    return replace(
+        segment,
+        description=None,
+        undescribed_because=f"{first_refused_because} {outcome}",
+    )
 
 
 def _reference(raw: dict[str, Any]) -> CellReference:

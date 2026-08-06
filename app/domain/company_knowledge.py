@@ -34,6 +34,35 @@ class RevenueModel(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class DescriptionRepair:
+    """
+    Proof that a span was supplied by a second, bounded request.
+
+    Carried so that a repaired reading is never presented as a first
+    one. Two spans that both pass applicability are equally good
+    evidence for the claim beside them — but how a platform arrived at
+    a citation is part of what a reader is entitled to know, and a
+    surface that showed the repaired span silently would be concealing
+    that the first attempt cited something else.
+
+    Its existence is also the audit trail for a boundary this platform
+    is deliberately close to: a repair asks again, and asking again is
+    one short step from asking until something passes. An unrecorded
+    repair would make that step invisible.
+    """
+
+    #: Why the first citation was refused, in applicability's own words.
+    #: The claim did not change; only the evidence offered for it did,
+    #: and this is what the platform declined to accept the first time.
+    first_refused_because: str
+
+    #: What performed the repair — the same wording the reading carries,
+    #: because a repair is a reading and is exactly as trustworthy as
+    #: whatever did it.
+    reader: str
+
+
+@dataclass(frozen=True, slots=True)
 class SegmentDescription:
     """
     What a segment does and how it earns, with proof it is said of *it*.
@@ -51,11 +80,28 @@ class SegmentDescription:
 
     revenue_models: tuple[RevenueModel, ...]
 
+    #: Where this span came from, if not the first reading. None is the
+    #: ordinary case and means the first citation was applicable.
+    #:
+    #: The ways of earning beside it are *never* repaired. A repair may
+    #: supply a span and nothing else, so the claim it evidences is the
+    #: one the first reading made — which is what keeps "repair the
+    #: evidence for this claim" from becoming "find an acceptable claim".
+    #: Structural rather than instructed: there is nowhere in the repair
+    #: contract to put a revenue model.
+    repair: DescriptionRepair | None = None
+
     @property
     def quoted(self) -> str:
         """The filing's own words."""
 
         return self.evidence.quoted
+
+    @property
+    def was_repaired(self) -> bool:
+        """Whether this span came from a second, bounded request."""
+
+        return self.repair is not None
 
 
 @dataclass(frozen=True, slots=True)
