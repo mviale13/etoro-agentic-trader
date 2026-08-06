@@ -893,9 +893,10 @@ company is legally answerable for.
 4. **Investment Archetype rules.** Deterministic rules over the facts now
    being read. No archetype is decided anywhere in the knowledge work — the
    layer stores facts, and the rules that read them come next
-5. **Company Knowledge / Coverage UI.** Which companies the platform has
-   read, from which document, as of which period — and, stated apart, which
-   it could not read and why
+5. **Dossier transparency for company knowledge, coverage and playbook
+   selection.** Which companies the platform has read, from which document,
+   as of which period; why a security drew the playbook it did; and, stated
+   apart, what could not be read and why
 
 ## Policy — `data/knowledge/` is tracked, and is not a cache
 
