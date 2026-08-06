@@ -1159,6 +1159,61 @@ description that reads exactly like a measurement and is not one. An
 absence is a fact about this platform's reach. A plausible substitute is
 a claim about a company.
 
+## Evidence has kinds, and they are not equally strong
+
+The boundaries above say what a citation must survive. This says what a
+citation *is*, and the difference turned out to matter more than either
+alone. It was not designed up front; it emerged from production, and the
+schema 5 → 6 migration measured it.
+
+```text
+Structured evidence        →  table coordinates
+        ↓
+Semi-structured evidence   →  document regions
+        ↓
+Unstructured evidence      →  grounded spans
+```
+
+**An address is not a reading.** A table coordinate names a cell: the
+platform goes to that address in a document it parsed itself and reads
+what is there. A narrative description is a *choice* of words made by
+whatever read the filing. Those are different kinds of evidence, and the
+difference is not one of confidence — it is one of nature.
+
+**Reproducibility is therefore a property of the evidence, not of the
+reader.** Re-reading seven companies under a new schema, every measured
+size came back identical to the digit and every quoted span moved. The
+sizes are addresses, so two independent readings resolve to the same
+cell. The spans are readings, so two independent readings legitimately
+choose different words while both remain true. Neither is a defect. A
+platform that expects a span to be stable has misunderstood what a span
+is.
+
+### The acquisition principle
+
+> **Always prefer the strongest structural evidence the document
+> actually offers.**
+
+In practice, and in this order:
+
+- a **table coordinate** before a numeric span
+- a **document region** before positional proximity
+- **positional proximity** before an unsupported absence
+
+This is not a tenth invariant. The invariants say what a claim must
+establish; this says how the platform should go about establishing it,
+and it is a matter of acquisition rather than of truth. A weaker
+mechanism is not wrong — proximity is sound evidence on a document that
+offers nothing better — it is simply what to fall back to, never what to
+reach for first.
+
+The corollary is what keeps it honest: **preferring stronger evidence
+must never mean accepting more**. Every mechanism, strong or weak,
+discharges the identical boundaries above. A structurally selected span
+passes the same grounding and applicability checks a positionally
+selected one does; what changes is which span is offered, never what it
+has to survive.
+
 The boundaries are also **independent**, which is why they are separate
 stages rather than one validator. A reading can be perfectly grounded and
 about the wrong company; perfectly applicable and quoting words the
@@ -1357,6 +1412,43 @@ Two positional rules discharge it, both measured rather than chosen:
 Both are implementation. Replacing them with something that establishes
 ownership more directly is an improvement to this section, not a
 contradiction of it.
+
+**What an owner is, stated apart from how one is found.** A structural
+owner is *the smallest region of the document that can be shown to
+correspond uniquely to the claim*. Every word of that carries weight:
+
+- **smallest** — a region that covers the whole filing owns nothing in
+  particular, and a claim owned by everything is unowned.
+- **shown** — computed by this platform from the document, never
+  accepted from whatever read it.
+- **uniquely** — if two regions could own the claim, none does.
+  Ambiguity is not resolved by preference or by order; it means there is
+  no structural owner, and the platform falls back to the weaker
+  mechanism or reports the absence.
+
+Today such a region is introduced by a heading. Tomorrow it may come
+from XBRL narrative blocks, tagged document regions, semantic anchors,
+or a filer's explicit section markup. Each of those would be a stronger
+mechanism for the same concept, and none of them changes the concept —
+which is the test of whether this section is written at the right
+altitude.
+
+**Why a stronger mechanism is now needed, measured rather than argued.**
+Meta's 10-K is not an ambiguous document; this platform's ownership
+model is. The only exact occurrences of the stored names `Family of Apps
+(FoA)` and `Reality Labs (RL)` sit twenty-five characters apart, in one
+summary sentence, *after* all the descriptive prose — which lives under
+the headings `Family of Apps Products` and `Reality Labs Products`. So
+"the segment whose name most recently precedes it" hands nearly the
+whole document to whichever segment that late sentence names last. The
+partition is not imprecise. It is inverted.
+
+That is a different class of failure from a poorly chosen span, and it
+is why a targeted repair recovered nothing: asking again for a better
+citation cannot correct a region model. The document's structure is
+machine-readable — both headings are one short bold span inside a block
+element, and `Flattened.markup_span` already maps prose back to the
+markup that carries them.
 
 What is deliberately **not** a rule is that the span contain the
 segment's name. Two of Disney's three sound citations do not — the name
@@ -1629,4 +1721,50 @@ one after it cannot detect. New capabilities — providers, analysts,
 playbooks, committees — belong somewhere on this chain. A capability that
 bypasses a link is not a shortcut; it is a claim made without the check
 that link performs.
+
+## This is an evidence graph, not a retrieval system
+
+Worth naming, because the difference decides what gets built next.
+
+A retrieval system fetches text that is *relevant* to a question and
+hands it to something that writes an answer. Relevance is the only
+relationship it models, it is unverifiable after the fact, and a
+retrieved passage that turns out not to support the sentence beside it
+leaves no trace that it did not.
+
+What this platform has accumulated instead is a graph in which every
+claim carries its relationships explicitly:
+
+```text
+                    ┌──────────────────┐
+                    │ Source document  │
+                    └────────┬─────────┘
+                             │ identity — whose company this is
+                    ┌────────┴─────────┐
+                    │     Document     │
+                    └────┬────────┬────┘
+              table ─────┘        └───── region
+                    │                    │
+              ┌─────┴─────┐        ┌─────┴─────┐
+              │   Cell    │        │   Span    │
+              └─────┬─────┘        └─────┬─────┘
+                    │  applicability     │  ownership
+                    └────────┬───────────┘
+                             ↓
+                          Claim
+```
+
+Each edge is a checkable assertion rather than a similarity score, and
+each is checked by a different boundary: identity says the document is
+this company's, ownership says the region is this claim's, applicability
+says the cell or the span supports what it was cited for. A claim
+missing an edge is not weakly supported — it is *absent*, and says so.
+
+Two consequences follow, and both have already been paid for. An edge
+can be strengthened without the graph changing shape, which is why
+replacing positional ownership with structural ownership is an
+improvement rather than a redesign. And a claim can be walked backwards
+from a dashboard to a cell in a filing a reader can open, which is what
+the platform sells: not an answer that sounds well-sourced, but one
+whose sources can be checked.
 

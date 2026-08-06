@@ -1278,7 +1278,49 @@ says nothing:
    (`Flattened.markup_span`), so a span can be owned by the section
    containing it. Proximity then becomes the fallback for documents with
    no usable structure, exactly as `prose_evidence` anticipates. This is
-   what stands between the archetype engine and the portfolio
+   what stands between the archetype engine and the portfolio.
+
+   **Start from the ownership model, not from a prompt.** The concept is
+   in `architecture.md`: *a structural owner is the smallest region of
+   the document that can be shown to correspond uniquely to the claim*.
+   The pipeline it implies:
+
+   ```text
+   Document structure → named region → candidate spans within it
+                      → applicability → proximity only where structure is absent
+   ```
+
+   **Measured, so the implementation does not have to rediscover it.**
+   On Meta's 10-K the only exact occurrences of `Family of Apps (FoA)`
+   and `Reality Labs (RL)` sit at prose offsets 7021 and 7046 — twenty
+   five characters apart, in one summary sentence, *after* the
+   descriptive prose at 2323–6400. The real regions are introduced by
+   the headings `Family of Apps Products` and `Reality Labs Products`.
+   SEC filers do not use `<h1>`; both headings are the same idiom, a
+   block element whose entire content is one short bold span
+   (`font-weight:700`).
+
+   **The hard part is heading-to-segment matching, not heading
+   detection.** The heading reads `Family of Apps Products`, the stored
+   name is `Family of Apps (FoA)`, and neither contains the other. A
+   candidate rule: strip a trailing parenthetical the filer defined,
+   then a heading owns the segment when it contains that normalised name
+   and no other heading does. Uniqueness is the whole safeguard.
+
+   **Acceptance cases:**
+
+   1. *Meta-shaped* — several segment names introduced together, then
+      described in sequence. Each description binds to its own
+      structural region even though another segment's name is nearer.
+   2. *Volkswagen-shaped* — no usable structure, so proximity remains
+      the fallback and may still return absence.
+   3. *Misleading nearby text* — boilerplate or another segment's
+      sentence is closer but outside the owning region, and is refused.
+   4. *Structure and proximity disagree* — structure wins only where its
+      ownership is unambiguous; otherwise the field stays absent.
+   5. *No boundary weakening* — a structurally selected span passes the
+      same grounding and applicability checks as any other. Preferring
+      stronger evidence never means accepting more.
 2. **Segment sizes where a table was not found.** Caterpillar and
    JPMorgan describe their segments and neither had a size proven. Both
    print segment revenue; the mix reading did not locate it. Worth
