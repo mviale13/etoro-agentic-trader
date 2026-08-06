@@ -1,0 +1,109 @@
+{
+  "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
+  "reading": {
+    "observed_at": "2026-08-06T12:39:22.018825+00:00",
+    "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
+  },
+  "schema_version": 5,
+  "segments": [
+    {
+      "description": {
+        "distance": 24,
+        "quoted": "includes our Data Center accelerated computing and networking platforms",
+        "revenue_models": [
+          "manufacturing",
+          "licensing",
+          "services"
+        ],
+        "under": "Compute & Networking"
+      },
+      "name": "Compute & Networking",
+      "revenue": {
+        "denominator": {
+          "caption": "% Reportable Segments Revenue by Reportable Segments",
+          "cell": {
+            "column": 1,
+            "row": 5,
+            "table": 2
+          },
+          "column_header": "Year Ended",
+          "label": "Total",
+          "printed": "$ 215,938",
+          "value": 215938.0
+        },
+        "numerator": {
+          "caption": "% Reportable Segments Revenue by Reportable Segments",
+          "cell": {
+            "column": 1,
+            "row": 3,
+            "table": 2
+          },
+          "column_header": "Year Ended",
+          "label": "Compute & Networking",
+          "printed": "$ 193,479",
+          "value": 193479.0
+        }
+      },
+      "undescribed_because": null
+    },
+    {
+      "description": {
+        "distance": 15,
+        "quoted": "includes GeForce GPUs for gaming and PCs",
+        "revenue_models": [
+          "manufacturing"
+        ],
+        "under": "Graphics"
+      },
+      "name": "Graphics",
+      "revenue": {
+        "denominator": {
+          "caption": "% Reportable Segments Revenue by Reportable Segments",
+          "cell": {
+            "column": 1,
+            "row": 5,
+            "table": 2
+          },
+          "column_header": "Year Ended",
+          "label": "Total",
+          "printed": "$ 215,938",
+          "value": 215938.0
+        },
+        "numerator": {
+          "caption": "% Reportable Segments Revenue by Reportable Segments",
+          "cell": {
+            "column": 1,
+            "row": 4,
+            "table": 2
+          },
+          "column_header": "Year Ended",
+          "label": "Graphics",
+          "printed": "22,459",
+          "value": 22459.0
+        }
+      },
+      "undescribed_because": null
+    }
+  ],
+  "source": {
+    "authority": "regulator_filed",
+    "company": "NVIDIA CORP",
+    "document_format": "html",
+    "identifier": "10-K 0001045810-26-000021",
+    "key": "0001045810-26-000021",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-25",
+    "reporting_period": {
+      "ends_on": "2026-01-25",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "NVDA",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "NVDA"
+}

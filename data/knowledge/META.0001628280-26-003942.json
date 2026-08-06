@@ -1,0 +1,93 @@
+{
+  "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
+  "reading": {
+    "observed_at": "2026-08-06T12:37:55.753322+00:00",
+    "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
+  },
+  "schema_version": 5,
+  "segments": [
+    {
+      "description": null,
+      "name": "Family of Apps (FoA)",
+      "revenue": {
+        "denominator": {
+          "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+          "cell": {
+            "column": 1,
+            "row": 7,
+            "table": 3
+          },
+          "column_header": "Year Ended December\u00a031,",
+          "label": "Total revenue",
+          "printed": "$ 200,966",
+          "value": 200966.0
+        },
+        "numerator": {
+          "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+          "cell": {
+            "column": 1,
+            "row": 5,
+            "table": 3
+          },
+          "column_header": "Year Ended December\u00a031,",
+          "label": "Family of Apps",
+          "printed": "198,759",
+          "value": 198759.0
+        }
+      },
+      "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints under 'Reality Labs (RL)', so they are not what it says about 'Family of Apps (FoA)'."
+    },
+    {
+      "description": null,
+      "name": "Reality Labs (RL)",
+      "revenue": {
+        "denominator": {
+          "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+          "cell": {
+            "column": 1,
+            "row": 7,
+            "table": 3
+          },
+          "column_header": "Year Ended December\u00a031,",
+          "label": "Total revenue",
+          "printed": "$ 200,966",
+          "value": 200966.0
+        },
+        "numerator": {
+          "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+          "cell": {
+            "column": 1,
+            "row": 6,
+            "table": 3
+          },
+          "column_header": "Year Ended December\u00a031,",
+          "label": "Reality Labs",
+          "printed": "2,207",
+          "value": 2207.0
+        }
+      },
+      "undescribed_because": "The description of 'Reality Labs (RL)' quotes words that sit 404 characters from where the document last named it \u2014 far enough to be about something else. A description is what a document says of a segment, not what it happens to say after one."
+    }
+  ],
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Meta Platforms, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-003942",
+    "key": "0001628280-26-003942",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-01-29",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "META",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "META"
+}

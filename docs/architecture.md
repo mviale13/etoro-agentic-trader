@@ -1414,6 +1414,18 @@ document* to *find something acceptable*, which are not the same
 activity. If coverage proves unacceptable in production, the answer is a
 better evidence model, not more attempts under this one.
 
+Coverage did prove unacceptable — the archetype rules classify two
+companies in eight — and the response holds that line rather than
+crossing it. **Repairing the evidence for a claim already extracted is
+not retrying the reading.** A targeted repair asks one bounded question
+about one existing claim — same segment, same document, same period, no
+new factual content — and accepts an explicit absence as an answer. It
+cannot drift into *find something acceptable*, because it is not
+permitted to change what is being claimed, only to evidence it or fail.
+A repaired span records that it came from a repair, so a reader never
+sees a second attempt presented as a first reading. Designed, not built:
+`PROJECT_STATE.md` carries it as the next slice.
+
 ---
 
 # The Primary Source Ecosystem
@@ -1582,8 +1594,23 @@ Artificial CIO:
 ```text
 Identity  →  Primary Source Resolution  →  Grounding  →  Applicability  →  Knowledge
                                                                                 ↓
+                                                                            Archetype
+                                                                                ↓
              Communication  ←  Decision  ←  Reasoning  ←───────────────────────┘
 ```
+
+**Knowledge → Archetype is where facts become understanding**, and it is
+the only link on the chain that concludes rather than checks. Everything
+above it narrows what may be assumed about a document; the archetype
+rules read what survived and answer a question no document is asked —
+what kind of business is this. They are deterministic and they never ask
+a model, because a model would answer from what it knows about the
+company, and that is the industry taxonomy this link replaces
+(`app/services/archetype_engine.py`).
+
+It concludes but does not decide. What kind of business a company is
+still reaches the Artificial CIO as evidence, exactly as an analyst's
+assessment does.
 
 Each arrow is a narrowing of what the next stage is allowed to assume,
 and every stage exists because the one before it can fail in a way the

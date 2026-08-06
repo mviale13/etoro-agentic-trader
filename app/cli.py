@@ -4,6 +4,7 @@ from collections.abc import Callable, Coroutine
 from typing import Any, NoReturn
 
 from app.commands import (
+    archetype,
     brain,
     committee,
     company,
@@ -151,6 +152,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example DIS, ASML or VOW3.DE",
     )
 
+    archetype_parser = subparsers.add_parser(
+        "archetype",
+        help="Show what kind of business a company is, and what decided it",
+        description=(
+            "Classify a company from its own report rather than from an "
+            "industry: how much of its revenue earns which way, the rules "
+            "that read it, and what could not be established"
+        ),
+    )
+    archetype_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or VOW3.DE",
+    )
+
     writer_compare_parser = subparsers.add_parser(
         "writer-compare",
         help="Word one dossier with every writing provider and compare",
@@ -179,6 +194,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "knowledge":
         return await knowledge.run(args.symbol)
+
+    if args.command == "archetype":
+        return await archetype.run(args.symbol)
 
     if args.command == "writer-compare":
         return await writer_compare.run(args.symbol)

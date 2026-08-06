@@ -92,6 +92,8 @@ Orchestration lives in `app/application/workspace`:
 | `app/domain/prose_evidence.py` | Applicability for a description: the document's own naming of its segments as a partition of the prose, and the span's position within it |
 | `app/services/narrative_providers.py` | Building a model client, once, for both seams that use one |
 | `app/services/company_knowledge_reader.py` | Which model reads a filing — configured apart from the one that words a case |
+| `app/domain/company_archetype.py` | What kind of business a company is: the conclusion, every rule that reached it, and what was not established |
+| `app/services/archetype_engine.py` | The rules themselves — a pure function over `CompanyKnowledge`, no model, no industry |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
 | `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |
