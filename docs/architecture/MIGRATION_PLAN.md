@@ -345,7 +345,7 @@ the roadmap follows the classes:
   | Symbol | Measured failure | Times |
   |---|---|---|
   | ETOR | grounding contract refused: "the extractor described no business" (foreign-private-issuer filing shape) | 2×, identical, 2026-08-07 |
-  | VOW3.DE | at quorum on the issuer's own 2025 annual report: every segment description "arrived with no words at all" — sizes settle (98.4% measured), explanations never arrive | 5 of 5 observations, 2026-08-07 |
+  | VOW3.DE | *resolved into a document fact by Reader Slice 1*: asked by name, the reader finds no describing words — the tagged note prints tables and accounting boilerplate, verified by inspection of all 6,121 characters | 6 of 6 asked-by-name readings, 2026-08-07 |
 
   **The taxonomy ran (2026-08-07, `movrvest reader-defects`: 9
   companies scanned, 7 carrying defects, 14 absent claims) and the
@@ -398,15 +398,46 @@ the roadmap follows the classes:
   its 6 resolved by width alone, and only CAT's remains open. The
   history the snapshot could never show is exactly this column.
 
-  **Queued behind it, awaiting the owner's go:** the two earned reader
-  slices — *description never arrived* (JPM, VOW3.DE) and *description
-  rejected by applicability* (JPM, META) — with JPM as the regression
-  case for both, since it exercises the largest portion of the reader.
-  The causal chain the taxonomy exposed says each landed slice should
-  move the portfolio KPI with no further engineering: reader →
-  grounded descriptions → revenue mechanisms → understanding →
-  authoritative playbook → KPI. That prediction is itself testable,
-  and should be tested when the first slice lands.
+  **Reader Slice 1 executed (2026-08-07, approved by the owner):
+  *description never arrived* fell 4 open claims → 0, and the causal
+  chain's prediction was tested and failed at its first link — which
+  is the finding.** The slice: a segment whose description arrives
+  with no words is now *asked about once, by name* — a closed,
+  one-field question held to the identical applicability contract and
+  recorded like a repair, overturning the leave-it-as-it-arrived rule
+  the measurement had falsified (on JPM's 10-K, readings found words
+  intermittently that the focused question then judged honestly).
+  Asked by name, the reader returned empty for every targeted segment
+  in every new reading — JPM to 9 observations, VOW3.DE to 11 — and
+  the absence now carries the stronger cause: **no description found
+  when asked by name**, a fact about the text read, not about the
+  reader. Two supporting facts, verified before the spend: JPM's Item
+  1 names its segments once and states their descriptions are
+  *included elsewhere* in the 10-K (the same pointer shape as its
+  sizes), and VW's tagged note is 6,121 characters of accounting
+  boilerplate and tables with not one describing sentence. JPM's CIB
+  also *lost* a phantom description — the segment-listing sentence,
+  carrying no way of earning — which the closed question declines to
+  reach for; total absent claims rose 14 → 15 because the platform now
+  claims less and says why.
+
+  **The prediction's verdict: grounded authoritative playbooks
+  (portfolio) 2 → 2, unchanged.** The chain reader → grounded
+  descriptions → mechanisms → understanding → playbook → KPI broke at
+  link one, for a measured reason: the descriptions are not in the
+  text this platform reads. Per the constitution's own rule, that
+  failed hypothesis names the next bottleneck instead of patching
+  around it — and the taxonomy's pattern rule now returns it as
+  earned: *no description found when asked by name* reaches JPM and
+  VOW3.DE (5 claims), so the earned slice is **reading the part of
+  the document that describes the segments** (JPM: the exhibit its
+  Item 1 and Item 7 both point into; VOW3.DE: the untagged
+  management-report narrative). Recorded, not started — the owner
+  decides.
+
+  **Still queued, awaiting the owner's go:** the second earned reader
+  slice — *description rejected by applicability* (JPM, META), JPM
+  the regression case.
 
 - **Stream C — authority.** The highest-leverage spend after Phase A:
   holdings at width 1 are four observations from an authoritative

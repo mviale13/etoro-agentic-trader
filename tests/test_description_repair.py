@@ -23,8 +23,10 @@ from app.domain.primary_source import (
     SourceDocument,
     SourceType,
 )
+from app.domain.reader_defects import DefectCause, cause_of
 from app.providers.narrative_provider import Draft, DraftRequest
 from app.services.company_knowledge_extractor import (
+    ASKED_BY_NAME_SYSTEM_PROMPT,
     REPAIR_SYSTEM_PROMPT,
     CompanyKnowledgeExtractor,
 )
@@ -96,6 +98,14 @@ class ScriptedProvider:
             request
             for request in self.requests
             if request.system_prompt == REPAIR_SYSTEM_PROMPT
+        ]
+
+    @property
+    def asked_by_name(self) -> list[DraftRequest]:
+        return [
+            request
+            for request in self.requests
+            if request.system_prompt == ASKED_BY_NAME_SYSTEM_PROMPT
         ]
 
 
@@ -252,23 +262,116 @@ def test_a_repair_cannot_change_what_is_being_claimed() -> None:
     assert set(provider.repairs[0].schema["properties"]) == {"quoted"}
 
 
-def test_a_segment_that_claimed_nothing_is_never_repaired() -> None:
+def test_an_empty_arrival_is_asked_by_name_not_repaired() -> None:
     """
-    Volkswagen's shape. A reading that returned no words for a segment
-    made no claim about what it does, so there is no claim to repair —
-    and asking anyway would be searching the document for something
-    acceptable, which is the thing this is not.
+    A reading that returned no words made no claim, so there is nothing
+    to *repair* — the repair contract is never used for it. What it now
+    earns instead is the asked-by-name follow-up: a closed question
+    about that one segment, exactly once. The taxonomy overturned the
+    old leave-it-as-it-arrived rule with a measurement: on JPMorgan's
+    10-K, two readings in five found describing words the other three
+    returned empty, so an empty arrival is one pass's attention, not
+    yet a fact about the filing.
     """
 
-    knowledge, provider = extract(reading(""))
+    knowledge, provider = extract(reading(""), {"quoted": ITS_OWN_WORDS})
+
+    assert provider.repairs == []
+    assert len(provider.asked_by_name) == 1
+    assert named(knowledge, "Experiences").description is not None
+
+
+def test_asked_by_name_describes_the_segment_and_says_how_it_was_asked() -> None:
+    knowledge, provider = extract(reading(""), {"quoted": ITS_OWN_WORDS})
+
+    experiences = named(knowledge, "Experiences")
+
+    assert experiences.description is not None
+    assert experiences.quoted == ITS_OWN_WORDS
+    assert experiences.undescribed_because is None
+
+    # The claim is the first reading's: the models arrived beside the
+    # empty span, and the follow-up evidenced them rather than made them.
+    assert experiences.revenue_models == (
+        RevenueModel.TRANSACTION,
+        RevenueModel.LICENSING,
+    )
+
+    # Recorded, never presented as a first reading.
+    repair = experiences.description.repair
+    assert repair is not None
+    assert "no words at all" in repair.first_refused_because
+    assert repair.reader == "reader-9"
+
+
+def test_asked_by_name_finding_nothing_is_the_stronger_worded_absence() -> None:
+    """
+    Volkswagen's shape, measured: its tagged note prints tables and
+    boilerplate and describes nothing, so the honest answer to the
+    closed question is empty — and that absence is a different fact
+    from an empty first arrival, because the attention explanation has
+    been ruled out. The taxonomy reads it as its own cause.
+    """
+
+    knowledge, provider = extract(reading(""), {"quoted": ""})
 
     experiences = named(knowledge, "Experiences")
 
     assert experiences.description is None
-    assert provider.repairs == []
+    assert experiences.revenue_models == ()
 
-    # The absence is the reading's own, unaltered by any repair wording.
-    assert "repair" not in (experiences.undescribed_because or "").lower()
+    because = experiences.undescribed_because or ""
+
+    assert "no words at all" in because
+    assert "Asked once more by name" in because
+    assert cause_of(because) is DefectCause.NONE_TO_QUOTE
+
+    assert len(provider.asked_by_name) == 1
+
+
+def test_an_asked_by_name_span_is_held_to_the_identical_contract() -> None:
+    knowledge, _ = extract(reading(""), {"quoted": ANOTHER_SEGMENTS_WORDS})
+
+    experiences = named(knowledge, "Experiences")
+
+    assert experiences.description is None
+    assert "refused too" in (experiences.undescribed_because or "")
+
+
+def test_asked_by_name_is_one_attempt_and_cannot_supply_a_claim() -> None:
+    """
+    The same boundary the repair holds, held here: one bounded request,
+    and a one-field contract with nowhere to put a revenue model or a
+    different segment. A segment that arrived with neither words nor
+    models is described and names no way of earning — the narrower
+    honest claim — however many models the follow-up tries to send.
+    """
+
+    wordless = {
+        "description": "A diversified entertainment company.",
+        "segments": [
+            {
+                "name": "Entertainment",
+                "revenue_models": ["subscription"],
+                "quoted": "produces and distributes film and television content",
+            },
+            {"name": "Experiences", "revenue_models": [], "quoted": ""},
+        ],
+    }
+
+    knowledge, provider = extract(
+        wordless,
+        {"quoted": ITS_OWN_WORDS, "revenue_models": ["premiums"]},
+        {"quoted": ITS_OWN_WORDS},  # never asked for
+    )
+
+    experiences = named(knowledge, "Experiences")
+
+    assert experiences.description is not None
+    assert experiences.revenue_models == ()
+
+    assert len(provider.asked_by_name) == 1
+    assert set(provider.asked_by_name[0].schema["properties"]) == {"quoted"}
 
 
 def test_a_sound_citation_is_never_second_guessed() -> None:

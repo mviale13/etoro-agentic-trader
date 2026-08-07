@@ -271,6 +271,16 @@ def build_parser() -> argparse.ArgumentParser:
         "symbol",
         help="Ticker symbol, for example DIS, NVDA or VOW3.DE",
     )
+    observe_parser.add_argument(
+        "--to",
+        type=int,
+        default=None,
+        help=(
+            "Observe up to this many observations instead of the quorum — "
+            "a deeper, explicit spend. The count is fixed before anything "
+            "is read; the content never moves it"
+        ),
+    )
 
     reader_stability_parser = subparsers.add_parser(
         "reader-stability",
@@ -322,7 +332,7 @@ async def dispatch(args: argparse.Namespace) -> int:
         return await reader_stability.run(args.symbol, args.readings)
 
     if args.command == "observe":
-        return await observe.run(args.symbol)
+        return await observe.run(args.symbol, args.to)
 
     if args.command == "understanding":
         return await understanding.run(args.symbol)

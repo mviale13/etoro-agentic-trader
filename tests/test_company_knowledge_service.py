@@ -582,6 +582,37 @@ def test_observe_fills_the_quorum_and_stops_on_the_count(tmp_path: Path) -> None
     assert extractor.extractions == QUORUM
 
 
+def test_observe_reaches_a_deeper_target_and_still_stops_on_the_count(
+    tmp_path: Path,
+) -> None:
+    """
+    The deeper explicit spend: a target past the quorum, fixed before
+    anything is read. The rule is unchanged — the count stops the run,
+    never the content — and a target the entry already meets observes
+    nothing further.
+    """
+
+    provider = ProviderStub()
+    extractor = ExtractorStub()
+    knowing = service(tmp_path, provider, extractor)
+
+    asyncio.run(knowing.observe("DIS"))
+
+    assert extractor.extractions == QUORUM
+
+    outcome = asyncio.run(knowing.observe("DIS", target=QUORUM + 2))
+
+    assert extractor.extractions == QUORUM + 2
+    assert outcome.knowledge is not None
+    assert outcome.knowledge.observation_count == QUORUM + 2
+    assert outcome.knowledge.state is ConsensusState.QUORATE
+
+    # A shallower target than the entry's width spends nothing.
+    asyncio.run(knowing.observe("DIS", target=3))
+
+    assert extractor.extractions == QUORUM + 2
+
+
 def test_a_refused_reading_ends_the_observe_run_and_keeps_what_stands(
     tmp_path: Path,
 ) -> None:

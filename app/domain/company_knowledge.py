@@ -61,9 +61,12 @@ class DescriptionRepair:
     repair would make that step invisible.
     """
 
-    #: Why the first citation was refused, in applicability's own words.
-    #: The claim did not change; only the evidence offered for it did,
-    #: and this is what the platform declined to accept the first time.
+    #: Why the platform asked a second time, in the knowledge layer's
+    #: own words: applicability's refusal of the first citation, or —
+    #: for a segment the first reading described with no words at all —
+    #: that very absence. Either way the sentence is what stood before
+    #: the second request, and it is kept so the record shows what the
+    #: request was answering.
     first_refused_because: str
 
     #: What performed the repair — the same wording the reading carries,
@@ -90,15 +93,20 @@ class SegmentDescription:
 
     revenue_models: tuple[RevenueModel, ...]
 
-    #: Where this span came from, if not the first reading. None is the
-    #: ordinary case and means the first citation was applicable.
+    #: Where this span came from, if not the first reading: a repair of
+    #: a refused citation, or the asked-by-name follow-up a wordless
+    #: arrival earns. None is the ordinary case and means the first
+    #: citation was applicable.
     #:
-    #: The ways of earning beside it are *never* repaired. A repair may
-    #: supply a span and nothing else, so the claim it evidences is the
-    #: one the first reading made — which is what keeps "repair the
-    #: evidence for this claim" from becoming "find an acceptable claim".
-    #: Structural rather than instructed: there is nowhere in the repair
-    #: contract to put a revenue model.
+    #: The ways of earning beside it are *never* supplied by the second
+    #: request. It may return a span and nothing else, so the claim
+    #: evidenced is the one the first reading made — for a segment that
+    #: arrived with neither words nor models, that claim is "described,
+    #: naming no way of earning", the narrower honest statement. This is
+    #: what keeps "evidence this claim" from becoming "find an
+    #: acceptable claim", and it is structural rather than instructed:
+    #: there is nowhere in the one-field contract to put a revenue
+    #: model.
     repair: DescriptionRepair | None = None
 
     @property

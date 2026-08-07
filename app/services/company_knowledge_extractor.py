@@ -127,6 +127,34 @@ Rules:
 - You are asked once. There is no further attempt.
 """
 
+ASKED_BY_NAME_SYSTEM_PROMPT = """\
+A previous reading of this filing reported a segment and offered no
+words describing it. Your only job is to answer, for THAT ONE segment:
+does this filing print words that say what it does?
+
+You are not re-reading the document, and you are not looking for other
+segments or better claims. One segment, named below, once.
+
+Rules:
+- Return one SHORT verbatim span — between five and fifteen words —
+  copied exactly from the filing text, character for character, from a
+  single run of prose. Do not join text across a table cell, a bullet or
+  a line break, and do not tidy the wording.
+- The span must sit where the filing names THIS segment, and must be
+  what the document says about it — what it makes, sells, operates or
+  provides. A table's labels, headers and figures are not a description,
+  and neither is a note about accounting, restated figures or legal
+  form.
+- If this filing prints no such words, return an empty `quoted`. That is
+  a complete and correct answer, and on some filings it is the true one:
+  a document can name its segments in a table and describe them nowhere
+  this text reaches. An honest empty answer is worth more here than a
+  reached-for one, because a span that does not describe this segment
+  will be refused and the claim will be recorded as unevidenced either
+  way.
+- You are asked once. There is no further attempt.
+"""
+
 SYSTEM_PROMPT = """\
 You extract structural facts from a company's annual report. You do not
 analyse the company, rate it, or classify it.
@@ -354,6 +382,27 @@ def repair_prompt(
     )
 
 
+def asked_by_name_prompt(document: SourceDocument, segment: str) -> str:
+    """One segment the first reading left wordless, asked about by name."""
+
+    return "\n".join(
+        (
+            f"Company: {document.source.company}",
+            f"Segment: {segment}",
+            "",
+            f"A previous reading of this filing reported the segment "
+            f"{segment!r} and offered no words describing it.",
+            "",
+            f"Find the words this filing prints under {segment!r} that say "
+            "what it does, or return an empty span if it prints none.",
+            "",
+            "--- FILING BEGINS ---",
+            document.business_description,
+            "--- FILING ENDS ---",
+        )
+    )
+
+
 def mix_prompt(document: SourceDocument, segments: tuple[str, ...]) -> str:
     return "\n".join(
         (
@@ -470,18 +519,29 @@ class CompanyKnowledgeExtractor:
 
         What makes that boundary real rather than instructed:
 
-        - **The claim cannot move.** The repair supplies a span and
-          nothing else; the ways of earning come from the first reading,
-          and `repair_schema` has nowhere to put a new one.
-        - **Only a refused citation is repairable.** A segment the
-          reading described with no words at all made no claim, so there
-          is nothing to repair and none is attempted. Volkswagen's three
-          segments are of that kind and are left exactly as they were.
-        - **Exactly one attempt.** No loop, and a repair that fails is
-          not asked again.
+        - **The claim cannot move.** The second request supplies a span
+          and nothing else; the ways of earning come from the first
+          reading, and `repair_schema` has nowhere to put a new one.
+        - **Exactly one attempt.** No loop, and a second request that
+          fails is not asked again.
         - **The refusal still stands if it fails.** The span is held to
-          the identical applicability contract, and a repair that cannot
-          meet it leaves the description absent with both reasons.
+          the identical applicability contract, and an answer that
+          cannot meet it leaves the description absent with both
+          reasons.
+
+        A segment the reading described with *no words at all* was once
+        left exactly as it arrived, on the argument that it made no
+        claim and asking would be searching for something acceptable.
+        The defect taxonomy overturned that with a measurement: on one
+        filing, two readings in five found describing words the other
+        three returned empty — the words were in the document and the
+        first pass's attention was the only thing that varied. So an
+        empty arrival is now *asked about once, by name*: a closed
+        question about one segment, whose honest answer may be that the
+        text prints none — which is a finding, worded apart, not a
+        failure. Every guard above applies unchanged, and the answer is
+        recorded exactly as a repair is, so it is never presented as a
+        first reading.
 
         Everything else about the segment — its name, its size, the other
         segments' descriptions — is untouched either way.
@@ -504,22 +564,31 @@ class CompanyKnowledgeExtractor:
             raw = claimed.get(segment.name) or {}
             refused = str(raw.get("quoted") or "").strip()
 
-            # Described already, or never claimed anything to repair.
-            if segment.description is not None or not refused:
+            if segment.description is not None:
                 segments.append(segment)
-                continue
-
-            segments.append(
-                await self._repaired(
-                    segment,
-                    document,
-                    prose,
-                    partition,
-                    owners.get(segment.name),
-                    raw,
-                    refused,
+            elif refused:
+                segments.append(
+                    await self._repaired(
+                        segment,
+                        document,
+                        prose,
+                        partition,
+                        owners.get(segment.name),
+                        raw,
+                        refused,
+                    )
                 )
-            )
+            else:
+                segments.append(
+                    await self._asked_by_name(
+                        segment,
+                        document,
+                        prose,
+                        partition,
+                        owners.get(segment.name),
+                        raw,
+                    )
+                )
 
         return replace(knowledge, segments=tuple(segments))
 
@@ -589,6 +658,84 @@ class CompanyKnowledgeExtractor:
                 revenue_models=_models(raw),
                 repair=DescriptionRepair(
                     first_refused_because=first_refused_because,
+                    reader=draft.model,
+                ),
+            ),
+            undescribed_because=None,
+        )
+
+    async def _asked_by_name(
+        self,
+        segment: BusinessSegment,
+        document: SourceDocument,
+        prose: str,
+        partition: tuple[Naming, ...],
+        owner: Region | None,
+        raw: dict[str, Any],
+    ) -> BusinessSegment:
+        """One segment the first reading left wordless, asked about once.
+
+        The closed question the empty arrival earns: does this filing
+        print words that say what this one segment does? It reuses the
+        repair's one-field contract deliberately — there is still
+        nowhere to put a revenue model or a different segment — and its
+        honest answer may be empty, which is worded as its own finding:
+        an absence that survived being asked for by name is a fact
+        about the text this platform reads, no longer about one pass's
+        attention.
+        """
+
+        first = segment.undescribed_because or (
+            f"The description of {segment.name!r} arrived with no words at all."
+        )
+
+        request = DraftRequest(
+            system_prompt=ASKED_BY_NAME_SYSTEM_PROMPT,
+            user_prompt=asked_by_name_prompt(document, segment.name),
+            schema=repair_schema(),
+            max_tokens=MAX_TOKENS,
+        )
+
+        try:
+            draft = await self._provider.draft(request)
+            quoted = str(json.loads(draft.text).get("quoted") or "").strip()
+        except (NarrativeDeclined, json.JSONDecodeError, ValueError) as failed:
+            return _unrepaired(
+                segment,
+                first,
+                f"A follow-up by name was attempted and could not be read: {failed}",
+            )
+
+        if not quoted:
+            return _unrepaired(
+                segment,
+                first,
+                "Asked once more by name, the reader found no words "
+                "describing it in the text this platform reads.",
+            )
+
+        try:
+            described = describes(prose, partition, segment.name, quoted, owner)
+        except EvidenceNotApplicable as inapplicable:
+            return _unrepaired(
+                segment,
+                first,
+                f"Asked once more by name, the span offered was refused "
+                f"too: {inapplicable}",
+            )
+
+        # Described now — and claiming only what the first reading
+        # claimed. A segment that arrived with words of earning and no
+        # span keeps those models; one that arrived with neither is
+        # described and names no way of earning, which is the narrower
+        # honest claim rather than an invitation to add one.
+        return replace(
+            segment,
+            description=SegmentDescription(
+                evidence=described,
+                revenue_models=_models(raw),
+                repair=DescriptionRepair(
+                    first_refused_because=first,
                     reader=draft.model,
                 ),
             ),
