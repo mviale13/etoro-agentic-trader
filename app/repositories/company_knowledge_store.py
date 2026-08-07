@@ -167,6 +167,24 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
         # on the company.
         return max(known, key=lambda entry: entry[0].source.published_on)
 
+    def symbols(self) -> tuple[str, ...]:
+        """Every company the store holds any observation for, sorted.
+
+        Read from the entries themselves rather than parsed back out of
+        filenames: `_safe` flattens dots and filenames cannot be
+        reversed, but every entry records the symbol it was filed for.
+        """
+
+        return tuple(
+            sorted(
+                {
+                    restored[0].symbol
+                    for path in self.directory.glob("*.json")
+                    if (restored := self._restore(path))
+                }
+            )
+        )
+
     # ── on disk ─────────────────────────────────────────────────────
 
     def _path(self, symbol: str, key: str) -> Path:

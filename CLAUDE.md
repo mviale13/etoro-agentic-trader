@@ -62,7 +62,12 @@ the width, the outcome, and exactly one blocking claim; the blocker
 distribution is the roadmap),
 `movrvest reader-stability SYMBOL --readings N` (one document read N times,
 and how far the readings agreed — a measurement of this platform, storing
-nothing).
+nothing),
+`movrvest reader-defects` (every absent claim in the store classified
+against the knowledge layer's own reason templates, counted by
+structural cause — the measurement that decides whether reader work is
+earned: patterns earn architecture, individual failures earn backlog
+entries).
 
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see
