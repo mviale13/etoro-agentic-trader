@@ -127,3 +127,123 @@ Condition and Results of Operations.</p>
 
     assert "pages 46-160" in filing.discussion_text
     assert filing.discussion_tables == ()
+
+
+# ── a section that says its content is printed elsewhere ────────────
+#
+# JPMorgan's shape. Item 1 names the segments and then states, in the
+# filer's own words, that what they do is provided in the MD&A under a
+# heading it quotes. Reading Item 1 alone saw the names and no
+# descriptions, and every reading honestly reported that the filing
+# described nothing — eighty pages from where it described them.
+
+REFERRING = """\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Firm has two reportable business segments &#8212; Consumer Banking
+(&#8220;CB&#8221;) and Investment Bank (&#8220;IB&#8221;). A description of
+the Firm&#8217;s reportable business segments is provided in the
+Management&#8217;s discussion and analysis section of this Form 10-K under
+the heading &#8220;Business Segment Results,&#8221; which begins on page
+46.</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>{padding}</p>
+<p>BUSINESS SEGMENT RESULTS</p>
+<p>Consumer Banking offers deposit and lending products to consumers
+through bank branches.</p>
+<p>Investment Bank offers advisory, capital-raising and market-making
+services to institutional clients.</p>
+<table>
+  <tr><td>($ in millions)</td><td>2025</td></tr>
+  <tr><td>Consumer Banking</td><td>25,808</td></tr>
+  <tr><td>Investment Bank</td><td>11,235</td></tr>
+  <tr><td>Total net revenue</td><td>64,809</td></tr>
+</table>
+</body></html>
+""".format(padding="filler " * 200)
+
+
+def test_a_referenced_chapter_is_read_where_the_filer_says_it_is() -> None:
+    """
+    The address is the filer's own. This platform does not guess what a
+    section might be called: it reads the heading the document quotes.
+    """
+
+    filing = read(REFERRING)
+
+    # Both, never one instead of the other: the section that referred is
+    # where the segments are named, and the referenced chapter is where
+    # the filing says what they do.
+    assert "two reportable business segments" in filing.business_text
+    assert "offers deposit and lending products" in filing.business_text
+    assert "advisory, capital-raising and market-making" in filing.business_text
+
+
+def test_a_referenced_chapter_contributes_prose_and_not_its_tables() -> None:
+    """
+    Deliberate, and measured rather than assumed. A referenced
+    chapter's figures are the filing's figures and belong with the
+    other tables in principle — handing JPMorgan's twenty-five MD&A
+    tables to the size reading made it cite a cell whose column carries
+    no header, and a mix that cannot be checked discards the whole
+    reading, descriptions included.
+
+    Sizes are a different claim from descriptions and are not worth
+    trading for them. The chapter's prose is acquired; its tables wait
+    for a measurement of their own.
+    """
+
+    assert read(REFERRING).discussion_tables == ()
+
+
+def test_the_referenced_chapter_keeps_its_regions_in_the_joined_text() -> None:
+    """
+    Structural ownership is checked against the text the reader is
+    given. Regions carried across unshifted would place every heading at
+    the wrong end of the document and quietly hand each segment
+    another's words.
+    """
+
+    filing = read(REFERRING)
+
+    for region in filing.business_regions:
+        assert filing.business_text[region.at : region.ends].strip()
+        assert region.at <= len(filing.business_text)
+
+
+def test_an_ambiguous_reference_is_refused_rather_than_chosen_between() -> None:
+    """
+    The same rule `owning` applies, refused for the same reason: where
+    two regions could answer, none does. Measured on the filing that
+    earned this — Item 7's reference to "Management's discussion and
+    analysis" resolves to forty-two blocks, and is declined.
+    """
+
+    ambiguous = """\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Company makes machines. A description is provided under the
+heading &#8220;Segment Results.&#8221;</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>SEGMENT RESULTS</p>
+<p>The first chapter of that name.</p>
+<p>SEGMENT RESULTS</p>
+<p>The second chapter of that name.</p>
+</body></html>
+"""
+
+    filing = read(ambiguous)
+
+    assert "makes machines" in filing.business_text
+    assert "first chapter" not in filing.business_text
+    assert "second chapter" not in filing.business_text
+
+
+def test_a_filing_that_refers_to_nothing_is_read_exactly_as_before() -> None:
+    """The mechanism costs nothing where a filer describes its segments
+    in the section the reader was already given."""
+
+    filing = read(CROSS_REFERENCED)
+
+    assert "The Company makes machines." in filing.business_text
+    assert "operating segments" not in filing.business_text

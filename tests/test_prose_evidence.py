@@ -371,15 +371,29 @@ def test_a_description_binds_to_its_own_section_though_it_precedes_the_naming() 
     """
     Meta-shaped, and the reason this mechanism exists.
 
-    Position alone refuses this description outright — the document has
-    named no segment at all by the time it prints it. Structure accepts
-    it, because the filer printed it under that segment's own heading.
+    Structure accepts this description because the filer printed it
+    under that segment's own heading — which is the claim this test
+    has always made and still makes.
+
+    What changed underneath it: position no longer refuses it. The
+    inversion that made Meta the case for structure was not a property
+    of the document but of abbreviation-blind matching — the stored
+    name "Family of Apps (FoA)" occurred only in the summary sentence
+    *after* the prose, so the partition ran backwards. Now that a
+    naming is recognised with or without the abbreviation the filer
+    defined, the heading "Family of Apps Products" names the segment
+    before its own description, and both mechanisms place the span on
+    the same segment. Structure is still preferred, and still says
+    something stronger: printed *inside* the section, not merely after
+    a mention of it.
     """
 
     quoted = "Facebook helps people share moments and build community"
 
-    with pytest.raises(EvidenceNotApplicable):
-        describes(META_SHAPED, META_PARTITION, "Family of Apps (FoA)", quoted)
+    positional = describes(META_SHAPED, META_PARTITION, "Family of Apps (FoA)", quoted)
+
+    assert positional.ownership is Ownership.PROXIMITY
+    assert positional.under == "Family of Apps (FoA)"
 
     evidence = describes(
         META_SHAPED,
