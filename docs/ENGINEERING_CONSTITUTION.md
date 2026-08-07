@@ -194,6 +194,25 @@ If not, do not build it.
 
 ---
 
+## 19a. Patterns earn architecture
+
+A new engineering slice must be earned by a measured pattern, never by
+an individual company.
+
+One filing that defeats the reader is a backlog entry — recorded, with
+its measured failure, on a watchlist. Several companies failing for the
+*same structural cause* are a pattern, and a pattern earns a slice. The
+instrument that tells one from the other (`movrvest reader-defects`,
+and its successors) is consulted before any frozen layer is reopened;
+the measurements decide, not the most recent frustration.
+
+The same rule grows vocabularies: a grounded playbook exists only when
+a real company at quorum, an established understanding, an obvious
+deterministic mapping and a live acceptance case all exist. Case by
+case, never taxonomy-first.
+
+---
+
 ## 20. The North Star
 
 Every change should improve at least one of:

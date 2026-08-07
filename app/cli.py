@@ -22,6 +22,7 @@ from app.commands import (
     playbook,
     playbook_coverage,
     policy,
+    reader_defects,
     reader_stability,
     record,
     status,
@@ -229,6 +230,19 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    subparsers.add_parser(
+        "reader-defects",
+        help="Classify every reader-blocked claim in the store, with counts",
+        description=(
+            "The reader defect taxonomy: every absent claim's stored "
+            "reason classified against the knowledge layer's own "
+            "templates, counted by structural cause. The measurement that "
+            "decides whether reader work is earned — a cause shared by "
+            "several companies is a pattern; anything narrower stays a "
+            "backlog entry. Read-only; nothing is acquired or fixed"
+        ),
+    )
+
     observe_parser = subparsers.add_parser(
         "observe",
         help="Read the current filing again, up to the consensus quorum",
@@ -303,6 +317,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()
+
+    if args.command == "reader-defects":
+        return await reader_defects.run()
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

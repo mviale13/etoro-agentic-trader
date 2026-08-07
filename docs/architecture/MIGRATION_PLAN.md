@@ -347,8 +347,25 @@ the roadmap follows the classes:
   | ETOR | grounding contract refused: "the extractor described no business" (foreign-private-issuer filing shape) | 2×, identical, 2026-08-07 |
   | VOW3.DE | at quorum on the issuer's own 2025 annual report: every segment description "arrived with no words at all" — sizes settle (98.4% measured), explanations never arrive | 5 of 5 observations, 2026-08-07 |
 
-  Two rows, two *different* structural reasons. The pattern that would
-  earn reader work is several issuers failing for the *same* one.
+  **The taxonomy ran (2026-08-07, `movrvest reader-defects`: 9
+  companies scanned, 7 carrying defects, 14 absent claims) and the
+  pattern rule returned its verdict — two causes reach two companies
+  each and have earned an engineering slice:**
+
+  | Cause | Companies | Claims |
+  |---|---|---|
+  | description never arrived | JPM, VOW3.DE | 4 |
+  | description rejected by applicability | JPM, META | 3 |
+  | document points elsewhere for its tables | JPM | 3 |
+  | quotes words not in the document | UMI.BR | 1 |
+  | no table cell located | BNP.PA | 1 |
+  | observations disagree (noise, never a defect) | CAT | 1 |
+  | other (no template names it) | NFLX | 1 |
+
+  Total refusals (ETOR's class) store nothing and stay countable only
+  on this watchlist — a measurement limit the taxonomy states. The
+  earned slices are *not started here*: the verdict is recorded, and
+  beginning them is a decision the measurements' owner takes.
 
 - **Stream C — authority.** The highest-leverage spend after Phase A:
   holdings at width 1 are four observations from an authoritative
