@@ -13,10 +13,14 @@ class PlaybookKind(StrEnum):
     The kind of investment this is, as far as the evidence establishes it.
 
     Every one of these is a *structural* fact about the security — what it
-    is — read from its asset class and the industry its provider reports.
-    None of them is a judgement about how the business is behaving: a
-    "quality compounder" and a "turnaround" can sit in the same industry,
-    and telling them apart is an assessment this does not attempt.
+    is. Most are read from its asset class and the industry its provider
+    reports; `INDUSTRIAL` and `DIVERSIFIED` are different, and better:
+    they are activated only by a quorate Business Understanding, from the
+    company's own filing (see
+    `docs/architecture/PLAYBOOK_SELECTION.md`). None of them is a
+    judgement about how the business is behaving: a "quality compounder"
+    and a "turnaround" can sit in the same industry, and telling them
+    apart is an assessment this does not attempt.
 
     `GENERAL_CORPORATE` is the honest default for a company whose industry
     this platform has no specialised reading for. `UNCLASSIFIED` is the
@@ -27,6 +31,8 @@ class PlaybookKind(StrEnum):
     SOFTWARE = "software"
     PLATFORM = "platform"
     SEMICONDUCTOR = "semiconductor"
+    INDUSTRIAL = "industrial"
+    DIVERSIFIED = "diversified"
     BANK = "bank"
     INSURANCE = "insurance"
     ASSET_MANAGER = "asset_manager"
@@ -166,6 +172,32 @@ PLAYBOOKS: dict[PlaybookKind, InvestmentPlaybook] = {
             "Margin at the trough",
             "Capital intensity",
             "Balance sheet resilience",
+        ),
+    ),
+    PlaybookKind.INDUSTRIAL: _corporate(
+        PlaybookKind.INDUSTRIAL,
+        "Industrial",
+        "Evaluated as a maker of physical goods: the margin on what it "
+        "makes, the capital the making consumes, and the cash it returns "
+        "through a demand cycle it does not fully control.",
+        (
+            "Growth in what it sells",
+            "Margin on product",
+            "Capital intensity and cash conversion",
+            "Balance sheet through the cycle",
+        ),
+    ),
+    PlaybookKind.DIVERSIFIED: _corporate(
+        PlaybookKind.DIVERSIFIED,
+        "Diversified Business",
+        "Evaluated as a business with several ways of earning and none "
+        "leading: read on the whole of its ordinary accounts, because no "
+        "single mechanism's economics can stand for the company.",
+        (
+            "Earnings growth across the engines",
+            "Profitability of the whole",
+            "Balance sheet strength",
+            "Cash generation",
         ),
     ),
     PlaybookKind.AEROSPACE_DEFENCE: _corporate(

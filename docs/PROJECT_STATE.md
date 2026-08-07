@@ -102,6 +102,33 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The playbook is selected from Business Understanding, where that
+  route has earned it** (August 2026). The design in
+  [`architecture/PLAYBOOK_SELECTION.md`](architecture/PLAYBOOK_SELECTION.md):
+  a deterministic mapping from the archetype a quorate understanding
+  concluded to the playbook that analyses it, under an unblended
+  migration rule. Two rules, because the corpus at quorum has earned
+  two — Manufacturer activates **Industrial**, Diversified activates
+  **Diversified Business** — and every other conclusion is refused by
+  name rather than defaulted, because a default would rebuild the
+  industry taxonomy this selector replaces.
+
+  `select_grounded()` is a pure function over `BusinessUnderstanding`
+  alone; `PlaybookSelectionService` is the seam where a refusal falls
+  back to the pre-existing industry selector, recorded — `selected_by`,
+  `fallback_reason` verbatim, and `facts_consumed` empty on fallback by
+  invariant, which is the proof the routes never blended. Surfaced by
+  `movrvest playbook SYMBOL`. Accepted live on the five: DIS and CAT
+  Diversified Business (authoritative; CAT's excluded 2/2/1 can only
+  ever reach a refusal, never a silently different playbook), NVDA
+  Industrial (authoritative, and contingent — either observed minority
+  answer would select Diversified Business, said where the playbook is
+  named), META Platform by industry fallback with the grounded refusal
+  stated, JPM doubly honest: grounded refused *and* no provider profile
+  exists (not on the book), so Unclassified rather than a guess. The
+  research path (`ResearchStrategyFactory`, dossiers, committees) still
+  consumes the industry selector unchanged; the flip is a later slice.
+
 - **Business Understanding: how a business creates value, explained from
   consensus** (August 2026). Phase 2's first slice, and the first real
   consumer of the knowledge layer's finished contract. Company Knowledge

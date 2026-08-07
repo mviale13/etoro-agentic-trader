@@ -43,7 +43,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.domain.agreement import Agreement
-from app.domain.company_archetype import CompanyArchetype, Unestablished
+from app.domain.company_archetype import Archetype, CompanyArchetype, Unestablished
 from app.domain.company_knowledge import RevenueModel
 from app.domain.provenance import Provenance
 
@@ -106,6 +106,12 @@ class AlternativeConclusion:
 
     #: What `classify` concludes with that answer settled.
     concludes: str
+
+    #: The same conclusion as the rules' own vocabulary — the primary
+    #: archetype, or None where even the settled answer decides nothing.
+    #: Carried so a consumer downstream (the playbook mapping) evaluates
+    #: rules against rules, never against a display string.
+    primary: Archetype | None
 
 
 @dataclass(frozen=True, slots=True)

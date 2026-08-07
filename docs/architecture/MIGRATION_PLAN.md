@@ -269,15 +269,25 @@ The Business Understanding layer exists (`understand()` over
 `CompanyKnowledgeConsensus`, surfaced by `movrvest understanding`), and
 the selector's question changes with it: not *what industry is this*,
 but *which investment playbook best matches this business
-understanding*. The wiring is deliberately not flipped yet — the
-population at quorum is five companies, and the acquisition policy
-requires a quorate archetype before anything authoritative steers a
-playbook. What has to exist first: enough of the book's holdings at
-quorum for the flip not to degrade every case whose filing is thin, and
-a deterministic mapping from understanding (engine, mechanisms,
-characteristics) to the playbooks the platform already has. The
-industry-based selector keeps running until then; the two must not be
-blended.
+understanding*.
+
+**Done in the selection slice:** the deterministic mapping and the
+unblended seam, per
+[`PLAYBOOK_SELECTION.md`](PLAYBOOK_SELECTION.md). `select_grounded()`
+maps a quorate understanding's archetype to an earned playbook or
+refuses by name; `PlaybookSelectionService` falls back to the industry
+selector on refusal, recorded with the reason verbatim; `movrvest
+playbook` is the surface. Accepted live on all five quorate companies —
+three authoritative, two honest fallbacks.
+
+**Still open — the research-path flip.** `ResearchStrategyFactory`,
+the dossiers and the committees keep consuming the industry selector
+unchanged. Before the flip: enough of the book's holdings at quorum for
+it not to degrade every case whose filing is thin, and the mapping's
+vocabulary grown case by earned case (a grounded Bank rule, for
+instance, needs `financial_spread` established at quorum for some
+company — JPM's filing points elsewhere for exactly the figures that
+would do it). The two routes stay unblended throughout.
 
 ## Agreed order
 
