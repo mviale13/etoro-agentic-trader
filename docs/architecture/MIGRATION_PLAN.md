@@ -367,6 +367,27 @@ the roadmap follows the classes:
   earned slices are *not started here*: the verdict is recorded, and
   beginning them is a decision the measurements' owner takes.
 
+  **Accepted next measurement slice — the defect ledger** (review of
+  PR #48): the taxonomy is a snapshot; it should become an engineering
+  history. Per defect pattern, record *first observed / last observed /
+  occurrences / status / resolved by PR*, so "which reader defects have
+  the highest historical cost?" is answerable without reading git
+  history. Design questions for the slice: the ledger is derived state
+  that must never disagree with the store (one concept, one
+  implementation), and "resolved by" is a fact about a PR that a
+  measurement can only confirm — a pattern is *resolved* when a rerun
+  stops finding it, and the PR is credited, never trusted.
+
+  **Queued behind it, awaiting the owner's go:** the two earned reader
+  slices — *description never arrived* (JPM, VOW3.DE) and *description
+  rejected by applicability* (JPM, META) — with JPM as the regression
+  case for both, since it exercises the largest portion of the reader.
+  The causal chain the taxonomy exposed says each landed slice should
+  move the portfolio KPI with no further engineering: reader →
+  grounded descriptions → revenue mechanisms → understanding →
+  authoritative playbook → KPI. That prediction is itself testable,
+  and should be tested when the first slice lands.
+
 - **Stream C — authority.** The highest-leverage spend after Phase A:
   holdings at width 1 are four observations from an authoritative
   conclusion, and every observation upgrades a company already in the
