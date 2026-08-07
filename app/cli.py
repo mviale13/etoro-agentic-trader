@@ -11,6 +11,7 @@ from app.commands import (
     credentials,
     daily,
     decision,
+    defect_ledger,
     doctor,
     evaluate,
     explain,
@@ -243,6 +244,20 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    subparsers.add_parser(
+        "defect-ledger",
+        help="Show every defect pattern's history: cost, dates, status",
+        description=(
+            "The reader defect ledger: the store's readings replayed in "
+            "the order they were taken, so every defect pattern carries "
+            "when it first appeared, when a reading last found it, how "
+            "many claims it has ever blocked, and whether a rerun still "
+            "finds it. A PR that claims a resolution is credited only "
+            "where the rerun agrees. Read-only; nothing is acquired, "
+            "stored or fixed"
+        ),
+    )
+
     observe_parser = subparsers.add_parser(
         "observe",
         help="Read the current filing again, up to the consensus quorum",
@@ -320,6 +335,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "reader-defects":
         return await reader_defects.run()
+
+    if args.command == "defect-ledger":
+        return await defect_ledger.run()
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

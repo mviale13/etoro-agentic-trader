@@ -14,10 +14,9 @@ from typing import Any
 
 from app.domain.knowledge_consensus import consensus_of
 from app.domain.reader_defects import (
-    Claim,
     DefectTaxonomy,
     ReaderDefect,
-    cause_of,
+    defects_of,
 )
 from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
 
@@ -37,45 +36,6 @@ class ReaderDefectService:
                 continue
 
             scanned.append(symbol)
-            consensus = consensus_of(observations)
-            width = consensus.observation_count
-
-            if consensus.segments_because is not None:
-                defects.append(
-                    ReaderDefect(
-                        symbol=symbol,
-                        segment="(the segment frame itself)",
-                        claim=Claim.SEGMENTS,
-                        cause=cause_of(consensus.segments_because),
-                        because=consensus.segments_because,
-                        width=width,
-                    )
-                )
-                continue
-
-            for segment in consensus.segments:
-                if not segment.revenue_models and segment.undescribed_because:
-                    defects.append(
-                        ReaderDefect(
-                            symbol=symbol,
-                            segment=segment.name,
-                            claim=Claim.DESCRIPTION,
-                            cause=cause_of(segment.undescribed_because),
-                            because=segment.undescribed_because,
-                            width=width,
-                        )
-                    )
-
-                if segment.revenue is None and segment.unmeasured_because:
-                    defects.append(
-                        ReaderDefect(
-                            symbol=symbol,
-                            segment=segment.name,
-                            claim=Claim.SIZE,
-                            cause=cause_of(segment.unmeasured_because),
-                            because=segment.unmeasured_because,
-                            width=width,
-                        )
-                    )
+            defects.extend(defects_of(symbol, consensus_of(observations)))
 
         return DefectTaxonomy(scanned=tuple(scanned), defects=tuple(defects))

@@ -24,6 +24,10 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.domain.knowledge_consensus import CompanyKnowledgeConsensus
 
 
 class Claim(StrEnum):
@@ -94,6 +98,12 @@ def cause_of(reason: str) -> DefectCause:
             return cause
 
     return DefectCause.OTHER
+
+
+#: The frame a segment-level claim lives in. Where the observations
+#: cannot agree which segments exist, there is no segment to hang the
+#: defect on, and the defect is recorded against the frame by this name.
+FRAME = "(the segment frame itself)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,3 +193,60 @@ class DefectTaxonomy:
             for count in self.by_cause
             if count.companies >= threshold and count.cause is not DefectCause.UNSETTLED
         )
+
+
+def defects_of(
+    symbol: str,
+    consensus: CompanyKnowledgeConsensus,
+) -> tuple[ReaderDefect, ...]:
+    """Every absent claim this consensus serves, classified.
+
+    The one walk from a consensus to its defects, shared by the taxonomy
+    (which classifies what the store serves now) and the ledger (which
+    replays what it served after every stored reading). Two walks would
+    let the two measurements disagree about the same consensus, and the
+    ledger's whole claim is that it never can.
+    """
+
+    width = consensus.observation_count
+
+    if consensus.segments_because is not None:
+        return (
+            ReaderDefect(
+                symbol=symbol,
+                segment=FRAME,
+                claim=Claim.SEGMENTS,
+                cause=cause_of(consensus.segments_because),
+                because=consensus.segments_because,
+                width=width,
+            ),
+        )
+
+    defects: list[ReaderDefect] = []
+
+    for segment in consensus.segments:
+        if not segment.revenue_models and segment.undescribed_because:
+            defects.append(
+                ReaderDefect(
+                    symbol=symbol,
+                    segment=segment.name,
+                    claim=Claim.DESCRIPTION,
+                    cause=cause_of(segment.undescribed_because),
+                    because=segment.undescribed_because,
+                    width=width,
+                )
+            )
+
+        if segment.revenue is None and segment.unmeasured_because:
+            defects.append(
+                ReaderDefect(
+                    symbol=symbol,
+                    segment=segment.name,
+                    claim=Claim.SIZE,
+                    cause=cause_of(segment.unmeasured_because),
+                    because=segment.unmeasured_because,
+                    width=width,
+                )
+            )
+
+    return tuple(defects)
