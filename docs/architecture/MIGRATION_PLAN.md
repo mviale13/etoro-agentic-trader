@@ -263,6 +263,22 @@ strongest available evidence for giving narrative evidence the treatment
 quantitative evidence already has — the model pointing at structure the
 platform reads, rather than the model returning the words.
 
+## Open: PlaybookSelector consumes Business Understanding
+
+The Business Understanding layer exists (`understand()` over
+`CompanyKnowledgeConsensus`, surfaced by `movrvest understanding`), and
+the selector's question changes with it: not *what industry is this*,
+but *which investment playbook best matches this business
+understanding*. The wiring is deliberately not flipped yet — the
+population at quorum is five companies, and the acquisition policy
+requires a quorate archetype before anything authoritative steers a
+playbook. What has to exist first: enough of the book's holdings at
+quorum for the flip not to degrade every case whose filing is thin, and
+a deterministic mapping from understanding (engine, mechanisms,
+characteristics) to the playbooks the platform already has. The
+industry-based selector keeps running until then; the two must not be
+blended.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`

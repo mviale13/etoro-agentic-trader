@@ -24,6 +24,7 @@ from app.commands import (
     record,
     status,
     today,
+    understanding,
     watchlist,
     writer_compare,
 )
@@ -182,6 +183,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, ASML or BTC-USD",
     )
 
+    understanding_parser = subparsers.add_parser(
+        "understanding",
+        help="Explain how a business creates value, from consensus knowledge",
+        description=(
+            "Derive, deterministically, how a business creates value from "
+            "its consensus knowledge: the economic engine, the revenue "
+            "mechanisms with their support, the archetype with what it "
+            "rests on, and what could change the conclusion. No model is "
+            "asked and nothing is read"
+        ),
+    )
+    understanding_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or CAT",
+    )
+
     observe_parser = subparsers.add_parser(
         "observe",
         help="Read the current filing again, up to the consensus quorum",
@@ -247,6 +264,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "observe":
         return await observe.run(args.symbol)
+
+    if args.command == "understanding":
+        return await understanding.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

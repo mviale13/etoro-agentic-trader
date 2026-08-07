@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1090 passing (2026-08-07) |
+| Pytest | 🟢 1101 passing (2026-08-07) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,66 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **Business Understanding: how a business creates value, explained from
+  consensus** (August 2026). Phase 2's first slice, and the first real
+  consumer of the knowledge layer's finished contract. Company Knowledge
+  answers *what has been established*; `BusinessUnderstanding` answers
+  *how this business creates value* — one level above the knowledge, one
+  level below the committees. Completely deterministic: no model, no new
+  reading, and every statement traces to `CompanyKnowledgeConsensus`.
+  `understand()` is a pure function beside `classify`, surfaced by
+  `movrvest understanding SYMBOL`.
+
+  The examples in the design conversation ("owns intellectual property",
+  "designs semiconductor platforms") were deliberately not built — they
+  are not derivable from consensus without inference, and the
+  architectural rule outranks the examples. The engine is worded from
+  settled segments, settled mechanisms and the archetype only. A
+  mechanism is exactly as established as the weakest earning claim
+  carrying it, and says so where it is named.
+
+  **The genuinely new computation is contingency analysis.** For every
+  earning claim that is narrow or unsettled, the engine evaluates what
+  the rules would have concluded had the claim settled at each of its
+  *observed* answers — the identical `classify`, over a consensus
+  differing in exactly one claim. A statement about the rules, never a
+  new fact about the company: no answer is evaluated that no observation
+  gave, and nothing evaluated is stored or promoted. It is how "not
+  established" gets the explanation it is owed — whether the gap bears
+  on the conclusion — without ever being compensated for.
+
+  Accepted live, deterministically, on the three cases:
+
+  - **DIS** (observed to quorum first, per the acquisition policy):
+    multi-engine — licensing, services and transaction lead together;
+    six mechanisms each with coverage and support; the narrowest claim
+    is 4/5, and the contingency shows every observed answer leaves
+    Diversified unchanged — the gap does not bear on it.
+  - **NVDA**: Manufacturer because manufacturing runs through 100%,
+    more than 5% clear; *not* Diversified because Graphics' earning
+    settled at `manufacturing`, 3/5 — and the contingency names the
+    dependency exactly: either minority answer would conclude
+    Diversified.
+  - **CAT**: Diversified from the settled claims; Financial Products'
+    earning unsettled at 2/2/1 and *excluded, not resolved* — and the
+    contingency answers more precisely than the acceptance question
+    asked: one observed answer (2× financial_spread, services) would
+    conclude "Service business, then manufacturer", which is exactly
+    the stored one-in-twenty draw the consensus architecture retired.
+    The platform now explains that draw instead of serving it.
+
+  Also this slice: the repository moved from iCloud Drive to the local
+  SSD (`/Users/movr/AI Projects/etoro-agentic-trader`) after a
+  `fileproviderd` sync storm throttled the old path to ~3 file reads a
+  second and made the 4-second test suite look hung. The suite, the DIS
+  quorum observation and all three acceptance cases were re-run on the
+  new path; the identical tree passed identically, so nothing was
+  attributable to the move. PlaybookSelector deliberately stays on the
+  industry seam — the flip to consuming Business Understanding is
+  recorded as open work with its preconditions in
+  [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md).
+
 
 - **A conclusion is as firm as the narrowest claim beneath it, and now
   says so** (August 2026). The three layers the consensus architecture

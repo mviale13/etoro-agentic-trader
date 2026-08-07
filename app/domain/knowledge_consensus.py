@@ -473,6 +473,25 @@ def _earning(segment: BusinessSegment) -> str:
     return ", ".join(sorted(model.value for model in segment.revenue_models))
 
 
+def models_of_answer(stated: str) -> tuple[RevenueModel, ...]:
+    """The ways of earning an observed earning answer states.
+
+    The inverse of `_earning`, kept beside it because this module owns
+    the format. What it exists for is contingency analysis: Business
+    Understanding evaluates what the rules would conclude had a narrow
+    or unsettled claim settled at one of its *observed* answers — and an
+    observed answer is a string in exactly this format, so walking it
+    back to models is a round trip, never an interpretation. An answer
+    this cannot parse is an error, not a guess: the only strings that
+    reach it are ones `_earning` produced.
+    """
+
+    if stated == NO_EARNING:
+        return ()
+
+    return tuple(RevenueModel(value) for value in stated.split(", "))
+
+
 def _described(segment: BusinessSegment) -> str:
     return "described" if segment.description is not None else NOT_DESCRIBED
 

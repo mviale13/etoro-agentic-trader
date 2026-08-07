@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1090 tests, fast
+python -m pytest -q            # ~1101 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -48,6 +48,9 @@ of 5 — the explicit spend that fills a consensus; stops on the count,
 never the content),
 `movrvest archetype SYMBOL` (what kind of business the consensus facts
 make it, and which rule decided — or why none could),
+`movrvest understanding SYMBOL` (how the business creates value, derived
+deterministically from consensus — engine, mechanisms with support,
+what could change the conclusion),
 `movrvest reader-stability SYMBOL --readings N` (one document read N times,
 and how far the readings agreed — a measurement of this platform, storing
 nothing).
@@ -168,9 +171,14 @@ window loses nothing.
 
 ## Environment notes
 
-- The repository lives in iCloud Drive. It creates conflict copies
-  (`reasoning_service 2.py`); `.gitignore` covers `* [0-9].*`, but check for
-  them if type-checking reports odd duplicates.
+- The repository lives on the local SSD at
+  `/Users/movr/AI Projects/etoro-agentic-trader`, moved 2026-08-07 after an
+  iCloud `fileproviderd` sync storm throttled the old path to ~3 file
+  reads/second — the identical suite that "hung" there runs in 4s here. A
+  stale copy may linger in iCloud Drive
+  (`…/com~apple~CloudDocs/AI Agents/etoro-agentic-trader`); do not work in
+  it. If a file appears with a ` 2.py`-style suffix it is an iCloud
+  conflict-copy remnant; `.gitignore` covers `* [0-9].*`.
 - The preview-server tooling cannot access the iCloud path — run dev servers
   with plain background shell commands instead.
 - Yahoo Finance rate-limits (401s). Per-security signals can flip between
