@@ -12,10 +12,11 @@ import pytest
 from app.domain.company_archetype import ARCHETYPE_OF, Archetype, Dimension
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     RevenueModel,
     SegmentDescription,
 )
+from app.domain.knowledge_consensus import CompanyKnowledgeConsensus, consensus_of
 from app.domain.primary_source import (
     IdentityCheck,
     PrimarySource,
@@ -57,6 +58,7 @@ def segment(
     earns: tuple[RevenueModel, ...] = (),
     row: int = 1,
     undescribed: str | None = None,
+    unmeasured: str | None = None,
 ) -> BusinessSegment:
     """One segment, with either dimension present or absent independently."""
 
@@ -78,31 +80,48 @@ def segment(
         revenue=size(share, row) if share is not None else None,
         description=description,
         undescribed_because=undescribed,
+        unmeasured_because=unmeasured,
     )
 
 
-def company(symbol: str, *segments: BusinessSegment) -> CompanyKnowledge:
-    return CompanyKnowledge(
-        symbol=symbol,
-        description=f"What {symbol} says it does.",
-        segments=segments,
-        source=PrimarySource(
+def company(symbol: str, *segments: BusinessSegment) -> CompanyKnowledgeConsensus:
+    """One observation's facts, as the width-1 consensus the rules consume.
+
+    The rules read consensus only, so the harness derives one — at a
+    quorum of one, which is the calibration instrument's question, not
+    the decision path's. What is under test here is the rules, and the
+    derivation itself is tested in test_knowledge_consensus.
+    """
+
+    return _consensus(
+        CompanyKnowledgeObservation(
             symbol=symbol,
-            company=symbol,
-            source_type=SourceType.ANNUAL_REPORT,
-            identifier="10-K 0000000000-00-000000",
-            key="0000000000-00-000000",
-            published_on=datetime(2026, 1, 1, tzinfo=UTC).date(),
-            reporting_period=None,
-            document_format="html",
-            language="en",
-            location="https://www.sec.gov/Archives/x",
-            provider="SEC EDGAR",
-            authority=SourceAuthority.REGULATOR_FILED,
-            verification=(IdentityCheck.REGISTER_INDEXED,),
-        ),
-        reading=Provenance(source="10-K via SEC EDGAR", observed_at=datetime.now(UTC)),
+            description=f"What {symbol} says it does.",
+            segments=segments,
+            source=PrimarySource(
+                symbol=symbol,
+                company=symbol,
+                source_type=SourceType.ANNUAL_REPORT,
+                identifier="10-K 0000000000-00-000000",
+                key="0000000000-00-000000",
+                published_on=datetime(2026, 1, 1, tzinfo=UTC).date(),
+                reporting_period=None,
+                document_format="html",
+                language="en",
+                location="https://www.sec.gov/Archives/x",
+                provider="SEC EDGAR",
+                authority=SourceAuthority.REGULATOR_FILED,
+                verification=(IdentityCheck.REGISTER_INDEXED,),
+            ),
+            reading=Provenance(
+                source="10-K via SEC EDGAR", observed_at=datetime.now(UTC)
+            ),
+        )
     )
+
+
+def _consensus(observation: CompanyKnowledgeObservation) -> CompanyKnowledgeConsensus:
+    return consensus_of((observation,), quorum=1)
 
 
 # ── the four regimes ────────────────────────────────────────────────
@@ -491,7 +510,11 @@ def test_every_missing_dimension_carries_the_knowledge_layers_own_reason() -> No
 
     earning = [gap for gap in gaps if gap.dimension is Dimension.EARNING]
 
-    assert [gap.because for gap in earning] == [refused]
+    # The knowledge layer's own words survive, with the consensus width
+    # counted beside them — an absence at width one says it is one.
+    assert len(earning) == 1
+    assert refused in earning[0].because
+    assert "1 of 1 observations" in earning[0].because
 
 
 def test_a_missing_size_and_a_missing_description_are_reported_apart() -> None:
@@ -627,3 +650,126 @@ def test_the_leading_threshold_is_the_one_the_rules_apply() -> None:
 
     assert classify_at(LEADS - 0.01) is Archetype.DIVERSIFIED
     assert classify_at(LEADS + 0.02) is Archetype.RETAILER
+
+
+def test_a_missing_size_reports_the_reason_the_reading_recorded() -> None:
+    """
+    Rather than the one sentence that used to stand for every cause.
+
+    "No figure was proven against a table in the filing" reads as a fact
+    about the filing, and for Caterpillar it was a fact about this
+    platform: the section holding the table had been located wrongly, so
+    the reading never saw it. A reader deciding whether a gap is worth
+    chasing needs to know which of those it is.
+    """
+
+    gaps = classify(
+        company(
+            "CAT",
+            segment(
+                "Financial Products Segment",
+                earns=(RevenueModel.FINANCIAL_SPREAD,),
+                unmeasured="This filing's discussion prints no table.",
+            ),
+        )
+    ).missing
+
+    size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
+
+    assert "This filing's discussion prints no table." in size.because
+
+
+def test_a_missing_size_the_reading_left_unworded_still_states_one() -> None:
+    """A knowledge entry that predates the reason is not shown as blank."""
+
+    gaps = classify(
+        company("OLD", segment("Unworded", earns=(RevenueModel.RETAIL,)))
+    ).missing
+
+    size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
+
+    assert "No observation located a figure for this segment" in size.because
+
+
+# ── what a conclusion rests on ──────────────────────────────────────
+
+
+def multi(
+    *observations_segments: tuple[BusinessSegment, ...],
+) -> CompanyKnowledgeConsensus:
+    """A consensus over several observations of one document."""
+
+    return consensus_of(
+        tuple(
+            CompanyKnowledgeObservation(
+                symbol="NVDA",
+                description="What NVDA says it does.",
+                segments=segments,
+                source=company("NVDA").source,
+                reading=Provenance(
+                    source="10-K via SEC EDGAR",
+                    observed_at=datetime.now(UTC),
+                ),
+            )
+            for segments in observations_segments
+        )
+    )
+
+
+def test_a_conclusion_carries_the_narrowest_claim_it_rests_on() -> None:
+    """NVIDIA's accepted shape: Manufacturer, resting on 3 of 5."""
+
+    both = (
+        segment("Compute", share=0.90, earns=(RevenueModel.MANUFACTURING,)),
+        segment(
+            "Graphics",
+            share=0.10,
+            earns=(RevenueModel.MANUFACTURING, RevenueModel.SERVICES),
+            row=2,
+        ),
+    )
+    one = (
+        segment("Compute", share=0.90, earns=(RevenueModel.MANUFACTURING,)),
+        segment("Graphics", share=0.10, earns=(RevenueModel.MANUFACTURING,), row=2),
+    )
+
+    archetype = classify(multi(one, one, one, both, both))
+
+    assert archetype.quorate
+    assert archetype.narrowest is not None
+    assert archetype.narrowest.counted() == "3/5"
+    assert "a narrow majority (3/5)" in (archetype.rests_on or "")
+    assert "how 'Graphics' earns" in (archetype.rests_on or "")
+    assert "has not been established" in (archetype.rests_on or "")
+
+
+def test_a_unanimous_consensus_says_so_rather_than_scoring_itself() -> None:
+    same = (segment("Only", share=0.95, earns=(RevenueModel.RETAIL,)),)
+
+    archetype = classify(multi(same, same, same, same, same))
+
+    assert archetype.quorate
+    assert "unanimous on every claim consumed" in (archetype.rests_on or "")
+
+
+def test_below_quorum_nothing_is_authoritative_and_the_basis_says_so() -> None:
+    """
+    At the decision path's quorum of five, not the harness's one. The
+    width-1 conclusion is served, labeled, and never authoritative.
+    """
+
+    archetype = classify(
+        multi((segment("Only", share=0.95, earns=(RevenueModel.RETAIL,)),))
+    )
+
+    assert not archetype.quorate
+    assert "nothing decided from it is authoritative" in (archetype.rests_on or "")
+
+
+def test_an_undecided_archetype_asserts_no_basis() -> None:
+    """Its reasons carry the distributions; there is no conclusion to rest."""
+
+    archetype = classify(company("META", segment("FoA", share=0.99)))
+
+    assert archetype.rests_on is None
+    assert archetype.narrowest is None

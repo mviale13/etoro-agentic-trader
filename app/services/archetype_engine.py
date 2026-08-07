@@ -31,6 +31,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from app.domain.agreement import Agreement
 from app.domain.company_archetype import (
     ARCHETYPE_OF,
     Archetype,
@@ -40,7 +41,11 @@ from app.domain.company_archetype import (
     Ruling,
     Unestablished,
 )
-from app.domain.company_knowledge import BusinessSegment, CompanyKnowledge, RevenueModel
+from app.domain.company_knowledge import RevenueModel
+from app.domain.knowledge_consensus import (
+    CompanyKnowledgeConsensus,
+    ConsensusSegment,
+)
 
 #: How much of a company must be shown to earn *some* particular way
 #: before any archetype is decided for it.
@@ -79,7 +84,7 @@ LEADS = 0.5
 TIED = 0.05
 
 
-def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
+def classify(knowledge: CompanyKnowledgeConsensus) -> CompanyArchetype:
     """
     What kind of business this is, or why that could not be decided.
 
@@ -90,7 +95,41 @@ def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
     and wholly unexplained, or fully explained and wholly unmeasured.
     Both happen; both are in the population these rules were written
     against.
+
+    The rules consume consensus, never a single observation, and an
+    unsettled claim reaches them as an absence carrying its
+    distribution — so a rule that needs it declines with the
+    disagreement worded, rather than deciding from whichever answer a
+    single reading happened to give.
     """
+
+    if knowledge.segments_because is not None:
+        # The observations could not agree what segments exist, so
+        # every per-segment rule is starved of its frame. Refused
+        # outright with the distribution, never adjudicated here: which
+        # reading to prefer is exactly the question the rules must not
+        # answer.
+        return _undecided(
+            knowledge,
+            missing=(),
+            coverage=(),
+            explained=0.0,
+            basis=(
+                Ruling(
+                    rule="segments-unsettled",
+                    read=(
+                        f"{knowledge.observation_count} observations that "
+                        "do not agree which segments this document names"
+                    ),
+                    concluded=(
+                        "No archetype. Until the observations agree what "
+                        "the parts of this business are, no rule about "
+                        "the parts can run."
+                    ),
+                ),
+            ),
+            because=knowledge.segments_because,
+        )
 
     missing = _unestablished(knowledge.segments)
     earning = tuple(segment for segment in knowledge.segments if segment.revenue_models)
@@ -161,8 +200,8 @@ def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
 
 
 def _ranked(
-    knowledge: CompanyKnowledge,
-    measurable: tuple[BusinessSegment, ...],
+    knowledge: CompanyKnowledgeConsensus,
+    measurable: tuple[ConsensusSegment, ...],
     missing: tuple[Unestablished, ...],
     explained: float,
 ) -> CompanyArchetype:
@@ -212,6 +251,8 @@ def _ranked(
             ),
         )
 
+    narrowest, rests_on = _rests_on(knowledge, measurable, sizes_consumed=True)
+
     return CompanyArchetype(
         symbol=knowledge.symbol,
         primary=ARCHETYPE_OF[top.model],
@@ -236,12 +277,15 @@ def _ranked(
         undecided_because=None,
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+        narrowest=narrowest,
+        rests_on=rests_on,
     )
 
 
 def _unranked(
-    knowledge: CompanyKnowledge,
-    earning: tuple[BusinessSegment, ...],
+    knowledge: CompanyKnowledgeConsensus,
+    earning: tuple[ConsensusSegment, ...],
     missing: tuple[Unestablished, ...],
 ) -> CompanyArchetype:
     """
@@ -255,6 +299,8 @@ def _unranked(
 
     covers = _coverage(earning)
     candidates = tuple(ARCHETYPE_OF[coverage.model] for coverage in covers)
+
+    narrowest, rests_on = _rests_on(knowledge, earning, sizes_consumed=False)
 
     return CompanyArchetype(
         symbol=knowledge.symbol,
@@ -287,11 +333,14 @@ def _unranked(
         ),
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+        narrowest=narrowest,
+        rests_on=rests_on,
     )
 
 
 def _diversified(
-    knowledge: CompanyKnowledge,
+    knowledge: CompanyKnowledgeConsensus,
     *,
     coverage: tuple[ModelCoverage, ...],
     missing: tuple[Unestablished, ...],
@@ -301,6 +350,12 @@ def _diversified(
     concluded: str,
 ) -> CompanyArchetype:
     """Measured, explained, and genuinely without a leading way to earn."""
+
+    narrowest, rests_on = _rests_on(
+        knowledge,
+        tuple(segment for segment in knowledge.segments if segment.revenue_models),
+        sizes_consumed=True,
+    )
 
     return CompanyArchetype(
         symbol=knowledge.symbol,
@@ -315,11 +370,14 @@ def _diversified(
         undecided_because=None,
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+        narrowest=narrowest,
+        rests_on=rests_on,
     )
 
 
 def _undecided(
-    knowledge: CompanyKnowledge,
+    knowledge: CompanyKnowledgeConsensus,
     *,
     missing: tuple[Unestablished, ...],
     coverage: tuple[ModelCoverage, ...],
@@ -329,6 +387,9 @@ def _undecided(
 ) -> CompanyArchetype:
     """No archetype, with the reason and the evidence that fell short."""
 
+    # An undecided archetype consumed no claim all the way to a
+    # conclusion, so it asserts no basis — its reasons carry the
+    # distributions instead.
     return CompanyArchetype(
         symbol=knowledge.symbol,
         primary=None,
@@ -342,13 +403,85 @@ def _undecided(
         undecided_because=because,
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+    )
+
+
+# ── what a conclusion rests on ──────────────────────────────────────
+
+
+def _rests_on(
+    knowledge: CompanyKnowledgeConsensus,
+    used: tuple[ConsensusSegment, ...],
+    sizes_consumed: bool,
+) -> tuple[Agreement | None, str | None]:
+    """The weakest agreement among the claims the rules consumed, worded.
+
+    A conclusion is exactly as firm as the narrowest claim beneath it.
+    Which claims count is which claims were *used*: identity always,
+    each used segment's ways of earning always, and its size only in
+    the regimes that weighed sizes — an unranked outcome consumed no
+    size, and charging it with one would report a width nothing rested
+    on.
+
+    Robustness is deliberately not asserted. A narrow majority is a
+    fact about these observations; whether it survives further ones has
+    not been established for anything, and the wording stops at the
+    count.
+    """
+
+    consumed: list[tuple[str, Agreement]] = [
+        ("which segments the document names", knowledge.identity)
+    ]
+
+    for segment in used:
+        consumed.append((f"how {segment.name!r} earns", segment.earning_agreement))
+
+        if sizes_consumed:
+            consumed.append((f"the size of {segment.name!r}", segment.size_agreement))
+
+    answered = [
+        (about, agreement) for about, agreement in consumed if agreement.readings > 0
+    ]
+
+    if not answered:
+        return None, None
+
+    about, narrowest = min(
+        answered,
+        key=lambda claim: claim[1].stability or 0.0,
+    )
+
+    if not knowledge.is_quorate:
+        counted = (
+            "1 observation"
+            if knowledge.observation_count == 1
+            else f"{knowledge.observation_count} observations"
+        )
+
+        return narrowest, (
+            f"{counted}, below the quorum of {knowledge.quorum} — not a "
+            "consensus, and nothing decided from it is authoritative."
+        )
+
+    if narrowest.settled:
+        return narrowest, (
+            f"a consensus of {knowledge.observation_count} observations, "
+            f"unanimous on every claim consumed."
+        )
+
+    return narrowest, (
+        f"a consensus of {knowledge.observation_count} observations; the "
+        f"narrowest claim beneath it is {narrowest.stated_majority()} — "
+        f"{about}. Whether that majority would survive further observations "
+        "has not been established."
     )
 
 
 # ── the arithmetic ──────────────────────────────────────────────────
 
 
-def _coverage(segments: tuple[BusinessSegment, ...]) -> tuple[ModelCoverage, ...]:
+def _coverage(segments: tuple[ConsensusSegment, ...]) -> tuple[ModelCoverage, ...]:
     """
     How much of the business earns each way, widest first.
 
@@ -408,7 +541,7 @@ def _secondary(leading: list[ModelCoverage]) -> Archetype | None:
 
 
 def _unestablished(
-    segments: tuple[BusinessSegment, ...],
+    segments: tuple[ConsensusSegment, ...],
 ) -> tuple[Unestablished, ...]:
     """What the rules needed about each segment and did not have."""
 
@@ -420,7 +553,8 @@ def _unestablished(
                 Unestablished(
                     segment=segment.name,
                     dimension=Dimension.SIZE,
-                    because=(
+                    because=segment.unmeasured_because
+                    or (
                         "No figure for this segment was proven against a table "
                         "in the filing."
                     ),

@@ -5,7 +5,7 @@ under it — segments, measured sizes, evidenced ways of earning — is a
 fact taken from a document. This is a rule's answer to a question no
 document is asked: what do those facts add up to?
 
-So it is kept apart from `CompanyKnowledge` in the way the Brain is kept
+So it is kept apart from `CompanyKnowledgeObservation` in the way the Brain is kept
 apart from the Artificial CIO. The knowledge layer stores what a filing
 says. This states what follows from it, names every rule that fired, and
 carries the facts each rule read — because a classification a reader
@@ -47,6 +47,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.agreement import Agreement
 from app.domain.company_knowledge import RevenueModel
 from app.domain.provenance import Provenance
 
@@ -282,6 +283,28 @@ class CompanyArchetype:
 
     #: When that reading happened, and by what.
     reading: Provenance
+
+    #: Whether the consensus this was decided from had its quorum. A
+    #: conclusion from a width-1 entry is served and labeled, never
+    #: authoritative — the gate a later consumer of archetypes must
+    #: check before letting one steer anything.
+    quorate: bool = False
+
+    #: The weakest agreement among the claims the rules actually
+    #: consumed — identity, and each used segment's size and ways of
+    #: earning. Carried whole so a consumer sees the distribution, not
+    #: only the count: a conclusion is exactly as firm as the narrowest
+    #: claim beneath it, and 3/5 under one segment's earning makes a
+    #: "Manufacturer" a different finding from 5/5 under everything.
+    #: None where nothing was consumed (an undecided archetype with no
+    #: usable claims).
+    narrowest: Agreement | None = None
+
+    #: The same fact worded for a surface: what this conclusion rests
+    #: on, quorum state and narrowest claim included. Robustness under
+    #: further observations is deliberately never asserted here,
+    #: because it has not been established for anything.
+    rests_on: str | None = None
 
     @property
     def is_decided(self) -> bool:

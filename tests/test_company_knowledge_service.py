@@ -8,10 +8,15 @@ from pathlib import Path
 
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     DescriptionRepair,
     RevenueModel,
     SegmentDescription,
+)
+from app.domain.knowledge_consensus import (
+    QUORUM,
+    ConsensusState,
+    consensus_of,
 )
 from app.domain.primary_source import (
     IdentityCheck,
@@ -30,6 +35,7 @@ from app.domain.tabular_evidence import (
     ReportedFigure,
 )
 from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
+from app.services.company_knowledge_extractor import ExtractionRejected
 from app.services.company_knowledge_service import (
     CompanyKnowledgeService,
     KnowledgeState,
@@ -76,7 +82,7 @@ def measured_share() -> MeasuredShare:
 
 
 def knowledge(accession: str = ACCESSION, filed: str = "2025-11-13"):
-    return CompanyKnowledge(
+    return CompanyKnowledgeObservation(
         symbol="DIS",
         description="A diversified worldwide entertainment company.",
         segments=(
@@ -149,7 +155,9 @@ class ExtractorStub:
     def __init__(self) -> None:
         self.extractions = 0
 
-    async def extract(self, symbol: str, document: SourceDocument) -> CompanyKnowledge:
+    async def extract(
+        self, symbol: str, document: SourceDocument
+    ) -> CompanyKnowledgeObservation:
         self.extractions += 1
 
         return knowledge()
@@ -199,7 +207,7 @@ def test_a_newer_filing_is_read_because_it_is_a_different_document(
 
     asyncio.run(service(tmp_path, filings, extractor).knowledge("DIS"))
 
-    JsonCompanyKnowledgeStore(tmp_path).write(knowledge())
+    JsonCompanyKnowledgeStore(tmp_path).append(knowledge())
 
     filings.current = source("0001744489-26-000001", "2026-11-12")
 
@@ -241,7 +249,7 @@ def test_what_was_already_known_survives_a_provider_that_stops_answering(
     business. A lookup that fails today does not unlearn it.
     """
 
-    JsonCompanyKnowledgeStore(tmp_path).write(knowledge())
+    JsonCompanyKnowledgeStore(tmp_path).append(knowledge())
 
     filings = ProviderStub(
         unavailable="The SEC index could not be read.",
@@ -267,23 +275,25 @@ def test_the_store_returns_the_latest_filing_by_when_it_was_filed(
 
     store = JsonCompanyKnowledgeStore(tmp_path)
 
-    store.write(knowledge("0001744489-26-000001", "2026-11-12"))
-    store.write(knowledge(ACCESSION, "2025-11-13"))
+    store.append(knowledge("0001744489-26-000001", "2026-11-12"))
+    store.append(knowledge(ACCESSION, "2025-11-13"))
 
     latest = store.latest("DIS")
 
-    assert latest is not None
-    assert latest.source.published_on.isoformat() == "2026-11-12"
+    assert len(latest) == 1
+    assert latest[0].source.published_on.isoformat() == "2026-11-12"
 
 
 def test_knowledge_survives_the_round_trip_to_disk(tmp_path: Path) -> None:
     store = JsonCompanyKnowledgeStore(tmp_path)
 
-    store.write(knowledge())
+    store.append(knowledge())
 
-    restored = store.read("DIS", ACCESSION)
+    observations = store.read("DIS", ACCESSION)
 
-    assert restored is not None
+    assert len(observations) == 1
+
+    restored = observations[0]
     assert restored.segments[0].name == "Experiences"
     assert restored.segments[0].revenue_models == (
         RevenueModel.TRANSACTION,
@@ -338,11 +348,13 @@ def test_which_mechanism_owned_a_description_survives_the_round_trip(
         ),
     )
 
-    store.write(structural)
+    store.append(structural)
 
-    restored = store.read("DIS", ACCESSION)
+    observations = store.read("DIS", ACCESSION)
 
-    assert restored is not None
+    assert len(observations) == 1
+
+    restored = observations[0]
 
     description = restored.segments[0].description
 
@@ -364,18 +376,19 @@ def test_an_entry_holding_a_bare_share_is_read_again(tmp_path: Path) -> None:
     """
 
     store = JsonCompanyKnowledgeStore(tmp_path)
-    store.write(knowledge())
+    store.append(knowledge())
 
     stored = next(tmp_path.glob("*.json"))
     older = json.loads(stored.read_text())
 
     older["schema_version"] = 3
-    older["segments"][0].pop("revenue")
-    older["segments"][0]["revenue_share"] = 0.383
+    segments = older["observations"][0]["segments"]
+    segments[0].pop("revenue")
+    segments[0]["revenue_share"] = 0.383
 
     stored.write_text(json.dumps(older))
 
-    assert store.read("DIS", ACCESSION) is None
+    assert store.read("DIS", ACCESSION) == ()
 
 
 def test_an_entry_written_before_the_audit_trail_is_read_again(
@@ -392,7 +405,7 @@ def test_an_entry_written_before_the_audit_trail_is_read_again(
     """
 
     store = JsonCompanyKnowledgeStore(tmp_path)
-    store.write(knowledge())
+    store.append(knowledge())
 
     stored = next(tmp_path.glob("*.json"))
     older = json.loads(stored.read_text())
@@ -401,20 +414,20 @@ def test_an_entry_written_before_the_audit_trail_is_read_again(
     older["source"].pop("verification")
     stored.write_text(json.dumps(older))
 
-    assert store.read("DIS", ACCESSION) is None
+    assert store.read("DIS", ACCESSION) == ()
 
 
 def test_an_unreadable_entry_is_absent_rather_than_repaired(tmp_path: Path) -> None:
     """A guessed record would be indistinguishable from a read one."""
 
     store = JsonCompanyKnowledgeStore(tmp_path)
-    store.write(knowledge())
+    store.append(knowledge())
 
     corrupt = next(tmp_path.glob("DIS.*.json"))
     corrupt.write_text("{ not json", encoding="utf-8")
 
-    assert store.read("DIS", ACCESSION) is None
-    assert store.latest("DIS") is None
+    assert store.read("DIS", ACCESSION) == ()
+    assert store.latest("DIS") == ()
 
 
 def test_a_repaired_span_never_comes_back_off_disk_as_a_first_reading(
@@ -435,7 +448,7 @@ def test_a_repaired_span_never_comes_back_off_disk_as_a_first_reading(
     described = original.segments[0].description
     assert described is not None
 
-    store.write(
+    store.append(
         replace(
             original,
             segments=(
@@ -455,9 +468,11 @@ def test_a_repaired_span_never_comes_back_off_disk_as_a_first_reading(
         )
     )
 
-    restored = store.read("DIS", ACCESSION)
+    observations = store.read("DIS", ACCESSION)
 
-    assert restored is not None
+    assert len(observations) == 1
+
+    restored = observations[0]
 
     repair = restored.segments[0].description.repair  # type: ignore[union-attr]
 
@@ -472,10 +487,168 @@ def test_an_unrepaired_description_stores_nothing_about_repairs(
     """The ordinary case stays the ordinary case, on disk as in memory."""
 
     store = JsonCompanyKnowledgeStore(tmp_path)
-    store.write(knowledge())
+    store.append(knowledge())
+
+    observations = store.read("DIS", ACCESSION)
+
+    assert len(observations) == 1
+
+    restored = observations[0]
+    assert restored.segments[0].description is not None
+    assert not restored.segments[0].description.was_repaired
+
+
+def test_why_a_size_is_absent_survives_the_round_trip_to_disk(
+    tmp_path: Path,
+) -> None:
+    """
+    An absence stored without its reason is an absence a later session
+    has to re-derive from outside the platform. This one was: the sizes
+    Caterpillar's 10-K prints looked like a gap in the filing for as
+    long as nothing recorded that the reading had never seen its tables.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+
+    stored = knowledge()
+
+    store.append(
+        replace(
+            stored,
+            segments=(
+                replace(
+                    stored.segments[0],
+                    revenue=None,
+                    unmeasured_because="This filing's discussion prints no table.",
+                ),
+            ),
+        )
+    )
+
+    observations = store.read("DIS", ACCESSION)
+
+    assert len(observations) == 1
+
+    restored = observations[0]
+    assert restored.segments[0].revenue is None
+    assert (
+        restored.segments[0].unmeasured_because
+        == "This filing's discussion prints no table."
+    )
+
+
+# ── observations and consensus ──────────────────────────────────────
+
+
+def test_what_the_service_serves_is_a_consensus_with_its_width_stated(
+    tmp_path: Path,
+) -> None:
+    """One acquisition is one observation, labeled as exactly that."""
+
+    outcome = asyncio.run(
+        service(tmp_path, ProviderStub(), ExtractorStub()).knowledge("DIS")
+    )
+
+    assert outcome.knowledge is not None
+    assert outcome.knowledge.observation_count == 1
+    assert outcome.knowledge.state is ConsensusState.INSUFFICIENT_QUORUM
+    assert "a single reading, not a consensus" in outcome.knowledge.reading.source
+
+
+def test_observe_fills_the_quorum_and_stops_on_the_count(tmp_path: Path) -> None:
+    """
+    The stopping rule references the count and never the content — an
+    entry stops at quorum whether its claims settled or not.
+    """
+
+    provider = ProviderStub()
+    extractor = ExtractorStub()
+    knowing = service(tmp_path, provider, extractor)
+
+    asyncio.run(knowing.knowledge("DIS"))
+
+    assert extractor.extractions == 1
+
+    outcome = asyncio.run(knowing.observe("DIS"))
+
+    assert extractor.extractions == QUORUM
+    assert outcome.knowledge is not None
+    assert outcome.knowledge.observation_count == QUORUM
+    assert outcome.knowledge.state is ConsensusState.QUORATE
+
+    # Asking again observes nothing further: the quorum is filled.
+    asyncio.run(knowing.observe("DIS"))
+
+    assert extractor.extractions == QUORUM
+
+
+def test_a_refused_reading_ends_the_observe_run_and_keeps_what_stands(
+    tmp_path: Path,
+) -> None:
+    class RefusingAfterOne(ExtractorStub):
+        async def extract(self, symbol: str, document: SourceDocument):
+            if self.extractions >= 1:
+                raise ExtractionRejected("The span was not in the text.")
+
+            return await super().extract(symbol, document)
+
+    outcome = asyncio.run(
+        service(tmp_path, ProviderStub(), RefusingAfterOne()).observe("DIS")
+    )
+
+    assert outcome.knowledge is not None
+    assert outcome.knowledge.observation_count == 1
+    assert outcome.knowledge.state is ConsensusState.INSUFFICIENT_QUORUM
+    assert "was not in the text" in (outcome.absent_because or "")
+
+
+def test_a_schema_8_entry_serves_as_one_observation_below_quorum(
+    tmp_path: Path,
+) -> None:
+    """
+    The carried-forward corpus: a single-reading entry keeps operating,
+    labeled, and is never called settled.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.append(knowledge())
+
+    # Rewrite the entry as its schema-8 form: the observation body at
+    # the top level, exactly as the previous store wrote it.
+    path = next(tmp_path.glob("*.json"))
+    entry = json.loads(path.read_text())
+    observation = entry["observations"][0]
+    entry.pop("observations")
+    entry.update(observation)
+    entry["schema_version"] = 8
+    path.write_text(json.dumps(entry))
 
     restored = store.read("DIS", ACCESSION)
 
-    assert restored is not None
-    assert restored.segments[0].description is not None
-    assert not restored.segments[0].description.was_repaired
+    assert len(restored) == 1
+
+    consensus = consensus_of(restored)
+
+    assert consensus.observation_count == 1
+    assert consensus.state is ConsensusState.INSUFFICIENT_QUORUM
+
+
+def test_appending_to_a_schema_8_entry_carries_the_observation_forward(
+    tmp_path: Path,
+) -> None:
+    """The relabeling is real: the old reading survives beside the new one."""
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.append(knowledge())
+
+    path = next(tmp_path.glob("*.json"))
+    entry = json.loads(path.read_text())
+    observation = entry["observations"][0]
+    entry.pop("observations")
+    entry.update(observation)
+    entry["schema_version"] = 8
+    path.write_text(json.dumps(entry))
+
+    store.append(knowledge())
+
+    assert len(store.read("DIS", ACCESSION)) == 2

@@ -36,7 +36,7 @@ for the package-by-package mapping, verified against the import graph.
 
 # Repository Health
 
-Green baseline, measured 2026-08-06. A figure here is an observation with a
+Green baseline, measured 2026-08-07. A figure here is an observation with a
 date, not a standing claim — refresh it at slice boundaries, and keep the
 test count in [`CLAUDE.md`](../CLAUDE.md) in step, so a later session does
 not inherit a quality state that has silently drifted.
@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1028 passing (2026-08-06) |
+| Pytest | 🟢 1101 passing (2026-08-07) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,342 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **Business Understanding: how a business creates value, explained from
+  consensus** (August 2026). Phase 2's first slice, and the first real
+  consumer of the knowledge layer's finished contract. Company Knowledge
+  answers *what has been established*; `BusinessUnderstanding` answers
+  *how this business creates value* — one level above the knowledge, one
+  level below the committees. Completely deterministic: no model, no new
+  reading, and every statement traces to `CompanyKnowledgeConsensus`.
+  `understand()` is a pure function beside `classify`, surfaced by
+  `movrvest understanding SYMBOL`.
+
+  The examples in the design conversation ("owns intellectual property",
+  "designs semiconductor platforms") were deliberately not built — they
+  are not derivable from consensus without inference, and the
+  architectural rule outranks the examples. The engine is worded from
+  settled segments, settled mechanisms and the archetype only. A
+  mechanism is exactly as established as the weakest earning claim
+  carrying it, and says so where it is named.
+
+  **The genuinely new computation is contingency analysis.** For every
+  earning claim that is narrow or unsettled, the engine evaluates what
+  the rules would have concluded had the claim settled at each of its
+  *observed* answers — the identical `classify`, over a consensus
+  differing in exactly one claim. A statement about the rules, never a
+  new fact about the company: no answer is evaluated that no observation
+  gave, and nothing evaluated is stored or promoted. It is how "not
+  established" gets the explanation it is owed — whether the gap bears
+  on the conclusion — without ever being compensated for.
+
+  Accepted live, deterministically, on the three cases:
+
+  - **DIS** (observed to quorum first, per the acquisition policy):
+    multi-engine — licensing, services and transaction lead together;
+    six mechanisms each with coverage and support; the narrowest claim
+    is 4/5, and the contingency shows every observed answer leaves
+    Diversified unchanged — the gap does not bear on it.
+  - **NVDA**: Manufacturer because manufacturing runs through 100%,
+    more than 5% clear; *not* Diversified because Graphics' earning
+    settled at `manufacturing`, 3/5 — and the contingency names the
+    dependency exactly: either minority answer would conclude
+    Diversified.
+  - **CAT**: Diversified from the settled claims; Financial Products'
+    earning unsettled at 2/2/1 and *excluded, not resolved* — and the
+    contingency answers more precisely than the acceptance question
+    asked: one observed answer (2× financial_spread, services) would
+    conclude "Service business, then manufacturer", which is exactly
+    the stored one-in-twenty draw the consensus architecture retired.
+    The platform now explains that draw instead of serving it.
+
+  Also this slice: the repository moved from iCloud Drive to the local
+  SSD (`/Users/movr/AI Projects/etoro-agentic-trader`) after a
+  `fileproviderd` sync storm throttled the old path to ~3 file reads a
+  second and made the 4-second test suite look hung. The suite, the DIS
+  quorum observation and all three acceptance cases were re-run on the
+  new path; the identical tree passed identically, so nothing was
+  attributable to the move. PlaybookSelector deliberately stays on the
+  industry seam — the flip to consuming Business Understanding is
+  recorded as open work with its preconditions in
+  [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md).
+
+
+- **A conclusion is as firm as the narrowest claim beneath it, and now
+  says so** (August 2026). The three layers the consensus architecture
+  supports, made visible, with a terminology refinement NVIDIA forced:
+  its Graphics claim leaned one way over ten calibration readings and
+  settled the other way over the five-observation quorum — correctly,
+  both times — so *settled* must never be read as *unlikely to change*.
+  Four properties are now kept apart: **quorum** (enough observations
+  exist), **consensus** (one observed value has a strict majority),
+  **agreement strength** (the winning count and full distribution), and
+  **robustness** (survival under further observations — not
+  established, for anything).
+
+  `CompanyArchetype` carries `quorate`, the `narrowest` consumed
+  agreement (distribution included), and a worded `rests_on`. The
+  archetype surface renders three layers in the order trust is built —
+  acquisition, knowledge stability, business understanding — and the
+  headline is inseparable from its basis: *"NVDA — Manufacturer,
+  resting on a consensus of 5 observations; the narrowest claim beneath
+  it is a narrow majority (3/5) — how 'Graphics' earns. Whether that
+  majority would survive further observations has not been
+  established."* A width-1 entry reads "not a consensus, and nothing
+  decided from it is authoritative", and its 1/1 is printed as a width,
+  never as unanimity — arithmetic is not agreement. Every majority is
+  worded with its count; "narrow" never appears alone.
+
+  Acquisition policy is recorded as policy, not code: width 1 suffices
+  for developer inspection, quorum before an archetype is
+  authoritative (`quorate` is the machine-readable gate), observations
+  on demand at the dossier, no portfolio-wide rereading until cost is
+  measured, and never adaptive stopping on content.
+
+- **Knowledge became observations, and what the platform serves is
+  consensus** (August 2026). The accepted design in
+  [`architecture/KNOWLEDGE_CONSENSUS.md`](architecture/KNOWLEDGE_CONSENSUS.md),
+  implemented as the authorized narrow slice: the domain model, the
+  derived-on-read consensus, and the archetype engine as first consumer.
+  Automatic quorum acquisition for every company is deliberately not
+  built yet.
+
+  `CompanyKnowledge` is renamed `CompanyKnowledgeObservation`, which is
+  what it always was — one reading, admissible and one draw.
+  `CompanyKnowledgeConsensus` is derived by `consensus_of` from the
+  stored observations on every read and stored nowhere: a content-blind
+  strict majority per atomic claim, over the observations that addressed
+  the claim, with quorum 5. Every settled value is verbatim one an
+  observation gave; ties and pluralities settle nothing and carry their
+  distribution through the existing absence fields; the spans never
+  settle at all. The store (schema 9) holds observations append-only,
+  and a schema-8 entry restores as one observation — the one legitimate
+  cross-schema read, because relabeling a reading as one reading invents
+  nothing. Below quorum the platform keeps operating and says so:
+  `insufficient_quorum`, "a single reading, not a consensus".
+
+  The three admissibility boundaries and this one are deliberately
+  different kinds: identity, grounding and applicability decide whether
+  an observation may enter trusted knowledge at all; consensus decides
+  whether admissible observations are reproducible enough to interpret.
+  Consensus cannot rescue an inadmissible observation, and an unsettled
+  consensus does not mean the observations are untrue.
+
+  **Accepted live on the four calibration cases**, each observed to
+  quorum (one carried-forward schema-8 observation plus four new):
+
+  - **NVDA — settles, by count and against completeness.** Graphics'
+    ways of earning settled at `manufacturing`, 3 of 5, over
+    `manufacturing, services` — the *less* complete answer won because
+    more observations gave it, which is content-blindness demonstrated
+    on live data. Archetype: Manufacturer, from consensus facts, with
+    the 2-of-5 minority in the record. (The ten-reading calibration
+    leaned the other way, 6/10 — a near-even claim lands either way at
+    N=5, and the 3/5 width on the surface says exactly how firmly it
+    is held.)
+  - **CAT — the one-in-twenty result cannot become authoritative.**
+    Financial Products' earning came back 2× `financial_spread,
+    services`, 2× `financial_spread`, 1× `financial_spread, premiums`:
+    no strict majority, unsettled, refused by the rules with the
+    distribution worded. Archetype: **Diversified** — matching the
+    19-of-20 modal reading, where the stored single draw had said
+    "Service business, then manufacturer".
+  - **JPM — disagreement is visible, not removed.** Identity settled 4
+    of 5 at three segments; the fifth observation's `Corporate` stands
+    in the identity distribution as a minority answer. The boilerplate
+    segment-list "description" that passed mechanical checks in a
+    minority of readings loses to the counted absence.
+  - **META — absence wins with the minority inspectable.** Reality
+    Labs settles as not-described 4 of 5, and the one genuine product
+    description remains in the span distribution, attached to the
+    observation that found it.
+
+  Every acceptance property is also a unit test: no consensus value
+  exists that was not present in at least one admissible observation
+  (selection, never synthesis — observations {a}, {b}, {a,b,c} elect
+  nothing); and changing the consensus rule recomputes results from the
+  same files without rewriting a byte of them (the same three
+  observations are `insufficient_quorum` at quorum 5 and `quorate` at
+  quorum 3).
+
+  `movrvest observe SYMBOL` is the explicit spend that fills a quorum,
+  and its stopping rule references the count, never the content — an
+  entry stops at quorum whether its claims settled or not, which is
+  what keeps observation from becoming read-until-classifiable.
+  `movrvest knowledge` renders every claim with its width and prints
+  the full distribution wherever agreement is short of unanimous: 3 of
+  5 and 5 of 5 never look identical. DIS, NFLX and VOW3.DE remain
+  width-1 entries, served and labeled, until they are next observed.
+
+- **The reader is measured before it is improved** (August 2026). The
+  platform's first measurement of *itself* rather than of a company, and
+  it exists because NVIDIA's archetype moved with its evidence unchanged.
+  Every acquisition defect before this one was the platform reading the
+  wrong thing. This is the platform reading the same thing twice and
+  getting two answers — the document immutable, the rules a pure
+  function, and the variance entirely in the one layer that asks a model.
+
+  `movrvest reader-stability SYMBOL --readings N` fetches the current
+  document **once** — a primary source is immutable, so one fetch *is*
+  every reading's document — and reads it N times under identical
+  conditions. It stores nothing, and that is a boundary rather than an
+  omission: a calibration that wrote what it read would let whichever
+  draw ran last become the platform's account of the company, which is
+  the failure it exists to quantify.
+
+  **Fifty readings across five 10-Ks, ten each.** The finding is not a
+  single number, because the variance is not spread evenly — it is
+  concentrated, and where it concentrates is the point.
+
+  | | DIS | NVDA | CAT | META | JPM |
+  |---|---|---|---|---|---|
+  | reading completed | 10/10 | 10/10 | 10/10 | 10/10 | 10/10 |
+  | segments named | 10/10 | 10/10 | 10/10 | 10/10 | 7/10 |
+  | size (worst segment) | 10/10 | 10/10 | 10/10 | 10/10 | 10/10 |
+  | described at all (worst) | 9/10 | 10/10 | 10/10 | 7/10 | 9/10 |
+  | ways of earning (worst) | 6/10 | 6/10 | 8/10 | 7/10 | 10/10 |
+  | span cited (worst) | 3/10 | 4/10 | 3/10 | 7/10 | 9/10 |
+  | **archetype** | 10/10 | **6/10** | 10/10 | 10/10 | 10/10 |
+
+  **Every size agreed every time.** Sixteen segment sizes across five
+  documents, fifty readings: identical share, identical cell, without
+  exception. That is not luck and it is not the model being careful — it
+  is the shape of the evidence. A quantitative citation is an *address*
+  into a table this platform parsed, checked against the cell it names,
+  with the division performed here. The model only has to point; the
+  platform does the reading and the arithmetic, so there is almost
+  nothing left for it to vary.
+
+  **Everything a model reads out of prose moves.** Ways of earning fall
+  to 6 of 10; spans to 3 of 10. The span figure is the softer of the two
+  and deliberately reported apart from whether a description was
+  established at all — ten readings cited one sentence about Caterpillar's
+  Resource Industries eight ways, trimmed at "quarry", at "quarry and
+  aggregates", with and without the full stop. As spans that is 3 of 10;
+  as an account of what the segment does it is 10 of 10, and only the
+  second reaches a decision. Reporting only the first would describe a
+  reader that cannot read.
+
+  **So the platform's noise is structural, not incidental.** Variance is
+  absent exactly where evidence is an address this platform verifies, and
+  present exactly where it is a model's reading of prose. That is a
+  measurement of the decision taken in *"a quantitative citation is an
+  address, not a span"* — and it says plainly what narrative evidence
+  still lacks.
+
+  **NVIDIA is the worst case and shows how noise becomes a conclusion.**
+  Its sizes are perfectly stable at 90/10 and both segments are described
+  in all ten readings. One segment's ways of earning move — Graphics
+  reads `manufacturing, services` six times, `manufacturing` three and
+  `manufacturing, subscription` once — and because `services` either does
+  or does not run through all 100% of revenue, that single flip crosses
+  the rule that separates a ranked archetype from a diversified one. 6 of
+  10 Diversified, 4 of 10 Manufacturer. The rules are deterministic and
+  behaved perfectly; a coin-flip arrived from above them.
+
+  **A correction this measured.** Caterpillar was reported in the
+  previous slice as classifying "Service business, then manufacturer".
+  Over twenty readings it is Diversified nineteen times. The stored entry
+  holds the single reading in which Financial Products was described as
+  earning by `services`, which lifts services above manufacturing and
+  ranks what is otherwise a tie. CAT does classify — that part stands,
+  and coverage is still 3 of 7 — but *which* archetype was a one-in-twenty
+  draw, and the platform had no way to know that until now.
+
+  **What this changes about coverage.** Stored knowledge is one draw
+  presented as the company's own account of itself, and every coverage
+  figure this repository has published was measured on one draw. Coverage
+  and stability are now known to be different qualities: a company that
+  classifies every time and one that classifies 60% of the time because
+  successive readings disagree are not the same finding, and until this
+  slice they were reported identically. Reporting them apart, and
+  deciding whether knowledge should be a reading or the modal reading of
+  several, is the next question — see
+  [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md).
+
+  Nothing here is called a probability. An agreement observed over ten
+  readings is exactly that, and stating it as the chance a further
+  reading agrees would invent a number nobody measured.
+
+- **A section is located where the filer typeset its title** (August
+  2026). The first acquisition defect found by asking what was blocking
+  Business Understanding rather than what was missing from the evidence,
+  and it had been invisible because it failed as an honest-looking
+  absence.
+
+  Two of seven filings in the calibration corpus classified. Of the five
+  that did not, Caterpillar was the closest: four segments, all four
+  described, every way of earning established — and no size, so the
+  archetype was *unranked*, which is a statement that the platform knows
+  what a business does and cannot order it. The surface said "no figure
+  for this segment was proven against a table in the filing". The filing
+  prints them in a table. This platform had never seen it.
+
+  **Width is not a property of a section.** A 10-K's sections are located
+  by pairing each occurrence of "Item 7" with the closing heading after
+  it, and the widest pair won. Caterpillar names Item 7 inside its
+  forward-looking-statements note, mid-sentence, and the span from that
+  sentence to the next closing heading is 45,096 characters against Item
+  7's own 28,215. So the platform read the wrong section — one containing
+  none of the five tables the sizes are measured from. Disney, NVIDIA and
+  Netflix were right by luck: each of them also has a cross-reference
+  competing with its heading, and each happened to lose on width.
+
+  **A heading begins a block; a cross-reference is part of a sentence.**
+  Flattened to prose the two are the same string, so the markup is the
+  only place the difference survives — the same three-layer shape the
+  narrative half already uses, structure read from what the filer
+  typeset and position behind it. Measured across the corpus: every
+  correctly located section begins its block, and every cross-reference
+  competing with one carries between 127 and 540 characters of its
+  sentence ahead of it. Among block-starting candidates the widest still
+  wins, because a table-of-contents entry begins a block too and what
+  separates it is that it runs to its neighbour. A document whose markup
+  offers no blocks at all is read by width as before — and asking the
+  question anyway would have been worse than useless, because the first
+  position in an unstructured document begins a block trivially.
+
+  **The second defect was underneath the first, and only reachable
+  through it.** With the right section in hand, Caterpillar's total
+  revenue was refused: cited at table 1, row 11, column 6 — the correct
+  cell — "whose column carries no header". Row 0 was taken as the header
+  row without inspection, and Caterpillar typesets the table's own title
+  *inside* the table, so row 0 reads `Sales and Revenues by Segment` and
+  nothing else. The row naming the periods is row 1. A title fills one
+  cell and holds words, which is a fact about the row's shape rather
+  than a reading of what it says; a row holding *nothing* is not a title
+  and is not skipped, because a table with no header should have its
+  figures refused rather than have a row of data promoted into the role.
+
+  **A missing size now says why it is missing.** Three claims evidenced
+  apart is three absences worded apart, and only two of the three were.
+  `undescribed_because` existed; the size had nothing, so four different
+  causes printed one sentence — and that sentence read as a fact about
+  the filing. It is what hid this: reconstructing why Caterpillar had no
+  sizes meant re-deriving it from outside the platform. Each cause is
+  now worded where it happens, including the one that is not about the
+  company at all — JPMorgan's Item 7 is 395 characters naming the pages
+  of a document filed separately, so its figures exist and are not in
+  the document this platform read.
+
+  Knowledge schema 8; every entry re-read, because an entry written
+  under 7 may have been read from a cross-reference and nothing stored
+  says so. Measured after the re-read: **three of seven classify, up
+  from two.** Caterpillar reads Construction Industries 37%, Resource
+  Industries 18%, Power & Energy 48% and Financial Products 6% — each
+  naming its cell — and classifies as a service business, then a
+  manufacturer. Disney is unchanged at 45/19/38. The four that still do
+  not classify are blocked on something else, and each says which:
+  Meta's and Volkswagen's descriptions, JPMorgan's separately filed
+  discussion, and Netflix's single operating segment, which reports no
+  segment table because the segment is the company.
+
+  One caveat the re-read exposed and this slice does not close: NVIDIA
+  moved from Diversified to Manufacturer without its sizes changing,
+  because a second reading of the same unchanged prose reported one
+  fewer way of earning for Graphics. The classification is deterministic
+  over the facts; the facts are read by a model, and this is the first
+  measurement of how much they move between readings.
 
 - **A description is owned by the section it was printed in** (August
   2026). The narrative half of ownership, replacing a partition that

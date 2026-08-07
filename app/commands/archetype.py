@@ -45,10 +45,49 @@ class ArchetypeCommand:
 
 
 def _render(archetype: CompanyArchetype) -> None:
+    """The three layers, in the order trust is built.
+
+    Acquisition coverage says what source material was read; knowledge
+    stability says how firmly each consumed claim is held; Business
+    Understanding says what the rules concluded from the settled facts.
+    A conclusion is exactly as firm as the narrowest claim beneath it,
+    and this surface never lets one be read without the other.
+    """
+
     print(f"{archetype.symbol} — {archetype.stated}")
+
+    if archetype.rests_on:
+        print(f"  resting on {archetype.rests_on}")
+
     print()
-    print(archetype.source)
-    print(f"read: {archetype.reading.source}")
+    print("acquisition:")
+    print(f"  {archetype.source}")
+    print(f"  read: {archetype.reading.source}")
+    print()
+
+    if archetype.narrowest is not None:
+        print("knowledge stability:")
+
+        if archetype.quorate:
+            print(
+                f"  narrowest consumed claim: {archetype.narrowest.stated_majority()}"
+            )
+        else:
+            # Below quorum there is no majority to word. "Unanimous
+            # (1/1)" is arithmetic dressed as agreement, and printing it
+            # would be the over-reading this layer exists to prevent.
+            print(
+                f"  narrowest consumed claim: {archetype.narrowest.counted()} "
+                "— below quorum, a width and not a consensus"
+            )
+
+        if not archetype.narrowest.settled:
+            for answer in archetype.narrowest.answers:
+                print(f"    {answer.given}× {answer.stated}")
+
+        print()
+
+    print("business understanding:")
     print()
 
     if archetype.candidates:

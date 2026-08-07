@@ -828,3 +828,133 @@ def test_a_segments_description_taken_from_another_section_stays_absent() -> Non
     assert segment_read.name == "Family of Apps (FoA)"
     assert segment_read.description is None
     assert "outside the section it heads" in (segment_read.undescribed_because or "")
+
+
+# ── why a size is absent ────────────────────────────────────────────
+#
+# Three claims evidenced apart is three absences worded apart, and only
+# two of the three were. A missing size read identically whether the
+# filing printed no segment table, stated its figures in a document this
+# one only points at, or reported a total nothing could locate — and
+# that silence hid a defect in this platform inside what looked like an
+# honest gap in a filing.
+
+
+def test_a_missing_size_says_why_it_is_missing() -> None:
+    """Every absence in this platform carries its reason, and now so does this one."""
+
+    knowledge = measure({"total": None, "segments": []})
+
+    assert knowledge.segments[0].revenue is None
+    assert "no table" in (knowledge.segments[0].unmeasured_because or "").lower()
+
+
+def test_a_filing_whose_discussion_prints_no_table_says_so() -> None:
+    """
+    Not "the filing does not prove it". The reading never saw a table,
+    which is a different fact and calls for a different response.
+    """
+
+    document = SourceDocument(
+        source=filing().source,
+        business_description=FILING_TEXT,
+        performance_discussion="Segment results are discussed at length. " * 80,
+        performance_tables=(),
+    )
+
+    provider = ReadingsStub(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [segment()],
+        },
+        {"total": None, "segments": []},
+    )
+
+    knowledge = asyncio.run(
+        CompanyKnowledgeExtractor(provider).extract("DIS", document)
+    )
+
+    assert knowledge.segments[0].revenue is None
+    assert "prints no table" in (knowledge.segments[0].unmeasured_because or "")
+
+
+def test_a_discussion_that_only_points_elsewhere_is_named_as_a_pointer() -> None:
+    """
+    JPMorgan's Item 7 is 395 characters naming the pages of a document
+    filed separately. The figures exist; they are not in the document
+    this platform read, and reporting that as the filing not proving
+    them would be a statement about the company that is not true.
+    """
+
+    document = SourceDocument(
+        source=filing().source,
+        business_description=FILING_TEXT,
+        performance_discussion=(
+            "Management's discussion and analysis appears on pages 46-160."
+        ),
+        performance_tables=(),
+    )
+
+    provider = ReadingsStub(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [segment()],
+        },
+        {"total": None, "segments": []},
+    )
+
+    knowledge = asyncio.run(
+        CompanyKnowledgeExtractor(provider).extract("DIS", document)
+    )
+
+    assert "pointer to a document filed separately" in (
+        knowledge.segments[0].unmeasured_because or ""
+    )
+
+
+def test_no_size_reading_is_asked_for_when_there_are_no_tables_to_read() -> None:
+    """The absence is structural, so nothing is spent discovering it."""
+
+    document = SourceDocument(
+        source=filing().source,
+        business_description=FILING_TEXT,
+        performance_discussion="",
+        performance_tables=(),
+    )
+
+    provider = ReadingsStub(
+        {
+            "description": "A diversified entertainment company.",
+            "segments": [segment()],
+        },
+        {"total": None, "segments": []},
+    )
+
+    asyncio.run(CompanyKnowledgeExtractor(provider).extract("DIS", document))
+
+    assert not any(
+        request.system_prompt is MIX_SYSTEM_PROMPT for request in provider.requests
+    )
+
+
+def test_a_segment_the_mix_omitted_says_so_while_the_others_keep_their_sizes() -> None:
+    """
+    Sizes fail one at a time as well as all at once. A segment left out
+    of a mix that measured the rest is a different absence again, and
+    the segments beside it are untouched.
+    """
+
+    knowledge = measure(
+        {
+            "total": cell(3, 94425.0),
+            "segments": [{"segment": "Entertainment", **cell(1, 42466.0)}],
+        }
+    )
+
+    entertainment, experiences = knowledge.segments
+
+    assert entertainment.revenue is not None
+    assert entertainment.unmeasured_because is None
+
+    assert experiences.revenue is None
+    assert "located no cell" in (experiences.unmeasured_because or "")

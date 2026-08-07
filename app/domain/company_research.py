@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.domain.company_knowledge import CompanyKnowledge
+from app.domain.knowledge_consensus import CompanyKnowledgeConsensus
 from app.domain.playbook import InvestmentPlaybook
 from app.domain.research_plan import AnalystKey
 
@@ -35,7 +35,7 @@ class CompanyResearch:
     #: account of itself. None where no authoritative source could be
     #: reached — which `knowledge_state` distinguishes from a source that
     #: was read and failed validation.
-    knowledge: CompanyKnowledge | None = None
+    knowledge: CompanyKnowledgeConsensus | None = None
 
     #: How that knowledge was obtained, or why it was not. Carried so a
     #: surface can report analysis coverage honestly rather than showing

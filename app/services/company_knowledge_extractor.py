@@ -9,7 +9,7 @@ from typing import Any
 
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     DescriptionRepair,
     RevenueModel,
     SegmentDescription,
@@ -66,7 +66,13 @@ do not analyse the company, and you do not calculate anything at all.
 
 You are given the tables exactly as they were parsed out of the document.
 Every cell is addressed: `[table N]`, then `rR` for the row, then `cC`
-for the column. Row `r0` is the header row, which names the columns.
+for the column.
+
+The columns are named by the first row that labels more than one of
+them. That is usually `r0`, but a filer who typesets a title inside the
+table — "Sales and Revenues by Segment" — puts it in `r0` alone, and
+then `r1` names the columns. Read the rows you are given rather than
+assuming which one it is.
 
 Tables are laid out one of two ways, and both are normal:
 - Segments as ROWS, periods as columns. Then the total is another row,
@@ -83,8 +89,8 @@ Rules:
 - Every segment cell must be in the SAME TABLE as the total, and must
   share either its row or its column with the total — whichever the
   table's layout calls for. Omit any segment whose revenue is not there.
-- Never cite row `r0` or column `c0`. They name the rows and columns and
-  measure nothing.
+- Never cite the naming row, any row above it, or column `c0`. They name
+  the rows and columns and measure nothing.
 - Never cite a cell holding a percentage, a change, a margin, an operating
   income or a label. Revenue only.
 - `value` is the number that cell prints, written plainly: no thousands
@@ -386,7 +392,9 @@ class CompanyKnowledgeExtractor:
     def __init__(self, provider: NarrativeProvider) -> None:
         self._provider = provider
 
-    async def extract(self, symbol: str, document: SourceDocument) -> CompanyKnowledge:
+    async def extract(
+        self, symbol: str, document: SourceDocument
+    ) -> CompanyKnowledgeObservation:
         """
         Read this document, asking again where the reading is not grounded.
 
@@ -412,7 +420,7 @@ class CompanyKnowledgeExtractor:
         self,
         symbol: str,
         document: SourceDocument,
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         request = DraftRequest(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt(document),
@@ -445,10 +453,10 @@ class CompanyKnowledgeExtractor:
 
     async def _with_repaired_descriptions(
         self,
-        knowledge: CompanyKnowledge,
+        knowledge: CompanyKnowledgeObservation,
         document: SourceDocument,
         payload: dict[str, Any],
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         """
         One bounded second request per claim whose citation did not apply.
 
@@ -589,9 +597,9 @@ class CompanyKnowledgeExtractor:
 
     async def _with_revenue_mix(
         self,
-        knowledge: CompanyKnowledge,
+        knowledge: CompanyKnowledgeObservation,
         document: SourceDocument,
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         """
         How large each segment is, measured out of the tables that state it.
 
@@ -615,8 +623,11 @@ class CompanyKnowledgeExtractor:
         is left over.
         """
 
-        if not knowledge.segments or not document.performance_tables:
+        if not knowledge.segments:
             return knowledge
+
+        if not document.performance_tables:
+            return _unmeasured(knowledge, _no_tables(document))
 
         request = DraftRequest(
             system_prompt=MIX_SYSTEM_PROMPT,
@@ -633,24 +644,47 @@ class CompanyKnowledgeExtractor:
             payload = json.loads(draft.text)
         except (NarrativeDeclined, json.JSONDecodeError):
             # The segments stand; only their sizes are unread.
-            return knowledge
+            return _unmeasured(
+                knowledge,
+                "The reading of this filing's tables did not complete, so no "
+                "figure was located for any segment. Nothing here is a "
+                "statement about the filing.",
+            )
 
         measured = self._measured(knowledge, document.performance_tables, payload)
 
         if not measured:
-            return knowledge
+            return _unmeasured(
+                knowledge,
+                "No table in this filing's performance discussion was read as "
+                "reporting a total revenue, so there was nothing to measure a "
+                "segment against.",
+            )
 
         return replace(
             knowledge,
             segments=tuple(
-                replace(segment, revenue=measured.get(segment.name.casefold()))
+                replace(
+                    segment,
+                    revenue=measured.get(segment.name.casefold()),
+                    unmeasured_because=(
+                        None
+                        if segment.name.casefold() in measured
+                        else (
+                            "The reading located no cell reporting this "
+                            "segment's revenue in the tables this filing's "
+                            "performance discussion prints, though it located "
+                            "the total and other segments' figures there."
+                        )
+                    ),
+                )
                 for segment in knowledge.segments
             ),
         )
 
     def _measured(
         self,
-        knowledge: CompanyKnowledge,
+        knowledge: CompanyKnowledgeObservation,
         tables: tuple[SourceTable, ...],
         payload: dict[str, Any],
     ) -> dict[str, MeasuredShare]:
@@ -761,7 +795,7 @@ class CompanyKnowledgeExtractor:
         document: SourceDocument,
         payload: dict[str, Any],
         model: str,
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         description = str(payload.get("description") or "").strip()
 
         if not description:
@@ -793,7 +827,7 @@ class CompanyKnowledgeExtractor:
 
         source = document.source
 
-        return CompanyKnowledge(
+        return CompanyKnowledgeObservation(
             symbol=symbol.upper().strip(),
             description=description,
             segments=segments,
@@ -906,6 +940,70 @@ def _unrepaired(
         segment,
         description=None,
         undescribed_because=f"{first_refused_because} {outcome}",
+    )
+
+
+#: Shorter than this and a located section is not the discussion itself.
+#: Measured: JPMorgan's Item 7 is 395 characters, all of them saying on
+#: which pages of a separately filed document the discussion appears.
+#: The four filings that carry their own discussion run from 28,000 to
+#: 80,000, so nothing sits near this line.
+_STUB_WIDEST = 2_000
+
+
+def _unmeasured(
+    knowledge: CompanyKnowledgeObservation, because: str
+) -> CompanyKnowledgeObservation:
+    """Every segment's size absent, and every one of them saying why.
+
+    The reason belongs on each segment rather than on the reading,
+    because a size is a claim about a segment and its absence is too —
+    and because sizes fail one at a time as well as all at once, so a
+    reader who found the explanation somewhere else would have to know
+    which kind of failure this had been to know where to look.
+    """
+
+    return replace(
+        knowledge,
+        segments=tuple(
+            segment
+            if segment.revenue is not None
+            else replace(segment, unmeasured_because=because)
+            for segment in knowledge.segments
+        ),
+    )
+
+
+def _no_tables(document: SourceDocument) -> str:
+    """Why a filing's performance discussion yielded no table to read.
+
+    Three different facts, and only the last is about the company being
+    unusual. A section this platform never located, a section that is a
+    pointer to a document filed separately, and a discussion that really
+    does print no table of segment revenue call for three different
+    responses — and reported as one sentence they would call for none.
+    """
+
+    discussion = document.performance_discussion.strip()
+
+    if not discussion:
+        return (
+            "This platform located no management's discussion in this filing, "
+            "so it read no tables and measured no segment. This is a fact "
+            "about the reading, not about the company."
+        )
+
+    if len(discussion) <= _STUB_WIDEST:
+        return (
+            f"This filing's management discussion is {len(discussion):,} "
+            "characters long and prints no table, which makes it a pointer to "
+            "a document filed separately rather than the discussion itself. "
+            "The figures exist; they are not in the document this platform read."
+        )
+
+    return (
+        "This filing's management discussion prints no table this platform "
+        "could read a figure out of, so no segment was measured."
     )
 
 

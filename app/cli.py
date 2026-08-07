@@ -18,13 +18,17 @@ from app.commands import (
     knowledge,
     market,
     morning,
+    observe,
     policy,
+    reader_stability,
     record,
     status,
     today,
+    understanding,
     watchlist,
     writer_compare,
 )
+from app.services.reader_calibration import DEFAULT_READINGS
 
 CommandHandler = Callable[[], Coroutine[Any, Any, int]]
 
@@ -179,6 +183,60 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, ASML or BTC-USD",
     )
 
+    understanding_parser = subparsers.add_parser(
+        "understanding",
+        help="Explain how a business creates value, from consensus knowledge",
+        description=(
+            "Derive, deterministically, how a business creates value from "
+            "its consensus knowledge: the economic engine, the revenue "
+            "mechanisms with their support, the archetype with what it "
+            "rests on, and what could change the conclusion. No model is "
+            "asked and nothing is read"
+        ),
+    )
+    understanding_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or CAT",
+    )
+
+    observe_parser = subparsers.add_parser(
+        "observe",
+        help="Read the current filing again, up to the consensus quorum",
+        description=(
+            "Take independent observations of a company's current document "
+            "until the quorum is reached, and show the consensus they "
+            "derive. The stopping rule is the count, never the content"
+        ),
+    )
+    observe_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or VOW3.DE",
+    )
+
+    reader_stability_parser = subparsers.add_parser(
+        "reader-stability",
+        help="Read one filing repeatedly and report how far the readings agree",
+        description=(
+            "Read a company's current document several times under identical "
+            "conditions and report where the readings agreed and where they "
+            "did not. A measurement of this platform, not of the company: "
+            "nothing is stored, and no reading is improved"
+        ),
+    )
+    reader_stability_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or VOW3.DE",
+    )
+    reader_stability_parser.add_argument(
+        "--readings",
+        type=int,
+        default=DEFAULT_READINGS,
+        help=(
+            f"How many independent readings to run (default {DEFAULT_READINGS}). "
+            "Each one costs a model call and reads the same document"
+        ),
+    )
+
     return parser
 
 
@@ -200,6 +258,15 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "writer-compare":
         return await writer_compare.run(args.symbol)
+
+    if args.command == "reader-stability":
+        return await reader_stability.run(args.symbol, args.readings)
+
+    if args.command == "observe":
+        return await observe.run(args.symbol)
+
+    if args.command == "understanding":
+        return await understanding.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

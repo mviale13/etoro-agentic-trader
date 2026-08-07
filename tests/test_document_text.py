@@ -3,7 +3,12 @@
 import html
 import re
 
-from app.providers.document_text import flatten, read_regions, read_tables
+from app.providers.document_text import (
+    begins_a_block,
+    flatten,
+    read_regions,
+    read_tables,
+)
 
 _TAGS = re.compile(r"<[^>]+>")
 _WHITESPACE = re.compile(r"[ \t\r\f\v]+")
@@ -322,3 +327,48 @@ def test_a_document_that_typesets_no_headings_yields_no_regions() -> None:
     flat = flatten(plain)
 
     assert read_regions(plain, flat, 0, len(flat.text)) == ()
+
+
+def test_a_section_title_begins_the_block_the_filer_typeset_it_in() -> None:
+    """What tells a heading from a sentence that mentions it.
+
+    Flattened to prose the two are the same string, so the markup is the
+    only place the difference survives.
+    """
+
+    markup = "<p>ITEM 7. Management&#8217;s Discussion</p>"
+
+    flat = flatten(markup)
+
+    assert begins_a_block(markup, flat, flat.text.index("ITEM 7."))
+
+
+def test_a_cross_reference_to_a_section_does_not_begin_a_block() -> None:
+    """
+    Caterpillar's 10-K names Item 7 inside its forward-looking-statements
+    note, with the rest of that sentence typeset ahead of it.
+    """
+
+    markup = (
+        "<p>The statements under Item 7 "
+        "&#8220;Management&#8217;s Discussion&#8221; include "
+        "forward-looking statements.</p>"
+    )
+
+    flat = flatten(markup)
+
+    assert not begins_a_block(markup, flat, flat.text.index("Item 7"))
+
+
+def test_a_title_the_filer_typeset_into_a_cell_still_begins_its_block() -> None:
+    """A section title in a table cell is a section title.
+
+    Which is why this asks a wider question than `_headings` does: the
+    row and the cell open a block as surely as a paragraph.
+    """
+
+    markup = "<table><tr><td>ITEM 1. Business</td></tr></table>"
+
+    flat = flatten(markup)
+
+    assert begins_a_block(markup, flat, flat.text.index("ITEM 1."))

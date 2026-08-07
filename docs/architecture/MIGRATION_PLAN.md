@@ -205,6 +205,80 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 # Open Work
 
+## Open: knowledge is one draw, and coverage was measured on it
+
+Settled by measurement, not yet acted on. `movrvest reader-stability`
+established the acquisition layer's variance over fifty readings of five
+10-Ks, and it is concentrated rather than spread: every segment size agreed
+in every reading, and everything a model reads out of prose moves — ways of
+earning to 6 of 10, cited spans to 3 of 10, and NVIDIA's archetype to 6 of
+10 on a single segment's ways of earning crossing a rule threshold.
+
+Three consequences, in the order they have to be taken:
+
+1. **Coverage and stability are different qualities and must be reported
+   apart.** A company that classifies every time and one that classifies
+   60% of the time because successive readings disagree are not the same
+   finding, and every coverage figure this repository has published was
+   measured on one draw. The layering the platform now needs is
+
+   ```text
+   Acquisition Coverage  →  Knowledge Stability  →  Business Understanding
+   ```
+
+   with the middle term measured rather than assumed. Nothing surfaces it
+   yet; `reader-stability` is a developer instrument.
+
+2. **Then decide what a stored reading is.** Today it is whichever draw ran,
+   presented as the company's own account of itself — Caterpillar's stored
+   entry is a one-in-twenty reading, and it changes the archetype. The
+   options are to keep one reading and state that it is one, or to store the
+   modal reading of several and state how far they agreed. Neither is free,
+   and the second is one careless step from reading until an answer pleases,
+   which `docs/architecture.md` forecloses: what makes a mode legitimate and
+   a retry illegitimate is that a mode is chosen without reference to
+   whether the answer is liked.
+
+   **Done.** [`KNOWLEDGE_CONSENSUS.md`](KNOWLEDGE_CONSENSUS.md) was
+   accepted and the authorized slice is implemented: observations (schema
+   9, append-only, schema-8 entries carried forward as width 1),
+   `consensus_of` derived on read, the archetype engine consuming
+   consensus only, and `movrvest observe` filling quorums on a count-only
+   stopping rule. Accepted live on NVDA, CAT, META and JPM at quorum —
+   CAT's one-in-twenty "Service business" is structurally unreachable and
+   reads Diversified. Still open from the original list: surfacing the
+   three-layer reporting (coverage / stability / understanding) beyond
+   the developer CLI, and automatic quorum acquisition, which is
+   deliberately unbuilt until the cost is taken knowingly.
+
+3. **Only then return to acquisition coverage.** An improvement smaller
+   than the variance it is measured against cannot be told from another draw
+   of the same distribution. The measured floor is what makes the next
+   acquisition slice checkable.
+
+**What the measurement says to build.** Variance is absent exactly where
+evidence is an address this platform verifies against a parsed table, and
+present exactly where it is a model's reading of prose. That is the
+strongest available evidence for giving narrative evidence the treatment
+quantitative evidence already has — the model pointing at structure the
+platform reads, rather than the model returning the words.
+
+## Open: PlaybookSelector consumes Business Understanding
+
+The Business Understanding layer exists (`understand()` over
+`CompanyKnowledgeConsensus`, surfaced by `movrvest understanding`), and
+the selector's question changes with it: not *what industry is this*,
+but *which investment playbook best matches this business
+understanding*. The wiring is deliberately not flipped yet — the
+population at quorum is five companies, and the acquisition policy
+requires a quorate archetype before anything authoritative steers a
+playbook. What has to exist first: enough of the book's holdings at
+quorum for the flip not to degrade every case whose filing is thin, and
+a deterministic mapping from understanding (engine, mechanisms,
+characteristics) to the playbooks the platform already has. The
+industry-based selector keeps running until then; the two must not be
+blended.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`

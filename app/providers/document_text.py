@@ -104,6 +104,13 @@ _BOLD = ("font-weight:700", "font-weight:bold")
 #: and nothing in that section is bold, alone in its block, and longer.
 _HEADING_WIDEST = 120
 
+#: Every element a filer starts a new block of text with. Wider than the
+#: set a heading may sit alone inside, because this one only has to say
+#: where a block *begins*: a section title typeset into a table cell is
+#: still a section title, and the row and the table around it open the
+#: block just as a paragraph does.
+_BLOCK_EDGE = re.compile(r"(?is)<\s*/?\s*(p|div|td|th|tr|table|li|h[1-6]|body)\b[^>]*>")
+
 
 @dataclass(frozen=True, slots=True)
 class Flattened:
@@ -293,6 +300,55 @@ def read_regions(
         )
         for index, (at, heading) in enumerate(headings)
     )
+
+
+def typesets_blocks(markup: str) -> bool:
+    """Whether this document lays its text out in blocks at all.
+
+    What `begins_a_block` may be asked about. A document carrying no
+    block element offers no structure to prefer, and asking anyway is
+    not merely useless but wrong: the first position in it begins a
+    block trivially, because nothing precedes it — so an unstructured
+    document would answer that its table-of-contents entry is the only
+    real heading it has.
+    """
+
+    return _BLOCK_EDGE.search(markup) is not None
+
+
+def begins_a_block(markup: str, flat: Flattened, at: int) -> bool:
+    """
+    Whether the filer began a block of text at this position in the prose.
+
+    The difference between a section and a mention of it. A filer prints
+    the words "Item 7. Management's Discussion and Analysis" over the
+    section itself *and* inside sentences elsewhere in the document that
+    refer to it — and flattened to prose the two are the same string, so
+    nothing that reads the words alone can tell a heading from a
+    cross-reference.
+
+    The markup can. A heading opens its block; a cross-reference is
+    part of a sentence, with the rest of that sentence typeset ahead of
+    it. So the question asked here is only whether any words precede
+    this one inside the block it sits in — deliberately weaker than
+    `_headings`, which additionally requires bold and shortness. A
+    section title is not always typeset bold, and one that runs to a
+    hundred and twenty characters is ordinary.
+
+    Measured across the calibration corpus: every correctly located
+    section begins its block, and every cross-reference that had been
+    competing with one carries between 127 and 540 characters of the
+    sentence it belongs to.
+    """
+
+    opens, _ = flat.markup_span(at, at)
+
+    last = 0
+
+    for edge in _BLOCK_EDGE.finditer(markup, 0, opens):
+        last = edge.end()
+
+    return not _TAG.sub("", markup[last:opens]).replace("\xa0", " ").strip()
 
 
 def _headings(markup: str) -> list[tuple[int, str]]:

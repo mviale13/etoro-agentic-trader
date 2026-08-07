@@ -1,10 +1,10 @@
 {
-  "description": "Die Volkswagen AG hat ihren Sitz in Wolfsburg, Deutschland , und ist beim Amtsgericht Braunschweig unter der Registernummer HRB 100484 eingetragen.",
+  "description": "Die Volkswagen AG hat gem\u00e4\u00df der Verordnung 1606/2002 des Europ\u00e4ischen Parlaments und des Rates ihren Konzernabschluss f\u00fcr das Jahr 2025 nach den durch die Europ\u00e4ische Union \u00fcbernommenen internationalen Rechnungslegungsstandards, den IFRS Accounting Standards (IFRS), erstellt.",
   "reading": {
-    "observed_at": "2026-08-06T21:56:51.065853+00:00",
+    "observed_at": "2026-08-07T07:06:22.486553+00:00",
     "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
   },
-  "schema_version": 7,
+  "schema_version": 8,
   "segments": [
     {
       "description": null,
@@ -14,11 +14,11 @@
           "caption": "BERICHTSSEGMENTe 2025",
           "cell": {
             "column": 7,
-            "row": 3,
+            "row": 1,
             "table": 0
           },
           "column_header": "Volkswagen Konzern",
-          "label": "Umsatzerl\u00f6se",
+          "label": "Umsatzerl\u00f6se mit externen Dritten",
           "printed": "321.913",
           "value": 321913.0
         },
@@ -26,16 +26,17 @@
           "caption": "BERICHTSSEGMENTe 2025",
           "cell": {
             "column": 1,
-            "row": 3,
+            "row": 1,
             "table": 0
           },
           "column_header": "Pkw und leichte Nutzfahrzeuge",
-          "label": "Umsatzerl\u00f6se",
-          "printed": "244.484",
-          "value": 244484.0
+          "label": "Umsatzerl\u00f6se mit externen Dritten",
+          "printed": "217.299",
+          "value": 217299.0
         }
       },
-      "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all."
+      "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all.",
+      "unmeasured_because": null
     },
     {
       "description": null,
@@ -45,11 +46,11 @@
           "caption": "BERICHTSSEGMENTe 2025",
           "cell": {
             "column": 7,
-            "row": 3,
+            "row": 1,
             "table": 0
           },
           "column_header": "Volkswagen Konzern",
-          "label": "Umsatzerl\u00f6se",
+          "label": "Umsatzerl\u00f6se mit externen Dritten",
           "printed": "321.913",
           "value": 321913.0
         },
@@ -57,16 +58,17 @@
           "caption": "BERICHTSSEGMENTe 2025",
           "cell": {
             "column": 2,
-            "row": 3,
+            "row": 1,
             "table": 0
           },
           "column_header": "Nutzfahrzeuge",
-          "label": "Umsatzerl\u00f6se",
-          "printed": "42.540",
-          "value": 42540.0
+          "label": "Umsatzerl\u00f6se mit externen Dritten",
+          "printed": "41.517",
+          "value": 41517.0
         }
       },
-      "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all."
+      "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all.",
+      "unmeasured_because": null
     },
     {
       "description": null,
@@ -76,11 +78,11 @@
           "caption": "BERICHTSSEGMENTe 2025",
           "cell": {
             "column": 7,
-            "row": 3,
+            "row": 1,
             "table": 0
           },
           "column_header": "Volkswagen Konzern",
-          "label": "Umsatzerl\u00f6se",
+          "label": "Umsatzerl\u00f6se mit externen Dritten",
           "printed": "321.913",
           "value": 321913.0
         },
@@ -88,16 +90,17 @@
           "caption": "BERICHTSSEGMENTe 2025",
           "cell": {
             "column": 3,
-            "row": 3,
+            "row": 1,
             "table": 0
           },
           "column_header": "Finanzdienst- leistungen",
-          "label": "Umsatzerl\u00f6se",
-          "printed": "62.136",
-          "value": 62136.0
+          "label": "Umsatzerl\u00f6se mit externen Dritten",
+          "printed": "57.853",
+          "value": 57853.0
         }
       },
-      "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all."
+      "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all.",
+      "unmeasured_because": null
     }
   ],
   "source": {
