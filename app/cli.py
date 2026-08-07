@@ -19,6 +19,7 @@ from app.commands import (
     market,
     morning,
     observe,
+    playbook,
     policy,
     reader_stability,
     record,
@@ -199,6 +200,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example DIS, NVDA or CAT",
     )
 
+    playbook_parser = subparsers.add_parser(
+        "playbook",
+        help="Show which playbook analyses a business, and what decided it",
+        description=(
+            "Select the investment playbook under the migration rule: from "
+            "quorate business understanding where the mapping has earned "
+            "the conclusion, otherwise from the reported industry — "
+            "recorded as fallback, with the grounded route's refusal "
+            "stated. The two routes never blend"
+        ),
+    )
+    playbook_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or CAT",
+    )
+
     observe_parser = subparsers.add_parser(
         "observe",
         help="Read the current filing again, up to the consensus quorum",
@@ -267,6 +284,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "understanding":
         return await understanding.run(args.symbol)
+
+    if args.command == "playbook":
+        return await playbook.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

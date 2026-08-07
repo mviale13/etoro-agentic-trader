@@ -51,6 +51,10 @@ make it, and which rule decided — or why none could),
 `movrvest understanding SYMBOL` (how the business creates value, derived
 deterministically from consensus — engine, mechanisms with support,
 what could change the conclusion),
+`movrvest playbook SYMBOL` (which playbook analyses the business:
+grounded from quorate understanding where the mapping has earned the
+conclusion, otherwise the industry route as recorded fallback — the two
+never blend),
 `movrvest reader-stability SYMBOL --readings N` (one document read N times,
 and how far the readings agreed — a measurement of this platform, storing
 nothing).

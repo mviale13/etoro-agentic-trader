@@ -168,16 +168,21 @@ def _contingencies(
         if earning.settled or earning.modal is None:
             continue
 
-        alternatives = tuple(
-            AlternativeConclusion(
-                answer=answer.stated,
-                given=answer.given,
-                concludes=classify(
-                    _with_settled_earning(consensus, segment, answer.stated)
-                ).stated,
+        alternatives = []
+
+        for answer in earning.answers:
+            concluded = classify(
+                _with_settled_earning(consensus, segment, answer.stated)
             )
-            for answer in earning.answers
-        )
+
+            alternatives.append(
+                AlternativeConclusion(
+                    answer=answer.stated,
+                    given=answer.given,
+                    concludes=concluded.stated,
+                    primary=concluded.primary,
+                )
+            )
 
         found.append(
             Contingency(
@@ -185,7 +190,7 @@ def _contingencies(
                 agreement=earning,
                 as_it_stands=archetype.stated,
                 consumed=bool(segment.revenue_models),
-                alternatives=alternatives,
+                alternatives=tuple(alternatives),
             )
         )
 
