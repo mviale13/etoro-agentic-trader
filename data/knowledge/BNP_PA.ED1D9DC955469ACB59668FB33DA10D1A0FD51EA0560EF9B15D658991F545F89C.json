@@ -1,0 +1,179 @@
+{
+  "observations": [
+    {
+      "description": "BNP Paribas is the Group\u2019s lead company holding key positions in three operating divisions: Corporate & Institutional Banking, Commercial, Personal Banking & Services, and Investment & Protection Services.",
+      "reading": {
+        "observed_at": "2026-08-07T13:37:24.956249+00:00",
+        "source": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Corporate & Institutional Banking (CIB) which covers Global Banking, Global Markets and Securities Services",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Corporate & Institutional Banking (CIB)"
+          },
+          "name": "Corporate & Institutional Banking (CIB)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Corporate & Institutional Banking",
+              "printed": "18,997",
+              "value": 18997.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 37,
+            "ownership": "proximity",
+            "quoted": "which covers Commercial & Personal banking in the Eurozone",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Commercial, Personal Banking & Services (CPBS)"
+          },
+          "name": "Commercial, Personal Banking & Services (CPBS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Commercial, Personal Banking &\u00a0Services",
+              "printed": "26,717",
+              "value": 26717.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 36,
+            "ownership": "proximity",
+            "quoted": "covers Insurance (BNP Paribas Cardif), Wealth and Asset Management",
+            "revenue_models": [
+              "premiums",
+              "asset_management_fees",
+              "services"
+            ],
+            "under": "Investment & Protection Services (IPS)"
+          },
+          "name": "Investment & Protection Services (IPS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Investment & Protection Services",
+              "printed": "6,929",
+              "value": 6929.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 15,
+            "ownership": "proximity",
+            "quoted": "mainly include activities related to the Group\u2019s central treasury function",
+            "revenue_models": [
+              "financial_spread",
+              "services"
+            ],
+            "under": "Other Activities"
+          },
+          "name": "Other Activities",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "The reading located no cell reporting this segment's revenue in the tables this filing's performance discussion prints, though it located the total and other segments' figures there."
+        }
+      ]
+    }
+  ],
+  "schema_version": 9,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "BNP Paribas Group",
+    "document_format": "xhtml",
+    "identifier": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0",
+    "key": "ed1d9dc955469acb59668fb33da10d1a0fd51ea0560ef9b15d658991f545f89c",
+    "language": "en",
+    "location": "https://filings.xbrl.org/R0MUWSFPU8MPRO8K5P83/2025-12-31/ESEF/FR/0/bnp-2025-12-31-1/reports/bnp-2025-12-31-1-en.html",
+    "provider": "ESEF",
+    "published_on": "2026-03-24",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "BNP.PA",
+    "verification": [
+      "security_registry",
+      "register_indexed",
+      "document_lei"
+    ]
+  },
+  "symbol": "BNP.PA"
+}
