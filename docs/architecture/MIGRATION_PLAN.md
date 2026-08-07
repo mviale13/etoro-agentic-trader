@@ -239,6 +239,17 @@ Three consequences, in the order they have to be taken:
    a retry illegitimate is that a mode is chosen without reference to
    whether the answer is liked.
 
+   **Designed, awaiting agreement:**
+   [`KNOWLEDGE_CONSENSUS.md`](KNOWLEDGE_CONSENSUS.md) proposes the answer —
+   `CompanyObservation` as what the extractor returns, `CompanyConsensus`
+   derived on read from N stored observations by a content-blind strict
+   majority per claim, absences voting with full standing, unsettled claims
+   flowing through the existing absence machinery with their distributions.
+   Checked against the fifty stored calibration readings: NVIDIA settles as
+   Diversified, Caterpillar's one-in-twenty "Service business" cannot
+   survive it, and JPMorgan's boilerplate 1-of-10 "description" loses to
+   the counted absence. No implementation until the design is agreed.
+
 3. **Only then return to acquisition coverage.** An improvement smaller
    than the variance it is measured against cannot be told from another draw
    of the same distribution. The measured floor is what makes the next
