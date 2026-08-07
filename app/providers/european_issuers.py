@@ -110,6 +110,9 @@ _ISSUERS: tuple[RegisteredIssuer, ...] = (
         "ES0113211835",
         "BANCO BILBAO VIZCAYA ARGENTARIA SOCIEDAD ANONIMA",
     ),
+    # Belgium. Verified 2026-08-07: GLEIF returns UMICORE for the ISIN,
+    # and Euronext lists that ISIN as Umicore's Brussels equity.
+    RegisteredIssuer("UMI.BR", "BE0974320526", "UMICORE"),
     # Nordics
     RegisteredIssuer("NOVO-B.CO", "DK0062498333", "NOVO NORDISK A/S"),
     RegisteredIssuer("VOLV-B.ST", "SE0000115446", "Aktiebolaget Volvo"),
