@@ -9,7 +9,14 @@ import httpx
 
 from app.domain.prose_evidence import Region
 from app.domain.tabular_evidence import SourceTable
-from app.providers.document_text import Flattened, flatten, read_regions, read_tables
+from app.providers.document_text import (
+    Flattened,
+    begins_a_block,
+    flatten,
+    read_regions,
+    read_tables,
+    typesets_blocks,
+)
 
 #: SEC's fair-access policy requires a request to identify who is making
 #: it. A platform that scraped anonymously would be asking a public
@@ -318,9 +325,31 @@ class EdgarFilings:
 
         Every heading appears at least twice: once in the table of
         contents and once over the section itself. So every opening is
-        paired with the closing that follows it and the widest pair wins.
-        A contents entry sits a few characters from its neighbour; the
-        real section runs to tens of thousands.
+        paired with the closing that follows it.
+
+        **A section heading begins a block; a cross-reference is part of
+        a sentence.** That is what chooses between the pairs, and it is
+        read from the markup the filer wrote rather than inferred from
+        the words, because flattened to prose a heading and a reference
+        to it are the same string. Width alone was the rule before and
+        it is not a property of a section at all: Caterpillar's 10-K
+        mentions Item 7 inside its forward-looking-statements note, and
+        the span from that sentence to the next closing heading is
+        wider than Item 7 itself — so the platform read forty-five
+        thousand characters of the wrong section, containing none of
+        the tables the segment sizes are measured from, and reported
+        the sizes as absent from the filing.
+
+        Among the openings that do begin a block, the widest pair still
+        wins: a table-of-contents entry begins its block too, and what
+        separates it from the section it points at is that it runs a few
+        characters to its neighbour rather than tens of thousands.
+
+        Where no opening begins a block, every candidate is considered
+        again. A document whose markup offers no structure is read by
+        width as before rather than left unread — the same order of
+        preference the narrative half of this platform's evidence uses,
+        structure first and position behind it.
 
         Nothing where no such pair exists. A section that could not be
         found leaves what it would have said unstated, which is the
@@ -330,19 +359,24 @@ class EdgarFilings:
 
         lowered = flat.text.casefold()
 
-        widest: tuple[int, int] | None = None
+        pairs: list[tuple[int, int]] = []
 
         for start in _occurrences(lowered, opening):
             end = _first_heading(lowered, closing, after=start + 1)
 
-            if end is None:
-                continue
+            if end is not None:
+                pairs.append((start, end))
 
-            if widest is None or end - start > widest[1] - widest[0]:
-                widest = (start, end)
-
-        if widest is None:
+        if not pairs:
             return ("", (), ())
+
+        titled = (
+            [pair for pair in pairs if begins_a_block(document, flat, pair[0])]
+            if typesets_blocks(document)
+            else []
+        )
+
+        widest = max(titled or pairs, key=lambda pair: pair[1] - pair[0])
 
         opens, closes = flat.markup_span(*widest)
 

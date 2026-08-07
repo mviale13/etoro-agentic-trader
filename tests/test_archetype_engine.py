@@ -57,6 +57,7 @@ def segment(
     earns: tuple[RevenueModel, ...] = (),
     row: int = 1,
     undescribed: str | None = None,
+    unmeasured: str | None = None,
 ) -> BusinessSegment:
     """One segment, with either dimension present or absent independently."""
 
@@ -78,6 +79,7 @@ def segment(
         revenue=size(share, row) if share is not None else None,
         description=description,
         undescribed_because=undescribed,
+        unmeasured_because=unmeasured,
     )
 
 
@@ -627,3 +629,42 @@ def test_the_leading_threshold_is_the_one_the_rules_apply() -> None:
 
     assert classify_at(LEADS - 0.01) is Archetype.DIVERSIFIED
     assert classify_at(LEADS + 0.02) is Archetype.RETAILER
+
+
+def test_a_missing_size_reports_the_reason_the_reading_recorded() -> None:
+    """
+    Rather than the one sentence that used to stand for every cause.
+
+    "No figure was proven against a table in the filing" reads as a fact
+    about the filing, and for Caterpillar it was a fact about this
+    platform: the section holding the table had been located wrongly, so
+    the reading never saw it. A reader deciding whether a gap is worth
+    chasing needs to know which of those it is.
+    """
+
+    gaps = classify(
+        company(
+            "CAT",
+            segment(
+                "Financial Products Segment",
+                earns=(RevenueModel.FINANCIAL_SPREAD,),
+                unmeasured="This filing's discussion prints no table.",
+            ),
+        )
+    ).missing
+
+    size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
+
+    assert size.because == "This filing's discussion prints no table."
+
+
+def test_a_missing_size_the_reading_left_unworded_still_states_one() -> None:
+    """A knowledge entry that predates the reason is not shown as blank."""
+
+    gaps = classify(
+        company("OLD", segment("Unworded", earns=(RevenueModel.RETAIL,)))
+    ).missing
+
+    size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
+
+    assert size.because.startswith("No figure for this segment")

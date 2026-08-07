@@ -50,7 +50,14 @@ from app.domain.tabular_evidence import (
 #: because what was wrong is which region the words were read as
 #: belonging to; the filing is immutable and still there, so it is read
 #: again.
-KNOWLEDGE_SCHEMA_VERSION = 7
+#: 8 — a section is located by the structure the filer typeset rather
+#: than by width, and a missing size now carries its reason. An entry
+#: written under 7 may have been read from a cross-reference to the
+#: section instead of the section, which is not visible in what was
+#: stored: the segments look ordinary and their sizes look absent from
+#: the filing. Caterpillar's were, and they are printed in a table the
+#: reading was never shown.
+KNOWLEDGE_SCHEMA_VERSION = 8
 
 
 class CompanyKnowledgeStore(ABC):
@@ -154,6 +161,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                     "revenue": _encode_share(segment.revenue),
                     "description": _encode_description(segment.description),
                     "undescribed_because": segment.undescribed_because,
+                    "unmeasured_because": segment.unmeasured_because,
                 }
                 for segment in knowledge.segments
             ],
@@ -216,6 +224,11 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                         undescribed_because=(
                             str(segment["undescribed_because"])
                             if segment.get("undescribed_because")
+                            else None
+                        ),
+                        unmeasured_because=(
+                            str(segment["unmeasured_because"])
+                            if segment.get("unmeasured_because")
                             else None
                         ),
                     )

@@ -420,7 +420,8 @@ def _unestablished(
                 Unestablished(
                     segment=segment.name,
                     dimension=Dimension.SIZE,
-                    because=(
+                    because=segment.unmeasured_because
+                    or (
                         "No figure for this segment was proven against a table "
                         "in the filing."
                     ),

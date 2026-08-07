@@ -132,11 +132,19 @@ class SourceTable:
     that says which figure belongs to which row — which is precisely the
     relationship a quantitative fact asserts.
 
-    Row 0 is treated as the header row without further inspection. A
-    heuristic that decided which row was "really" the header would be a
-    guess dressed as a fact; the model is shown the table exactly as
-    parsed, addresses a cell within it, and the platform reports the
-    labels it finds at that address for a reader to judge.
+    The header row is the first row that labels more than one column.
+    That is a fact about the row's shape rather than a reading of what
+    it says: a filer who typesets a title inside the table gives it one
+    cell spanning the width, so the row names the table and labels no
+    column at all. Caterpillar prints `Sales and Revenues by Segment`
+    that way above the row carrying the periods, and taking row 0 as the
+    header meant every figure in the table was refused as measuring
+    nothing — including the consolidated total the archetype rules need.
+
+    Deliberately not a reading of the contents. Deciding which row is
+    "really" the header by recognising a year or a currency would be a
+    guess dressed as a fact, and would quietly prefer the tables written
+    in English.
     """
 
     #: Position among the tables of the section this came from. Stable
@@ -162,10 +170,35 @@ class SourceTable:
 
         return cells[column]
 
-    def column_header(self, column: int) -> str:
-        """What row 0 calls this column, which is usually the period."""
+    @property
+    def header_row(self) -> int:
+        """Which row names the columns, which is not always the first.
 
-        return self.cell(0, column) or ""
+        Row 0, unless the filer typeset a title inside the table above
+        it. A title fills one cell and spans the rest, and what it holds
+        is words — so it names the table rather than any column in it,
+        and the row beneath it is what names the columns.
+
+        A row holding *nothing* is not a title and is not skipped. A
+        table whose first row labels no column is a table with no
+        header, and refusing its figures is the correct outcome rather
+        than a reason to promote a row of data into the role.
+        """
+
+        for index, row in enumerate(self.rows):
+            named = [cell for cell in row.cells if cell.strip()]
+
+            if len(named) == 1 and read_number(named[0]) is None:
+                continue
+
+            return index
+
+        return 0
+
+    def column_header(self, column: int) -> str:
+        """What the header row calls this column, which is usually the period."""
+
+        return self.cell(self.header_row, column) or ""
 
     def stated(self) -> str:
         """The table as an extraction is shown it: addressable, verbatim."""
@@ -404,7 +437,7 @@ def figure_at(
 
     table = tables[reference.table]
 
-    if reference.row == 0:
+    if reference.row <= table.header_row:
         raise EvidenceNotApplicable(
             f"{described} cites the header row of table {reference.table}, "
             "which labels the columns rather than measuring anything."

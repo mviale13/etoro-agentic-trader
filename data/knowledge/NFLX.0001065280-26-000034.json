@@ -1,10 +1,10 @@
 {
-  "description": "Netflix, Inc. is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
+  "description": "Netflix is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
   "reading": {
-    "observed_at": "2026-08-06T21:54:17.145275+00:00",
+    "observed_at": "2026-08-07T07:04:00.748016+00:00",
     "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 7,
+  "schema_version": 8,
   "segments": [
     {
       "description": {
@@ -19,7 +19,8 @@
       },
       "name": "one operating segment",
       "revenue": null,
-      "undescribed_because": null
+      "undescribed_because": null,
+      "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
     }
   ],
   "source": {

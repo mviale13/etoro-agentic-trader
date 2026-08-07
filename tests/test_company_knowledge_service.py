@@ -479,3 +479,40 @@ def test_an_unrepaired_description_stores_nothing_about_repairs(
     assert restored is not None
     assert restored.segments[0].description is not None
     assert not restored.segments[0].description.was_repaired
+
+
+def test_why_a_size_is_absent_survives_the_round_trip_to_disk(
+    tmp_path: Path,
+) -> None:
+    """
+    An absence stored without its reason is an absence a later session
+    has to re-derive from outside the platform. This one was: the sizes
+    Caterpillar's 10-K prints looked like a gap in the filing for as
+    long as nothing recorded that the reading had never seen its tables.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+
+    stored = knowledge()
+
+    store.write(
+        replace(
+            stored,
+            segments=(
+                replace(
+                    stored.segments[0],
+                    revenue=None,
+                    unmeasured_because="This filing's discussion prints no table.",
+                ),
+            ),
+        )
+    )
+
+    restored = store.read("DIS", ACCESSION)
+
+    assert restored is not None
+    assert restored.segments[0].revenue is None
+    assert (
+        restored.segments[0].unmeasured_because
+        == "This filing's discussion prints no table."
+    )

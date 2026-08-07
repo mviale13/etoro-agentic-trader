@@ -36,7 +36,7 @@ for the package-by-package mapping, verified against the import graph.
 
 # Repository Health
 
-Green baseline, measured 2026-08-06. A figure here is an observation with a
+Green baseline, measured 2026-08-07. A figure here is an observation with a
 date, not a standing claim — refresh it at slice boundaries, and keep the
 test count in [`CLAUDE.md`](../CLAUDE.md) in step, so a later session does
 not inherit a quality state that has silently drifted.
@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1028 passing (2026-08-06) |
+| Pytest | 🟢 1048 passing (2026-08-07) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,86 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A section is located where the filer typeset its title** (August
+  2026). The first acquisition defect found by asking what was blocking
+  Business Understanding rather than what was missing from the evidence,
+  and it had been invisible because it failed as an honest-looking
+  absence.
+
+  Two of seven filings in the calibration corpus classified. Of the five
+  that did not, Caterpillar was the closest: four segments, all four
+  described, every way of earning established — and no size, so the
+  archetype was *unranked*, which is a statement that the platform knows
+  what a business does and cannot order it. The surface said "no figure
+  for this segment was proven against a table in the filing". The filing
+  prints them in a table. This platform had never seen it.
+
+  **Width is not a property of a section.** A 10-K's sections are located
+  by pairing each occurrence of "Item 7" with the closing heading after
+  it, and the widest pair won. Caterpillar names Item 7 inside its
+  forward-looking-statements note, mid-sentence, and the span from that
+  sentence to the next closing heading is 45,096 characters against Item
+  7's own 28,215. So the platform read the wrong section — one containing
+  none of the five tables the sizes are measured from. Disney, NVIDIA and
+  Netflix were right by luck: each of them also has a cross-reference
+  competing with its heading, and each happened to lose on width.
+
+  **A heading begins a block; a cross-reference is part of a sentence.**
+  Flattened to prose the two are the same string, so the markup is the
+  only place the difference survives — the same three-layer shape the
+  narrative half already uses, structure read from what the filer
+  typeset and position behind it. Measured across the corpus: every
+  correctly located section begins its block, and every cross-reference
+  competing with one carries between 127 and 540 characters of its
+  sentence ahead of it. Among block-starting candidates the widest still
+  wins, because a table-of-contents entry begins a block too and what
+  separates it is that it runs to its neighbour. A document whose markup
+  offers no blocks at all is read by width as before — and asking the
+  question anyway would have been worse than useless, because the first
+  position in an unstructured document begins a block trivially.
+
+  **The second defect was underneath the first, and only reachable
+  through it.** With the right section in hand, Caterpillar's total
+  revenue was refused: cited at table 1, row 11, column 6 — the correct
+  cell — "whose column carries no header". Row 0 was taken as the header
+  row without inspection, and Caterpillar typesets the table's own title
+  *inside* the table, so row 0 reads `Sales and Revenues by Segment` and
+  nothing else. The row naming the periods is row 1. A title fills one
+  cell and holds words, which is a fact about the row's shape rather
+  than a reading of what it says; a row holding *nothing* is not a title
+  and is not skipped, because a table with no header should have its
+  figures refused rather than have a row of data promoted into the role.
+
+  **A missing size now says why it is missing.** Three claims evidenced
+  apart is three absences worded apart, and only two of the three were.
+  `undescribed_because` existed; the size had nothing, so four different
+  causes printed one sentence — and that sentence read as a fact about
+  the filing. It is what hid this: reconstructing why Caterpillar had no
+  sizes meant re-deriving it from outside the platform. Each cause is
+  now worded where it happens, including the one that is not about the
+  company at all — JPMorgan's Item 7 is 395 characters naming the pages
+  of a document filed separately, so its figures exist and are not in
+  the document this platform read.
+
+  Knowledge schema 8; every entry re-read, because an entry written
+  under 7 may have been read from a cross-reference and nothing stored
+  says so. Measured after the re-read: **three of seven classify, up
+  from two.** Caterpillar reads Construction Industries 37%, Resource
+  Industries 18%, Power & Energy 48% and Financial Products 6% — each
+  naming its cell — and classifies as a service business, then a
+  manufacturer. Disney is unchanged at 45/19/38. The four that still do
+  not classify are blocked on something else, and each says which:
+  Meta's and Volkswagen's descriptions, JPMorgan's separately filed
+  discussion, and Netflix's single operating segment, which reports no
+  segment table because the segment is the company.
+
+  One caveat the re-read exposed and this slice does not close: NVIDIA
+  moved from Diversified to Manufacturer without its sizes changing,
+  because a second reading of the same unchanged prose reported one
+  fewer way of earning for Graphics. The classification is deterministic
+  over the facts; the facts are read by a model, and this is the first
+  measurement of how much they move between readings.
 
 - **A description is owned by the section it was printed in** (August
   2026). The narrative half of ownership, replacing a partition that

@@ -413,3 +413,81 @@ def test_a_figure_measured_against_itself_is_refused() -> None:
         )
 
     assert "against itself" in str(refused.value)
+
+
+#: Caterpillar's shape: the filer typesets the table's own title into a
+#: row of the table, so the row carrying the periods is the second one.
+TITLED = SourceTable(
+    index=0,
+    caption="We expect machine dealer inventory to increase in 2026.",
+    rows=(
+        TableRow(cells=("Sales and Revenues by Segment", "", "", "")),
+        TableRow(cells=("(Millions of dollars)", "2024", "2025", "$ Change")),
+        TableRow(cells=("Construction Industries", "25,455", "25,060", "(395)")),
+        TableRow(
+            cells=("Consolidated Sales and Revenues", "64,809", "67,589", "2,780")
+        ),
+    ),
+)
+
+
+def test_a_title_the_filer_typeset_into_the_table_names_no_column() -> None:
+    """
+    So the row beneath it does. Taking row 0 as the header regardless
+    refused every figure in Caterpillar's segment table as measuring
+    nothing — including the consolidated total, which is the one cell
+    every segment's size is a share of.
+    """
+
+    figure = figure_at(
+        (TITLED,),
+        CellReference(table=0, row=3, column=2),
+        67589.0,
+        "Total sales and revenues",
+    )
+
+    assert figure.column_header == "2025"
+    assert figure.label == "Consolidated Sales and Revenues"
+
+
+def test_the_row_that_names_the_columns_is_still_refused_as_a_figure() -> None:
+    """Wherever it sits. A header labels; it measures nothing."""
+
+    with pytest.raises(EvidenceNotApplicable) as refused:
+        figure_at((TITLED,), CellReference(table=0, row=1, column=2), 2025.0, "Revenue")
+
+    assert "header row" in str(refused.value)
+
+
+def test_the_title_row_above_the_header_is_refused_too() -> None:
+    """It is further from measuring anything, not closer."""
+
+    with pytest.raises(EvidenceNotApplicable) as refused:
+        figure_at((TITLED,), CellReference(table=0, row=0, column=1), 1.0, "Revenue")
+
+    assert "header row" in str(refused.value)
+
+
+def test_a_first_row_that_names_nothing_is_a_missing_header_not_a_title() -> None:
+    """
+    A row holding nothing is not a title, so nothing is promoted into
+    its place. Refusing the figures of a table with no header is the
+    correct outcome; reading the first row of data as one would invent
+    the very relationship this platform checks.
+    """
+
+    headerless = SourceTable(
+        index=0,
+        caption="Revenue",
+        rows=(
+            TableRow(cells=("", "", "")),
+            TableRow(cells=("Passenger Cars", "122,321", "118,004")),
+        ),
+    )
+
+    assert headerless.header_row == 0
+
+    with pytest.raises(EvidenceNotApplicable) as refused:
+        figure_at((headerless,), at(row=1), 122321.0, "Passenger Cars revenue")
+
+    assert "column carries no header" in str(refused.value)

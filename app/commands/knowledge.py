@@ -81,6 +81,7 @@ def _render_knowledge(knowledge: CompanyKnowledge) -> None:
             # described without a figure this platform could locate in a
             # table is not a small segment.
             print("    size: absent — no table figure was proven for it")
+            print(f"      because: {segment.unmeasured_because or 'not stated'}")
             continue
 
         print(f"    size: {segment.revenue.stated()}")
