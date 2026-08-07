@@ -199,6 +199,657 @@
           "unmeasured_because": null
         }
       ]
+    },
+    {
+      "description": "Umicore is de circulaire materiaaltechnologiegroep.",
+      "reading": {
+        "observed_at": "2026-08-07T14:07:33.073422+00:00",
+        "source": "529900F3AIQECS8ZSV61-2024-12-31-ESEF-BE-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 61,
+            "ownership": "proximity",
+            "quoted": "ontwikkeling, productie en verkoop van kathodematerialen (CAM) en hun precursoren",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Battery Materials"
+          },
+          "name": "Battery Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 2,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Battery Materials",
+              "label": "Externe omzet",
+              "printed": "938.360",
+              "value": 938360.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Catalysis ontwikkelt autokatalysatoren voor benzine- en dieselpersonenwagens, zware dieseltoepassingen",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Catalysis"
+          },
+          "name": "Catalysis",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Catalysis",
+              "label": "Externe omzet",
+              "printed": "4.165.950",
+              "value": 4165950.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Recycling verwerkt complexe afvalstromen die edelmetalen en andere speciale metalen bevatten.",
+            "revenue_models": [
+              "services",
+              "commodity",
+              "manufacturing"
+            ],
+            "under": "Recycling"
+          },
+          "name": "Recycling",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Recycling",
+              "label": "Externe omzet",
+              "printed": "8.294.280",
+              "value": 8294280.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Specialty Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 5,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Specialty Materials",
+              "label": "Externe omzet",
+              "printed": "1.397.310",
+              "value": 1397310.0
+            }
+          },
+          "undescribed_because": "The description of 'Specialty Materials' quotes words that are not in the document. A repair was attempted and was refused too: The description of 'Specialty Materials' quotes words that are not in the document.",
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "Umicore is de circulaire materiaaltechnologiegroep.",
+      "reading": {
+        "observed_at": "2026-08-07T14:08:11.748123+00:00",
+        "source": "529900F3AIQECS8ZSV61-2024-12-31-ESEF-BE-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 61,
+            "ownership": "proximity",
+            "quoted": "ontwikkeling, productie en verkoop van kathodematerialen (CAM) en hun precursoren",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Battery Materials"
+          },
+          "name": "Battery Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 2,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Battery Materials",
+              "label": "Externe omzet",
+              "printed": "938.360",
+              "value": 938360.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Catalysis ontwikkelt autokatalysatoren voor benzine- en dieselpersonenwagens",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Catalysis"
+          },
+          "name": "Catalysis",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Catalysis",
+              "label": "Externe omzet",
+              "printed": "4.165.950",
+              "value": 4165950.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Recycling verwerkt complexe afvalstromen die edelmetalen en andere speciale metalen bevatten.",
+            "revenue_models": [
+              "services",
+              "commodity",
+              "manufacturing"
+            ],
+            "under": "Recycling"
+          },
+          "name": "Recycling",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Recycling",
+              "label": "Externe omzet",
+              "printed": "8.294.280",
+              "value": 8294280.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Specialty Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 5,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Specialty Materials",
+              "label": "Externe omzet",
+              "printed": "1.397.310",
+              "value": 1397310.0
+            }
+          },
+          "undescribed_because": "The description of 'Specialty Materials' quotes words that are not in the document. A repair was attempted and was refused too: The description of 'Specialty Materials' quotes words that are not in the document.",
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "Umicore is de circulaire materiaaltechnologiegroep.",
+      "reading": {
+        "observed_at": "2026-08-07T14:08:53.419345+00:00",
+        "source": "529900F3AIQECS8ZSV61-2024-12-31-ESEF-BE-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 61,
+            "ownership": "proximity",
+            "quoted": "ontwikkeling, productie en verkoop van kathodematerialen (CAM) en hun precursoren",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Battery Materials"
+          },
+          "name": "Battery Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 2,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Battery Materials",
+              "label": "Externe omzet",
+              "printed": "938.360",
+              "value": 938360.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 9,
+            "ownership": "proximity",
+            "quoted": "ontwikkelt autokatalysatoren voor benzine- en dieselpersonenwagens",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Catalysis"
+          },
+          "name": "Catalysis",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Catalysis",
+              "label": "Externe omzet",
+              "printed": "4.165.950",
+              "value": 4165950.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Recycling verwerkt complexe afvalstromen die edelmetalen en andere speciale metalen bevatten",
+            "revenue_models": [
+              "services",
+              "commodity"
+            ],
+            "under": "Recycling"
+          },
+          "name": "Recycling",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Recycling",
+              "label": "Externe omzet",
+              "printed": "8.294.280",
+              "value": 8294280.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Specialty Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 5,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Specialty Materials",
+              "label": "Externe omzet",
+              "printed": "1.397.310",
+              "value": 1397310.0
+            }
+          },
+          "undescribed_because": "The description of 'Specialty Materials' quotes words that are not in the document. A repair was attempted and was refused too: The description of 'Specialty Materials' quotes words that are not in the document.",
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "Umicore is de circulaire materiaaltechnologiegroep.",
+      "reading": {
+        "observed_at": "2026-08-07T14:09:28.011528+00:00",
+        "source": "529900F3AIQECS8ZSV61-2024-12-31-ESEF-BE-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 59,
+            "ownership": "proximity",
+            "quoted": "de ontwikkeling, productie en verkoop van kathodematerialen (CAM)",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Battery Materials"
+          },
+          "name": "Battery Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 2,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Battery Materials",
+              "label": "Externe omzet",
+              "printed": "938.360",
+              "value": 938360.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Catalysis ontwikkelt autokatalysatoren voor benzine- en dieselpersonenwagens",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Catalysis"
+          },
+          "name": "Catalysis",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Catalysis",
+              "label": "Externe omzet",
+              "printed": "4.165.950",
+              "value": 4165950.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Recycling verwerkt complexe afvalstromen die edelmetalen en andere speciale metalen bevatten.",
+            "revenue_models": [
+              "services",
+              "manufacturing",
+              "commodity"
+            ],
+            "under": "Recycling"
+          },
+          "name": "Recycling",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Recycling",
+              "label": "Externe omzet",
+              "printed": "8.294.280",
+              "value": 8294280.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Specialty Materials",
+          "revenue": {
+            "denominator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 8,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Totaal voortgezette bedrijfsactiviteiten",
+              "label": "Externe omzet",
+              "printed": "14.853.681",
+              "value": 14853681.0
+            },
+            "numerator": {
+              "caption": "- 253.076 O&O geactiveerd als immateri\u00eble activa F35 17.646 4.636 5.653 - 0 - 27.935 Informatie per business group van de Groep 2024",
+              "cell": {
+                "column": 5,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "Specialty Materials",
+              "label": "Externe omzet",
+              "printed": "1.397.310",
+              "value": 1397310.0
+            }
+          },
+          "undescribed_because": "The description of 'Specialty Materials' quotes words that are not in the document. A repair was attempted and was refused too: The description of 'Specialty Materials' quotes words that are not in the document.",
+          "unmeasured_because": null
+        }
+      ]
     }
   ],
   "schema_version": 9,

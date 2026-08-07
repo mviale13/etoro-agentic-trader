@@ -62,6 +62,18 @@ def _render(report: CoverageReport) -> None:
     print()
 
     print("investor-visible understanding — the KPI, portfolio first:")
+
+    # The number that is coming to matter more than observation width:
+    # how many held companies the grounded route serves with authority.
+    print(
+        _leader(
+            "grounded authoritative playbooks (portfolio)",
+            report.funnel(CoverageOrigin.PORTFOLIO).quorate,
+            width=46,
+        )
+    )
+    print()
+
     _funnel("portfolio", report.funnel(CoverageOrigin.PORTFOLIO))
     _funnel("watchlist", report.funnel(CoverageOrigin.WATCHLIST))
     print()
