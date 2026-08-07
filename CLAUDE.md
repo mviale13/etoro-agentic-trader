@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1048 tests, fast
+python -m pytest -q            # ~1063 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -43,7 +43,10 @@ cd apps/web/movrvest-web && npm run build     # frontend gate
 CLI: `movrvest evaluate SYMBOL`, `movrvest brain`, `movrvest today`,
 `movrvest knowledge SYMBOL` (what was read from a filing, and from which cell),
 `movrvest archetype SYMBOL` (what kind of business those facts make it, and
-which rule decided — or why none could).
+which rule decided — or why none could),
+`movrvest reader-stability SYMBOL --readings N` (one document read N times,
+and how far the readings agreed — a measurement of this platform, storing
+nothing).
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)

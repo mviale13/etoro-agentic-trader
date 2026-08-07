@@ -205,6 +205,52 @@ See the Removed table in `REPOSITORY_INVENTORY.md`.
 
 # Open Work
 
+## Open: knowledge is one draw, and coverage was measured on it
+
+Settled by measurement, not yet acted on. `movrvest reader-stability`
+established the acquisition layer's variance over fifty readings of five
+10-Ks, and it is concentrated rather than spread: every segment size agreed
+in every reading, and everything a model reads out of prose moves — ways of
+earning to 6 of 10, cited spans to 3 of 10, and NVIDIA's archetype to 6 of
+10 on a single segment's ways of earning crossing a rule threshold.
+
+Three consequences, in the order they have to be taken:
+
+1. **Coverage and stability are different qualities and must be reported
+   apart.** A company that classifies every time and one that classifies
+   60% of the time because successive readings disagree are not the same
+   finding, and every coverage figure this repository has published was
+   measured on one draw. The layering the platform now needs is
+
+   ```text
+   Acquisition Coverage  →  Knowledge Stability  →  Business Understanding
+   ```
+
+   with the middle term measured rather than assumed. Nothing surfaces it
+   yet; `reader-stability` is a developer instrument.
+
+2. **Then decide what a stored reading is.** Today it is whichever draw ran,
+   presented as the company's own account of itself — Caterpillar's stored
+   entry is a one-in-twenty reading, and it changes the archetype. The
+   options are to keep one reading and state that it is one, or to store the
+   modal reading of several and state how far they agreed. Neither is free,
+   and the second is one careless step from reading until an answer pleases,
+   which `docs/architecture.md` forecloses: what makes a mode legitimate and
+   a retry illegitimate is that a mode is chosen without reference to
+   whether the answer is liked.
+
+3. **Only then return to acquisition coverage.** An improvement smaller
+   than the variance it is measured against cannot be told from another draw
+   of the same distribution. The measured floor is what makes the next
+   acquisition slice checkable.
+
+**What the measurement says to build.** Variance is absent exactly where
+evidence is an address this platform verifies against a parsed table, and
+present exactly where it is a model's reading of prose. That is the
+strongest available evidence for giving narrative evidence the treatment
+quantitative evidence already has — the model pointing at structure the
+platform reads, rather than the model returning the words.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`

@@ -19,12 +19,14 @@ from app.commands import (
     market,
     morning,
     policy,
+    reader_stability,
     record,
     status,
     today,
     watchlist,
     writer_compare,
 )
+from app.services.reader_calibration import DEFAULT_READINGS
 
 CommandHandler = Callable[[], Coroutine[Any, Any, int]]
 
@@ -179,6 +181,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, ASML or BTC-USD",
     )
 
+    reader_stability_parser = subparsers.add_parser(
+        "reader-stability",
+        help="Read one filing repeatedly and report how far the readings agree",
+        description=(
+            "Read a company's current document several times under identical "
+            "conditions and report where the readings agreed and where they "
+            "did not. A measurement of this platform, not of the company: "
+            "nothing is stored, and no reading is improved"
+        ),
+    )
+    reader_stability_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or VOW3.DE",
+    )
+    reader_stability_parser.add_argument(
+        "--readings",
+        type=int,
+        default=DEFAULT_READINGS,
+        help=(
+            f"How many independent readings to run (default {DEFAULT_READINGS}). "
+            "Each one costs a model call and reads the same document"
+        ),
+    )
+
     return parser
 
 
@@ -200,6 +226,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "writer-compare":
         return await writer_compare.run(args.symbol)
+
+    if args.command == "reader-stability":
+        return await reader_stability.run(args.symbol, args.readings)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

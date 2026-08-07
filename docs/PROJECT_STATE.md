@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1048 passing (2026-08-07) |
+| Pytest | 🟢 1063 passing (2026-08-07) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,96 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **The reader is measured before it is improved** (August 2026). The
+  platform's first measurement of *itself* rather than of a company, and
+  it exists because NVIDIA's archetype moved with its evidence unchanged.
+  Every acquisition defect before this one was the platform reading the
+  wrong thing. This is the platform reading the same thing twice and
+  getting two answers — the document immutable, the rules a pure
+  function, and the variance entirely in the one layer that asks a model.
+
+  `movrvest reader-stability SYMBOL --readings N` fetches the current
+  document **once** — a primary source is immutable, so one fetch *is*
+  every reading's document — and reads it N times under identical
+  conditions. It stores nothing, and that is a boundary rather than an
+  omission: a calibration that wrote what it read would let whichever
+  draw ran last become the platform's account of the company, which is
+  the failure it exists to quantify.
+
+  **Fifty readings across five 10-Ks, ten each.** The finding is not a
+  single number, because the variance is not spread evenly — it is
+  concentrated, and where it concentrates is the point.
+
+  | | DIS | NVDA | CAT | META | JPM |
+  |---|---|---|---|---|---|
+  | reading completed | 10/10 | 10/10 | 10/10 | 10/10 | 10/10 |
+  | segments named | 10/10 | 10/10 | 10/10 | 10/10 | 7/10 |
+  | size (worst segment) | 10/10 | 10/10 | 10/10 | 10/10 | 10/10 |
+  | described at all (worst) | 9/10 | 10/10 | 10/10 | 7/10 | 9/10 |
+  | ways of earning (worst) | 6/10 | 6/10 | 8/10 | 7/10 | 10/10 |
+  | span cited (worst) | 3/10 | 4/10 | 3/10 | 7/10 | 9/10 |
+  | **archetype** | 10/10 | **6/10** | 10/10 | 10/10 | 10/10 |
+
+  **Every size agreed every time.** Sixteen segment sizes across five
+  documents, fifty readings: identical share, identical cell, without
+  exception. That is not luck and it is not the model being careful — it
+  is the shape of the evidence. A quantitative citation is an *address*
+  into a table this platform parsed, checked against the cell it names,
+  with the division performed here. The model only has to point; the
+  platform does the reading and the arithmetic, so there is almost
+  nothing left for it to vary.
+
+  **Everything a model reads out of prose moves.** Ways of earning fall
+  to 6 of 10; spans to 3 of 10. The span figure is the softer of the two
+  and deliberately reported apart from whether a description was
+  established at all — ten readings cited one sentence about Caterpillar's
+  Resource Industries eight ways, trimmed at "quarry", at "quarry and
+  aggregates", with and without the full stop. As spans that is 3 of 10;
+  as an account of what the segment does it is 10 of 10, and only the
+  second reaches a decision. Reporting only the first would describe a
+  reader that cannot read.
+
+  **So the platform's noise is structural, not incidental.** Variance is
+  absent exactly where evidence is an address this platform verifies, and
+  present exactly where it is a model's reading of prose. That is a
+  measurement of the decision taken in *"a quantitative citation is an
+  address, not a span"* — and it says plainly what narrative evidence
+  still lacks.
+
+  **NVIDIA is the worst case and shows how noise becomes a conclusion.**
+  Its sizes are perfectly stable at 90/10 and both segments are described
+  in all ten readings. One segment's ways of earning move — Graphics
+  reads `manufacturing, services` six times, `manufacturing` three and
+  `manufacturing, subscription` once — and because `services` either does
+  or does not run through all 100% of revenue, that single flip crosses
+  the rule that separates a ranked archetype from a diversified one. 6 of
+  10 Diversified, 4 of 10 Manufacturer. The rules are deterministic and
+  behaved perfectly; a coin-flip arrived from above them.
+
+  **A correction this measured.** Caterpillar was reported in the
+  previous slice as classifying "Service business, then manufacturer".
+  Over twenty readings it is Diversified nineteen times. The stored entry
+  holds the single reading in which Financial Products was described as
+  earning by `services`, which lifts services above manufacturing and
+  ranks what is otherwise a tie. CAT does classify — that part stands,
+  and coverage is still 3 of 7 — but *which* archetype was a one-in-twenty
+  draw, and the platform had no way to know that until now.
+
+  **What this changes about coverage.** Stored knowledge is one draw
+  presented as the company's own account of itself, and every coverage
+  figure this repository has published was measured on one draw. Coverage
+  and stability are now known to be different qualities: a company that
+  classifies every time and one that classifies 60% of the time because
+  successive readings disagree are not the same finding, and until this
+  slice they were reported identically. Reporting them apart, and
+  deciding whether knowledge should be a reading or the modal reading of
+  several, is the next question — see
+  [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md).
+
+  Nothing here is called a probability. An agreement observed over ten
+  readings is exactly that, and stating it as the chance a further
+  reading agrees would invent a number nobody measured.
 
 - **A section is located where the filer typeset its title** (August
   2026). The first acquisition defect found by asking what was blocking
