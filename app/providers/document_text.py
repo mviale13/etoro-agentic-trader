@@ -425,6 +425,16 @@ def read_tables(markup: str) -> tuple[SourceTable, ...]:
         if len(rows) < 2 or figures < _MINIMUM_FIGURES:
             continue
 
+        previous = tables[-1] if tables else None
+
+        if previous is not None and _continues(previous.rows, rows):
+            tables[-1] = SourceTable(
+                index=previous.index,
+                caption=previous.caption,
+                rows=_widened(previous.rows, rows),
+            )
+            continue
+
         tables.append(
             SourceTable(
                 index=len(tables),
@@ -434,6 +444,79 @@ def read_tables(markup: str) -> tuple[SourceTable, ...]:
         )
 
     return tuple(tables)
+
+
+#: A continuation must agree with its table on at least this many row
+#: labels. Two rows of agreement is a coincidence two small tables can
+#: manage; the page-split this exists for repeats the whole label
+#: column, eight rows on the filing that earned it.
+_CONTINUED_ROWS = 3
+
+
+def _continues(rows: tuple[TableRow, ...], next_rows: tuple[TableRow, ...]) -> bool:
+    """
+    Whether the next table is this one's remaining columns.
+
+    A filer whose table outgrows the page splits it and repeats the
+    label column, so the proof of a continuation is the labels
+    themselves: the same number of rows, every label equal pairwise, and
+    enough of them for the agreement to mean something. JPMorgan's
+    segment results print that way — Consumer & Community Banking
+    through Asset & Wealth Management in one table, Corporate and the
+    firmwide total in the next, eight row labels repeated verbatim.
+
+    The one shape those conditions alone would swallow is a *repeated*
+    table rather than a split one: Volkswagen prints its 2025 segment
+    table and then its 2024 segment table with identical row labels.
+    What separates the two is the header — a continuation carries the
+    columns the first table did not have room for, where a repetition
+    carries the same columns again — so a header cell the first table
+    already prints refuses the merge. Measured on both filings: the
+    JPMorgan pair's headers are disjoint and merge; the Volkswagen
+    pair's are identical and do not.
+    """
+
+    if len(rows) != len(next_rows) or len(rows) < _CONTINUED_ROWS:
+        return False
+
+    labels = [row.label for row in rows]
+
+    if sum(1 for label in labels if label.strip()) < _CONTINUED_ROWS:
+        return False
+
+    if labels != [row.label for row in next_rows]:
+        return False
+
+    here = _header_names(rows)
+    there = _header_names(next_rows)
+
+    return bool(here) and bool(there) and not (here & there)
+
+
+def _header_names(rows: tuple[TableRow, ...]) -> set[str]:
+    """What a table's header row calls its columns, beyond the labels."""
+
+    table = SourceTable(index=0, caption="", rows=rows)
+
+    return {cell.strip() for cell in rows[table.header_row].cells[1:] if cell.strip()}
+
+
+def _widened(
+    rows: tuple[TableRow, ...],
+    continuation: tuple[TableRow, ...],
+) -> tuple[TableRow, ...]:
+    """One table's rows joined with its continuation's, row by row.
+
+    The continuation's label column is dropped — it is the repeated join
+    key, not a new column — and everything after it lands to the right
+    of the columns already read, which is where the page would have put
+    it had it been wide enough.
+    """
+
+    return tuple(
+        TableRow(cells=row.cells + more.cells[1:])
+        for row, more in zip(rows, continuation, strict=True)
+    )
 
 
 def _table_spans(markup: str) -> list[tuple[int, int]]:
@@ -580,14 +663,26 @@ def _cells(row: str) -> tuple[str, ...]:
     for index, match in enumerate(opened):
         end = opened[index + 1].start() if index + 1 < len(opened) else len(row)
 
-        cells.append(flatten(row[match.start() : end]).text.strip())
+        text = flatten(row[match.start() : end]).text.strip()
+        cells.append(text)
 
         spans = _COLSPAN.search(match.group(0))
         width = min(int(spans.group(1)), _WIDEST) if spans else 1
 
-        # The columns a wide cell covers beyond its first. Empty, so a
-        # uniformly empty one is pruned with the rest of the spacing.
-        cells.extend("" for _ in range(max(0, width - 1)))
+        # The columns a wide cell covers beyond its first. Words are
+        # repeated into every one of them, because that is what the
+        # colspan the filer wrote asserts: JPMorgan heads six columns of
+        # figures "Consumer & Community Banking" with one spanned cell,
+        # and a figure in the sixth is exactly as much that segment's as
+        # a figure in the first. A *number* is never repeated — a value
+        # spanned for centering would become several addressable copies
+        # of one printed figure, and two segments could then cite the
+        # same number at two addresses without the duplicate-cell check
+        # ever seeing it. Nor is a lone currency symbol, which is the
+        # front of the one value beside it and must not multiply into a
+        # symbol for every column it was stretched across.
+        words = text and read_number(text) is None and text not in _CURRENCY
+        cells.extend((text if words else "") for _ in range(max(0, width - 1)))
 
     return _with_currency_absorbed(cells)
 

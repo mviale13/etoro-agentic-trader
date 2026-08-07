@@ -249,7 +249,9 @@ class EdgarFilings:
         business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
         discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
 
-        referenced, referred_regions = self._referenced(document, flat, business)
+        referenced, referred_regions, referred_tables = self._referenced(
+            document, flat, business
+        )
 
         return Filing(
             reference=reference,
@@ -258,17 +260,20 @@ class EdgarFilings:
                 regions + _shifted(referred_regions, by=_offset(business))
             ),
             discussion_text=discussion,
-            # Deliberately the discussion's own tables, and not the
-            # referenced chapter's. A referenced chapter's figures are
-            # the filing's figures and belong here in principle —
-            # measured, handing JPMorgan's twenty-five MD&A tables to
-            # the size reading made it cite a cell whose column carries
-            # no header, and a mix that cannot be checked discards the
-            # whole reading, descriptions included. Sizes are a
-            # different claim from descriptions and are not worth
-            # trading for them; what it takes to read tables of that
-            # shape is a measurement of its own.
-            discussion_tables=tables,
+            # The discussion's own tables where it prints any, and the
+            # referenced chapter's where it prints none — which is the
+            # pointer shape: JPMorgan's Item 7 is 395 characters naming
+            # the pages its discussion appears on, and the figures are
+            # in the chapter Item 1's reference already located. An
+            # earlier pass declined this because the size reading could
+            # not survive tables of that chapter's shape; the parse now
+            # reads a spanned group header as covering its columns and a
+            # page-split table as the one table it is, both measured on
+            # this filing, so the decline is over on evidence rather
+            # than on hope. A discussion with its own tables keeps
+            # exactly those: mixing another chapter's in beside them
+            # would put two tables' totals in one reading's reach.
+            discussion_tables=tables or referred_tables,
         )
 
     @staticmethod
@@ -276,7 +281,7 @@ class EdgarFilings:
         document: str,
         flat: Flattened,
         within: str,
-    ) -> tuple[str, tuple[Region, ...]]:
+    ) -> tuple[str, tuple[Region, ...], tuple[SourceTable, ...]]:
         """
         The section this one names as the place its content is printed.
 
@@ -298,7 +303,7 @@ class EdgarFilings:
         """
 
         if not within:
-            return ("", ())
+            return ("", (), ())
 
         lowered = flat.text.casefold()
 
@@ -323,12 +328,15 @@ class EdgarFilings:
             if within.strip() and flat.text[at:ends].strip() in within:
                 continue
 
+            opens, closes = flat.markup_span(at, ends)
+
             return (
                 flat.text[at:ends].strip(),
                 read_regions(document, flat, at, ends),
+                read_tables(document[opens:closes]),
             )
 
-        return ("", ())
+        return ("", (), ())
 
     def latest_annual_report(self, symbol: str) -> Filing:
         """The most recent 10-K or 20-F this company filed, read in full."""

@@ -372,3 +372,142 @@ def test_a_title_the_filer_typeset_into_a_cell_still_begins_its_block() -> None:
     flat = flatten(markup)
 
     assert begins_a_block(markup, flat, flat.text.index("ITEM 1."))
+
+
+# ── spanned words, split tables ─────────────────────────────────────
+
+
+def test_a_spanned_groups_words_cover_every_column_it_claims() -> None:
+    """
+    What the colspan the filer wrote asserts. JPMorgan heads six columns
+    of figures "Consumer & Community Banking" with one spanned cell, and
+    a figure in the sixth is exactly as much that segment's as a figure
+    in the first — so the words go into every column the span covers,
+    and each column's header is the group it belongs to.
+    """
+
+    grouped = """
+    <table>
+      <tr><td>Year ended December 31,</td>
+          <td colspan="3">Consumer Banking</td><td colspan="3">Total</td></tr>
+      <tr><td>(in millions)</td><td>2025</td><td>2024</td><td>2023</td>
+          <td>2025</td><td>2024</td><td>2023</td></tr>
+      <tr><td>Total net revenue</td><td>76,029</td><td>71,507</td><td>70,148</td>
+          <td>185,581</td><td>180,593</td><td>162,366</td></tr>
+    </table>
+    """
+
+    table = read_tables(grouped)[0]
+
+    assert table.header_row == 0
+    assert table.column_header(1) == "Consumer Banking"
+    assert table.column_header(3) == "Consumer Banking"
+    assert table.column_header(4) == "Total"
+    assert table.column_header(6) == "Total"
+
+
+def test_a_spanned_number_is_never_repeated_into_its_columns() -> None:
+    """
+    A value spanned for centering must not become several addressable
+    copies of one printed figure — two segments could then cite the same
+    number at two addresses without the duplicate-cell check seeing it.
+    """
+
+    centered = """
+    <table>
+      <tr><td>(in millions)</td><td>2025</td><td>2024</td></tr>
+      <tr><td>Entertainment</td><td colspan="2">42,466</td></tr>
+      <tr><td>Revenues</td><td>94,425</td><td>91,361</td></tr>
+    </table>
+    """
+
+    table = read_tables(centered)[0]
+
+    assert table.cell(1, 1) == "42,466"
+    assert table.cell(1, 2) == ""
+
+
+def test_a_spanned_title_still_names_the_table_and_no_column() -> None:
+    """Caterpillar's shape, preserved through the repetition rule: a
+    title is one distinct stretch of words however many columns the
+    filer spanned it across."""
+
+    titled = """
+    <table>
+      <tr><td colspan="3">Sales and Revenues by Segment</td></tr>
+      <tr><td>(in millions)</td><td>2025</td><td>2024</td></tr>
+      <tr><td>Construction Industries</td><td>25,808</td><td>26,414</td></tr>
+      <tr><td>Total sales and revenues</td><td>64,809</td><td>67,060</td></tr>
+    </table>
+    """
+
+    table = read_tables(titled)[0]
+
+    assert table.header_row == 1
+    assert table.column_header(1) == "2025"
+
+
+def test_a_table_split_by_the_page_is_read_as_the_one_table_it_is() -> None:
+    """
+    JPMorgan's segment results: the table outgrew the page, so the filer
+    split it and repeated the label column. The labels are the proof —
+    same rows, every label equal pairwise — and the merged table is what
+    lets a segment's figure and the firmwide total share a row again,
+    which is the relationship the mix contract requires.
+    """
+
+    split = """
+    <table>
+      <tr><td>Year ended December 31,</td><td colspan="2">Consumer Banking</td></tr>
+      <tr><td>(in millions)</td><td>2025</td><td>2024</td></tr>
+      <tr><td>Total net revenue</td><td>76,029</td><td>71,507</td></tr>
+      <tr><td>Net income</td><td>4,520</td><td>10,601</td></tr>
+    </table>
+    <table>
+      <tr><td>Year ended December 31,</td><td colspan="2">Total</td></tr>
+      <tr><td>(in millions)</td><td>2025</td><td>2024</td></tr>
+      <tr><td>Total net revenue</td><td>185,581</td><td>180,593</td></tr>
+      <tr><td>Net income</td><td>57,048</td><td>58,471</td></tr>
+    </table>
+    """
+
+    tables = read_tables(split)
+
+    assert len(tables) == 1
+
+    table = tables[0]
+
+    assert table.column_header(1) == "Consumer Banking"
+    assert table.cell(2, 1) == "76,029"
+
+    # The continuation's columns, to the right of the first table's,
+    # with its repeated label column dropped.
+    assert table.column_header(3) == "Total"
+    assert table.cell(2, 3) == "185,581"
+
+
+def test_a_repeated_prior_year_table_is_not_a_continuation() -> None:
+    """
+    Volkswagen's shape, and the case the header gate exists for: the
+    2025 segment table and the 2024 segment table print identical row
+    labels, and merging them would put two columns called "Pkw und
+    leichte Nutzfahrzeuge" in one table. A continuation carries the
+    columns the first table had no room for; a repetition carries the
+    same columns again, and a header cell the first table already
+    prints refuses the merge.
+    """
+
+    repeated = """
+    <table>
+      <tr><td>Mio. EUR</td><td>Pkw</td><td>Nutzfahrzeuge</td></tr>
+      <tr><td>Umsatzerloese</td><td>244,484</td><td>42,540</td></tr>
+      <tr><td>Segmentergebnis</td><td>4,966</td><td>2,417</td></tr>
+    </table>
+    <table>
+      <tr><td>Mio. EUR</td><td>Pkw</td><td>Nutzfahrzeuge</td></tr>
+      <tr><td>Umsatzerloese</td><td>241,526</td><td>46,183</td></tr>
+      <tr><td>Segmentergebnis</td><td>13,656</td><td>4,218</td></tr>
+    </table>
+    """
+
+    assert len(read_tables(repeated)) == 2

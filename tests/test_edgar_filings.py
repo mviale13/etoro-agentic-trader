@@ -179,21 +179,45 @@ def test_a_referenced_chapter_is_read_where_the_filer_says_it_is() -> None:
     assert "advisory, capital-raising and market-making" in filing.business_text
 
 
-def test_a_referenced_chapter_contributes_prose_and_not_its_tables() -> None:
+def test_a_pointer_discussion_is_served_the_referenced_chapters_tables() -> None:
     """
-    Deliberate, and measured rather than assumed. A referenced
-    chapter's figures are the filing's figures and belong with the
-    other tables in principle — handing JPMorgan's twenty-five MD&A
-    tables to the size reading made it cite a cell whose column carries
-    no header, and a mix that cannot be checked discards the whole
-    reading, descriptions included.
+    The pointer shape, closed. JPMorgan's Item 7 is 395 characters
+    naming the pages its discussion appears on and prints no table; the
+    figures are in the chapter Item 1's reference already located. An
+    earlier pass declined these tables because the size reading could
+    not survive their shape — the parse now reads a spanned group
+    header as covering its columns and a page-split table as one table,
+    so the decline is over on evidence rather than on hope.
 
-    Sizes are a different claim from descriptions and are not worth
-    trading for them. The chapter's prose is acquired; its tables wait
-    for a measurement of their own.
+    REFERRING's Item 7 is absent entirely, which is the same shape:
+    the discussion contributes no tables of its own.
     """
 
-    assert read(REFERRING).discussion_tables == ()
+    (table,) = read(REFERRING).discussion_tables
+
+    assert any("Total net revenue" in row.label for row in table.rows)
+
+
+def test_a_discussion_with_its_own_tables_keeps_exactly_those() -> None:
+    """Mixing another chapter's tables in beside a discussion's own
+    would put two tables' totals in one reading's reach."""
+
+    referring_with_own = REFERRING.replace(
+        "</body></html>",
+        """<p>ITEM 7. Management&#8217;s Discussion and Analysis</p>
+<table>
+  <tr><td>(in millions)</td><td>2025</td></tr>
+  <tr><td>Own Section Revenue</td><td>1,234</td></tr>
+  <tr><td>Own Total</td><td>5,678</td></tr>
+</table>
+<p>ITEM 8. Financial Statements</p>
+</body></html>""",
+    )
+
+    tables = read(referring_with_own).discussion_tables
+
+    assert len(tables) == 1
+    assert any("Own Total" in row.label for row in tables[0].rows)
 
 
 def test_the_referenced_chapter_keeps_its_regions_in_the_joined_text() -> None:
