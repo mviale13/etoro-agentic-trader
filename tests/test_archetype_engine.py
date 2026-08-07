@@ -689,3 +689,87 @@ def test_a_missing_size_the_reading_left_unworded_still_states_one() -> None:
     size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
 
     assert "No observation located a figure for this segment" in size.because
+
+
+# ── what a conclusion rests on ──────────────────────────────────────
+
+
+def multi(
+    *observations_segments: tuple[BusinessSegment, ...],
+) -> CompanyKnowledgeConsensus:
+    """A consensus over several observations of one document."""
+
+    return consensus_of(
+        tuple(
+            CompanyKnowledgeObservation(
+                symbol="NVDA",
+                description="What NVDA says it does.",
+                segments=segments,
+                source=company("NVDA").source,
+                reading=Provenance(
+                    source="10-K via SEC EDGAR",
+                    observed_at=datetime.now(UTC),
+                ),
+            )
+            for segments in observations_segments
+        )
+    )
+
+
+def test_a_conclusion_carries_the_narrowest_claim_it_rests_on() -> None:
+    """NVIDIA's accepted shape: Manufacturer, resting on 3 of 5."""
+
+    both = (
+        segment("Compute", share=0.90, earns=(RevenueModel.MANUFACTURING,)),
+        segment(
+            "Graphics",
+            share=0.10,
+            earns=(RevenueModel.MANUFACTURING, RevenueModel.SERVICES),
+            row=2,
+        ),
+    )
+    one = (
+        segment("Compute", share=0.90, earns=(RevenueModel.MANUFACTURING,)),
+        segment("Graphics", share=0.10, earns=(RevenueModel.MANUFACTURING,), row=2),
+    )
+
+    archetype = classify(multi(one, one, one, both, both))
+
+    assert archetype.quorate
+    assert archetype.narrowest is not None
+    assert archetype.narrowest.counted() == "3/5"
+    assert "a narrow majority (3/5)" in (archetype.rests_on or "")
+    assert "how 'Graphics' earns" in (archetype.rests_on or "")
+    assert "has not been established" in (archetype.rests_on or "")
+
+
+def test_a_unanimous_consensus_says_so_rather_than_scoring_itself() -> None:
+    same = (segment("Only", share=0.95, earns=(RevenueModel.RETAIL,)),)
+
+    archetype = classify(multi(same, same, same, same, same))
+
+    assert archetype.quorate
+    assert "unanimous on every claim consumed" in (archetype.rests_on or "")
+
+
+def test_below_quorum_nothing_is_authoritative_and_the_basis_says_so() -> None:
+    """
+    At the decision path's quorum of five, not the harness's one. The
+    width-1 conclusion is served, labeled, and never authoritative.
+    """
+
+    archetype = classify(
+        multi((segment("Only", share=0.95, earns=(RevenueModel.RETAIL,)),))
+    )
+
+    assert not archetype.quorate
+    assert "nothing decided from it is authoritative" in (archetype.rests_on or "")
+
+
+def test_an_undecided_archetype_asserts_no_basis() -> None:
+    """Its reasons carry the distributions; there is no conclusion to rest."""
+
+    archetype = classify(company("META", segment("FoA", share=0.99)))
+
+    assert archetype.rests_on is None
+    assert archetype.narrowest is None

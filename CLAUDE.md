@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1084 tests, fast
+python -m pytest -q            # ~1090 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 

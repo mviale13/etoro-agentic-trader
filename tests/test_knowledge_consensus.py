@@ -413,3 +413,34 @@ def test_a_consensus_across_two_documents_is_refused() -> None:
         )
 
     assert "one immutable document" in str(refused.value)
+
+
+# ── agreement strength, and what it never claims ────────────────────
+
+
+def test_a_majority_is_worded_with_its_count_and_never_without() -> None:
+    """ "Narrow" alone would be an interpretation wearing a measurement's
+    authority; the count always travels with the word."""
+
+    from app.domain.agreement import agreement as agree
+
+    assert agree("q", ("a",) * 5).stated_majority() == "unanimous (5/5)"
+    assert agree("q", ("a", "a", "a", "b", "b")).stated_majority() == (
+        "a narrow majority (3/5)"
+    )
+    assert agree("q", ("a", "a", "a", "a", "b")).stated_majority() == (
+        "a majority (4/5)"
+    )
+    assert agree("q", ("a", "a", "b", "b", "c")).stated_majority() == (
+        "no majority (2/5)"
+    )
+
+
+def test_the_smallest_strict_majority_is_named_narrow() -> None:
+    """One changed answer would unsettle it, and the name says so."""
+
+    from app.domain.agreement import agreement as agree
+
+    assert agree("q", ("a", "a", "a", "b", "b")).is_narrow
+    assert not agree("q", ("a", "a", "a", "a", "b")).is_narrow
+    assert not agree("q", ("a", "a", "b", "b")).is_narrow

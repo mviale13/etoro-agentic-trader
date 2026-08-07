@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1084 passing (2026-08-07) |
+| Pytest | 🟢 1090 passing (2026-08-07) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,37 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A conclusion is as firm as the narrowest claim beneath it, and now
+  says so** (August 2026). The three layers the consensus architecture
+  supports, made visible, with a terminology refinement NVIDIA forced:
+  its Graphics claim leaned one way over ten calibration readings and
+  settled the other way over the five-observation quorum — correctly,
+  both times — so *settled* must never be read as *unlikely to change*.
+  Four properties are now kept apart: **quorum** (enough observations
+  exist), **consensus** (one observed value has a strict majority),
+  **agreement strength** (the winning count and full distribution), and
+  **robustness** (survival under further observations — not
+  established, for anything).
+
+  `CompanyArchetype` carries `quorate`, the `narrowest` consumed
+  agreement (distribution included), and a worded `rests_on`. The
+  archetype surface renders three layers in the order trust is built —
+  acquisition, knowledge stability, business understanding — and the
+  headline is inseparable from its basis: *"NVDA — Manufacturer,
+  resting on a consensus of 5 observations; the narrowest claim beneath
+  it is a narrow majority (3/5) — how 'Graphics' earns. Whether that
+  majority would survive further observations has not been
+  established."* A width-1 entry reads "not a consensus, and nothing
+  decided from it is authoritative", and its 1/1 is printed as a width,
+  never as unanimity — arithmetic is not agreement. Every majority is
+  worded with its count; "narrow" never appears alone.
+
+  Acquisition policy is recorded as policy, not code: width 1 suffices
+  for developer inspection, quorum before an archetype is
+  authoritative (`quorate` is the machine-readable gate), observations
+  on demand at the dossier, no portfolio-wide rereading until cost is
+  measured, and never adaptive stopping on content.
 
 - **Knowledge became observations, and what the platform serves is
   consensus** (August 2026). The accepted design in

@@ -31,6 +31,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from app.domain.agreement import Agreement
 from app.domain.company_archetype import (
     ARCHETYPE_OF,
     Archetype,
@@ -250,6 +251,8 @@ def _ranked(
             ),
         )
 
+    narrowest, rests_on = _rests_on(knowledge, measurable, sizes_consumed=True)
+
     return CompanyArchetype(
         symbol=knowledge.symbol,
         primary=ARCHETYPE_OF[top.model],
@@ -274,6 +277,9 @@ def _ranked(
         undecided_because=None,
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+        narrowest=narrowest,
+        rests_on=rests_on,
     )
 
 
@@ -293,6 +299,8 @@ def _unranked(
 
     covers = _coverage(earning)
     candidates = tuple(ARCHETYPE_OF[coverage.model] for coverage in covers)
+
+    narrowest, rests_on = _rests_on(knowledge, earning, sizes_consumed=False)
 
     return CompanyArchetype(
         symbol=knowledge.symbol,
@@ -325,6 +333,9 @@ def _unranked(
         ),
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+        narrowest=narrowest,
+        rests_on=rests_on,
     )
 
 
@@ -340,6 +351,12 @@ def _diversified(
 ) -> CompanyArchetype:
     """Measured, explained, and genuinely without a leading way to earn."""
 
+    narrowest, rests_on = _rests_on(
+        knowledge,
+        tuple(segment for segment in knowledge.segments if segment.revenue_models),
+        sizes_consumed=True,
+    )
+
     return CompanyArchetype(
         symbol=knowledge.symbol,
         primary=Archetype.DIVERSIFIED,
@@ -353,6 +370,9 @@ def _diversified(
         undecided_because=None,
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+        narrowest=narrowest,
+        rests_on=rests_on,
     )
 
 
@@ -367,6 +387,9 @@ def _undecided(
 ) -> CompanyArchetype:
     """No archetype, with the reason and the evidence that fell short."""
 
+    # An undecided archetype consumed no claim all the way to a
+    # conclusion, so it asserts no basis — its reasons carry the
+    # distributions instead.
     return CompanyArchetype(
         symbol=knowledge.symbol,
         primary=None,
@@ -380,6 +403,78 @@ def _undecided(
         undecided_because=because,
         source=knowledge.stated_source(),
         reading=knowledge.reading,
+        quorate=knowledge.is_quorate,
+    )
+
+
+# ── what a conclusion rests on ──────────────────────────────────────
+
+
+def _rests_on(
+    knowledge: CompanyKnowledgeConsensus,
+    used: tuple[ConsensusSegment, ...],
+    sizes_consumed: bool,
+) -> tuple[Agreement | None, str | None]:
+    """The weakest agreement among the claims the rules consumed, worded.
+
+    A conclusion is exactly as firm as the narrowest claim beneath it.
+    Which claims count is which claims were *used*: identity always,
+    each used segment's ways of earning always, and its size only in
+    the regimes that weighed sizes — an unranked outcome consumed no
+    size, and charging it with one would report a width nothing rested
+    on.
+
+    Robustness is deliberately not asserted. A narrow majority is a
+    fact about these observations; whether it survives further ones has
+    not been established for anything, and the wording stops at the
+    count.
+    """
+
+    consumed: list[tuple[str, Agreement]] = [
+        ("which segments the document names", knowledge.identity)
+    ]
+
+    for segment in used:
+        consumed.append((f"how {segment.name!r} earns", segment.earning_agreement))
+
+        if sizes_consumed:
+            consumed.append((f"the size of {segment.name!r}", segment.size_agreement))
+
+    answered = [
+        (about, agreement) for about, agreement in consumed if agreement.readings > 0
+    ]
+
+    if not answered:
+        return None, None
+
+    about, narrowest = min(
+        answered,
+        key=lambda claim: claim[1].stability or 0.0,
+    )
+
+    if not knowledge.is_quorate:
+        counted = (
+            "1 observation"
+            if knowledge.observation_count == 1
+            else f"{knowledge.observation_count} observations"
+        )
+
+        return narrowest, (
+            f"{counted}, below the quorum of {knowledge.quorum} — not a "
+            "consensus, and nothing decided from it is authoritative."
+        )
+
+    if narrowest.settled:
+        return narrowest, (
+            f"a consensus of {knowledge.observation_count} observations, "
+            f"unanimous on every claim consumed."
+        )
+
+    return narrowest, (
+        f"a consensus of {knowledge.observation_count} observations; the "
+        f"narrowest claim beneath it is {narrowest.stated_majority()} — "
+        f"{about}. Whether that majority would survive further observations "
+        "has not been established."
     )
 
 

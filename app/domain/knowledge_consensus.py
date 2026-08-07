@@ -35,6 +35,25 @@ The rule, and what makes it safe:
   stale conclusions and there is no second place for an answer to be
   true.
 
+Four words, kept apart because conflating any two of them overstates
+what the platform knows:
+
+- **Quorum** — enough observations exist. A property of the set's size
+  and nothing else.
+- **Consensus** — one observed value carries a strict majority. A
+  property of these answers.
+- **Agreement strength** — the winning count and the complete
+  distribution. 3/5 and 5/5 are both consensus and different findings,
+  and no surface may collapse them.
+- **Robustness** — whether that consensus would survive additional
+  observations. **Not established, for anything.** Measured on NVIDIA:
+  a claim that leaned one way over ten calibration readings settled the
+  other way over a five-observation quorum, correctly, both times.
+  "Settled" therefore means a majority among these observations — it
+  never means unlikely to change, and a downstream consumer that
+  treated every majority as equally stable would be reading a forecast
+  nobody made.
+
 Nothing here is a probability. "3 of 5 observations" counts something
 that happened; the chance a sixth agrees was not measured and is not
 stated.

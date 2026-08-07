@@ -317,6 +317,57 @@ derived as one. What those facts add up to remains the rules' decision.
   Acquisition Coverage  →  Knowledge Stability  →  Business Understanding
   ```
 
+### Four words, kept apart (added on acceptance, 2026-08-07)
+
+NVIDIA supplied the exhibit that forced this refinement: a claim that
+leaned one way over ten calibration readings settled the other way over
+a five-observation quorum. The system behaved correctly both times —
+and it proves that *settled* must never be read as *unlikely to
+change*. So four properties are distinguished, and no surface or
+consumer may collapse them:
+
+```text
+Quorum              Enough observations exist.
+Consensus           One observed value carries a strict majority.
+Agreement strength  The winning count and the complete distribution.
+Robustness          Whether the consensus survives further observations.
+                    NOT ESTABLISHED — for anything.
+```
+
+Consequences in the implementation: every majority is worded with its
+count ("a narrow majority (3/5)" — never "narrow" alone, which would be
+an interpretation wearing a measurement's authority); an archetype
+carries the narrowest claim it consumed, distribution included, and its
+`rests_on` wording states outright that survival under further
+observations has not been established; below quorum, a width-1 claim is
+a *width*, not an agreement — "unanimous (1/1)" is arithmetic dressed
+as consensus and is never printed. Downstream consumers must not treat
+all majority outcomes as equally stable, and the machine-readable gate
+for that is the archetype's `quorate` flag and `narrowest` agreement.
+
+Sequential sampling and statistical confidence are deliberately not
+built. Showing 3/5, 4/5 and 5/5 prominently is the first version.
+
+## Acquisition policy (decided 2026-08-07)
+
+The mechanism to fill a quorum exists; when its cost is paid is policy,
+explicit and separate:
+
+- **Width 1 is sufficient for developer inspection.** `movrvest
+  knowledge` serves it, labeled.
+- **Quorum is requested before an archetype becomes authoritative.** A
+  conclusion from a width-1 entry is served and labeled
+  non-authoritative; a consumer that lets an archetype steer anything
+  checks `quorate` first.
+- **Additional observations are acquired on demand** — the natural
+  hook is opening or refreshing a dossier — not as a side effect of
+  asking what the platform knows.
+- **No automatic portfolio-wide rereading** until its latency and cost
+  are measured.
+- **Never adaptive stopping on content.** An observation run stops on
+  the count, whether or not the result classifies. This is the
+  read-until-classifiable boundary and it does not move.
+
 ---
 
 ## Acquisition policy and cost

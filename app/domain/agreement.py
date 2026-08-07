@@ -96,9 +96,55 @@ class Agreement:
         Content-blind by construction: it counts who agreed and never
         looks at what they agreed on, so a worded absence wins it
         exactly as a measured value does.
+
+        A majority is a fact about *these* answers, never a forecast.
+        Measured on NVIDIA: a claim that leaned one way over ten
+        readings settled the other way over a five-observation quorum,
+        and both majorities were real. Whether a majority would survive
+        further observations — robustness — is a different property,
+        and this platform has not established it for anything. That is
+        why the count travels with every majority: 3 of 5 and 5 of 5
+        are different findings, and a consumer that treated them as
+        equally firm would be reading a forecast nobody made.
         """
 
         return self.readings > 0 and self.agreeing * 2 > self.readings
+
+    @property
+    def is_narrow(self) -> bool:
+        """Whether this is the smallest strict majority the count allows.
+
+        The weakest kind of settled: one changed answer would unsettle
+        it. Worded rather than banded — there is no scale here, only
+        the observation that 3 of 5 sits at the edge and 5 of 5 does
+        not.
+        """
+
+        return self.by_majority and self.agreeing == self.readings // 2 + 1
+
+    def counted(self) -> str:
+        """The width as a surface shows it: '3/5'."""
+
+        return f"{self.agreeing}/{self.readings}"
+
+    def stated_majority(self) -> str:
+        """The strength of the winning count, always with the count.
+
+        Never without the numbers: "narrow" is a reading of 3/5, and
+        printed alone it would be an interpretation wearing the
+        authority of a measurement.
+        """
+
+        if self.settled:
+            return f"unanimous ({self.counted()})"
+
+        if self.is_narrow:
+            return f"a narrow majority ({self.counted()})"
+
+        if self.by_majority:
+            return f"a majority ({self.counted()})"
+
+        return f"no majority ({self.counted()})"
 
     def stated(self) -> str:
         """The finding as an investor-facing line."""
