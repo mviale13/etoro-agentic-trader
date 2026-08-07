@@ -49,6 +49,16 @@ class DefectCause(StrEnum):
     #: The reader returned no describing words for the segment.
     NEVER_ARRIVED = "description never arrived"
 
+    #: The reader was asked once more, by the segment's own name, and
+    #: found no describing words either. Stronger than an empty first
+    #: arrival: the one-pass-attention explanation has been ruled out,
+    #: and what remains is a fact about the text this platform reads —
+    #: measured on Volkswagen, whose tagged segment note prints tables
+    #: and accounting boilerplate and not one describing sentence. Not
+    #: a reader defect: the fix, if one is owed, is reading a different
+    #: part of the document.
+    NONE_TO_QUOTE = "no description found when asked by name"
+
     #: The description quoted real words printed under another
     #: section, and applicability refused the ownership.
     MISAPPLIED = "description rejected by applicability"
@@ -77,11 +87,18 @@ class DefectCause(StrEnum):
 #: consensus disagreement wording may embed observation wordings
 #: beneath it, and the disagreement is the operative fact. MISAPPLIED
 #: before UNGROUNDED: an applicability refusal quotes real words, and
-#: its wording must not fall through to the weaker class.
+#: its wording must not fall through to the weaker class. NONE_TO_QUOTE
+#: before NEVER_ARRIVED for the same shape of reason: its wording
+#: follows the empty arrival it answered, and the asked-by-name absence
+#: is the operative, stronger fact.
 _TEMPLATES: tuple[tuple[str, DefectCause], ...] = (
     ("unsettled across", DefectCause.UNSETTLED),
     ("outside the section it heads", DefectCause.MISAPPLIED),
     ("prints under", DefectCause.MISAPPLIED),
+    (
+        "found no words describing it in the text this platform reads",
+        DefectCause.NONE_TO_QUOTE,
+    ),
     ("arrived with no words at all", DefectCause.NEVER_ARRIVED),
     ("quotes words that are not in the document", DefectCause.UNGROUNDED),
     ("names no way of earning", DefectCause.NAMES_NO_EARNING),

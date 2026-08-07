@@ -29,6 +29,11 @@ def test_every_template_lands_on_its_cause() -> None:
         "describe this segment.": DefectCause.MISAPPLIED,
         "The filing's description of this segment names no way of "
         "earning.": DefectCause.NAMES_NO_EARNING,
+        # The asked-by-name absence follows the empty arrival it
+        # answered, and the stronger fact is the operative one.
+        "The description of 'X' arrived with no words at all. Asked "
+        "once more by name, the reader found no words describing it in "
+        "the text this platform reads.": DefectCause.NONE_TO_QUOTE,
         "Which ways this segment earns is unsettled across 5 "
         "observations: 2× financial_spread, services; 2× "
         "financial_spread; 1× financial_spread, premiums.": DefectCause.UNSETTLED,

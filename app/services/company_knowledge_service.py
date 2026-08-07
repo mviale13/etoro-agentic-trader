@@ -223,15 +223,18 @@ class CompanyKnowledgeService:
             knowledge=consensus_of(self._store.read(symbol, extracted.source.key)),
         )
 
-    async def observe(self, symbol: str) -> KnowledgeOutcome:
-        """Take observations of the current document up to the quorum.
+    async def observe(self, symbol: str, target: int = QUORUM) -> KnowledgeOutcome:
+        """Take observations of the current document up to a count.
 
-        The explicit spend that fills a consensus. The stopping rule
-        references only the count — never what any observation says —
-        which is what keeps this from being read-until-classifiable: an
-        entry stops at quorum whether its claims settled or not, and an
-        unsettled consensus at quorum is a finding, not a failure to
-        keep asking.
+        The explicit spend that fills a consensus — to the quorum by
+        default, or deeper where the spend is explicitly deeper. The
+        stopping rule references only the count, fixed before anything
+        is read and never what any observation says — which is what
+        keeps this from being read-until-classifiable: an entry stops
+        at its target whether its claims settled or not, and an
+        unsettled consensus at the target is a finding, not a failure
+        to keep asking. An entry already at the target observes nothing
+        further.
 
         A reading refused by the grounding contract counts against
         nothing and is not retried here beyond the protocol's own
@@ -265,7 +268,7 @@ class CompanyKnowledgeService:
 
         refused: str | None = None
 
-        while len(self._store.read(symbol, source.key)) < QUORUM:
+        while len(self._store.read(symbol, source.key)) < target:
             try:
                 observation = await self._extractor.extract(symbol, document)
             except ExtractionRejected as rejected:
