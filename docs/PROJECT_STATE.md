@@ -102,6 +102,28 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The grounded selector is measured before it is extended** (August
+  2026). `movrvest playbook-coverage`, a read-only measurement over the
+  portfolio and watchlists: the knowledge store is consulted as it
+  stands — never the acquiring service, which the module deliberately
+  does not import — and every company without an authoritative grounded
+  playbook is charged with exactly one blocker from a closed
+  vocabulary, worded as the next cheapest established claim that would
+  unlock it. The distribution over blockers is the roadmap.
+
+  First live run (2026-08-07, 75 securities): 2 grounded (DIS
+  Diversified Business, NVDA Industrial), 48 industry fallbacks, 25
+  unclassified. 70 of 75 never read; 2 below quorum (NFLX, VOW3.DE at
+  1/5); 1 quorate and blocked on reading applicability (META). Blockers:
+  *no filing read* 59, *no primary source* 11 (tokens, commodities, a
+  fund — correctly out of scope), *below quorum* 2, *no revenue
+  mechanisms established* 1. Two of the five quorate companies (CAT,
+  JPM) are on neither the portfolio nor a watchlist, so the corpus the
+  mapping was proven on overlaps the book less than it appears. The run
+  also measured the industry route itself: Yahoo 401s degraded several
+  fallback rows to unclassified, which is the fragility the grounded
+  migration exists to replace.
+
 - **The playbook is selected from Business Understanding, where that
   route has earned it** (August 2026). The design in
   [`architecture/PLAYBOOK_SELECTION.md`](architecture/PLAYBOOK_SELECTION.md):

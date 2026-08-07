@@ -96,23 +96,26 @@ def segment(
     )
 
 
-def consensus(*observations_segments: tuple[BusinessSegment, ...]):
-    return consensus_of(
-        tuple(
-            CompanyKnowledgeObservation(
-                symbol="NVDA",
-                description="What the company says it does.",
-                segments=segments,
-                source=SOURCE,
-                reading=Provenance(
-                    source="10-K via SEC EDGAR, read by stub-1",
-                    observed_at=datetime(2026, 8, 7, tzinfo=UTC)
-                    + timedelta(hours=ordinal),
-                ),
-            )
-            for ordinal, segments in enumerate(observations_segments)
+def observations_of(
+    *observations_segments: tuple[BusinessSegment, ...],
+) -> tuple[CompanyKnowledgeObservation, ...]:
+    return tuple(
+        CompanyKnowledgeObservation(
+            symbol="NVDA",
+            description="What the company says it does.",
+            segments=segments,
+            source=SOURCE,
+            reading=Provenance(
+                source="10-K via SEC EDGAR, read by stub-1",
+                observed_at=datetime(2026, 8, 7, tzinfo=UTC) + timedelta(hours=ordinal),
+            ),
         )
+        for ordinal, segments in enumerate(observations_segments)
     )
+
+
+def consensus(*observations_segments: tuple[BusinessSegment, ...]):
+    return consensus_of(observations_of(*observations_segments))
 
 
 MFG = (RevenueModel.MANUFACTURING,)

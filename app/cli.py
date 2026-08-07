@@ -20,6 +20,7 @@ from app.commands import (
     morning,
     observe,
     playbook,
+    playbook_coverage,
     policy,
     reader_stability,
     record,
@@ -216,6 +217,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example DIS, NVDA or CAT",
     )
 
+    subparsers.add_parser(
+        "playbook-coverage",
+        help="Measure the grounded selector over the portfolio and watchlists",
+        description=(
+            "A read-only measurement: for every held or watched security, "
+            "the stored knowledge width, the selector outcome, and — for "
+            "every company without an authoritative grounded playbook — "
+            "exactly one blocking claim. Nothing is acquired, fetched or "
+            "read"
+        ),
+    )
+
     observe_parser = subparsers.add_parser(
         "observe",
         help="Read the current filing again, up to the consensus quorum",
@@ -287,6 +300,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "playbook":
         return await playbook.run(args.symbol)
+
+    if args.command == "playbook-coverage":
+        return await playbook_coverage.run()
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()
