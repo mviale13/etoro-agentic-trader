@@ -367,16 +367,36 @@ the roadmap follows the classes:
   earned slices are *not started here*: the verdict is recorded, and
   beginning them is a decision the measurements' owner takes.
 
-  **Accepted next measurement slice — the defect ledger** (review of
-  PR #48): the taxonomy is a snapshot; it should become an engineering
-  history. Per defect pattern, record *first observed / last observed /
-  occurrences / status / resolved by PR*, so "which reader defects have
-  the highest historical cost?" is answerable without reading git
-  history. Design questions for the slice: the ledger is derived state
-  that must never disagree with the store (one concept, one
-  implementation), and "resolved by" is a fact about a PR that a
-  measurement can only confirm — a pattern is *resolved* when a rerun
-  stops finding it, and the PR is credited, never trusted.
+  **The defect ledger shipped (2026-08-07, `movrvest defect-ledger`,
+  accepted in review of PR #48).** The taxonomy's snapshot became an
+  engineering history: the store is append-only and every observation
+  is dated, so the ledger *replays* it — after each stored reading it
+  derives the consensus that was served at that moment (current
+  document by `published_on`, the same `consensus_of`, the same
+  `defects_of` classification the taxonomy walks) and records each
+  defect pattern's first appearance, last finding, occurrences and
+  status. Both design questions closed structurally: the ledger is
+  derived on every read from the store alone, and the final replay
+  state *is* the taxonomy's answer, so the two cannot disagree; and
+  "resolved by PR" is a claim a PR records in
+  `app/domain/defect_ledger.py` (`CLAIMED_RESOLUTIONS`, empty until a
+  reader slice lands) that the ledger *credits* only while a rerun
+  stops finding the pattern — never trusts. A pattern can also resolve
+  unattributed (a new filing, or new observations settling a claim),
+  and the surface says which happened.
+
+  **First replay (2026-08-07, 9 companies): 20 defect instances ever,
+  14 still found — the taxonomy's exact 14.** The six historical
+  instances no rerun finds are five *observations disagree* — JPM's
+  segment frame, META's Reality Labs, NVDA's Graphics, UMI.BR's frame
+  and its Recycling earning — and one *description never arrived*
+  (JPM's Commercial & Investment Bank earning), every one of them
+  resolved by nothing but more observations: width absorbed them, the
+  consensus architecture doing precisely what it was accepted to do.
+  Disagreement is thereby the costliest pattern the store has ever
+  carried (6 claims ever) *and* the one needing no engineering — 5 of
+  its 6 resolved by width alone, and only CAT's remains open. The
+  history the snapshot could never show is exactly this column.
 
   **Queued behind it, awaiting the owner's go:** the two earned reader
   slices — *description never arrived* (JPM, VOW3.DE) and *description

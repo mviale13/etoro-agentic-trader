@@ -167,6 +167,31 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
         # on the company.
         return max(known, key=lambda entry: entry[0].source.published_on)
 
+    def documents(
+        self, symbol: str
+    ) -> tuple[tuple[CompanyKnowledgeObservation, ...], ...]:
+        """Every stored filing's observations for this company.
+
+        Each inner tuple is one document's observations, oldest first,
+        exactly as `read` returns them; the outer tuple is ordered by
+        the filing's `published_on`, oldest first. What the ledger's
+        replay walks: `latest` answers what the current word is, and
+        this answers everything the store can still restore — which is
+        the honest bound on any history derived from it, because an
+        entry an older schema wrote restores as absent here too.
+        """
+
+        return tuple(
+            sorted(
+                (
+                    restored
+                    for path in self.directory.glob(f"{self._safe(symbol)}.*.json")
+                    if (restored := self._restore(path))
+                ),
+                key=lambda entry: entry[0].source.published_on,
+            )
+        )
+
     def symbols(self) -> tuple[str, ...]:
         """Every company the store holds any observation for, sorted.
 
