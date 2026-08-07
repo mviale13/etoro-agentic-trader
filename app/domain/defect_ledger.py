@@ -63,11 +63,16 @@ class ResolutionClaim:
 
 
 #: Every resolution a PR has claimed, appended by the PR that claims
-#: it. Empty until the first reader slice lands: the two earned slices
-#: (description never arrived; description rejected by applicability)
-#: are queued awaiting the owner's go, and crediting them before they
-#: exist would be exactly the trust this registry is built to refuse.
-CLAIMED_RESOLUTIONS: tuple[ResolutionClaim, ...] = ()
+#: it. The ledger credits an entry here only while the rerun stops
+#: finding the cause — a claim is how a PR asks, never how it is
+#: believed.
+CLAIMED_RESOLUTIONS: tuple[ResolutionClaim, ...] = (
+    ResolutionClaim(
+        cause=DefectCause.NEVER_ARRIVED,
+        pull_request=51,
+        shipped="an empty arrival is asked about once, by name",
+    ),
+)
 
 
 @dataclass(frozen=True, slots=True)
