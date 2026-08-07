@@ -651,20 +651,20 @@ def test_an_entry_read_under_an_earlier_protocol_is_absent(tmp_path: Path) -> No
     """
     Not wrong, and not poolable — which is why it is absent.
 
-    A schema-9 entry is a faithful record of what its reading was
-    shown, and what it was shown was less of the filing: a section that
-    said its content was printed elsewhere had not yet been followed.
-    Serving it beside a reading of the wider text would derive a
-    consensus over two different strings and call the difference
-    instability, which is the one thing `consensus_of` refuses across
-    documents. The filing is immutable and still there, so it is read
-    again.
+    A schema-10 entry is a faithful record of what its reading was
+    shown, and what it was shown differed: grouped table columns
+    carried no header, a page-split table was two tables, and a
+    pointer discussion was shown no tables at all. Serving it beside a
+    reading under the current protocol would derive a consensus over
+    two different inputs and call the difference instability, which is
+    the one thing `consensus_of` refuses across documents. The filing
+    is immutable and still there, so it is read again.
     """
 
     store = JsonCompanyKnowledgeStore(tmp_path)
     store.append(knowledge())
 
-    superseded(store, tmp_path, version=9)
+    superseded(store, tmp_path, version=10)
 
     assert store.read("DIS", ACCESSION) == ()
     assert store.latest("DIS") == ()
@@ -673,8 +673,9 @@ def test_an_entry_read_under_an_earlier_protocol_is_absent(tmp_path: Path) -> No
 
 def test_no_older_protocol_is_relabeled_either(tmp_path: Path) -> None:
     """Schema 8 was relabeled into 9 because nothing about the reading
-    had changed. That is over: 9 into 10 changed what the reader was
-    shown, so every entry beneath it is read again rather than carried."""
+    had changed. Every version since changed what the reading was
+    shown, so every entry beneath the current one is read again rather
+    than carried."""
 
     store = JsonCompanyKnowledgeStore(tmp_path)
     store.append(knowledge())
@@ -693,7 +694,7 @@ def test_a_superseded_entry_is_replaced_by_what_is_read_next(
     store = JsonCompanyKnowledgeStore(tmp_path)
     store.append(knowledge())
 
-    superseded(store, tmp_path, version=9)
+    superseded(store, tmp_path, version=10)
 
     store.append(knowledge())
 

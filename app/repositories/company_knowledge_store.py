@@ -78,12 +78,21 @@ from app.domain.tabular_evidence import (
 #: different strings and calling the difference instability, which is
 #: the one thing `consensus_of` refuses across documents and must refuse
 #: here for the same reason.
-KNOWLEDGE_SCHEMA_VERSION = 10
+#: 11 — the tables are shown differently: a spanned group's words now
+#: cover every column the filer's colspan asserted, a table split by
+#: the page is read as the one table it is, and a pointer discussion is
+#: served the referenced chapter's tables. An entry written under 10
+#: had its sizes read from tables whose grouped columns carried no
+#: header and whose totals sat in a separate physical table — JPMorgan's
+#: sizes were absent for exactly that reason — and its mix reading was
+#: shown different table text besides, so the readings are not poolable
+#: and the documents are read again.
+KNOWLEDGE_SCHEMA_VERSION = 11
 
 #: No older schema is restored. 8 was relabeled into 9 because nothing
-#: about the reading had changed; 9 into 10 is not that — the reader was
-#: shown different text — so entries under it are absent and the
-#: documents, immutable and still there, are read again.
+#: about the reading had changed; every version since changed what the
+#: reading was shown — so entries beneath the current version are absent
+#: and the documents, immutable and still there, are read again.
 RELABELED_SCHEMA_VERSION: int | None = None
 
 

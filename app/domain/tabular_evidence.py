@@ -175,9 +175,15 @@ class SourceTable:
         """Which row names the columns, which is not always the first.
 
         Row 0, unless the filer typeset a title inside the table above
-        it. A title fills one cell and spans the rest, and what it holds
-        is words — so it names the table rather than any column in it,
-        and the row beneath it is what names the columns.
+        it. A title is one stretch of words however many columns the
+        filer spanned it across — since a spanned cell's words now cover
+        every column the colspan asserted, the mark of a title is that
+        the row holds exactly one *distinct* string, and that string is
+        words: it names the table rather than any column in it, and the
+        row beneath it is what names the columns. A row naming two
+        different things is naming columns, which is what makes
+        JPMorgan's segment-group row a header and Caterpillar's "Sales
+        and Revenues by Segment" a title.
 
         A row holding *nothing* is not a title and is not skipped. A
         table whose first row labels no column is a table with no
@@ -186,9 +192,9 @@ class SourceTable:
         """
 
         for index, row in enumerate(self.rows):
-            named = [cell for cell in row.cells if cell.strip()]
+            named = {cell.strip() for cell in row.cells if cell.strip()}
 
-            if len(named) == 1 and read_number(named[0]) is None:
+            if len(named) == 1 and read_number(next(iter(named))) is None:
                 continue
 
             return index

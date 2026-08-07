@@ -1,9 +1,9 @@
 {
   "observations": [
     {
-      "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
+      "description": "NVIDIA is now a data center scale AI infrastructure company reshaping all industries.",
       "reading": {
-        "observed_at": "2026-08-07T16:10:18.835069+00:00",
+        "observed_at": "2026-08-07T17:06:02.436772+00:00",
         "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -11,7 +11,7 @@
           "description": {
             "distance": 24,
             "ownership": "proximity",
-            "quoted": "includes our Data Center accelerated computing and networking platforms and AI solutions and software",
+            "quoted": "includes our Data Center accelerated computing and networking platforms",
             "revenue_models": [
               "manufacturing",
               "licensing",
@@ -24,7 +24,7 @@
             "denominator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 5,
                 "table": 2
               },
@@ -36,190 +36,7 @@
             "numerator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
-                "row": 3,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Compute & Networking",
-              "printed": "$ 193,479",
-              "value": 193479.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 15,
-            "ownership": "proximity",
-            "quoted": "includes GeForce GPUs for gaming and PCs, and Quadro/NVIDIA RTX GPUs",
-            "revenue_models": [
-              "manufacturing"
-            ],
-            "under": "Graphics"
-          },
-          "name": "Graphics",
-          "revenue": {
-            "denominator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Total",
-              "printed": "$ 215,938",
-              "value": 215938.0
-            },
-            "numerator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 4,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Graphics",
-              "printed": "22,459",
-              "value": 22459.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
-      "reading": {
-        "observed_at": "2026-08-07T16:10:32.496255+00:00",
-        "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": {
-            "distance": 24,
-            "ownership": "proximity",
-            "quoted": "includes our Data Center accelerated computing and networking platforms and AI solutions and software",
-            "revenue_models": [
-              "manufacturing",
-              "licensing",
-              "services"
-            ],
-            "under": "Compute & Networking"
-          },
-          "name": "Compute & Networking",
-          "revenue": {
-            "denominator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Total",
-              "printed": "$ 215,938",
-              "value": 215938.0
-            },
-            "numerator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 3,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Compute & Networking",
-              "printed": "$ 193,479",
-              "value": 193479.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 15,
-            "ownership": "proximity",
-            "quoted": "includes GeForce GPUs for gaming and PCs, and Quadro/NVIDIA RTX GPUs",
-            "revenue_models": [
-              "manufacturing",
-              "services"
-            ],
-            "under": "Graphics"
-          },
-          "name": "Graphics",
-          "revenue": {
-            "denominator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Total",
-              "printed": "$ 215,938",
-              "value": 215938.0
-            },
-            "numerator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 4,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Graphics",
-              "printed": "22,459",
-              "value": 22459.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
-      "reading": {
-        "observed_at": "2026-08-07T16:10:50.769112+00:00",
-        "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": {
-            "distance": 24,
-            "ownership": "proximity",
-            "quoted": "includes our Data Center accelerated computing and networking platforms and AI",
-            "revenue_models": [
-              "manufacturing",
-              "services",
-              "licensing"
-            ],
-            "under": "Compute & Networking"
-          },
-          "name": "Compute & Networking",
-          "revenue": {
-            "denominator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Total",
-              "printed": "$ 215,938",
-              "value": 215938.0
-            },
-            "numerator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 3,
                 "table": 2
               },
@@ -247,7 +64,7 @@
             "denominator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 5,
                 "table": 2
               },
@@ -259,99 +76,7 @@
             "numerator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
-                "row": 4,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Graphics",
-              "printed": "22,459",
-              "value": 22459.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "NVIDIA pioneered accelerated computing and is now a data center scale AI infrastructure company reshaping industries with hardware, systems, networking, software and AI platforms.",
-      "reading": {
-        "observed_at": "2026-08-07T16:11:09.070982+00:00",
-        "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": {
-            "distance": 24,
-            "ownership": "proximity",
-            "quoted": "includes our Data Center accelerated computing and networking platforms and AI",
-            "revenue_models": [
-              "manufacturing",
-              "licensing",
-              "services"
-            ],
-            "under": "Compute & Networking"
-          },
-          "name": "Compute & Networking",
-          "revenue": {
-            "denominator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Total",
-              "printed": "$ 215,938",
-              "value": 215938.0
-            },
-            "numerator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 3,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Compute & Networking",
-              "printed": "$ 193,479",
-              "value": 193479.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 15,
-            "ownership": "proximity",
-            "quoted": "includes GeForce GPUs for gaming and PCs, and Quadro/NVIDIA RTX",
-            "revenue_models": [
-              "manufacturing",
-              "services"
-            ],
-            "under": "Graphics"
-          },
-          "name": "Graphics",
-          "revenue": {
-            "denominator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 2
-              },
-              "column_header": "Jan 25, 2026",
-              "label": "Total",
-              "printed": "$ 215,938",
-              "value": 215938.0
-            },
-            "numerator": {
-              "caption": "% Reportable Segments Revenue by Reportable Segments",
-              "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 4,
                 "table": 2
               },
@@ -369,7 +94,7 @@
     {
       "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
       "reading": {
-        "observed_at": "2026-08-07T16:11:33.017078+00:00",
+        "observed_at": "2026-08-07T17:06:25.909010+00:00",
         "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -377,7 +102,7 @@
           "description": {
             "distance": 24,
             "ownership": "proximity",
-            "quoted": "includes our Data Center accelerated computing and networking platforms and AI solutions and software",
+            "quoted": "includes our Data Center accelerated computing and networking platforms and AI solutions and software,",
             "revenue_models": [
               "manufacturing",
               "licensing",
@@ -390,7 +115,7 @@
             "denominator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 5,
                 "table": 2
               },
@@ -402,7 +127,7 @@
             "numerator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 3,
                 "table": 2
               },
@@ -421,8 +146,7 @@
             "ownership": "proximity",
             "quoted": "includes GeForce GPUs for gaming and PCs, and Quadro/NVIDIA RTX GPUs",
             "revenue_models": [
-              "manufacturing",
-              "services"
+              "manufacturing"
             ],
             "under": "Graphics"
           },
@@ -431,7 +155,7 @@
             "denominator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 5,
                 "table": 2
               },
@@ -443,7 +167,280 @@
             "numerator": {
               "caption": "% Reportable Segments Revenue by Reportable Segments",
               "cell": {
-                "column": 1,
+                "column": 3,
+                "row": 4,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Graphics",
+              "printed": "22,459",
+              "value": 22459.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
+      "reading": {
+        "observed_at": "2026-08-07T17:06:48.890358+00:00",
+        "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "includes our Data Center accelerated computing and networking platforms",
+            "revenue_models": [
+              "manufacturing",
+              "licensing",
+              "services"
+            ],
+            "under": "Compute & Networking"
+          },
+          "name": "Compute & Networking",
+          "revenue": {
+            "denominator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Total",
+              "printed": "$ 215,938",
+              "value": 215938.0
+            },
+            "numerator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Compute & Networking",
+              "printed": "$ 193,479",
+              "value": 193479.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 15,
+            "ownership": "proximity",
+            "quoted": "includes GeForce GPUs for gaming and PCs, and Quadro/NVIDIA RTX GPUs",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Graphics"
+          },
+          "name": "Graphics",
+          "revenue": {
+            "denominator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Total",
+              "printed": "$ 215,938",
+              "value": 215938.0
+            },
+            "numerator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Graphics",
+              "printed": "22,459",
+              "value": 22459.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "NVIDIA pioneered accelerated computing to help solve the most challenging computational problems.",
+      "reading": {
+        "observed_at": "2026-08-07T17:07:13.577568+00:00",
+        "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "The Compute & Networking segment includes our Data Center accelerated computing and networking platforms",
+            "revenue_models": [
+              "manufacturing",
+              "licensing",
+              "services"
+            ],
+            "under": "Compute & Networking"
+          },
+          "name": "Compute & Networking",
+          "revenue": {
+            "denominator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Total",
+              "printed": "$ 215,938",
+              "value": 215938.0
+            },
+            "numerator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Compute & Networking",
+              "printed": "$ 193,479",
+              "value": 193479.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "The Graphics segment includes GeForce GPUs for gaming and PCs,",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Graphics"
+          },
+          "name": "Graphics",
+          "revenue": {
+            "denominator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Total",
+              "printed": "$ 215,938",
+              "value": 215938.0
+            },
+            "numerator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Graphics",
+              "printed": "22,459",
+              "value": 22459.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "NVIDIA is now a data center scale AI infrastructure company reshaping all industries.",
+      "reading": {
+        "observed_at": "2026-08-07T17:07:38.510181+00:00",
+        "source": "10-K 0001045810-26-000021 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "includes our Data Center accelerated computing and networking platforms",
+            "revenue_models": [
+              "manufacturing",
+              "licensing",
+              "services"
+            ],
+            "under": "Compute & Networking"
+          },
+          "name": "Compute & Networking",
+          "revenue": {
+            "denominator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Total",
+              "printed": "$ 215,938",
+              "value": 215938.0
+            },
+            "numerator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Compute & Networking",
+              "printed": "$ 193,479",
+              "value": 193479.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 15,
+            "ownership": "proximity",
+            "quoted": "includes GeForce GPUs for gaming and PCs",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Graphics"
+          },
+          "name": "Graphics",
+          "revenue": {
+            "denominator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Jan 25, 2026",
+              "label": "Total",
+              "printed": "$ 215,938",
+              "value": 215938.0
+            },
+            "numerator": {
+              "caption": "% Reportable Segments Revenue by Reportable Segments",
+              "cell": {
+                "column": 3,
                 "row": 4,
                 "table": 2
               },
@@ -459,7 +456,7 @@
       ]
     }
   ],
-  "schema_version": 10,
+  "schema_version": 11,
   "source": {
     "authority": "regulator_filed",
     "company": "NVIDIA CORP",
