@@ -18,6 +18,7 @@ from app.commands import (
     knowledge,
     market,
     morning,
+    observe,
     policy,
     reader_stability,
     record,
@@ -181,6 +182,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example MSFT, ASML or BTC-USD",
     )
 
+    observe_parser = subparsers.add_parser(
+        "observe",
+        help="Read the current filing again, up to the consensus quorum",
+        description=(
+            "Take independent observations of a company's current document "
+            "until the quorum is reached, and show the consensus they "
+            "derive. The stopping rule is the count, never the content"
+        ),
+    )
+    observe_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example DIS, NVDA or VOW3.DE",
+    )
+
     reader_stability_parser = subparsers.add_parser(
         "reader-stability",
         help="Read one filing repeatedly and report how far the readings agree",
@@ -229,6 +244,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "reader-stability":
         return await reader_stability.run(args.symbol, args.readings)
+
+    if args.command == "observe":
+        return await observe.run(args.symbol)
 
     _, command_handler = COMMANDS[args.command]
     return await command_handler()

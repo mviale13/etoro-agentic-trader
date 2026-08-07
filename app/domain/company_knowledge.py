@@ -1,4 +1,14 @@
-"""Structural facts about a business, read from its own annual report."""
+"""One reading of a business's own annual report: an observation.
+
+Not a deterministic artifact, and the name says so. The reader
+calibration measured fifty readings of five immutable documents: every
+claim a model contributes varies between readings of unchanged prose,
+and the object this module defines is therefore *one draw* — admissible,
+grounded, and one of several a quorum will hold. What the platform
+treats as knowledge is the consensus derived over a set of these, in
+`app.domain.knowledge_consensus`, and nothing downstream of the store
+should consume a single observation directly.
+"""
 
 from __future__ import annotations
 
@@ -188,14 +198,21 @@ class BusinessSegment:
 
 
 @dataclass(frozen=True, slots=True)
-class CompanyKnowledge:
+class CompanyKnowledgeObservation:
     """
-    What this company does, from the document it is legally answerable for.
+    One reading of the document this company is legally answerable for.
 
-    Facts, never conclusions. What kind of investment this makes the
-    company is a rule's decision, taken from these facts and stated
-    separately — the same separation the Brain keeps between what it
-    perceives and what the Artificial CIO decides.
+    Facts, never conclusions — and *observed* facts, never the settled
+    account. This object is what one pass of the reader found: it
+    survived identity, grounding and applicability, which makes it
+    admissible, and admissible is all one reading can be. Whether its
+    answers are representative is a property of several observations
+    together, and is decided by the consensus derived over them — never
+    by promoting one observation because its answers please.
+
+    Immutable once taken. An observation is a record of what a reading
+    found at a moment; correcting it would destroy the very disagreement
+    the consensus exists to measure.
 
     Every part of it is traceable to a dated filing a reader can open.
     """

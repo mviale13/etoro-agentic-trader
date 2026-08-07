@@ -9,7 +9,7 @@ from typing import Any
 
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     DescriptionRepair,
     RevenueModel,
     SegmentDescription,
@@ -392,7 +392,9 @@ class CompanyKnowledgeExtractor:
     def __init__(self, provider: NarrativeProvider) -> None:
         self._provider = provider
 
-    async def extract(self, symbol: str, document: SourceDocument) -> CompanyKnowledge:
+    async def extract(
+        self, symbol: str, document: SourceDocument
+    ) -> CompanyKnowledgeObservation:
         """
         Read this document, asking again where the reading is not grounded.
 
@@ -418,7 +420,7 @@ class CompanyKnowledgeExtractor:
         self,
         symbol: str,
         document: SourceDocument,
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         request = DraftRequest(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=user_prompt(document),
@@ -451,10 +453,10 @@ class CompanyKnowledgeExtractor:
 
     async def _with_repaired_descriptions(
         self,
-        knowledge: CompanyKnowledge,
+        knowledge: CompanyKnowledgeObservation,
         document: SourceDocument,
         payload: dict[str, Any],
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         """
         One bounded second request per claim whose citation did not apply.
 
@@ -595,9 +597,9 @@ class CompanyKnowledgeExtractor:
 
     async def _with_revenue_mix(
         self,
-        knowledge: CompanyKnowledge,
+        knowledge: CompanyKnowledgeObservation,
         document: SourceDocument,
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         """
         How large each segment is, measured out of the tables that state it.
 
@@ -682,7 +684,7 @@ class CompanyKnowledgeExtractor:
 
     def _measured(
         self,
-        knowledge: CompanyKnowledge,
+        knowledge: CompanyKnowledgeObservation,
         tables: tuple[SourceTable, ...],
         payload: dict[str, Any],
     ) -> dict[str, MeasuredShare]:
@@ -793,7 +795,7 @@ class CompanyKnowledgeExtractor:
         document: SourceDocument,
         payload: dict[str, Any],
         model: str,
-    ) -> CompanyKnowledge:
+    ) -> CompanyKnowledgeObservation:
         description = str(payload.get("description") or "").strip()
 
         if not description:
@@ -825,7 +827,7 @@ class CompanyKnowledgeExtractor:
 
         source = document.source
 
-        return CompanyKnowledge(
+        return CompanyKnowledgeObservation(
             symbol=symbol.upper().strip(),
             description=description,
             segments=segments,
@@ -949,7 +951,9 @@ def _unrepaired(
 _STUB_WIDEST = 2_000
 
 
-def _unmeasured(knowledge: CompanyKnowledge, because: str) -> CompanyKnowledge:
+def _unmeasured(
+    knowledge: CompanyKnowledgeObservation, because: str
+) -> CompanyKnowledgeObservation:
     """Every segment's size absent, and every one of them saying why.
 
     The reason belongs on each segment rather than on the reading,

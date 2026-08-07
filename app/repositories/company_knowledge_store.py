@@ -10,7 +10,7 @@ from typing import Any
 
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     DescriptionRepair,
     RevenueModel,
     SegmentDescription,
@@ -57,7 +57,20 @@ from app.domain.tabular_evidence import (
 #: stored: the segments look ordinary and their sizes look absent from
 #: the filing. Caterpillar's were, and they are printed in a table the
 #: reading was never shown.
-KNOWLEDGE_SCHEMA_VERSION = 8
+#: 9 — an entry holds *observations*, plural, because the calibration
+#: measured that a reading of unchanged prose varies between runs, and
+#: what the platform serves is the consensus derived over the set. A
+#: schema-8 entry is the one cross-schema read this store performs: it
+#: restores as a single observation, because that is exactly what it
+#: always was, and relabeling a reading as one reading invents nothing.
+#: The prohibition on upgrades exists to stop inventing what a reading
+#: never captured; here nothing is filled in — the reading protocol did
+#: not change between 8 and 9, only what the store calls the entry.
+KNOWLEDGE_SCHEMA_VERSION = 9
+
+#: The one older schema restored rather than treated as absent. See
+#: above: a relabeling, not an upgrade.
+RELABELED_SCHEMA_VERSION = 8
 
 
 class CompanyKnowledgeStore(ABC):
@@ -75,20 +88,31 @@ class CompanyKnowledgeStore(ABC):
     accession number, and a filing under a given accession is the same
     document forever, so knowledge read from it can be reused for as long
     as that filing stands as the company's latest word.
+
+    What an entry holds is *observations* — every independent reading of
+    that one document, in the order they were taken. The store never
+    holds a consensus: consensus is derived from the observations on
+    every read, so a changed rule leaves no stale conclusions behind it
+    and there is no second place for an answer to be true.
     """
 
     @abstractmethod
-    def read(self, symbol: str, key: str) -> CompanyKnowledge | None:
-        """What was read from this exact document, or nothing."""
+    def read(self, symbol: str, key: str) -> tuple[CompanyKnowledgeObservation, ...]:
+        """Every observation of this exact document, oldest first."""
 
     @abstractmethod
-    def write(self, knowledge: CompanyKnowledge) -> None:
-        """Keep what was read from a document."""
+    def append(self, observation: CompanyKnowledgeObservation) -> None:
+        """Keep one more reading of a document, after the ones it has.
 
-    @abstractmethod
-    def latest(self, symbol: str) -> CompanyKnowledge | None:
+        Append-only. An observation is a record of what a reading found
+        at a moment; replacing one would destroy the disagreement the
+        consensus exists to measure.
         """
-        The most recent filing's knowledge for this company.
+
+    @abstractmethod
+    def latest(self, symbol: str) -> tuple[CompanyKnowledgeObservation, ...]:
+        """
+        The most recent filing's observations for this company.
 
         What an analyst asks for: it knows the company, not which
         document last described it.
@@ -104,38 +128,44 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
     ) -> None:
         self.directory = Path(directory)
 
-    def read(self, symbol: str, key: str) -> CompanyKnowledge | None:
+    def read(self, symbol: str, key: str) -> tuple[CompanyKnowledgeObservation, ...]:
         path = self._path(symbol, key)
 
         if not path.exists():
-            return None
+            return ()
 
         return self._restore(path)
 
-    def write(self, knowledge: CompanyKnowledge) -> None:
+    def append(self, observation: CompanyKnowledgeObservation) -> None:
         self.directory.mkdir(parents=True, exist_ok=True)
 
-        path = self._path(knowledge.symbol, knowledge.source.key)
+        path = self._path(observation.symbol, observation.source.key)
+
+        existing = self._restore(path) if path.exists() else ()
 
         path.write_text(
-            json.dumps(self._encode(knowledge), indent=2, sort_keys=True),
+            json.dumps(
+                self._encode((*existing, observation)),
+                indent=2,
+                sort_keys=True,
+            ),
             encoding="utf-8",
         )
 
-    def latest(self, symbol: str) -> CompanyKnowledge | None:
+    def latest(self, symbol: str) -> tuple[CompanyKnowledgeObservation, ...]:
         known = [
             restored
             for path in self.directory.glob(f"{self._safe(symbol)}.*.json")
-            if (restored := self._restore(path)) is not None
+            if (restored := self._restore(path))
         ]
 
         if not known:
-            return None
+            return ()
 
         # By the date the filing was received, not the date it was read.
         # Reading an older filing later must not make it the current word
         # on the company.
-        return max(known, key=lambda item: item.source.published_on)
+        return max(known, key=lambda entry: entry[0].source.published_on)
 
     # ── on disk ─────────────────────────────────────────────────────
 
@@ -150,120 +180,159 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
         )
 
     @staticmethod
-    def _encode(knowledge: CompanyKnowledge) -> dict[str, Any]:
+    def _encode(
+        observations: tuple[CompanyKnowledgeObservation, ...],
+    ) -> dict[str, Any]:
+        """One document's entry: the source once, every observation of it.
+
+        The source is shared rather than repeated per observation
+        because the entry is keyed by it — observations of two documents
+        cannot share a file, and `append` never mixes them.
+        """
+
+        first = observations[0]
+
         return {
             "schema_version": KNOWLEDGE_SCHEMA_VERSION,
-            "symbol": knowledge.symbol,
-            "description": knowledge.description,
-            "segments": [
-                {
-                    "name": segment.name,
-                    "revenue": _encode_share(segment.revenue),
-                    "description": _encode_description(segment.description),
-                    "undescribed_because": segment.undescribed_because,
-                    "unmeasured_because": segment.unmeasured_because,
-                }
-                for segment in knowledge.segments
-            ],
+            "symbol": first.symbol,
             "source": {
-                "symbol": knowledge.source.symbol,
-                "company": knowledge.source.company,
-                "source_type": knowledge.source.source_type.value,
-                "identifier": knowledge.source.identifier,
-                "key": knowledge.source.key,
-                "published_on": knowledge.source.published_on.isoformat(),
-                "reporting_period": _encode_period(knowledge.source.reporting_period),
-                "document_format": knowledge.source.document_format,
-                "language": knowledge.source.language,
-                "location": knowledge.source.location,
-                "provider": knowledge.source.provider,
-                "authority": knowledge.source.authority.value,
-                "verification": [
-                    check.value for check in knowledge.source.verification
-                ],
+                "symbol": first.source.symbol,
+                "company": first.source.company,
+                "source_type": first.source.source_type.value,
+                "identifier": first.source.identifier,
+                "key": first.source.key,
+                "published_on": first.source.published_on.isoformat(),
+                "reporting_period": _encode_period(first.source.reporting_period),
+                "document_format": first.source.document_format,
+                "language": first.source.language,
+                "location": first.source.location,
+                "provider": first.source.provider,
+                "authority": first.source.authority.value,
+                "verification": [check.value for check in first.source.verification],
             },
-            "reading": {
-                "source": knowledge.reading.source,
-                "observed_at": knowledge.reading.observed_at.isoformat(),
-            },
+            "observations": [
+                {
+                    "description": observation.description,
+                    "segments": [
+                        {
+                            "name": segment.name,
+                            "revenue": _encode_share(segment.revenue),
+                            "description": _encode_description(segment.description),
+                            "undescribed_because": segment.undescribed_because,
+                            "unmeasured_because": segment.unmeasured_because,
+                        }
+                        for segment in observation.segments
+                    ],
+                    "reading": {
+                        "source": observation.reading.source,
+                        "observed_at": observation.reading.observed_at.isoformat(),
+                    },
+                }
+                for observation in observations
+            ],
         }
 
-    def _restore(self, path: Path) -> CompanyKnowledge | None:
+    def _restore(self, path: Path) -> tuple[CompanyKnowledgeObservation, ...]:
         """
-        Read one stored filing back, or treat it as absent.
+        Read one stored filing's observations back, or treat it as absent.
 
         An entry that cannot be read is not repaired. A guessed knowledge
         record would be indistinguishable from one taken off a filing,
         which is the one thing this store exists to keep apart.
 
-        Nor is an entry written by an older extraction upgraded in place.
-        Filling in what that reading never captured would be inventing
-        it; the document is immutable and still available, so it is read
-        again instead.
+        Nor is an entry written by an older extraction upgraded in place
+        — with one deliberate exception. A schema-8 entry restores as a
+        single observation, because that is precisely what it always
+        was: the reading protocol did not change between 8 and 9, only
+        what the store calls the entry, and relabeling a reading as one
+        reading invents nothing. Anything older is absent as before; the
+        document is immutable and still there, so it is read again.
         """
 
         try:
             stored = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            return None
+            return ()
 
-        if stored.get("schema_version") != KNOWLEDGE_SCHEMA_VERSION:
-            # Read under an older extraction. Absent rather than partly
-            # filled: the document is still there and can be read again.
-            return None
+        version = stored.get("schema_version")
 
         try:
-            return CompanyKnowledge(
-                symbol=str(stored["symbol"]),
-                description=str(stored["description"]),
-                segments=tuple(
-                    BusinessSegment(
-                        name=str(segment["name"]),
-                        revenue=_share(segment.get("revenue")),
-                        description=_description(segment.get("description")),
-                        undescribed_because=(
-                            str(segment["undescribed_because"])
-                            if segment.get("undescribed_because")
-                            else None
-                        ),
-                        unmeasured_because=(
-                            str(segment["unmeasured_because"])
-                            if segment.get("unmeasured_because")
-                            else None
-                        ),
-                    )
-                    for segment in stored.get("segments", ())
-                ),
-                source=PrimarySource(
-                    symbol=str(stored["source"]["symbol"]),
-                    company=str(stored["source"]["company"]),
-                    source_type=SourceType(stored["source"]["source_type"]),
-                    identifier=str(stored["source"]["identifier"]),
-                    key=str(stored["source"]["key"]),
-                    published_on=date.fromisoformat(stored["source"]["published_on"]),
-                    reporting_period=_period(stored["source"].get("reporting_period")),
-                    document_format=str(stored["source"]["document_format"]),
-                    language=str(stored["source"]["language"]),
-                    location=str(stored["source"]["location"]),
-                    provider=str(stored["source"]["provider"]),
-                    authority=SourceAuthority(stored["source"]["authority"]),
-                    verification=tuple(
-                        IdentityCheck(value)
-                        for value in stored["source"].get("verification", ())
-                    ),
-                ),
-                reading=Provenance(
-                    source=str(stored["reading"]["source"]),
-                    observed_at=datetime.fromisoformat(
-                        stored["reading"]["observed_at"]
-                    ),
-                ),
+            source = _source(stored["source"])
+            symbol = str(stored["symbol"])
+
+            if version == RELABELED_SCHEMA_VERSION:
+                return (_observation(symbol, source, stored),)
+
+            if version != KNOWLEDGE_SCHEMA_VERSION:
+                return ()
+
+            return tuple(
+                _observation(symbol, source, observed)
+                for observed in stored.get("observations", ())
             )
         except (KeyError, TypeError, ValueError, EvidenceNotApplicable):
             # A stored share whose two figures no longer hold together is
             # an entry that cannot be read, not one to be repaired. The
             # document is immutable and still there, so it is read again.
-            return None
+            return ()
+
+
+def _source(stored: dict[str, Any]) -> PrimarySource:
+    """The document identity an entry is keyed by."""
+
+    return PrimarySource(
+        symbol=str(stored["symbol"]),
+        company=str(stored["company"]),
+        source_type=SourceType(stored["source_type"]),
+        identifier=str(stored["identifier"]),
+        key=str(stored["key"]),
+        published_on=date.fromisoformat(stored["published_on"]),
+        reporting_period=_period(stored.get("reporting_period")),
+        document_format=str(stored["document_format"]),
+        language=str(stored["language"]),
+        location=str(stored["location"]),
+        provider=str(stored["provider"]),
+        authority=SourceAuthority(stored["authority"]),
+        verification=tuple(
+            IdentityCheck(value) for value in stored.get("verification", ())
+        ),
+    )
+
+
+def _observation(
+    symbol: str,
+    source: PrimarySource,
+    stored: dict[str, Any],
+) -> CompanyKnowledgeObservation:
+    """One reading's body — identical in shape under schema 8 and 9."""
+
+    return CompanyKnowledgeObservation(
+        symbol=symbol,
+        description=str(stored["description"]),
+        segments=tuple(
+            BusinessSegment(
+                name=str(segment["name"]),
+                revenue=_share(segment.get("revenue")),
+                description=_description(segment.get("description")),
+                undescribed_because=(
+                    str(segment["undescribed_because"])
+                    if segment.get("undescribed_because")
+                    else None
+                ),
+                unmeasured_because=(
+                    str(segment["unmeasured_because"])
+                    if segment.get("unmeasured_because")
+                    else None
+                ),
+            )
+            for segment in stored.get("segments", ())
+        ),
+        source=source,
+        reading=Provenance(
+            source=str(stored["reading"]["source"]),
+            observed_at=datetime.fromisoformat(stored["reading"]["observed_at"]),
+        ),
+    )
 
 
 def _encode_description(described: SegmentDescription | None) -> dict[str, Any] | None:

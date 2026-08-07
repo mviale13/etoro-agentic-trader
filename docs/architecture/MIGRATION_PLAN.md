@@ -239,16 +239,17 @@ Three consequences, in the order they have to be taken:
    a retry illegitimate is that a mode is chosen without reference to
    whether the answer is liked.
 
-   **Designed, awaiting agreement:**
-   [`KNOWLEDGE_CONSENSUS.md`](KNOWLEDGE_CONSENSUS.md) proposes the answer —
-   `CompanyObservation` as what the extractor returns, `CompanyConsensus`
-   derived on read from N stored observations by a content-blind strict
-   majority per claim, absences voting with full standing, unsettled claims
-   flowing through the existing absence machinery with their distributions.
-   Checked against the fifty stored calibration readings: NVIDIA settles as
-   Diversified, Caterpillar's one-in-twenty "Service business" cannot
-   survive it, and JPMorgan's boilerplate 1-of-10 "description" loses to
-   the counted absence. No implementation until the design is agreed.
+   **Done.** [`KNOWLEDGE_CONSENSUS.md`](KNOWLEDGE_CONSENSUS.md) was
+   accepted and the authorized slice is implemented: observations (schema
+   9, append-only, schema-8 entries carried forward as width 1),
+   `consensus_of` derived on read, the archetype engine consuming
+   consensus only, and `movrvest observe` filling quorums on a count-only
+   stopping rule. Accepted live on NVDA, CAT, META and JPM at quorum —
+   CAT's one-in-twenty "Service business" is structurally unreachable and
+   reads Diversified. Still open from the original list: surfacing the
+   three-layer reporting (coverage / stability / understanding) beyond
+   the developer CLI, and automatic quorum acquisition, which is
+   deliberately unbuilt until the cost is taken knowingly.
 
 3. **Only then return to acquisition coverage.** An improvement smaller
    than the variance it is measured against cannot be told from another draw

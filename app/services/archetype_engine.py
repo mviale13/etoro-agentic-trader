@@ -40,7 +40,11 @@ from app.domain.company_archetype import (
     Ruling,
     Unestablished,
 )
-from app.domain.company_knowledge import BusinessSegment, CompanyKnowledge, RevenueModel
+from app.domain.company_knowledge import RevenueModel
+from app.domain.knowledge_consensus import (
+    CompanyKnowledgeConsensus,
+    ConsensusSegment,
+)
 
 #: How much of a company must be shown to earn *some* particular way
 #: before any archetype is decided for it.
@@ -79,7 +83,7 @@ LEADS = 0.5
 TIED = 0.05
 
 
-def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
+def classify(knowledge: CompanyKnowledgeConsensus) -> CompanyArchetype:
     """
     What kind of business this is, or why that could not be decided.
 
@@ -90,7 +94,41 @@ def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
     and wholly unexplained, or fully explained and wholly unmeasured.
     Both happen; both are in the population these rules were written
     against.
+
+    The rules consume consensus, never a single observation, and an
+    unsettled claim reaches them as an absence carrying its
+    distribution — so a rule that needs it declines with the
+    disagreement worded, rather than deciding from whichever answer a
+    single reading happened to give.
     """
+
+    if knowledge.segments_because is not None:
+        # The observations could not agree what segments exist, so
+        # every per-segment rule is starved of its frame. Refused
+        # outright with the distribution, never adjudicated here: which
+        # reading to prefer is exactly the question the rules must not
+        # answer.
+        return _undecided(
+            knowledge,
+            missing=(),
+            coverage=(),
+            explained=0.0,
+            basis=(
+                Ruling(
+                    rule="segments-unsettled",
+                    read=(
+                        f"{knowledge.observation_count} observations that "
+                        "do not agree which segments this document names"
+                    ),
+                    concluded=(
+                        "No archetype. Until the observations agree what "
+                        "the parts of this business are, no rule about "
+                        "the parts can run."
+                    ),
+                ),
+            ),
+            because=knowledge.segments_because,
+        )
 
     missing = _unestablished(knowledge.segments)
     earning = tuple(segment for segment in knowledge.segments if segment.revenue_models)
@@ -161,8 +199,8 @@ def classify(knowledge: CompanyKnowledge) -> CompanyArchetype:
 
 
 def _ranked(
-    knowledge: CompanyKnowledge,
-    measurable: tuple[BusinessSegment, ...],
+    knowledge: CompanyKnowledgeConsensus,
+    measurable: tuple[ConsensusSegment, ...],
     missing: tuple[Unestablished, ...],
     explained: float,
 ) -> CompanyArchetype:
@@ -240,8 +278,8 @@ def _ranked(
 
 
 def _unranked(
-    knowledge: CompanyKnowledge,
-    earning: tuple[BusinessSegment, ...],
+    knowledge: CompanyKnowledgeConsensus,
+    earning: tuple[ConsensusSegment, ...],
     missing: tuple[Unestablished, ...],
 ) -> CompanyArchetype:
     """
@@ -291,7 +329,7 @@ def _unranked(
 
 
 def _diversified(
-    knowledge: CompanyKnowledge,
+    knowledge: CompanyKnowledgeConsensus,
     *,
     coverage: tuple[ModelCoverage, ...],
     missing: tuple[Unestablished, ...],
@@ -319,7 +357,7 @@ def _diversified(
 
 
 def _undecided(
-    knowledge: CompanyKnowledge,
+    knowledge: CompanyKnowledgeConsensus,
     *,
     missing: tuple[Unestablished, ...],
     coverage: tuple[ModelCoverage, ...],
@@ -348,7 +386,7 @@ def _undecided(
 # ── the arithmetic ──────────────────────────────────────────────────
 
 
-def _coverage(segments: tuple[BusinessSegment, ...]) -> tuple[ModelCoverage, ...]:
+def _coverage(segments: tuple[ConsensusSegment, ...]) -> tuple[ModelCoverage, ...]:
     """
     How much of the business earns each way, widest first.
 
@@ -408,7 +446,7 @@ def _secondary(leading: list[ModelCoverage]) -> Archetype | None:
 
 
 def _unestablished(
-    segments: tuple[BusinessSegment, ...],
+    segments: tuple[ConsensusSegment, ...],
 ) -> tuple[Unestablished, ...]:
     """What the rules needed about each segment and did not have."""
 

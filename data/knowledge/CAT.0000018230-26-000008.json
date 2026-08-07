@@ -1,176 +1,870 @@
 {
-  "description": "Caterpillar Inc. is shaping the future as the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
-  "reading": {
-    "observed_at": "2026-08-07T07:01:48.570855+00:00",
-    "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
-  },
-  "schema_version": 8,
-  "segments": [
+  "observations": [
     {
-      "description": {
-        "distance": 79,
-        "ownership": "structure",
-        "quoted": "supporting customers using machinery in infrastructure and building construction",
-        "revenue_models": [
-          "manufacturing",
-          "services"
-        ],
-        "under": "Construction Industries"
+      "description": "Caterpillar Inc. is shaping the future as the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+      "reading": {
+        "observed_at": "2026-08-07T07:01:48.570855+00:00",
+        "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
       },
-      "name": "Construction Industries",
-      "revenue": {
-        "denominator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 11,
-            "table": 1
+      "segments": [
+        {
+          "description": {
+            "distance": 79,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in infrastructure and building construction",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Construction Industries"
           },
-          "column_header": "2025",
-          "label": "Consolidated Sales and Revenues",
-          "printed": "$ 67,589",
-          "value": 67589.0
+          "name": "Construction Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Construction Industries",
+              "printed": "$ 25,060",
+              "value": 25060.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         },
-        "numerator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 2,
-            "table": 1
+        {
+          "description": {
+            "distance": 245,
+            "ownership": "structure",
+            "quoted": "develop and manufacture high productivity equipment for both surface",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Resource Industries"
           },
-          "column_header": "2025",
-          "label": "Construction Industries",
-          "printed": "$ 25,060",
-          "value": 25060.0
+          "name": "Resource Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 3,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Resource Industries",
+              "printed": "12,474",
+              "value": 12474.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "structure",
+            "quoted": "supports customers in oil and gas, power generation, marine",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Power & Energy"
+          },
+          "name": "Power & Energy",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 4,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Power & Energy",
+              "printed": "32,201",
+              "value": 32201.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 222,
+            "ownership": "structure",
+            "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
+            "revenue_models": [
+              "financial_spread",
+              "services"
+            ],
+            "under": "Financial Products Segment"
+          },
+          "name": "Financial Products Segment",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Financial Products Segment",
+              "printed": "4,220",
+              "value": 4220.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         }
-      },
-      "undescribed_because": null,
-      "unmeasured_because": null
+      ]
     },
     {
-      "description": {
-        "distance": 245,
-        "ownership": "structure",
-        "quoted": "develop and manufacture high productivity equipment for both surface",
-        "revenue_models": [
-          "manufacturing",
-          "services"
-        ],
-        "under": "Resource Industries"
+      "description": "Caterpillar Inc. is shaping the future as the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+      "reading": {
+        "observed_at": "2026-08-07T08:09:16.093081+00:00",
+        "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
       },
-      "name": "Resource Industries",
-      "revenue": {
-        "denominator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 11,
-            "table": 1
+      "segments": [
+        {
+          "description": {
+            "distance": 79,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in infrastructure and building construction applications.",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Construction Industries"
           },
-          "column_header": "2025",
-          "label": "Consolidated Sales and Revenues",
-          "printed": "$ 67,589",
-          "value": 67589.0
+          "name": "Construction Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Construction Industries",
+              "printed": "$ 25,060",
+              "value": 25060.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         },
-        "numerator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 3,
-            "table": 1
+        {
+          "description": {
+            "distance": 71,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in mining, heavy construction and quarry and aggregates.",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Resource Industries"
           },
-          "column_header": "2025",
-          "label": "Resource Industries",
-          "printed": "12,474",
-          "value": 12474.0
+          "name": "Resource Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 3,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Resource Industries",
+              "printed": "12,474",
+              "value": 12474.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "structure",
+            "quoted": "supports customers in oil and gas, power generation, marine",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Power & Energy"
+          },
+          "name": "Power & Energy",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 4,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Power & Energy",
+              "printed": "32,201",
+              "value": 32201.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 222,
+            "ownership": "structure",
+            "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Financial Products Segment"
+          },
+          "name": "Financial Products Segment",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Financial Products Segment",
+              "printed": "4,220",
+              "value": 4220.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         }
-      },
-      "undescribed_because": null,
-      "unmeasured_because": null
+      ]
     },
     {
-      "description": {
-        "distance": 32,
-        "ownership": "structure",
-        "quoted": "supports customers in oil and gas, power generation, marine",
-        "revenue_models": [
-          "manufacturing",
-          "services"
-        ],
-        "under": "Power & Energy"
+      "description": "Caterpillar Inc. is the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+      "reading": {
+        "observed_at": "2026-08-07T08:09:55.100830+00:00",
+        "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
       },
-      "name": "Power & Energy",
-      "revenue": {
-        "denominator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 11,
-            "table": 1
+      "segments": [
+        {
+          "description": {
+            "distance": 56,
+            "ownership": "structure",
+            "quoted": "primarily responsible for supporting customers using machinery in infrastructure",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Construction Industries"
           },
-          "column_header": "2025",
-          "label": "Consolidated Sales and Revenues",
-          "printed": "$ 67,589",
-          "value": 67589.0
+          "name": "Construction Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Construction Industries",
+              "printed": "$ 25,060",
+              "value": 25060.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         },
-        "numerator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 4,
-            "table": 1
+        {
+          "description": {
+            "distance": 48,
+            "ownership": "structure",
+            "quoted": "primarily responsible for supporting customers using machinery in mining",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Resource Industries"
           },
-          "column_header": "2025",
-          "label": "Power & Energy",
-          "printed": "32,201",
-          "value": 32201.0
+          "name": "Resource Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 3,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Resource Industries",
+              "printed": "12,474",
+              "value": 12474.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "structure",
+            "quoted": "supports customers in oil and gas, power generation, marine",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Power & Energy"
+          },
+          "name": "Power & Energy",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 4,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Power & Energy",
+              "printed": "32,201",
+              "value": 32201.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 222,
+            "ownership": "structure",
+            "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
+            "revenue_models": [
+              "financial_spread",
+              "services"
+            ],
+            "under": "Financial Products Segment"
+          },
+          "name": "Financial Products Segment",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Financial Products Segment",
+              "printed": "4,220",
+              "value": 4220.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         }
-      },
-      "undescribed_because": null,
-      "unmeasured_because": null
+      ]
     },
     {
-      "description": {
-        "distance": 222,
-        "ownership": "structure",
-        "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
-        "revenue_models": [
-          "financial_spread",
-          "services"
-        ],
-        "under": "Financial Products Segment"
+      "description": "Caterpillar Inc. is shaping the future as the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+      "reading": {
+        "observed_at": "2026-08-07T08:10:28.292420+00:00",
+        "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
       },
-      "name": "Financial Products Segment",
-      "revenue": {
-        "denominator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 11,
-            "table": 1
+      "segments": [
+        {
+          "description": {
+            "distance": 79,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in infrastructure and building construction applications",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Construction Industries"
           },
-          "column_header": "2025",
-          "label": "Consolidated Sales and Revenues",
-          "printed": "$ 67,589",
-          "value": 67589.0
+          "name": "Construction Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Construction Industries",
+              "printed": "$ 25,060",
+              "value": 25060.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         },
-        "numerator": {
-          "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
-          "cell": {
-            "column": 6,
-            "row": 8,
-            "table": 1
+        {
+          "description": {
+            "distance": 71,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in mining, heavy construction and quarry and aggregates",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Resource Industries"
           },
-          "column_header": "2025",
-          "label": "Financial Products Segment",
-          "printed": "4,220",
-          "value": 4220.0
+          "name": "Resource Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 3,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Resource Industries",
+              "printed": "12,474",
+              "value": 12474.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "structure",
+            "quoted": "supports customers in oil and gas, power generation, marine, rail",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Power & Energy"
+          },
+          "name": "Power & Energy",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 4,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Power & Energy",
+              "printed": "32,201",
+              "value": 32201.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 222,
+            "ownership": "structure",
+            "quoted": "provides retail and wholesale financing alternatives to customers and dealers",
+            "revenue_models": [
+              "financial_spread",
+              "premiums"
+            ],
+            "under": "Financial Products Segment"
+          },
+          "name": "Financial Products Segment",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Financial Products Segment",
+              "printed": "4,220",
+              "value": 4220.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
         }
+      ]
+    },
+    {
+      "description": "Caterpillar Inc. is the world\u2019s leading manufacturer of construction and mining equipment, off-highway diesel and natural gas engines, industrial gas turbines and diesel-electric locomotives.",
+      "reading": {
+        "observed_at": "2026-08-07T08:11:09.050587+00:00",
+        "source": "10-K 0000018230-26-000008 via SEC EDGAR, read by gpt-5"
       },
-      "undescribed_because": null,
-      "unmeasured_because": null
+      "segments": [
+        {
+          "description": {
+            "distance": 79,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in infrastructure and building construction applications",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Construction Industries"
+          },
+          "name": "Construction Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Construction Industries",
+              "printed": "$ 25,060",
+              "value": 25060.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 71,
+            "ownership": "structure",
+            "quoted": "supporting customers using machinery in mining, heavy construction and quarry and aggregates",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Resource Industries"
+          },
+          "name": "Resource Industries",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 3,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Resource Industries",
+              "printed": "12,474",
+              "value": 12474.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "structure",
+            "quoted": "supports customers in oil and gas, power generation, marine, rail and industrial applications",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Power & Energy"
+          },
+          "name": "Power & Energy",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 4,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Power & Energy",
+              "printed": "32,201",
+              "value": 32201.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 222,
+            "ownership": "structure",
+            "quoted": "provides retail and wholesale financing alternatives to customers and dealers around the world",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Financial Products Segment"
+          },
+          "name": "Financial Products Segment",
+          "revenue": {
+            "denominator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Consolidated Sales and Revenues",
+              "printed": "$ 67,589",
+              "value": 67589.0
+            },
+            "numerator": {
+              "caption": "We expect machine dealer inventory to increase in 2026 and offset the $500 million decrease in 2025. 31 Table of Contents",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Financial Products Segment",
+              "printed": "4,220",
+              "value": 4220.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
     }
   ],
+  "schema_version": 9,
   "source": {
     "authority": "regulator_filed",
     "company": "CATERPILLAR INC",

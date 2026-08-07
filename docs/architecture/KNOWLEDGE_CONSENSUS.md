@@ -1,8 +1,11 @@
 # Knowledge Consensus Architecture
 
-Status: **Proposed** — a design for agreement, before any implementation.
-Nothing in this document is built, and nothing downstream should be built
-on it until it stops being a proposal.
+Status: **Accepted** (2026-08-07) — agreed for implementation as a narrow
+vertical slice: the domain model, derived-on-read consensus over the
+already-stored observations, and the archetype engine as first consumer.
+Automatic quorum acquisition for every company is deliberately **not** in
+scope until the domain model is proven. The decisions that closed the
+open questions are recorded at the end of this document.
 
 ---
 
@@ -286,10 +289,26 @@ derived as one. What those facts add up to remains the rules' decision.
   something that happened. The chance that an eleventh reading agrees
   was not measured and is not stated.
 - **"Settled" means reproducible, not true.** A wrong-company filing
-  read ten times agrees ten times. Consensus joins the evidence stack —
-  identity, grounding, applicability, now reproducibility — and
-  substitutes for none of the other three (invariant 2's shape, one
-  boundary further out).
+  read ten times agrees ten times. And that is why consensus is **not**
+  a fourth boundary beside identity, grounding and applicability. Those
+  three are **admissibility** boundaries: they decide whether an
+  observation may enter trusted knowledge at all, and consensus cannot
+  rescue an observation they refused. Consensus is a **stability**
+  boundary: it decides whether multiple *admissible* observations are
+  reproducible enough to support downstream interpretation. An
+  unsettled consensus does not mean the observations are untrue — every
+  one of them passed admissibility — it means the platform cannot yet
+  claim representativeness.
+
+  ```text
+  Identity · Grounding · Applicability     (admissibility — per observation)
+                  ↓
+        Admissible observations
+                  ↓
+        Consensus / stability              (representativeness — per set)
+                  ↓
+        Business Understanding
+  ```
 - Consensus also does not measure completeness: ten readings that all
   miss the same thing agree perfectly. Coverage remains its own quality,
   which is why the platform reports three layers apart:
@@ -370,22 +389,39 @@ Worked from the fifty stored calibration readings, no new model calls:
 4. **Business Understanding resumes**, consuming consensus — with the
    noise floor known, so every improvement is checkable against it.
 
-## Open questions, for agreement
+## Decisions (2026-08-07)
 
-1. **Quorum size and settling threshold.** N = 5 with strict majority
-   (≥ 3) is proposed. Uniform across claim kinds — varying strictness by
-   how consequential a claim is was considered and declined, since a
-   priori it is defensible but it reintroduces outcome-awareness one
-   step removed.
-2. **The company self-description.** Unmeasured by the calibration's
-   dimensions today. Proposed: same treatment, one atomic claim — but
-   measure it first before trusting its stability either way.
-3. **Span claims.** Decisions consume *whether described* and *ways of
-   earning*, never the span itself. Does a span need to settle at all,
-   or is it enough that it is reported with its distribution as the
-   evidence trail? Proposed: it never needs to settle; it is evidence,
-   not a fact consumed downstream.
-4. **Serving width-1 consensus** from carried-forward entries until
-   their document is next re-read, versus forcing a quorum re-read of
-   the whole corpus at migration. Proposed: serve at stated width; the
-   quorum arrives when the document is next acquired.
+The open questions were closed as follows, and these bind the
+implementation:
+
+1. **Quorum N = 5, strict majority, uniform across claim kinds.** Small
+   enough to control cost, large enough to expose instability, no result
+   settles on a tie, and 3/5 is clearly distinguishable from 5/5 — which
+   is the second half of the decision: **the full distribution is kept
+   and shown, never only the winner.** 3/5 and 5/5 must never look
+   identical downstream.
+2. **The company self-description does not enter consensus until its
+   variance is calibrated.** It is broader than a segment description,
+   less structurally partitioned, and legitimately appears in several
+   forms — it may behave unlike anything the calibration dimensioned.
+   Until measured, the consensus object carries one observation's
+   wording, chosen content-blind (the earliest stored observation) and
+   labeled as exactly that.
+3. **Spans never settle.** The claim settles; the evidence spans remain
+   attached to the observations that produced them, and the consensus
+   exposes their distribution and provenance. Selecting a canonical span
+   would mistake stable wording for stable meaning — the exact
+   conflation the calibration caught and split.
+4. **Schema-8 entries serve at width 1, labeled, and are never called
+   settled.** `observation_count: 1`, `consensus_state:
+   insufficient_quorum`. The platform keeps operating on them, and every
+   downstream consumer knows it is reading one observation rather than a
+   consensus. No corpus-wide quorum re-read is forced at migration — the
+   quorum arrives when a document is next observed.
+5. **For collections, equality is explicit: order is normalized where
+   order carries no meaning, and the collection stays atomic.** A
+   ways-of-earning answer is compared as a sorted set; it is never
+   decomposed into per-element votes, because a per-element winner could
+   be a set no observation asserted — a value with no observational
+   provenance, which nothing could walk backward to a reading that said
+   it.

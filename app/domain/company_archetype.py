@@ -5,7 +5,7 @@ under it — segments, measured sizes, evidenced ways of earning — is a
 fact taken from a document. This is a rule's answer to a question no
 document is asked: what do those facts add up to?
 
-So it is kept apart from `CompanyKnowledge` in the way the Brain is kept
+So it is kept apart from `CompanyKnowledgeObservation` in the way the Brain is kept
 apart from the Artificial CIO. The knowledge layer stores what a filing
 says. This states what follows from it, names every rule that fired, and
 carries the facts each rule read — because a classification a reader

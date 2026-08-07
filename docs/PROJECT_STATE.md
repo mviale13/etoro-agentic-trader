@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1063 passing (2026-08-07) |
+| Pytest | 🟢 1084 passing (2026-08-07) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,81 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **Knowledge became observations, and what the platform serves is
+  consensus** (August 2026). The accepted design in
+  [`architecture/KNOWLEDGE_CONSENSUS.md`](architecture/KNOWLEDGE_CONSENSUS.md),
+  implemented as the authorized narrow slice: the domain model, the
+  derived-on-read consensus, and the archetype engine as first consumer.
+  Automatic quorum acquisition for every company is deliberately not
+  built yet.
+
+  `CompanyKnowledge` is renamed `CompanyKnowledgeObservation`, which is
+  what it always was — one reading, admissible and one draw.
+  `CompanyKnowledgeConsensus` is derived by `consensus_of` from the
+  stored observations on every read and stored nowhere: a content-blind
+  strict majority per atomic claim, over the observations that addressed
+  the claim, with quorum 5. Every settled value is verbatim one an
+  observation gave; ties and pluralities settle nothing and carry their
+  distribution through the existing absence fields; the spans never
+  settle at all. The store (schema 9) holds observations append-only,
+  and a schema-8 entry restores as one observation — the one legitimate
+  cross-schema read, because relabeling a reading as one reading invents
+  nothing. Below quorum the platform keeps operating and says so:
+  `insufficient_quorum`, "a single reading, not a consensus".
+
+  The three admissibility boundaries and this one are deliberately
+  different kinds: identity, grounding and applicability decide whether
+  an observation may enter trusted knowledge at all; consensus decides
+  whether admissible observations are reproducible enough to interpret.
+  Consensus cannot rescue an inadmissible observation, and an unsettled
+  consensus does not mean the observations are untrue.
+
+  **Accepted live on the four calibration cases**, each observed to
+  quorum (one carried-forward schema-8 observation plus four new):
+
+  - **NVDA — settles, by count and against completeness.** Graphics'
+    ways of earning settled at `manufacturing`, 3 of 5, over
+    `manufacturing, services` — the *less* complete answer won because
+    more observations gave it, which is content-blindness demonstrated
+    on live data. Archetype: Manufacturer, from consensus facts, with
+    the 2-of-5 minority in the record. (The ten-reading calibration
+    leaned the other way, 6/10 — a near-even claim lands either way at
+    N=5, and the 3/5 width on the surface says exactly how firmly it
+    is held.)
+  - **CAT — the one-in-twenty result cannot become authoritative.**
+    Financial Products' earning came back 2× `financial_spread,
+    services`, 2× `financial_spread`, 1× `financial_spread, premiums`:
+    no strict majority, unsettled, refused by the rules with the
+    distribution worded. Archetype: **Diversified** — matching the
+    19-of-20 modal reading, where the stored single draw had said
+    "Service business, then manufacturer".
+  - **JPM — disagreement is visible, not removed.** Identity settled 4
+    of 5 at three segments; the fifth observation's `Corporate` stands
+    in the identity distribution as a minority answer. The boilerplate
+    segment-list "description" that passed mechanical checks in a
+    minority of readings loses to the counted absence.
+  - **META — absence wins with the minority inspectable.** Reality
+    Labs settles as not-described 4 of 5, and the one genuine product
+    description remains in the span distribution, attached to the
+    observation that found it.
+
+  Every acceptance property is also a unit test: no consensus value
+  exists that was not present in at least one admissible observation
+  (selection, never synthesis — observations {a}, {b}, {a,b,c} elect
+  nothing); and changing the consensus rule recomputes results from the
+  same files without rewriting a byte of them (the same three
+  observations are `insufficient_quorum` at quorum 5 and `quorate` at
+  quorum 3).
+
+  `movrvest observe SYMBOL` is the explicit spend that fills a quorum,
+  and its stopping rule references the count, never the content — an
+  entry stops at quorum whether its claims settled or not, which is
+  what keeps observation from becoming read-until-classifiable.
+  `movrvest knowledge` renders every claim with its width and prints
+  the full distribution wherever agreement is short of unanimous: 3 of
+  5 and 5 of 5 never look identical. DIS, NFLX and VOW3.DE remain
+  width-1 entries, served and labeled, until they are next observed.
 
 - **The reader is measured before it is improved** (August 2026). The
   platform's first measurement of *itself* rather than of a company, and

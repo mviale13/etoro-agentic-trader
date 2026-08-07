@@ -5,7 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from app.domain.company_knowledge import CompanyKnowledge
+from app.domain.knowledge_consensus import (
+    QUORUM,
+    CompanyKnowledgeConsensus,
+    consensus_of,
+)
 from app.domain.primary_source import (
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
@@ -76,7 +80,7 @@ class KnowledgeOutcome:
     """
 
     state: KnowledgeState
-    knowledge: CompanyKnowledge | None = None
+    knowledge: CompanyKnowledgeConsensus | None = None
     absent_because: str | None = None
 
 
@@ -136,7 +140,15 @@ class CompanyKnowledgeService:
                 self._extractor = resolved
 
     async def knowledge(self, symbol: str) -> KnowledgeOutcome:
-        """What is known about this company, reading a filing only if new."""
+        """What is known about this company, reading a filing only if new.
+
+        What comes back is a consensus, derived from the stored
+        observations on this read and never stored itself. Acquisition
+        still takes a single observation per new document — the quorum
+        is filled by `observe`, explicitly, because five readings of
+        every company's filing is a spend the platform takes knowingly
+        rather than as a side effect of asking what it knows.
+        """
 
         try:
             source, provider = self._sources.resolve(symbol)
@@ -150,22 +162,22 @@ class CompanyKnowledgeService:
                     if isinstance(unavailable, PrimarySourceProviderError)
                     else KnowledgeState.UNAVAILABLE
                 ),
-                knowledge=self._store.latest(symbol),
+                knowledge=self._latest(symbol),
                 absent_because=str(unavailable),
             )
 
-        stored = self._store.read(symbol, source.key)
+        observations = self._store.read(symbol, source.key)
 
-        if stored is not None:
+        if observations:
             return KnowledgeOutcome(
                 state=KnowledgeState.AVAILABLE_CACHED,
-                knowledge=stored,
+                knowledge=consensus_of(observations),
             )
 
         if self._extractor is None:
             return KnowledgeOutcome(
                 state=KnowledgeState.UNAVAILABLE,
-                knowledge=self._store.latest(symbol),
+                knowledge=self._latest(symbol),
                 absent_because=(
                     f"{source.stated()} has not been read. {self._unreadable}"
                     if self._unreadable
@@ -185,7 +197,7 @@ class CompanyKnowledgeService:
                     if isinstance(failure, PrimarySourceProviderError)
                     else KnowledgeState.UNAVAILABLE
                 ),
-                knowledge=self._store.latest(symbol),
+                knowledge=self._latest(symbol),
                 absent_because=str(failure),
             )
 
@@ -196,13 +208,93 @@ class CompanyKnowledgeService:
             # is stored, in part or at all.
             return KnowledgeOutcome(
                 state=KnowledgeState.INVALID_EXTRACTION,
-                knowledge=self._store.latest(symbol),
+                knowledge=self._latest(symbol),
                 absent_because=str(rejected),
             )
 
-        self._store.write(extracted)
+        self._store.append(extracted)
 
         return KnowledgeOutcome(
             state=KnowledgeState.AVAILABLE_ACQUIRED,
-            knowledge=extracted,
+            # Read back under the key the observation itself carries —
+            # the store filed it there, and a reader whose document
+            # identity differed from the resolved one would otherwise
+            # produce an entry this consensus could not see.
+            knowledge=consensus_of(self._store.read(symbol, extracted.source.key)),
         )
+
+    async def observe(self, symbol: str) -> KnowledgeOutcome:
+        """Take observations of the current document up to the quorum.
+
+        The explicit spend that fills a consensus. The stopping rule
+        references only the count — never what any observation says —
+        which is what keeps this from being read-until-classifiable: an
+        entry stops at quorum whether its claims settled or not, and an
+        unsettled consensus at quorum is a finding, not a failure to
+        keep asking.
+
+        A reading refused by the grounding contract counts against
+        nothing and is not retried here beyond the protocol's own
+        bounded retries: the attempt is reported, and the observations
+        that do exist keep serving at their stated width.
+        """
+
+        if self._extractor is None:
+            return KnowledgeOutcome(
+                state=KnowledgeState.UNAVAILABLE,
+                knowledge=None,
+                absent_because=(
+                    self._unreadable
+                    or "No reader is configured, so nothing can be observed."
+                ),
+            )
+
+        try:
+            source, provider = self._sources.resolve(symbol)
+            document = provider.fetch(source)
+        except PrimarySourceUnavailable as unavailable:
+            return KnowledgeOutcome(
+                state=(
+                    KnowledgeState.PROVIDER_ERROR
+                    if isinstance(unavailable, PrimarySourceProviderError)
+                    else KnowledgeState.UNAVAILABLE
+                ),
+                knowledge=self._latest(symbol),
+                absent_because=str(unavailable),
+            )
+
+        refused: str | None = None
+
+        while len(self._store.read(symbol, source.key)) < QUORUM:
+            try:
+                observation = await self._extractor.extract(symbol, document)
+            except ExtractionRejected as rejected:
+                # One refusal ends the run rather than looping on a
+                # document that resists reading; what was already
+                # observed stands.
+                refused = str(rejected)
+                break
+
+            self._store.append(observation)
+
+        observations = self._store.read(symbol, source.key)
+
+        if not observations:
+            return KnowledgeOutcome(
+                state=KnowledgeState.INVALID_EXTRACTION,
+                knowledge=None,
+                absent_because=refused,
+            )
+
+        return KnowledgeOutcome(
+            state=KnowledgeState.AVAILABLE_ACQUIRED,
+            knowledge=consensus_of(observations),
+            absent_because=refused,
+        )
+
+    def _latest(self, symbol: str) -> CompanyKnowledgeConsensus | None:
+        """Consensus over the newest document's observations, if any."""
+
+        observations = self._store.latest(symbol)
+
+        return consensus_of(observations) if observations else None

@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1063 tests, fast
+python -m pytest -q            # ~1084 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -41,12 +41,23 @@ cd apps/web/movrvest-web && npm run build     # frontend gate
 ```
 
 CLI: `movrvest evaluate SYMBOL`, `movrvest brain`, `movrvest today`,
-`movrvest knowledge SYMBOL` (what was read from a filing, and from which cell),
-`movrvest archetype SYMBOL` (what kind of business those facts make it, and
-which rule decided — or why none could),
+`movrvest knowledge SYMBOL` (the consensus over stored observations of a
+filing, every claim with its width and cell),
+`movrvest observe SYMBOL` (read the current filing again up to the quorum
+of 5 — the explicit spend that fills a consensus; stops on the count,
+never the content),
+`movrvest archetype SYMBOL` (what kind of business the consensus facts
+make it, and which rule decided — or why none could),
 `movrvest reader-stability SYMBOL --readings N` (one document read N times,
 and how far the readings agreed — a measurement of this platform, storing
 nothing).
+
+Knowledge is observations plus a derived consensus, never a single
+reading presented as the account: see
+[`docs/architecture/KNOWLEDGE_CONSENSUS.md`](docs/architecture/KNOWLEDGE_CONSENSUS.md)
+(accepted). The store holds `CompanyKnowledgeObservation`s (schema 9,
+append-only); `consensus_of` derives on read; the decision path consumes
+`CompanyKnowledgeConsensus` only.
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)

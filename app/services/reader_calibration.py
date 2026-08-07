@@ -18,7 +18,8 @@ from __future__ import annotations
 
 import asyncio
 
-from app.domain.company_knowledge import BusinessSegment, CompanyKnowledge
+from app.domain.company_knowledge import BusinessSegment, CompanyKnowledgeObservation
+from app.domain.knowledge_consensus import consensus_of
 from app.domain.primary_source import (
     PrimarySourceUnavailable,
     SourceDocument,
@@ -100,7 +101,9 @@ class ReaderCalibrationService:
         outcomes = await self._read_repeatedly(symbol, document, readings)
 
         read = [
-            outcome for outcome in outcomes if isinstance(outcome, CompanyKnowledge)
+            outcome
+            for outcome in outcomes
+            if isinstance(outcome, CompanyKnowledgeObservation)
         ]
 
         return ReaderStability(
@@ -118,9 +121,18 @@ class ReaderCalibrationService:
                 (_identity(knowledge) for knowledge in read),
             ),
             segments=_segments(read),
+            # What the rules would conclude from each single reading —
+            # which is the question this instrument measures, so each
+            # observation is classified alone, as a consensus of one at
+            # a quorum of one. The decision path never does this: its
+            # quorum is fixed in the domain and its archetype is
+            # classify(consensus), not a vote over per-reading verdicts.
             archetype=agreement(
                 "what the rules concluded",
-                (classify(knowledge).stated for knowledge in read),
+                (
+                    classify(consensus_of((knowledge,), quorum=1)).stated
+                    for knowledge in read
+                ),
             ),
         )
 
@@ -129,7 +141,7 @@ class ReaderCalibrationService:
         symbol: str,
         document: SourceDocument,
         readings: int,
-    ) -> list[CompanyKnowledge | str]:
+    ) -> list[CompanyKnowledgeObservation | str]:
         """Every reading's outcome, in the order they were asked for.
 
         A refusal is an outcome rather than an error. The share of
@@ -142,7 +154,7 @@ class ReaderCalibrationService:
 
         extractor = self._extractor
 
-        async def once() -> CompanyKnowledge | str:
+        async def once() -> CompanyKnowledgeObservation | str:
             async with limit:
                 try:
                     return await extractor.extract(symbol, document)
@@ -152,7 +164,7 @@ class ReaderCalibrationService:
         return list(await asyncio.gather(*(once() for _ in range(readings))))
 
 
-def _identity(knowledge: CompanyKnowledge) -> str:
+def _identity(knowledge: CompanyKnowledgeObservation) -> str:
     """The set of segments one reading named, as a comparable answer.
 
     Sorted, because the order a filing's segments come back in is not a
@@ -166,7 +178,9 @@ def _identity(knowledge: CompanyKnowledge) -> str:
     return ", ".join(sorted(segment.name for segment in knowledge.segments))
 
 
-def _segments(readings: list[CompanyKnowledge]) -> tuple[SegmentStability, ...]:
+def _segments(
+    readings: list[CompanyKnowledgeObservation],
+) -> tuple[SegmentStability, ...]:
     """Each segment's stability, counted over the readings that named it."""
 
     by_name: dict[str, list[BusinessSegment]] = {}

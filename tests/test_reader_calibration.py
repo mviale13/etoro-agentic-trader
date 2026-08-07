@@ -8,7 +8,7 @@ import pytest
 
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     RevenueModel,
     SegmentDescription,
 )
@@ -102,8 +102,8 @@ def segment(
     )
 
 
-def knowledge(*segments: BusinessSegment) -> CompanyKnowledge:
-    return CompanyKnowledge(
+def knowledge(*segments: BusinessSegment) -> CompanyKnowledgeObservation:
+    return CompanyKnowledgeObservation(
         symbol="DIS",
         description="A diversified entertainment company.",
         segments=segments,
@@ -136,7 +136,7 @@ class Sources:
 class Readings:
     """A reader that answers each call with the next scripted outcome."""
 
-    def __init__(self, *outcomes: CompanyKnowledge | str) -> None:
+    def __init__(self, *outcomes: CompanyKnowledgeObservation | str) -> None:
         self._outcomes = list(outcomes)
         self.documents: list[SourceDocument] = []
 
@@ -318,7 +318,7 @@ def test_a_calibration_stores_nothing_it_reads(tmp_path) -> None:
         Readings(*(knowledge(segment("Entertainment", share=0.45)),) * 3),
     )
 
-    assert store.read("DIS", SOURCE.key) is None
+    assert store.read("DIS", SOURCE.key) == ()
     assert list(tmp_path.iterdir()) == []
 
 

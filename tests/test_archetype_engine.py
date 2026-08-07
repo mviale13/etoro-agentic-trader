@@ -12,10 +12,11 @@ import pytest
 from app.domain.company_archetype import ARCHETYPE_OF, Archetype, Dimension
 from app.domain.company_knowledge import (
     BusinessSegment,
-    CompanyKnowledge,
+    CompanyKnowledgeObservation,
     RevenueModel,
     SegmentDescription,
 )
+from app.domain.knowledge_consensus import CompanyKnowledgeConsensus, consensus_of
 from app.domain.primary_source import (
     IdentityCheck,
     PrimarySource,
@@ -83,28 +84,44 @@ def segment(
     )
 
 
-def company(symbol: str, *segments: BusinessSegment) -> CompanyKnowledge:
-    return CompanyKnowledge(
-        symbol=symbol,
-        description=f"What {symbol} says it does.",
-        segments=segments,
-        source=PrimarySource(
+def company(symbol: str, *segments: BusinessSegment) -> CompanyKnowledgeConsensus:
+    """One observation's facts, as the width-1 consensus the rules consume.
+
+    The rules read consensus only, so the harness derives one — at a
+    quorum of one, which is the calibration instrument's question, not
+    the decision path's. What is under test here is the rules, and the
+    derivation itself is tested in test_knowledge_consensus.
+    """
+
+    return _consensus(
+        CompanyKnowledgeObservation(
             symbol=symbol,
-            company=symbol,
-            source_type=SourceType.ANNUAL_REPORT,
-            identifier="10-K 0000000000-00-000000",
-            key="0000000000-00-000000",
-            published_on=datetime(2026, 1, 1, tzinfo=UTC).date(),
-            reporting_period=None,
-            document_format="html",
-            language="en",
-            location="https://www.sec.gov/Archives/x",
-            provider="SEC EDGAR",
-            authority=SourceAuthority.REGULATOR_FILED,
-            verification=(IdentityCheck.REGISTER_INDEXED,),
-        ),
-        reading=Provenance(source="10-K via SEC EDGAR", observed_at=datetime.now(UTC)),
+            description=f"What {symbol} says it does.",
+            segments=segments,
+            source=PrimarySource(
+                symbol=symbol,
+                company=symbol,
+                source_type=SourceType.ANNUAL_REPORT,
+                identifier="10-K 0000000000-00-000000",
+                key="0000000000-00-000000",
+                published_on=datetime(2026, 1, 1, tzinfo=UTC).date(),
+                reporting_period=None,
+                document_format="html",
+                language="en",
+                location="https://www.sec.gov/Archives/x",
+                provider="SEC EDGAR",
+                authority=SourceAuthority.REGULATOR_FILED,
+                verification=(IdentityCheck.REGISTER_INDEXED,),
+            ),
+            reading=Provenance(
+                source="10-K via SEC EDGAR", observed_at=datetime.now(UTC)
+            ),
+        )
     )
+
+
+def _consensus(observation: CompanyKnowledgeObservation) -> CompanyKnowledgeConsensus:
+    return consensus_of((observation,), quorum=1)
 
 
 # ── the four regimes ────────────────────────────────────────────────
@@ -493,7 +510,11 @@ def test_every_missing_dimension_carries_the_knowledge_layers_own_reason() -> No
 
     earning = [gap for gap in gaps if gap.dimension is Dimension.EARNING]
 
-    assert [gap.because for gap in earning] == [refused]
+    # The knowledge layer's own words survive, with the consensus width
+    # counted beside them — an absence at width one says it is one.
+    assert len(earning) == 1
+    assert refused in earning[0].because
+    assert "1 of 1 observations" in earning[0].because
 
 
 def test_a_missing_size_and_a_missing_description_are_reported_apart() -> None:
@@ -655,7 +676,7 @@ def test_a_missing_size_reports_the_reason_the_reading_recorded() -> None:
 
     size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
 
-    assert size.because == "This filing's discussion prints no table."
+    assert "This filing's discussion prints no table." in size.because
 
 
 def test_a_missing_size_the_reading_left_unworded_still_states_one() -> None:
@@ -667,4 +688,4 @@ def test_a_missing_size_the_reading_left_unworded_still_states_one() -> None:
 
     size = next(gap for gap in gaps if gap.dimension is Dimension.SIZE)
 
-    assert size.because.startswith("No figure for this segment")
+    assert "No observation located a figure for this segment" in size.because
