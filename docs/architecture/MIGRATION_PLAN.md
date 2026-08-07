@@ -327,6 +327,60 @@ Each acquisition is the explicit, counted spend it always was
 (`movrvest knowledge`, then `movrvest observe` for promotion) — the
 phase changes what is prioritised, not how carefully it is paid for.
 
+### Revised after Phase A (2026-08-07): three streams, not one backlog
+
+Phase A's result (portfolio 71% read; the two remaining gaps not
+acquisition-shaped) classified the blockers by engineering class, and
+the roadmap follows the classes:
+
+- **Stream A — acquisition.** First readings only where acquisition is
+  genuinely the blocker. SPCX is complete for now: no annual report
+  exists; it waits for a filing, not for engineering.
+- **Stream B — reader quality.** A measured defect list, not a work
+  queue. One company is insufficient to unfreeze reader work; several
+  foreign private issuers failing for the same structural reason would
+  earn the slice. Until then: known, measured, accepted.
+
+  **Reader watchlist:**
+  | Symbol | Measured failure | Times |
+  |---|---|---|
+  | ETOR | grounding contract refused: "the extractor described no business" (foreign-private-issuer filing shape) | 2×, identical, 2026-08-07 |
+  | VOW3.DE | at quorum on the issuer's own 2025 annual report: every segment description "arrived with no words at all" — sizes settle (98.4% measured), explanations never arrive | 5 of 5 observations, 2026-08-07 |
+
+  Two rows, two *different* structural reasons. The pattern that would
+  earn reader work is several issuers failing for the *same* one.
+
+- **Stream C — authority.** The highest-leverage spend after Phase A:
+  holdings at width 1 are four observations from an authoritative
+  conclusion, and every observation upgrades a company already in the
+  portfolio. Ranked by expected investor value, not mechanically:
+  does quorum unlock a new authoritative playbook, a new grounded
+  pattern, a meaningful holding, a more diverse grounded corpus?
+  Every observation spend answers "does this increase authoritative
+  investor understanding?" — and where it does not, the spend
+  justifies itself or is not made.
+
+  **Measured so far:** VOW3.DE reached quorum first (before the
+  ranking was revised) and unlocked nothing — its 2025 annual report
+  settles sizes and describes no segment, a finding now on the reader
+  watchlist. The spend still bought the reclassification of VOW3.DE's
+  blocker from *below quorum* to *no revenue mechanisms established*:
+  an authority problem became a measured reader problem, which is what
+  keeps the streams honest. BNP.PA is deliberately queued last: its
+  quorum cannot unlock authority until a 'Service business' rule is
+  earned, so its observations buy confidence, not authority.
+
+**Portfolio and watchlist are no longer one optimisation problem.**
+Holdings steer investor decisions and deserve confidence — the 1→5
+trust investment. Watchlist companies support discovery and mainly
+need enough understanding to be found — the 0→1 coverage investment.
+The funnel KPI carries a headline for the number that now matters
+most: **grounded authoritative playbooks in the portfolio**.
+
+The measurements choose these investments. The platform stopped
+telling us what to build and started telling us where to spend model
+calls; the roadmap follows the report, not a predetermined phase plan.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`
