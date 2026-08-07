@@ -289,6 +289,44 @@ instance, needs `financial_spread` established at quorum for some
 company — JPM's filing points elsewhere for exactly the figures that
 would do it). The two routes stay unblended throughout.
 
+## Next phase: Operation First Reading (accepted 2026-08-07)
+
+The coverage measurement (first run: 75 securities, 70 never read, 2
+grounded) settled the question the reasoning slices kept deferring:
+**the bottleneck is acquisition breadth, not reasoning quality.** The
+Evidence Graph, consensus, Business Understanding and the
+PlaybookSelector are each sufficient for the corpus they see; none is
+expanded until the measurements demand it. The build-the-engine phase
+is over; the feed-the-engine phase begins.
+
+**Frozen until measured demand:** new playbooks, new Business
+Understanding features, new consensus work, new evidence theory. A new
+grounded playbook still requires all four of: a real company at quorum,
+an understanding that establishes the pattern, an obvious deterministic
+mapping, and a live acceptance case. Case-by-case, never
+taxonomy-first.
+
+**The KPI is investor-visible understanding, not observation width.**
+`movrvest playbook-coverage` leads with the funnel — companies → read →
+understanding decided → playbook mapped → quorate — portfolio first.
+Moving a company from 0 → 1 observations moves it through three rows;
+moving 1 → 5 moves it through one. The authority gate does not move: a
+width-1 decision is visible and labelled, and only quorum makes it
+authoritative.
+
+1. **Phase A — portfolio.** Every held company reaches: identity
+   resolved, primary source acquired, one grounded observation, a
+   Business Understanding, a playbook. Width 1 is vastly more valuable
+   than width 0; quorum is not chased here.
+2. **Phase B — watchlist.** The same, in the same order.
+3. **Phase C — quorum promotion.** Only after A and B, and per
+   company: repeated observation becomes a quality investment chosen
+   on the funnel's numbers, never a default.
+
+Each acquisition is the explicit, counted spend it always was
+(`movrvest knowledge`, then `movrvest observe` for promotion) — the
+phase changes what is prioritised, not how carefully it is paid for.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`

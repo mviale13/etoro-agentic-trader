@@ -56,6 +56,7 @@ class Blocker(StrEnum):
     `unlocked_by` words the cheapest way to establish it.
     """
 
+    IDENTITY_UNRESOLVED = "identity unresolved"
     NOT_READ = "no filing read"
     BELOW_QUORUM = "below quorum"
     SEGMENTS_UNSETTLED = "segments unsettled"
@@ -73,6 +74,10 @@ class Blocker(StrEnum):
 
 
 _UNLOCKED_BY: dict[Blocker, str] = {
+    Blocker.IDENTITY_UNRESOLVED: (
+        "a ticker symbol resolved for the broker's instrument id — before "
+        "any source can even be looked up"
+    ),
     Blocker.NOT_READ: (
         "one reading of its current filing — the first stored observation"
     ),
@@ -130,10 +135,77 @@ class SecurityCoverage:
     #: which segment or conclusion — in one line.
     blocking_claim: str | None
 
+    #: Whether the archetype rules decided what kind of business this
+    #: is, at whatever width. Below quorum the decision is not
+    #: authoritative — that is what `quorate` beside it says — but a
+    #: width-1 decision is investor-visible understanding, and the
+    #: funnel counts it apart from nothing at all.
+    decided: bool = False
+
+    #: Whether the earned mapping reaches a playbook from that
+    #: conclusion. Mapped below quorum still serves as fallback — the
+    #: authority gate is quorum and it does not move — but the distance
+    #: from here to authoritative is observations, not engineering.
+    mapped: bool = False
+
     #: An absence in the measurement itself (a provider that errored
     #: while the industry route was consulted), carried with its reason
     #: rather than silently folded into an outcome.
     note: str | None = None
+
+    @property
+    def files_nothing(self) -> bool:
+        """A security no filing could ever be read for."""
+
+        return self.blocker is Blocker.NO_PRIMARY_SOURCE
+
+    @property
+    def unresolved(self) -> bool:
+        """A holding whose broker id no source could name."""
+
+        return self.blocker is Blocker.IDENTITY_UNRESOLVED
+
+    @property
+    def is_company(self) -> bool:
+        """Counts toward the funnel: a filing could exist for it."""
+
+        return not self.files_nothing and not self.unresolved
+
+
+@dataclass(frozen=True, slots=True)
+class CoverageFunnel:
+    """Investor-visible understanding over one slice of the book.
+
+    The KPI of the feed-the-engine phase. Each row is a strictly
+    narrower capability than the one above it, so the funnel reads as
+    the distance from a held symbol to an authoritative grounded
+    playbook — and the first gap from the top is always the cheapest
+    one to close. Moving a company from 0 → 1 observations moves it
+    through three rows at once; moving 1 → 5 moves it through one.
+    """
+
+    #: Securities a filing could exist for. Tokens, commodities, funds
+    #: and unresolved holdings are counted beside, never inside.
+    companies: int
+
+    #: At least one stored observation.
+    read: int
+
+    #: The archetype rules decided what kind of business it is.
+    decided: int
+
+    #: The earned mapping reaches a playbook from that conclusion.
+    mapped: int
+
+    #: At quorum — the decision is authoritative, and the grounded
+    #: route serves it.
+    quorate: int
+
+    #: Holdings whose broker id no source could name.
+    unresolved: int
+
+    #: Securities that file nothing; correctly out of scope.
+    out_of_scope: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -141,6 +213,32 @@ class CoverageReport:
     """The measured population, and the arithmetic over it."""
 
     securities: tuple[SecurityCoverage, ...]
+
+    def funnel(self, origin: CoverageOrigin | None = None) -> CoverageFunnel:
+        """The KPI over one origin — a security held *and* watched
+        counts in both funnels — or over the whole book with None."""
+
+        population = tuple(
+            security
+            for security in self.securities
+            if origin is None
+            or security.origin is origin
+            or security.origin is CoverageOrigin.BOTH
+        )
+
+        companies = tuple(security for security in population if security.is_company)
+
+        return CoverageFunnel(
+            companies=len(companies),
+            read=sum(1 for security in companies if security.width > 0),
+            decided=sum(1 for security in companies if security.decided),
+            mapped=sum(1 for security in companies if security.mapped),
+            quorate=sum(
+                1 for security in companies if security.quorate and security.mapped
+            ),
+            unresolved=sum(1 for security in population if security.unresolved),
+            out_of_scope=sum(1 for security in population if security.files_nothing),
+        )
 
     @property
     def total(self) -> int:
