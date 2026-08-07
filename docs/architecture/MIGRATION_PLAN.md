@@ -426,6 +426,33 @@ the roadmap follows the classes:
   mechanism applied to the tabular half, and which the size reading
   must be shown to survive before the chapter's tables are handed to
   it.
+
+  **The whole corpus re-read under protocol 10 (2026-08-07, 9
+  companies at quorum 5).** What the taxonomy now finds, and what it
+  no longer does:
+
+  - `description never arrived`: **zero, corpus-wide.**
+  - `no description found when asked by name`: VOW3.DE only — one
+    company, not a pattern, correctly a frozen backlog entry with its
+    cause precisely known (the untagged Lagebericht, finding 2).
+  - **The queued applicability slice is un-earned.** JPM's CCB is now
+    described, so *description rejected by applicability* reaches META
+    alone — one company, below the pattern threshold. The measurement
+    that earned it has been superseded by this slice's result, and the
+    queue entry is withdrawn rather than kept on momentum.
+  - **BNP.PA reached quorum in the re-read** (a held bank, previously
+    1/5): three of four segments sized, `financial_spread`, `services`,
+    `transaction` and `asset_management_fees` established through CIB
+    and IPS — but CPBS, 52% of revenue, has its ways of earning
+    unsettled across 5 observations. The Bank-rule case is closer and
+    not clean; whether CPBS's disagreement warrants spend or a rule can
+    rest on the settled majority engine is the owner's call.
+  - The ledger's history begins again at protocol 10 — its stated
+    limit, behaving as designed under supersession — and PR #51's
+    resolution claim is now surfaced as *unadjudicated*: the pattern it
+    resolved lives in history the current schema no longer restores.
+    The credit discipline did exactly what it promises: it never
+    trusted, and when the evidence base moved, it said so.
 - **Stream B — reader quality.** A measured defect list, not a work
   queue. One company is insufficient to unfreeze reader work; several
   foreign private issuers failing for the same structural reason would
