@@ -3,7 +3,7 @@
 import html
 import re
 
-from app.providers.document_text import flatten, read_tables
+from app.providers.document_text import flatten, read_regions, read_tables
 
 _TAGS = re.compile(r"<[^>]+>")
 _WHITESPACE = re.compile(r"[ \t\r\f\v]+")
@@ -206,3 +206,119 @@ def test_a_stylesheet_inside_a_table_is_not_a_cell_s_contents() -> None:
     """
 
     assert read_tables(styled)[0].rows[1].cells == ("Entertainment", "42,466")
+
+
+# ── the structure a filer typesets ──────────────────────────────────
+
+#: An SEC filer's own idiom, copied from Meta's 10-K: no `<h1>`
+#: anywhere, and a heading is a block whose entire content is one short
+#: span typeset bold.
+_BOLD = "color:#000000;font-family:'Times New Roman',serif;font-weight:700"
+
+SECTIONED = f"""\
+<html><body>
+<div><span>ITEM 1. Business</span></div>
+<div><span style="{_BOLD}">Overview</span></div>
+<div><span>We build technology that helps people connect.</span></div>
+<div><span style="{_BOLD}">Family of Apps Products</span></div>
+<div><span>Facebook helps people <b>share</b> moments and build community.</span></div>
+<div><span style="{_BOLD}">Reality Labs Products</span></div>
+<div><span>We build augmented and virtual reality hardware.</span></div>
+<div><span>ITEM 1A. Risk Factors</span></div>
+</body></html>
+"""
+
+
+def sectioned_regions():
+    """The regions of the business section, as the provider reads them."""
+
+    flat = flatten(SECTIONED)
+
+    start = flat.text.index("ITEM 1. Business")
+    end = flat.text.index("ITEM 1A.")
+
+    return flat.text[start:end].strip(), read_regions(SECTIONED, flat, start, end)
+
+
+def test_a_filers_bold_block_is_the_heading_it_is_typeset_as() -> None:
+    """SEC filers do not use `<h1>`, so the idiom is what gets detected."""
+
+    _, regions = sectioned_regions()
+
+    assert [region.heading for region in regions] == [
+        "Overview",
+        "Family of Apps Products",
+        "Reality Labs Products",
+    ]
+
+
+def test_a_region_runs_to_the_next_heading_and_not_to_the_end() -> None:
+    """
+    What makes it the *smallest* region the document offers.
+
+    A region bounded at the end of the section instead would hand the
+    last segment every word the filer wrote afterwards about competition,
+    regulation and its workforce.
+    """
+
+    text, regions = sectioned_regions()
+
+    apps = next(r for r in regions if r.heading == "Family of Apps Products")
+
+    inside = text[apps.at : apps.ends]
+
+    assert "Facebook helps people share moments" in inside
+    assert "augmented and virtual reality" not in inside
+
+
+def test_a_regions_coordinates_address_the_section_as_a_caller_receives_it() -> None:
+    """
+    The prose is handed over stripped, so the regions must describe that
+    string. Off by the document's leading whitespace is off silently.
+    """
+
+    text, regions = sectioned_regions()
+
+    for region in regions:
+        assert text[region.at :].startswith(region.heading)
+
+
+def test_emphasis_inside_a_sentence_is_not_a_heading() -> None:
+    """A heading is alone in its block; bold mid-sentence is not."""
+
+    _, regions = sectioned_regions()
+
+    assert "share" not in [region.heading for region in regions]
+
+
+def test_a_bold_paragraph_is_not_a_heading_over_a_section() -> None:
+    """
+    Length is what separates a heading from a paragraph the filer
+    emphasised. Measured: every heading in Meta's Item 1 is between 8 and
+    50 characters, and nothing longer is bold and alone in its block.
+    """
+
+    emphasised = (
+        f'<div><span style="{_BOLD}">Heading</span></div>'
+        f'<div><span style="{_BOLD}">{"word " * 40}</span></div>'
+    )
+
+    flat = flatten(emphasised)
+
+    regions = read_regions(emphasised, flat, 0, len(flat.text))
+
+    assert [region.heading for region in regions] == ["Heading"]
+
+
+def test_a_document_that_typesets_no_headings_yields_no_regions() -> None:
+    """
+    Which is not a failure. Ownership falls back to position, and a
+    provider that invented structure the document did not supply would be
+    manufacturing the evidence this platform exists to check.
+    """
+
+    plain = "<div><span>We build technology that helps people connect.</span></div>"
+
+    flat = flatten(plain)
+
+    assert read_regions(plain, flat, 0, len(flat.text)) == ()

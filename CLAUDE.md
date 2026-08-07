@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~973 tests, fast
+python -m pytest -q            # ~1028 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -97,11 +97,14 @@ These are not style preferences. Breaking them damages the product.
    against the cell it names, and a share is arithmetic the platform
    performs over two checked figures. A narrative citation must
    establish **unambiguous ownership** between the cited text and the
-   claim it supports; position under the segment's own naming is today's
-   mechanism for that, not the invariant. Learned from one reading that
-   cited a *column header* and got the shares right anyway, and another
-   that cited one sentence about restated figures as three segments'
-   business.
+   claim it supports. Two mechanisms serve that and neither is the
+   invariant: the section the filer printed the words under, and — where
+   the document offers no structure — position under the segment's own
+   naming. Learned from one reading that cited a *column header* and got
+   the shares right anyway, another that cited one sentence about
+   restated figures as three segments' business, and a filing that named
+   its segments only *after* describing them, inverting the positional
+   partition rather than merely straining it.
 4. **A segment is three claims, evidenced apart.** Identity, size and
    description fail independently: an inapplicable description leaves
    the segment named and measured, and says nothing about what it does.

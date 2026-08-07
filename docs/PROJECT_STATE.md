@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 973 passing (2026-08-06) |
+| Pytest | 🟢 1028 passing (2026-08-06) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -101,6 +101,53 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A description is owned by the section it was printed in** (August
+  2026). The narrative half of ownership, replacing a partition that
+  Meta's 10-K inverted rather than merely strained. Ownership had been
+  the most recent segment naming in flattened prose, with proximity
+  (`NEARBY = 300`) standing in for "inside the part of the document
+  about this segment". Meta names `Family of Apps (FoA)` and `Reality
+  Labs (RL)` twenty-five characters apart, in one summary sentence,
+  *after* all the descriptive prose — so both descriptions were refused
+  as belonging to nothing the document had named yet, and a targeted
+  repair could not have recovered them, because what was wrong was the
+  region model rather than the citations.
+
+  Three steps, each in the layer that can honestly perform it:
+
+  ```text
+  markup → headings → regions in prose coordinates   (the provider)
+  regions + segment names → the owner of each claim  (the domain)
+  owner + span → applicable, or a worded refusal     (the domain)
+  ```
+
+  - **A heading is the filers' idiom, not an assumption.** SEC filers do
+    not use `<h1>`; a heading is a block element whose entire content is
+    one short bold span. `Flattened.markup_span` gained an inverse, so a
+    heading found in the markup becomes a position in the prose the
+    platform cites and nothing downstream sees markup.
+  - **A region runs to the next heading**, which is what keeps it
+    smallest. Bounded at the end of the section, the last segment would
+    own every word about competition, regulation and the workforce.
+  - **Uniqueness is the whole safeguard.** The abbreviation the filer
+    defined is stripped, and a heading owns a segment when it contains
+    what remains, no other heading does, and it names no other segment.
+    Ambiguity is never resolved by preference or by order — it means
+    there is no structural owner, and position takes over.
+  - **Structure decides both ways.** A span inside the owning region is
+    a description however deep into the section it sits; a span outside
+    it is refused however close it sits to a mention of the segment.
+    Existence is still established first and identically.
+
+  Measured across all seven stored readings: six descriptions are now
+  carried by structure and four by proximity, and **none was lost**.
+  Meta's two segments, which no mechanism could evidence before, now
+  have owning regions. Volkswagen has no regions at all — an ESEF
+  package's description is assembled from the blocks the filer tagged
+  rather than laid out as a section — and keeps the positional
+  mechanism. Knowledge schema 7; entries written under 6 are re-read,
+  because what was wrong in them is not repairable from what was stored.
 
 - **Evidence is repaired for a claim, never searched for** (August 2026).
   The knowledge layer's first second chance, and it is deliberately not
@@ -1254,81 +1301,58 @@ rest are refused for want of an input, and every one of those refusals
 is a reading that could have gone better rather than a document that
 says nothing:
 
-| | Size measured | Way of earning evidenced |
-|---|---|---|
-| DIS, NVDA | ✅ | ✅ |
-| META, VOW3.DE | ✅ | ✗ |
-| CAT, NFLX | ✗ | ✅ |
-| JPM | ✗ | ✗ |
-| COST | extraction refused outright | |
+**Re-measured 2026-08-06 under schema 7**, every filing read again
+through the full pipeline. Structural ownership changed how six
+descriptions are *owned* and changed the coverage table not at all:
 
-1. **Ownership by document structure.** Promoted, and now evidenced
-   rather than suspected. The targeted repair shipped and recovered
-   nothing: every repair was refused again on identical grounds or
-   answered that the filing holds no such words, which locates the
-   defect in the ownership model rather than in the citations. Ownership
-   is established today by the most recent segment naming in flattened
-   prose, with proximity (`NEARBY = 300`) standing in for "inside the
-   part of the document about this segment". Meta breaks both at once:
-   the 10-K introduces `Family of Apps` and `Reality Labs` together and
-   then describes them in order, so the first segment's description
-   falls after the second's naming, and Reality Labs' own sits 402
-   characters from its naming. A filing's markup states the structure
-   directly and `flatten` already keeps a map back to it
-   (`Flattened.markup_span`), so a span can be owned by the section
-   containing it. Proximity then becomes the fallback for documents with
-   no usable structure, exactly as `prose_evidence` anticipates. This is
-   what stands between the archetype engine and the portfolio.
+| | Size measured | Way of earning evidenced | Classifies |
+|---|---|---|---|
+| DIS, NVDA | ✅ | ✅ | ✅ |
+| META, VOW3.DE | ✅ | ✗ | ✗ |
+| CAT, NFLX | ✗ | ✅ | ✗ |
+| JPM | ✗ | ✗ | ✗ |
+| COST | extraction refused outright | | ✗ |
 
-   **Start from the ownership model, not from a prompt.** The concept is
-   in `architecture.md`: *a structural owner is the smallest region of
-   the document that can be shown to correspond uniquely to the claim*.
-   The pipeline it implies:
+Two of seven classify, the same two as before. **Coverage did not
+materially improve, so the next work is evidence acquisition rather than
+richer taxonomy.**
 
-   ```text
-   Document structure → named region → candidate spans within it
-                      → applicability → proximity only where structure is absent
-   ```
+**Meta is the finding.** Its segments now have owning regions and the
+regions contain exactly the prose a reader would want — `Family of Apps
+Products` opens with *"Facebook helps give people the power to build
+community…"*. The reading does not quote it. Asked what the segment
+does, the reader reaches for the sentences that contain the segment's
+*stored name*, and on this filing those live under `Revenue and
+Investments`: *"selling advertising placements on our family of apps to
+marketers, which is reflected in FoA"*. Genuinely about FoA, genuinely
+naming it, and outside the section that owns it — so it is refused, and
+the bounded repair returned the same sentence and was refused again.
 
-   **Measured, so the implementation does not have to rediscover it.**
-   On Meta's 10-K the only exact occurrences of `Family of Apps (FoA)`
-   and `Reality Labs (RL)` sit at prose offsets 7021 and 7046 — twenty
-   five characters apart, in one summary sentence, *after* the
-   descriptive prose at 2323–6400. The real regions are introduced by
-   the headings `Family of Apps Products` and `Reality Labs Products`.
-   SEC filers do not use `<h1>`; both headings are the same idiom, a
-   block element whose entire content is one short bold span
-   (`font-weight:700`).
+That is not a regression: proximity refused the same span before, for a
+different reason. It relocates the defect. The ownership model is no
+longer the thing standing in the way — **the reader is not being told
+where the owning section is.** The document's structure is now computed
+before the reading and never reaches the reading, which is the gap to
+close next, and it is acquisition rather than taxonomy.
 
-   **The hard part is heading-to-segment matching, not heading
-   detection.** The heading reads `Family of Apps Products`, the stored
-   name is `Family of Apps (FoA)`, and neither contains the other. A
-   candidate rule: strip a trailing parenthetical the filer defined,
-   then a heading owns the segment when it contains that normalised name
-   and no other heading does. Uniqueness is the whole safeguard.
+Two instabilities the re-read exposed, neither caused by this slice:
 
-   **Acceptance cases:**
+- **Segment identity is not stable across readings.** JPMorgan came back
+  as `Consumer & Community Banking (CCB)` where the previous reading
+  said `Consumer & Community Banking`. Both are in the filing. A stored
+  entry keyed by the reader's choice of name is a fact that moves.
+- **Ways of earning drift additively.** NVDA's `Graphics` gained
+  `services`, which the previous reading did not report from the same
+  document.
 
-   1. *Meta-shaped* — several segment names introduced together, then
-      described in sequence. Each description binds to its own
-      structural region even though another segment's name is nearer.
-   2. *Volkswagen-shaped* — no usable structure, so proximity remains
-      the fallback and may still return absence.
-   3. *Misleading nearby text* — boilerplate or another segment's
-      sentence is closer but outside the owning region, and is refused.
-   4. *Structure and proximity disagree* — structure wins only where its
-      ownership is unambiguous; otherwise the field stays absent.
-   5. *No boundary weakening* — a structurally selected span passes the
-      same grounding and applicability checks as any other. Preferring
-      stronger evidence never means accepting more.
-2. **Segment sizes where a table was not found.** Caterpillar and
+1. **Segment sizes where a table was not found.** Caterpillar and
    JPMorgan describe their segments and neither had a size proven. Both
    print segment revenue; the mix reading did not locate it. Worth
    measuring before assuming the cause
-3. **Manual document ingestion.** A document handed to the platform
+2. **Manual document ingestion.** A document handed to the platform
    directly, carrying the same identity and the same grounding contract as
    one it fetched itself
-4. **Playbook selection from the archetype.** The consequence this slice
+3. **Playbook selection from the archetype.** The consequence this slice
    exists to enable, and deliberately not taken yet: `PlaybookSelector`
    still reads the provider's industry, and flipping it while most of the
    population is unclassifiable would degrade every holding whose filing
@@ -1342,12 +1366,12 @@ says nothing:
 
    An interpretation does not become authoritative merely because it
    exists. It follows coverage, not the other way round
-5. **Dossier transparency for company knowledge, coverage and playbook
+4. **Dossier transparency for company knowledge, coverage and playbook
    selection.** Which companies the platform has read, from which document,
    as of which period; under which authority and on which identity checks;
    why a security drew the playbook it did; and, stated apart, what could
    not be read and why
-6. **Multilingual presentation, with the original preserved.** The stored
+5. **Multilingual presentation, with the original preserved.** The stored
    grounded span stays in the language it was published in — replacing it
    with a translation severs the evidence chain, which is the one thing
    the store exists to keep intact. Presentation gains a second, clearly
@@ -1447,7 +1471,7 @@ platform knows. So a bump is closed the same way every time:
 3. Commit the new artifacts in the same slice as the bump.
 4. Record material drift, especially changed segment identity or
    segments that appeared or vanished.
-5. **Never normalise a new reading back to the old one for diff
+4. **Never normalise a new reading back to the old one for diff
    stability.** The new reading is the reading; a corpus tidied to match
    its predecessor is no longer grounded in anything.
 

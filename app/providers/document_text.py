@@ -17,8 +17,10 @@ from __future__ import annotations
 
 import html
 import re
+from bisect import bisect_left
 from dataclasses import dataclass
 
+from app.domain.prose_evidence import Region
 from app.domain.tabular_evidence import SourceTable, TableRow, read_number
 
 _TAG = re.compile(r"<[^>]+>")
@@ -78,6 +80,30 @@ _SPACING = frozenset({"", *_CURRENCY})
 #: citation into this platform's tables is a citation of a number.
 _MINIMUM_FIGURES = 3
 
+#: Emphasis, however the filer expresses it. SEC filers do not use
+#: `<h1>`: a heading is a short span typeset bold, and the tag that says
+#: so is the tag the filer happened to reach for.
+_EMPHASIS = re.compile(r"(?is)<(span|b|strong)\b([^>]*)>([^<]*)</\1\s*>")
+
+#: The block element a heading sits alone inside. What makes it a
+#: heading rather than a bold phrase mid-sentence is that the block
+#: holds nothing else, so both ends are checked.
+_BLOCK_OPENS = re.compile(r"(?is)<(div|p|td|li|h[1-6])\b[^>]*>\s*$")
+_BLOCK_CLOSES = re.compile(r"(?is)\s*</(div|p|td|li|h[1-6])\s*>")
+
+#: How far back to look for the block that opens a heading. A filer
+#: writes a long style attribute and nothing else between the two.
+_TAG_WIDEST = 300
+
+#: What the filer wrote to mean bold, as a style declaration.
+_BOLD = ("font-weight:700", "font-weight:bold")
+
+#: Longer than this and a block typeset bold is a paragraph the filer
+#: emphasised, not a heading over a section. Measured: every one of the
+#: seventeen headings in Meta's Item 1 is between 8 and 50 characters,
+#: and nothing in that section is bold, alone in its block, and longer.
+_HEADING_WIDEST = 120
+
 
 @dataclass(frozen=True, slots=True)
 class Flattened:
@@ -100,6 +126,18 @@ class Flattened:
         last = self.origin[max(0, min(end, len(self.origin) - 1))]
 
         return (first, last)
+
+    def text_index(self, markup_at: int) -> int:
+        """Where a position in the markup lands in the text read from it.
+
+        The inverse of `markup_span`, and what lets structure found in
+        the markup — a heading — be expressed as a position in the prose
+        this platform actually reads and cites. Origins only ever rise,
+        so the first character kept from a markup position onwards is
+        the first origin that reaches it.
+        """
+
+        return bisect_left(self.origin, markup_at)
 
 
 def flatten(markup: str) -> Flattened:
@@ -198,6 +236,108 @@ def _collapsed(characters: list[str], origin: list[int]) -> Flattened:
         index += 1
 
     return Flattened(text="".join(text), origin=tuple(places))
+
+
+def read_regions(
+    markup: str,
+    flat: Flattened,
+    start: int,
+    end: int,
+) -> tuple[Region, ...]:
+    """
+    The regions a section's own headings introduce, in its prose coordinates.
+
+    Where the structural half of narrative ownership comes from. A
+    heading is found in the markup — that is the only place it survives,
+    since flattening turns bold into ordinary words — and is then
+    expressed as a position in the prose the platform reads and cites, so
+    that everything downstream can stay markup-free.
+
+    Each region runs to the next heading, which is what makes it the
+    smallest region the document offers. Bounding one at the end of the
+    section instead would hand the last segment every word the filer
+    wrote afterwards about competition, regulation and its workforce.
+
+    Coordinates are relative to the section as a caller receives it,
+    stripped, because a region that described a different string from the
+    one being searched would be silently off by the document's leading
+    whitespace.
+    """
+
+    opens, closes = flat.markup_span(start, end)
+
+    raw = flat.text[start:end]
+    lead = len(raw) - len(raw.lstrip())
+    body = len(raw.strip())
+
+    if body <= 0:
+        return ()
+
+    headings: list[tuple[int, str]] = []
+
+    for at, heading in _headings(markup[opens:closes]):
+        # From a position in the whole document's markup to one in the
+        # section's own prose.
+        where = flat.text_index(opens + at) - start - lead
+
+        if 0 <= where < body:
+            headings.append((where, heading))
+
+    headings.sort()
+
+    return tuple(
+        Region(
+            heading=heading,
+            at=at,
+            ends=headings[index + 1][0] if index + 1 < len(headings) else body,
+        )
+        for index, (at, heading) in enumerate(headings)
+    )
+
+
+def _headings(markup: str) -> list[tuple[int, str]]:
+    """
+    Every heading this markup prints, as where it begins and what it says.
+
+    A heading is a block element whose entire content is one short span
+    typeset bold. That is the idiom, measured on filings rather than
+    assumed: SEC filers do not use `<h1>`, and both of the headings that
+    Meta's 10-K puts over its two segments are exactly this shape.
+
+    Deliberately not a rule about what the heading *says*. Matching a
+    heading to a segment is a separate judgement, made in the domain
+    where the segment names live, and a detector that only admitted
+    headings it recognised would decide that question here by accident.
+    """
+
+    found: list[tuple[int, str]] = []
+
+    for match in _EMPHASIS.finditer(markup):
+        tag, attrs, content = match.group(1), match.group(2), match.group(3)
+
+        declared = attrs.replace(" ", "").casefold()
+
+        if tag.casefold() not in ("b", "strong") and not any(
+            weight in declared for weight in _BOLD
+        ):
+            continue
+
+        # Alone in its block at both ends, or it is emphasis inside a
+        # sentence rather than a heading over a section.
+        before = markup[max(0, match.start() - _TAG_WIDEST) : match.start()]
+
+        if not _BLOCK_OPENS.search(before):
+            continue
+
+        if not _BLOCK_CLOSES.match(markup, match.end()):
+            continue
+
+        heading = " ".join(flatten(content).text.split())
+
+        if heading and len(heading) <= _HEADING_WIDEST:
+            found.append((match.start(), heading))
+
+    return found
 
 
 def read_tables(markup: str) -> tuple[SourceTable, ...]:

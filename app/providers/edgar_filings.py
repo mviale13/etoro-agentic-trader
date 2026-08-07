@@ -7,8 +7,9 @@ from datetime import date
 
 import httpx
 
+from app.domain.prose_evidence import Region
 from app.domain.tabular_evidence import SourceTable
-from app.providers.document_text import Flattened, flatten, read_tables
+from app.providers.document_text import Flattened, flatten, read_regions, read_tables
 
 #: SEC's fair-access policy requires a request to identify who is making
 #: it. A platform that scraped anonymously would be asking a public
@@ -100,6 +101,14 @@ class Filing:
     #: would turn to for what the company actually does.
     business_text: str
 
+    #: The regions that section's own headings introduce, in the
+    #: coordinates of `business_text`. What lets a description be owned
+    #: by the part of the document it was printed in rather than by
+    #: whichever segment the prose happened to name last. Empty where the
+    #: filer typeset no headings this platform could find, which leaves
+    #: ownership to the positional mechanism rather than to nothing.
+    business_regions: tuple[Region, ...] = ()
+
     #: Management's discussion, where the filer states what each segment
     #: earned. Empty where the section could not be found, which leaves
     #: the segments described and their sizes unstated rather than
@@ -188,12 +197,13 @@ class EdgarFilings:
 
         flat = flatten(document)
 
-        business, _ = self._section(document, flat, _ITEM_1, _ITEM_1A)
-        discussion, tables = self._section(document, flat, _ITEM_7, _ITEM_7A)
+        business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
+        discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
 
         return Filing(
             reference=reference,
             business_text=business,
+            business_regions=regions,
             discussion_text=discussion,
             discussion_tables=tables,
         )
@@ -297,9 +307,9 @@ class EdgarFilings:
         flat: Flattened,
         opening: tuple[str, ...],
         closing: tuple[str, ...],
-    ) -> tuple[str, tuple[SourceTable, ...]]:
+    ) -> tuple[str, tuple[SourceTable, ...], tuple[Region, ...]]:
         """
-        One numbered item of the filing, as plain text and as its tables.
+        One numbered item, as plain text, as its tables and as its structure.
 
         An annual report is megabytes of markup. The two sections this
         platform reads — what the business is, and what each part of it
@@ -332,13 +342,14 @@ class EdgarFilings:
                 widest = (start, end)
 
         if widest is None:
-            return ("", ())
+            return ("", (), ())
 
         opens, closes = flat.markup_span(*widest)
 
         return (
             flat.text[widest[0] : widest[1]].strip(),
             read_tables(document[opens:closes]),
+            read_regions(document, flat, *widest),
         )
 
 

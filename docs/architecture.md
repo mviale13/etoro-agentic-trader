@@ -1386,17 +1386,24 @@ segment at all.
 **The invariant is unambiguous ownership: a narrative citation must
 establish that the cited text belongs to the claim it supports.** That
 is what the boundary requires, and it is deliberately stated without
-naming a mechanism — position is the best evidence available today, and
-structural section boundaries, document markup or the filer's own tagging
-may be better evidence tomorrow. An architecture document that named the
-mechanism as the invariant would have to be weakened to accept its own
-improvement.
+naming a mechanism. It has already outlived one: position was the best
+evidence available when this was written, the document's own section
+structure is better evidence now, and a filer's explicit tagging may be
+better still tomorrow. An architecture document that named the mechanism
+as the invariant would have had to be weakened to accept its own
+improvement — this one did not have to change.
 
-**Position is the current mechanism.** What a table gives a number, prose
-gives a description: a figure belongs to the row whose label leads it, so
-a description belongs to the segment whose name most recently precedes
-it. The document's own naming of its segments partitions the prose the
-way row labels partition a table, and that partition is something this
+**Two mechanisms serve it, and the stronger one is preferred where the
+document supports it.** Structure, where the filer laid the section out
+under headings; position, where it did not. Neither is the invariant,
+and a third that establishes ownership more directly would replace them
+both without this section changing.
+
+**Position, the weaker one.** What a table gives a number, prose gives a
+description: a figure belongs to the row whose label leads it, so a
+description belongs to the segment whose name most recently precedes it.
+The document's own naming of its segments partitions the prose the way
+row labels partition a table, and that partition is something this
 platform computes rather than accepts.
 
 Two positional rules discharge it, both measured rather than chosen:
@@ -1409,9 +1416,7 @@ Two positional rules discharge it, both measured rather than chosen:
   Sound citations measured 0, 23 and 51 characters from their naming;
   the boilerplate measured 814 and 1474.
 
-Both are implementation. Replacing them with something that establishes
-ownership more directly is an improvement to this section, not a
-contradiction of it.
+Both are implementation, and both are now the *fallback*.
 
 **What an owner is, stated apart from how one is found.** A structural
 owner is *the smallest region of the document that can be shown to
@@ -1433,22 +1438,55 @@ mechanism for the same concept, and none of them changes the concept —
 which is the test of whether this section is written at the right
 altitude.
 
-**Why a stronger mechanism is now needed, measured rather than argued.**
+**Why the stronger mechanism was needed, measured rather than argued.**
 Meta's 10-K is not an ambiguous document; this platform's ownership
-model is. The only exact occurrences of the stored names `Family of Apps
-(FoA)` and `Reality Labs (RL)` sit twenty-five characters apart, in one
-summary sentence, *after* all the descriptive prose — which lives under
-the headings `Family of Apps Products` and `Reality Labs Products`. So
-"the segment whose name most recently precedes it" hands nearly the
-whole document to whichever segment that late sentence names last. The
-partition is not imprecise. It is inverted.
+model was. The only exact occurrences of the stored names `Family of
+Apps (FoA)` and `Reality Labs (RL)` sit twenty-five characters apart,
+in one summary sentence, *after* all the descriptive prose — which
+lives under the headings `Family of Apps Products` and `Reality Labs
+Products`. So "the segment whose name most recently precedes it" handed
+nearly the whole document to whichever segment that late sentence named
+last. The partition was not imprecise. It was inverted.
 
 That is a different class of failure from a poorly chosen span, and it
 is why a targeted repair recovered nothing: asking again for a better
-citation cannot correct a region model. The document's structure is
-machine-readable — both headings are one short bold span inside a block
-element, and `Flattened.markup_span` already maps prose back to the
-markup that carries them.
+citation cannot correct a region model.
+
+**How a region is found.** Three steps, each in the layer that can
+honestly perform it:
+
+```text
+markup → headings → regions in prose coordinates   (the provider)
+regions + segment names → the owner of each claim  (the domain)
+owner + span → applicable, or a worded refusal     (the domain)
+```
+
+A heading is a block element whose entire content is one short span
+typeset bold. That is the filers' idiom rather than an assumption: SEC
+filers do not use `<h1>`, and both of Meta's segment headings are
+exactly this shape. `Flattened.markup_span` already mapped prose to
+markup, and its inverse now maps a heading back into the prose the
+platform cites, so nothing downstream ever sees markup. A region runs to
+the *next* heading, which is what keeps it smallest — bounded at the end
+of the section instead, the last segment would own every word the filer
+wrote afterwards about competition, regulation and its workforce.
+
+**Matching a heading to a segment is the hard part, and uniqueness is
+the whole safeguard.** The heading reads `Family of Apps Products`; the
+stored name is `Family of Apps (FoA)`; neither contains the other. So
+the abbreviation the filer defined for its own use is stripped, and a
+heading owns a segment when it contains what remains, when no other
+heading does, and when it names no other segment. A segment failing any
+of those has no structural owner and falls back to position — ambiguity
+is never resolved by preference or by order.
+
+**Measured across the corpus, seven filings.** Every description the
+platform already held survived: six are now carried by structure and
+four by proximity, and none was lost. Meta's two segments, which no
+mechanism could evidence before, now have owning regions. Volkswagen has
+no regions at all — an ESEF package's description is assembled from the
+blocks the filer tagged rather than laid out as a section — and keeps
+the positional mechanism, which is the honest outcome rather than a gap.
 
 What is deliberately **not** a rule is that the span contain the
 segment's name. Two of Disney's three sound citations do not — the name
@@ -1761,9 +1799,10 @@ says the cell or the span supports what it was cited for. A claim
 missing an edge is not weakly supported — it is *absent*, and says so.
 
 Two consequences follow, and both have already been paid for. An edge
-can be strengthened without the graph changing shape, which is why
-replacing positional ownership with structural ownership is an
-improvement rather than a redesign. And a claim can be walked backwards
+can be strengthened without the graph changing shape, which is what
+happened when structural ownership was added beside positional ownership
+without either the graph or this section changing. And a claim can be
+walked backwards
 from a dashboard to a cell in a filing a reader can open, which is what
 the platform sells: not an answer that sounds well-sourced, but one
 whose sources can be checked.

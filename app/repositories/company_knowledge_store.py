@@ -23,7 +23,7 @@ from app.domain.primary_source import (
     SourceAuthority,
     SourceType,
 )
-from app.domain.prose_evidence import DescribedSegment
+from app.domain.prose_evidence import DescribedSegment, Ownership
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
@@ -43,7 +43,14 @@ from app.domain.tabular_evidence import (
 #: document is read again under the current one. Immutable source,
 #: versioned reading: the two are different things and only one of them
 #: is fixed.
-KNOWLEDGE_SCHEMA_VERSION = 6
+#: 7 — narrative ownership can now be structural. An entry written under
+#: 6 had its descriptions placed by the nearest segment naming, which on
+#: a filing that names its segments after describing them attributes the
+#: prose backwards. Those entries are not repairable from what is stored,
+#: because what was wrong is which region the words were read as
+#: belonging to; the filing is immutable and still there, so it is read
+#: again.
+KNOWLEDGE_SCHEMA_VERSION = 7
 
 
 class CompanyKnowledgeStore(ABC):
@@ -263,6 +270,11 @@ def _encode_description(described: SegmentDescription | None) -> dict[str, Any] 
         "quoted": described.evidence.quoted,
         "under": described.evidence.under,
         "distance": described.evidence.distance,
+        # Which mechanism established the ownership, because "inside the
+        # section headed Reality Labs Products" and "51 characters after
+        # a mention of Reality Labs" are different strengths of proof and
+        # a reader is owed the difference.
+        "ownership": described.evidence.ownership.value,
         "revenue_models": [model.value for model in described.revenue_models],
     }
 
@@ -288,6 +300,7 @@ def _description(stored: Any) -> SegmentDescription | None:
             quoted=str(stored["quoted"]),
             under=str(stored["under"]),
             distance=int(stored["distance"]),
+            ownership=Ownership(stored["ownership"]),
         ),
         revenue_models=tuple(
             RevenueModel(value)

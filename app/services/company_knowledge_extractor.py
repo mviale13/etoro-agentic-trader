@@ -16,7 +16,7 @@ from app.domain.company_knowledge import (
 )
 from app.domain.evidence import EvidenceNotApplicable, normalised
 from app.domain.primary_source import SourceDocument
-from app.domain.prose_evidence import Naming, describes, namings
+from app.domain.prose_evidence import Naming, Region, describes, namings, owning
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
@@ -485,7 +485,10 @@ class CompanyKnowledgeExtractor:
         }
 
         prose = document.business_description
-        partition = namings(prose, tuple(seg.name for seg in knowledge.segments))
+        named = tuple(seg.name for seg in knowledge.segments)
+
+        partition = namings(prose, named)
+        owners = owning(document.business_regions, named)
 
         segments = []
 
@@ -499,7 +502,15 @@ class CompanyKnowledgeExtractor:
                 continue
 
             segments.append(
-                await self._repaired(segment, document, prose, partition, raw, refused)
+                await self._repaired(
+                    segment,
+                    document,
+                    prose,
+                    partition,
+                    owners.get(segment.name),
+                    raw,
+                    refused,
+                )
             )
 
         return replace(knowledge, segments=tuple(segments))
@@ -510,6 +521,7 @@ class CompanyKnowledgeExtractor:
         document: SourceDocument,
         prose: str,
         partition: tuple[Naming, ...],
+        owner: Region | None,
         raw: dict[str, Any],
         refused: str,
     ) -> BusinessSegment:
@@ -548,7 +560,7 @@ class CompanyKnowledgeExtractor:
             )
 
         try:
-            described = describes(prose, partition, segment.name, quoted)
+            described = describes(prose, partition, segment.name, quoted, owner)
         except EvidenceNotApplicable as inapplicable:
             # The repair is held to the identical contract, so a second
             # inapplicable span changes nothing except that a reader now
@@ -768,8 +780,14 @@ class CompanyKnowledgeExtractor:
         # from the document — never taken from the reading.
         partition = namings(prose, tuple(name for name in named if name))
 
+        # And its own structure, where it has any: the section each
+        # segment is described in, which owns a description more directly
+        # than the segment's nearest mention does. A segment with no
+        # region here falls back to the partition above.
+        owners = owning(document.business_regions, tuple(n for n in named if n))
+
         segments = tuple(
-            self._segment(raw, prose, partition)
+            self._segment(raw, prose, partition, owners)
             for raw in payload.get("segments") or ()
         )
 
@@ -791,6 +809,7 @@ class CompanyKnowledgeExtractor:
         raw: dict[str, Any],
         prose: str,
         partition: tuple[Naming, ...],
+        owners: dict[str, Region],
     ) -> BusinessSegment:
         """
         One segment, with each of its claims held to its own contract.
@@ -830,6 +849,7 @@ class CompanyKnowledgeExtractor:
                 partition,
                 name,
                 str(raw.get("quoted") or ""),
+                owners.get(name),
             )
         except EvidenceNotApplicable as inapplicable:
             # Absent, not fatal. The segment is real, its size may well be

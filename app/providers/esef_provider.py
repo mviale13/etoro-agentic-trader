@@ -140,6 +140,12 @@ class EsefProvider:
                 report.language,
                 self._checked(source, report.lei),
             ),
+            # No `business_regions`. An ESEF package's description is
+            # assembled out of the blocks the filer tagged, from wherever
+            # in the report they sit, so there is no laid-out section for
+            # headings to divide. Ownership stays positional here, which
+            # is the weaker mechanism and the honest one: the alternative
+            # is inventing structure the document did not supply.
             business_description=report.business_text,
             performance_discussion=report.discussion_text,
             performance_tables=report.discussion_tables,

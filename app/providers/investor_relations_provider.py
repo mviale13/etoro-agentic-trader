@@ -185,6 +185,10 @@ class InvestorRelationsProvider:
                     IdentityCheck.DOCUMENT_LEI,
                 ),
             ),
+            # No `business_regions`, for the same reason as the ESEF
+            # provider: this reads an ESEF package too, and a description
+            # assembled from tagged blocks has no section for headings to
+            # divide. Ownership stays positional.
             business_description=document.business_text,
             performance_discussion=document.discussion_text,
             performance_tables=document.discussion_tables,

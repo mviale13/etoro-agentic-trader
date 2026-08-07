@@ -1,35 +1,42 @@
 {
   "description": "JPMorgan Chase & Co. is a leading financial services firm based in the United States of America, with operations worldwide.",
   "reading": {
-    "observed_at": "2026-08-06T14:12:33.446838+00:00",
+    "observed_at": "2026-08-06T21:56:21.391924+00:00",
     "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
   },
-  "schema_version": 6,
+  "schema_version": 7,
   "segments": [
     {
       "description": null,
-      "name": "Consumer & Community Banking",
+      "name": "Consumer & Community Banking (CCB)",
       "revenue": null,
-      "undescribed_because": "The description of 'Consumer & Community Banking' quotes words the document prints under 'Corporate', so they are not what it says about 'Consumer & Community Banking'. A repair was attempted, and the reader found no words in this filing that describe this segment."
-    },
-    {
-      "description": null,
-      "name": "Commercial & Investment Bank",
-      "revenue": null,
-      "undescribed_because": "The description of 'Commercial & Investment Bank' quotes words the document prints under 'Corporate', so they are not what it says about 'Commercial & Investment Bank'. A repair was attempted, and the reader found no words in this filing that describe this segment."
-    },
-    {
-      "description": null,
-      "name": "Asset & Wealth Management",
-      "revenue": null,
-      "undescribed_because": "The description of 'Asset & Wealth Management' arrived with no words at all."
+      "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Corporate', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment."
     },
     {
       "description": {
         "distance": 0,
+        "ownership": "proximity",
+        "quoted": "reportable business segments \u2013 Consumer & Community Banking (\u201cCCB\u201d), Commercial & Investment Bank",
+        "revenue_models": [],
+        "under": "Commercial & Investment Bank (CIB)"
+      },
+      "name": "Commercial & Investment Bank (CIB)",
+      "revenue": null,
+      "undescribed_because": null
+    },
+    {
+      "description": null,
+      "name": "Asset & Wealth Management (AWM)",
+      "revenue": null,
+      "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' quotes words the document prints under 'Corporate', so they are not what it says about 'Asset & Wealth Management (AWM)'. A repair was attempted, and the reader found no words in this filing that describe this segment."
+    },
+    {
+      "description": {
+        "distance": 177,
+        "ownership": "structure",
         "quoted": "with the remaining activities in Corporate.",
         "revenue_models": [],
-        "under": "Corporate"
+        "under": "Business segments & Corporate"
       },
       "name": "Corporate",
       "revenue": null,

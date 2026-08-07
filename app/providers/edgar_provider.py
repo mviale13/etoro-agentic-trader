@@ -85,6 +85,7 @@ class EdgarProvider:
         return SourceDocument(
             source=source,
             business_description=filing.business_text,
+            business_regions=filing.business_regions,
             performance_discussion=filing.discussion_text,
             performance_tables=filing.discussion_tables,
         )
