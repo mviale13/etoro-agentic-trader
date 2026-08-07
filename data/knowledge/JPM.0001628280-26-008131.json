@@ -1,55 +1,40 @@
 {
   "observations": [
     {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm based in the United States with operations worldwide, serving consumers, small businesses, and prominent corporate, institutional and government clients.",
+      "description": "JPMorgan Chase & Co. is a leading financial services firm that provides investment banking, consumer and small business financial services, commercial banking, financial transaction processing and asset management.",
       "reading": {
-        "observed_at": "2026-08-07T07:05:50.036676+00:00",
+        "observed_at": "2026-08-07T16:05:12.219574+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
         {
-          "description": null,
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "offers products and services to consumers and small businesses",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction",
+              "asset_management_fees"
+            ],
+            "under": "Consumer & Community Banking (CCB)"
+          },
           "name": "Consumer & Community Banking (CCB)",
           "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Commercial & Investment Bank (CIB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' arrived with no words at all.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        }
-      ]
-    },
-    {
-      "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
-      "reading": {
-        "observed_at": "2026-08-07T08:17:59.892285+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Corporate', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
           "description": {
-            "distance": 0,
+            "distance": 108,
             "ownership": "proximity",
-            "quoted": "three reportable business segments \u2013 Consumer & Community Banking (\u201cCCB\u201d), Commercial & Investment Bank (\u201cCIB\u201d)",
-            "revenue_models": [],
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody",
+            "revenue_models": [
+              "services",
+              "transaction",
+              "financial_spread"
+            ],
             "under": "Commercial & Investment Bank (CIB)"
           },
           "name": "Commercial & Investment Bank (CIB)",
@@ -58,19 +43,35 @@
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
-          "description": null,
+          "description": {
+            "distance": 49,
+            "ownership": "structure",
+            "quoted": "is a global leader in investment and wealth management",
+            "repair": {
+              "first_refused_because": "The description of 'Asset & Wealth Management (AWM)' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management (AWM)'.",
+              "reader": "gpt-5"
+            },
+            "revenue_models": [
+              "asset_management_fees",
+              "services",
+              "financial_spread"
+            ],
+            "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
+          },
           "name": "Asset & Wealth Management (AWM)",
           "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' quotes words the document prints under 'Corporate', so they are not what it says about 'Asset & Wealth Management (AWM)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
           "description": {
-            "distance": 177,
-            "ownership": "structure",
-            "quoted": "with the remaining activities in Corporate",
-            "revenue_models": [],
-            "under": "Business segments & Corporate"
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Corporate consists of Treasury and Chief Investment Office (\u201cCIO\u201d) and Other Corporate.",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Corporate"
           },
           "name": "Corporate",
           "revenue": null,
@@ -80,25 +81,183 @@
       ]
     },
     {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm based in the U.S., with operations worldwide, serving consumers, small businesses, and corporate, institutional and government clients globally.",
+      "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
       "reading": {
-        "observed_at": "2026-08-07T08:18:50.749287+00:00",
+        "observed_at": "2026-08-07T16:05:39.828143+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
         {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "offers products and services to consumers and small businesses",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction",
+              "asset_management_fees"
+            ],
+            "under": "Consumer & Community Banking"
+          },
+          "name": "Consumer & Community Banking",
           "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 108,
+            "ownership": "proximity",
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
+            "revenue_models": [
+              "services",
+              "transaction",
+              "financial_spread"
+            ],
+            "under": "Commercial & Investment Bank"
+          },
+          "name": "Commercial & Investment Bank",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 49,
+            "ownership": "structure",
+            "quoted": "is a global leader in investment and wealth management.",
+            "revenue_models": [
+              "asset_management_fees",
+              "financial_spread",
+              "services"
+            ],
+            "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
+          },
+          "name": "Asset & Wealth Management",
+          "revenue": null,
+          "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
           "description": {
             "distance": 0,
             "ownership": "proximity",
-            "quoted": "three reportable business segments \u2013 Consumer & Community Banking (\u201cCCB\u201d), Commercial & Investment Bank (\u201cCIB\u201d)",
-            "revenue_models": [],
+            "quoted": "Corporate consists of Treasury and Chief Investment Office (\u201cCIO\u201d) and Other Corporate.",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Corporate"
+          },
+          "name": "Corporate",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    },
+    {
+      "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
+      "reading": {
+        "observed_at": "2026-08-07T16:05:57.528305+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "offers products and services to consumers and small businesses",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction",
+              "asset_management_fees"
+            ],
+            "under": "Consumer & Community Banking"
+          },
+          "name": "Consumer & Community Banking",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 108,
+            "ownership": "proximity",
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
+            "revenue_models": [
+              "services",
+              "transaction",
+              "financial_spread"
+            ],
+            "under": "Commercial & Investment Bank"
+          },
+          "name": "Commercial & Investment Bank",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": null,
+          "name": "Asset & Wealth Management",
+          "revenue": null,
+          "undescribed_because": "The description of 'Asset & Wealth Management' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management'. A repair was attempted and was refused too: The description of 'Asset & Wealth Management' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management'.",
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 38,
+            "ownership": "proximity",
+            "quoted": "responsible for measuring, monitoring, reporting and managing the Firm\u2019s liquidity, funding",
+            "revenue_models": [
+              "financial_spread",
+              "services"
+            ],
+            "under": "Corporate"
+          },
+          "name": "Corporate",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    },
+    {
+      "description": "JPMorgan Chase & Co. is a leading financial services firm based in the United States with operations worldwide, serving consumers, small businesses, and many corporate, institutional and government clients under the J.P. Morgan and Chase brands.",
+      "reading": {
+        "observed_at": "2026-08-07T16:06:31.401820+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "offers products and services to consumers and small businesses",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction",
+              "asset_management_fees"
+            ],
+            "under": "Consumer & Community Banking (CCB)"
+          },
+          "name": "Consumer & Community Banking (CCB)",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 108,
+            "ownership": "proximity",
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody",
+            "revenue_models": [
+              "services",
+              "transaction",
+              "financial_spread"
+            ],
             "under": "Commercial & Investment Bank (CIB)"
           },
           "name": "Commercial & Investment Bank (CIB)",
@@ -108,13 +267,32 @@
         },
         {
           "description": {
-            "distance": 100,
-            "ownership": "proximity",
-            "quoted": "the Firm\u2019s wholesale business segments are CIB and AWM",
-            "revenue_models": [],
-            "under": "Asset & Wealth Management (AWM)"
+            "distance": 49,
+            "ownership": "structure",
+            "quoted": "is a global leader in investment and wealth management",
+            "revenue_models": [
+              "asset_management_fees",
+              "financial_spread",
+              "services"
+            ],
+            "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
           },
           "name": "Asset & Wealth Management (AWM)",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Corporate consists of Treasury and Chief Investment Office (\u201cCIO\u201d) and Other Corporate",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Corporate"
+          },
+          "name": "Corporate",
           "revenue": null,
           "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
@@ -122,25 +300,40 @@
       ]
     },
     {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm that is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
+      "description": "JPMorgan Chase & Co. is a leading financial services firm that provides investment banking, consumer and small business banking, commercial banking, payments, markets activities, securities services and asset & wealth management globally.",
       "reading": {
-        "observed_at": "2026-08-07T08:19:31.280092+00:00",
+        "observed_at": "2026-08-07T16:06:45.666946+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
         {
-          "description": null,
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Consumer & Community Banking offers products and services to consumers and small businesses",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction",
+              "asset_management_fees"
+            ],
+            "under": "Consumer & Community Banking (CCB)"
+          },
           "name": "Consumer & Community Banking (CCB)",
           "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
           "description": {
-            "distance": 0,
+            "distance": 108,
             "ownership": "proximity",
-            "quoted": "Commercial & Investment Bank (\u201cCIB\u201d)",
-            "revenue_models": [],
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
+            "revenue_models": [
+              "services",
+              "transaction",
+              "financial_spread"
+            ],
             "under": "Commercial & Investment Bank (CIB)"
           },
           "name": "Commercial & Investment Bank (CIB)",
@@ -149,166 +342,41 @@
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
-          "description": null,
+          "description": {
+            "distance": 49,
+            "ownership": "structure",
+            "quoted": "is a global leader in investment and wealth management.",
+            "revenue_models": [
+              "asset_management_fees",
+              "services",
+              "financial_spread"
+            ],
+            "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
+          },
           "name": "Asset & Wealth Management (AWM)",
           "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        }
-      ]
-    },
-    {
-      "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
-      "reading": {
-        "observed_at": "2026-08-07T08:19:58.178671+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         },
         {
-          "description": null,
-          "name": "Commercial & Investment Bank (CIB)",
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Corporate consists of Treasury and Chief Investment Office (\u201cCIO\u201d) and Other Corporate.",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Corporate"
+          },
+          "name": "Corporate",
           "revenue": null,
-          "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' arrived with no words at all.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        }
-      ]
-    },
-    {
-      "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
-      "reading": {
-        "observed_at": "2026-08-07T15:24:13.494347+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Commercial & Investment Bank (CIB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        }
-      ]
-    },
-    {
-      "description": "JPMorganChase is a leading financial services firm that is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
-      "reading": {
-        "observed_at": "2026-08-07T15:25:11.718189+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Commercial & Investment Bank (CIB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        }
-      ]
-    },
-    {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm based in the U.S. with operations worldwide.",
-      "reading": {
-        "observed_at": "2026-08-07T15:26:04.608411+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Commercial & Investment Bank (CIB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        }
-      ]
-    },
-    {
-      "description": "JPMorganChase is a leading financial services firm based in the U.S. with operations worldwide serving consumers and prominent corporate, institutional and government clients globally.",
-      "reading": {
-        "observed_at": "2026-08-07T15:27:16.964667+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Consumer & Community Banking (CCB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Consumer & Community Banking (CCB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Commercial & Investment Bank (CIB)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Commercial & Investment Bank (CIB)' quotes words the document prints under 'Asset & Wealth Management (AWM)', so they are not what it says about 'Commercial & Investment Bank (CIB)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
-          "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
-        },
-        {
-          "description": null,
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": null,
-          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "undescribed_because": null,
           "unmeasured_because": "This filing's management discussion is 395 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
         }
       ]
     }
   ],
-  "schema_version": 9,
+  "schema_version": 10,
   "source": {
     "authority": "regulator_filed",
     "company": "JPMORGAN CHASE & CO",
