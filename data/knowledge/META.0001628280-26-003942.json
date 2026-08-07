@@ -1,9 +1,9 @@
 {
   "observations": [
     {
-      "description": "We build technology that helps people connect and share, find and build communities, and grow businesses.",
+      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
       "reading": {
-        "observed_at": "2026-08-07T16:13:52.672079+00:00",
+        "observed_at": "2026-08-07T17:10:33.552882+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -14,9 +14,9 @@
             "denominator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 7,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Total revenue",
@@ -26,9 +26,82 @@
             "numerator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 5,
-                "table": 3
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Family of Apps",
+              "printed": "198,759",
+              "value": 198759.0
+            }
+          },
+          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Reality Labs (RL)",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 7,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Total revenue",
+              "printed": "$ 200,966",
+              "value": 200966.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Reality Labs",
+              "printed": "2,207",
+              "value": 2207.0
+            }
+          },
+          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
+      "reading": {
+        "observed_at": "2026-08-07T17:11:11.960178+00:00",
+        "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Family of Apps (FoA)",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 7,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Total revenue",
+              "printed": "$ 200,966",
+              "value": 200966.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Family of Apps",
@@ -40,249 +113,16 @@
           "unmeasured_because": null
         },
         {
-          "description": null,
-          "name": "Reality Labs (RL)",
-          "revenue": {
-            "denominator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 7,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Total revenue",
-              "printed": "$ 200,966",
-              "value": 200966.0
-            },
-            "numerator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 6,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Reality Labs",
-              "printed": "2,207",
-              "value": 2207.0
-            }
-          },
-          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
-      "reading": {
-        "observed_at": "2026-08-07T16:14:49.569169+00:00",
-        "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Family of Apps (FoA)",
-          "revenue": {
-            "denominator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 7,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Total revenue",
-              "printed": "$ 200,966",
-              "value": 200966.0
-            },
-            "numerator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Family of Apps",
-              "printed": "198,759",
-              "value": 198759.0
-            }
-          },
-          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
-          "unmeasured_because": null
-        },
-        {
           "description": {
-            "distance": 1507,
+            "distance": 197,
             "ownership": "structure",
-            "quoted": "our Reality Labs efforts include shorter-term projects developing specific products and services",
+            "quoted": "exploring innovations in AI and hardware to help build next-generation interfaces",
             "repair": {
               "first_refused_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
               "reader": "gpt-5"
             },
             "revenue_models": [
               "manufacturing",
-              "retail"
-            ],
-            "under": "Reality Labs Products"
-          },
-          "name": "Reality Labs (RL)",
-          "revenue": {
-            "denominator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 7,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Total revenue",
-              "printed": "$ 200,966",
-              "value": 200966.0
-            },
-            "numerator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 6,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Reality Labs",
-              "printed": "2,207",
-              "value": 2207.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
-      "reading": {
-        "observed_at": "2026-08-07T16:15:32.432639+00:00",
-        "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Family of Apps (FoA)",
-          "revenue": {
-            "denominator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 7,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Total revenue",
-              "printed": "$ 200,966",
-              "value": 200966.0
-            },
-            "numerator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Family of Apps",
-              "printed": "198,759",
-              "value": 198759.0
-            }
-          },
-          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
-          "unmeasured_because": null
-        },
-        {
-          "description": null,
-          "name": "Reality Labs (RL)",
-          "revenue": {
-            "denominator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 7,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Total revenue",
-              "printed": "$ 200,966",
-              "value": 200966.0
-            },
-            "numerator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 6,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Reality Labs",
-              "printed": "2,207",
-              "value": 2207.0
-            }
-          },
-          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "We build technology that helps people connect and share, find and build communities, and grow businesses.",
-      "reading": {
-        "observed_at": "2026-08-07T16:16:20.204741+00:00",
-        "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Family of Apps (FoA)",
-          "revenue": {
-            "denominator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 7,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Total revenue",
-              "printed": "$ 200,966",
-              "value": 200966.0
-            },
-            "numerator": {
-              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 3
-              },
-              "column_header": "Year Ended December\u00a031,",
-              "label": "Family of Apps",
-              "printed": "198,759",
-              "value": 198759.0
-            }
-          },
-          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 1507,
-            "ownership": "structure",
-            "quoted": "our Reality Labs efforts include shorter-term projects developing specific products",
-            "repair": {
-              "first_refused_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
-              "reader": "gpt-5"
-            },
-            "revenue_models": [
-              "manufacturing",
-              "retail",
               "transaction"
             ],
             "under": "Reality Labs Products"
@@ -292,9 +132,9 @@
             "denominator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 7,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Total revenue",
@@ -304,9 +144,9 @@
             "numerator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 6,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Reality Labs",
@@ -322,7 +162,7 @@
     {
       "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
       "reading": {
-        "observed_at": "2026-08-07T16:16:59.985630+00:00",
+        "observed_at": "2026-08-07T17:12:05.764590+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -333,9 +173,9 @@
             "denominator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 7,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Total revenue",
@@ -345,9 +185,9 @@
             "numerator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 5,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Family of Apps",
@@ -355,19 +195,20 @@
               "value": 198759.0
             }
           },
-          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
           "unmeasured_because": null
         },
         {
           "description": {
-            "distance": 285,
+            "distance": 368,
             "ownership": "structure",
-            "quoted": "continuing to develop products and experiences that help people feel connected",
+            "quoted": "Our current product offerings in VR include our Meta Quest devices",
             "repair": {
               "first_refused_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
               "reader": "gpt-5"
             },
             "revenue_models": [
+              "manufacturing",
               "retail"
             ],
             "under": "Reality Labs Products"
@@ -377,9 +218,9 @@
             "denominator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 7,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Total revenue",
@@ -389,9 +230,9 @@
             "numerator": {
               "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
               "cell": {
-                "column": 1,
+                "column": 3,
                 "row": 6,
-                "table": 3
+                "table": 2
               },
               "column_header": "Year Ended December\u00a031,",
               "label": "Reality Labs",
@@ -403,9 +244,168 @@
           "unmeasured_because": null
         }
       ]
+    },
+    {
+      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
+      "reading": {
+        "observed_at": "2026-08-07T17:13:03.595286+00:00",
+        "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Family of Apps (FoA)",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 7,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Total revenue",
+              "printed": "$ 200,966",
+              "value": 200966.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Family of Apps",
+              "printed": "198,759",
+              "value": 198759.0
+            }
+          },
+          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 297,
+            "ownership": "structure",
+            "quoted": "develop products and experiences that help people feel connected",
+            "repair": {
+              "first_refused_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+              "reader": "gpt-5"
+            },
+            "revenue_models": [
+              "manufacturing",
+              "transaction"
+            ],
+            "under": "Reality Labs Products"
+          },
+          "name": "Reality Labs (RL)",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 7,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Total revenue",
+              "printed": "$ 200,966",
+              "value": 200966.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Reality Labs",
+              "printed": "2,207",
+              "value": 2207.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
+      "reading": {
+        "observed_at": "2026-08-07T17:14:07.080565+00:00",
+        "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Family of Apps (FoA)",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 7,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Total revenue",
+              "printed": "$ 200,966",
+              "value": 200966.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Family of Apps",
+              "printed": "198,759",
+              "value": 198759.0
+            }
+          },
+          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Reality Labs (RL)",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 7,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Total revenue",
+              "printed": "$ 200,966",
+              "value": 200966.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Revenue The following table sets forth our revenue by source and by segment:",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 2
+              },
+              "column_header": "Year Ended December\u00a031,",
+              "label": "Reality Labs",
+              "printed": "2,207",
+              "value": 2207.0
+            }
+          },
+          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+          "unmeasured_because": null
+        }
+      ]
     }
   ],
-  "schema_version": 10,
+  "schema_version": 11,
   "source": {
     "authority": "regulator_filed",
     "company": "Meta Platforms, Inc.",

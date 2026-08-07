@@ -427,9 +427,54 @@ the roadmap follows the classes:
   must be shown to survive before the chapter's tables are handed to
   it.
 
-  **The whole corpus re-read under protocol 10 (2026-08-07, 9
-  companies at quorum 5).** What the taxonomy now finds, and what it
-  no longer does:
+  **The tabular slice (2026-08-07, approved after PR #52).** The same
+  cross-reference discipline applied to the tabular half, and the
+  reader again unmodified — three parse rules, each measured on the
+  filing that earned it: a spanned group's words cover every column
+  the filer's colspan asserted (numbers and lone currency symbols are
+  never repeated — an aliased figure would defeat the duplicate-cell
+  check); a table split by the page is read as the one table it is,
+  proven by the label column the filer repeated and gated by the
+  headers (JPMorgan's pair merges; Volkswagen's repeated prior-year
+  pair does not); and a pointer discussion is served the referenced
+  chapter's tables. Schema 11 supersedes the corpus.
+
+  **The chain closed end-to-end on JPM for the first time:**
+  descriptions (3/3) → four mechanisms → sizes grounded — CCB 41.0%,
+  CIB 42.3%, AWM 13.0%, each the platform's own division of two
+  checked cells of the merged table — → archetype **Diversified**
+  (financial_spread, services and transaction lead together, within
+  5%) → **authoritative playbook: Diversified Business**, resting
+  stated on its narrowest claim (3/5 on the segment frame).
+  `document points elsewhere for its tables` is **zero**; JPM's one
+  remaining defect is an earning disagreement at AWM (noise, the
+  consensus's own territory). The portfolio KPI stayed 2, exactly as
+  the slice predicted: JPM is on no tracked list, and the KPI path
+  still runs through BNP.PA and the unearned Bank rule.
+
+  **Operational finding, stated rather than smoothed over:** the
+  protocol-11 re-read ran out of OpenAI credits at BNP.PA and
+  VOW3.DE, so their superseded entries are absent until the account
+  is funded and `movrvest observe` completes them — the portfolio
+  funnel reads lower in the interim, and VOW3.DE's
+  `no description found when asked by name` claims are unmeasurable
+  rather than resolved. A second finding from the same failure: a
+  provider outage inside an observe run surfaced as a raw traceback
+  instead of a worded PROVIDER_ERROR outcome, against this platform's
+  own absence discipline — recorded for a small follow-up fix.
+
+  **The Evidence Graph** (the owner's strategic note on PR #52): the
+  natural abstraction once narrative and tabular cross-references both
+  exist — evidence nodes related by *describes / quantifies /
+  references / continues / defines*. Deliberately not built yet, per
+  the owner's own rule: generalise only once two or three independent
+  mechanisms converge on the abstraction. Two exist today
+  (`_referenced` follows *references*; `_continues` merges
+  *continues*); the third convergence is the earned trigger.
+
+  **The earlier corpus re-read under protocol 10 (2026-08-07, 9
+  companies at quorum 5).** What the taxonomy then found, and what it
+  no longer did:
 
   - `description never arrived`: **zero, corpus-wide.**
   - `no description found when asked by name`: VOW3.DE only — one
