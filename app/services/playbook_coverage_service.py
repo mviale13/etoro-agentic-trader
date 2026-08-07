@@ -37,10 +37,10 @@ from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
 from app.services.account_service import AccountService
 from app.services.company_facts_service import CompanyFactsService
 from app.services.company_profiler import CompanyProfiler
-from app.services.playbook_mapping import select_grounded
+from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
+from app.services.playbook_mapping import GROUNDED, select_grounded
 from app.services.playbook_selector import PlaybookSelector
 from app.services.understanding_engine import understand
-from app.services.watchlist_service import WatchlistService
 
 #: Asset classes that publish no annual report a segment could be read
 #: from — a token, a commodity, and a fund whose accounts describe the
@@ -54,42 +54,68 @@ class PlaybookCoverageService:
         self,
         *,
         store: Any | None = None,
-        watchlist: Any | None = None,
+        resolver: Any | None = None,
         account: Any | None = None,
         facts: Any | None = None,
         profiler: CompanyProfiler | None = None,
         industry: PlaybookSelector | None = None,
     ) -> None:
         self._store = store or JsonCompanyKnowledgeStore()
-        self._watchlist = watchlist or WatchlistService()
+        self._resolver = resolver or InstrumentSymbolResolver()
         self._account = account or AccountService(EtoroAccountBroker(Settings()))
         self._facts = facts or CompanyFactsService()
         self._profiler = profiler or CompanyProfiler()
         self._industry = industry or PlaybookSelector()
 
     async def report(self) -> CoverageReport:
-        """The measured population: every held or watched security once."""
+        """The measured population: every held or watched security once.
+
+        Holdings arrive from the broker as instrument ids with no
+        symbol, so they pass through the same resolver the portfolio
+        perception uses — watchlists first, then the broker's own
+        catalog. A holding neither source can name enters the report
+        under its placeholder identity with `identity unresolved` as
+        its blocker, rather than silently vanishing from a measurement
+        whose first question is how much of the portfolio is covered.
+        """
+
+        watched = await self._resolver.items()
+        snapshot = await self._account.snapshot()
+
+        by_instrument: dict[int, WatchlistItem] = await self._resolver.items_for(
+            position.instrument_id
+            for position in snapshot.positions
+            if not position.is_resolved
+        )
 
         items: dict[str, WatchlistItem] = {}
 
-        for watchlist in await self._watchlist.get():
-            for item in watchlist.items:
-                items.setdefault(item.symbol.upper(), item)
+        for entry in by_instrument.values():
+            items.setdefault(entry.symbol.upper(), entry)
 
-        snapshot = await self._account.snapshot()
+        watched_symbols = {entry.symbol.upper() for entry in watched.values()}
 
-        held: dict[str, str | None] = {
-            position.symbol.upper(): position.asset_class
-            for position in snapshot.positions
-            if position.is_resolved
-        }
+        held: dict[str, str | None] = {}
+        unresolved: list[int] = []
+
+        for position in snapshot.positions:
+            if position.is_resolved:
+                held[position.symbol.upper()] = position.asset_class
+                continue
+
+            named = by_instrument.get(position.instrument_id)
+
+            if named is not None and named.symbol:
+                held[named.symbol.upper()] = position.asset_class
+            else:
+                unresolved.append(position.instrument_id)
 
         securities = []
 
-        for symbol in sorted(set(items) | set(held)):
+        for symbol in sorted(watched_symbols | set(held)):
             origin = (
                 CoverageOrigin.BOTH
-                if symbol in items and symbol in held
+                if symbol in watched_symbols and symbol in held
                 else CoverageOrigin.PORTFOLIO
                 if symbol in held
                 else CoverageOrigin.WATCHLIST
@@ -101,6 +127,27 @@ class PlaybookCoverageService:
                     origin,
                     items.get(symbol),
                     held.get(symbol),
+                )
+            )
+
+        for instrument_id in sorted(unresolved):
+            securities.append(
+                SecurityCoverage(
+                    symbol=InstrumentSymbolResolver.placeholder(instrument_id),
+                    origin=CoverageOrigin.PORTFOLIO,
+                    width=0,
+                    quorate=False,
+                    understanding=False,
+                    outcome=CoverageOutcome.UNCLASSIFIED,
+                    playbook=PlaybookKind.UNCLASSIFIED,
+                    blocker=Blocker.IDENTITY_UNRESOLVED,
+                    blocking_claim=(
+                        f"a ticker symbol for broker instrument {instrument_id}"
+                    ),
+                    note=(
+                        "neither the watchlists nor the broker's catalog "
+                        "name this instrument"
+                    ),
                 )
             )
 
@@ -135,6 +182,10 @@ class PlaybookCoverageService:
         understanding = understand(consensus_of(observations))
         grounded = select_grounded(understanding)
 
+        primary = understanding.characteristics.primary
+        decided = primary is not None
+        mapped = primary is not None and primary in GROUNDED
+
         if isinstance(grounded, PlaybookSelection):
             return SecurityCoverage(
                 symbol=symbol,
@@ -146,6 +197,8 @@ class PlaybookCoverageService:
                 playbook=grounded.playbook.kind,
                 blocker=None,
                 blocking_claim=None,
+                decided=True,
+                mapped=True,
             )
 
         blocker, claim = self._refused(understanding)
@@ -161,6 +214,8 @@ class PlaybookCoverageService:
             playbook=playbook,
             blocker=blocker,
             blocking_claim=claim,
+            decided=decided,
+            mapped=mapped,
             note=note,
         )
 

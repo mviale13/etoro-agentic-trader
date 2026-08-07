@@ -56,9 +56,10 @@ grounded from quorate understanding where the mapping has earned the
 conclusion, otherwise the industry route as recorded fallback — the two
 never blend),
 `movrvest playbook-coverage` (measure the grounded selector over the
-book, read-only: per security the width, the outcome, and — where not
-grounded — exactly one blocking claim; the blocker distribution is the
-roadmap),
+book, read-only: leads with the investor-visible funnel — companies →
+read → decided → mapped → quorate, portfolio first — then per security
+the width, the outcome, and exactly one blocking claim; the blocker
+distribution is the roadmap),
 `movrvest reader-stability SYMBOL --readings N` (one document read N times,
 and how far the readings agreed — a measurement of this platform, storing
 nothing).
