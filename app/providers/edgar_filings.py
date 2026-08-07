@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date
 
@@ -61,6 +62,38 @@ _ITEM_7A = (
     "quantitative and qualitative disclosures about market risk",
     "report of independent registered public accounting firm",
 )
+
+#: How a filer says that what a section would contain is printed
+#: elsewhere in the same document, immediately before naming the place.
+#:
+#: English, like every other anchor in this module, because a 10-K or a
+#: 20-F is filed with the SEC in English. What is deliberately *not*
+#: assumed is the heading it names: that is quoted out of the filing
+#: itself, so the address followed is always the filer's own words
+#: rather than this platform's guess at what a section might be called.
+#: Whitespace-tolerant throughout, because the prose this is read from
+#: keeps the document's line breaks: a filer wraps "under the heading"
+#: across two lines as readily as it prints it on one.
+_REFERRED = re.compile(
+    r'(?i)(?:under\s+the\s+(?:heading|caption)s?|entitled)\s*[“"]([^”"]{6,90})[”"]'
+)
+
+#: How much of a referenced section is read, in characters.
+#:
+#: Measured on the filing that earned this mechanism. JPMorgan's Item 1
+#: names "Business Segment & Corporate Results", and that chapter runs
+#: 62,774 characters from its heading to the next one the filer typeset
+#: at the same size, with the three segment descriptions 8,225, 19,717
+#: and 40,797 characters into it. Item 1 itself is 39,175, and the
+#: sections across the calibration corpus run 28,000 to 80,000 — so this
+#: is an ordinary section's width rather than a number fitted to one
+#: document.
+#:
+#: Overshooting is the deliberately safe direction. Prose read past the
+#: end of a referenced chapter cannot become a description, because a
+#: span still has to be shown to belong to the segment it is cited for;
+#: it costs tokens, where stopping short costs the evidence itself.
+_FOLLOWED_WIDEST = 80_000
 
 
 class FilingUnavailable(Exception):
@@ -200,6 +233,15 @@ class EdgarFilings:
         the markup it came from. The prose is read from the reduction and
         the tables from the markup underneath it, so the same section
         yields both without being parsed twice or differently.
+
+        A section that says its content is printed elsewhere is followed.
+        Measured on JPMorgan, whose Item 1 names its segments and then
+        states that what they do "is provided in" the MD&A under a
+        heading it quotes: reading Item 1 alone, this platform saw the
+        names and no descriptions, and every reading of it honestly
+        reported that the filing described nothing. It described them
+        eighty pages away, in the same document, at an address the filer
+        printed.
         """
 
         flat = flatten(document)
@@ -207,13 +249,86 @@ class EdgarFilings:
         business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
         discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
 
+        referenced, referred_regions = self._referenced(document, flat, business)
+
         return Filing(
             reference=reference,
-            business_text=business,
-            business_regions=regions,
+            business_text=_joined(business, referenced),
+            business_regions=(
+                regions + _shifted(referred_regions, by=_offset(business))
+            ),
             discussion_text=discussion,
+            # Deliberately the discussion's own tables, and not the
+            # referenced chapter's. A referenced chapter's figures are
+            # the filing's figures and belong here in principle —
+            # measured, handing JPMorgan's twenty-five MD&A tables to
+            # the size reading made it cite a cell whose column carries
+            # no header, and a mix that cannot be checked discards the
+            # whole reading, descriptions included. Sizes are a
+            # different claim from descriptions and are not worth
+            # trading for them; what it takes to read tables of that
+            # shape is a measurement of its own.
             discussion_tables=tables,
         )
+
+    @staticmethod
+    def _referenced(
+        document: str,
+        flat: Flattened,
+        within: str,
+    ) -> tuple[str, tuple[Region, ...]]:
+        """
+        The section this one names as the place its content is printed.
+
+        Two conditions, and the second is the whole of the discipline.
+        The filer has to *say* it is referring — "under the heading", in
+        its own words — and the heading it then quotes has to occur
+        exactly once in the document as something that begins a block.
+        A heading two blocks carry is one the filing did not disambiguate
+        and is refused rather than chosen between, which is the same rule
+        `owning` applies to structural ownership and is refused for the
+        same reason: where two regions could answer, none does.
+
+        Measured on the filing that earned this: Item 1's reference to
+        "Business Segment & Corporate Results" resolves to one block
+        among nine occurrences, and Item 7's to "Management's discussion
+        and analysis" resolves to forty-two — so the first is followed
+        and the second is declined, on evidence rather than on which
+        would have been more useful.
+        """
+
+        if not within:
+            return ("", ())
+
+        lowered = flat.text.casefold()
+
+        for quoted in _REFERRED.findall(within):
+            heading = quoted.strip().strip(",").strip()
+
+            blocks = [
+                at
+                for at in _every(lowered, heading.casefold())
+                if begins_a_block(document, flat, at)
+            ]
+
+            if len(blocks) != 1:
+                continue
+
+            at = blocks[0]
+            ends = min(at + _FOLLOWED_WIDEST, len(flat.text))
+
+            # The reference points out of the section that made it. One
+            # that points back inside it would add nothing and would
+            # double every region already read.
+            if within.strip() and flat.text[at:ends].strip() in within:
+                continue
+
+            return (
+                flat.text[at:ends].strip(),
+                read_regions(document, flat, at, ends),
+            )
+
+        return ("", ())
 
     def latest_annual_report(self, symbol: str) -> Filing:
         """The most recent 10-K or 20-F this company filed, read in full."""
@@ -385,6 +500,60 @@ class EdgarFilings:
             read_tables(document[opens:closes]),
             read_regions(document, flat, *widest),
         )
+
+
+#: What separates a section from the one it referred to, in the prose
+#: the platform reads. A blank line, because that is what the two are
+#: on the printed page: different parts of one document, not one
+#: continuous sentence.
+_BETWEEN = "\n\n"
+
+
+def _joined(section: str, referenced: str) -> str:
+    """A section, and what it said was printed elsewhere, as one text.
+
+    Both, never one instead of the other. The section that referred is
+    where the filer names its segments — the identity check reads it —
+    and the referenced chapter is where it says what they do. Dropping
+    either would trade one claim for another.
+    """
+
+    return f"{section}{_BETWEEN}{referenced}" if referenced else section
+
+
+def _offset(section: str) -> int:
+    """Where a referenced chapter begins in the joined text."""
+
+    return len(section) + len(_BETWEEN) if section else 0
+
+
+def _shifted(regions: tuple[Region, ...], by: int) -> tuple[Region, ...]:
+    """A referenced chapter's regions, in the joined text's coordinates.
+
+    Regions are read in the coordinates of the section they were found
+    in, and structural ownership is checked against the text the reader
+    is given. Carrying them across unshifted would place every heading
+    at the wrong end of the document and quietly hand each segment
+    another's words.
+    """
+
+    return tuple(
+        Region(heading=region.heading, at=region.at + by, ends=region.ends + by)
+        for region in regions
+    )
+
+
+def _every(text: str, needle: str) -> list[int]:
+    """Every position this string appears at, in order."""
+
+    found: list[int] = []
+    at = text.find(needle)
+
+    while at != -1:
+        found.append(at)
+        at = text.find(needle, at + 1)
+
+    return found
 
 
 def _occurrences(text: str, headings: tuple[str, ...]) -> list[int]:

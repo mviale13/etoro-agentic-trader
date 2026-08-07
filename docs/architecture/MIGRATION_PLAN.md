@@ -336,6 +336,123 @@ the roadmap follows the classes:
 - **Stream A — acquisition.** First readings only where acquisition is
   genuinely the blocker. SPCX is complete for now: no annual report
   exists; it waits for a filing, not for engineering.
+
+  **The acquisition slice (2026-08-07, approved after Reader Slice 1).**
+  Reader Slice 1 localised the bottleneck one layer up: the reader was
+  never failing on JPM or VOW3.DE, it was correctly refusing to invent
+  descriptions absent from the text it was handed. So a located section
+  is now searched for the filer's own cross-reference — "under the
+  heading «X»", the filer's words, never this platform's guess at what
+  a section might be called — and what it names is read too, on two
+  conditions: the filer must say it is referring, and the heading it
+  quotes must occur exactly once in the document as something that
+  begins a block. Two blocks carrying it means the filing did not
+  disambiguate, and it is refused rather than chosen between (the rule
+  `owning` already applies). Measured on the earning filing: Item 1's
+  reference resolves to one block among nine occurrences and Item 7's
+  to forty-two, so the first is followed and the second declined.
+
+  Schema 10 follows necessarily: entries under 9 are faithful records
+  of what their readings were *shown*, and they were shown less of the
+  filing, so pooling them with readings of the wider text would derive
+  a consensus over two different strings. They are absent, not
+  relabeled, and the corpus is re-read.
+
+  **Verified live with the reader unmodified:** all four JPMorgan
+  segments now carry grounded descriptions — financial_spread,
+  services, transaction, asset_management_fees — where nine stored
+  readings had found none.
+
+  **Three findings this slice measured, none of them a defect:**
+
+  1. **The referenced chapter's tables are deliberately not merged.**
+     Handing the size reading JPMorgan's twenty-five MD&A tables made
+     it cite a cell whose column carries no header, and a mix that
+     cannot be checked discards the whole reading — descriptions
+     included. Sizes are a different claim and are not worth trading
+     for descriptions. Reading tables of that shape is a measurement of
+     its own.
+  2. **VOW3.DE is not reachable by this mechanism, and its case is now
+     precise.** Its narrative lives in the package's *management
+     report* — 13.4 MB, and confirmed to carry **zero** XBRL tags, so
+     the tagged route cannot see it. Three language-independent
+     locators were tried and all three land on tables rather than on
+     the description: densest occurrence of the IFRS term "segment"
+     (lands on the ratings chapter), smallest window naming all three
+     segments (lands on a table header row), and naming-outside-a-table
+     (VW's layout defeats the table test). The descriptive passage
+     exists and was read by hand — "Im Segment Pkw und leichte
+     Nutzfahrzeuge …", "Das Segment Nutzfahrzeuge umfasst …", "Der
+     Konzernbereich Finanzdienstleistungen …" — so the evidence is
+     real and the *locator* is what is missing. Not earned by one
+     company; recorded here rather than guessed at.
+  3. **JPM cannot move the portfolio KPI, because JPM is not in the
+     portfolio** — it is on neither the book nor a watchlist. The KPI
+     path from this slice runs through BNP.PA, a held bank at 1/5:
+     JPM's descriptions establish `financial_spread` at quorum, which
+     is exactly what a grounded Bank rule was waiting on, and BNP.PA
+     becomes its first live acceptance case. That rule is a vocabulary
+     decision reserved to the measurements' owner, so the KPI does not
+     move inside this slice and the reason is structural rather than a
+     failure of the mechanism.
+
+  **Measured at quorum (JPM, 5 observations under protocol 10).** The
+  targeted causes are gone: `description never arrived` and `no
+  description found when asked by name` are both **zero**, and every
+  remaining JPM absence is a *size*. Four revenue mechanisms are
+  established — `financial_spread` (4/5, across all four segments),
+  `asset_management_fees`, `services`, `transaction` — and Business
+  Understanding reaches quorum.
+
+  **The chain now stops exactly one link further along, and names its
+  own next bottleneck unanimously:**
+
+  | Link | Before | After |
+  |---|---|---|
+  | grounded descriptions | absent | **established, 3/3** |
+  | revenue mechanisms | none | **four, at quorum** |
+  | Business Understanding | blocked | **quorate** |
+  | archetype | — | refused: sizes unsettled |
+  | authoritative playbook | — | refused |
+  | portfolio KPI | 2 | 2 |
+
+  The archetype's own words: "The ways this business earns are known
+  and cannot be ordered. Counting segments would weigh its largest and
+  smallest parts equally." All four size claims carry one reason —
+  *document points elsewhere for its tables* — which is precisely the
+  finding (1) this slice declined to attack. **The next slice is
+  therefore earned by measurement rather than inferred: read the
+  referenced chapter's tables**, which is the same cross-reference
+  mechanism applied to the tabular half, and which the size reading
+  must be shown to survive before the chapter's tables are handed to
+  it.
+
+  **The whole corpus re-read under protocol 10 (2026-08-07, 9
+  companies at quorum 5).** What the taxonomy now finds, and what it
+  no longer does:
+
+  - `description never arrived`: **zero, corpus-wide.**
+  - `no description found when asked by name`: VOW3.DE only — one
+    company, not a pattern, correctly a frozen backlog entry with its
+    cause precisely known (the untagged Lagebericht, finding 2).
+  - **The queued applicability slice is un-earned.** JPM's CCB is now
+    described, so *description rejected by applicability* reaches META
+    alone — one company, below the pattern threshold. The measurement
+    that earned it has been superseded by this slice's result, and the
+    queue entry is withdrawn rather than kept on momentum.
+  - **BNP.PA reached quorum in the re-read** (a held bank, previously
+    1/5): three of four segments sized, `financial_spread`, `services`,
+    `transaction` and `asset_management_fees` established through CIB
+    and IPS — but CPBS, 52% of revenue, has its ways of earning
+    unsettled across 5 observations. The Bank-rule case is closer and
+    not clean; whether CPBS's disagreement warrants spend or a rule can
+    rest on the settled majority engine is the owner's call.
+  - The ledger's history begins again at protocol 10 — its stated
+    limit, behaving as designed under supersession — and PR #51's
+    resolution claim is now surfaced as *unadjudicated*: the pattern it
+    resolved lives in history the current schema no longer restores.
+    The credit discipline did exactly what it promises: it never
+    trusted, and when the evidence base moved, it said so.
 - **Stream B — reader quality.** A measured defect list, not a work
   queue. One company is insufficient to unfreeze reader work; several
   foreign private issuers failing for the same structural reason would

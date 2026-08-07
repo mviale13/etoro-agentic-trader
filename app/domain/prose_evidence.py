@@ -227,6 +227,22 @@ def namings(text: str, segments: tuple[str, ...]) -> tuple[Naming, ...]:
     nothing here for it, which is not a failure — it is why that
     segment's description will be absent rather than attached to whatever
     sentence happened to be nearby.
+
+    A filer that defines an abbreviation for a segment names it both
+    ways: once in full where it introduces the short form, and by the
+    plain name everywhere it goes on to describe it. Both are the
+    document naming that segment, which is why the abbreviation is
+    stripped here exactly as `owning` strips it from a heading — the
+    two are halves of one partition and a rule either applied to only
+    one of them would be a rule about neither.
+
+    Measured, and it was not a subtlety: JPMorgan stores its segments
+    as "Consumer & Community Banking (CCB)" and describes them eighty
+    pages later under the plain names. Matching only the full form
+    found all three exactly once, in the sentence of Item 1 that
+    defines the abbreviations — so the last of them opened a region
+    that ran to the end of the document, and every description in the
+    chapter was read as belonging to Asset & Wealth Management.
     """
 
     flat, origins = _indexed(text)
@@ -234,27 +250,43 @@ def namings(text: str, segments: tuple[str, ...]) -> tuple[Naming, ...]:
     found: list[Naming] = []
 
     for segment in segments:
-        needle = normalised(segment)
+        for needle in _named(segment):
+            at = flat.find(needle)
 
-        if not needle:
-            continue
+            while at != -1:
+                if _is_a_word(text, origins, at, at + len(needle)):
+                    found.append(Naming(segment=segment, at=at, ends=at + len(needle)))
 
-        at = flat.find(needle)
-
-        while at != -1:
-            if _is_a_word(text, origins, at, at + len(needle)):
-                found.append(Naming(segment=segment, at=at, ends=at + len(needle)))
-
-            at = flat.find(needle, at + 1)
+                at = flat.find(needle, at + 1)
 
     # A naming swallowed whole by a longer one is that longer one, said
     # once. Keeping both would let "Nutzfahrzeuge" claim every stretch of
-    # the document that "Pkw und leichte Nutzfahrzeuge" opened.
+    # the document that "Pkw und leichte Nutzfahrzeuge" opened — and it
+    # is also what reduces the two forms of an abbreviated name to the
+    # one naming they are wherever the filer writes it in full.
     standing = [
         naming for naming in found if not any(other.covers(naming) for other in found)
     ]
 
     return tuple(sorted(standing, key=lambda naming: naming.at))
+
+
+def _named(segment: str) -> tuple[str, ...]:
+    """The forms this document may name this segment by, longest first.
+
+    The stored name, and the same name without the abbreviation the
+    filer defined for its own use. Never the abbreviation alone: "CCB"
+    is three letters that appear inside other words and in other
+    companies' filings, and a partition opened by a false naming is
+    worse than one that misses a true one.
+    """
+
+    full = normalised(segment)
+    plain = normalised(_DEFINED_ABBREVIATION.sub("", segment))
+
+    forms = [form for form in (full, plain) if form]
+
+    return tuple(dict.fromkeys(forms))
 
 
 def owning(

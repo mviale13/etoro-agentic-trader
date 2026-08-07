@@ -3,15 +3,15 @@
     {
       "description": "The Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
       "reading": {
-        "observed_at": "2026-08-07T07:02:55.116193+00:00",
+        "observed_at": "2026-08-07T16:08:34.106864+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
         {
           "description": {
-            "distance": 67,
+            "distance": 13,
             "ownership": "structure",
-            "quoted": "non-sports focused global film and episodic content production and distribution",
+            "quoted": "The Entertainment segment generally encompasses the Company\u2019s non-sports focused global film and episodic content",
             "revenue_models": [
               "subscription",
               "advertising",
@@ -53,9 +53,9 @@
         },
         {
           "description": {
-            "distance": 53,
+            "distance": 6,
             "ownership": "structure",
-            "quoted": "sports-focused global television and DTC video streaming content production and distribution",
+            "quoted": "The Sports segment generally encompasses the Company\u2019s sports-focused global television and DTC video streaming content",
             "revenue_models": [
               "subscription",
               "advertising",
@@ -99,7 +99,286 @@
           "description": {
             "distance": 0,
             "ownership": "proximity",
-            "quoted": "lines of business within Experiences along with their significant business activities",
+            "quoted": "The lines of business within Experiences along with their significant business activities include",
+            "revenue_models": [
+              "services",
+              "retail",
+              "licensing",
+              "advertising"
+            ],
+            "under": "Experiences"
+          },
+          "name": "Experiences",
+          "revenue": {
+            "denominator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 5,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Revenues",
+              "printed": "$ 94,425",
+              "value": 94425.0
+            },
+            "numerator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 3,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Experiences",
+              "printed": "36,156",
+              "value": 36156.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+      "reading": {
+        "observed_at": "2026-08-07T16:08:58.732151+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 45,
+            "ownership": "structure",
+            "quoted": "encompasses the Company\u2019s non-sports focused global film and episodic content",
+            "revenue_models": [
+              "subscription",
+              "advertising",
+              "licensing",
+              "transaction",
+              "services"
+            ],
+            "under": "ENTERTAINMENT"
+          },
+          "name": "Entertainment",
+          "revenue": {
+            "denominator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 5,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Revenues",
+              "printed": "$ 94,425",
+              "value": 94425.0
+            },
+            "numerator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 1,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Entertainment",
+              "printed": "$ 42,466",
+              "value": 42466.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 31,
+            "ownership": "structure",
+            "quoted": "encompasses the Company\u2019s sports-focused global television and DTC video",
+            "revenue_models": [
+              "subscription",
+              "advertising",
+              "licensing",
+              "transaction"
+            ],
+            "under": "SPORTS"
+          },
+          "name": "Sports",
+          "revenue": {
+            "denominator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 5,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Revenues",
+              "printed": "$ 94,425",
+              "value": 94425.0
+            },
+            "numerator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Sports",
+              "printed": "17,672",
+              "value": 17672.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "The lines of business within Experiences along with their significant",
+            "revenue_models": [
+              "retail",
+              "licensing",
+              "services",
+              "transaction"
+            ],
+            "under": "Experiences"
+          },
+          "name": "Experiences",
+          "revenue": {
+            "denominator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 5,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Revenues",
+              "printed": "$ 94,425",
+              "value": 94425.0
+            },
+            "numerator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 3,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Experiences",
+              "printed": "36,156",
+              "value": 36156.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "The Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+      "reading": {
+        "observed_at": "2026-08-07T16:09:22.940642+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 67,
+            "ownership": "structure",
+            "quoted": "non-sports focused global film and episodic content production and distribution activities",
+            "revenue_models": [
+              "subscription",
+              "advertising",
+              "licensing",
+              "transaction",
+              "services"
+            ],
+            "under": "ENTERTAINMENT"
+          },
+          "name": "Entertainment",
+          "revenue": {
+            "denominator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 5,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Revenues",
+              "printed": "$ 94,425",
+              "value": 94425.0
+            },
+            "numerator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 1,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Entertainment",
+              "printed": "$ 42,466",
+              "value": 42466.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 53,
+            "ownership": "structure",
+            "quoted": "sports-focused global television and DTC video streaming content production",
+            "revenue_models": [
+              "subscription",
+              "advertising",
+              "licensing",
+              "transaction",
+              "services"
+            ],
+            "under": "SPORTS"
+          },
+          "name": "Sports",
+          "revenue": {
+            "denominator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 5,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Revenues",
+              "printed": "$ 94,425",
+              "value": 94425.0
+            },
+            "numerator": {
+              "caption": "The following table presents revenues from our operating segments:",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 6
+              },
+              "column_header": "2025",
+              "label": "Sports",
+              "printed": "17,672",
+              "value": 17672.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "The lines of business within Experiences along with their significant business activities",
             "revenue_models": [
               "transaction",
               "services",
@@ -141,9 +420,9 @@
       ]
     },
     {
-      "description": "The Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+      "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
       "reading": {
-        "observed_at": "2026-08-07T12:19:56.302698+00:00",
+        "observed_at": "2026-08-07T16:09:41.780617+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -241,10 +520,10 @@
             "ownership": "proximity",
             "quoted": "The lines of business within Experiences along with their significant business activities include the following:",
             "revenue_models": [
-              "retail",
-              "licensing",
+              "transaction",
               "services",
-              "transaction"
+              "retail",
+              "licensing"
             ],
             "under": "Experiences"
           },
@@ -281,150 +560,9 @@
       ]
     },
     {
-      "description": "The Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
+      "description": "The Walt Disney Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
       "reading": {
-        "observed_at": "2026-08-07T12:20:25.839407+00:00",
-        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": {
-            "distance": 83,
-            "ownership": "structure",
-            "quoted": "global film and episodic content production and distribution activities",
-            "revenue_models": [
-              "subscription",
-              "advertising",
-              "licensing",
-              "transaction",
-              "services"
-            ],
-            "under": "ENTERTAINMENT"
-          },
-          "name": "Entertainment",
-          "revenue": {
-            "denominator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Revenues",
-              "printed": "$ 94,425",
-              "value": 94425.0
-            },
-            "numerator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 1,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Entertainment",
-              "printed": "$ 42,466",
-              "value": 42466.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 53,
-            "ownership": "structure",
-            "quoted": "sports-focused global television and DTC video streaming content production and distribution activities",
-            "revenue_models": [
-              "subscription",
-              "advertising",
-              "licensing",
-              "transaction",
-              "services"
-            ],
-            "under": "SPORTS"
-          },
-          "name": "Sports",
-          "revenue": {
-            "denominator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Revenues",
-              "printed": "$ 94,425",
-              "value": 94425.0
-            },
-            "numerator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 2,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Sports",
-              "printed": "17,672",
-              "value": 17672.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 0,
-            "ownership": "proximity",
-            "quoted": "The lines of business within Experiences along with their significant business activities",
-            "revenue_models": [
-              "transaction",
-              "services",
-              "retail",
-              "licensing",
-              "advertising"
-            ],
-            "under": "Experiences"
-          },
-          "name": "Experiences",
-          "revenue": {
-            "denominator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Revenues",
-              "printed": "$ 94,425",
-              "value": 94425.0
-            },
-            "numerator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 3,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Experiences",
-              "printed": "36,156",
-              "value": 36156.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "The Company is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
-      "reading": {
-        "observed_at": "2026-08-07T12:20:55.390671+00:00",
+        "observed_at": "2026-08-07T16:10:00.283338+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -476,12 +614,12 @@
           "description": {
             "distance": 53,
             "ownership": "structure",
-            "quoted": "sports-focused global television and DTC video streaming content production and distribution activities",
+            "quoted": "sports-focused global television and DTC video streaming content production",
             "revenue_models": [
               "subscription",
               "advertising",
-              "licensing",
               "transaction",
+              "licensing",
               "services"
             ],
             "under": "SPORTS"
@@ -520,7 +658,7 @@
           "description": {
             "distance": 0,
             "ownership": "proximity",
-            "quoted": "The lines of business within Experiences along with their significant business activities",
+            "quoted": "The lines of business within Experiences along with their significant business activities include",
             "revenue_models": [
               "transaction",
               "services",
@@ -560,149 +698,9 @@
           "unmeasured_because": null
         }
       ]
-    },
-    {
-      "description": "The Walt Disney Company, together with the subsidiaries through which businesses are conducted (the Company), is a diversified worldwide entertainment company with operations in three segments: Entertainment, Sports and Experiences.",
-      "reading": {
-        "observed_at": "2026-08-07T12:21:24.827522+00:00",
-        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": {
-            "distance": 36,
-            "ownership": "structure",
-            "quoted": "generally encompasses the Company\u2019s non-sports focused global film and episodic content",
-            "revenue_models": [
-              "subscription",
-              "advertising",
-              "licensing",
-              "transaction",
-              "services"
-            ],
-            "under": "ENTERTAINMENT"
-          },
-          "name": "Entertainment",
-          "revenue": {
-            "denominator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Revenues",
-              "printed": "$ 94,425",
-              "value": 94425.0
-            },
-            "numerator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 1,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Entertainment",
-              "printed": "$ 42,466",
-              "value": 42466.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 31,
-            "ownership": "structure",
-            "quoted": "encompasses the Company\u2019s sports-focused global television and DTC video streaming",
-            "revenue_models": [
-              "subscription",
-              "advertising",
-              "licensing",
-              "transaction",
-              "services"
-            ],
-            "under": "SPORTS"
-          },
-          "name": "Sports",
-          "revenue": {
-            "denominator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Revenues",
-              "printed": "$ 94,425",
-              "value": 94425.0
-            },
-            "numerator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 2,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Sports",
-              "printed": "17,672",
-              "value": 17672.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 0,
-            "ownership": "proximity",
-            "quoted": "The revenues of Experiences are as follows:",
-            "revenue_models": [
-              "retail",
-              "licensing",
-              "services",
-              "transaction"
-            ],
-            "under": "Experiences"
-          },
-          "name": "Experiences",
-          "revenue": {
-            "denominator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 5,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Revenues",
-              "printed": "$ 94,425",
-              "value": 94425.0
-            },
-            "numerator": {
-              "caption": "The following table presents revenues from our operating segments:",
-              "cell": {
-                "column": 1,
-                "row": 3,
-                "table": 6
-              },
-              "column_header": "2025",
-              "label": "Experiences",
-              "printed": "36,156",
-              "value": 36156.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        }
-      ]
     }
   ],
-  "schema_version": 9,
+  "schema_version": 10,
   "source": {
     "authority": "regulator_filed",
     "company": "Walt Disney Co",

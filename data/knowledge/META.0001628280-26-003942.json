@@ -1,9 +1,9 @@
 {
   "observations": [
     {
-      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
+      "description": "We build technology that helps people connect and share, find and build communities, and grow businesses.",
       "reading": {
-        "observed_at": "2026-08-07T07:04:41.457871+00:00",
+        "observed_at": "2026-08-07T16:13:52.672079+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -36,7 +36,7 @@
               "value": 198759.0
             }
           },
-          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
+          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
           "unmeasured_because": null
         },
         {
@@ -68,7 +68,7 @@
               "value": 2207.0
             }
           },
-          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
           "unmeasured_because": null
         }
       ]
@@ -76,7 +76,7 @@
     {
       "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
       "reading": {
-        "observed_at": "2026-08-07T08:11:39.431596+00:00",
+        "observed_at": "2026-08-07T16:14:49.569169+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -160,9 +160,9 @@
       ]
     },
     {
-      "description": "We build technology and platforms that help people connect and share across mobile, computers, VR headsets, and AI glasses, powered by AI innovations.",
+      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
       "reading": {
-        "observed_at": "2026-08-07T08:12:48.306913+00:00",
+        "observed_at": "2026-08-07T16:15:32.432639+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -233,9 +233,9 @@
       ]
     },
     {
-      "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
+      "description": "We build technology that helps people connect and share, find and build communities, and grow businesses.",
       "reading": {
-        "observed_at": "2026-08-07T08:14:13.248951+00:00",
+        "observed_at": "2026-08-07T16:16:20.204741+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -272,7 +272,21 @@
           "unmeasured_because": null
         },
         {
-          "description": null,
+          "description": {
+            "distance": 1507,
+            "ownership": "structure",
+            "quoted": "our Reality Labs efforts include shorter-term projects developing specific products",
+            "repair": {
+              "first_refused_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+              "reader": "gpt-5"
+            },
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "transaction"
+            ],
+            "under": "Reality Labs Products"
+          },
           "name": "Reality Labs (RL)",
           "revenue": {
             "denominator": {
@@ -300,7 +314,7 @@
               "value": 2207.0
             }
           },
-          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+          "undescribed_because": null,
           "unmeasured_because": null
         }
       ]
@@ -308,7 +322,7 @@
     {
       "description": "Our products enable people to connect and share through mobile devices, personal computers, virtual reality (VR) headsets, and AI glasses.",
       "reading": {
-        "observed_at": "2026-08-07T08:16:28.534315+00:00",
+        "observed_at": "2026-08-07T16:16:59.985630+00:00",
         "source": "10-K 0001628280-26-003942 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -341,11 +355,23 @@
               "value": 198759.0
             }
           },
-          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted and was refused too: The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'.",
+          "undescribed_because": "The description of 'Family of Apps (FoA)' quotes words the document prints outside the section it heads 'Family of Apps Products', so they are not what it says there about 'Family of Apps (FoA)'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
           "unmeasured_because": null
         },
         {
-          "description": null,
+          "description": {
+            "distance": 285,
+            "ownership": "structure",
+            "quoted": "continuing to develop products and experiences that help people feel connected",
+            "repair": {
+              "first_refused_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+              "reader": "gpt-5"
+            },
+            "revenue_models": [
+              "retail"
+            ],
+            "under": "Reality Labs Products"
+          },
           "name": "Reality Labs (RL)",
           "revenue": {
             "denominator": {
@@ -373,13 +399,13 @@
               "value": 2207.0
             }
           },
-          "undescribed_because": "The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'. A repair was attempted and was refused too: The description of 'Reality Labs (RL)' quotes words the document prints outside the section it heads 'Reality Labs Products', so they are not what it says there about 'Reality Labs (RL)'.",
+          "undescribed_because": null,
           "unmeasured_because": null
         }
       ]
     }
   ],
-  "schema_version": 9,
+  "schema_version": 10,
   "source": {
     "authority": "regulator_filed",
     "company": "Meta Platforms, Inc.",

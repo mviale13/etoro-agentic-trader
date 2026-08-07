@@ -1,9 +1,307 @@
 {
   "observations": [
     {
-      "description": "BNP Paribas is the Group\u2019s lead company holding key positions in three operating divisions: Corporate & Institutional Banking, Commercial, Personal Banking & Services, and Investment & Protection Services.",
+      "description": "BNP Paribas holds key positions in its three operating divisions: Corporate & Institutional Banking (CIB), Commercial, Personal Banking & Services (CPBS) and Investment & Protection Services (IPS).",
       "reading": {
-        "observed_at": "2026-08-07T13:37:24.956249+00:00",
+        "observed_at": "2026-08-07T16:21:52.543393+00:00",
+        "source": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "proximity",
+            "quoted": "which covers Global Banking, Global Markets and Securities Services",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Corporate & Institutional Banking (CIB)"
+          },
+          "name": "Corporate & Institutional Banking (CIB)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Corporate & Institutional Banking",
+              "printed": "18,997",
+              "value": 18997.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 37,
+            "ownership": "proximity",
+            "quoted": "which covers Commercial & Personal banking in the Eurozone",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Commercial, Personal Banking & Services (CPBS)"
+          },
+          "name": "Commercial, Personal Banking & Services (CPBS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Commercial, Personal Banking &\u00a0Services",
+              "printed": "26,717",
+              "value": 26717.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 31,
+            "ownership": "proximity",
+            "quoted": "which covers Insurance (BNP Paribas Cardif), Wealth and Asset Management",
+            "revenue_models": [
+              "premiums",
+              "asset_management_fees",
+              "services"
+            ],
+            "under": "Investment & Protection Services (IPS)"
+          },
+          "name": "Investment & Protection Services (IPS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Investment & Protection Services",
+              "printed": "6,929",
+              "value": 6929.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 15,
+            "ownership": "proximity",
+            "quoted": "mainly include activities related to the Group\u2019s central treasury function",
+            "revenue_models": [],
+            "under": "Other Activities"
+          },
+          "name": "Other Activities",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "The reading located no cell reporting this segment's revenue in the tables this filing's performance discussion prints, though it located the total and other segments' figures there."
+        }
+      ]
+    },
+    {
+      "description": "BNP Paribas, a soci\u00e9t\u00e9 anonyme (Public Limited Company), registered in France , is the Group\u2019s lead company, which holds key positions in its three operating divisions: Corporate & Institutional Banking (CIB), Commercial, Personal Banking & Services (CPBS) and Investment & Protection Services (IPS).",
+      "reading": {
+        "observed_at": "2026-08-07T16:22:22.837969+00:00",
+        "source": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Corporate & Institutional Banking (CIB) which covers Global Banking, Global Markets",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Corporate & Institutional Banking (CIB)"
+          },
+          "name": "Corporate & Institutional Banking (CIB)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Corporate & Institutional Banking",
+              "printed": "18,997",
+              "value": 18997.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Commercial, Personal Banking & Services (CPBS) which covers Commercial & Personal banking in the Eurozone,",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Commercial, Personal Banking & Services (CPBS)"
+          },
+          "name": "Commercial, Personal Banking & Services (CPBS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Commercial, Personal Banking &\u00a0Services",
+              "printed": "26,717",
+              "value": 26717.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Investment & Protection Services (IPS) which covers Insurance (BNP Paribas Cardif), Wealth and Asset Management",
+            "revenue_models": [
+              "premiums",
+              "asset_management_fees",
+              "services"
+            ],
+            "under": "Investment & Protection Services (IPS)"
+          },
+          "name": "Investment & Protection Services (IPS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Investment & Protection Services",
+              "printed": "6,929",
+              "value": 6929.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Other Activities mainly include activities related to the Group\u2019s central treasury function,",
+            "revenue_models": [
+              "financial_spread"
+            ],
+            "under": "Other Activities"
+          },
+          "name": "Other Activities",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "The reading located no cell reporting this segment's revenue in the tables this filing's performance discussion prints, though it located the total and other segments' figures there."
+        }
+      ]
+    },
+    {
+      "description": "The Group is composed of three operating divisions: Corporate & Institutional Banking (CIB), Commercial, Personal Banking & Services (CPBS) and Investment & Protection Services (IPS).",
+      "reading": {
+        "observed_at": "2026-08-07T16:22:52.312334+00:00",
         "source": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0 via ESEF, read by gpt-5"
       },
       "segments": [
@@ -51,13 +349,161 @@
         },
         {
           "description": {
-            "distance": 37,
+            "distance": 0,
             "ownership": "proximity",
-            "quoted": "which covers Commercial & Personal banking in the Eurozone",
+            "quoted": "Commercial, Personal Banking & Services (CPBS) which covers Commercial & Personal banking in the Eurozone",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "retail",
+              "transaction"
+            ],
+            "under": "Commercial, Personal Banking & Services (CPBS)"
+          },
+          "name": "Commercial, Personal Banking & Services (CPBS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Commercial, Personal Banking &\u00a0Services",
+              "printed": "26,717",
+              "value": 26717.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Investment & Protection Services (IPS) which covers Insurance (BNP Paribas Cardif), Wealth and Asset Management",
+            "revenue_models": [
+              "premiums",
+              "asset_management_fees",
+              "services"
+            ],
+            "under": "Investment & Protection Services (IPS)"
+          },
+          "name": "Investment & Protection Services (IPS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Investment & Protection Services",
+              "printed": "6,929",
+              "value": 6929.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Other Activities mainly include activities related to the Group\u2019s central treasury function",
+            "revenue_models": [],
+            "under": "Other Activities"
+          },
+          "name": "Other Activities",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "The reading located no cell reporting this segment's revenue in the tables this filing's performance discussion prints, though it located the total and other segments' figures there."
+        }
+      ]
+    },
+    {
+      "description": "BNP Paribas, a soci\u00e9t\u00e9 anonyme (Public Limited Company), registered in France , is the Group\u2019s lead company, which holds key positions in its three operating divisions: Corporate & Institutional Banking (CIB), Commercial, Personal Banking & Services (CPBS) and Investment & Protection Services (IPS).",
+      "reading": {
+        "observed_at": "2026-08-07T16:23:25.512466+00:00",
+        "source": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 32,
+            "ownership": "proximity",
+            "quoted": "which covers Global Banking, Global Markets and Securities Services",
             "revenue_models": [
               "financial_spread",
               "services",
               "transaction"
+            ],
+            "under": "Corporate & Institutional Banking (CIB)"
+          },
+          "name": "Corporate & Institutional Banking (CIB)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Corporate & Institutional Banking",
+              "printed": "18,997",
+              "value": 18997.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 42,
+            "ownership": "proximity",
+            "quoted": "covers Commercial & Personal banking in the Eurozone",
+            "revenue_models": [
+              "financial_spread",
+              "services"
             ],
             "under": "Commercial, Personal Banking & Services (CPBS)"
           },
@@ -150,9 +596,159 @@
           "unmeasured_because": "The reading located no cell reporting this segment's revenue in the tables this filing's performance discussion prints, though it located the total and other segments' figures there."
         }
       ]
+    },
+    {
+      "description": "BNP Paribas, a soci\u00e9t\u00e9 anonyme (Public Limited Company), registered in France , is the Group\u2019s lead company, which holds key positions in its three operating divisions: Corporate & Institutional Banking (CIB), Commercial, Personal Banking & Services (CPBS) and Investment & Protection Services (IPS).",
+      "reading": {
+        "observed_at": "2026-08-07T16:27:10.003952+00:00",
+        "source": "R0MUWSFPU8MPRO8K5P83-2025-12-31-ESEF-FR-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Corporate & Institutional Banking (CIB) which covers Global Banking, Global Markets and Securities Services;",
+            "revenue_models": [
+              "financial_spread",
+              "services"
+            ],
+            "under": "Corporate & Institutional Banking (CIB)"
+          },
+          "name": "Corporate & Institutional Banking (CIB)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Corporate & Institutional Banking",
+              "printed": "18,997",
+              "value": 18997.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Commercial, Personal Banking & Services (CPBS) which covers Commercial & Personal banking in the Eurozone",
+            "revenue_models": [
+              "retail",
+              "financial_spread",
+              "services"
+            ],
+            "under": "Commercial, Personal Banking & Services (CPBS)"
+          },
+          "name": "Commercial, Personal Banking & Services (CPBS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Commercial, Personal Banking &\u00a0Services",
+              "printed": "26,717",
+              "value": 26717.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Investment & Protection Services (IPS) which covers Insurance (BNP Paribas Cardif), Wealth and Asset Management",
+            "revenue_models": [
+              "premiums",
+              "asset_management_fees",
+              "services"
+            ],
+            "under": "Investment & Protection Services (IPS)"
+          },
+          "name": "Investment & Protection Services (IPS)",
+          "revenue": {
+            "denominator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Total",
+              "printed": "51,223",
+              "value": 51223.0
+            },
+            "numerator": {
+              "caption": "\u27a4 Income by business segment",
+              "cell": {
+                "column": 1,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "Year to 31 Dec. 2025",
+              "label": "Investment & Protection Services",
+              "printed": "6,929",
+              "value": 6929.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Other Activities mainly include activities related to the Group\u2019s central treasury function",
+            "revenue_models": [
+              "financial_spread",
+              "services"
+            ],
+            "under": "Other Activities"
+          },
+          "name": "Other Activities",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "The reading located no cell reporting this segment's revenue in the tables this filing's performance discussion prints, though it located the total and other segments' figures there."
+        }
+      ]
     }
   ],
-  "schema_version": 9,
+  "schema_version": 10,
   "source": {
     "authority": "regulator_filed",
     "company": "BNP Paribas Group",

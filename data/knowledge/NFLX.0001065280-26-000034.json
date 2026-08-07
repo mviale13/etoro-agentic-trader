@@ -1,28 +1,96 @@
 {
-  "description": "Netflix is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
-  "reading": {
-    "observed_at": "2026-08-07T07:04:00.748016+00:00",
-    "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
-  },
-  "schema_version": 8,
-  "segments": [
+  "observations": [
     {
-      "description": {
-        "distance": 0,
-        "ownership": "proximity",
-        "quoted": "We operate as one operating segment.",
-        "revenue_models": [
-          "subscription",
-          "advertising"
-        ],
-        "under": "one operating segment"
+      "description": "Netflix, Inc. is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
+      "reading": {
+        "observed_at": "2026-08-07T16:17:50.312094+00:00",
+        "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
       },
-      "name": "one operating segment",
-      "revenue": null,
-      "undescribed_because": null,
-      "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "We operate as one operating segment.",
+            "revenue_models": [
+              "subscription",
+              "advertising"
+            ],
+            "under": "One operating segment"
+          },
+          "name": "One operating segment",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    },
+    {
+      "description": "Netflix is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
+      "reading": {
+        "observed_at": "2026-08-07T16:18:03.210458+00:00",
+        "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    },
+    {
+      "description": "Netflix, Inc. is one of the world\u2019s leading entertainment services offering TV series, films, games and live programming across a wide variety of genres and languages.",
+      "reading": {
+        "observed_at": "2026-08-07T16:18:21.340607+00:00",
+        "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "We operate as one operating segment.",
+            "revenue_models": [
+              "subscription"
+            ],
+            "under": "One operating segment"
+          },
+          "name": "One operating segment",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    },
+    {
+      "description": "Netflix is an entertainment service offering TV series, films, games and live programming across a wide variety of genres and languages.",
+      "reading": {
+        "observed_at": "2026-08-07T16:18:35.803051+00:00",
+        "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    },
+    {
+      "description": "Netflix is an entertainment service offering TV series, films, games and live programming across many genres and languages.",
+      "reading": {
+        "observed_at": "2026-08-07T16:18:48.182431+00:00",
+        "source": "10-K 0001065280-26-000034 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "We operate as one operating segment.",
+            "revenue_models": [
+              "subscription"
+            ],
+            "under": "One operating segment"
+          },
+          "name": "One operating segment",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
     }
   ],
+  "schema_version": 10,
   "source": {
     "authority": "regulator_filed",
     "company": "NETFLIX INC",

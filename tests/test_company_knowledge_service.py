@@ -16,7 +16,6 @@ from app.domain.company_knowledge import (
 from app.domain.knowledge_consensus import (
     QUORUM,
     ConsensusState,
-    consensus_of,
 )
 from app.domain.primary_source import (
     IdentityCheck,
@@ -633,53 +632,69 @@ def test_a_refused_reading_ends_the_observe_run_and_keeps_what_stands(
     assert "was not in the text" in (outcome.absent_because or "")
 
 
-def test_a_schema_8_entry_serves_as_one_observation_below_quorum(
-    tmp_path: Path,
-) -> None:
+def superseded(store, tmp_path, version: int) -> None:
+    """Rewrite the stored entry as an earlier protocol wrote it."""
+
+    path = next(tmp_path.glob("*.json"))
+    entry = json.loads(path.read_text())
+
+    if version == 8:
+        observation = entry["observations"][0]
+        entry.pop("observations")
+        entry.update(observation)
+
+    entry["schema_version"] = version
+    path.write_text(json.dumps(entry))
+
+
+def test_an_entry_read_under_an_earlier_protocol_is_absent(tmp_path: Path) -> None:
     """
-    The carried-forward corpus: a single-reading entry keeps operating,
-    labeled, and is never called settled.
+    Not wrong, and not poolable — which is why it is absent.
+
+    A schema-9 entry is a faithful record of what its reading was
+    shown, and what it was shown was less of the filing: a section that
+    said its content was printed elsewhere had not yet been followed.
+    Serving it beside a reading of the wider text would derive a
+    consensus over two different strings and call the difference
+    instability, which is the one thing `consensus_of` refuses across
+    documents. The filing is immutable and still there, so it is read
+    again.
     """
 
     store = JsonCompanyKnowledgeStore(tmp_path)
     store.append(knowledge())
 
-    # Rewrite the entry as its schema-8 form: the observation body at
-    # the top level, exactly as the previous store wrote it.
-    path = next(tmp_path.glob("*.json"))
-    entry = json.loads(path.read_text())
-    observation = entry["observations"][0]
-    entry.pop("observations")
-    entry.update(observation)
-    entry["schema_version"] = 8
-    path.write_text(json.dumps(entry))
+    superseded(store, tmp_path, version=9)
 
-    restored = store.read("DIS", ACCESSION)
-
-    assert len(restored) == 1
-
-    consensus = consensus_of(restored)
-
-    assert consensus.observation_count == 1
-    assert consensus.state is ConsensusState.INSUFFICIENT_QUORUM
+    assert store.read("DIS", ACCESSION) == ()
+    assert store.latest("DIS") == ()
+    assert store.symbols() == ()
 
 
-def test_appending_to_a_schema_8_entry_carries_the_observation_forward(
-    tmp_path: Path,
-) -> None:
-    """The relabeling is real: the old reading survives beside the new one."""
+def test_no_older_protocol_is_relabeled_either(tmp_path: Path) -> None:
+    """Schema 8 was relabeled into 9 because nothing about the reading
+    had changed. That is over: 9 into 10 changed what the reader was
+    shown, so every entry beneath it is read again rather than carried."""
 
     store = JsonCompanyKnowledgeStore(tmp_path)
     store.append(knowledge())
 
-    path = next(tmp_path.glob("*.json"))
-    entry = json.loads(path.read_text())
-    observation = entry["observations"][0]
-    entry.pop("observations")
-    entry.update(observation)
-    entry["schema_version"] = 8
-    path.write_text(json.dumps(entry))
+    superseded(store, tmp_path, version=8)
+
+    assert store.read("DIS", ACCESSION) == ()
+
+
+def test_a_superseded_entry_is_replaced_by_what_is_read_next(
+    tmp_path: Path,
+) -> None:
+    """The re-read starts the entry over rather than appending to a
+    record of a different acquisition."""
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+    store.append(knowledge())
+
+    superseded(store, tmp_path, version=9)
 
     store.append(knowledge())
 
-    assert len(store.read("DIS", ACCESSION)) == 2
+    assert len(store.read("DIS", ACCESSION)) == 1

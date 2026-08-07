@@ -66,11 +66,25 @@ from app.domain.tabular_evidence import (
 #: The prohibition on upgrades exists to stop inventing what a reading
 #: never captured; here nothing is filled in — the reading protocol did
 #: not change between 8 and 9, only what the store calls the entry.
-KNOWLEDGE_SCHEMA_VERSION = 9
+#: 10 — a section that says its content is printed elsewhere is now
+#: followed, so the reader is shown a part of the filing that entries
+#: written under 9 were never given. This is the case the version exists
+#: for, in its plainest form: JPMorgan's Item 1 names its segments and
+#: states that what they do is described in a chapter eighty pages
+#: later, and every reading under 9 honestly reported that the filing
+#: described nothing. Those entries are not wrong about what they were
+#: shown, and that is exactly why they cannot be pooled with readings of
+#: the wider text — a consensus over both would be measuring two
+#: different strings and calling the difference instability, which is
+#: the one thing `consensus_of` refuses across documents and must refuse
+#: here for the same reason.
+KNOWLEDGE_SCHEMA_VERSION = 10
 
-#: The one older schema restored rather than treated as absent. See
-#: above: a relabeling, not an upgrade.
-RELABELED_SCHEMA_VERSION = 8
+#: No older schema is restored. 8 was relabeled into 9 because nothing
+#: about the reading had changed; 9 into 10 is not that — the reader was
+#: shown different text — so entries under it are absent and the
+#: documents, immutable and still there, are read again.
+RELABELED_SCHEMA_VERSION: int | None = None
 
 
 class CompanyKnowledgeStore(ABC):
