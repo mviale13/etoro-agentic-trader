@@ -308,7 +308,67 @@ names: a live refusal. JPMorgan condenses equity to one line labelled
 pointed at the right cell and this platform refused it for the filer's
 wording — which is the sentence that earns the entry.
 
-### Open defect: the balance-sheet locator finds the MD&A first
+### Closed: the statements are resolved as the run they form (2026-08-08)
+
+The defect below was repaired the way the owner ruled it had to be —
+in the locator, not the reader, and by generalising the boundary
+architecture rather than by a fourth anchor guess.
+
+**The acceptance criterion, which is the whole design:**
+
+> Every authoritative financial statement is selected because it
+> belongs to the highest-quality structural run, never because its
+> title matched first.
+
+`app/providers/statement_locator.py` resolves the most coherent
+progression of *statements*, exactly as `section_locator` resolves the
+most coherent progression of *numbered items*. A run's quality is its
+**substance**: how many *different* statements it carries at more than
+a listing's width. That single measure separates every shape, with no
+clause written for any of them:
+
+| Shape | Substance | Why |
+|---|---|---|
+| Contents page | 0 | Three statements, each a few characters to the next — a progression of nothing. |
+| MD&A discussion | 1 | Wide, block-beginning, and isolated: no sibling statements around it. |
+| Pointer item | — | Item 8's "appear on pages 162–314" holds no statement title, so it is a candidate for nothing. |
+| Audited statements | 3 | Several different statements, each thousands of characters. |
+
+Two refusals are built in. **No fallback**: a statement absent from the
+selected run is absent, even where its title appears elsewhere in the
+document. And **no tiebreak**: two structurally indistinguishable runs
+resolve to nothing, because choosing between them by position or
+capitalisation is the localised repair this architecture exists to
+avoid. `RUN_GAP` errs deliberately small for the same reason — too
+small splits a real block and reports an honest absence; too large lets
+a discussion join the run and produces a wrong provenance claim.
+
+**Measured on JPM.** The balance sheet moved from the MD&A's *Selected
+Consolidated balance sheets data* (8,479 characters) to the audited
+*Consolidated balance sheets* (3,554), and every statement now resolves
+with exactly one contender, so the provenance caveat is silent. The
+figures are unchanged — 4,062,462 and 362,438 — which says the MD&A
+summary was accurate and says nothing about whether the platform was
+entitled to call it the audited statement.
+
+Two vocabulary entries were earned by live refusals along the way, both
+by the mechanism the design names. The bare form "Stockholders' equity"
+(JPMorgan's MD&A summary prints no "Total"), and **a trailing footnote
+marker is typography, not a label** — the audited statement labels its
+line "Total liabilities (a)" where the summary labels it "Total
+liabilities", so a platform reading the marker as part of the name
+would have refused the audited statement and accepted the discussion of
+it, which is exactly backwards. The rule is bounded to one to three
+letters or digits in brackets, so "Net income (loss)" is untouched.
+
+Store schema 2: schema-1 balance-sheet readings were shown different
+text, so the corpus was re-read rather than pooled. The bump covers the
+whole stream even though two of the three statements resolve to
+byte-identical sections, because the *protocol* changed — a version
+tracking outcomes rather than protocols would have to be re-argued at
+every locator change.
+
+### Repaired: the balance-sheet locator found the MD&A first
 
 **Measured on JPM, and not repaired here.** The opening anchor
 `consolidated balance sheet` matches the MD&A heading *"CONSOLIDATED

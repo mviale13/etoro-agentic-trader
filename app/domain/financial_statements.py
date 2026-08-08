@@ -23,6 +23,7 @@ schema 10.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -329,6 +330,31 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
 }
 
 
+#: A footnote marker a filer prints after a line's name: "(a)", "(1)".
+#:
+#: Bounded to one to three letters or digits inside brackets, which is
+#: what keeps it from eating a parenthetical that is part of the name.
+#: "Net income (loss)" carries four letters and survives; so does
+#: "Gross profit (loss)". The distinction is not stylistic — "(loss)"
+#: says what the line measures and "(a)" says where to read about it.
+_FOOTNOTE = re.compile(r"\s*\((?:[a-z]{1,3}|\d{1,3})\)\s*$", re.IGNORECASE)
+
+
+def without_footnote(label: str) -> str:
+    """A row label with a trailing footnote marker removed.
+
+    Earned by a live refusal, and by the one that proves the point: the
+    audited balance sheet JPMorgan prints labels its line "Total
+    liabilities (a)", where the summary of the same figures in the
+    MD&A prints "Total liabilities". The marker is a pointer into the
+    notes, not part of what the line is called — so a platform that
+    read it as part of the name would refuse the audited statement and
+    accept the discussion of it, which is precisely backwards.
+    """
+
+    return _FOOTNOTE.sub("", label.strip())
+
+
 def matches_concept(concept: StatementConcept, label: str) -> bool:
     """Whether a filer's row label answers this concept.
 
@@ -337,9 +363,12 @@ def matches_concept(concept: StatementConcept, label: str) -> bool:
     with related parties" — a containment rule would read the second
     as the company's revenue. A declared form matches exactly or the
     cell is refused.
+
+    A trailing footnote marker is removed before comparing, because it
+    is typography rather than the line's name.
     """
 
-    printed = normalised(label)
+    printed = normalised(without_footnote(label))
 
     return any(printed == normalised(form) for form in CONCEPT_LABELS[concept])
 

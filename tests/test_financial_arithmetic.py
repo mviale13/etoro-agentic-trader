@@ -3,6 +3,11 @@
 import pytest
 
 from app.domain.evidence import EvidenceNotApplicable
+from app.domain.financial_statements import (
+    StatementConcept,
+    matches_concept,
+    without_footnote,
+)
 from app.domain.tabular_evidence import (
     CellReference,
     MeasuredChange,
@@ -225,3 +230,27 @@ def test_a_change_across_two_lines_is_refused() -> None:
             later=figure(column=1),
             earlier=figure(header="2024", value=177556.0, row=2, column=2),
         )
+
+
+# ── a footnote marker is typography, not a label ─────────────────────
+
+
+def test_a_footnote_marker_does_not_change_what_a_line_is_called() -> None:
+    """JPM's audited balance sheet prints "Total liabilities (a)"."""
+
+    assert matches_concept(StatementConcept.TOTAL_LIABILITIES, "Total liabilities (a)")
+    assert matches_concept(StatementConcept.TOTAL_LIABILITIES, "Total liabilities (1)")
+    assert matches_concept(StatementConcept.TOTAL_LIABILITIES, "Total liabilities")
+
+
+def test_a_parenthetical_that_names_the_line_is_kept() -> None:
+    """ "(loss)" says what the line measures; "(a)" says where to read."""
+
+    assert without_footnote("Net income (loss)") == "Net income (loss)"
+    assert without_footnote("Total liabilities (a)") == "Total liabilities"
+
+
+def test_a_footnote_never_turns_one_line_into_another() -> None:
+    assert not matches_concept(
+        StatementConcept.TOTAL_LIABILITIES, "Other liabilities (a)"
+    )

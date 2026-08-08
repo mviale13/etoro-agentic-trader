@@ -44,7 +44,23 @@ from app.repositories.source_codec import (
 #: 1 — the stream begins: the income statement located where the filer
 #: typeset its title, anchors checked by `figure_at`, rows read by the
 #: platform.
-STATEMENT_SCHEMA_VERSION = 1
+#:
+#: 2 — the statements are located as the run they form
+#: (`app.providers.statement_locator`) rather than by the widest title
+#: match. On JPMorgan that moves the balance sheet from the MD&A's
+#: *Selected Consolidated balance sheets data* to the audited statement,
+#: which is a different 3,554 characters — so schema-1 balance-sheet
+#: readings and schema-2 ones were shown different text, and pooling
+#: them would measure two strings and call the difference instability.
+#:
+#: The bump covers the whole stream rather than the one statement whose
+#: text moved. The income statement and cash flow statement happen to
+#: resolve to byte-identical sections, but *the protocol that produced
+#: them changed*, and a version that tracked outcomes instead of
+#: protocols would have to be re-argued at every locator change. The
+#: corpus is re-read instead; the cost of that discipline here is
+#: fifteen readings of one company.
+STATEMENT_SCHEMA_VERSION = 2
 
 
 class FinancialStatementStore(ABC):
