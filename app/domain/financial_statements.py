@@ -156,6 +156,22 @@ def statement_text(document: SourceDocument, statement: StatementKind) -> str:
     }[statement]
 
 
+def statement_contenders(document: SourceDocument, statement: StatementKind) -> int:
+    """How many places in the document could have opened this statement.
+
+    One means the filing named the section once and the location is not
+    in doubt. Several means the platform chose among structural
+    contenders, and that choice is an interpretation nothing downstream
+    has checked — so every figure read from the section carries it.
+    """
+
+    return {
+        StatementKind.INCOME_STATEMENT: document.income_statement_contenders,
+        StatementKind.BALANCE_SHEET: document.balance_sheet_contenders,
+        StatementKind.CASH_FLOW_STATEMENT: document.cash_flow_contenders,
+    }[statement]
+
+
 #: What a filer calls each statement, for wording a refusal an investor
 #: reads. The enum's own value is a machine key and reads like one.
 STATEMENT_NAMES: dict[StatementKind, str] = {
@@ -392,6 +408,20 @@ class FinancialStatementObservation:
     source: PrimarySource
 
     reading: Provenance
+
+    #: How many places in the document could have opened this statement,
+    #: 0 where the reading predates the count. Above one, the section
+    #: these figures came from was chosen among contenders and the
+    #: provenance claim is an interpretation — reported as uncertain
+    #: rather than asserted, which is the honest state until the locator
+    #: can resolve statements as the sequence they are.
+    located_among: int = 0
+
+    @property
+    def provenance_uncertain(self) -> bool:
+        """Whether more than one section could have been this statement."""
+
+        return self.located_among > 1
 
     def fact(self, concept: StatementConcept) -> StatementFact | None:
         """This reading's answer for one concept, if it was asked."""

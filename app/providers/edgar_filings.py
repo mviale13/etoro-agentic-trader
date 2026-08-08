@@ -269,6 +269,14 @@ class Filing:
     cash_flow_text: str = ""
     cash_flow_tables: tuple[SourceTable, ...] = ()
 
+    #: How many places in the filing could have opened each statement.
+    #: One means the location is not in doubt; several means the choice
+    #: among them was an interpretation nothing downstream has checked,
+    #: and every figure read from that section carries the caveat.
+    income_statement_contenders: int = 0
+    balance_sheet_contenders: int = 0
+    cash_flow_contenders: int = 0
+
 
 class EdgarFilings:
     """
@@ -397,6 +405,9 @@ class EdgarFilings:
             balance_sheet_tables=balance_tables,
             cash_flow_text=cash_flow,
             cash_flow_tables=cash_flow_tables,
+            income_statement_contenders=_contenders(document, flat, _INCOME_STATEMENT),
+            balance_sheet_contenders=_contenders(document, flat, _BALANCE_SHEET),
+            cash_flow_contenders=_contenders(document, flat, _CASH_FLOW),
         )
 
     @staticmethod
@@ -685,6 +696,44 @@ def _every(text: str, needle: str) -> list[int]:
         at = text.find(needle, at + 1)
 
     return found
+
+
+def _contenders(
+    document: str,
+    flat: Flattened,
+    opening: tuple[str, ...],
+) -> int:
+    """How many places in this filing could have opened this section.
+
+    A count, never a choice. `_section` picks one of these and cannot
+    say whether it picked the right one — so what this reports is the
+    size of the question it had to answer, which is the honest signal
+    to carry beside a figure read out of the section it chose.
+
+    One contender means the filing named the section once and the
+    location is not in doubt. Several means the filing prints that
+    title in more than one structural position — a table of contents
+    entry, a discussion of the statement, and the statement itself all
+    begin blocks — and the platform's choice among them is an
+    interpretation that nothing downstream has checked.
+
+    Deliberately not a tiebreak, and deliberately not consulted by
+    `_section`. Preferring a contender by its neighbourhood, its
+    capitalisation or the item it sits under would be exactly the
+    localised repair the Reference Corpus has already refused twice.
+    The count is reported; the choice is left where it is until the
+    locator can resolve statements as the sequence they are.
+    """
+
+    lowered = flat.text.casefold()
+
+    return len(
+        {
+            at
+            for at in _occurrences(lowered, opening)
+            if begins_a_block(document, flat, at)
+        }
+    )
 
 
 def _occurrences(text: str, headings: tuple[str, ...]) -> list[int]:

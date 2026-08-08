@@ -16,6 +16,7 @@ from app.domain.financial_statements import (
     StatementKind,
     concepts_of,
     matches_concept,
+    statement_contenders,
     statement_tables,
     statement_text,
 )
@@ -231,6 +232,7 @@ class FinancialStatementExtractor:
             symbol=symbol.upper().strip(),
             statement=statement,
             facts=facts,
+            located_among=statement_contenders(document, statement),
             source=document.source,
             reading=Provenance(
                 source=(
@@ -358,6 +360,7 @@ class FinancialStatementExtractor:
                 )
                 for concept in concepts_of(statement)
             ),
+            located_among=statement_contenders(document, statement),
             source=document.source,
             reading=Provenance(
                 source=(

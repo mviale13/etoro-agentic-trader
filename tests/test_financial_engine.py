@@ -92,6 +92,7 @@ def consensus(
     key: str = ACCESSION,
     count: int = 5,
     quorum: int = 5,
+    located_among: int = 1,
 ) -> FinancialStatementConsensus:
     return FinancialStatementConsensus(
         symbol="JPM",
@@ -99,6 +100,7 @@ def consensus(
         source=source(key),
         observation_count=count,
         quorum=quorum,
+        located_among=located_among,
         state=(
             ConsensusState.QUORATE
             if count >= quorum
@@ -365,3 +367,38 @@ def test_established_and_absent_measures_are_separable() -> None:
     assert FinancialMeasure.NET_MARGIN in established
     assert FinancialMeasure.GROSS_MARGIN in absent
     assert not established & absent
+
+
+# ── where the figures came from ──────────────────────────────────────
+
+
+def test_one_contender_makes_no_claim_because_none_is_needed() -> None:
+    settled = consensus(StatementKind.INCOME_STATEMENT, (), count=5)
+
+    assert settled.provenance_uncertain is False
+    assert settled.provenance_caveat() is None
+
+
+def test_several_contenders_report_the_choice_as_an_interpretation() -> None:
+    """Right figures with a wrong provenance claim is the failure to stop."""
+
+    ambiguous = consensus(StatementKind.BALANCE_SHEET, (), located_among=5)
+
+    assert ambiguous.provenance_uncertain is True
+
+    caveat = ambiguous.provenance_caveat()
+
+    assert caveat is not None
+    assert "5 structural positions" in caveat
+    assert "has not established" in caveat
+
+
+def test_an_unrecorded_count_says_so_rather_than_reading_as_one() -> None:
+    """Silence here would be the confident claim the count exists to stop."""
+
+    older = consensus(StatementKind.CASH_FLOW_STATEMENT, (), located_among=0)
+
+    caveat = older.provenance_caveat()
+
+    assert caveat is not None
+    assert "is unknown" in caveat

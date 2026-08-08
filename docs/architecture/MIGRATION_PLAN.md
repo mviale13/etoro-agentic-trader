@@ -1012,6 +1012,122 @@ The measurements choose these investments. The platform stopped
 telling us what to build and started telling us where to spend model
 calls; the roadmap follows the report, not a predetermined phase plan.
 
+
+### The owner's ruling after the financial statement domain: playbooks own executive interpretation (2026-08-08)
+
+Recorded verbatim in substance, because it changes what a playbook
+*is* and therefore what every later slice is building toward.
+
+Three findings were put to the owner from the filing-grade analyst
+route — a balance sheet located from the MD&A, a liabilities-to-equity
+ratio the debt-to-equity thresholds cannot score, and a negative
+operating cash flow that is ordinary for a bank and alarming for an
+industrial. All three were shipped as honest gaps rather than repaired
+with local logic. The owner's ruling is that none of them is an
+implementation problem:
+
+> They're no longer implementation problems — they're ontology
+> problems.
+
+**1. Section interpretation belongs to the locator; statement
+understanding belongs to the reader.** Any fix of the form "prefer Item
+8", "ignore Selected Consolidated…", or "boost audited statements" is
+refused as a localised heuristic. Until the locator can resolve
+statements structurally, the platform must report *provenance
+uncertain* rather than *provenance confidently wrong*.
+
+**2. A generic rule table cannot own a domain-specific question.**
+Liabilities-to-equity is not to be scored by adapting the debt/equity
+thresholds, and banks are not to be special-cased inside a generic
+analyst. Leverage is removed from the generic balance-sheet table.
+
+**3. The same holds for cash flow.** Negative operating cash flow is
+alarming for most industrials and ordinary for a deposit-taking
+institution. Cash-flow scoring moves to the playbook.
+
+#### What actually moved
+
+The analysts were:
+
+```text
+facts → generic thresholds → score
+```
+
+They become:
+
+```text
+canonical facts
+      ↓
+playbook chooses the relevant questions
+      ↓
+playbook supplies the thresholds
+      ↓
+analyst answers
+```
+
+**The analyst is no longer responsible for knowing banking.** It
+evaluates questions a playbook defines. Playbooks stop being routers to
+a recommendation framework and become **the owners of executive
+interpretation**: they determine not only what kind of company this is,
+but which financial questions are meaningful for that kind.
+
+```text
+Generic balance sheet facts
+    ↓ playbook contributes metrics
+Industrial → debt/equity
+Bank       → CET1, Tier 1, leverage ratio, loan-loss coverage, …
+```
+
+This is what makes the Artificial CIO's question change from *"is
+debt/equity under 0.6?"* to *"is JPMorgan well capitalized for a
+globally systemic bank?"* — two different executive questions, and the
+filing-grade facts are what finally make the second one askable.
+
+#### The sequence the owner set
+
+1. **Wire the locator so statement provenance becomes authoritative.**
+2. **Move the financial rule tables into playbooks**, starting with
+   BANK.
+3. **Leave industrial thresholds untouched** for industrial companies.
+4. **Only then** expand filing-grade financial understanding across the
+   rest of the corpus.
+
+Universal acquisition, universal facts, playbook-specific
+interpretation.
+
+#### Measured against step 1: Item 8 containment does not work
+
+Taken directly, "wire PR #67" reads as *locate Item 8 and read the
+statements inside it*. Measured on JPMorgan, it does not:
+
+| Section | Located span |
+|---|---|
+| Item 7 | 396 characters — "…appears on pages 46–160" |
+| Item 8 | 370 characters — "…appear on pages 162–314" |
+
+Both are **pointers**. JPMorgan's statements are not inside Item 8 at
+all, so containment locates nothing. What the same measurement shows
+instead is that the audited statements form a tight ordered **run** —
+income at 846,628, balance sheet at 849,303, cash flow at 855,214 —
+while the losing balance-sheet candidates are isolated: a contents
+entry at 426,085 and the MD&A heading at 464,205.
+
+So step 1's real shape is the PR #67 *pattern* generalised rather than
+its `Item` vocabulary reused: discover every statement-title
+occurrence, observe each structurally, and resolve **the most coherent
+progression of statements**, exactly as the locator today resolves the
+most coherent progression of items. An isolated title that no sibling
+statement follows is a discussion of the statement, not the statement.
+
+Shipped in the interim, and only this: every statement observation
+records **how many structural positions could have opened it**. A
+count, never a tiebreak — `_section` does not consult it. One contender
+is silent; several report the choice as an interpretation; and a
+reading taken before the count existed says *that*, because an
+unrecorded count read as "one" would be the confident claim the
+measurement exists to stop. Measured on JPM: income statement 1, cash
+flow 1, **balance sheet 5**.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`

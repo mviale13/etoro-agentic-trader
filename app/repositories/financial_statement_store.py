@@ -164,6 +164,7 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             "observations": [
                 {
                     "statement": observation.statement.value,
+                    "located_among": observation.located_among,
                     "facts": [
                         {
                             "concept": fact.concept.value,
@@ -245,6 +246,11 @@ def _observation(
     return FinancialStatementObservation(
         symbol=symbol,
         statement=StatementKind(stored["statement"]),
+        # Defaulted, never invented: an entry written before the count
+        # existed records 0, which reads as "not recorded" rather than
+        # as "one contender". Upgrading it in place would be filling in
+        # what the reading never captured.
+        located_among=int(stored.get("located_among", 0)),
         facts=tuple(
             StatementFact(
                 concept=StatementConcept(fact["concept"]),

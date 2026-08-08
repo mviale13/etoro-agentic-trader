@@ -291,6 +291,15 @@ class SourceDocument:
     cash_flow_text: str = ""
     cash_flow_tables: tuple[SourceTable, ...] = ()
 
+    #: How many places in the document could have opened each statement.
+    #: Carried so a figure can say how firmly the section it came from
+    #: was identified — a location chosen among several contenders is an
+    #: interpretation, and a reader is owed that rather than a silent
+    #: claim to have read the audited statement.
+    income_statement_contenders: int = 0
+    balance_sheet_contenders: int = 0
+    cash_flow_contenders: int = 0
+
 
 class PrimarySourceUnavailable(Exception):
     """This provider holds no document for the security, and says why.

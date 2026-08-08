@@ -20,7 +20,10 @@ from app.analysts.filing_analysts import (
     filing_profitability,
     stated_value,
 )
-from app.domain.financial_statement_consensus import statement_consensus_of
+from app.domain.financial_statement_consensus import (
+    FinancialStatementConsensus,
+    statement_consensus_of,
+)
 from app.domain.financial_statements import STATEMENT_NAMES, StatementKind
 from app.domain.financial_understanding import FinancialUnderstanding
 from app.repositories.financial_statement_store import (
@@ -52,12 +55,15 @@ class FinancialsCommand:
             )
             return 1
 
-        _render(measure(normalized, held))
+        _render(measure(normalized, held), held)
 
         return 0
 
 
-def _render(understanding: FinancialUnderstanding) -> None:
+def _render(
+    understanding: FinancialUnderstanding,
+    held: dict[StatementKind, FinancialStatementConsensus],
+) -> None:
     print(f"{understanding.symbol} — what its own statements measure")
     print()
     print(understanding.source)
@@ -83,6 +89,12 @@ def _render(understanding: FinancialUnderstanding) -> None:
             "before calling anything settled — every measure below is at "
             "that width."
         )
+
+    for kind, consensus in held.items():
+        caveat = consensus.provenance_caveat()
+
+        if caveat is not None:
+            print(f"  PROVENANCE UNCERTAIN ({STATEMENT_NAMES[kind]}): {caveat}")
 
     print()
     print("measured")

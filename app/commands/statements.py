@@ -66,6 +66,11 @@ def _render_statements(consensus: FinancialStatementConsensus) -> None:
             "say, at that width."
         )
 
+    caveat = consensus.provenance_caveat()
+
+    if caveat is not None:
+        print(f"  PROVENANCE UNCERTAIN: {caveat}")
+
     print()
     print(STATEMENT_NAMES[consensus.statement])
 

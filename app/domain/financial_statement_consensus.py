@@ -93,6 +93,13 @@ class FinancialStatementConsensus:
     quorum: int
     state: ConsensusState
 
+    #: How many places in the document could have opened this statement,
+    #: as every observation of it recorded. Above one, these figures came
+    #: from a section chosen among contenders: the figures are the
+    #: filer's and checked, and the claim that they are *this statement*
+    #: is an interpretation. Reported, never silently asserted.
+    located_among: int
+
     facts: tuple[ConsensusFact, ...]
 
     #: The derivation, stated, dated to the newest observation.
@@ -101,6 +108,47 @@ class FinancialStatementConsensus:
     @property
     def is_quorate(self) -> bool:
         return self.state is ConsensusState.QUORATE
+
+    @property
+    def provenance_uncertain(self) -> bool:
+        """Whether more than one section could have been this statement."""
+
+        return self.located_among > 1
+
+    def provenance_caveat(self) -> str | None:
+        """What a reader is owed about where these figures came from.
+
+        Three states, and only one of them is silent. A statement whose
+        title occurs once is located beyond doubt and says nothing. A
+        statement with several contenders says the choice among them was
+        an interpretation. And a reading taken before this platform
+        counted says *that* — never nothing, because an unrecorded count
+        is not evidence of a single contender, and letting it read as
+        one would be the confident claim this measurement exists to
+        stop being made.
+        """
+
+        if self.located_among == 0:
+            return (
+                "These readings were taken before this platform recorded how "
+                "many sections of the filing could have been this statement, "
+                "so how firmly it was located is unknown. The figures are the "
+                "filer's and were checked against the cells they sit in; "
+                "which section they were read from is not established. "
+                "Observing this statement again records it."
+            )
+
+        if not self.provenance_uncertain:
+            return None
+
+        return (
+            f"This filing prints this statement's title in "
+            f"{self.located_among} structural positions, and this platform "
+            "read the widest of them. The figures below are the filer's and "
+            "were checked against the cells they sit in; that they are the "
+            "audited statement rather than a discussion of it is an "
+            "interpretation this platform has not established."
+        )
 
     def fact(self, concept: StatementConcept) -> ConsensusFact | None:
         """The consensus on one concept, if any observation addressed it."""
@@ -174,6 +222,7 @@ def statement_consensus_of(
             if count >= quorum
             else ConsensusState.INSUFFICIENT_QUORUM
         ),
+        located_among=max(observation.located_among for observation in observations),
         facts=facts,
         reading=_reading(observations, count, quorum),
     )
