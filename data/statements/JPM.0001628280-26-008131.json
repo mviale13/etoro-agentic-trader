@@ -1,0 +1,611 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T14:09:43.119825+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T14:09:46.035076+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T14:09:49.814480+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T14:09:55.110846+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T14:09:59.492179+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 1,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "JPMORGAN CHASE & CO",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-008131",
+    "key": "0001628280-26-008131",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-13",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "JPM",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "JPM"
+}
