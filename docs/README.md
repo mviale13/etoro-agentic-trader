@@ -21,6 +21,7 @@ These are the documents a new session should read first. They are the same set
 | What is next, and what is open? | [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md) |
 | How does the pipeline work? | [`architecture.md`](architecture.md) — **v5.0 section only** |
 | What is knowledge, once the reader is known to vary? | [`architecture/KNOWLEDGE_CONSENSUS.md`](architecture/KNOWLEDGE_CONSENSUS.md) — **accepted**: observation vs consensus, the content-blind rule that separates them, and the decisions that bind the implementation |
+| What is an investment decision? | [`architecture/INVESTMENT_DECISION.md`](architecture/INVESTMENT_DECISION.md) — **proposed**: the canonical object every future CIO engine must produce; a decision resolves disagreement, never uncertainty |
 | What state is the frontend in? | [`frontend/UX_UI_INVENTORY.md`](frontend/UX_UI_INVENTORY.md) — the pre-migration audit and the slice-by-slice execution log of the UX/UI Alignment mission (complete, PRs #8–#16) |
 
 ## Reference
