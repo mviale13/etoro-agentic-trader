@@ -40,3 +40,12 @@ data/cache/
 # someone else's. Tracking it also put this directory in the path of
 # iCloud's conflict copies, twice.
 data/events/
+
+# The investor's decision ledger — durable operational state, never cache
+# and never corpus. Company knowledge is grounded against public immutable
+# sources and serves engineering; a decision event records the investor's
+# actual portfolio and policy context at a moment, belongs to their
+# operational history, and is not re-derivable. It stays out of version
+# control (back it up like data, not like code); tests carry synthetic
+# decision events only.
+data/decisions/
