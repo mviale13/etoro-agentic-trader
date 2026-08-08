@@ -1,9 +1,13 @@
 # The Investment Assessment
 
-Status: **Proposed** (2026-08-08) — a design document only, the next
-slice after the decision layer shipped. Nothing here is implemented,
-and nothing should be until the open questions at the end are closed
-and recorded, the way `INVESTMENT_DECISION.md`'s were.
+Status: **Accepted** (2026-08-08) — proposed and accepted the same
+day. The owner confirmed the direction and the Yahoo boundary, closed
+the three remaining questions, and added the fourth constitutional
+property — *an implication is directional* — all recorded in the
+Decisions section at the end, in the tradition of
+`INVESTMENT_DECISION.md`. The implementation sequence is fixed there
+too: the Financial Statement Acquisition first, then the first
+warranting kind, Business Quality.
 
 ---
 
@@ -120,12 +124,43 @@ facts any time.)
 
 ### Independent, like observations
 
-No assessment sees another's conclusion. Each answers its own claim
-from the basis alone, and disagreement between assessments is
+Strengthened at acceptance to its full form: **an assessment is not
+allowed to know that another assessment exists.** No assessment
+consumes another, ranks another, or resolves disagreement with
+another — each is a pure implication producer, answering its own
+claim from the basis alone. Disagreement between assessments is
 resolved only in the decision's adjudication, by a named rule, losers
 preserved. Assessments that negotiated with each other would be a
 committee hiding inside the basis — the adjudication would have
 happened before the layer that is allowed to adjudicate.
+
+```text
+Facts → Knowledge → Understanding → Playbook
+                                       │
+                     ┌─────────┬───────┴──┬─────────┐
+                Assessment A  Assessment B  …  Assessment N
+                     └─────────┴───────┬──┴─────────┘
+                                       ▼
+                                   Decision
+```
+
+### An implication is directional
+
+The fourth constitutional property, added by the owner at acceptance,
+beside the three verbs the stack already had — knowledge
+*establishes*, an assessment *implies*, a decision *concludes*:
+
+> **An assessment emits only implications it can positively
+> establish. It never infers the logical opposite from absence.**
+
+*High quality supports entry* and *not high quality opposes entry*
+are different claims — the second needs its own positive ground, not
+the first's failure. *Overvalued opposes entry* does not make
+*undervalued supports entry* available; there may be no valuation
+evidence at all. Absence of support is a refusal, never opposition —
+the refusing/opposing separation above is this property's type-level
+enforcement, and the discipline is the platform's oldest: what could
+not be established is never converted into a claim.
 
 ---
 
@@ -140,9 +175,12 @@ it without translation.
 a time under §19a. A kind is a *contract*, not a label:
 
 - the one evaluative claim it answers, worded as a question;
-- the closed set of courses it may offer (a valuation kind may offer
-  *entry is warranted* or *waiting is supported*; it may never offer
-  a size);
+- the subset of the **shared course vocabulary** it may offer
+  (decision 2 at the end): kinds do not invent verbs — every
+  assessment speaks the same course language to the decision layer,
+  which adjudicates implications without needing to know which kind
+  produced them. A valuation kind and a quality kind offer different
+  subsets; neither may ever offer a size;
 - the decision questions it applies to — applicability is declared,
   and an assessment offered to a question its kind does not apply to
   is inadmissible, full stop;
@@ -177,12 +215,12 @@ and labeled context observations (width-1, saying so — and admissible
 only where the observer is the *primary source* of the observed
 thing; the Yahoo boundary below draws this line). Assessments consume
 facts; they never establish them — a gap in the basis is inherited or
-refused, never filled. Whether declared
-policy may enter an assessment's basis at all is an open question
-below; the working position is that it may not, because policy is the
-one input the *decision* obeys rather than weighs, and an assessment
+refused, never filled. Declared policy never enters an assessment's
+basis: policy — portfolio fit included — is admissibility, decided
+before any assessment runs (decision 1 at the end), and an assessment
 that consumed policy would be adjudicating admissibility one layer
-early.
+early. Assessments evaluate the business; policy evaluates the
+investor.
 
 ### Admissibility, checked at the decision
 
@@ -363,41 +401,80 @@ by the ruling:
 
 ---
 
-## Open questions for the design conversation
+## Decisions (2026-08-08)
 
-Two of the original five were closed by the Yahoo boundary and are
-recorded there: kind #1's road (the fundamentals acquisition
-precedes the first warranting kind) and context-grade warranting
-(foreclosed). Three remain:
+The design was proposed and accepted the same day. The Yahoo
+boundary was confirmed, with its abstraction stated by the owner —
+the distinction moved off the source and onto epistemology, and the
+sentence that survives any particular provider:
 
-1. **Is portfolio fit a kind at all?** The working position: hard
-   policy constraints are the decision layer's admissibility and are
-   never re-assessed; a fit kind could exist only for what policy
-   does not already decide, and it should not exist until a live
-   case demands it.
-2. **The course vocabulary.** Per-kind closed sets, with no global
-   course taxonomy — is that right, or should courses be drawn from
-   one shared vocabulary so adjudication rules can be written
-   generically?
-3. **Where adjudication rules live.** Support and opposition will
-   eventually arrive together; the resolution belongs to the decision
-   layer's rule tables (assessments stay independent) — confirm, and
-   confirm that the first such conflict earns its rule the way every
-   rule has been earned: from a live case, never in advance.
+> **A secondary restatement cannot become a load-bearing fact merely
+> because it is labeled as an observation.**
+
+Two questions were closed by that boundary and are recorded with it:
+kind #1's road (the fundamentals acquisition precedes the first
+warranting kind) and context-grade warranting (foreclosed). The
+owner closed the remaining three, and added one property:
+
+1. **Portfolio fit is not a kind — it determines admissibility,
+   never warrant.** It evaluates the investor, not the business, and
+   so belongs before assessments:
+
+   ```text
+   Can I?          → Policy      (admissibility; portfolio fit lives here)
+   Should I?       → Assessment  (implications about the case)
+   What do I do?   → Decision    (adjudication, for one question)
+   ```
+
+2. **The course vocabulary is shared.** Kinds do not invent verbs:
+   every assessment offers implications from one canonical
+   vocabulary — the owner's examples: *supports entry*, *supports
+   monitoring*, *supports preparation*, *opposes entry* — each kind
+   using the subset it can positively establish. The decision layer
+   never needs to know which kind produced an implication; it only
+   adjudicates implications. The exact enumeration is fixed with
+   kind #1 under two standing rules: refusal remains an outcome
+   type, not a course (the refusing/opposing separation), and a
+   course enters the vocabulary only when a kind's rule table can
+   positively establish it — §19a applied to verbs.
+
+3. **Adjudication belongs exclusively to the decision layer, and
+   independence is total.** An assessment is not allowed to know
+   that another assessment exists: no consuming, no ranking, no
+   resolving. Pure implication producers, fanning into one
+   adjudicator — the cleanest separation this project has drawn.
+
+**Added at acceptance: an implication is directional** — the fourth
+constitutional property beside *establishes*, *implies*,
+*concludes*, recorded in full above. An assessment emits only what
+it can positively establish, and never infers the logical opposite
+from absence.
 
 ---
 
-## What acceptance would mean
+## The implementation sequence
 
-Accepting this document fixes the contract: whatever produces
-assessments emits `InvestmentAssessment`s and nothing else, and the
-decision layer's `entry-no-assessment-establishes-a-case` rule gains
-its successor: a rule that weighs offered courses. The road there is
-set by the Yahoo boundary — the first implementation work after
-acceptance is the **fundamentals acquisition**: the primary
-financial statements through the proven tabular chain, a knowledge
-slice reopened on the decision layer's own measured demand. The
-first kind follows on those established figures, exercised against
-the JPM entry stream — where the second decision in that stream will
-either still say `MONITOR` with a richer record, or say something
-more, and either way say it honestly.
+Fixed at acceptance, and it does not begin with an "Assessment
+Engine":
+
+1. **Financial Statement Acquisition** — the earned §19a reopening
+   of the knowledge platform. JPM reached `MONITOR` not because the
+   decision layer is weak but because filing-grade financial facts
+   do not exist; the primary statements enter through the proven
+   tabular chain, as their own knowledge slice with its own
+   measurements.
+2. **The first warranting kind: Business Quality** — chosen over
+   valuation because it sits closest to the evidence already earned,
+   and it gives the Artificial CIO its first genuine road from
+   `MONITOR` toward `RECOMMEND` without compromising the evidence
+   standard the platform spent months establishing.
+3. **The adjudication successor** — the decision layer's
+   `entry-no-assessment-establishes-a-case` rule gains the rule that
+   weighs offered courses, earned from the first live conflict,
+   never in advance.
+
+The contract this document fixes holds through all three: whatever
+produces assessments emits `InvestmentAssessment`s and nothing else,
+and the second decision in JPM's entry stream will either still say
+`MONITOR` with a richer record, or say something more — and either
+way say it honestly.
