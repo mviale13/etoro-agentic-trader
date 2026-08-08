@@ -550,6 +550,27 @@ IPS first so the archetype beneath the rule is not resting on 3/5.
 The case earns the rule, never the other way around — and this case
 is now precise enough to decide either way on evidence.
 
+**What the funnel says after both runs.** The portfolio KPI —
+grounded authoritative playbooks — stays **2**, and the reason is now
+a different one, which is the finding. BNP.PA's blocker was *below
+quorum*, then *unsettled earning*; it is now **`no deterministic
+mapping`**, and the funnel names what would unlock it: "a playbook
+rule for 'Service business, then lender', which no quorate case has
+earned yet." The whole blocker distribution over 78 securities:
+
+| Blocker | Companies |
+|---|---|
+| no filing read | 58 |
+| no primary source | 11 |
+| no revenue mechanisms established | 2 |
+| no deterministic mapping | 1 |
+| no measured segment sizes | 1 |
+
+Acquisition breadth remains the bottleneck by an order of magnitude —
+Operation First Reading's finding, unchanged and now unobstructed by
+funding. Exactly one company in the whole book is waiting on a
+vocabulary decision, and it is BNP.PA.
+
 **VOW3.DE — the corpus closes, and its known limit is confirmed
 rather than assumed.** All three segments size at 4/5 — Pkw und
 leichte Nutzfahrzeuge 76% (244.484 of 321.913), Nutzfahrzeuge 13%,
