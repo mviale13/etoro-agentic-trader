@@ -112,6 +112,29 @@ _STATED: dict[Archetype, str] = {
 }
 
 
+def stated_archetype(
+    primary: Archetype | None,
+    secondary: Archetype | None = None,
+) -> str:
+    """A conclusion in one line, absence included.
+
+    Module-level because two things now name a conclusion: the archetype
+    object itself, and the playbook mapping, whose rules may key on a
+    *pair* — a service business whose second engine is lending is not
+    the same conclusion as a service business, and a rule that fires on
+    the pair must be able to say so in the words the reader already
+    sees. One wording, one implementation.
+    """
+
+    if primary is None:
+        return "Not classified"
+
+    if secondary is None:
+        return primary.stated
+
+    return f"{primary.stated}, then {secondary.stated.lower()}"
+
+
 #: The archetype each way of earning names, where it leads the business.
 #:
 #: Exhaustive over `RevenueModel` on purpose. A way of earning with no
@@ -322,10 +345,4 @@ class CompanyArchetype:
     def stated(self) -> str:
         """The archetype in one line, absence included."""
 
-        if self.primary is None:
-            return "Not classified"
-
-        if self.secondary is None:
-            return self.primary.stated
-
-        return f"{self.primary.stated}, then {self.secondary.stated.lower()}"
+        return stated_archetype(self.primary, self.secondary)

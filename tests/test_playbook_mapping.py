@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from app.domain.company_archetype import Archetype
 from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledgeObservation,
@@ -31,7 +32,12 @@ from app.domain.tabular_evidence import (
     ReportedFigure,
 )
 from app.services.company_knowledge_service import KnowledgeOutcome, KnowledgeState
-from app.services.playbook_mapping import GROUNDED, select_grounded
+from app.services.playbook_mapping import (
+    GROUNDED,
+    GROUNDED_PAIRS,
+    rule_for,
+    select_grounded,
+)
 from app.services.playbook_selection_service import PlaybookSelectionService
 from app.services.understanding_engine import understand
 
@@ -230,8 +236,14 @@ def test_the_selection_states_why_the_other_playbook_did_not_fire() -> None:
         for alternative in selection.alternatives_considered
     }
 
-    assert set(not_selected) == {PlaybookKind.DIVERSIFIED}
+    # Every earned rule that did not fire is listed — the pair rule
+    # included, named by the whole conclusion that would activate it
+    # rather than by the leading engine it shares with nothing here.
+    assert set(not_selected) == {PlaybookKind.DIVERSIFIED, PlaybookKind.BANK}
     assert not_selected[PlaybookKind.DIVERSIFIED].activated_by == "Diversified"
+    assert (
+        not_selected[PlaybookKind.BANK].activated_by == "Service business, then lender"
+    )
     assert "clear of anything else" in (
         not_selected[PlaybookKind.DIVERSIFIED].not_selected_because
     )
@@ -497,3 +509,142 @@ async def test_a_symbol_off_the_book_is_unclassified_not_guessed() -> None:
 
     assert selection.playbook.kind is PlaybookKind.UNCLASSIFIED
     assert not selection.authoritative
+
+
+# ------------------------------------------------------------------
+# The pair rule: BNP Paribas's acceptance, and the case that keeps the
+# key narrow.
+# ------------------------------------------------------------------
+
+BANKING = (RevenueModel.FINANCIAL_SPREAD, RevenueModel.SERVICES)
+IPS_EARNS = (
+    RevenueModel.ASSET_MANAGEMENT_FEES,
+    RevenueModel.PREMIUMS,
+    RevenueModel.SERVICES,
+)
+IPS_WITHOUT_SERVICES = (
+    RevenueModel.ASSET_MANAGEMENT_FEES,
+    RevenueModel.PREMIUMS,
+)
+
+
+def bank_shape():
+    """BNP's accepted live shape: services covers every segment, lending
+    covers the two that are banks — Service business, then lender."""
+
+    def observation(ips_earns: tuple[RevenueModel, ...]):
+        return (
+            segment("CIB", share=0.37, earns=BANKING),
+            segment("CPBS", share=0.52, earns=BANKING, row=2),
+            segment("IPS", share=0.14, earns=ips_earns, row=3),
+        )
+
+    settled = observation(IPS_EARNS)
+    minority = observation(IPS_WITHOUT_SERVICES)
+
+    return consensus(settled, settled, settled, settled, minority)
+
+
+def test_the_pair_rule_fires_where_lending_is_the_second_engine() -> None:
+    """BNP's acceptance: a bank is analysed with a bank's playbook."""
+
+    understanding = understand(bank_shape())
+
+    assert understanding.characteristics.stated == "Service business, then lender"
+
+    selection = select_grounded(understanding)
+
+    assert isinstance(selection, PlaybookSelection)
+    assert selection.playbook.kind is PlaybookKind.BANK
+    assert selection.authoritative
+    assert selection.rule_fired == "service-business-then-lender-activates-bank"
+    assert selection.selected_by is SelectedBy.BUSINESS_UNDERSTANDING
+
+
+def test_a_service_business_alone_is_still_refused() -> None:
+    """
+    The pair is the rule, not the primary. A business whose services
+    lead and whose second engine is not lending has earned nothing, and
+    serving a bank's playbook on the shared primary would be exactly
+    the industry substitution this selector replaces.
+    """
+
+    def observation():
+        return (
+            segment("Consulting", share=0.70, earns=(RevenueModel.SERVICES,)),
+            segment(
+                "Licensing",
+                share=0.30,
+                earns=(RevenueModel.LICENSING, RevenueModel.SERVICES),
+                row=2,
+            ),
+        )
+
+    understanding = understand(consensus(*[observation()] * 5))
+
+    assert understanding.characteristics.primary is Archetype.SERVICE_BUSINESS
+
+    refused = select_grounded(understanding)
+
+    assert isinstance(refused, RefusedGrounding)
+    assert "has not yet earned a playbook mapping" in refused.because
+
+
+def test_a_maker_with_a_captive_lender_keeps_the_industrial_playbook() -> None:
+    """
+    The corpus case that decided how narrow the key had to be.
+    Caterpillar makes machines and lends against them; a rule keyed on
+    "lending is a leading engine" would have handed a maker of
+    excavators a bank's playbook. Keyed on the pair, the primary rule
+    still answers.
+    """
+
+    def observation():
+        # Lending large enough to *lead* as the runner-up, which is what
+        # the pair key has to survive. A captive lender too small to lead
+        # never reaches a secondary at all, so it could not test this.
+        return (
+            segment("Machines", share=0.60, earns=MFG),
+            segment(
+                "Financial Products",
+                share=0.52,
+                earns=(RevenueModel.FINANCIAL_SPREAD,),
+                row=2,
+            ),
+        )
+
+    understanding = understand(consensus(*[observation()] * 5))
+    archetype = understanding.characteristics
+
+    assert archetype.primary is Archetype.MANUFACTURER
+    assert archetype.secondary is Archetype.LENDER
+
+    selection = select_grounded(understanding)
+
+    assert isinstance(selection, PlaybookSelection)
+    assert selection.playbook.kind is PlaybookKind.INDUSTRIAL
+    assert selection.rule_fired == "manufacturer-activates-industrial"
+
+
+def test_a_pair_rule_is_consulted_before_the_primary_rule() -> None:
+    """Precedence, stated as a property rather than inferred from a case."""
+
+    assert (
+        rule_for(Archetype.SERVICE_BUSINESS, Archetype.LENDER).kind is PlaybookKind.BANK
+    )
+    # Same primary, no runner-up: nothing earned.
+    assert rule_for(Archetype.SERVICE_BUSINESS, None) is None
+    # Same primary, a different runner-up: nothing earned.
+    assert rule_for(Archetype.SERVICE_BUSINESS, Archetype.INSURER) is None
+    # A primary rule is unaffected by any runner-up.
+    assert (
+        rule_for(Archetype.MANUFACTURER, Archetype.LENDER).kind
+        is PlaybookKind.INDUSTRIAL
+    )
+
+
+def test_every_pair_key_is_a_genuine_pair() -> None:
+    """A pair whose two halves are the same archetype is not a pair, and
+    would be a primary rule wearing the more specific table's clothes."""
+
+    assert all(primary is not secondary for primary, secondary in GROUNDED_PAIRS)
