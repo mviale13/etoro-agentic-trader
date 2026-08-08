@@ -1,11 +1,14 @@
 # The Investment Decision
 
-Status: **Proposed** (2026-08-08) — the CIO phase's first deliverable,
-a design document only, per the owner's brief in
-[`MIGRATION_PLAN.md`](MIGRATION_PLAN.md). Nothing here is implemented,
-and nothing should be until the open questions at the end are closed
-the way `KNOWLEDGE_CONSENSUS.md`'s were, with the decisions recorded
-in this document.
+Status: **Proposed, accepted in principle** (2026-08-08) — the CIO
+phase's first deliverable, a design document only, per the owner's
+brief in [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md). The owner accepted
+the governing principle as the foundation and closed the five open
+questions the same day — the closures are recorded at the end, in the
+tradition of `KNOWLEDGE_CONSENSUS.md` — and proposed one amendment,
+the decision question, which is explored and integrated below. The
+freeze awaits the owner's confirmation of the integrated amendment;
+nothing is implemented before it.
 
 ---
 
@@ -127,19 +130,26 @@ one.
 
 ### A verdict and an action
 
-The five verdicts are postures toward a case, not broker orders. Only
-`RECOMMEND` carries a proposed position action — and MOVRvest
-recommends, the investor decides, so even that action is a proposal,
-never an execution. An action is expressible only relative to the
-investor's current position (open, add, keep, trim, exit — you cannot
-"buy" without knowing whether you hold), which is one of the two
-reasons portfolio context is a mandatory input rather than an
-enrichment. Where an action carries a magnitude, the magnitude is
-**policy-room arithmetic** — the distance between the position's
-current weight and the policy's own bound, computed by the platform
-the way a `MeasuredShare` is computed — never a target the platform
-invented. A magnitude the arithmetic cannot produce is absent, with
-the reason, per invariant 1.
+The five verdicts are postures toward a question — the concept a later
+section establishes — not broker orders: `REJECT` answers the question
+in the negative and closes the case against it (supersedable, like
+every stance); `MONITOR` declines to answer now and keeps the question
+open; `PREPARE` readies the question's affirmative and names the
+trigger it waits on; `INVESTIGATE` defers the question and raises the
+spend question; `RECOMMEND` answers in the affirmative, made concrete.
+Only `RECOMMEND` carries an action — and MOVRvest recommends, the
+investor decides, so even that action is a proposal, never an
+execution. The action is the question's affirmative made executable.
+For the position questions that means a position action expressed
+relative to the investor's current holding — you cannot "add" without
+knowing what is held, which is one of the two reasons portfolio
+context is a mandatory input rather than an enrichment — with
+magnitude as **policy-room arithmetic**: the distance between the
+position's current weight and the policy's own bound, computed by the
+platform the way a `MeasuredShare` is computed, never a target the
+platform invented. For the spend question it means an observation run,
+its count and cost fixed in the action itself. A magnitude the
+arithmetic cannot produce is absent, with the reason, per invariant 1.
 
 ### A hold and a refusal
 
@@ -155,14 +165,18 @@ unrepresentable: a verdict requires its supporting clauses, and a
 refusal requires its reason, and neither can wear the other's clothes.
 
 Note what the constitutional vocabulary already absorbs: much of what
-looks like "cannot decide" is actually `INVESTIGATE` — a decision that
-the case merits spending to learn more. Below-quorum knowledge on a
-case worth having is not a refusal; it is the CIO deciding that the
-next action is acquisition (`movrvest observe` — the explicit spend
-that fills a consensus). Refusal proper is narrower: identity not
-established, a mandatory context missing, a disagreement no rule
-resolves. The engine's rule table will draw this line case by case;
-the object only insists the two outcomes are distinct types.
+looks like "cannot decide" is actually `INVESTIGATE` — the decision
+that the question is worth answering and that the gap in its basis is
+acquirable. How that verdict relates to the spend question is fixed in
+a later section. Refusal proper is narrower: identity not established,
+a mandatory context missing, a question no rule table answers, a
+disagreement no rule resolves. And a refusal names the question it
+refused, because a refusal is never neutral in effect — refusing
+*should this security enter?* leaves the investor out, while refusing
+*should this position decrease?* leaves the investor in. The engine's
+rule table will draw the refusal line case by case; the object only
+insists that verdict and refusal are distinct types, and that both are
+question-scoped.
 
 ### A decision and the current stance
 
@@ -170,9 +184,10 @@ A decision is an **event**. It happened at a time, on a recorded
 basis, and the investor may have acted on it. It is therefore stored
 append-only and never revised — a later decision **supersedes** it,
 citing it, exactly as a new observation joins a store rather than
-editing one. "The current stance" is not a second object to keep
-consistent; it is the latest decision for the subject, served with its
-age.
+editing one. Supersession runs within one stream: a new answer to a
+question supersedes the previous answer to *that* question. "The
+current stance" is not a second object to keep consistent; it is the
+subject's latest answer per question, served with its age.
 
 This is deliberately the opposite of the consensus, which is derived
 on read and never stored — and the asymmetry is principled, not
@@ -182,6 +197,113 @@ decision is a function of *perishable* inputs — the portfolio as-of,
 the market as-of, the policy as versioned — and recomputing it later
 on fresher inputs produces a *different decision*, not a correction of
 this one. The historical act must survive; its inputs will not.
+
+---
+
+## A decision answers one question
+
+The owner's amendment at acceptance: *the object defines the verdict
+but not the question being answered.* Explored here before the freeze,
+and integrated — because once stated, the model is visibly incomplete
+without it.
+
+The argument is the platform's own third boundary, reappearing one
+layer up. Identity, grounding and applicability are independent
+invariants below, and the standing exhibit is the JPM boilerplate: a
+span can be perfectly grounded and still fail to support the claim it
+was cited *for*. A verdict has exactly this failure mode. It proves an
+adjudication happened; it cannot, by itself, say *what was
+adjudicated*. `MONITOR` on a security means one thing as the answer to
+*should this enter the portfolio?* — not yet, keep watching — and the
+opposite-in-effect thing as the answer to *should this position
+decrease?* — no, stay in. Same subject, same basis, same verdict,
+different meanings. A verdict without its question is a grounded span
+cited for nothing in particular, and the cure is the one the evidence
+layer already paid for: the relationship is carried explicitly, or the
+object is invalid. The decision's boundaries therefore mirror the
+chain's:
+
+```text
+subject   — identity        whose case this is
+edges     — grounding       what the clauses rest on
+question  — applicability   what the verdict is an answer to
+```
+
+Each decision answers **exactly one** question. An occasion may raise
+several — one filing arriving can raise the entry question for a
+security not held and the spend question for its thin consensus — and
+each raised question is its own decision, with its own basis, verdict
+and stream.
+
+Two further consequences surfaced while testing the amendment, and
+each argues the question is domain, not engine:
+
+- **The same evidence legitimately answers different questions
+  differently** — the owner's core claim, and it holds structurally.
+  The question cannot be derived from the subject and the position
+  state, because a held position admits the increase and the decrease
+  questions *simultaneously*, each with its own independently
+  supported answer. What is decisive for one question is a mere
+  constraint for another: a position at the policy cap ends the
+  increase question by arithmetic and barely touches the decrease
+  question. A model without the question would need one verdict to
+  serve both askings, and would answer neither honestly.
+- **Supersession runs per (subject, question).** A new answer to the
+  increase question supersedes the previous answer to the increase
+  question — not last month's answer about decreasing. The subject's
+  current stance becomes the set of its questions' latest answers,
+  derived, never stored. Coherence *across* that set — a rule table
+  that answers increase and decrease affirmatively at once has a
+  defect — is the engine's obligation, not the object's, and it is
+  checkable precisely because every decision names its rule and its
+  edges.
+
+### The questions, at birth
+
+Four, and the list is **closed** — a question exists only with a rule
+table and a live case behind it, grown one at a time under §19a, never
+taxonomy-first:
+
+- **Entry** — *should this security enter the portfolio?*
+- **Increase** — *should this position increase?*
+- **Decrease** — *should this position decrease?* Exit is this
+  question's limiting case — the policy-room arithmetic runs to zero —
+  and becomes a question of its own only when a real case earns it a
+  rule table of its own.
+- **Understanding** — *should the platform spend to improve its
+  understanding of this subject?* The spend question. Its affirmative
+  action is not a position action but an observation run — N readings
+  of a named document key, the count fixed before the first reading,
+  exactly as the acquisition policy already demands.
+
+A question no rule table answers is refused with that reason —
+`question unmapped`, the selector's `conclusion unmapped` one layer up
+— never answered by a neighbouring table.
+
+### INVESTIGATE and the spend question
+
+The constitutional verdict and the fourth question meet, and the model
+must say how, or it carries two implementations of one concept.
+`INVESTIGATE`, reached on any question, means: *this question is worth
+answering and cannot yet be answered, and the gap in its basis is
+acquirable.* It **defers** the question it was answering and
+**raises** the spend question — whose own decision, on its own basis
+(the cost, the budget, the deferred case's promise), is where the
+spend is actually decided. The owner's closure — `INVESTIGATE` owns
+below-quorum and research acquisition — lands as exactly this
+mechanism. The two decisions reference each other: the `INVESTIGATE`
+outcome names the spend question it raised, and the spend decision
+names the deferred question as its occasion. Acquisition thereby
+becomes what the acquisition policy always wanted it to be — an
+explicit spend with a decision behind it — and read-until-classifiable
+stays foreclosed twice over: the spend decision fixes its observation
+count before content, and the deferred question is re-asked only when
+the observations land, which is a new occasion, never a loop.
+
+One asymmetry follows and is deliberate: the spend question is the one
+question on which `INVESTIGATE` is unreachable. Its basis — cost,
+budget, promise — is never itself acquirable by spending; deferring
+the decision to spend into a decision to spend would be circular.
 
 ---
 
@@ -195,13 +317,19 @@ field earns its place against the eight constraints.
 reading. A decision about an instrument the platform cannot identify
 is a refusal.
 
+**The question.** Exactly one of the four, named above. The verdict is
+an answer; this is what it answers. A decision that cannot name its
+question is not ambiguous — it is invalid, the way a citation without
+its relationship is not weak evidence but no citation.
+
 **Decided-at, and the occasion.** When the decision was made, and
 *what changed* to occasion it: a new filing observed, a quorum filled,
 a policy edit, a position drifted past a threshold, a scheduled
-review, the investor asking. "First consideration of this subject;
-nothing preceded" is an occasion. "Scheduled review; nothing material
-changed; stance re-affirmed" is an occasion. The occasion names the
-changed facts by reference — it is the third constraint made
+review, the investor asking, a deferred question's observations
+landing. "First consideration of this subject; nothing preceded" is an
+occasion. "Scheduled review; nothing material changed; stance
+re-affirmed" is an occasion. The occasion names the changed facts by
+reference and the question it raised — it is the third constraint made
 structural, not a prose field.
 
 **The basis** — every input, by reference, each dated or versioned,
@@ -232,8 +360,11 @@ carry three different kinds of authority:
 **The outcome.** Exactly one of:
 
 - a **verdict** — `REJECT`, `INVESTIGATE`, `MONITOR`, `PREPARE`, or
-  `RECOMMEND`, with a position action (and its policy-room arithmetic)
-  attached to `RECOMMEND` only; or
+  `RECOMMEND` — the answer to the question, with the question's
+  affirmative action attached to `RECOMMEND` only (a position action
+  with its policy-room arithmetic, or the spend question's bounded
+  observation run), and the raised spend question referenced from an
+  `INVESTIGATE`; or
 - a **refusal** — no verdict, with the refusing layer's reason
   verbatim.
 
@@ -244,9 +375,9 @@ the brief will say must already be present in the object with edges:
 
 1. **What changed** — the occasion, with references to the changed
    facts or contexts.
-2. **Why it matters** — materiality for the case, stated in the
-   playbook's and understanding's own terms, with references to the
-   consensus claims consumed.
+2. **Why it matters** — materiality for the case *and for the
+   question asked*, stated in the playbook's and understanding's own
+   terms, with references to the consensus claims consumed.
 3. **Why it matters for this investor** — the policy clauses and
    portfolio facts that make it this investor's concern, with the
    arithmetic shown.
@@ -280,10 +411,11 @@ cannot exist. This single field is what makes every future engine
 replaceable: engines compete to fill the same object honestly, and the
 object never learns which one did.
 
-**The predecessor.** A reference to the decision this one supersedes,
-or the worded statement that none preceded. The chain of decisions for
-a subject is the investor-visible history of the platform changing its
-mind, and it must read as *this superseded that, because this fact
+**The predecessor.** A reference to the decision this one supersedes
+— same subject, same question — or the worded statement that none
+preceded. The chain of decisions in one question's stream is the
+investor-visible history of the platform changing its mind about that
+question, and it must read as *this superseded that, because this fact
 changed* — never as an edit.
 
 ---
@@ -308,11 +440,14 @@ Source ── identity ──▶ Document ──▶ Cell / Span
                                                                       │
                                                           supports    ▼
                                               Clause ──────────▶ Outcome
+                                             Outcome ── answers ──▶ Question
                                   Decision ── supersedes ──▶ prior Decision
+                                             (same subject, same question)
 ```
 
 Walking backwards from a verdict therefore reaches, in order: the
-clauses that support it, the facts and contexts each clause consumed,
+question it answers, the clauses that support it, the facts and
+contexts each clause consumed,
 the consensus each fact settled under, the observations behind the
 consensus, the spans and cells behind the observations, and the
 identity-checked document behind those — the eighth constraint,
@@ -373,6 +508,10 @@ authoritative case at a time, the two routes never blending.
 
 - A confidence integer, probability, or score of any kind, anywhere.
 - A free-text field as the semantic payload of an outcome.
+- A verdict without its question — an adjudication that cannot say
+  what it adjudicated.
+- A question invented ahead of its rule table and its live case — the
+  list is closed, and grows only under §19a.
 - A hedged hold standing where a refusal belongs.
 - A compromise action no input implied — splitting the difference is
   synthesis, and synthesis is generation.
@@ -390,45 +529,53 @@ authoritative case at a time, the two routes never blending.
 
 ---
 
-## Open questions for the design conversation
+## Decisions (2026-08-08)
 
-1. **The verdict set.** Adopting the constitutional five plus refusal:
-   is `REJECT` terminal for a subject (a standing stance that ends
-   reconsideration until a named occasion revives it), or just another
-   supersedable stance? And does `INVESTIGATE` formally own the
-   below-quorum case — making observation acquisition a *decided
-   spend* with a decision behind it, rather than a side effect of
-   anything?
-2. **Magnitude.** Is policy-room arithmetic the whole of sizing in the
-   canonical object (open up to X% of the portfolio before the cap),
-   with anything finer — conviction weighting, tranching — refused as
-   unsupported until some future layer earns it?
-3. **Scope.** This object is per-subject. A rebalance is a
-   portfolio-level occasion that implies several per-subject decisions
-   plus a policy clause (`rebalance_threshold`). Is a portfolio
-   decision a composition of these objects under one occasion, or a
-   distinct object — and does v1 need it at all?
-4. **Occasions.** Which occasions exist at birth — new-filing, quorum
-   filled, policy edit, investor request, scheduled review — and is
-   the occasion list closed (like the verdict list) or open (like
-   absence reasons)?
-5. **Context calibration.** Filing-grade evidence earned its trust
-   through measurement (`reader-stability`). Context-grade evidence
-   has no analogue — the platform knows market reads flip between
-   runs, but has never dimensioned it. Does a clause resting on market
-   context need a stability measurement of that feed before any
-   verdict may rest on it, or is the width-1 label sufficient for v1?
+The design was accepted in principle by the owner the day it was
+proposed, with the governing principle confirmed as the foundation.
+The open questions were closed as follows, and these bind the
+implementation:
+
+1. **`REJECT` is supersedable.** No stance is terminal; a revived
+   case is a new decision citing what changed.
+2. **`INVESTIGATE` owns below-quorum and research acquisition.** The
+   mechanism is the spend question: `INVESTIGATE` defers and raises,
+   the spend decision decides, and the two reference each other.
+3. **Sizing in v1 is policy-room arithmetic only.** Conviction
+   weighting, tranching, and anything finer are refused as
+   unsupported until a future layer earns them.
+4. **Decisions are per-subject only.** A rebalance is an occasion
+   that raises per-subject questions; no portfolio-level decision
+   object exists in v1.
+5. **The occasion list is open**, like absence reasons — an occasion
+   is worded, never enumerated. The question list, by contrast, is
+   closed, like the verdicts.
+6. **Market observations are admissible as explicitly observed
+   inputs.** They require no knowledge-style stability measurement
+   before v1; the width-1 label and the context-observation partition
+   of the basis are the guard.
+
+**Amended at acceptance: the decision question.** Proposed by the
+owner — the object defined the verdict but not the question being
+answered — explored, and integrated throughout this document: one
+decision answers one question; the question is the verdict's
+applicability; four questions at birth, closed; supersession per
+(subject, question). The freeze awaits the owner's confirmation of the
+integrated form.
 
 ---
 
-## What acceptance would mean
+## What the freeze would mean
 
-Accepting this document fixes the language: every future engine —
-the first deterministic rule set, committees when they return, and
+Freezing this document fixes the language: every future engine — the
+first deterministic rule set, committees when they return, and
 anything after — produces `InvestmentDecision`s and nothing else, the
-way every reader produces observations and nothing else. The next
-design session after acceptance is the engine's rule table for the
-first verdicts the corpus can actually earn — JPM holds an
-authoritative playbook today, and the first real decision this
-platform makes should be about a company whose every supporting link
-is already checkable.
+way every reader produces observations and nothing else, and every
+rule table is written per question. The next design session after the
+freeze is the first such table, for the question the corpus can
+actually earn: JPM holds the platform's only authoritative end-to-end
+playbook and sits outside the investor's book, so the first question
+this platform formally answers should be the **entry question for
+JPM** — with every supporting link already checkable — and the spend
+question standing ready for the companies whose consensus is still
+thin.
