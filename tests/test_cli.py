@@ -118,3 +118,32 @@ async def test_dispatches_archetype_with_symbol() -> None:
 
     assert exit_code == 0
     run.assert_awaited_once_with("NVDA")
+
+
+def test_parser_accepts_decide_symbol_and_question() -> None:
+    parser = cli.build_parser()
+
+    args = parser.parse_args(["decide", "JPM", "entry"])
+
+    assert args.command == "decide"
+    assert args.symbol == "JPM"
+    assert args.question == "entry"
+
+
+@pytest.mark.anyio
+async def test_dispatches_decide_with_symbol_and_question() -> None:
+    args = Namespace(
+        command="decide",
+        symbol="JPM",
+        question="entry",
+    )
+
+    with patch.object(
+        cli.decide,
+        "run",
+        new=AsyncMock(return_value=0),
+    ) as run:
+        exit_code = await cli.dispatch(args)
+
+    assert exit_code == 0
+    run.assert_awaited_once_with("JPM", "entry")

@@ -10,6 +10,7 @@ from app.commands import (
     company,
     credentials,
     daily,
+    decide,
     decision,
     defect_ledger,
     doctor,
@@ -203,6 +204,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example DIS, NVDA or CAT",
     )
 
+    decide_parser = subparsers.add_parser(
+        "decide",
+        help="Ask the platform one investment question about one security",
+        description=(
+            "Answer one explicit question — entry, increase, decrease, or "
+            "research_spend — with a canonical investment decision: a "
+            "constitutional verdict or a worded refusal, its basis, its "
+            "clauses with their edges, and the implications weighed with "
+            "the losers preserved. Appends one event to the append-only "
+            "(subject, question) stream; the current stance is always the "
+            "latest answer"
+        ),
+    )
+    decide_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example JPM",
+    )
+    decide_parser.add_argument(
+        "question",
+        help="One of: entry, increase, decrease, research_spend",
+    )
+
     playbook_parser = subparsers.add_parser(
         "playbook",
         help="Show which playbook analyses a business, and what decided it",
@@ -336,6 +359,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "understanding":
         return await understanding.run(args.symbol)
+
+    if args.command == "decide":
+        return await decide.run(args.symbol, args.question)
 
     if args.command == "playbook":
         return await playbook.run(args.symbol)

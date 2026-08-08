@@ -67,7 +67,15 @@ nothing),
 against the knowledge layer's own reason templates, counted by
 structural cause — the measurement that decides whether reader work is
 earned: patterns earn architecture, individual failures earn backlog
-entries).
+entries),
+`movrvest decide SYMBOL QUESTION` (ask one investment question — entry,
+increase, decrease, research_spend — and get a canonical decision: a
+constitutional verdict or a worded refusal, its clauses with their
+edges, and the implications weighed with the losers preserved; appends
+one event to the append-only (subject, question) stream, and the
+current stance is always the latest answer; see
+[`docs/architecture/INVESTMENT_DECISION.md`](docs/architecture/INVESTMENT_DECISION.md),
+accepted).
 
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see
