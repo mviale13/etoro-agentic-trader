@@ -32,6 +32,7 @@ from app.domain.playbook_coverage import (
     SecurityCoverage,
 )
 from app.domain.playbook_selection import PlaybookSelection
+from app.domain.reference_corpus import REFERENCE_CORPUS, ReferenceCompany
 from app.domain.watchlist_item import WatchlistItem
 from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
 from app.services.account_service import AccountService
@@ -59,6 +60,7 @@ class PlaybookCoverageService:
         facts: Any | None = None,
         profiler: CompanyProfiler | None = None,
         industry: PlaybookSelector | None = None,
+        reference: tuple[ReferenceCompany, ...] | None = None,
     ) -> None:
         self._store = store or JsonCompanyKnowledgeStore()
         self._resolver = resolver or InstrumentSymbolResolver()
@@ -66,6 +68,11 @@ class PlaybookCoverageService:
         self._facts = facts or CompanyFactsService()
         self._profiler = profiler or CompanyProfiler()
         self._industry = industry or PlaybookSelector()
+
+        # None means the real corpus; an explicit empty tuple means a
+        # caller measuring without it, which is what tests of the
+        # investor's book do.
+        self._reference = REFERENCE_CORPUS if reference is None else reference
 
     async def report(self) -> CoverageReport:
         """The measured population: every held or watched security once.
@@ -127,6 +134,27 @@ class PlaybookCoverageService:
                     origin,
                     items.get(symbol),
                     held.get(symbol),
+                )
+            )
+
+        # The reference corpus, behind the investor's own lists: an
+        # acceptance case the investor already holds or watches enters
+        # above under the origin they gave it, and the rest are
+        # measured under their own origin so a reasoning change that
+        # breaks one is caught here without a reference company ever
+        # counting as held or watched.
+        for company in self._reference:
+            symbol = company.symbol.upper()
+
+            if symbol in watched_symbols or symbol in held:
+                continue
+
+            securities.append(
+                await self._measure(
+                    symbol,
+                    CoverageOrigin.REFERENCE,
+                    items.get(symbol),
+                    None,
                 )
             )
 

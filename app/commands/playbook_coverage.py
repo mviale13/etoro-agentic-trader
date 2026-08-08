@@ -58,7 +58,10 @@ def _funnel(title: str, funnel: CoverageFunnel) -> None:
 def _render(report: CoverageReport) -> None:
     print("grounded playbook coverage — the book as this platform knows it today")
     print()
-    print(f"  {report.total} securities, portfolio and watchlists together")
+    print(
+        f"  {report.total} securities: portfolio and watchlists, "
+        "plus the reference corpus"
+    )
     print()
 
     print("investor-visible understanding — the KPI, portfolio first:")
@@ -76,6 +79,16 @@ def _render(report: CoverageReport) -> None:
 
     _funnel("portfolio", report.funnel(CoverageOrigin.PORTFOLIO))
     _funnel("watchlist", report.funnel(CoverageOrigin.WATCHLIST))
+
+    # Engineering acceptance cases, never the investor's book: a
+    # reference company the investor also holds or watches is counted
+    # above under the origin they gave it, so this funnel is exactly
+    # the companies tracked for regression alone.
+    reference = report.funnel(CoverageOrigin.REFERENCE)
+
+    if reference.companies:
+        _funnel("reference corpus (engineering, not investment)", reference)
+
     print()
 
     print("selector outcomes:")

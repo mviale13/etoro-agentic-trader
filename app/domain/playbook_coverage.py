@@ -31,6 +31,14 @@ class CoverageOrigin(StrEnum):
     WATCHLIST = "watchlist"
     BOTH = "portfolio and watchlist"
 
+    #: An engineering acceptance case from the reference corpus,
+    #: tracked so every reasoning change keeps passing through it.
+    #: Deliberately its own origin: a reference company held or watched
+    #: enters under the origin the investor gave it, and one tracked
+    #: only for engineering never blends into the portfolio's funnel or
+    #: its KPI.
+    REFERENCE = "reference corpus"
+
 
 class CoverageOutcome(StrEnum):
     """What the selector serves for this security today.
@@ -215,15 +223,23 @@ class CoverageReport:
     securities: tuple[SecurityCoverage, ...]
 
     def funnel(self, origin: CoverageOrigin | None = None) -> CoverageFunnel:
-        """The KPI over one origin — a security held *and* watched
-        counts in both funnels — or over the whole book with None."""
+        """The KPI over one origin, or over the whole book with None.
+
+        A security held *and* watched counts in the portfolio funnel
+        and the watchlist funnel — those are the two lists the overlap
+        is an overlap of. It never counts in the reference funnel,
+        which exists precisely so engineering acceptance cases and the
+        investor's book cannot blend.
+        """
+
+        overlapping = (CoverageOrigin.PORTFOLIO, CoverageOrigin.WATCHLIST)
 
         population = tuple(
             security
             for security in self.securities
             if origin is None
             or security.origin is origin
-            or security.origin is CoverageOrigin.BOTH
+            or (security.origin is CoverageOrigin.BOTH and origin in overlapping)
         )
 
         companies = tuple(security for security in population if security.is_company)
