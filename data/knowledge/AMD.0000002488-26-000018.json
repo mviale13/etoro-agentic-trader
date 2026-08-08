@@ -1,0 +1,82 @@
+{
+  "observations": [
+    {
+      "description": "AMD drives innovation in high performance and AI computing, offering CPUs, GPUs, adaptive SoCs, networking and software across data center, client, gaming and embedded markets.",
+      "reading": {
+        "observed_at": "2026-08-08T18:25:24.732743+00:00",
+        "source": "10-K 0000002488-26-000018 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 17,
+            "ownership": "proximity",
+            "quoted": "which primarily includes AI accelerators, CPUs for servers, GPUs, APUs",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Data Center"
+          },
+          "name": "Data Center",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        },
+        {
+          "description": {
+            "distance": 22,
+            "ownership": "proximity",
+            "quoted": "which primarily includes CPUs, APUs, chipsets for desktops and notebooks",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Client and Gaming"
+          },
+          "name": "Client and Gaming",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "which primarily includes embedded CPUs, APUs, FPGAs, SOMs, and adaptive SoC products",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Embedded"
+          },
+          "name": "Embedded",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "ADVANCED MICRO DEVICES INC",
+    "document_format": "html",
+    "identifier": "10-K 0000002488-26-000018",
+    "key": "0000002488-26-000018",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000018/amd-20251227.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-04",
+    "reporting_period": {
+      "ends_on": "2025-12-27",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "AMD",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "AMD"
+}

@@ -1,0 +1,69 @@
+{
+  "observations": [
+    {
+      "description": "PayPal provides digital payment and commerce solutions connecting consumers and merchants across online and in-person channels through a global two-sided platform.",
+      "reading": {
+        "observed_at": "2026-08-08T18:37:24.383073+00:00",
+        "source": "10-K 0001633917-26-000024 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 17,
+            "ownership": "structure",
+            "quoted": "We help consumers transact securely with merchants, manage their finances",
+            "revenue_models": [
+              "transaction",
+              "services",
+              "financial_spread"
+            ],
+            "under": "Consumer solutions"
+          },
+          "name": "Consumer solutions",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": {
+            "distance": 17,
+            "ownership": "structure",
+            "quoted": "Merchants use our solutions to increase conversion rates and grow",
+            "revenue_models": [
+              "transaction",
+              "services",
+              "financial_spread"
+            ],
+            "under": "Merchant solutions"
+          },
+          "name": "Merchant solutions",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "PayPal Holdings, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001633917-26-000024",
+    "key": "0001633917-26-000024",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1633917/000163391726000024/pypl-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-03",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "PYPL",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "PYPL"
+}

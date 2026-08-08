@@ -1,0 +1,124 @@
+{
+  "observations": [
+    {
+      "description": "We are focused on bringing artificial intelligence (\u201cAI\u201d) into the real world, through products and services like Full Self-Driving (\u201cFSD\u201d) (Supervised) and Robotaxi, as well as working to develop and commercialize AI robots (\u201cBots\u201d) (including Optimus).",
+      "reading": {
+        "observed_at": "2026-08-08T18:41:30.969237+00:00",
+        "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "The automotive segment includes the design, development, manufacturing, sales and leasing",
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "services",
+              "subscription",
+              "transaction",
+              "premiums"
+            ],
+            "under": "Automotive"
+          },
+          "name": "Automotive",
+          "revenue": {
+            "denominator": {
+              "caption": "t the final tax outcome of these matters differs from our expectations, such differences may impact income tax expense in the period in which such determination is made. Results of Operations Revenues",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Total revenues",
+              "printed": "$ 94,827",
+              "value": 94827.0
+            },
+            "numerator": {
+              "caption": "t the final tax outcome of these matters differs from our expectations, such differences may impact income tax expense in the period in which such determination is made. Results of Operations Revenues",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Total automotive revenues",
+              "printed": "69,526",
+              "value": 69526.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "The energy generation and storage segment includes sales, leasing, and financing",
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "services",
+              "transaction",
+              "commodity"
+            ],
+            "under": "Energy Generation and Storage"
+          },
+          "name": "Energy Generation and Storage",
+          "revenue": {
+            "denominator": {
+              "caption": "t the final tax outcome of these matters differs from our expectations, such differences may impact income tax expense in the period in which such determination is made. Results of Operations Revenues",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Total revenues",
+              "printed": "$ 94,827",
+              "value": 94827.0
+            },
+            "numerator": {
+              "caption": "t the final tax outcome of these matters differs from our expectations, such differences may impact income tax expense in the period in which such determination is made. Results of Operations Revenues",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Energy generation and storage segment revenue",
+              "printed": "12,771",
+              "value": 12771.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Tesla, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-003952",
+    "key": "0001628280-26-003952",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1318605/000162828026003952/tsla-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-01-29",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "TSLA",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "TSLA"
+}

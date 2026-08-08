@@ -1,0 +1,73 @@
+{
+  "observations": [
+    {
+      "description": "Alphabet is a collection of businesses \u2014 the largest of which is Google.",
+      "reading": {
+        "observed_at": "2026-08-08T18:31:39.400660+00:00",
+        "source": "10-K 0001652044-26-000018 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Google Services",
+          "revenue": null,
+          "undescribed_because": "The description of 'Google Services' quotes words the document prints outside the section it heads 'Google Services', so they are not what it says there about 'Google Services'. A repair was attempted and was refused too: The description of 'Google Services' quotes words the document prints outside the section it heads 'Google Services', so they are not what it says there about 'Google Services'.",
+          "unmeasured_because": "This filing's management discussion is 385 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 67,
+            "ownership": "structure",
+            "quoted": "Google Cloud generates revenues primarily from consumption-based fees and subscriptions",
+            "revenue_models": [
+              "subscription",
+              "services"
+            ],
+            "under": "Google Cloud"
+          },
+          "name": "Google Cloud",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 385 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 762,
+            "ownership": "structure",
+            "quoted": "Revenues from Other Bets are generated primarily from the sale of autonomous transportation and internet services",
+            "revenue_models": [
+              "services"
+            ],
+            "under": "Other Bets"
+          },
+          "name": "Other Bets",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 385 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Alphabet Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001652044-26-000018",
+    "key": "0001652044-26-000018",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000018/goog-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-05",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "GOOG",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "GOOG"
+}

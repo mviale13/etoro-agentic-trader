@@ -1,0 +1,126 @@
+{
+  "observations": [
+    {
+      "description": "The Company designs, manufactures and markets smartphones, personal computers, tablets, wearables and accessories, and sells a variety of related services.",
+      "reading": {
+        "observed_at": "2026-08-08T18:24:30.663519+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Americas includes both North and South America.",
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "services",
+              "subscription",
+              "advertising",
+              "transaction",
+              "licensing"
+            ],
+            "under": "Americas"
+          },
+          "name": "Americas",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 238 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Europe includes European countries, as well as India, the Middle East and Africa.",
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "services",
+              "subscription",
+              "advertising",
+              "transaction",
+              "licensing"
+            ],
+            "under": "Europe"
+          },
+          "name": "Europe",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 238 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Greater China includes China mainland, Hong Kong and Taiwan.",
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "services",
+              "subscription",
+              "advertising",
+              "transaction",
+              "licensing"
+            ],
+            "under": "Greater China"
+          },
+          "name": "Greater China",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 238 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": null,
+          "name": "Japan",
+          "revenue": null,
+          "undescribed_because": "The description of 'Japan' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "unmeasured_because": "This filing's management discussion is 238 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Rest of Asia Pacific includes Australia, New Zealand and those Asian countries not included in the Company\u2019s other reportable segments.",
+            "revenue_models": [
+              "manufacturing",
+              "retail",
+              "services",
+              "subscription",
+              "advertising",
+              "transaction",
+              "licensing"
+            ],
+            "under": "Rest of Asia Pacific"
+          },
+          "name": "Rest of Asia Pacific",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 238 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Apple Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0000320193-25-000079",
+    "key": "0000320193-25-000079",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2025-10-31",
+    "reporting_period": {
+      "ends_on": "2025-09-27",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "AAPL",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "AAPL"
+}

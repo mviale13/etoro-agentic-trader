@@ -1,0 +1,34 @@
+{
+  "observations": [
+    {
+      "description": "We are a medical device company primarily focused on the design, development and commercialization of continuous glucose monitoring, or CGM, systems for the management of diabetes and metabolic health.",
+      "reading": {
+        "observed_at": "2026-08-08T18:27:57.715787+00:00",
+        "source": "10-K 0001093557-26-000027 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "DEXCOM INC",
+    "document_format": "html",
+    "identifier": "10-K 0001093557-26-000027",
+    "key": "0001093557-26-000027",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1093557/000109355726000027/dxcm-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-12",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "DXCM",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "DXCM"
+}

@@ -1,0 +1,69 @@
+{
+  "observations": [
+    {
+      "description": "Shopify provides essential internet infrastructure for commerce.",
+      "reading": {
+        "observed_at": "2026-08-08T18:40:54.715913+00:00",
+        "source": "10-K 0001594805-26-000007 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "We generate subscription solutions revenues primarily through the sale of subscriptions",
+            "revenue_models": [
+              "subscription",
+              "transaction"
+            ],
+            "under": "Subscription Solutions"
+          },
+          "name": "Subscription Solutions",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "We principally generate merchant solutions revenues from payment processing fees",
+            "revenue_models": [
+              "transaction",
+              "financial_spread",
+              "retail",
+              "advertising"
+            ],
+            "under": "Merchant Solutions"
+          },
+          "name": "Merchant Solutions",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "SHOPIFY INC.",
+    "document_format": "html",
+    "identifier": "10-K 0001594805-26-000007",
+    "key": "0001594805-26-000007",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1594805/000159480526000007/shop-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-11",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "SHOP",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "SHOP"
+}

@@ -1,0 +1,52 @@
+{
+  "observations": [
+    {
+      "description": "eBay Inc. operates global online marketplace platforms that connect buyers and sellers to enable third\u2011party ecommerce transactions, supported by advertising and shipping services.",
+      "reading": {
+        "observed_at": "2026-08-08T18:28:16.900631+00:00",
+        "source": "10-K 0001065088-26-000027 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Our Marketplace platforms, including our online marketplace located at www.ebay.com",
+            "revenue_models": [
+              "transaction",
+              "advertising",
+              "services"
+            ],
+            "under": "Marketplace platforms"
+          },
+          "name": "Marketplace platforms",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "EBAY INC",
+    "document_format": "html",
+    "identifier": "10-K 0001065088-26-000027",
+    "key": "0001065088-26-000027",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1065088/000106508826000027/ebay-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-19",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "EBAY",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "EBAY"
+}

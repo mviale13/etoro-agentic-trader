@@ -1,0 +1,34 @@
+{
+  "observations": [
+    {
+      "description": "No business description is provided in the supplied excerpt of the filing.",
+      "reading": {
+        "observed_at": "2026-08-08T18:27:39.945632+00:00",
+        "source": "20-F 0001104659-26-042350 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "DiDi Global Inc.",
+    "document_format": "html",
+    "identifier": "20-F 0001104659-26-042350",
+    "key": "0001104659-26-042350",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1764757/000110465926042350/didi-20251231x20f.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-04-13",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "DIDIY",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "DIDIY"
+}

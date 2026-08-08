@@ -1,0 +1,34 @@
+{
+  "observations": [
+    {
+      "description": "The Procter & Gamble Company is a world-leading multinational consumer goods company focused on providing trusted, branded products of superior quality, performance and value to improve the lives of consumers around the world.",
+      "reading": {
+        "observed_at": "2026-08-08T18:36:38.710713+00:00",
+        "source": "10-K 0000080424-26-000103 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "PROCTER & GAMBLE Co",
+    "document_format": "html",
+    "identifier": "10-K 0000080424-26-000103",
+    "key": "0000080424-26-000103",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/80424/000008042426000103/pg-20260630.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-08-04",
+    "reporting_period": {
+      "ends_on": "2026-06-30",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "PG",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "PG"
+}

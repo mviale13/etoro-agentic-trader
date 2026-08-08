@@ -1,0 +1,77 @@
+{
+  "observations": [
+    {
+      "description": "The company develops, manufactures, and commercializes radiopharmaceuticals and related diagnostics, and also licenses technologies and provides CDMO and digital solutions to partners.",
+      "reading": {
+        "observed_at": "2026-08-08T18:32:49.596940+00:00",
+        "source": "10-K 0001193125-26-073498 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Our Radiopharmaceutical Oncology product helps healthcare professionals (\u201cHCPs\u201d) Find, Fight and Follow cancer.",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Radiopharmaceutical Oncology"
+          },
+          "name": "Radiopharmaceutical Oncology",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 286 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": null,
+          "name": "Precision Diagnostics",
+          "revenue": null,
+          "undescribed_because": "The description of 'Precision Diagnostics' quotes words the document prints outside the section it heads 'Precision Diagnostics', so they are not what it says there about 'Precision Diagnostics'. A repair was attempted, and the reader found no words in this filing that describe this segment.",
+          "unmeasured_because": "This filing's management discussion is 286 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 617,
+            "ownership": "structure",
+            "quoted": "also includes revenue derived from partnerships with pharmaceutical companies",
+            "repair": {
+              "first_refused_because": "The description of 'Strategic Partnerships and Other Revenue' quotes words the document prints outside the section it heads 'Strategic Partnerships and Other Revenue', so they are not what it says there about 'Strategic Partnerships and Other Revenue'.",
+              "reader": "gpt-5"
+            },
+            "revenue_models": [
+              "licensing",
+              "services"
+            ],
+            "under": "Strategic Partnerships and Other Revenue"
+          },
+          "name": "Strategic Partnerships and Other Revenue",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 286 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Lantheus Holdings, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001193125-26-073498",
+    "key": "0001193125-26-073498",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1521036/000119312526073498/lnth-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-26",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "LNTH",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "LNTH"
+}

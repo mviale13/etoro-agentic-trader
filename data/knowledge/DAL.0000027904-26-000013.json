@@ -1,0 +1,67 @@
+{
+  "observations": [
+    {
+      "description": "Delta Air Lines is a U.S.-based global airline that transports passengers and cargo and operates complementary businesses including a refinery, MRO services, vacations, and a loyalty program.",
+      "reading": {
+        "observed_at": "2026-08-08T18:27:13.135534+00:00",
+        "source": "10-K 0000027904-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "These companies are distinct from our airline operation, operating under their own management teams",
+            "revenue_models": [
+              "services",
+              "transaction"
+            ],
+            "under": "Airline operation"
+          },
+          "name": "Airline operation",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "Includes the impact of fuel hedge activity and refinery segment results",
+            "revenue_models": [
+              "manufacturing",
+              "commodity"
+            ],
+            "under": "refinery segment"
+          },
+          "name": "refinery segment",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "DELTA AIR LINES, INC.",
+    "document_format": "html",
+    "identifier": "10-K 0000027904-26-000013",
+    "key": "0000027904-26-000013",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/27904/000002790426000013/dal-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-11",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "DAL",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "DAL"
+}

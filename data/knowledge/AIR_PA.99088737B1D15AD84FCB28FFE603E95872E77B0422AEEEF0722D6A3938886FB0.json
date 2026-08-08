@@ -1,0 +1,85 @@
+{
+  "observations": [
+    {
+      "description": "The Company operates in three reportable segments: Airbus, Airbus Helicopters and Airbus Defence and Space, providing commercial aircraft, helicopters, and defence and space systems with related services.",
+      "reading": {
+        "observed_at": "2026-08-08T18:25:06.599321+00:00",
+        "source": "MINO79WLOO247M1IL051-2025-12-31-ESEF-NL-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 6,
+            "ownership": "proximity",
+            "quoted": "Development, manufacturing, marketing and sale of commercial jet passenger aircraft",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Airbus"
+          },
+          "name": "Airbus",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        },
+        {
+          "description": {
+            "distance": 17,
+            "ownership": "proximity",
+            "quoted": "Development, manufacturing, marketing and sale of civil and military helicopters",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Airbus Helicopters"
+          },
+          "name": "Airbus Helicopters",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        },
+        {
+          "description": {
+            "distance": 29,
+            "ownership": "proximity",
+            "quoted": "design, development, delivery and support of crewed and uncrewed military air systems",
+            "revenue_models": [
+              "manufacturing",
+              "services"
+            ],
+            "under": "Airbus Defence and Space"
+          },
+          "name": "Airbus Defence and Space",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Airbus SE",
+    "document_format": "xhtml",
+    "identifier": "MINO79WLOO247M1IL051-2025-12-31-ESEF-NL-0",
+    "key": "99088737b1d15ad84fcb28ffe603e95872e77b0422aeeef0722d6a3938886fb0",
+    "language": "en",
+    "location": "https://filings.xbrl.org/MINO79WLOO247M1IL051/2025-12-31/ESEF/NL/0/MINO79WLOO247M1IL051-2025-12-31-1-en/reports/MINO79WLOO247M1IL051-2025-12-31-1-en.xhtml",
+    "provider": "ESEF",
+    "published_on": "2026-03-04",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "AIR.PA",
+    "verification": [
+      "security_registry",
+      "register_indexed",
+      "document_lei"
+    ]
+  },
+  "symbol": "AIR.PA"
+}

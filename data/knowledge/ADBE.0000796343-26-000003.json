@@ -1,0 +1,34 @@
+{
+  "observations": [
+    {
+      "description": "We build innovative platforms and tools that unleash creativity, productivity and personalized customer experiences.",
+      "reading": {
+        "observed_at": "2026-08-08T18:24:47.883259+00:00",
+        "source": "10-K 0000796343-26-000003 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "ADOBE INC.",
+    "document_format": "html",
+    "identifier": "10-K 0000796343-26-000003",
+    "key": "0000796343-26-000003",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/796343/000079634326000003/adbe-20251128.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-01-15",
+    "reporting_period": {
+      "ends_on": "2025-11-28",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "ADBE",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "ADBE"
+}
