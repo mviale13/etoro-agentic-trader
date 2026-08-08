@@ -486,6 +486,39 @@ the roadmap follows the classes:
   the platform's canonical regression company without ever being a
   recommendation.
 
+### The knowledge stack is closed (the owner, 2026-08-07, after PR #54)
+
+**No further infrastructure slice unless the measurements demand one.**
+Identity, evidence, consensus, Business Understanding, grounded
+playbooks and the Reference Corpus together are sufficient: the
+nervous system is built, and §19a governs any reopening — a measured
+pattern earns a slice, nothing else does. The Reference Corpus is now
+part of the engineering contract (constitution §19b): every reasoning
+change proves itself against it before reaching the investor, and the
+corpus stays stable.
+
+**Remaining operational work, in order, none of it engineering:**
+
+1. Fund the observation account (the owner, at the provider's
+   billing page).
+2. Complete the protocol-11 corpus: `movrvest observe BNP.PA` and
+   `movrvest observe VOW3.DE` — one background run.
+3. Measure BNP.PA at quorum under the better tables. Its protocol-10
+   reading left CPBS (52% of revenue) unsettled five ways; whether
+   protocol 11 settles it is the case-earns-the-rule test for the
+   first grounded financial-services playbook. The case earns the
+   rule, never the other way around.
+
+**The next major engineering effort is the Artificial CIO.** The
+question changes from "how does this business make money?" to "given
+everything we know, what should the investor do?" — Business
+Understanding becomes an input, grounded playbooks become an input,
+and portfolio, market, valuation, macro and investor context become
+peer inputs. That is the product. Deliberately not started here: it
+begins after the corpus completes, with its own design phase, on top
+of a nervous system that is for the first time mature enough to build
+the brain on rather than alongside.
+
   **The earlier corpus re-read under protocol 10 (2026-08-07, 9
   companies at quorum 5).** What the taxonomy then found, and what it
   no longer did:
