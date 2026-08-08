@@ -606,6 +606,24 @@ blocker as a worded `invalid_extraction` (the fix above), and the JPM
 quorum — the slice's measurement — runs once the account is funded:
 `movrvest observe-statements JPM`.
 
+**The measurement (2026-08-08, account funded, quorum run).** Five
+independent readings of the statement, stopped on the count, and the
+expectation stated before the spend held exactly: **both anchors are
+unanimous, 5/5.** `total_revenue` settles on "Total net revenue" =
+182,447 at table 0, row 15, column 3 under "2025"; `net_income` on
+"Net income" = $ 57,048 at row 27; each carries its platform-read row
+(2024 and 2023 under the filer's own headers) and the "(in millions,
+except per share data)" caption. Cells measured 10/10 stable on
+segment sizes and 5/5 here — prose enters this reading nowhere, and
+the statement stream starts life with no unsettled claim on its first
+company. The entry is committed under `data/statements/` exactly as
+the knowledge corpus is: facts from a public filing, re-derivable,
+and the natural offline fixture for whatever the combination design
+session decides to build. Filing-grade financial facts now exist —
+the demand `JPM.entry.0001` measured is answered at the knowledge
+layer, and what those facts *imply* remains, deliberately, nobody's
+to say until the next design session.
+
 ### The owner's note after PR #60: a second domain, not a parser (2026-08-08)
 
 Recorded on the merge, in the owner's framing, because it changes
