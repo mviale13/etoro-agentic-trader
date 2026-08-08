@@ -49,3 +49,6 @@ data/events/
 # control (back it up like data, not like code); tests carry synthetic
 # decision events only.
 data/decisions/
+
+# Claude Code: shared project settings are tracked; personal overrides are not.
+.claude/settings.local.json
