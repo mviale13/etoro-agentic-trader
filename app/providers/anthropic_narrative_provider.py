@@ -33,23 +33,34 @@ class AnthropicNarrativeProvider:
         self.model = model
 
     async def draft(self, request: DraftRequest) -> Draft:
-        response = await self._client.messages.create(
-            model=self.model,
-            max_tokens=request.max_tokens,
-            system=request.system_prompt,
-            output_config={
-                "format": {
-                    "type": "json_schema",
-                    "schema": request.schema,
-                }
-            },
-            messages=[
-                {
-                    "role": "user",
-                    "content": request.user_prompt,
-                }
-            ],
-        )
+        from anthropic import AnthropicError
+
+        try:
+            response = await self._client.messages.create(
+                model=self.model,
+                max_tokens=request.max_tokens,
+                system=request.system_prompt,
+                output_config={
+                    "format": {
+                        "type": "json_schema",
+                        "schema": request.schema,
+                    }
+                },
+                messages=[
+                    {
+                        "role": "user",
+                        "content": request.user_prompt,
+                    }
+                ],
+            )
+        except AnthropicError as failed:
+            # An outage, an exhausted balance, a rate limit. Wrapped so
+            # it travels the seam as the worded absence every caller
+            # already carries to its surface, exactly as the OpenAI
+            # provider wraps its own.
+            raise NarrativeDeclined(
+                f"{self.name} could not complete the request: {failed}"
+            ) from failed
 
         if response.stop_reason == "refusal":
             raise NarrativeDeclined(

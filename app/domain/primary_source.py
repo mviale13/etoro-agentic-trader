@@ -267,6 +267,19 @@ class SourceDocument:
     #: unstated rather than read off a flattened row.
     performance_tables: tuple[SourceTable, ...] = ()
 
+    #: The audited income statement, located where the publisher
+    #: typeset its title. The text is kept beside the tables so an
+    #: absence can say which fact it is: a statement this platform
+    #: never located, and a located statement that printed no table it
+    #: could read, are different findings and only one is about the
+    #: document.
+    income_statement_text: str = ""
+
+    #: The tables printed under that title — the statement itself,
+    #: structure kept. Empty leaves the figures unstated rather than
+    #: read out of whatever section mentioned them.
+    income_statement_tables: tuple[SourceTable, ...] = ()
+
 
 class PrimarySourceUnavailable(Exception):
     """This provider holds no document for the security, and says why.

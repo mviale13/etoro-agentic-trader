@@ -21,12 +21,14 @@ from app.commands import (
     market,
     morning,
     observe,
+    observe_statements,
     playbook,
     playbook_coverage,
     policy,
     reader_defects,
     reader_stability,
     record,
+    statements,
     status,
     today,
     understanding,
@@ -281,6 +283,46 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    statements_parser = subparsers.add_parser(
+        "statements",
+        help="Show the figures the filer's own statements settled, with widths",
+        description=(
+            "The consensus over stored statement observations of the current "
+            "filing: every concept with its width, cell, printed figure and "
+            "caption, and every absence with its reason. The figures are the "
+            "filer's, at addresses this platform checked; nothing here is "
+            "derived or estimated"
+        ),
+    )
+    statements_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example JPM",
+    )
+
+    observe_statements_parser = subparsers.add_parser(
+        "observe-statements",
+        help="Read the current filing's statements again, up to the quorum",
+        description=(
+            "Take independent statement observations of a company's current "
+            "document until the quorum is reached, and show the consensus "
+            "they derive. The stopping rule is the count, never the content"
+        ),
+    )
+    observe_statements_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example JPM",
+    )
+    observe_statements_parser.add_argument(
+        "--to",
+        type=int,
+        default=None,
+        help=(
+            "Observe up to this many observations instead of the quorum — "
+            "a deeper, explicit spend. The count is fixed before anything "
+            "is read; the content never moves it"
+        ),
+    )
+
     observe_parser = subparsers.add_parser(
         "observe",
         help="Read the current filing again, up to the consensus quorum",
@@ -356,6 +398,12 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "observe":
         return await observe.run(args.symbol, args.to)
+
+    if args.command == "statements":
+        return await statements.run(args.symbol)
+
+    if args.command == "observe-statements":
+        return await observe_statements.run(args.symbol, args.to)
 
     if args.command == "understanding":
         return await understanding.run(args.symbol)

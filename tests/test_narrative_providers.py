@@ -200,3 +200,59 @@ async def test_openai_reports_no_usage_as_absent_not_zero() -> None:
     draft = await provider.draft(request())
 
     assert draft.usage is None
+
+
+# ------------------------------------------------------------------
+# A provider failure travels the seam as a worded decline.
+# ------------------------------------------------------------------
+
+
+class AnthropicFailingClient:
+    """A client whose wire fails the way the real SDK fails."""
+
+    def __init__(self, error: Exception) -> None:
+        async def create(**kwargs):
+            raise error
+
+        self.messages = SimpleNamespace(create=create)
+
+
+class OpenAIFailingClient:
+    def __init__(self, error: Exception) -> None:
+        async def create(**kwargs):
+            raise error
+
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=create))
+
+
+@pytest.mark.anyio
+async def test_an_openai_outage_is_a_worded_decline_not_a_traceback() -> None:
+    """
+    Measured twice before this existed: an exhausted credit balance
+    surfaced as a raw traceback ending the run, against this platform's
+    own absence discipline. The seam now words it, and every caller
+    already carries the wording to its surface.
+    """
+
+    from openai import OpenAIError
+
+    provider = OpenAINarrativeProvider(
+        OpenAIFailingClient(OpenAIError("You have no credits remaining.")),  # type: ignore[arg-type]
+        model="gpt-5",
+    )
+
+    with pytest.raises(NarrativeDeclined, match="no credits remaining"):
+        await provider.draft(request())
+
+
+@pytest.mark.anyio
+async def test_an_anthropic_outage_is_a_worded_decline_not_a_traceback() -> None:
+    from anthropic import AnthropicError
+
+    provider = AnthropicNarrativeProvider(
+        AnthropicFailingClient(AnthropicError("Overloaded.")),  # type: ignore[arg-type]
+        model="claude-opus-5",
+    )
+
+    with pytest.raises(NarrativeDeclined, match="Overloaded"):
+        await provider.draft(request())

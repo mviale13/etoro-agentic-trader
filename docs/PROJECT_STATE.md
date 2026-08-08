@@ -36,7 +36,7 @@ for the package-by-package mapping, verified against the import graph.
 
 # Repository Health
 
-Green baseline, measured 2026-08-07. A figure here is an observation with a
+Green baseline, measured 2026-08-08. A figure here is an observation with a
 date, not a standing claim — refresh it at slice boundaries, and keep the
 test count in [`CLAUDE.md`](../CLAUDE.md) in step, so a later session does
 not inherit a quality state that has silently drifted.
@@ -45,7 +45,7 @@ not inherit a quality state that has silently drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean |
-| Pytest | 🟢 1101 passing (2026-08-07) |
+| Pytest | 🟢 1277 passing (2026-08-08) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |

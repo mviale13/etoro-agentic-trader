@@ -41,6 +41,7 @@ class OpenAINarrativeProvider:
         self.model = model
 
     async def draft(self, request: DraftRequest) -> Draft:
+        from openai import OpenAIError
         from openai.types.chat import (
             ChatCompletionMessageParam,
             ChatCompletionSystemMessageParam,
@@ -62,22 +63,33 @@ class OpenAINarrativeProvider:
             ),
         ]
 
-        response = await self._client.chat.completions.create(
-            model=self.model,
-            # The reasoning-model parameter name; `max_tokens` is not
-            # accepted by current OpenAI models.
-            max_completion_tokens=request.max_tokens,
-            reasoning_effort=self.REASONING_EFFORT,
-            messages=messages,
-            response_format=ResponseFormatJSONSchema(
-                type="json_schema",
-                json_schema=JSONSchema(
-                    name="executive_narrative",
-                    strict=True,
-                    schema=request.schema,
+        try:
+            response = await self._client.chat.completions.create(
+                model=self.model,
+                # The reasoning-model parameter name; `max_tokens` is not
+                # accepted by current OpenAI models.
+                max_completion_tokens=request.max_tokens,
+                reasoning_effort=self.REASONING_EFFORT,
+                messages=messages,
+                response_format=ResponseFormatJSONSchema(
+                    type="json_schema",
+                    json_schema=JSONSchema(
+                        name="executive_narrative",
+                        strict=True,
+                        schema=request.schema,
+                    ),
                 ),
-            ),
-        )
+            )
+        except OpenAIError as failed:
+            # An outage, an exhausted balance, a rate limit. Wrapped so
+            # it travels the seam as the worded absence every caller
+            # already carries to its surface — measured twice as a raw
+            # traceback ending a run against this platform's own absence
+            # discipline, once in an observe run and once on the first
+            # statement reading.
+            raise NarrativeDeclined(
+                f"{self.name} could not complete the request: {failed}"
+            ) from failed
 
         choice = response.choices[0]
 

@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1101 tests, fast
+python -m pytest -q            # ~1277 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -75,14 +75,23 @@ edges, and the implications weighed with the losers preserved; appends
 one event to the append-only (subject, question) stream, and the
 current stance is always the latest answer; see
 [`docs/architecture/INVESTMENT_DECISION.md`](docs/architecture/INVESTMENT_DECISION.md),
-accepted).
+accepted),
+`movrvest statements SYMBOL` (the consensus over stored statement
+observations of the current filing: every concept with its width,
+cell, printed figure and caption — the filer's figures at checked
+addresses, nothing derived),
+`movrvest observe-statements SYMBOL` (the statement stream's explicit
+spend, to the quorum of 5; stops on the count, never the content).
 
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see
 [`docs/architecture/KNOWLEDGE_CONSENSUS.md`](docs/architecture/KNOWLEDGE_CONSENSUS.md)
-(accepted). The store holds `CompanyKnowledgeObservation`s (schema 9,
+(accepted). The store holds `CompanyKnowledgeObservation`s (schema 11,
 append-only); `consensus_of` derives on read; the decision path consumes
-`CompanyKnowledgeConsensus` only.
+`CompanyKnowledgeConsensus` only. Financial statement facts are their
+own observation stream (schema 1, `data/statements`, never pooled with
+segment readings): see
+[`docs/architecture/FINANCIAL_STATEMENT_ACQUISITION.md`](docs/architecture/FINANCIAL_STATEMENT_ACQUISITION.md).
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)

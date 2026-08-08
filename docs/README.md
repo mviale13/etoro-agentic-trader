@@ -22,7 +22,8 @@ These are the documents a new session should read first. They are the same set
 | How does the pipeline work? | [`architecture.md`](architecture.md) — **v5.0 section only** |
 | What is knowledge, once the reader is known to vary? | [`architecture/KNOWLEDGE_CONSENSUS.md`](architecture/KNOWLEDGE_CONSENSUS.md) — **accepted**: observation vs consensus, the content-blind rule that separates them, and the decisions that bind the implementation |
 | What is an investment decision? | [`architecture/INVESTMENT_DECISION.md`](architecture/INVESTMENT_DECISION.md) — **accepted**: the canonical object every future CIO engine must produce; a decision resolves disagreement, never uncertainty, and answers exactly one question |
-| What is an investment assessment? | [`architecture/INVESTMENT_ASSESSMENT.md`](architecture/INVESTMENT_ASSESSMENT.md) — **accepted**: the bounded evaluative claim that offers a course to a decision; it offers, never decides, an implication is directional, and the Yahoo boundary keeps secondary restatements out of every basis |
+| What is an investment assessment? | [`architecture/INVESTMENT_ASSESSMENT.md`](architecture/INVESTMENT_ASSESSMENT.md) — **accepted, frozen**: the bounded evaluative claim that offers a course to a decision; it offers, never decides, an implication is directional, and the Yahoo boundary keeps secondary restatements out of every basis |
+| How do filing-grade financial facts enter? | [`architecture/FINANCIAL_STATEMENT_ACQUISITION.md`](architecture/FINANCIAL_STATEMENT_ACQUISITION.md) — the earned §19a reopening the assessment design fixed: the income statement located by its own title, anchors checked cell by cell, rows read by the platform, consensus over its own observation stream |
 | What state is the frontend in? | [`frontend/UX_UI_INVENTORY.md`](frontend/UX_UI_INVENTORY.md) — the pre-migration audit and the slice-by-slice execution log of the UX/UI Alignment mission (complete, PRs #8–#16) |
 
 ## Reference

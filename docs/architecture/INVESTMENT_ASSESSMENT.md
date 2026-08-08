@@ -1,13 +1,21 @@
 # The Investment Assessment
 
-Status: **Accepted** (2026-08-08) — proposed and accepted the same
-day. The owner confirmed the direction and the Yahoo boundary, closed
-the three remaining questions, and added the fourth constitutional
-property — *an implication is directional* — all recorded in the
-Decisions section at the end, in the tradition of
-`INVESTMENT_DECISION.md`. The implementation sequence is fixed there
-too: the Financial Statement Acquisition first, then the first
-warranting kind, Business Quality.
+Status: **Accepted, and the contract is frozen** (2026-08-08) —
+proposed and accepted the same day. The owner confirmed the direction
+and the Yahoo boundary, closed the three remaining questions, and
+added the fourth constitutional property — *an implication is
+directional* — all recorded in the Decisions section at the end, in
+the tradition of `INVESTMENT_DECISION.md`. The implementation
+sequence is fixed there too: the Financial Statement Acquisition
+first, then the first warranting kind, Business Quality.
+
+Frozen means what it meant for the decision model: the object, the
+boundaries and the sequence hold through all three implementation
+steps, and amending any of them is an owner's decision recorded in
+this document — never a side effect of implementation. The one
+enumeration left deliberately open at acceptance stays open exactly
+as decided: the course vocabulary is fixed with kind #1, under the
+two standing rules recorded in decision 2.
 
 ---
 

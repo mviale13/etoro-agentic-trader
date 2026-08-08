@@ -88,4 +88,6 @@ class EdgarProvider:
             business_regions=filing.business_regions,
             performance_discussion=filing.discussion_text,
             performance_tables=filing.discussion_tables,
+            income_statement_text=filing.income_statement_text,
+            income_statement_tables=filing.income_statement_tables,
         )

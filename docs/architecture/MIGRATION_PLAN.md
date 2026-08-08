@@ -462,6 +462,11 @@ the roadmap follows the classes:
   provider outage inside an observe run surfaced as a raw traceback
   instead of a worded PROVIDER_ERROR outcome, against this platform's
   own absence discipline — recorded for a small follow-up fix.
+  **Fixed (2026-08-08), earned by a second measurement:** the first
+  statement reading hit the same exhausted balance and the same
+  traceback, so both narrative providers now wrap their SDK's errors
+  into the seam's worded decline, and the same 429 renders as
+  `invalid_extraction` with the provider's sentence carried verbatim.
 
   **The Evidence Graph** (the owner's strategic note on PR #52): the
   natural abstraction once narrative and tabular cross-references both
@@ -557,6 +562,49 @@ need reconciliation under *one business concept, one implementation*
 when the model lands. `config/policy.yaml` (risk profile, allocation
 targets, position constraints) is the seed the *for-this-investor*
 clause grows from.
+
+### The assessment contract is frozen; the acquisition begins (2026-08-08)
+
+The decision layer shipped (PR #58: `JPM.entry.0001` = `MONITOR`, the
+model validated by what it refused to manufacture) and the assessment
+design was accepted and merged (PR #59). The owner then confirmed the
+three-step course, executed in order:
+
+1. **The Assessment contract is frozen.**
+   [`INVESTMENT_ASSESSMENT.md`](INVESTMENT_ASSESSMENT.md) records it:
+   the object, the boundaries and the sequence hold through all three
+   implementation steps, and amending any of them is an owner's
+   decision recorded there — never a side effect of implementation.
+2. **The Financial Statement Acquisition slice is open** — the earned
+   §19a reopening of the knowledge stack, designed in
+   [`FINANCIAL_STATEMENT_ACQUISITION.md`](FINANCIAL_STATEMENT_ACQUISITION.md)
+   and implemented as its own observation stream: the income statement
+   located where the filer typeset its title (the structural-section
+   rule's third application), anchors checked by the tabular chain,
+   rows read by the platform with no model claim in them, consensus
+   with widths over `data/statements` (schema 1, never pooled with
+   segment readings). Surfaces: `movrvest statements`,
+   `movrvest observe-statements`. The segment corpus is untouched — no
+   re-read, no supersession. The measurement plan is JPM to quorum,
+   which requires the funded observation account.
+3. **Business Quality waits** until the acquisition is complete and
+   measured. Nothing in the slice defines a kind, a course or a rule
+   table.
+
+**Measured at opening, before any model spend.** The structural half
+was verified against JPMorgan's live 10-K (accession
+0001628280-26-008131, filed 2026-02-13): the income statement is
+located under its own typeset title — one table, 34 rows, periods
+2025/2024/2023 — and both concept rows are readable by the row
+expansion, "Total net revenue" (182,447 / 177,556 / 158,104) and "Net
+income" (57,048 / 58,471 / 49,552), each with the filer's own header
+and the "(in millions, except per share data)" caption. No observation
+is stored from that check, deliberately: storing one requires the
+reading, and the reading is blocked on the same exhausted provider
+balance the protocol-11 re-read hit. The first attempt surfaced that
+blocker as a worded `invalid_extraction` (the fix above), and the JPM
+quorum — the slice's measurement — runs once the account is funded:
+`movrvest observe-statements JPM`.
 
   **The earlier corpus re-read under protocol 10 (2026-08-07, 9
   companies at quorum 5).** What the taxonomy then found, and what it
