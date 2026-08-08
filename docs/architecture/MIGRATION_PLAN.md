@@ -761,6 +761,128 @@ trigger) is the owner's call, taken there.
   foreign private issuers failing for the same structural reason would
   earn the slice. Until then: known, measured, accepted.
 
+  **EARNED, NOT STARTED — the non-breaking space (measured
+  2026-08-08, on the resumed acquisition sweep).** The largest single
+  cause of failure across 59 first readings, and it is not a reader
+  defect at all: **the section locator misses headings typeset with a
+  non-breaking space**, hands the reader an empty string, and the
+  reader honestly reports that the filing described no business. An
+  absence that reads as a fact about the company is a fact about a
+  space character — the exact failure class invariant 1 exists to
+  prevent.
+
+  Measured directly, before any model call:
+
+  | Company | Heading as typeset | Text handed to the reader |
+  |---|---|---|
+  | AMZN | `Item\xa01. Business` | **0 characters** |
+  | BA | `Item\xa0\xa01. Business` | **0 characters** |
+  | DHR | `ITEM\xa01. BUSINESS` (contents uses a plain space) | 107 chars — its own contents listing |
+  | AAPL | `Item 1.\xa0\xa0\xa0\xa0Business` | 16,053 chars — works by luck |
+
+  The anchors match a literal ASCII space (`"item 1."`), so a filer's
+  typesetting decides whether this platform can read it. AAPL passes
+  only because its non-breaking spaces fall *after* the period.
+
+  **Two candidate fixes were built and both were refused by the
+  Reference Corpus — recorded so they are not rediscovered:**
+
+  1. *Match whitespace as whitespace* (`item\s+1\.`, offset-preserving,
+     `\s` already covers `\xa0`). Rescues AMZN/BA/DHR and **breaks two
+     corpus companies**: Disney's business section truncates ten
+     thousand characters early, mid-sentence, because tolerance also
+     surfaces the cross-reference "...are set forth in Item 1A" as a
+     closing anchor — the literal match had been closing that section
+     correctly *by accident*. NVIDIA's statement locator lands on a
+     note, "Consolidated Statements of Income include stock-based
+     compensation expense as follows".
+  2. *Also require a closing heading to begin a block* — the same
+     discipline the openings already have, and the principled repair
+     of (1). It fixes Disney and **breaks Caterpillar far worse**:
+     its discussion runs 28,214 → 105,515 characters, reintroducing
+     precisely the over-reading the structural-section rule was
+     introduced to eliminate. Where a true closing heading does not
+     register as a block, the section swallows everything to the next
+     one that does.
+
+  So the cause is known exactly and the naive repairs are eliminated
+  by measurement rather than by argument. What remains is a design
+  question the corpus has now framed sharply: **what closes a
+  section, when the heading that ends it may be typeset like prose and
+  a mention of it may be typeset like a heading?** A third guess was
+  not shipped. The reference check is doing its job — it refused two
+  changes that every unit test passed.
+
+  **The owner's decision (2026-08-08): build a candidate-and-ranker
+  boundary detector, not a third closing regex.** His diagnosis of why
+  the two repairs failed is the design: one pattern was doing two
+  different jobs — recognising a heading despite typography, and
+  deciding whether an occurrence is structurally a heading rather than
+  a reference in prose — and normalisation necessarily helps the first
+  while hurting the second. So the jobs are separated:
+
+  ```text
+  normalize for discovery  → every plausible occurrence, typography ignored
+  score each occurrence    → named structural evidence, for and against
+  resolve the sequence     → the most coherent progression of items
+  close at the next peer   → the boundary is a heading, never a mention
+  ```
+
+  Two invariants he set, both held by tests in
+  `tests/test_section_locator.py`:
+
+  > A typographic difference may change candidate discovery, but may
+  > not alone establish a section boundary.
+
+  > A closing boundary must be supported by structural evidence and by
+  > coherence with the surrounding item sequence.
+
+  **Built: `app/providers/section_locator.py`.** Deterministic, as he
+  directed — normalized candidate discovery, block/cross-reference/
+  capitalisation observations each named and directional, and a
+  sequence resolver that chooses the best increasing run through the
+  accepted candidates, rewarding the width each step spans. A table of
+  contents is a perfectly ordered run whose steps are a few characters
+  wide, so the body's run outscores it without being special-cased; a
+  prose mention cannot close a section, because choosing it would
+  strand the genuine heading for that same item later in the sequence.
+  Every selection carries a trace naming what won and what lost, since
+  section location is now authoritative evidence infrastructure.
+
+  **Measured on the acceptance corpus he named, deterministically and
+  before any model call:**
+
+  | Company | Old locator | New locator | Verdict |
+  |---|---|---|---|
+  | DIS | 80,349 chars, 43 tables | 80,341, 43 | unchanged |
+  | NVDA | 34,284, 9 | 34,285, 9 | unchanged |
+  | META | 60,804, 12 | 60,805, 12 | unchanged |
+  | AMZN | **0 chars** | 14,854 | recovered |
+  | BA | **0 chars** | 19,705 | recovered |
+  | DHR | **107** (its contents listing) | 55,686 | recovered |
+  | AAPL discussion | **238 chars, 0 tables** | 18,103, 6 | recovered — it had been failing silently |
+  | CAT discussion | 28,214, 5 tables | 105,516, 16 | genuine Item 7 → Item 7A span |
+  | JPM | 395-char pointer | 396 | preserved |
+
+  Caterpillar's resolved run is the clearest evidence the design
+  works: Item 1 → 1A → 1B → 1C → 2 → … → 16 straight through the body,
+  rejecting the entire table-of-contents run at offset 127,000 and
+  every one of twenty-odd in-prose mentions of Item 8.
+
+  **Not yet wired into the live path, and the reason is a measurement
+  rather than caution.** Integrating it changes the text the reader is
+  shown, which is a protocol change: schema 12, every stored entry
+  absent, and the committed JPM fixture that `test_entry_question.py`
+  runs against re-read at quorum before the suite is green again. The
+  one open risk is Caterpillar: its discussion would carry 16 tables
+  where 5 were enough, and this platform has already measured that
+  handing a size reading twenty-five MD&A tables makes it cite a
+  headerless column and lose the whole reading. Whether CAT still
+  measures its segments under the wider discussion is a
+  multi-observation question, not a deterministic one — so the flip,
+  the schema bump and the re-read are one budgeted step, taken with
+  that measurement in hand.
+
   **Reader watchlist:**
   | Symbol | Measured failure | Times |
   |---|---|---|
