@@ -1,0 +1,67 @@
+{
+  "observations": [
+    {
+      "description": "Novo Nordisk is a leading global healthcare company, founded in 1923 and headquartered in Denmark .",
+      "reading": {
+        "observed_at": "2026-08-08T18:36:30.946777+00:00",
+        "source": "549300DAQ1CVT6CXN342-2025-12-31-ESEF-DK-0 via ESEF, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 22,
+            "ownership": "proximity",
+            "quoted": "ob es it y, d iab et es , card iov as cu la r",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Obesity and Diabetes care"
+          },
+          "name": "Obesity and Diabetes care",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        },
+        {
+          "description": {
+            "distance": 11,
+            "ownership": "proximity",
+            "quoted": "rare blood disorders, rare endocrine disorders and hormone replacement therapy.",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Rare disease"
+          },
+          "name": "Rare disease",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion prints no table this platform could read a figure out of, so no segment was measured."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Novo Nordisk A/S",
+    "document_format": "xhtml",
+    "identifier": "549300DAQ1CVT6CXN342-2025-12-31-ESEF-DK-0",
+    "key": "98a7dd83b7b040d0829f8a9befd951fb981681d50bcb9165352f0d8f4c4089d7",
+    "language": "en",
+    "location": "https://filings.xbrl.org/549300DAQ1CVT6CXN342/2025-12-31/ESEF/DK/0/NOVO-2025-12-31-1-en/reports/NOVO-2025-12-31-1-en.xhtml",
+    "provider": "ESEF",
+    "published_on": "2026-04-07",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "NOVO-B.CO",
+    "verification": [
+      "security_registry",
+      "register_indexed",
+      "document_lei"
+    ]
+  },
+  "symbol": "NOVO-B.CO"
+}

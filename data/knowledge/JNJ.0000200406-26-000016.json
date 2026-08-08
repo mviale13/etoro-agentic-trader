@@ -1,0 +1,115 @@
+{
+  "observations": [
+    {
+      "description": "Johnson & Johnson and its subsidiaries are engaged in the research and development, manufacture and sale of a broad range of products in the healthcare field.",
+      "reading": {
+        "observed_at": "2026-08-08T18:32:13.871129+00:00",
+        "source": "10-K 0000200406-26-000016 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 18,
+            "ownership": "structure",
+            "quoted": "The Innovative Medicine segment is focused on the following therapeutic areas",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Innovative Medicine"
+          },
+          "name": "Innovative Medicine",
+          "revenue": {
+            "denominator": {
+              "caption": "Income before tax by segment Income before tax by segment of business was as follows:",
+              "cell": {
+                "column": 12,
+                "row": 6,
+                "table": 6
+              },
+              "column_header": "Segment Sales",
+              "label": "Worldwide income before tax",
+              "printed": "94,193",
+              "value": 94193.0
+            },
+            "numerator": {
+              "caption": "Income before tax by segment Income before tax by segment of business was as follows:",
+              "cell": {
+                "column": 12,
+                "row": 2,
+                "table": 6
+              },
+              "column_header": "Segment Sales",
+              "label": "Innovative Medicine",
+              "printed": "60,401",
+              "value": 60401.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 7,
+            "ownership": "structure",
+            "quoted": "The MedTech segment develops and manufactures a broad portfolio of products",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "MedTech"
+          },
+          "name": "MedTech",
+          "revenue": {
+            "denominator": {
+              "caption": "Income before tax by segment Income before tax by segment of business was as follows:",
+              "cell": {
+                "column": 12,
+                "row": 6,
+                "table": 6
+              },
+              "column_header": "Segment Sales",
+              "label": "Worldwide income before tax",
+              "printed": "94,193",
+              "value": 94193.0
+            },
+            "numerator": {
+              "caption": "Income before tax by segment Income before tax by segment of business was as follows:",
+              "cell": {
+                "column": 12,
+                "row": 3,
+                "table": 6
+              },
+              "column_header": "Segment Sales",
+              "label": "MedTech",
+              "printed": "33,792",
+              "value": 33792.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "JOHNSON & JOHNSON",
+    "document_format": "html",
+    "identifier": "10-K 0000200406-26-000016",
+    "key": "0000200406-26-000016",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/200406/000020040626000016/jnj-20251228.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-11",
+    "reporting_period": {
+      "ends_on": "2025-12-28",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "JNJ",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "JNJ"
+}

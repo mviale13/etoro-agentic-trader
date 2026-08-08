@@ -1,0 +1,80 @@
+{
+  "observations": [
+    {
+      "description": "At Pentair, we help the world sustainably move, improve and enjoy water, life\u2019s most essential resource.",
+      "reading": {
+        "observed_at": "2026-08-08T18:37:06.622220+00:00",
+        "source": "10-K 0000077360-26-000007 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 119,
+            "ownership": "structure",
+            "quoted": "designs, manufactures and sells a variety of fluid treatment and pump products and systems,",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Flow"
+          },
+          "name": "Flow",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": {
+            "distance": 140,
+            "ownership": "structure",
+            "quoted": "designs, manufactures and sells commercial and residential water treatment products and systems",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Water Solutions"
+          },
+          "name": "Water Solutions",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": {
+            "distance": 117,
+            "ownership": "structure",
+            "quoted": "designs, manufactures and sells a complete line of energy-efficient residential and commercial pool equipment",
+            "revenue_models": [
+              "manufacturing"
+            ],
+            "under": "Pool"
+          },
+          "name": "Pool",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "PENTAIR plc",
+    "document_format": "html",
+    "identifier": "10-K 0000077360-26-000007",
+    "key": "0000077360-26-000007",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/77360/000007736026000007/pnr-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-24",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "PNR",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "PNR"
+}

@@ -1,0 +1,56 @@
+{
+  "observations": [
+    {
+      "description": "Intuitive Machines, Inc. is a space infrastructure and services company focused on enabling sustained infrastructure and human activity beyond Earth.",
+      "reading": {
+        "observed_at": "2026-08-08T18:33:27.131027+00:00",
+        "source": "10-K 0001628280-26-019865 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Build",
+          "revenue": null,
+          "undescribed_because": "The description of 'Build' quotes words the document prints outside the section it heads 'Build', so they are not what it says there about 'Build'. A repair was attempted and was refused too: The description of 'Build' quotes words the document prints outside the section it heads 'Build', so they are not what it says there about 'Build'.",
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": null,
+          "name": "Connect",
+          "revenue": null,
+          "undescribed_because": "The description of 'Connect' quotes words the document prints outside the section it heads 'Connect', so they are not what it says there about 'Connect'. A repair was attempted and was refused too: The description of 'Connect' quotes words the document prints outside the section it heads 'Connect', so they are not what it says there about 'Connect'.",
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": null,
+          "name": "Operate",
+          "revenue": null,
+          "undescribed_because": "The description of 'Operate' quotes words the document prints outside the section it heads 'Operate', so they are not what it says there about 'Operate'. A repair was attempted and was refused too: The description of 'Operate' quotes words the document prints outside the section it heads 'Operate', so they are not what it says there about 'Operate'.",
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Intuitive Machines, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-019865",
+    "key": "0001628280-26-019865",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1844452/000162828026019865/lunr-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-03-19",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "LUNR",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "LUNR"
+}

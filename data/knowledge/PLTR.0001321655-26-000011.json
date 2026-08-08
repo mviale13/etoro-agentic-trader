@@ -1,0 +1,111 @@
+{
+  "observations": [
+    {
+      "description": "We build software that empowers organizations to effectively integrate their data, decisions, and operations at scale.",
+      "reading": {
+        "observed_at": "2026-08-08T18:36:51.314437+00:00",
+        "source": "10-K 0001321655-26-000011 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "54% came from customers in the government segment,",
+            "revenue_models": [],
+            "under": "Government segment"
+          },
+          "name": "Government segment",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Comparison of the Years Ended December 31, 2025 and 2024 Revenue",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 5
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Total revenue",
+              "printed": "$ 4,475,446",
+              "value": 4475446.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Comparison of the Years Ended December 31, 2025 and 2024 Revenue",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 5
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Government",
+              "printed": "$ 2,402,287",
+              "value": 2402287.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "46% came from customers in the commercial segment.",
+            "revenue_models": [],
+            "under": "Commercial segment"
+          },
+          "name": "Commercial segment",
+          "revenue": {
+            "denominator": {
+              "caption": "Table of Contents Comparison of the Years Ended December 31, 2025 and 2024 Revenue",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 5
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Total revenue",
+              "printed": "$ 4,475,446",
+              "value": 4475446.0
+            },
+            "numerator": {
+              "caption": "Table of Contents Comparison of the Years Ended December 31, 2025 and 2024 Revenue",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 5
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Commercial",
+              "printed": "2,073,159",
+              "value": 2073159.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Palantir Technologies Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001321655-26-000011",
+    "key": "0001321655-26-000011",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1321655/000132165526000011/pltr-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-17",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "PLTR",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "PLTR"
+}

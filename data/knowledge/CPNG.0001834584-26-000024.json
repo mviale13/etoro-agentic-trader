@@ -1,0 +1,49 @@
+{
+  "observations": [
+    {
+      "description": "Coupang is a technology and Fortune 150 company listed on the New York Stock Exchange that provides retail, restaurant delivery, video streaming, and fintech services to customers under brands that include Coupang, Eats, Play, Rocket Now, and Farfetch.",
+      "reading": {
+        "observed_at": "2026-08-08T18:26:27.217960+00:00",
+        "source": "10-K 0001834584-26-000024 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Product Commerce",
+          "revenue": null,
+          "undescribed_because": "The description of 'Product Commerce' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        },
+        {
+          "description": null,
+          "name": "Developing Offerings",
+          "revenue": null,
+          "undescribed_because": "The description of 'Developing Offerings' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "unmeasured_because": "No table in this filing's performance discussion was read as reporting a total revenue, so there was nothing to measure a segment against."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Coupang, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001834584-26-000024",
+    "key": "0001834584-26-000024",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1834584/000183458426000024/cpng-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-26",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "CPNG",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "CPNG"
+}

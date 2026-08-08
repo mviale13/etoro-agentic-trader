@@ -1,0 +1,34 @@
+{
+  "observations": [
+    {
+      "description": "DoubleVerify provides digital advertising measurement and authentication solutions used across demand- and supply-side platforms.",
+      "reading": {
+        "observed_at": "2026-08-08T18:27:47.820185+00:00",
+        "source": "10-K 0001104659-26-020499 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "DoubleVerify Holdings, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001104659-26-020499",
+    "key": "0001104659-26-020499",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1819928/000110465926020499/dv-20251231x10k.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-26",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "DV",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "DV"
+}
