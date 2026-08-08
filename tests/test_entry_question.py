@@ -171,11 +171,15 @@ class TestPolicyRoom:
     def test_room_is_the_smaller_of_cap_and_allocation_distance(self):
         decision = decide(_quorate_case(portfolio=_portfolio(stocks=50.0)))
         # distance to target is 10%, below the 15% cap
-        assert "room to enter: 10.0%" in (decision.clauses.why_for_this_investor.states)
+        assert "maximum room permitted by policy: 10.0%" in (
+            decision.clauses.why_for_this_investor.states
+        )
 
     def test_the_cap_binds_when_the_allocation_distance_is_wider(self):
         decision = decide(_quorate_case(portfolio=_portfolio(stocks=40.0)))
-        assert "room to enter: 15.0%" in (decision.clauses.why_for_this_investor.states)
+        assert "maximum room permitted by policy: 15.0%" in (
+            decision.clauses.why_for_this_investor.states
+        )
 
 
 class TestBelowQuorum:

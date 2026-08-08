@@ -196,12 +196,16 @@ def _fact_edges(case: EntryCase) -> tuple[str, ...]:
 
 
 def _room_statement(case: EntryCase, *, room: float) -> str:
+    # A ceiling, never a target: v1 computes what policy permits, and a
+    # future RECOMMEND does not mean entering at the full room — sizing
+    # below the ceiling waits for an evidence-backed sizing model.
     policy = case.policy
     portfolio = case.portfolio
     assert policy is not None and portfolio is not None
     allocation_room = policy.target.stocks - portfolio.allocation.stocks
     return (
-        f"room to enter: {room:.1f}% of the portfolio — the smaller of the "
+        f"maximum room permitted by policy: {room:.1f}% of the portfolio, "
+        "a ceiling rather than a target — the smaller of the "
         f"{policy.constraints.max_single_position:g}% single-position cap "
         f"and the {allocation_room:.1f}% distance from the current "
         f"{portfolio.allocation.stocks:.1f}% stocks allocation to its "
