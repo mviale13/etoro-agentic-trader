@@ -13,31 +13,38 @@ fact about this platform rather than about the company.
 
 from __future__ import annotations
 
-from app.analysts.filing_analysts import (
-    filing_balance_sheet,
-    filing_cash_flow,
-    filing_growth,
-    filing_profitability,
-    stated_value,
-)
+from app.analysts.filing_analysts import stated_value
 from app.domain.financial_statement_consensus import (
     FinancialStatementConsensus,
     statement_consensus_of,
 )
 from app.domain.financial_statements import STATEMENT_NAMES, StatementKind
 from app.domain.financial_understanding import FinancialUnderstanding
+from app.domain.playbook import PlaybookKind
 from app.repositories.financial_statement_store import (
     FinancialStatementStore,
     JsonFinancialStatementStore,
 )
 from app.services.financial_engine import measure
+from app.services.financial_questions import (
+    answer_questions,
+    answered,
+    inapplicable,
+    unanswerable,
+)
+from app.services.playbook_selection_service import PlaybookSelectionService
 
 
 class FinancialsCommand:
-    def __init__(self, store: FinancialStatementStore | None = None) -> None:
+    def __init__(
+        self,
+        store: FinancialStatementStore | None = None,
+        selection: PlaybookSelectionService | None = None,
+    ) -> None:
         self._store = store or JsonFinancialStatementStore()
+        self._selection = selection or PlaybookSelectionService()
 
-    def run(self, symbol: str) -> int:
+    async def run(self, symbol: str, playbook: PlaybookKind | None = None) -> int:
         normalized = symbol.upper().strip()
 
         held = {
@@ -55,7 +62,9 @@ class FinancialsCommand:
             )
             return 1
 
-        _render(measure(normalized, held), held)
+        chosen = playbook or (await self._selection.select(normalized)).playbook.kind
+
+        _render(measure(normalized, held), held, chosen)
 
         return 0
 
@@ -63,6 +72,7 @@ class FinancialsCommand:
 def _render(
     understanding: FinancialUnderstanding,
     held: dict[StatementKind, FinancialStatementConsensus],
+    playbook: PlaybookKind,
 ) -> None:
     print(f"{understanding.symbol} — what its own statements measure")
     print()
@@ -120,30 +130,49 @@ def _render(
     for absent in understanding.not_established:
         print(f"  {absent.label}: {absent.absent_because}")
 
-    print()
-    print("the analysts, on these facts and nothing else")
-    print()
+    answers = answer_questions(playbook, understanding)
 
-    for named, analyst in (
-        ("profitability", filing_profitability()),
-        ("growth", filing_growth()),
-        ("balance sheet", filing_balance_sheet()),
-        ("cash flow", filing_cash_flow()),
-    ):
-        opinion = analyst.analyze(understanding)
+    print()
+    print(f"the {playbook.value} playbook's financial questions")
+    print()
+    print("  meaningful and answered")
 
+    for answer in answered(answers):
         print(
-            f"  {named}: {opinion.verdict.value} (confidence {opinion.confidence:.0%})"
+            f"    {answer.question.value}: {answer.verdict} "
+            f"(confidence {answer.confidence or 0:.0%})"
         )
+        print(f"      asks: {answer.asks}")
 
-        for line in opinion.evidence:
-            print(f"    + {line}")
+        for line in answer.evidence:
+            print(f"      + {line}")
 
-        for line in opinion.uncertainty:
-            print(f"    ? {line}")
+        for line in answer.gaps:
+            print(f"      ? {line}")
 
-        print()
+    if not answered(answers):
+        print("    none")
+
+    print()
+    print("  meaningful, not yet answerable from established facts")
+
+    for answer in unanswerable(answers):
+        print(f"    {answer.question.value}: {answer.because}")
+
+    if not unanswerable(answers):
+        print("    none")
+
+    print()
+    print(f"  not applicable to a {playbook.value}")
+
+    for answer in inapplicable(answers):
+        print(f"    {answer.question.value}: {answer.because}")
+
+    if not inapplicable(answers):
+        print("    none")
+
+    print()
 
 
-def run(symbol: str) -> int:
-    return FinancialsCommand().run(symbol)
+async def run(symbol: str, playbook: PlaybookKind | None = None) -> int:
+    return await FinancialsCommand().run(symbol, playbook)
