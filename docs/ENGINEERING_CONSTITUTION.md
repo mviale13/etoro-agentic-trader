@@ -213,6 +213,32 @@ case, never taxonomy-first.
 
 ---
 
+## 19b. The Reference Corpus is the engineering contract
+
+A stable set of real companies — each in the corpus for a property its
+filings exercise, named beside it in
+`app/domain/reference_corpus.py` — is what every reasoning change
+proves itself against before it reaches the investor.
+
+The corpus formalises what the platform had already begun doing
+informally: measuring every major capability against the same
+companies, so a regression is caught by the company that first proved
+the capability works. JPMorgan is the canonical case — the first
+company carried from filing to authoritative playbook with every link
+grounded — and a change that breaks any link of that chain must fail
+against JPMorgan before an investor can meet it.
+
+Two disciplines keep the contract meaningful:
+
+- **The corpus stays stable.** Membership is earned by exercising
+  something real, as measured, and is reviewed by the measurements'
+  owner — never adjusted to make a change look safe.
+- **The corpus is engineering, never investment.** Its companies are
+  tracked under their own origin, behind the investor's lists, and can
+  never enter a portfolio funnel or move a KPI.
+
+---
+
 ## 20. The North Star
 
 Every change should improve at least one of:
