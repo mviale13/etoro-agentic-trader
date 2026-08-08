@@ -472,6 +472,20 @@ the roadmap follows the classes:
   (`_referenced` follows *references*; `_continues` merges
   *continues*); the third convergence is the earned trigger.
 
+  **The Reference Corpus (2026-08-07, the owner's designation after
+  PR #53).** An engineering status, not a user-facing concept: the
+  companies every reasoning change must keep passing through, each in
+  the corpus for a property its filings exercise —
+  `app/domain/reference_corpus.py` names all seven with their reasons
+  (JPM the complete chain; DIS, NVDA, CAT, VOW3.DE, META, UMI.BR the
+  edges they each proved). The coverage measurement tracks them under
+  their own origin, behind the investor's lists: a reference company
+  the investor also holds or watches counts under the origin they
+  gave it, and one tracked for engineering alone can never enter the
+  portfolio or watchlist funnels or move the KPI. JPM thereby becomes
+  the platform's canonical regression company without ever being a
+  recommendation.
+
   **The earlier corpus re-read under protocol 10 (2026-08-07, 9
   companies at quorum 5).** What the taxonomy then found, and what it
   no longer did:

@@ -13,6 +13,7 @@ from app.domain.playbook_coverage import (
     CoverageOutcome,
 )
 from app.domain.portfolio_position import PortfolioPosition
+from app.domain.reference_corpus import REFERENCE_CORPUS, ReferenceCompany
 from app.domain.watchlist_item import WatchlistItem
 from app.services.playbook_coverage_service import PlaybookCoverageService
 from tests.test_playbook_mapping import MFG, observations_of, segment
@@ -165,6 +166,8 @@ def service(**overrides) -> PlaybookCoverageService:
         "facts": FakeFacts(),
         "profiler": FakeProfiler(),
         "industry": FakeIndustry(),
+        # The investor's book alone, unless a test is about the corpus.
+        "reference": (),
     }
     defaults.update(overrides)
 
@@ -465,3 +468,78 @@ async def test_the_funnel_counts_investor_visible_understanding() -> None:
     assert book.companies == 4
     assert book.unresolved == 1
     assert book.out_of_scope == 1
+
+
+# ── the reference corpus: engineering, never investment ─────────────
+
+
+@pytest.mark.anyio
+async def test_a_reference_company_is_tracked_under_its_own_origin() -> None:
+    """The canonical regression company enters the measurement without
+    entering the investor's book: its own origin, and no seat in the
+    portfolio or watchlist funnels."""
+
+    report = await service(
+        store=FakeStore({"JPM": grounded_observations()}),
+        reference=(ReferenceCompany(symbol="JPM", exercises="the complete chain"),),
+    ).report()
+
+    (security,) = report.securities
+
+    assert security.symbol == "JPM"
+    assert security.origin is CoverageOrigin.REFERENCE
+
+    assert report.funnel(CoverageOrigin.REFERENCE).companies == 1
+    assert report.funnel(CoverageOrigin.PORTFOLIO).companies == 0
+    assert report.funnel(CoverageOrigin.WATCHLIST).companies == 0
+
+
+@pytest.mark.anyio
+async def test_a_held_reference_company_keeps_the_investors_origin() -> None:
+    """A reference company the investor also holds is the investor's
+    first: it appears once, under the origin they gave it, and the
+    reference funnel stays exactly the regression-only companies."""
+
+    report = await service(
+        store=FakeStore({"NVDA": grounded_observations()}),
+        resolver=FakeResolver(watched=(item("NVDA"),)),
+        reference=(ReferenceCompany(symbol="NVDA", exercises="a manufacturer"),),
+    ).report()
+
+    (security,) = report.securities
+
+    assert security.origin is CoverageOrigin.WATCHLIST
+    assert report.funnel(CoverageOrigin.REFERENCE).companies == 0
+
+
+@pytest.mark.anyio
+async def test_a_held_and_watched_security_never_enters_the_reference_funnel() -> None:
+    """BOTH is an overlap of the two investor lists and counts in
+    those two funnels only — the reference funnel exists precisely so
+    acceptance cases and the book cannot blend."""
+
+    report = await service(
+        store=FakeStore({"NVDA": grounded_observations()}),
+        resolver=FakeResolver(watched=(item("NVDA"),)),
+        account=FakeAccount(position("NVDA")),
+    ).report()
+
+    (security,) = report.securities
+
+    assert security.origin is CoverageOrigin.BOTH
+    assert report.funnel(CoverageOrigin.PORTFOLIO).companies == 1
+    assert report.funnel(CoverageOrigin.WATCHLIST).companies == 1
+    assert report.funnel(CoverageOrigin.REFERENCE).companies == 0
+
+
+def test_the_real_corpus_carries_the_reference_company_and_its_reason() -> None:
+    """JPM is in the corpus for the chain it first closed, and every
+    member states what it exercises — a regression there should name
+    what actually broke."""
+
+    by_symbol = {company.symbol: company for company in REFERENCE_CORPUS}
+
+    assert "JPM" in by_symbol
+    assert "complete chain" in by_symbol["JPM"].exercises
+
+    assert all(company.exercises for company in REFERENCE_CORPUS)
