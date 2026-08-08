@@ -519,6 +519,45 @@ begins after the corpus completes, with its own design phase, on top
 of a nervous system that is for the first time mature enough to build
 the brain on rather than alongside.
 
+### The Artificial CIO design brief (the owner, 2026-08-08)
+
+**The CIO begins with a design question, not a coding question: what
+is an investment decision?** Not what the UI shows, not what data to
+add, not which committee should exist. The decision model comes
+first; everything else — committees, scoring, portfolio reasoning,
+opportunity ranking, risk balancing, executive briefs — derives from
+it, exactly as the platform once grew around `CompanyKnowledge`.
+
+**The first deliverable, before any code: the minimal canonical
+Decision object.** A design document only, in the tradition of
+`KNOWLEDGE_CONSENSUS.md`.
+
+**The owner's constraints, carried from the knowledge platform:**
+
+- It consumes established facts; it never establishes new ones.
+- It may weigh evidence; it may never rewrite evidence.
+- It must state what changed.
+- It must state why it matters.
+- It must state why it matters *for this investor*.
+- It must distinguish uncertainty from disagreement.
+- It must refuse conclusions unsupported by its inputs.
+- Every recommendation must be explainable by walking backwards
+  through the existing evidence graph.
+
+The CIO is another deterministic consumer of the platform — not a
+replacement for it. Success criterion: the knowledge platform
+answered *how well do we understand this company?*; the CIO answers
+*given everything we know, what should the investor do — and why?*
+
+**Noted at the boundary, for the design session:** the existing
+`CommitteeDecision` is a vote-count object — `recommendation: str`,
+`confidence: int`, buy/hold/sell tallies — free text beside an
+unexplainable number, and it cannot be the canonical object; it will
+need reconciliation under *one business concept, one implementation*
+when the model lands. `config/policy.yaml` (risk profile, allocation
+targets, position constraints) is the seed the *for-this-investor*
+clause grows from.
+
   **The earlier corpus re-read under protocol 10 (2026-08-07, 9
   companies at quorum 5).** What the taxonomy then found, and what it
   no longer did:
