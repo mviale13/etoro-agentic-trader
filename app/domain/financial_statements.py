@@ -264,6 +264,16 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
     #: across filers would compare companies on different denominators.
     #: A filer printing only the combined line is refused with its own
     #: words, which is what earns the next entry here.
+    #: The bare forms were earned by a live refusal, which is the only
+    #: way a form enters here. JPMorgan's balance sheet condenses equity
+    #: to a single line labelled "Stockholders' equity" — 362,438 — and
+    #: prints no "Total" anywhere near it, so the reading pointed at the
+    #: right cell and this platform refused it for the filer's wording.
+    #:
+    #: Accepting the bare form does not let a section header in. On a
+    #: filing that uses it as a heading over a breakdown, that row
+    #: prints no number, and a cell that prints no number is already
+    #: refused as measuring nothing before any label is compared.
     StatementConcept.TOTAL_EQUITY: (
         "total stockholders' equity",
         "total stockholders equity",
@@ -272,6 +282,9 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         "total shareowners' equity",
         "total common stockholders' equity",
         "total jpmorgan chase stockholders' equity",
+        "stockholders' equity",
+        "shareholders' equity",
+        "shareowners' equity",
     ),
     StatementConcept.OPERATING_CASH_FLOW: (
         "net cash provided by operating activities",

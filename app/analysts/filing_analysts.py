@@ -63,11 +63,21 @@ from app.domain.profitability_opinion import ProfitabilityOpinion, Profitability
 def stated_value(established: EstablishedMeasure) -> str:
     """One measure's number, read the way its unit is read.
 
-    A currency measure is stated at the scale its caption gives rather
-    than rescaled into dollars. The filer printed "182,447" under "(in
-    millions)", and turning that into "$182.4K" — which is what a
-    dollar formatter does to it — would be this platform inventing a
-    scale nobody wrote down.
+    A currency measure is printed exactly as the arithmetic produced it,
+    at whatever scale the statement was typeset in, and **no scale is
+    asserted here**. Two temptations are refused. Formatting it as
+    dollars would turn a filer's "182,447" under "(in millions)" into
+    "$182.4K", which is wrong by a factor of a million. Appending the
+    table's caption would be worse, because a caption on this platform
+    is the text immediately preceding the table, and on real filings
+    that is as often the statement's own title as a scale — JPMorgan's
+    cash flow table is preceded by "Consolidated statements of cash
+    flows", and printing "-147,782 Consolidated statements of cash
+    flows" states a scale that nothing established.
+
+    The scale is not lost. It travels in `stated`, with the printed
+    cell and the caption, which is where a reader checks it against the
+    document.
     """
 
     if established.value is None:
@@ -79,9 +89,7 @@ def stated_value(established: EstablishedMeasure) -> str:
     if established.unit is MeasureUnit.MULTIPLE:
         return f"{established.value:.2f}x"
 
-    caption = established.basis[0].caption if established.basis else ""
-
-    return f"{established.value:,.0f} {caption}".strip()
+    return f"{established.value:,.0f}"
 
 
 class FilingAnalyst[OpinionT: Opinion[Any]](Analyst[FinancialUnderstanding, OpinionT]):

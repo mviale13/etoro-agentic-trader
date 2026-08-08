@@ -6,6 +6,7 @@ import pytest
 
 from app.commands import statements as command
 from app.domain.financial_statement_consensus import statement_consensus_of
+from app.domain.financial_statements import StatementKind
 from app.services.company_knowledge_service import KnowledgeState
 from app.services.financial_statement_service import StatementOutcome
 from tests.test_financial_statement_consensus import (
@@ -19,7 +20,11 @@ class ServiceStub:
     def __init__(self, outcome: StatementOutcome) -> None:
         self._outcome = outcome
 
-    async def statements(self, symbol: str) -> StatementOutcome:
+    async def statements(
+        self,
+        symbol: str,
+        statement: StatementKind = StatementKind.INCOME_STATEMENT,
+    ) -> StatementOutcome:
         return self._outcome
 
 
@@ -51,7 +56,9 @@ def test_a_security_with_no_statement_read_is_told_so(
 
     assert exit_code == 1
     assert "No provider holds an annual report" in printed
-    assert "No statement has been read" in printed
+    # The statement is named, because which one was not read decides
+    # which figures are absent.
+    assert "No income statement has been read" in printed
 
 
 def test_a_settled_figure_prints_its_cell_and_its_width(

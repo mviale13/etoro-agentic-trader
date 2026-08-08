@@ -173,11 +173,17 @@ def test_the_balance_sheet_route_scores_liquidity_and_not_leverage() -> None:
     assert all("iabilities" not in line for line in opinion.evidence)
 
 
-def test_a_currency_measure_keeps_the_scale_its_caption_states() -> None:
-    """182,447 under "(in millions)" must never be printed as $182.4K."""
+def test_a_currency_measure_asserts_no_scale_of_its_own() -> None:
+    """182,447 under "(in millions)" must never be printed as $182.4K.
+
+    Nor may the table's caption be appended as though it were a scale:
+    a caption here is the text preceding the table, which on real
+    filings is as often the statement's own title.
+    """
 
     opinion = filing_cash_flow().analyze(
         understanding(established(FinancialMeasure.OPERATING_CASH_FLOW, 100000.0))
     )
 
-    assert "100,000 (in millions)" in opinion.evidence[0]
+    assert "Operating cash flow is 100,000 —" in opinion.evidence[0]
+    assert "$100.0K" not in opinion.evidence[0]

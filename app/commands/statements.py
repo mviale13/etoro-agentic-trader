@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from app.domain.agreement import Agreement
 from app.domain.financial_statement_consensus import FinancialStatementConsensus
+from app.domain.financial_statements import STATEMENT_NAMES, StatementKind
 from app.services.financial_statement_service import (
     FinancialStatementService,
     StatementOutcome,
@@ -20,18 +21,26 @@ from app.services.financial_statement_service import (
 
 
 class StatementsCommand:
-    async def run(self, symbol: str) -> int:
+    async def run(
+        self,
+        symbol: str,
+        statement: StatementKind = StatementKind.INCOME_STATEMENT,
+    ) -> int:
         normalized = symbol.upper().strip()
 
-        outcome = await FinancialStatementService().statements(normalized)
+        outcome = await FinancialStatementService().statements(normalized, statement)
 
-        _render(normalized, outcome)
+        _render(normalized, outcome, statement)
 
         return 0 if outcome.state.is_available else 1
 
 
-def _render(symbol: str, outcome: StatementOutcome) -> None:
-    print(f"{symbol} — {outcome.state.value}")
+def _render(
+    symbol: str,
+    outcome: StatementOutcome,
+    statement: StatementKind = StatementKind.INCOME_STATEMENT,
+) -> None:
+    print(f"{symbol} — {STATEMENT_NAMES[statement]} — {outcome.state.value}")
     print()
 
     if outcome.absent_because:
@@ -39,7 +48,7 @@ def _render(symbol: str, outcome: StatementOutcome) -> None:
         print()
 
     if outcome.statements is None:
-        print("No statement has been read for this security.")
+        print(f"No {STATEMENT_NAMES[statement]} has been read for this security.")
         return
 
     _render_statements(outcome.statements)
@@ -58,7 +67,7 @@ def _render_statements(consensus: FinancialStatementConsensus) -> None:
         )
 
     print()
-    print(consensus.statement.value)
+    print(STATEMENT_NAMES[consensus.statement])
 
     for fact in consensus.facts:
         print(f"  {fact.concept.value}")
@@ -105,5 +114,8 @@ def _agreement(
         print(f"{indent}  {answer.given}× {answer.stated}")
 
 
-async def run(symbol: str) -> int:
-    return await StatementsCommand().run(symbol)
+async def run(
+    symbol: str,
+    statement: StatementKind = StatementKind.INCOME_STATEMENT,
+) -> int:
+    return await StatementsCommand().run(symbol, statement)

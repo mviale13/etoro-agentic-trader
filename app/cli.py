@@ -16,6 +16,7 @@ from app.commands import (
     doctor,
     evaluate,
     explain,
+    financials,
     intelligence,
     knowledge,
     market,
@@ -35,6 +36,7 @@ from app.commands import (
     watchlist,
     writer_compare,
 )
+from app.domain.financial_statements import StatementKind
 from app.services.reader_calibration import DEFAULT_READINGS
 
 CommandHandler = Callable[[], Coroutine[Any, Any, int]]
@@ -298,6 +300,31 @@ def build_parser() -> argparse.ArgumentParser:
         "symbol",
         help="Ticker symbol, for example JPM",
     )
+    statements_parser.add_argument(
+        "--statement",
+        choices=[kind.value for kind in StatementKind],
+        default=StatementKind.INCOME_STATEMENT.value,
+        help=(
+            "Which primary statement to show. Three quorums share a "
+            "document key and are never pooled, so one is asked for at a time"
+        ),
+    )
+
+    financials_parser = subparsers.add_parser(
+        "financials",
+        help="Show what the filer's statements measure, and the analysts on them",
+        description=(
+            "The canonical financial facts a filing establishes — every "
+            "measure with the cells it was computed from and the narrowest "
+            "agreement beneath it — and the four financial analysts' answers "
+            "over exactly those facts. Read-only: it derives from what is "
+            "stored and never observes"
+        ),
+    )
+    financials_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example JPM",
+    )
 
     observe_statements_parser = subparsers.add_parser(
         "observe-statements",
@@ -320,6 +347,15 @@ def build_parser() -> argparse.ArgumentParser:
             "Observe up to this many observations instead of the quorum — "
             "a deeper, explicit spend. The count is fixed before anything "
             "is read; the content never moves it"
+        ),
+    )
+    observe_statements_parser.add_argument(
+        "--statement",
+        choices=[kind.value for kind in StatementKind],
+        default=StatementKind.INCOME_STATEMENT.value,
+        help=(
+            "Which primary statement to observe. Each is its own quorum and "
+            "its own spend"
         ),
     )
 
@@ -400,10 +436,15 @@ async def dispatch(args: argparse.Namespace) -> int:
         return await observe.run(args.symbol, args.to)
 
     if args.command == "statements":
-        return await statements.run(args.symbol)
+        return await statements.run(args.symbol, StatementKind(args.statement))
+
+    if args.command == "financials":
+        return financials.run(args.symbol)
 
     if args.command == "observe-statements":
-        return await observe_statements.run(args.symbol, args.to)
+        return await observe_statements.run(
+            args.symbol, args.to, StatementKind(args.statement)
+        )
 
     if args.command == "understanding":
         return await understanding.run(args.symbol)

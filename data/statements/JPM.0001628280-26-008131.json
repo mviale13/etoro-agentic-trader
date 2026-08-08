@@ -584,6 +584,1641 @@
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Total liabilities",
+              "printed": "11",
+              "value": 11.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Stockholders\u2019 equity",
+              "printed": "5",
+              "value": 5.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:08.955161+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Total liabilities",
+              "printed": "11",
+              "value": 11.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Stockholders\u2019 equity",
+              "printed": "5",
+              "value": 5.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:13.760639+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Total liabilities",
+              "printed": "11",
+              "value": 11.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Stockholders\u2019 equity",
+              "printed": "5",
+              "value": 5.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:17.693580+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Total liabilities",
+              "printed": "11",
+              "value": 11.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Stockholders\u2019 equity",
+              "printed": "5",
+              "value": 5.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:22.630327+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 10,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Total liabilities",
+              "printed": "11",
+              "value": 11.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 1
+            },
+            "column_header": "2025",
+            "label": "Stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2025",
+              "label": "Stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "2024",
+              "label": "Stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            },
+            {
+              "caption": "Other assets increased predominantly due to higher cash collateral placed with counterparties in Markets, and higher auto operating lease assets in CCB.",
+              "cell": {
+                "column": 12,
+                "row": 11,
+                "table": 1
+              },
+              "column_header": "Change",
+              "label": "Stockholders\u2019 equity",
+              "printed": "5",
+              "value": 5.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:26.989348+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:45.480385+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:49.955136+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:53.615942+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:27:57.200650+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:28:00.464385+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:28:36.627515+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:28:41.639780+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:28:46.141916+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:28:51.595820+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "reading": {
+        "observed_at": "2026-08-08T19:28:55.741588+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
     }
   ],
   "schema_version": 1,
