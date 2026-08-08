@@ -1,9 +1,9 @@
 {
   "observations": [
     {
-      "description": "Die Volkswagen AG hat gem\u00e4\u00df der Verordnung 1606/2002 des Europ\u00e4ischen Parlaments und des Rates ihren Konzernabschluss f\u00fcr das Jahr 2025 nach den durch die Europ\u00e4ische Union \u00fcbernommenen internationalen Rechnungslegungsstandards, den IFRS Accounting Standards (IFRS), erstellt.",
+      "description": "Die Volkswagen AG berichtet im Konzernabschluss die Segmente Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
       "reading": {
-        "observed_at": "2026-08-07T16:27:53.878686+00:00",
+        "observed_at": "2026-08-08T14:31:42.681252+00:00",
         "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
       },
       "segments": [
@@ -106,114 +106,9 @@
       ]
     },
     {
-      "description": "Die Volkswagen AG hat ihren Sitz in Wolfsburg, Deutschland , und ist beim Amtsgericht Braunschweig unter der Registernummer HRB 100484 eingetragen.",
+      "description": "Der Volkswagen Konzern umfasst die Segmente \u201ePkw und leichte Nutzfahrzeuge\u201c, \u201eNutzfahrzeuge\u201c und \u201eFinanzdienstleistungen\u201c.",
       "reading": {
-        "observed_at": "2026-08-07T16:28:31.231122+00:00",
-        "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": null,
-          "name": "Pkw und leichte Nutzfahrzeuge",
-          "revenue": {
-            "denominator": {
-              "caption": "BERICHTSSEGMENTe 2025",
-              "cell": {
-                "column": 7,
-                "row": 1,
-                "table": 0
-              },
-              "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "321.913",
-              "value": 321913.0
-            },
-            "numerator": {
-              "caption": "BERICHTSSEGMENTe 2025",
-              "cell": {
-                "column": 1,
-                "row": 1,
-                "table": 0
-              },
-              "column_header": "Pkw und leichte Nutzfahrzeuge",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "217.299",
-              "value": 217299.0
-            }
-          },
-          "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": null
-        },
-        {
-          "description": null,
-          "name": "Nutzfahrzeuge",
-          "revenue": {
-            "denominator": {
-              "caption": "BERICHTSSEGMENTe 2025",
-              "cell": {
-                "column": 7,
-                "row": 1,
-                "table": 0
-              },
-              "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "321.913",
-              "value": 321913.0
-            },
-            "numerator": {
-              "caption": "BERICHTSSEGMENTe 2025",
-              "cell": {
-                "column": 2,
-                "row": 1,
-                "table": 0
-              },
-              "column_header": "Nutzfahrzeuge",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "41.517",
-              "value": 41517.0
-            }
-          },
-          "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": null
-        },
-        {
-          "description": null,
-          "name": "Finanzdienstleistungen",
-          "revenue": {
-            "denominator": {
-              "caption": "BERICHTSSEGMENTe 2025",
-              "cell": {
-                "column": 7,
-                "row": 1,
-                "table": 0
-              },
-              "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "321.913",
-              "value": 321913.0
-            },
-            "numerator": {
-              "caption": "BERICHTSSEGMENTe 2025",
-              "cell": {
-                "column": 3,
-                "row": 1,
-                "table": 0
-              },
-              "column_header": "Finanzdienst- leistungen",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "57.853",
-              "value": 57853.0
-            }
-          },
-          "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
-          "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "Der Volkswagen Konzern berichtet die Segmente Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
-      "reading": {
-        "observed_at": "2026-08-07T16:29:05.299419+00:00",
+        "observed_at": "2026-08-08T14:32:19.575730+00:00",
         "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
       },
       "segments": [
@@ -316,9 +211,9 @@
       ]
     },
     {
-      "description": "Die Berichtssegmente sind Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
+      "description": "Berichtssegmente sind Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
       "reading": {
-        "observed_at": "2026-08-07T16:29:44.372872+00:00",
+        "observed_at": "2026-08-08T14:33:05.720887+00:00",
         "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
       },
       "segments": [
@@ -330,11 +225,11 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 7,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
+              "label": "Umsatzerl\u00f6se",
               "printed": "321.913",
               "value": 321913.0
             },
@@ -342,13 +237,13 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 1,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Pkw und leichte Nutzfahrzeuge",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "217.299",
-              "value": 217299.0
+              "label": "Umsatzerl\u00f6se",
+              "printed": "244.484",
+              "value": 244484.0
             }
           },
           "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
@@ -362,11 +257,11 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 7,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
+              "label": "Umsatzerl\u00f6se",
               "printed": "321.913",
               "value": 321913.0
             },
@@ -374,13 +269,13 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 2,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Nutzfahrzeuge",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "41.517",
-              "value": 41517.0
+              "label": "Umsatzerl\u00f6se",
+              "printed": "42.540",
+              "value": 42540.0
             }
           },
           "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
@@ -394,11 +289,11 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 7,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
+              "label": "Umsatzerl\u00f6se",
               "printed": "321.913",
               "value": 321913.0
             },
@@ -406,13 +301,13 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 3,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Finanzdienst- leistungen",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "57.853",
-              "value": 57853.0
+              "label": "Umsatzerl\u00f6se",
+              "printed": "62.136",
+              "value": 62136.0
             }
           },
           "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
@@ -421,9 +316,9 @@
       ]
     },
     {
-      "description": "Der Volkswagen Konzern berichtet die Segmente Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
+      "description": "Die Volkswagen AG hat ihren Sitz in Wolfsburg, Deutschland.",
       "reading": {
-        "observed_at": "2026-08-07T16:30:17.607710+00:00",
+        "observed_at": "2026-08-08T14:33:41.958507+00:00",
         "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
       },
       "segments": [
@@ -435,11 +330,11 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 7,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
+              "label": "Umsatzerl\u00f6se",
               "printed": "321.913",
               "value": 321913.0
             },
@@ -447,13 +342,13 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 1,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Pkw und leichte Nutzfahrzeuge",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "217.299",
-              "value": 217299.0
+              "label": "Umsatzerl\u00f6se",
+              "printed": "244.484",
+              "value": 244484.0
             }
           },
           "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
@@ -467,11 +362,11 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 7,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
+              "label": "Umsatzerl\u00f6se",
               "printed": "321.913",
               "value": 321913.0
             },
@@ -479,13 +374,13 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 2,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Nutzfahrzeuge",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "41.517",
-              "value": 41517.0
+              "label": "Umsatzerl\u00f6se",
+              "printed": "42.540",
+              "value": 42540.0
             }
           },
           "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
@@ -499,11 +394,11 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 7,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Volkswagen Konzern",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
+              "label": "Umsatzerl\u00f6se",
               "printed": "321.913",
               "value": 321913.0
             },
@@ -511,13 +406,118 @@
               "caption": "BERICHTSSEGMENTe 2025",
               "cell": {
                 "column": 3,
-                "row": 1,
+                "row": 3,
                 "table": 0
               },
               "column_header": "Finanzdienst- leistungen",
-              "label": "Umsatzerl\u00f6se mit externen Dritten",
-              "printed": "57.853",
-              "value": 57853.0
+              "label": "Umsatzerl\u00f6se",
+              "printed": "62.136",
+              "value": 62136.0
+            }
+          },
+          "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "unmeasured_because": null
+        }
+      ]
+    },
+    {
+      "description": "Der Konzern berichtet die Segmente Pkw und leichte Nutzfahrzeuge, Nutzfahrzeuge und Finanzdienstleistungen.",
+      "reading": {
+        "observed_at": "2026-08-08T14:34:37.667193+00:00",
+        "source": "VWAG_JFB_Konzern-2025-12-31-DE.zip via Official Investor Relations, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": null,
+          "name": "Pkw und leichte Nutzfahrzeuge",
+          "revenue": {
+            "denominator": {
+              "caption": "BERICHTSSEGMENTe 2025",
+              "cell": {
+                "column": 7,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "Volkswagen Konzern",
+              "label": "Umsatzerl\u00f6se",
+              "printed": "321.913",
+              "value": 321913.0
+            },
+            "numerator": {
+              "caption": "BERICHTSSEGMENTe 2025",
+              "cell": {
+                "column": 1,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "Pkw und leichte Nutzfahrzeuge",
+              "label": "Umsatzerl\u00f6se",
+              "printed": "244.484",
+              "value": 244484.0
+            }
+          },
+          "undescribed_because": "The description of 'Pkw und leichte Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Nutzfahrzeuge",
+          "revenue": {
+            "denominator": {
+              "caption": "BERICHTSSEGMENTe 2025",
+              "cell": {
+                "column": 7,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "Volkswagen Konzern",
+              "label": "Umsatzerl\u00f6se",
+              "printed": "321.913",
+              "value": 321913.0
+            },
+            "numerator": {
+              "caption": "BERICHTSSEGMENTe 2025",
+              "cell": {
+                "column": 2,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "Nutzfahrzeuge",
+              "label": "Umsatzerl\u00f6se",
+              "printed": "42.540",
+              "value": 42540.0
+            }
+          },
+          "undescribed_because": "The description of 'Nutzfahrzeuge' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Finanzdienstleistungen",
+          "revenue": {
+            "denominator": {
+              "caption": "BERICHTSSEGMENTe 2025",
+              "cell": {
+                "column": 7,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "Volkswagen Konzern",
+              "label": "Umsatzerl\u00f6se",
+              "printed": "321.913",
+              "value": 321913.0
+            },
+            "numerator": {
+              "caption": "BERICHTSSEGMENTe 2025",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "Finanzdienst- leistungen",
+              "label": "Umsatzerl\u00f6se",
+              "printed": "62.136",
+              "value": 62136.0
             }
           },
           "undescribed_because": "The description of 'Finanzdienstleistungen' arrived with no words at all. Asked once more by name, the reader found no words describing it in the text this platform reads.",
@@ -526,7 +526,7 @@
       ]
     }
   ],
-  "schema_version": 10,
+  "schema_version": 11,
   "source": {
     "authority": "issuer_published",
     "company": "Volkswagen AG",

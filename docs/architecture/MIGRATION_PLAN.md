@@ -502,17 +502,65 @@ part of the engineering contract (constitution §19b): every reasoning
 change proves itself against it before reaching the investor, and the
 corpus stays stable.
 
-**Remaining operational work, in order, none of it engineering:**
+**Remaining operational work, in order, none of it engineering.
+All three are now done (2026-08-08); the measurements follow.**
 
-1. Fund the observation account (the owner, at the provider's
-   billing page).
-2. Complete the protocol-11 corpus: `movrvest observe BNP.PA` and
-   `movrvest observe VOW3.DE` — one background run.
-3. Measure BNP.PA at quorum under the better tables. Its protocol-10
-   reading left CPBS (52% of revenue) unsettled five ways; whether
-   protocol 11 settles it is the case-earns-the-rule test for the
-   first grounded financial-services playbook. The case earns the
-   rule, never the other way around.
+1. ~~Fund the observation account.~~ Done by the owner.
+2. ~~Complete the protocol-11 corpus: `movrvest observe BNP.PA` and
+   `movrvest observe VOW3.DE`.~~ Done, one background run, both to
+   the quorum of 5.
+3. ~~Measure BNP.PA at quorum under the better tables.~~ Done, and
+   the answer is below.
+
+### The protocol-11 corpus closes, and CPBS settles (2026-08-08)
+
+**BNP.PA — the open question is answered: CPBS settles unanimously.**
+Its protocol-10 reading left CPBS, 52% of revenue, earning unsettled
+five ways. Under protocol 11's tables it is **`financial_spread,
+services`, 5 of 5** — and every segment's size settles 5/5 besides:
+CIB 37% (18,997 of 51,223), CPBS 52% (26,717), IPS 14% (6,929), each
+divided by this platform from two checked cells of the ESEF filing's
+own segment table. `Other Activities` carries a *settled absence* of
+size, 5/5, with the reason worded — the filing's discussion prints no
+cell for it while printing the others.
+
+So the case the first grounded financial-services rule was waiting on
+now exists. What the rules make of it, unprompted:
+
+- **Archetype: `Service business, then lender`**, resting on a
+  consensus of 5 — and its narrowest consumed claim is a **narrow
+  majority (3/5)**, how IPS earns.
+- **The playbook route refuses, by name**: no earned mapping covers
+  that archetype, and serving a default would rebuild the industry
+  taxonomy the selector replaces.
+- **The contingency the understanding surfaces is the load-bearing
+  caveat**: of IPS's two observed answers, the winning one
+  (`asset_management_fees, premiums, services`, 3/5) concludes
+  *Service business, then lender*, and the other (2/5, without
+  `services`) would conclude **`Diversified`** — a different
+  archetype, which a different rule would answer. The archetype that
+  a financial-services rule would be earned against is therefore one
+  changed observation from moving.
+
+**That is a vocabulary decision, and it stays the owner's.** The
+measurement is taken and recorded; no rule is written here. Two
+honest options exist and they are not equivalent: earn the rule on
+the settled majority as it stands, or spend further observations on
+IPS first so the archetype beneath the rule is not resting on 3/5.
+The case earns the rule, never the other way around — and this case
+is now precise enough to decide either way on evidence.
+
+**VOW3.DE — the corpus closes, and its known limit is confirmed
+rather than assumed.** All three segments size at 4/5 — Pkw und
+leichte Nutzfahrzeuge 76% (244.484 of 321.913), Nutzfahrzeuge 13%,
+Finanzdienstleistungen 19%, read across the `Umsatzerlöse` row of
+the segment table — and all three descriptions remain **absent, 5/5,
+asked by name**: "the reader found no words describing it in the text
+this platform reads." That is the untagged Lagebericht finding
+(stream B, finding 2), now measured under the current protocol
+instead of carried forward from protocol 10. It unlocks nothing, and
+it was never expected to: the locator is what is missing, not the
+evidence, and no single company earns a slice.
 
 **The next major engineering effort is the Artificial CIO.** The
 question changes from "how does this business make money?" to "given
