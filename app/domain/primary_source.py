@@ -280,6 +280,17 @@ class SourceDocument:
     #: read out of whatever section mentioned them.
     income_statement_tables: tuple[SourceTable, ...] = ()
 
+    #: The other two primary statements, carried on the identical terms.
+    #: Which of the three a reading is shown is decided by its
+    #: `StatementKind`, in `app.domain.financial_statements`, which is
+    #: where the mapping lives so that this module stays unaware of the
+    #: vocabulary reading it — the dependency runs one way.
+    balance_sheet_text: str = ""
+    balance_sheet_tables: tuple[SourceTable, ...] = ()
+
+    cash_flow_text: str = ""
+    cash_flow_tables: tuple[SourceTable, ...] = ()
+
 
 class PrimarySourceUnavailable(Exception):
     """This provider holds no document for the security, and says why.

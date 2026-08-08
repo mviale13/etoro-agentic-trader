@@ -127,7 +127,10 @@ class ExtractorStub:
         self.rejected = rejected
 
     async def extract(
-        self, symbol: str, document: SourceDocument
+        self,
+        symbol: str,
+        document: SourceDocument,
+        statement: StatementKind = StatementKind.INCOME_STATEMENT,
     ) -> FinancialStatementObservation:
         self.extractions += 1
 
@@ -202,7 +205,12 @@ def test_a_rejected_reading_stores_nothing(tmp_path: Path) -> None:
     assert outcome.state is KnowledgeState.INVALID_EXTRACTION
     assert outcome.statements is None
     assert outcome.absent_because is not None
-    assert JsonFinancialStatementStore(tmp_path).read("JPM", ACCESSION) == ()
+    assert (
+        JsonFinancialStatementStore(tmp_path).read(
+            "JPM", ACCESSION, StatementKind.INCOME_STATEMENT
+        )
+        == ()
+    )
 
 
 def test_a_refusal_mid_observe_keeps_what_was_observed(tmp_path: Path) -> None:

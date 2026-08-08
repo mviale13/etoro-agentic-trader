@@ -27,46 +27,188 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from app.domain.evidence import normalised
-from app.domain.primary_source import PrimarySource
+from app.domain.primary_source import PrimarySource, SourceDocument
 from app.domain.provenance import Provenance
-from app.domain.tabular_evidence import ReportedFigure
+from app.domain.tabular_evidence import ReportedFigure, SourceTable
 
 
 class StatementKind(StrEnum):
     """Which primary statement a reading was of.
 
-    One member, deliberately. The mechanism below is general; the
-    vocabulary is not, and the balance sheet and the cash flow
-    statement enter one at a time, when a consumer's demand for their
-    figures is measured — never because a taxonomy would be tidier
-    complete.
+    Three members now, and each one arrived the way the first did: a
+    consumer's demand for its figures was measured, and the vocabulary
+    grew to meet it. The balance sheet and the cash flow statement
+    entered together because the four financial analysts' rule tables
+    name figures from both — a current ratio is two balance-sheet
+    lines, free cash flow is two cash-flow lines — and a demand that
+    specific is what the door was left open for.
+
+    The mechanism below is general and always was. What is deliberately
+    not general is this list: a statement enters when something asks it
+    a question, never because a taxonomy would be tidier complete.
     """
 
     INCOME_STATEMENT = "income_statement"
+    BALANCE_SHEET = "balance_sheet"
+    CASH_FLOW_STATEMENT = "cash_flow_statement"
 
 
 class StatementConcept(StrEnum):
     """One figure this platform asks a statement for.
 
-    A concept is a contract, not a label: the question it asks, worded
-    in `CONCEPT_QUESTIONS`; and the row labels this platform accepts
-    as answering it, declared in `CONCEPT_LABELS` and grown only by a
-    live refusal naming the label a real filer used. A reading cannot
+    A concept is a contract, not a label: the statement it belongs to,
+    declared in `CONCEPT_STATEMENT`; the question it asks, worded in
+    `CONCEPT_QUESTIONS`; and the row labels this platform accepts as
+    answering it, declared in `CONCEPT_LABELS` and grown only by a live
+    refusal naming the label a real filer used. A reading cannot
     relabel a row into a concept, because the label check reads the
     document, never the reading.
+
+    Every member below is here because a named consumer asks for it.
+    `GROSS_PROFIT` and `OPERATING_INCOME` are the profitability
+    analyst's two remaining margins; the two balance-sheet pairs are
+    the balance-sheet analyst's two ratios; the two cash-flow lines are
+    the cash-flow analyst's. Growth needs no concept at all — it is
+    arithmetic along a row this platform already reads.
+
+    What is deliberately *not* here is as considered as what is. No
+    concept was added for return on equity or invested capital: no
+    rule table asks for them today, and a concept acquired ahead of its
+    consumer is the taxonomy-first move the door stays shut against.
     """
 
     TOTAL_REVENUE = "total_revenue"
+    GROSS_PROFIT = "gross_profit"
+    OPERATING_INCOME = "operating_income"
     NET_INCOME = "net_income"
+
+    TOTAL_CURRENT_ASSETS = "total_current_assets"
+    TOTAL_CURRENT_LIABILITIES = "total_current_liabilities"
+    TOTAL_LIABILITIES = "total_liabilities"
+    TOTAL_EQUITY = "total_equity"
+
+    OPERATING_CASH_FLOW = "operating_cash_flow"
+    CAPITAL_EXPENDITURES = "capital_expenditures"
+
+
+#: Which statement prints each concept.
+#:
+#: The partition that keeps a reading honest: one reading is shown one
+#: statement's tables and asked only that statement's concepts, so a
+#: figure can never be located in a document region the concept does
+#: not belong to. It is also what lets the consensus stay a property of
+#: one statement — the rule `statement_consensus_of` enforces.
+CONCEPT_STATEMENT: dict[StatementConcept, StatementKind] = {
+    StatementConcept.TOTAL_REVENUE: StatementKind.INCOME_STATEMENT,
+    StatementConcept.GROSS_PROFIT: StatementKind.INCOME_STATEMENT,
+    StatementConcept.OPERATING_INCOME: StatementKind.INCOME_STATEMENT,
+    StatementConcept.NET_INCOME: StatementKind.INCOME_STATEMENT,
+    StatementConcept.TOTAL_CURRENT_ASSETS: StatementKind.BALANCE_SHEET,
+    StatementConcept.TOTAL_CURRENT_LIABILITIES: StatementKind.BALANCE_SHEET,
+    StatementConcept.TOTAL_LIABILITIES: StatementKind.BALANCE_SHEET,
+    StatementConcept.TOTAL_EQUITY: StatementKind.BALANCE_SHEET,
+    StatementConcept.OPERATING_CASH_FLOW: StatementKind.CASH_FLOW_STATEMENT,
+    StatementConcept.CAPITAL_EXPENDITURES: StatementKind.CASH_FLOW_STATEMENT,
+}
+
+
+def concepts_of(statement: StatementKind) -> tuple[StatementConcept, ...]:
+    """The concepts this statement is asked for, in the vocabulary's order."""
+
+    return tuple(
+        concept
+        for concept in StatementConcept
+        if CONCEPT_STATEMENT[concept] is statement
+    )
+
+
+def statement_tables(
+    document: SourceDocument, statement: StatementKind
+) -> tuple[SourceTable, ...]:
+    """The tables the filer printed under this statement's own title.
+
+    The whole of what a reading of this statement is shown. Keeping the
+    three statements' tables apart is not tidiness: a reading handed
+    every table in Item 8 could locate "total revenue" on the cash flow
+    statement's supplementary schedule and pass every check, because the
+    checks prove where a figure is, never which statement it belongs to.
+    """
+
+    return {
+        StatementKind.INCOME_STATEMENT: document.income_statement_tables,
+        StatementKind.BALANCE_SHEET: document.balance_sheet_tables,
+        StatementKind.CASH_FLOW_STATEMENT: document.cash_flow_tables,
+    }[statement]
+
+
+def statement_text(document: SourceDocument, statement: StatementKind) -> str:
+    """The prose under that title, which says which absence an absence is.
+
+    Read only to word a refusal: a statement whose title this platform
+    never located and a located statement printing no readable table are
+    different findings, and only the second is about the document.
+    """
+
+    return {
+        StatementKind.INCOME_STATEMENT: document.income_statement_text,
+        StatementKind.BALANCE_SHEET: document.balance_sheet_text,
+        StatementKind.CASH_FLOW_STATEMENT: document.cash_flow_text,
+    }[statement]
+
+
+#: What a filer calls each statement, for wording a refusal an investor
+#: reads. The enum's own value is a machine key and reads like one.
+STATEMENT_NAMES: dict[StatementKind, str] = {
+    StatementKind.INCOME_STATEMENT: "income statement",
+    StatementKind.BALANCE_SHEET: "balance sheet",
+    StatementKind.CASH_FLOW_STATEMENT: "cash flow statement",
+}
 
 
 #: What each concept asks for, in words a refusal can carry.
+#:
+#: A balance sheet is dated rather than periodic, so its concepts ask
+#: for the most recent *date* the statement reports. Which column that
+#: is stays the reading's only positional claim, checkable by anyone
+#: against the header stored beside the figure.
 CONCEPT_QUESTIONS: dict[StatementConcept, str] = {
     StatementConcept.TOTAL_REVENUE: (
         "the company's total revenue for the most recent period the statement reports"
     ),
+    StatementConcept.GROSS_PROFIT: (
+        "the company's gross profit for the most recent period the statement "
+        "reports, where the statement prints that line"
+    ),
+    StatementConcept.OPERATING_INCOME: (
+        "the company's operating income for the most recent period the "
+        "statement reports, where the statement prints that line"
+    ),
     StatementConcept.NET_INCOME: (
         "the company's net income for the most recent period the statement reports"
+    ),
+    StatementConcept.TOTAL_CURRENT_ASSETS: (
+        "the company's total current assets at the most recent date the "
+        "balance sheet reports, where the balance sheet is classified"
+    ),
+    StatementConcept.TOTAL_CURRENT_LIABILITIES: (
+        "the company's total current liabilities at the most recent date the "
+        "balance sheet reports, where the balance sheet is classified"
+    ),
+    StatementConcept.TOTAL_LIABILITIES: (
+        "the company's total liabilities at the most recent date the balance "
+        "sheet reports"
+    ),
+    StatementConcept.TOTAL_EQUITY: (
+        "the total equity attributable to the company's shareholders at the "
+        "most recent date the balance sheet reports"
+    ),
+    StatementConcept.OPERATING_CASH_FLOW: (
+        "the net cash the company generated from operating activities for the "
+        "most recent period the statement reports"
+    ),
+    StatementConcept.CAPITAL_EXPENDITURES: (
+        "the cash the company spent on purchases of property, plant and "
+        "equipment for the most recent period the statement reports"
     ),
 }
 
@@ -98,6 +240,62 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         "net earnings (loss)",
         "profit for the year",
         "profit for the period",
+    ),
+    StatementConcept.GROSS_PROFIT: (
+        "gross profit",
+        "gross margin",
+        "gross profit (loss)",
+    ),
+    StatementConcept.OPERATING_INCOME: (
+        "operating income",
+        "operating income (loss)",
+        "income from operations",
+        "loss from operations",
+        "operating profit",
+        "total operating income",
+        "operating income from continuing operations",
+    ),
+    StatementConcept.TOTAL_CURRENT_ASSETS: ("total current assets",),
+    StatementConcept.TOTAL_CURRENT_LIABILITIES: ("total current liabilities",),
+    StatementConcept.TOTAL_LIABILITIES: ("total liabilities",),
+    #: Deliberately the equity attributable to the parent's shareholders,
+    #: never "total equity including noncontrolling interests": the two
+    #: are different quantities, and a ratio that silently mixed them
+    #: across filers would compare companies on different denominators.
+    #: A filer printing only the combined line is refused with its own
+    #: words, which is what earns the next entry here.
+    StatementConcept.TOTAL_EQUITY: (
+        "total stockholders' equity",
+        "total stockholders equity",
+        "total shareholders' equity",
+        "total shareholders equity",
+        "total shareowners' equity",
+        "total common stockholders' equity",
+        "total jpmorgan chase stockholders' equity",
+    ),
+    StatementConcept.OPERATING_CASH_FLOW: (
+        "net cash provided by operating activities",
+        "net cash provided by (used in) operating activities",
+        "net cash used in operating activities",
+        "net cash from operating activities",
+        "net cash provided by operating activities of continuing operations",
+        "cash provided by operating activities",
+        "net cash flows from operating activities",
+        "net cash (used in) provided by operating activities",
+    ),
+    #: Printed as a negative in the statement, because it is cash out.
+    #: Nothing here flips the sign: the printed cell is the fact, and the
+    #: consumer that subtracts it says which direction it is subtracting.
+    StatementConcept.CAPITAL_EXPENDITURES: (
+        "purchases of property and equipment",
+        "purchases of property, plant and equipment",
+        "purchase of property and equipment",
+        "purchase of property, plant and equipment",
+        "payments for acquisition of property, plant and equipment",
+        "capital expenditures",
+        "additions to property, plant and equipment",
+        "additions to property and equipment",
+        "expenditures for property, plant and equipment",
     ),
 }
 

@@ -89,7 +89,7 @@ def test_an_observation_survives_the_round_trip_exactly(tmp_path: Path) -> None:
     store.append(observation())
     store.append(observation())
 
-    restored = store.read("JPM", ACCESSION)
+    restored = store.read("JPM", ACCESSION, StatementKind.INCOME_STATEMENT)
 
     assert len(restored) == 2
     assert restored[0] == observation()
@@ -100,10 +100,10 @@ def test_appending_never_replaces_what_a_reading_found(tmp_path: Path) -> None:
     store = JsonFinancialStatementStore(tmp_path)
 
     store.append(observation())
-    first = store.read("JPM", ACCESSION)
+    first = store.read("JPM", ACCESSION, StatementKind.INCOME_STATEMENT)
     store.append(observation())
 
-    assert store.read("JPM", ACCESSION)[0] == first[0]
+    assert store.read("JPM", ACCESSION, StatementKind.INCOME_STATEMENT)[0] == first[0]
 
 
 def test_another_schema_version_is_absent_not_upgraded(tmp_path: Path) -> None:
@@ -115,7 +115,7 @@ def test_another_schema_version_is_absent_not_upgraded(tmp_path: Path) -> None:
     stored["schema_version"] = STATEMENT_SCHEMA_VERSION + 1
     path.write_text(json.dumps(stored), encoding="utf-8")
 
-    assert store.read("JPM", ACCESSION) == ()
+    assert store.read("JPM", ACCESSION, StatementKind.INCOME_STATEMENT) == ()
 
 
 def test_an_unreadable_entry_is_absent_not_repaired(tmp_path: Path) -> None:
@@ -125,7 +125,7 @@ def test_an_unreadable_entry_is_absent_not_repaired(tmp_path: Path) -> None:
     path = next(tmp_path.glob("*.json"))
     path.write_text("{not json", encoding="utf-8")
 
-    assert store.read("JPM", ACCESSION) == ()
+    assert store.read("JPM", ACCESSION, StatementKind.INCOME_STATEMENT) == ()
 
 
 def test_latest_is_the_newest_filing_not_the_newest_reading(tmp_path: Path) -> None:
@@ -137,6 +137,6 @@ def test_latest_is_the_newest_filing_not_the_newest_reading(tmp_path: Path) -> N
     # An older filing read later must not become the current word.
     store.append(observation(key=ACCESSION, published="2025-02-14"))
 
-    latest = store.latest("JPM")
+    latest = store.latest("JPM", StatementKind.INCOME_STATEMENT)
 
     assert latest and latest[0].source.key == newer

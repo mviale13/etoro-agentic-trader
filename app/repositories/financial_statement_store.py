@@ -57,8 +57,17 @@ class FinancialStatementStore(ABC):
     """
 
     @abstractmethod
-    def read(self, symbol: str, key: str) -> tuple[FinancialStatementObservation, ...]:
-        """Every statement observation of this exact document, oldest first."""
+    def read(
+        self, symbol: str, key: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
+        """This statement's observations of this exact document, oldest first.
+
+        Partitioned by statement, because a consensus is a property of
+        one statement and `statement_consensus_of` refuses a mixed set
+        outright. One document's three statements are three separate
+        quorums that happen to share a key, and the store is where they
+        are kept from meeting.
+        """
 
     @abstractmethod
     def append(self, observation: FinancialStatementObservation) -> None:
@@ -70,8 +79,10 @@ class FinancialStatementStore(ABC):
         """
 
     @abstractmethod
-    def latest(self, symbol: str) -> tuple[FinancialStatementObservation, ...]:
-        """The most recent filing's statement observations for this company."""
+    def latest(
+        self, symbol: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
+        """This statement's observations of the most recent filing."""
 
 
 class JsonFinancialStatementStore(FinancialStatementStore):
@@ -83,13 +94,15 @@ class JsonFinancialStatementStore(FinancialStatementStore):
     ) -> None:
         self.directory = Path(directory)
 
-    def read(self, symbol: str, key: str) -> tuple[FinancialStatementObservation, ...]:
+    def read(
+        self, symbol: str, key: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
         path = self._path(symbol, key)
 
         if not path.exists():
             return ()
 
-        return self._restore(path)
+        return _only(self._restore(path), statement)
 
     def append(self, observation: FinancialStatementObservation) -> None:
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -107,11 +120,13 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             encoding="utf-8",
         )
 
-    def latest(self, symbol: str) -> tuple[FinancialStatementObservation, ...]:
+    def latest(
+        self, symbol: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
         known = [
             restored
             for path in self.directory.glob(f"{self._safe(symbol)}.*.json")
-            if (restored := self._restore(path))
+            if (restored := _only(self._restore(path), statement))
         ]
 
         if not known:
@@ -199,6 +214,25 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             )
         except (KeyError, TypeError, ValueError, EvidenceNotApplicable):
             return ()
+
+
+def _only(
+    observations: tuple[FinancialStatementObservation, ...],
+    statement: StatementKind,
+) -> tuple[FinancialStatementObservation, ...]:
+    """One statement's readings, in the order they were taken.
+
+    One file holds one filing, and a filing has three statements — so
+    the partition is applied on the way out rather than by writing three
+    files. Which keeps the store's unit what it has always been: the
+    immutable document.
+    """
+
+    return tuple(
+        observation
+        for observation in observations
+        if observation.statement is statement
+    )
 
 
 def _observation(

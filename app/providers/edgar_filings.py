@@ -98,6 +98,58 @@ _INCOME_STATEMENT_ENDS = (
     "notes to the consolidated financial statements",
 )
 
+#: The other two primary statements, located by the same rule and for
+#: the same reason: the title the filer typeset over the statement, never
+#: the item heading, which stands over an index as often as over the
+#: statements themselves.
+#:
+#: Every closing list names the titles that can follow that statement
+#: under either the US or the IFRS ordering, plus the notes heading that
+#: follows them all. A closing that in a given filing is printed *before*
+#: its opening costs nothing: a pair is only formed from a closing that
+#: follows the opening, so listing both orders is how one anchor set
+#: reads filers who order their statements differently.
+_BALANCE_SHEET = (
+    "consolidated balance sheets",
+    "consolidated balance sheet",
+    "consolidated statements of financial position",
+    "consolidated statement of financial position",
+)
+_BALANCE_SHEET_ENDS = (
+    "consolidated statements of cash flows",
+    "consolidated statement of cash flows",
+    "consolidated statements of changes in",
+    "consolidated statement of changes in",
+    "consolidated statements of stockholders",
+    "consolidated statements of shareholders",
+    "consolidated statements of equity",
+    "consolidated statements of income",
+    "consolidated statements of operations",
+    "consolidated statements of earnings",
+    "notes to consolidated financial statements",
+    "notes to the consolidated financial statements",
+)
+
+_CASH_FLOW = (
+    "consolidated statements of cash flows",
+    "consolidated statement of cash flows",
+)
+_CASH_FLOW_ENDS = (
+    "consolidated statements of changes in",
+    "consolidated statement of changes in",
+    "consolidated statements of stockholders",
+    "consolidated statements of shareholders",
+    "consolidated statements of equity",
+    "consolidated balance sheets",
+    "consolidated balance sheet",
+    "consolidated statements of financial position",
+    "consolidated statements of income",
+    "consolidated statements of operations",
+    "consolidated statements of earnings",
+    "notes to consolidated financial statements",
+    "notes to the consolidated financial statements",
+)
+
 #: How a filer says that what a section would contain is printed
 #: elsewhere in the same document, immediately before naming the place.
 #:
@@ -206,6 +258,17 @@ class Filing:
     #: its structure kept.
     income_statement_tables: tuple[SourceTable, ...] = ()
 
+    #: The audited balance sheet and cash flow statement, located by the
+    #: identical rule and empty for the identical reason. Three fields
+    #: apiece rather than one mapping because a statement this platform
+    #: did not locate must be distinguishable from one it never looked
+    #: for, and an absent key cannot say which it was.
+    balance_sheet_text: str = ""
+    balance_sheet_tables: tuple[SourceTable, ...] = ()
+
+    cash_flow_text: str = ""
+    cash_flow_tables: tuple[SourceTable, ...] = ()
+
 
 class EdgarFilings:
     """
@@ -296,6 +359,12 @@ class EdgarFilings:
         statement, statement_tables, _ = self._section(
             document, flat, _INCOME_STATEMENT, _INCOME_STATEMENT_ENDS
         )
+        balance, balance_tables, _ = self._section(
+            document, flat, _BALANCE_SHEET, _BALANCE_SHEET_ENDS
+        )
+        cash_flow, cash_flow_tables, _ = self._section(
+            document, flat, _CASH_FLOW, _CASH_FLOW_ENDS
+        )
 
         referenced, referred_regions, referred_tables = self._referenced(
             document, flat, business
@@ -324,6 +393,10 @@ class EdgarFilings:
             discussion_tables=tables or referred_tables,
             income_statement_text=statement,
             income_statement_tables=statement_tables,
+            balance_sheet_text=balance,
+            balance_sheet_tables=balance_tables,
+            cash_flow_text=cash_flow,
+            cash_flow_tables=cash_flow_tables,
         )
 
     @staticmethod
