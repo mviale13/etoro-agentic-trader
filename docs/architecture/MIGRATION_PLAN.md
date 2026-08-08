@@ -1128,6 +1128,69 @@ unrecorded count read as "one" would be the confident claim the
 measurement exists to stop. Measured on JPM: income statement 1, cash
 flow 1, **balance sheet 5**.
 
+
+### The owner's ruling: business identity and financial interpretation are two classifications (2026-08-08)
+
+The BANK question set worked, and then the measurement embarrassed the
+assumption underneath it. JPMorgan's grounded playbook is **Diversified**
+— its own filing says lending, services and transaction lead together
+within 5% — so it never reaches the BANK questions, and under its
+selected playbook it still receives the industrial leverage score.
+
+The obvious repair was to promote JPM to BANK. The owner refused it, and
+the reasoning is the ruling:
+
+> The fact that `movrvest financials JPM --model bank` produces a much
+> more sensible financial assessment is not evidence that JPM should
+> classify as BANK. It is evidence that the BANK financial questions are
+> better than the industrial ones for deposit-taking institutions. Those
+> are different claims.
+
+Changing the selector because the downstream interpretation looks better
+is reasoning backwards from the desired outcome — the exact pattern this
+project has spent months eliminating, and the reason playbook routes must
+be earned by evidence rather than by the convenience of what consumes
+them.
+
+**What was missing was a layer, not a rule.** Two questions were being
+answered by one vocabulary:
+
+```text
+Business understanding  → Business playbook  → what company is this?
+Financial understanding → Financial model    → which financial language
+                                               should the CIO speak?
+```
+
+For most companies the two coincide. Banks are the first place they may
+not. JPMorgan may genuinely be *Diversified Financial Services* as a
+business and *Bank* as a financial interpretation model — not an
+override, but two classifications serving two purposes.
+
+**Shipped: `FinancialModel`**, owning the question set, keyed apart from
+`PlaybookKind`. Two members — `GENERIC` and `BANK` — deliberately not a
+mirror of the twelve playbooks, because eleven models holding nothing
+the generic set does not would be the taxonomy-first move. One route
+between the layers today (`model_for`), which is a *coupling stated as
+one*: the financial model follows the business playbook because no
+evidence has yet earned it not to, and `PlaybookKind.BANK` is its only
+non-generic entry.
+
+**JPM is unchanged.** It selects Diversified, and therefore the generic
+financial model, and therefore still receives the industrial leverage
+score. That is the honest state, and it is now visibly a *missing
+divergence rule* rather than a misclassification. The second route — a
+financial model selected from the statements themselves, since a filing
+printing no gross profit, no operating income and an unclassified
+balance sheet is speaking a bank's language whatever its segments say —
+is the natural next acquisition and is not invented here.
+
+**Refusals became acquisition demands.** A declined question now names
+what would answer it: leverage needs Common Equity Tier 1, Tier 1
+capital and the regulatory leverage ratio; cash generation needs deposit
+funding quality and the liquidity coverage ratio. Naming a demand is not
+inventing a threshold, and it puts the bank work in the same currency
+every other gap on this platform is stated in.
+
 ## Agreed order
 
 1. ~~**Crypto symbol resolution.**~~ Done. `BTC`, `ETH`, `SOL`, `ADA`, `ARB`

@@ -14,13 +14,17 @@ fact about this platform rather than about the company.
 from __future__ import annotations
 
 from app.analysts.filing_analysts import stated_value
+from app.domain.financial_question import (
+    FinancialModel,
+    FinancialModelSelection,
+    model_for,
+)
 from app.domain.financial_statement_consensus import (
     FinancialStatementConsensus,
     statement_consensus_of,
 )
 from app.domain.financial_statements import STATEMENT_NAMES, StatementKind
 from app.domain.financial_understanding import FinancialUnderstanding
-from app.domain.playbook import PlaybookKind
 from app.repositories.financial_statement_store import (
     FinancialStatementStore,
     JsonFinancialStatementStore,
@@ -44,7 +48,7 @@ class FinancialsCommand:
         self._store = store or JsonFinancialStatementStore()
         self._selection = selection or PlaybookSelectionService()
 
-    async def run(self, symbol: str, playbook: PlaybookKind | None = None) -> int:
+    async def run(self, symbol: str, model: FinancialModel | None = None) -> int:
         normalized = symbol.upper().strip()
 
         held = {
@@ -62,9 +66,20 @@ class FinancialsCommand:
             )
             return 1
 
-        chosen = playbook or (await self._selection.select(normalized)).playbook.kind
+        if model is None:
+            # The business playbook is asked what company this is; the
+            # financial model follows from it until evidence earns a
+            # divergence. Two classifications, one route between them.
+            playbook = (await self._selection.select(normalized)).playbook.kind
+            governing = model_for(playbook)
+        else:
+            governing = FinancialModelSelection(
+                model=model,
+                from_playbook=None,
+                because="asked for explicitly, for inspection",
+            )
 
-        _render(measure(normalized, held), held, chosen)
+        _render(measure(normalized, held), held, governing)
 
         return 0
 
@@ -72,7 +87,7 @@ class FinancialsCommand:
 def _render(
     understanding: FinancialUnderstanding,
     held: dict[StatementKind, FinancialStatementConsensus],
-    playbook: PlaybookKind,
+    governing: FinancialModelSelection,
 ) -> None:
     print(f"{understanding.symbol} — what its own statements measure")
     print()
@@ -130,10 +145,11 @@ def _render(
     for absent in understanding.not_established:
         print(f"  {absent.label}: {absent.absent_because}")
 
-    answers = answer_questions(playbook, understanding)
+    answers = answer_questions(governing.model, understanding)
 
     print()
-    print(f"the {playbook.value} playbook's financial questions")
+    print(f"financial interpretation model: {governing.model.value}")
+    print(f"  {governing.because}")
     print()
     print("  meaningful and answered")
 
@@ -163,10 +179,16 @@ def _render(
         print("    none")
 
     print()
-    print(f"  not applicable to a {playbook.value}")
+    print(f"  not applicable under the {governing.model.value} model")
 
     for answer in inapplicable(answers):
         print(f"    {answer.question.value}: {answer.because}")
+
+        for demand in answer.needs:
+            # An acquisition demand, not a missing threshold: naming what
+            # would answer the question is how every other gap on this
+            # platform becomes the next slice.
+            print(f"      would need: {demand}")
 
     if not inapplicable(answers):
         print("    none")
@@ -174,5 +196,5 @@ def _render(
     print()
 
 
-async def run(symbol: str, playbook: PlaybookKind | None = None) -> int:
-    return await FinancialsCommand().run(symbol, playbook)
+async def run(symbol: str, model: FinancialModel | None = None) -> int:
+    return await FinancialsCommand().run(symbol, model)

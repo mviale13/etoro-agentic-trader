@@ -15,7 +15,9 @@ from app.domain.financial_question import (
     OWNED,
     QUESTIONS,
     AnswerState,
+    FinancialModel,
     FinancialQuestionKey,
+    model_for,
     questions_for,
 )
 from app.domain.financial_statements import StatementKind
@@ -97,10 +99,10 @@ def understanding(**values: float | None) -> FinancialUnderstanding:
     )
 
 
-def answer(playbook: PlaybookKind, key: FinancialQuestionKey, **values: float | None):
+def answer(model: FinancialModel, key: FinancialQuestionKey, **values: float | None):
     found = [
         given
-        for given in answer_questions(playbook, understanding(**values))
+        for given in answer_questions(model, understanding(**values))
         if given.question is key
     ]
 
@@ -115,7 +117,7 @@ def answer(playbook: PlaybookKind, key: FinancialQuestionKey, **values: float | 
 def test_bank_declines_the_industrial_leverage_question() -> None:
     """11.21x must never meet a threshold written for debt/equity."""
 
-    given = answer(PlaybookKind.BANK, FinancialQuestionKey.LEVERAGE)
+    given = answer(FinancialModel.BANK, FinancialQuestionKey.LEVERAGE)
 
     assert given.state is AnswerState.NOT_APPLICABLE_FOR_PLAYBOOK
     assert given.verdict is None
@@ -125,7 +127,7 @@ def test_bank_declines_the_industrial_leverage_question() -> None:
 
 
 def test_bank_declines_the_cash_flow_sign_question() -> None:
-    given = answer(PlaybookKind.BANK, FinancialQuestionKey.CASH_GENERATION)
+    given = answer(FinancialModel.BANK, FinancialQuestionKey.CASH_GENERATION)
 
     assert given.state is AnswerState.NOT_APPLICABLE_FOR_PLAYBOOK
     assert given.verdict is None
@@ -149,9 +151,9 @@ def test_a_declined_question_is_refused_before_its_facts_are_read() -> None:
 def test_the_decline_is_part_of_the_result_not_an_omission() -> None:
     """Every question the playbook asks is present, whatever became of it."""
 
-    answers = answer_questions(PlaybookKind.BANK, understanding())
+    answers = answer_questions(FinancialModel.BANK, understanding())
 
-    assert len(answers) == len(questions_for(PlaybookKind.BANK).asks)
+    assert len(answers) == len(questions_for(FinancialModel.BANK).asks)
     assert {given.question for given in inapplicable(answers)} == {
         FinancialQuestionKey.LEVERAGE,
         FinancialQuestionKey.CASH_GENERATION,
@@ -164,8 +166,8 @@ def test_the_decline_is_part_of_the_result_not_an_omission() -> None:
 def test_a_non_bank_playbook_still_uses_the_industrial_rule() -> None:
     """The same facts, the generic questions, the legacy behaviour."""
 
-    leverage = answer(PlaybookKind.INDUSTRIAL, FinancialQuestionKey.LEVERAGE)
-    cash = answer(PlaybookKind.INDUSTRIAL, FinancialQuestionKey.CASH_GENERATION)
+    leverage = answer(FinancialModel.GENERIC, FinancialQuestionKey.LEVERAGE)
+    cash = answer(FinancialModel.GENERIC, FinancialQuestionKey.CASH_GENERATION)
 
     assert leverage.state is AnswerState.ANSWERED
     assert leverage.verdict == "weak"
@@ -173,21 +175,67 @@ def test_a_non_bank_playbook_still_uses_the_industrial_rule() -> None:
     assert cash.verdict == "weak"
 
 
-def test_every_playbook_without_its_own_questions_asks_the_generic_set() -> None:
-    for kind in PlaybookKind:
-        if kind in OWNED:
+def test_every_model_without_its_own_questions_asks_the_generic_set() -> None:
+    for model in FinancialModel:
+        if model in OWNED:
             continue
 
-        assert questions_for(kind).asks == tuple(FinancialQuestionKey)
-        assert questions_for(kind).declines == ()
+        assert questions_for(model).asks == tuple(FinancialQuestionKey)
+        assert questions_for(model).declines == ()
+
+
+# ── the two classifications are separate ─────────────────────────────
+
+
+def test_every_business_playbook_but_one_implies_the_generic_model() -> None:
+    """The coupling is a default, and it is stated as one."""
+
+    for kind in PlaybookKind:
+        selection = model_for(kind)
+
+        assert selection.from_playbook is kind
+        assert selection.diverged is False
+
+        if kind is PlaybookKind.BANK:
+            assert selection.model is FinancialModel.BANK
+        else:
+            assert selection.model is FinancialModel.GENERIC
+
+
+def test_a_diversified_business_is_not_given_a_banks_questions() -> None:
+    """JPMorgan's case, and the override this slice refuses to make.
+
+    Its archetype is Diversified because its own filing says its lending,
+    services and transaction engines lead together. That the bank
+    financial model reads its statements better is a different claim,
+    and promoting it here would be reasoning backwards from the answer.
+    """
+
+    selection = model_for(PlaybookKind.DIVERSIFIED)
+
+    assert selection.model is FinancialModel.GENERIC
+
+    leverage = answer(selection.model, FinancialQuestionKey.LEVERAGE)
+
+    assert leverage.state is AnswerState.ANSWERED
+
+
+def test_a_declined_question_names_what_would_answer_it() -> None:
+    """An acquisition demand, not a missing threshold."""
+
+    leverage = answer(FinancialModel.BANK, FinancialQuestionKey.LEVERAGE)
+
+    assert leverage.state is AnswerState.NOT_APPLICABLE_FOR_PLAYBOOK
+    assert "Common Equity Tier 1 ratio" in leverage.needs
+    assert "the regulatory leverage ratio" in leverage.needs
 
 
 # ── what BANK answers, without copying a threshold ───────────────────
 
 
 def test_bank_reuses_a_shared_question_without_copying_its_thresholds() -> None:
-    growth = answer(PlaybookKind.BANK, FinancialQuestionKey.REVENUE_GROWTH)
-    industrial = answer(PlaybookKind.INDUSTRIAL, FinancialQuestionKey.REVENUE_GROWTH)
+    growth = answer(FinancialModel.BANK, FinancialQuestionKey.REVENUE_GROWTH)
+    industrial = answer(FinancialModel.GENERIC, FinancialQuestionKey.REVENUE_GROWTH)
 
     assert growth.state is AnswerState.ANSWERED
     assert growth.verdict == industrial.verdict
@@ -195,14 +243,14 @@ def test_bank_reuses_a_shared_question_without_copying_its_thresholds() -> None:
 
     # The threshold lives with the analyst that owns it, and the BANK
     # playbook declares no numbers of its own.
-    assert not hasattr(questions_for(PlaybookKind.BANK), "thresholds")
+    assert not hasattr(questions_for(FinancialModel.BANK), "thresholds")
 
 
 def test_bank_profitability_is_about_what_a_bank_actually_prints() -> None:
     """Narrowed to net margin: a bank's statement has no gross profit line."""
 
-    given = answer(PlaybookKind.BANK, FinancialQuestionKey.PROFITABILITY)
-    industrial = answer(PlaybookKind.INDUSTRIAL, FinancialQuestionKey.PROFITABILITY)
+    given = answer(FinancialModel.BANK, FinancialQuestionKey.PROFITABILITY)
+    industrial = answer(FinancialModel.GENERIC, FinancialQuestionKey.PROFITABILITY)
 
     assert given.state is AnswerState.ANSWERED
     assert given.confidence == pytest.approx(1.0)
@@ -233,7 +281,7 @@ def test_a_meaningful_question_with_no_established_fact_is_an_evidence_gap() -> 
 
 
 def test_an_evidence_gap_and_an_inapplicable_question_are_never_one_state() -> None:
-    answers = answer_questions(PlaybookKind.BANK, understanding(earnings_growth=None))
+    answers = answer_questions(FinancialModel.BANK, understanding(earnings_growth=None))
 
     assert {given.question for given in unanswerable(answers)} == {
         FinancialQuestionKey.EARNINGS_GROWTH
@@ -264,7 +312,7 @@ def test_a_missing_fact_is_never_filled_from_a_provider() -> None:
 
 
 def test_evidence_references_survive_from_the_facts_into_the_answer() -> None:
-    given = answer(PlaybookKind.BANK, FinancialQuestionKey.PROFITABILITY)
+    given = answer(FinancialModel.BANK, FinancialQuestionKey.PROFITABILITY)
 
     assert given.basis
     assert all(isinstance(cell, ReportedFigure) for cell in given.basis)
@@ -272,9 +320,9 @@ def test_evidence_references_survive_from_the_facts_into_the_answer() -> None:
     assert any("Total liabilities (a)" in line for line in given.evidence)
 
 
-def test_an_answered_question_carries_the_playbook_that_asked_it() -> None:
-    for given in answer_questions(PlaybookKind.BANK, understanding()):
-        assert given.playbook is PlaybookKind.BANK
+def test_an_answered_question_carries_the_model_that_asked_it() -> None:
+    for given in answer_questions(FinancialModel.BANK, understanding()):
+        assert given.model is FinancialModel.BANK
         assert given.asks == QUESTIONS[given.question].asks
 
 
@@ -287,7 +335,7 @@ def test_a_declined_question_yields_nothing_a_consumer_could_score_from() -> Non
     the playbook's decision one layer up.
     """
 
-    answers = answer_questions(PlaybookKind.BANK, understanding())
+    answers = answer_questions(FinancialModel.BANK, understanding())
 
     for given in inapplicable(answers):
         assert given.verdict is None
@@ -301,7 +349,7 @@ def test_a_declined_question_yields_nothing_a_consumer_could_score_from() -> Non
 def test_the_bank_can_state_all_three_things_it_knows() -> None:
     """The stopping point: answered, not yet answerable, not applicable."""
 
-    answers = answer_questions(PlaybookKind.BANK, understanding(earnings_growth=None))
+    answers = answer_questions(FinancialModel.BANK, understanding(earnings_growth=None))
 
     assert answered(answers)
     assert unanswerable(answers)

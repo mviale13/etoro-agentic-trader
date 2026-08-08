@@ -27,6 +27,7 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.financial_question import (
     QUESTIONS,
     AnswerState,
+    FinancialModel,
     FinancialQuestion,
     FinancialQuestionKey,
     QuestionAnswer,
@@ -34,7 +35,6 @@ from app.domain.financial_question import (
 )
 from app.domain.financial_understanding import FinancialUnderstanding
 from app.domain.opinion import Opinion
-from app.domain.playbook import PlaybookKind
 from app.domain.research_plan import AnalystKey
 from app.domain.tabular_evidence import ReportedFigure
 
@@ -49,30 +49,34 @@ RULES: dict[AnalystKey, Analyst[CompanyFacts, Any]] = {
 
 
 def answer_questions(
-    playbook: PlaybookKind,
+    model: FinancialModel,
     understanding: FinancialUnderstanding,
 ) -> tuple[QuestionAnswer, ...]:
-    """Every question this playbook asks, answered or explicitly not.
+    """Every question this financial model asks, answered or explicitly not.
 
-    One entry per question the playbook asks, always. A question the
-    playbook declined is present as a decline, and a question whose
-    facts are missing is present as an evidence gap — so a reader never
-    has to infer which of the two a blank space was.
+    One entry per question the model asks, always. A question the model
+    declined is present as a decline, and a question whose facts are
+    missing is present as an evidence gap — so a reader never has to
+    infer which of the two a blank space was.
+
+    Note what is *not* a parameter: the business playbook. Which company
+    this is has already been decided elsewhere, and what governs here is
+    only which financial language reads it.
     """
 
-    owned = questions_for(playbook)
+    owned = questions_for(model)
 
-    return tuple(_answer(QUESTIONS[key], playbook, understanding) for key in owned.asks)
+    return tuple(_answer(QUESTIONS[key], model, understanding) for key in owned.asks)
 
 
 def _answer(
     question: FinancialQuestion,
-    playbook: PlaybookKind,
+    model: FinancialModel,
     understanding: FinancialUnderstanding,
 ) -> QuestionAnswer:
     """One question: declined, unanswerable, or run through its rule."""
 
-    declined = questions_for(playbook).declined(question.key)
+    declined = questions_for(model).declined(question.key)
 
     if declined is not None:
         # Checked before the facts are even gathered. A declined
@@ -82,12 +86,13 @@ def _answer(
         # override the playbook's refusal.
         return QuestionAnswer(
             question=question.key,
-            playbook=playbook,
+            model=model,
             state=AnswerState.NOT_APPLICABLE_FOR_PLAYBOOK,
             because=declined.reason,
+            needs=declined.needs,
         )
 
-    consulted = questions_for(playbook).consults(question)
+    consulted = questions_for(model).consults(question)
 
     observations: list[AnalystObservation] = []
     basis: list[ReportedFigure] = []
@@ -125,7 +130,7 @@ def _answer(
         # gaps below name exactly which facts would reach it.
         return QuestionAnswer(
             question=question.key,
-            playbook=playbook,
+            model=model,
             state=AnswerState.NOT_ANSWERABLE_FROM_ESTABLISHED_FACTS,
             gaps=tuple(gaps),
             because=(
@@ -137,7 +142,7 @@ def _answer(
 
     return _scored(
         question,
-        playbook,
+        model,
         tuple(observations),
         tuple(basis),
         tuple(gaps),
@@ -147,7 +152,7 @@ def _answer(
 
 def _scored(
     question: FinancialQuestion,
-    playbook: PlaybookKind,
+    model: FinancialModel,
     observations: tuple[AnalystObservation, ...],
     basis: tuple[ReportedFigure, ...],
     gaps: tuple[str, ...],
@@ -177,7 +182,7 @@ def _scored(
 
     return QuestionAnswer(
         question=question.key,
-        playbook=playbook,
+        model=model,
         state=AnswerState.ANSWERED,
         verdict=str(opinion.verdict.value),
         score=opinion.score,
@@ -218,7 +223,7 @@ def inapplicable(answers: tuple[QuestionAnswer, ...]) -> tuple[QuestionAnswer, .
     )
 
 
-def declined_keys(playbook: PlaybookKind) -> frozenset[FinancialQuestionKey]:
-    """What this playbook refuses, without needing any facts to say so."""
+def declined_keys(model: FinancialModel) -> frozenset[FinancialQuestionKey]:
+    """What this model refuses, without needing any facts to say so."""
 
-    return frozenset(decline.question for decline in questions_for(playbook).declines)
+    return frozenset(decline.question for decline in questions_for(model).declines)

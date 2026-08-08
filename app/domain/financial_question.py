@@ -158,6 +158,109 @@ QUESTIONS: dict[FinancialQuestionKey, FinancialQuestion] = {
 }
 
 
+class FinancialModel(StrEnum):
+    """Which financial language governs the reading of a company's statements.
+
+    A second classification, deliberately kept apart from
+    `PlaybookKind`, because they answer different questions:
+
+    ```text
+    Business understanding  → Business playbook   → what company is this?
+    Financial understanding → Financial model     → which financial
+                                                    language should the
+                                                    CIO speak about it?
+    ```
+
+    For most companies the two coincide. Banks are the first place they
+    may not: JPMorgan's business archetype is *Diversified* — its
+    lending, services and transaction engines lead together within 5%,
+    which is what its own filing says — while the financial language
+    that reads its statements sensibly is a bank's. Those are two
+    different true statements, and collapsing them would mean bending
+    the business ontology to suit an analyst, which is backwards.
+
+    **Two members, not a mirror of every playbook.** A financial model
+    enters when a real case shows the generic language reading a company
+    wrongly. Twelve models named after the twelve playbooks, eleven of
+    them holding nothing the generic set does not, would be the
+    taxonomy-first move this platform keeps shut out. `GENERIC` is what
+    every company speaks until evidence distinguishes it.
+    """
+
+    GENERIC = "generic"
+    BANK = "bank"
+
+
+#: Which financial language a business playbook implies.
+#:
+#: One entry. A company the evidence reads as a bank is read financially
+#: as a bank — that much follows, and nothing else does yet. Every other
+#: playbook maps to `GENERIC`, not because the generic language is right
+#: for all of them but because no case has yet shown it wrong.
+IMPLIED_BY_PLAYBOOK: dict[PlaybookKind, FinancialModel] = {
+    PlaybookKind.BANK: FinancialModel.BANK,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class FinancialModelSelection:
+    """Which financial model governs, and why that one.
+
+    Explanatory rather than bare, for the reason every selection on this
+    platform is: a reader who sees a bank's questions asked of a company
+    is owed the route that chose them.
+    """
+
+    model: FinancialModel
+
+    #: The business playbook this was derived from, where it was.
+    from_playbook: PlaybookKind | None
+
+    because: str
+
+    #: Whether this model differs from the one its business playbook
+    #: implies. False everywhere today: no divergence rule has been
+    #: earned, and the standing candidate — JPMorgan, whose archetype is
+    #: Diversified and whose statements are a bank's — is exactly the
+    #: case that would earn the first one.
+    diverged: bool = False
+
+
+def model_for(playbook: PlaybookKind) -> FinancialModelSelection:
+    """The financial language this company's business playbook implies.
+
+    The only route today, and it is a coupling rather than a conclusion:
+    the financial model follows the business playbook because no
+    evidence has yet earned it not to. A rule that selected a financial
+    model from the statements themselves — a filing printing no gross
+    profit, no operating income and an unclassified balance sheet is
+    speaking a bank's language whatever its segments say — is the
+    natural second route, and it is not invented here.
+    """
+
+    implied = IMPLIED_BY_PLAYBOOK.get(playbook, FinancialModel.GENERIC)
+
+    if implied is FinancialModel.GENERIC:
+        return FinancialModelSelection(
+            model=implied,
+            from_playbook=playbook,
+            because=(
+                f"derived from the {playbook.value} business playbook: no "
+                "financial model has been distinguished from the generic "
+                "one for this kind of company"
+            ),
+        )
+
+    return FinancialModelSelection(
+        model=implied,
+        from_playbook=playbook,
+        because=(
+            f"derived from the {playbook.value} business playbook, which "
+            f"implies the {implied.value} financial language"
+        ),
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class QuestionDecline:
     """A question this playbook holds to be the wrong question, and why.
@@ -169,6 +272,12 @@ class QuestionDecline:
 
     question: FinancialQuestionKey
     reason: str
+
+    #: What evidence would let this model answer the question properly.
+    #: Named rather than built: these are acquisition demands, in the
+    #: same currency every other demand on this platform is stated in,
+    #: and naming one is not the same as inventing a threshold for it.
+    needs: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -222,13 +331,14 @@ class PlaybookQuestions:
 GENERIC = PlaybookQuestions(asks=tuple(FinancialQuestionKey))
 
 
-#: Playbooks that own their financial questions explicitly.
+#: Financial models that own their question set explicitly.
 #:
-#: One entry, deliberately. A playbook enters here when a real case
-#: shows the generic set answering the wrong question for it — never
-#: because a taxonomy of playbooks would look more complete filled in.
-OWNED: dict[PlaybookKind, PlaybookQuestions] = {
-    PlaybookKind.BANK: PlaybookQuestions(
+#: Keyed by financial model rather than by business playbook, which is
+#: the boundary this slice exists to draw: what a company *is* and which
+#: financial language reads it are two classifications, and only the
+#: second one belongs here.
+OWNED: dict[FinancialModel, PlaybookQuestions] = {
+    FinancialModel.BANK: PlaybookQuestions(
         asks=(
             FinancialQuestionKey.PROFITABILITY,
             FinancialQuestionKey.REVENUE_GROWTH,
@@ -255,6 +365,11 @@ OWNED: dict[PlaybookKind, PlaybookQuestions] = {
                     "is regulatory capital, which this platform has not "
                     "established."
                 ),
+                needs=(
+                    "Common Equity Tier 1 ratio",
+                    "Tier 1 capital ratio",
+                    "the regulatory leverage ratio",
+                ),
             ),
             QuestionDecline(
                 question=FinancialQuestionKey.CASH_GENERATION,
@@ -265,16 +380,20 @@ OWNED: dict[PlaybookKind, PlaybookQuestions] = {
                     "is established and reported; the industrial rule for "
                     "reading it is not applied."
                 ),
+                needs=(
+                    "deposit funding quality",
+                    "the liquidity coverage ratio",
+                ),
             ),
         ),
     ),
 }
 
 
-def questions_for(playbook: PlaybookKind) -> PlaybookQuestions:
-    """The questions this playbook asks, generic unless it owns its own."""
+def questions_for(model: FinancialModel) -> PlaybookQuestions:
+    """The questions this financial model asks, generic unless it owns its own."""
 
-    return OWNED.get(playbook, GENERIC)
+    return OWNED.get(model, GENERIC)
 
 
 @dataclass(frozen=True, slots=True)
@@ -289,7 +408,7 @@ class QuestionAnswer:
     """
 
     question: FinancialQuestionKey
-    playbook: PlaybookKind
+    model: FinancialModel
     state: AnswerState
 
     #: The rule table's own verdict word, where one ran.
@@ -310,8 +429,13 @@ class QuestionAnswer:
     basis: tuple[ReportedFigure, ...] = ()
 
     #: Why there is no answer — the consensus's own wording for a gap in
-    #: evidence, the playbook's own wording for a refused question.
+    #: evidence, the model's own wording for a refused question.
     because: str | None = None
+
+    #: What evidence would answer a question this model declined. An
+    #: acquisition demand, and the reason a refusal is a finding rather
+    #: than a dead end.
+    needs: tuple[str, ...] = ()
 
     @property
     def is_answered(self) -> bool:

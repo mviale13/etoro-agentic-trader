@@ -36,8 +36,8 @@ from app.commands import (
     watchlist,
     writer_compare,
 )
+from app.domain.financial_question import FinancialModel
 from app.domain.financial_statements import StatementKind
-from app.domain.playbook import PlaybookKind
 from app.services.reader_calibration import DEFAULT_READINGS
 
 CommandHandler = Callable[[], Coroutine[Any, Any, int]]
@@ -327,13 +327,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example JPM",
     )
     financials_parser.add_argument(
-        "--playbook",
-        choices=[kind.value for kind in PlaybookKind],
+        "--model",
+        choices=[model.value for model in FinancialModel],
         default=None,
         help=(
-            "Ask another playbook's financial questions of the same facts. "
-            "Inspection only: what a security is remains the selector's "
-            "answer, and this never changes it"
+            "Ask another financial interpretation model's questions of the "
+            "same facts. Inspection only: which model governs is derived "
+            "from the business playbook, and this never changes that"
         ),
     )
 
@@ -452,7 +452,7 @@ async def dispatch(args: argparse.Namespace) -> int:
     if args.command == "financials":
         return await financials.run(
             args.symbol,
-            PlaybookKind(args.playbook) if args.playbook else None,
+            FinancialModel(args.model) if args.model else None,
         )
 
     if args.command == "observe-statements":
