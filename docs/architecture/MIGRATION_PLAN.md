@@ -606,6 +606,43 @@ blocker as a worded `invalid_extraction` (the fix above), and the JPM
 quorum — the slice's measurement — runs once the account is funded:
 `movrvest observe-statements JPM`.
 
+### The owner's note after PR #60: a second domain, not a parser (2026-08-08)
+
+Recorded on the merge, in the owner's framing, because it changes
+what the next phase is understood to be:
+
+> This is not "financial statement parsing" anymore. It is the
+> Evidence Graph extended into a second domain — which matters more
+> than the code, because it means every future assessment can consume
+> financial facts with the same trust guarantees Business
+> Understanding already enjoys.
+
+Two consequences, both binding on the next sessions:
+
+1. **Business Quality does not start when the account is funded.**
+   Funding unlocks only the measurement. The gate is *quorate
+   statement observations* — and after the quorum, what begins is a
+   design conversation, not an implementation.
+2. **The next phase is expected to be the platform's first
+   combination of two independently established knowledge systems** —
+   Narrative Business Knowledge and Financial Statement Knowledge —
+   and that combination receives the same deliberate design
+   discipline as the decision and assessment layers: a design
+   document, the owner's acceptance, then code. The owner suspects
+   the phase will not simply be "Business Quality"; if the frozen
+   sequence's step 2 changes shape, that amendment is recorded in
+   `INVESTMENT_ASSESSMENT.md` as the freeze requires — a suspicion is
+   noted here, never silently promoted into the contract.
+
+Standing question for that design session, deliberately not answered
+now: the two streams share the subject and — on JPM today — the same
+immutable document identity, and a combined conclusion must rest on
+the narrowest width beneath it without blending the streams'
+admissibility. Whether a second *domain* is the convergence that
+earns the Evidence Graph abstraction (the owner's own trigger rule
+from PR #52: two mechanisms exist, the third convergence is the
+trigger) is the owner's call, taken there.
+
   **The earlier corpus re-read under protocol 10 (2026-08-07, 9
   companies at quorum 5).** What the taxonomy then found, and what it
   no longer did:
