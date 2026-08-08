@@ -181,6 +181,7 @@ def _contingencies(
                     given=answer.given,
                     concludes=concluded.stated,
                     primary=concluded.primary,
+                    secondary=concluded.secondary,
                 )
             )
 

@@ -113,6 +113,13 @@ class AlternativeConclusion:
     #: rules against rules, never against a display string.
     primary: Archetype | None
 
+    #: The runner-up engine of that same conclusion, where one stands
+    #: apart. Carried for the same reason the primary is: a mapping rule
+    #: may key on the *pair*, and a contingency evaluated on the primary
+    #: alone would report "unchanged" for an answer that in fact moves
+    #: the selection.
+    secondary: Archetype | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class Contingency:
