@@ -1,14 +1,14 @@
 # The Investment Decision
 
-Status: **Proposed, accepted in principle** (2026-08-08) — the CIO
-phase's first deliverable, a design document only, per the owner's
-brief in [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md). The owner accepted
-the governing principle as the foundation and closed the five open
-questions the same day — the closures are recorded at the end, in the
-tradition of `KNOWLEDGE_CONSENSUS.md` — and proposed one amendment,
-the decision question, which is explored and integrated below. The
-freeze awaits the owner's confirmation of the integrated amendment;
-nothing is implemented before it.
+Status: **Accepted** (2026-08-08) — agreed for initial implementation
+as a narrow vertical slice: the canonical decision domain types, the
+entry-question rule table for JPM, refusal paths, and the append-only
+decision event — no committee redesign, no UI, and no generalized
+engine beyond what the live rule earns. The design was proposed,
+accepted in principle, amended with the decision question, and
+accepted in integrated form on the same day; the owner's decisions
+are recorded at the end of this document, in the tradition of
+`KNOWLEDGE_CONSENSUS.md`.
 
 ---
 
@@ -203,7 +203,7 @@ this one. The historical act must survive; its inputs will not.
 ## A decision answers one question
 
 The owner's amendment at acceptance: *the object defines the verdict
-but not the question being answered.* Explored here before the freeze,
+but not the question being answered.* Explored here before acceptance,
 and integrated — because once stated, the model is visibly incomplete
 without it.
 
@@ -531,51 +531,109 @@ authoritative case at a time, the two routes never blending.
 
 ## Decisions (2026-08-08)
 
-The design was accepted in principle by the owner the day it was
-proposed, with the governing principle confirmed as the foundation.
-The open questions were closed as follows, and these bind the
-implementation:
+The design was proposed, accepted in principle, amended, and accepted
+in integrated form on the same day. The governing principle was
+confirmed as the foundation, and the amendment was confirmed for the
+reason this document established: **a verdict without its question is
+an adjudication whose applicability cannot be checked** — `MONITOR`
+has opposite practical effects depending on whether the question
+concerns entry, increase, or decrease, so the verdict has no complete
+meaning outside the question it answers. The owner's decisions bind
+the implementation:
 
-1. **`REJECT` is supersedable.** No stance is terminal; a revived
-   case is a new decision citing what changed.
-2. **`INVESTIGATE` owns below-quorum and research acquisition.** The
-   mechanism is the spend question: `INVESTIGATE` defers and raises,
-   the spend decision decides, and the two reference each other.
-3. **Sizing in v1 is policy-room arithmetic only.** Conviction
-   weighting, tranching, and anything finer are refused as
-   unsupported until a future layer earns them.
-4. **Decisions are per-subject only.** A rebalance is an occasion
-   that raises per-subject questions; no portfolio-level decision
-   object exists in v1.
-5. **The occasion list is open**, like absence reasons — an occasion
-   is worded, never enumerated. The question list, by contrast, is
-   closed, like the verdicts.
-6. **Market observations are admissible as explicitly observed
-   inputs.** They require no knowledge-style stability measurement
-   before v1; the width-1 label and the context-observation partition
-   of the basis are the guard.
-
-**Amended at acceptance: the decision question.** Proposed by the
-owner — the object defined the verdict but not the question being
-answered — explored, and integrated throughout this document: one
-decision answers one question; the question is the verdict's
-applicability; four questions at birth, closed; supersession per
-(subject, question). The freeze awaits the owner's confirmation of the
-integrated form.
+1. **`REJECT` is supersedable.** It means rejected *on the current
+   basis, for this question, at this time* — never terminal for the
+   security. Supersession is scoped to (subject, question): a new
+   answer about increasing supersedes the previous increase decision,
+   not an unrelated decision about decreasing or research spend.
+2. **The question vocabulary is closed at four for v1** — entry,
+   increase, decrease, research spend. The list grows only when a
+   real case and a deterministic rule table earn another question:
+   the correct application of §19a. Exit remains the limiting case of
+   decrease-to-zero until a real case demonstrates that it needs
+   different semantics.
+3. **`INVESTIGATE` and research spend remain separate decisions**,
+   reconciled as this document states: `INVESTIGATE` on entry,
+   increase, or decrease defers that question and may raise a
+   separate research-spend question; the research-spend decision
+   determines whether observations are acquired; the deferred
+   decision and the spend decision reference each other; and the
+   acquisition count is fixed before observing content. This prevents
+   "investigate" from quietly meaning *keep reading until the answer
+   becomes useful*. The asymmetry is approved: `INVESTIGATE` is not a
+   valid verdict for the research-spend question — deferring whether
+   to investigate into another investigation decision would be
+   circular.
+4. **Sizing remains policy-room arithmetic only.** No conviction
+   multiplier in v1. A position action may express only the room
+   established by declared policy and the current position: the
+   current allocation, the applicable floor or cap, and the
+   arithmetic distance to that boundary. Anything more requires a
+   future evidence-backed sizing model.
+5. **Decisions remain per subject and question.** No
+   portfolio-rebalance aggregate object yet. An occasion may raise
+   several questions, but each question produces its own canonical
+   decision event. Coherence across those decisions belongs to the
+   engine and must be checked explicitly — the engine must not
+   simultaneously produce incompatible increase and decrease actions
+   without a named rule resolving the conflict.
+6. **The occasion vocabulary remains open.** Questions are closed
+   because every one requires defined semantics and a rule table;
+   occasions are descriptive triggers and may remain an open,
+   versioned vocabulary.
+7. **Market context is admissible as observation in v1.** A decision
+   may consume it labelled explicitly as a width-1, uncalibrated
+   observation; it must never be presented as filing-grade
+   established knowledge; `rests_on` and the basis preserve that
+   distinction visibly. No reader-stability prerequisite is required
+   before v1, but a decision resting materially on unstable market
+   observations must say so.
 
 ---
 
-## What the freeze would mean
+## The accepted properties
 
-Freezing this document fixes the language: every future engine — the
-first deterministic rule set, committees when they return, and
-anything after — produces `InvestmentDecision`s and nothing else, the
-way every reader produces observations and nothing else, and every
-rule table is written per question. The next design session after the
-freeze is the first such table, for the question the corpus can
-actually earn: JPM holds the platform's only authoritative end-to-end
-playbook and sits outside the investor's book, so the first question
-this platform formally answers should be the **entry question for
-JPM** — with every supporting link already checkable — and the spend
-question standing ready for the companies whose consensus is still
-thin.
+The conformance list for any implementation, in the owner's words. A
+canonical decision:
+
+- answers exactly one explicit question;
+- concerns exactly one subject;
+- records the occasion that raised it;
+- selects only a course implied by its inputs;
+- preserves losing implications;
+- names the deterministic adjudication rule;
+- carries evidence-graph edges for every stated clause;
+- inherits uncertainty rather than manufacturing confidence;
+- refuses when no rule can resolve the implications;
+- is append-only and superseded, never revised;
+- stores the narrowest consumed agreement;
+- contains no free-form confidence integer.
+
+The current stance for a subject remains derived — the latest
+non-superseded answer per question — never stored as another source
+of truth.
+
+---
+
+## The first implementation slice
+
+Acceptance fixes the language: every future engine — the first
+deterministic rule set, committees when they return, and anything
+after — produces `InvestmentDecision`s and nothing else, the way every
+reader produces observations and nothing else, and every rule table is
+written per question.
+
+The first slice is one rule table only: **the entry question for
+JPM**. JPM is the right first case because it is outside the current
+portfolio; its identity, evidence, consensus, Business Understanding
+and playbook chain is complete; every supporting link is independently
+checkable; and the entry question has unambiguous semantics.
+
+The slice stays narrow: the canonical Decision domain types; the
+entry-question rule table for JPM; explicit basis and clauses; losing
+implications preserved; refusal paths; the append-only decision event.
+No committee redesign, no UI, and no generalized decision engine
+beyond what the live rule earns.
+
+The knowledge platform defined what MOVRvest is allowed to know. This
+document defines what it is allowed to conclude.
