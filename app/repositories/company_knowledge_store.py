@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -16,19 +16,15 @@ from app.domain.company_knowledge import (
     SegmentDescription,
 )
 from app.domain.evidence import EvidenceNotApplicable
-from app.domain.primary_source import (
-    IdentityCheck,
-    PrimarySource,
-    ReportingPeriod,
-    SourceAuthority,
-    SourceType,
-)
+from app.domain.primary_source import PrimarySource
 from app.domain.prose_evidence import DescribedSegment, Ownership
 from app.domain.provenance import Provenance
-from app.domain.tabular_evidence import (
-    CellReference,
-    MeasuredShare,
-    ReportedFigure,
+from app.domain.tabular_evidence import MeasuredShare
+from app.repositories.source_codec import (
+    decode_figure,
+    decode_source,
+    encode_figure,
+    encode_source,
 )
 
 #: What this platform reads out of a primary source, as a version.
@@ -261,21 +257,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
         return {
             "schema_version": KNOWLEDGE_SCHEMA_VERSION,
             "symbol": first.symbol,
-            "source": {
-                "symbol": first.source.symbol,
-                "company": first.source.company,
-                "source_type": first.source.source_type.value,
-                "identifier": first.source.identifier,
-                "key": first.source.key,
-                "published_on": first.source.published_on.isoformat(),
-                "reporting_period": _encode_period(first.source.reporting_period),
-                "document_format": first.source.document_format,
-                "language": first.source.language,
-                "location": first.source.location,
-                "provider": first.source.provider,
-                "authority": first.source.authority.value,
-                "verification": [check.value for check in first.source.verification],
-            },
+            "source": encode_source(first.source),
             "observations": [
                 {
                     "description": observation.description,
@@ -323,7 +305,7 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
         version = stored.get("schema_version")
 
         try:
-            source = _source(stored["source"])
+            source = decode_source(stored["source"])
             symbol = str(stored["symbol"])
 
             if version == RELABELED_SCHEMA_VERSION:
@@ -341,28 +323,6 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
             # an entry that cannot be read, not one to be repaired. The
             # document is immutable and still there, so it is read again.
             return ()
-
-
-def _source(stored: dict[str, Any]) -> PrimarySource:
-    """The document identity an entry is keyed by."""
-
-    return PrimarySource(
-        symbol=str(stored["symbol"]),
-        company=str(stored["company"]),
-        source_type=SourceType(stored["source_type"]),
-        identifier=str(stored["identifier"]),
-        key=str(stored["key"]),
-        published_on=date.fromisoformat(stored["published_on"]),
-        reporting_period=_period(stored.get("reporting_period")),
-        document_format=str(stored["document_format"]),
-        language=str(stored["language"]),
-        location=str(stored["location"]),
-        provider=str(stored["provider"]),
-        authority=SourceAuthority(stored["authority"]),
-        verification=tuple(
-            IdentityCheck(value) for value in stored.get("verification", ())
-        ),
-    )
 
 
 def _observation(
@@ -493,25 +453,8 @@ def _encode_share(share: MeasuredShare | None) -> dict[str, Any] | None:
         return None
 
     return {
-        "numerator": _encode_figure(share.numerator),
-        "denominator": _encode_figure(share.denominator),
-    }
-
-
-def _encode_figure(figure: ReportedFigure) -> dict[str, Any]:
-    """One printed number, with everything that says what it measures."""
-
-    return {
-        "label": figure.label,
-        "column_header": figure.column_header,
-        "printed": figure.printed,
-        "value": figure.value,
-        "caption": figure.caption,
-        "cell": {
-            "table": figure.cell.table,
-            "row": figure.cell.row,
-            "column": figure.cell.column,
-        },
+        "numerator": encode_figure(share.numerator),
+        "denominator": encode_figure(share.denominator),
     }
 
 
@@ -522,51 +465,6 @@ def _share(stored: Any) -> MeasuredShare | None:
         return None
 
     return MeasuredShare(
-        numerator=_figure(stored["numerator"]),
-        denominator=_figure(stored["denominator"]),
-    )
-
-
-def _figure(stored: Any) -> ReportedFigure:
-    """One printed number as stored."""
-
-    return ReportedFigure(
-        label=str(stored["label"]),
-        column_header=str(stored["column_header"]),
-        printed=str(stored["printed"]),
-        value=float(stored["value"]),
-        caption=str(stored.get("caption", "")),
-        cell=CellReference(
-            table=int(stored["cell"]["table"]),
-            row=int(stored["cell"]["row"]),
-            column=int(stored["cell"]["column"]),
-        ),
-    )
-
-
-def _encode_period(period: ReportingPeriod | None) -> dict[str, Any] | None:
-    """The business period as stored, or nothing where none was."""
-
-    if period is None:
-        return None
-
-    return {
-        "ends_on": period.ends_on.isoformat(),
-        "starts_on": (
-            period.starts_on.isoformat() if period.starts_on is not None else None
-        ),
-    }
-
-
-def _period(stored: Any) -> ReportingPeriod | None:
-    """The business period as stored, or nothing where none was."""
-
-    if not isinstance(stored, dict):
-        return None
-
-    starts = stored.get("starts_on")
-
-    return ReportingPeriod(
-        ends_on=date.fromisoformat(str(stored["ends_on"])),
-        starts_on=date.fromisoformat(str(starts)) if starts is not None else None,
+        numerator=decode_figure(stored["numerator"]),
+        denominator=decode_figure(stored["denominator"]),
     )

@@ -271,3 +271,56 @@ def test_a_filing_that_refers_to_nothing_is_read_exactly_as_before() -> None:
 
     assert "The Company makes machines." in filing.business_text
     assert "operating segments" not in filing.business_text
+
+
+#: The shape of an annual report's financial section: the statements
+#: listed in an index, mentioned in the auditor's report, and printed
+#: under their own titles — with the income statement closed by the
+#: statement that follows it.
+STATEMENTS = """\
+<html><body>
+<p>Consolidated statements of income 152</p>
+<p>Consolidated statements of comprehensive income 153</p>
+<p>Report of Independent Registered Public Accounting Firm</p>
+<p>We have audited the consolidated statements of income of Example
+Corp and the related notes.</p>
+<p>Consolidated statements of income</p>
+<table>
+  <tr><td>(in millions)</td><td>2025</td><td>2024</td></tr>
+  <tr><td>Total net revenue</td><td>177,419</td><td>162,878</td></tr>
+  <tr><td>Net income</td><td>58,471</td><td>49,552</td></tr>
+</table>
+<p>Consolidated statements of comprehensive income</p>
+<p>Other comprehensive income was as follows.</p>
+</body></html>
+"""
+
+
+def test_the_income_statement_is_located_where_its_title_is_typeset() -> None:
+    """
+    The structural-section rule's third application. The index entry
+    and the auditor's mention both carry the title; only the section's
+    own heading begins a block wide enough to be the statement.
+    """
+
+    filing = read(STATEMENTS)
+
+    assert filing.income_statement_text.startswith("Consolidated statements of income")
+    assert "Total net revenue" in filing.income_statement_text
+    assert "Other comprehensive income" not in filing.income_statement_text
+
+
+def test_locating_the_statement_puts_its_table_within_reach() -> None:
+    """The whole reason this matters: a figure is read out of a cell."""
+
+    tables = read(STATEMENTS).income_statement_tables
+
+    assert len(tables) == 1
+    assert tables[0].rows[1].label == "Total net revenue"
+
+
+def test_a_filing_without_statements_leaves_them_unstated() -> None:
+    filing = read(CROSS_REFERENCED)
+
+    assert filing.income_statement_text == ""
+    assert filing.income_statement_tables == ()

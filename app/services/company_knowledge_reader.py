@@ -21,7 +21,9 @@ from __future__ import annotations
 import os
 
 from app.config import get_settings
+from app.providers.narrative_provider import NarrativeProvider
 from app.services.company_knowledge_extractor import CompanyKnowledgeExtractor
+from app.services.financial_statement_extractor import FinancialStatementExtractor
 from app.services.narrative_providers import build_provider
 
 #: Which provider reads a filing.
@@ -57,6 +59,37 @@ def resolve_reader() -> CompanyKnowledgeExtractor | str:
     a gap in coverage does.
     """
 
+    provider = _resolve_provider()
+
+    if isinstance(provider, str):
+        return provider
+
+    return CompanyKnowledgeExtractor(provider)
+
+
+def resolve_statement_reader() -> FinancialStatementExtractor | str:
+    """
+    The same reader, pointed at the statements.
+
+    Deliberately the same configuration, not a parallel one. An
+    operator who configured `MOVRVEST_READER_*` configured how this
+    platform reads filings; the statement reading is a different
+    question put to the same document under the same discipline, and a
+    second set of knobs would eventually disagree with the first about
+    what "the reader" is.
+    """
+
+    provider = _resolve_provider()
+
+    if isinstance(provider, str):
+        return provider
+
+    return FinancialStatementExtractor(provider)
+
+
+def _resolve_provider() -> NarrativeProvider | str:
+    """The configured reading provider, or the worded reason there is none."""
+
     settings = get_settings()
 
     name = (
@@ -77,14 +110,9 @@ def resolve_reader() -> CompanyKnowledgeExtractor | str:
 
     override = (os.environ.get(MODEL_ENV) or settings.movrvest_reader_model).strip()
 
-    provider = build_provider(
+    return build_provider(
         name=name,
         model=override or DEFAULT_MODELS[name],
         timeout=READING_TIMEOUT,
         purpose="The knowledge reader",
     )
-
-    if isinstance(provider, str):
-        return provider
-
-    return CompanyKnowledgeExtractor(provider)

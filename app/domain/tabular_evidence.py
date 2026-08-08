@@ -33,6 +33,7 @@ import math
 import re
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Any
 
 from app.domain.evidence import EvidenceNotApplicable
 
@@ -413,6 +414,89 @@ class MeasuredShare:
             f"({self.numerator.caption or 'no caption'}, "
             f"table {self.numerator.cell.table})"
         )
+
+
+def cited_reference(raw: dict[str, Any]) -> CellReference:
+    """The address a reading gave, as an address.
+
+    Shared by every reading that points at cells, because the contract
+    is one contract: a citation is a table, a row and a column, and one
+    of them arriving as anything else is the same failure wherever it
+    happens.
+    """
+
+    return CellReference(
+        table=int(cited_number(raw, "table")),
+        row=int(cited_number(raw, "row")),
+        column=int(cited_number(raw, "column")),
+    )
+
+
+def cited_number(raw: dict[str, Any], named: str) -> float:
+    """One number out of a citation, or a refusal to guess at it."""
+
+    value = raw.get(named)
+
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(
+            f"A citation arrived without a {named}, so it points at nothing."
+        )
+
+    return float(value)
+
+
+def row_figures(table: SourceTable, row: int) -> tuple[ReportedFigure, ...]:
+    """
+    Every figure one row prints, read off the table by this platform.
+
+    The row expansion a checked anchor earns: a reading locates one
+    cell and survives `figure_at`, and the rest of that row is then
+    read here, deterministically — each cell past the label column
+    that prints a number under a named column header. No model claim
+    is involved anywhere in this function, which is the point: the
+    prior periods a statement prints on the same row arrive as
+    evidence without anything having asserted them.
+
+    Nothing is skipped silently that a reader would expect: a cell
+    printing a currency symbol or nothing at all is not a figure, and
+    a numeric cell under an unheaded column is a number whose period
+    is unproven — the same rule `figure_at` holds an anchor to.
+    """
+
+    if not table.header_row < row < len(table.rows):
+        return ()
+
+    label = table.rows[row].label.strip()
+
+    if not label:
+        return ()
+
+    figures = []
+
+    for column in range(1, len(table.rows[row].cells)):
+        printed = table.cell(row, column)
+        header = table.column_header(column).strip()
+
+        if printed is None or not header:
+            continue
+
+        value = read_number(printed)
+
+        if value is None:
+            continue
+
+        figures.append(
+            ReportedFigure(
+                label=label,
+                column_header=header,
+                printed=printed.strip(),
+                value=value,
+                cell=CellReference(table=table.index, row=row, column=column),
+                caption=table.caption,
+            )
+        )
+
+    return tuple(figures)
 
 
 def figure_at(

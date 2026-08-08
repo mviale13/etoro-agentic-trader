@@ -63,6 +63,41 @@ _ITEM_7A = (
     "report of independent registered public accounting firm",
 )
 
+#: The audited income statement is located by the title the filer
+#: typeset over it, never by "Item 8": that item's heading often
+#: stands over an index or a pointer while the statements themselves
+#: are printed under their own names — which is the structural-section
+#: rule's third application. The openings are the titles filers give
+#: the statement; the closings are the titles of the statements that
+#: follow it under either convention, and the notes heading that
+#: follows them all. A title in the table of contents or quoted inside
+#: the auditor's report does not begin a block, so the same discipline
+#: that locates Items 1 and 7 separates the statement from every
+#: mention of it.
+_INCOME_STATEMENT = (
+    "consolidated statements of income",
+    "consolidated statement of income",
+    "consolidated statements of operations",
+    "consolidated statement of operations",
+    "consolidated statements of earnings",
+    "consolidated statement of earnings",
+)
+_INCOME_STATEMENT_ENDS = (
+    "consolidated statements of comprehensive income",
+    "consolidated statement of comprehensive income",
+    "consolidated balance sheet",
+    "consolidated statements of financial position",
+    "consolidated statement of financial position",
+    "consolidated statements of cash flows",
+    "consolidated statement of cash flows",
+    "consolidated statements of changes in",
+    "consolidated statement of changes in",
+    "consolidated statements of stockholders",
+    "consolidated statements of shareholders",
+    "notes to consolidated financial statements",
+    "notes to the consolidated financial statements",
+)
+
 #: How a filer says that what a section would contain is printed
 #: elsewhere in the same document, immediately before naming the place.
 #:
@@ -161,6 +196,16 @@ class Filing:
     #: sentence and not enough to prove which row a number sits on.
     discussion_tables: tuple[SourceTable, ...] = ()
 
+    #: The audited income statement, located where the filer typeset
+    #: its title. Empty where no statement title begins a block in this
+    #: document, which leaves the figures unstated rather than read out
+    #: of whatever section mentioned them.
+    income_statement_text: str = ""
+
+    #: The tables printed under that title — the statement itself, with
+    #: its structure kept.
+    income_statement_tables: tuple[SourceTable, ...] = ()
+
 
 class EdgarFilings:
     """
@@ -248,6 +293,9 @@ class EdgarFilings:
 
         business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
         discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
+        statement, statement_tables, _ = self._section(
+            document, flat, _INCOME_STATEMENT, _INCOME_STATEMENT_ENDS
+        )
 
         referenced, referred_regions, referred_tables = self._referenced(
             document, flat, business
@@ -274,6 +322,8 @@ class EdgarFilings:
             # exactly those: mixing another chapter's in beside them
             # would put two tables' totals in one reading's reach.
             discussion_tables=tables or referred_tables,
+            income_statement_text=statement,
+            income_statement_tables=statement_tables,
         )
 
     @staticmethod

@@ -23,6 +23,8 @@ from app.domain.tabular_evidence import (
     MeasuredShare,
     ReportedFigure,
     SourceTable,
+    cited_number,
+    cited_reference,
     figure_at,
 )
 from app.providers.narrative_provider import (
@@ -870,8 +872,8 @@ class CompanyKnowledgeExtractor:
             try:
                 figure = figure_at(
                     tables,
-                    _reference(raw),
-                    _number(raw, "value"),
+                    cited_reference(raw),
+                    cited_number(raw, "value"),
                     f"The revenue of {name!r}",
                 )
 
@@ -926,8 +928,8 @@ class CompanyKnowledgeExtractor:
         try:
             return figure_at(
                 tables,
-                _reference(raw),
-                _number(raw, "value"),
+                cited_reference(raw),
+                cited_number(raw, "value"),
                 "The company's total revenue",
             )
         except (TypeError, ValueError) as unreadable:
@@ -1152,29 +1154,6 @@ def _no_tables(document: SourceDocument) -> str:
         "This filing's management discussion prints no table this platform "
         "could read a figure out of, so no segment was measured."
     )
-
-
-def _reference(raw: dict[str, Any]) -> CellReference:
-    """The address a reading gave, as an address."""
-
-    return CellReference(
-        table=int(_number(raw, "table")),
-        row=int(_number(raw, "row")),
-        column=int(_number(raw, "column")),
-    )
-
-
-def _number(raw: dict[str, Any], named: str) -> float:
-    """One number out of a citation, or a refusal to guess at it."""
-
-    value = raw.get(named)
-
-    if isinstance(value, bool) or not isinstance(value, int | float):
-        raise ValueError(
-            f"A citation arrived without a {named}, so it points at nothing."
-        )
-
-    return float(value)
 
 
 def _corresponds(name: str, label: str) -> bool:
