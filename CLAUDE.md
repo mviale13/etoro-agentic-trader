@@ -188,8 +188,13 @@ consumes it:
   the case. No analyst consumes them and the recommendation is identical
   without them.
 - **The conclusion is `DecisionSynthesis`** — *because / despite /
-  review if*, deterministic, from canonical objects only, complete with
-  the Executive Writer disabled.
+  review if / uncertainty / decision*, deterministic, from canonical
+  objects only, complete with the Executive Writer disabled.
+- **The committees state positions, not actions** — `CommitteeOpinion`
+  (`app/domain/committee/`) carries a stance over *referenced* findings,
+  the rule that produced it, and what it could not settle. It is the
+  reference implementation of the future Assessment layer; see
+  [`docs/architecture/ASSESSMENT_CONVERGENCE.md`](docs/architecture/ASSESSMENT_CONVERGENCE.md).
 
 Two rules this phase established, both worth applying to any new surface:
 
@@ -289,28 +294,37 @@ you make something real, update its pill.
 
 ---
 
-## Before you build
+## No new architecture without a product story
 
-**Answer this first, out loud, before any work starts:**
+Every PR answers one question:
 
-> **Which investor-facing decision becomes better because of this change?**
+> **What becomes better for the investor?**
 
-Name the decision, the mechanism, and what an investor could see afterwards
-that they could not before. *"The recommendation is more trustworthy because
-the Quality Committee now reasons from established business understanding"*
-is an answer. *"None, but the architecture is cleaner"* is not — push back,
-and say so.
+> *"Nothing, but the domain is cleaner."* → **the PR waits.**
+>
+> *"Recommendations become easier to trust."* → **ship it.**
 
-A decision currently getting a **wrong** answer counts: a defect, a seam that
-could spend money in tests, a dependency that fails only in CI. That is the
-same question answered in the negative, not an exception to it.
+A PR that waits is not a PR that is wrong. It is one whose product story has
+not arrived. When a slice finally needs that ground, it is built inside that
+slice — where the benefit is visible and the cost is charged against it.
+
+Name the mechanism where you can: *"recommendations become easier to trust,
+because the Quality Committee now reasons from established business
+understanding"* is checkable, and *"it improves quality"* is not.
+
+A decision **currently getting a wrong answer** is the same question answered
+in the negative, and it ships: a defect, a seam that could spend money in
+tests, a dependency that fails only in CI.
 
 **The core architecture is frozen** — deliberately, not forever. Enough
 exists to build several investor-facing capabilities. No new layers,
 canonical objects, taxonomies or re-factored seams, and no completing a
-designed step merely because it is designed. Structural work a passing slice
-genuinely needs travels *inside* that slice. Constitution §23–24 carries the
+designed step merely because it is designed. Constitution §23–24 carries the
 full rule; only the owner lifts the freeze.
+
+---
+
+## Before you build
 
 **Verify the import graph before believing any document, including this one.**
 

@@ -15,7 +15,7 @@ These are the documents a new session should read first. They are the same set
 
 | Question | Document |
 |---|---|
-| How do we work? | [`ENGINEERING_CONSTITUTION.md`](ENGINEERING_CONSTITUTION.md) — **§23–24 first**: every change names the investor-facing decision it improves, and the core architecture is frozen until one needs it |
+| How do we work? | [`ENGINEERING_CONSTITUTION.md`](ENGINEERING_CONSTITUTION.md) — **§23–24 first**: *no new architecture without a product story*. Every PR answers **what becomes better for the investor?** — "nothing, but the domain is cleaner" and the PR waits |
 | Which package owns what? | [`architecture/REPOSITORY_INVENTORY.md`](architecture/REPOSITORY_INVENTORY.md) |
 | What is built, what is missing? | [`PROJECT_STATE.md`](PROJECT_STATE.md) |
 | What is next, and what is open? | [`architecture/MIGRATION_PLAN.md`](architecture/MIGRATION_PLAN.md) |

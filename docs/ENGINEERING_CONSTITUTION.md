@@ -303,36 +303,38 @@ be dead is live.
 
 ---
 
-## 23. Every change names the decision it improves
+## 23. Every PR answers what becomes better for the investor
 
-*The owner's rule, 2026-08-09. It is asked before the work starts, not
-at review — this is a scoping gate, not a review checklist.*
+*The owner's rule, 2026-08-09, in the owner's words.*
 
-> **Which investor-facing decision becomes better because of this
-> change?**
+> **What becomes better for the investor?**
 
-An answer that names one, and names the mechanism, is a change worth
-making:
+> *"Nothing, but the domain is cleaner."* → **the PR waits.**
+>
+> *"Recommendations become easier to trust."* → **ship it.**
 
-> *The recommendation is more trustworthy because the Quality
-> Committee now reasons from established business understanding.*
+Asked before the work starts and answered again in the PR — a scoping
+gate first, and a standing question second.
 
-An answer that cannot is not:
+**A PR that waits is not a PR that is wrong.** It is one whose product
+story has not arrived. The disposition is deliberate: rejecting good
+work teaches people to stop noticing it, while making it wait keeps it
+available for the slice that eventually needs it — built inside that
+slice, where the benefit is visible and the cost is charged against
+it.
 
-> *None, but the architecture is cleaner.*
-
-The second is the one to push back on, and it is the reason this
-principle exists rather than being obvious. Every repository accretes
+This is the reason the principle exists rather than being obvious.
+Every repository accretes
 work that is locally correct, passes review, ships green, and moves no
 decision the investor ever sees. A platform whose product is
 **trust** cannot afford that work, because the investor is not paying
 for consistency — they are paying for a recommendation they can rely
 on and argue with.
 
-**What a good answer looks like.** It names (a) the decision, (b) the
-mechanism, and (c) what an investor could see afterwards that they
-could not see before. All three, or it is an assertion rather than an
-answer.
+**Name the mechanism where you can.** *Recommendations become easier
+to trust, because the Quality Committee now reasons from established
+business understanding* is checkable. *It improves quality* is an
+assertion wearing an answer's clothes.
 
 **What still passes honestly.** The question has a second admissible
 answer, and pretending otherwise would get the rule quietly ignored:
@@ -358,9 +360,12 @@ properties. None of them is a reason on its own.
 
 ---
 
-## 24. The core architecture is frozen — deliberately, and not forever
+## 24. No new architecture without a product story
 
-*The owner's declaration, 2026-08-09.*
+*The owner's declaration, 2026-08-09. §23 applied to structure, and
+the sentence to remember when only one survives.*
+
+**The core architecture is frozen — deliberately, and not forever.**
 
 The evidence stack, the knowledge and understanding layers, the
 decision model, the assessment contract and the committee object are

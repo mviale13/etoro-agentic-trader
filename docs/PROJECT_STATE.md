@@ -21,7 +21,7 @@ here as missing is not a mandate to build it.** This document says what
 the platform holds; whether a gap is worth closing is decided by one
 question, asked before the work starts:
 
-> Which investor-facing decision becomes better because of this change?
+> What becomes better for the investor?
 
 ---
 
