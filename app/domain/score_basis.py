@@ -1,4 +1,35 @@
-"""Why each score the Artificial CIO decided on is the number it is."""
+"""Why each score the Artificial CIO decided on is the number it is.
+
+## The scoring contract is stable (the owner's ruling, 2026-08-09)
+
+`Contribution`, `ScoreDerivation` and `ScoreBasis` are the shape every
+score on the dossier explains itself in, and they are **not to be
+reshaped**. The ruling on the slice that introduced them: *it solved
+the right problem at the right layer — keep this scoring contract
+stable.*
+
+Stable means what it means elsewhere on this platform. New scores
+**consume** these objects; they do not extend them, parallel them, or
+introduce a second decomposition shape beside them. The first grounded
+consumer — business quality read from the filing — was built entirely
+against this contract without altering a field of it, which is the
+evidence that the shape is right.
+
+What stability forecloses:
+
+- a second breakdown object for a score whose arithmetic differs. A
+  share-of-applicable score and a count-of-factors score are both
+  `earned` over `available`, and both say so in `stated()`;
+- a weight, a percentage or a penalty added to `Contribution`. Points
+  are non-negative and integral because this platform measures no
+  weights, and a `+18` would be a number nobody computed;
+- a derivation manufactured for a score that bands a single reading. A
+  one-row table dresses a threshold up as a tally, and `derivation`
+  stays `None` there.
+
+Changing any of it is an owner's decision, recorded here — never a
+side effect of adding a score.
+"""
 
 from __future__ import annotations
 
