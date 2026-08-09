@@ -166,15 +166,30 @@ class PortfolioService:
         positions: tuple[PortfolioPosition, ...],
         equity_usd: float,
     ) -> tuple[str | None, float]:
+        """
+        The largest holding by security, not the largest single trade.
+
+        The broker reports a position per trade, so a security bought
+        twice arrives as two rows. Measuring the biggest row measures a
+        transaction, and the investor's policy limits a *security*: two
+        BTC buys of 20.0% and 0.5% were read as a 20.0% holding exactly
+        at a 20% limit, when the holding was 20.5% and over it. A breach
+        of the investor's own policy reported as compliance.
+        """
+
         if not positions:
             return None, 0.0
 
-        largest = max(positions, key=lambda position: position.market_value_usd)
+        held: dict[str, float] = {}
 
-        return largest.symbol, cls._percentage(
-            largest.market_value_usd,
-            equity_usd,
-        )
+        for position in positions:
+            held[position.symbol] = (
+                held.get(position.symbol, 0.0) + position.market_value_usd
+            )
+
+        symbol, value = max(held.items(), key=lambda holding: holding[1])
+
+        return symbol, cls._percentage(value, equity_usd)
 
     @staticmethod
     def _percentage(value: float, total: float) -> float:

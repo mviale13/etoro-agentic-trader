@@ -1,6 +1,8 @@
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from app.domain.account_snapshot import AccountSnapshot
+from app.domain.portfolio_position import PortfolioPosition
 from app.services.portfolio_service import PortfolioService
 
 
@@ -86,3 +88,63 @@ def test_percentage_rounding():
 
     assert portfolio.allocation.cash == 33.33
     assert portfolio.allocation.unclassified == 66.67
+
+
+def held(symbol: str, value: float) -> PortfolioPosition:
+    return PortfolioPosition(
+        symbol=symbol,
+        quantity=1.0,
+        invested_usd=value,
+        market_value_usd=value,
+        unrealized_pnl_usd=0.0,
+        asset_class="crypto",
+    )
+
+
+def test_a_security_bought_twice_is_one_holding() -> None:
+    """
+    The broker reports a position per trade; the policy limits a security.
+
+    Found on the real book: BTC bought twice arrived as 20.0% and 0.5%,
+    and the largest *row* was read as the largest *holding*. The card
+    said "0.0 pts over the limit" against a 20% limit while the investor
+    actually held 20.5% — a breach of their own policy reported as
+    compliance.
+    """
+
+    account = replace(
+        build_account(equity=100_000.0, cash=0.0, invested=100_000.0, positions=3),
+        positions=(
+            held("BTC", 20_000.0),
+            held("ETH", 10_000.0),
+            held("BTC", 500.0),
+        ),
+    )
+
+    snapshot = PortfolioService().analyze(account)
+
+    assert snapshot.largest_position == "BTC"
+    assert snapshot.largest_position_pct == 20.5
+
+
+def test_the_largest_holding_can_be_one_the_broker_split() -> None:
+    """
+    Two small buys can outweigh one big one, and used not to.
+
+    Ranking by row would have named ETH here, because neither BTC trade
+    is individually the largest — the investor holds more BTC than ETH.
+    """
+
+    account = replace(
+        build_account(equity=100_000.0, cash=0.0, invested=100_000.0, positions=3),
+        positions=(
+            held("BTC", 6_000.0),
+            held("ETH", 9_000.0),
+            held("BTC", 6_000.0),
+        ),
+    )
+
+    snapshot = PortfolioService().analyze(account)
+
+    assert snapshot.largest_position == "BTC"
+    assert snapshot.largest_position_pct == 12.0
