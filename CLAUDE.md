@@ -143,9 +143,20 @@ both are load-bearing:
   ([`FINANCIAL_LANGUAGE_EVIDENCE.md`](docs/architecture/FINANCIAL_LANGUAGE_EVIDENCE.md)).
   It is acquired and **connected to nothing**; `model_for` is untouched.
 
-The standing guard on both: **a concept's absence is evidence only where
-the statement was located *and* read.** A statement establishing nothing
-looks identical to a bank's, an insurer's and an ordinary company's.
+- **`BANK`'s own demands cannot be grounded yet** — CET1 and the LCR
+  discriminate perfectly (10/10 banks, 0/9 non-banks, including three
+  interest-based lenders that are *not* deposit-funded), and are printed
+  in a capital/liquidity region this platform does not locate: CET1 is
+  reachable for 2 of 10 banks, the LCR for none
+  ([`BANK_PRUDENTIAL_EVIDENCE.md`](docs/architecture/BANK_PRUDENTIAL_EVIDENCE.md)).
+  None of them appears on the face of a primary statement, so none
+  belongs in `StatementConcept`.
+
+The standing guard on all three: **a concept's absence is evidence only
+where the section that would carry it was located *and* read.** A
+statement establishing nothing looks identical to a bank's, an insurer's
+and an ordinary company's — and a prudential fact missing from every
+region this platform acquires is missing from places it never looked.
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)
