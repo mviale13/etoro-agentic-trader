@@ -921,12 +921,15 @@ class DecisionEvidenceBuilder:
         asset_class: AssetClass | None = None,
     ) -> tuple[str, ...]:
         """
-        What this case is short of, and whether it can ever be supplied.
+        What this case is short of, and that a later cycle could supply.
 
         "Valuation data is unavailable" reads as a gap a later cycle might
         close. For an asset with no company behind it there is nothing to
-        become available, and saying otherwise sends the investor back to
-        wait for evidence that does not exist.
+        become available, so it is not listed here at all: a token has no
+        earnings, the findings already say so in those words, and saying
+        it again under *still missing* both repeats the evidence and
+        sends the investor back to wait for something that will never
+        arrive. Only what could still be read is named here.
         """
 
         if company is None:
@@ -934,26 +937,23 @@ class DecisionEvidenceBuilder:
 
         missing: list[str] = []
 
-        # Only an asset positively known to have no company is told so.
+        # Only an asset positively known to have no company is exempt.
         # An unclassified one is short of data, which may yet arrive.
         has_company = asset_class is None or not asset_class.has_no_company
 
-        if company.signals.value.valuation == "UNKNOWN":
-            missing.append(
-                f"Valuation data is unavailable for {symbol}."
-                if has_company
-                else f"{symbol} has no earnings to be valued against."
-            )
+        if has_company and company.signals.value.valuation == "UNKNOWN":
+            missing.append(f"Valuation data is unavailable for {symbol}.")
 
-        if company.signals.quality.quality == "UNKNOWN":
-            missing.append(
-                f"Quality data is unavailable for {symbol}."
-                if has_company
-                else f"{symbol} has no business whose quality could be assessed."
-            )
+        if has_company and company.signals.quality.quality == "UNKNOWN":
+            missing.append(f"Quality data is unavailable for {symbol}.")
 
         if company.signals.risk is None or company.signals.risk.level == "UNKNOWN":
-            missing.append(f"Price history for {symbol} is too short to measure risk.")
+            # Not "too short": this platform has not read enough of the
+            # price history to measure risk, and how much exists is a
+            # different claim it has not checked.
+            missing.append(
+                f"Not enough price history has been read for {symbol} to measure risk."
+            )
 
         # A calendar nobody could read, said as that. A company between
         # reports says so among its findings instead: no date published is
