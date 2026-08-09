@@ -556,3 +556,56 @@ def test_a_company_is_still_written_up(monkeypatch) -> None:
     )
 
     assert asked == ["AAPL"]
+
+
+def test_a_draft_that_suggests_sizing_is_refused() -> None:
+    """
+    The rule that was stated for the action model and not for the writer.
+
+    `PortfolioBriefing` has always said "no size, price or quantity is
+    ever suggested". Asked politely, the writer wrote "position sizing
+    should reflect balance-sheet and volatility risks" on a company and
+    "build operational readiness and risk controls" on a token — so it
+    is refused rather than requested.
+    """
+
+    findings = make_findings()
+
+    payload = valid_payload(findings)
+    payload["sections"][0]["text"] = (
+        "The case is credible, and position sizing should reflect the "
+        "balance-sheet risks."
+    )
+
+    with pytest.raises(NarrativeRejected) as refused:
+        narrative_from_payload(
+            payload,
+            symbol="AAPL",
+            decision_state="PREPARE",
+            findings=findings,
+            model="claude-opus-5",
+        )
+
+    assert "no size, price or quantity" in str(refused.value)
+
+
+def test_a_draft_that_invents_platform_work_is_refused() -> None:
+    """There is no diligence, no controls programme and no entry criteria."""
+
+    findings = make_findings()
+
+    for invented in (
+        "We will prepare additional diligence before deployment.",
+        "Build operational readiness and risk controls while waiting.",
+    ):
+        payload = valid_payload(findings)
+        payload["sections"][0]["text"] = invented
+
+        with pytest.raises(NarrativeRejected):
+            narrative_from_payload(
+                payload,
+                symbol="AAPL",
+                decision_state="PREPARE",
+                findings=findings,
+                model="claude-opus-5",
+            )
