@@ -1343,7 +1343,24 @@ function VerdictStrip({ derivation }: { derivation: DossierDerivation }) {
           <span aria-hidden className="text-slate-300">
             ·
           </span>
-          <span className="tabular-nums">{derivation.coverage}</span>
+
+          {/* Every readable factor scored and the band still fell short.
+              Without this, "2 of 2 favourable" beside 62 reads as a
+              broken score rather than as thin coverage. The boolean and
+              the sentence are both the backend's; this only shows them. */}
+          <span
+            className={`tabular-nums ${
+              derivation.cappedByUnreadableFactors
+                ? "font-medium text-amber-700"
+                : ""
+            }`}
+            title={
+              derivation.cappedByUnreadableFactors ? derivation.stated : undefined
+            }
+          >
+            {derivation.coverage}
+            {derivation.cappedByUnreadableFactors ? " — band limited" : ""}
+          </span>
         </>
       ) : null}
     </span>
