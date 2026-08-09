@@ -141,6 +141,10 @@ class ContributionResponse(BaseModel):
     #: factor that does not apply, `adverse` is one the company failed.
     sense: str
 
+    #: The rule table's own verdict word. Carried as data so a surface
+    #: never recovers it by splitting a sentence.
+    verdict: str | None = None
+
 
 class DerivationResponse(BaseModel):
     """How a counted score reached its number, factor by factor.
@@ -169,6 +173,16 @@ class DerivationResponse(BaseModel):
 
     #: The arithmetic as one checkable line, worded by the backend.
     stated: str
+
+    #: How much of what this score asks for could be read, as numerator
+    #: and denominator. A different question from how much of what was
+    #: read came back favourable, and both belong on the page.
+    established_factors: int | None = None
+    candidate_factors: int | None = None
+
+    #: The same, worded by the backend. Null where the score does not
+    #: know its own candidate set.
+    coverage: str | None = None
 
 
 class ScoreResponse(BaseModel):

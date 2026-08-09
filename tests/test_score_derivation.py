@@ -211,3 +211,107 @@ def test_the_band_is_exactly_what_it_was_before() -> None:
     assert quality(market_cap=2e12, eps=8.0, dividend_yield=0.0).quality == "MEDIUM"
     assert quality(market_cap=1e9, eps=8.0, dividend_yield=0.0).quality == "LOW"
     assert quality(market_cap=1e9, eps=-1.0, dividend_yield=0.0).quality == "LOW"
+
+
+# ── amendment 1: verdict and coverage as first-class fields ─────────
+
+
+def grounded(symbol: str):
+    """The dossier's own quality derivation for a corpus company."""
+
+    from app.application.executive.decision_evidence_builder import (
+        DecisionEvidenceBuilder,
+    )
+    from app.domain.financial_question import FinancialModel
+    from app.services.business_quality_service import quality_of
+    from app.services.company_understanding_service import (
+        CompanyUnderstandingService,
+    )
+
+    understanding = CompanyUnderstandingService().understanding(symbol)
+
+    quality = quality_of(symbol, understanding.financial, FinancialModel.GENERIC)
+
+    return DecisionEvidenceBuilder._quality_basis(None, quality).derivation
+
+
+def test_the_verdict_is_carried_as_data_never_as_prose() -> None:
+    """
+    A surface that recovered it by splitting a sentence would be doing
+    domain reasoning where none belongs.
+    """
+
+    derivation = grounded("JPM")
+
+    assert derivation is not None
+
+    verdicts = [item.verdict for item in derivation.contributions]
+
+    assert verdicts == ["excellent", "weak", "declining"]
+
+    # And the statement is the question alone, with no verdict folded in.
+    assert all("—" not in item.statement for item in derivation.contributions)
+
+
+def test_coverage_answers_a_different_question_from_the_share() -> None:
+    """
+    *One favourable of three answered* reads the business; *three of
+    three read* reads this platform. A 62 on a full set and a 62 on a
+    third of one are not the same claim.
+    """
+
+    derivation = grounded("PG")
+
+    assert derivation is not None
+
+    assert (derivation.earned, derivation.available) == (1, 3)
+    assert (derivation.established_factors, derivation.candidate_factors) == (3, 3)
+    assert derivation.coverage == "3 of 3 read"
+
+
+def test_three_companies_at_the_same_score_are_distinguishable() -> None:
+    """
+    The whole point of the slice. AAPL, PG and JPM all show 62; the
+    collapsed row must not present them as the same finding.
+
+    Distinguishable from *fields alone* — no string is parsed and no
+    threshold is compared to tell them apart.
+    """
+
+    shapes = {}
+
+    for symbol in ("AAPL", "PG", "JPM"):
+        derivation = grounded(symbol)
+
+        assert derivation is not None
+        assert derivation.score == 62
+
+        shapes[symbol] = (
+            tuple(item.sense for item in derivation.contributions),
+            tuple(item.verdict for item in derivation.contributions),
+        )
+
+    assert len({shapes[symbol] for symbol in shapes}) == 3
+
+    # The sense mix alone separates AAPL; only the verdicts separate
+    # PG from JPM, which is why the verdict had to become a field.
+    assert shapes["PG"][0] == shapes["JPM"][0]
+    assert shapes["PG"][1] != shapes["JPM"][1]
+
+
+def test_a_score_that_knows_no_candidate_set_leaves_coverage_absent() -> None:
+    """Optional and additive: absent is a real state, not a zero."""
+
+    from app.domain.score_basis import ScoreDerivation
+
+    bare = ScoreDerivation(
+        contributions=(),
+        earned=1,
+        available=2,
+        band="MEDIUM",
+        score=62,
+        scale=(("HIGH", 80),),
+    )
+
+    assert bare.coverage is None
+    assert bare.contributions == ()

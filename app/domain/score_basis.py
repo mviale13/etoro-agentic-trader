@@ -115,6 +115,17 @@ class Contribution:
     #: apart.
     sense: Sense
 
+    #: The rule table's own verdict word, where one produced this
+    #: contribution — "excellent", "declining". First-class rather than
+    #: folded into `statement`, because it is what distinguishes two
+    #: companies that reached the same score by different routes, and a
+    #: surface that recovered it by splitting a sentence would be doing
+    #: domain reasoning where none belongs.
+    #:
+    #: None for a score whose factors carry no verdict, which is not the
+    #: same as a verdict of nothing.
+    verdict: str | None = None
+
     @property
     def earned(self) -> bool:
         return self.points > 0
@@ -161,6 +172,19 @@ class ScoreDerivation:
     #: still fell short, this is what says so.
     required: int | None = None
 
+    #: How much of what this score asks for could be read: the factors
+    #: established, over the factors it would consult given everything.
+    #:
+    #: A different question from `earned` over `available`, and both
+    #: belong on the page. *One favourable of three answered* is a
+    #: reading of the business; *three of three read* is a reading of
+    #: this platform. A score of 62 on a full set and a 62 on a third of
+    #: one are not the same claim, and only these two say so.
+    #:
+    #: None where a score does not know its own candidate set.
+    established_factors: int | None = None
+    candidate_factors: int | None = None
+
     @property
     def is_capped_by_unreadable_factors(self) -> bool:
         """Whether a higher band was unreachable for want of data.
@@ -176,6 +200,15 @@ class ScoreDerivation:
             and self.earned == self.available
             and self.available < self.required
         )
+
+    @property
+    def coverage(self) -> str | None:
+        """How much of the score's own question set was readable."""
+
+        if self.established_factors is None or self.candidate_factors is None:
+            return None
+
+        return f"{self.established_factors} of {self.candidate_factors} read"
 
     def stated(self) -> str:
         """The arithmetic as one checkable line."""
