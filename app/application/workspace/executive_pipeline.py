@@ -29,6 +29,10 @@ from app.application.thesis.investment_thesis_builder import (
 from app.brain import Brain
 from app.cio.artificial_cio import ExecutiveDecisionEngine
 from app.repositories.json_event_repository import JsonEventRepository
+from app.services.business_quality_service import quality_of
+from app.services.company_understanding_service import (
+    CompanyUnderstandingService,
+)
 
 from .executive_workspace import ExecutiveWorkspace
 
@@ -69,6 +73,13 @@ class ExecutivePipeline:
     #: memory, which is what a test or a what-if evaluation wants: nothing
     #: the investor never saw should enter the record.
     journal: DecisionJournal | None = None
+
+    #: The read-only door onto stored statement evidence. Asks the store
+    #: and stops: no filing is fetched and no model is asked, so a
+    #: grounded quality score adds no spend to an evaluation.
+    understanding: CompanyUnderstandingService = field(
+        default_factory=CompanyUnderstandingService,
+    )
 
     @classmethod
     def with_memory(cls) -> ExecutivePipeline:
@@ -142,12 +153,28 @@ class ExecutivePipeline:
             workspace.findings,
         )
 
+        # What the company's own statements establish about how good the
+        # business is, where they reach quorum. It governs the quality
+        # score outright there; the provider-fed proxy stands unchanged
+        # everywhere else, and the two never blend.
+        #
+        # The financial model is not resolved here. Which financial
+        # language reads a company is decided by the layer that owns it,
+        # and this slice changes no routing — so a company reaches the
+        # default, and the questions this score asks are the same three
+        # under either model.
+        workspace.quality = quality_of(
+            symbol,
+            self.understanding.understanding(symbol).financial,
+        )
+
         workspace.evidence = self.evidence_builder.build(
             symbol,
             brain,
             workspace.reasoning,
             workspace.committee_opinions,
             findings=workspace.findings,
+            quality_assessment=workspace.quality,
         )
 
         workspace.decision = self.decision_engine.decide(
