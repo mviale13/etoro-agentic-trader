@@ -312,21 +312,44 @@ class PartiallyFailingMarketProvider(CountingMarketProvider):
         )
 
 
-def test_an_unpriceable_symbol_is_not_asked_for_again(tmp_path: Path) -> None:
-    provider = PartiallyFailingMarketProvider()
-    cached = make_market_provider(tmp_path, provider)
+def test_an_unpriceable_symbol_costs_a_page_nothing_and_a_cycle_one_ask(
+    tmp_path: Path,
+) -> None:
+    """
+    Who is asking decides whether asking again is waste.
 
+    A symbol that cannot be priced under its ticker — crypto without its
+    `-USD` suffix, an eToro future with no Yahoo listing — was once
+    remembered as unpriceable so it would not be re-asked. That memo
+    existed because every page view fetched, and every page view then
+    spent the rate limit the priceable securities needed.
+
+    A page view no longer fetches at all, so the only caller left is an
+    explicit acquisition — and one that skipped a security because it
+    failed half an hour ago is refusing to do the one thing it was run
+    for. So the cost is one ask per cycle, and the memo is gone with the
+    behaviour that justified it.
+    """
+
+    provider = PartiallyFailingMarketProvider()
     instruments = (make_instrument("MSFT"), make_instrument("SOL"))
 
-    first = asyncio.run(cached.quotes(instruments))
-    second = asyncio.run(cached.quotes(instruments))
+    cycle = make_market_provider(tmp_path, provider)
+
+    first = asyncio.run(cycle.quotes(instruments))
+    second = asyncio.run(cycle.quotes(instruments))
 
     assert [quote.symbol for quote in first] == ["MSFT"]
     assert [quote.symbol for quote in second] == ["MSFT"]
 
-    # SOL cannot be priced under this ticker. Asking again every cycle spent
-    # the rate limit the priceable securities needed.
-    assert provider.requested == ["MSFT", "SOL"]
+    # MSFT priced, so the second cycle serves it from the store. SOL did
+    # not, so the second cycle asks about it again — once.
+    assert provider.requested == ["MSFT", "SOL", "SOL"]
+
+    # And a surface asks about neither, whatever the store holds.
+    asyncio.run(CachedMarketProvider.stored(JsonCache(tmp_path)).quotes(instruments))
+
+    assert provider.requested == ["MSFT", "SOL", "SOL"]
 
 
 def test_the_market_index_is_read_once_too(tmp_path: Path) -> None:

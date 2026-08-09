@@ -55,7 +55,10 @@ class MarketPerception:
         sentiment_provider: SentimentProvider | None = None,
         archive: MarketArchive | None = None,
     ) -> None:
-        self._provider = provider or CachedMarketProvider()
+        # The read-only door: this runs on every page view, and the market
+        # strip is not a reason to make one wait on a provider. What was
+        # acquired is served with the moment it was taken.
+        self._provider = provider or CachedMarketProvider.stored()
         self._market_service = market_service or MarketService()
         self._sentiment_provider = sentiment_provider or CryptoFearGreedProvider()
         self._archive = archive or MarketSnapshotArchive()

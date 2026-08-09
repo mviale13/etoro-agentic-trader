@@ -23,9 +23,17 @@ class CachedMarketProvider:
     research candidate. The provider rate-limits, so that volume was the
     main reason evidence went missing.
 
-    Unlike fundamentals, a quote is never served stale. A price is a claim
-    about right now, so when the cached one has expired and the provider
-    cannot be reached, this reports no quote rather than yesterday's.
+    Two doors, and which one a caller opens decides whether it can reach
+    the network. This one acquires: an expired quote is fetched again, and
+    an acquisition cycle is the thing that opens it. `stored` is the
+    read-only door a page uses.
+
+    An instrument this door cannot price keeps whatever the store already
+    held for it. A failure used to be written *over* the last real quote,
+    which was survivable while a stale quote was refused anyway — and is
+    not now that the surfaces serve stored prices with their age. One
+    transient failure during the first acquisition cycle left a holding
+    with no price at all, when a three-hour-old one was sitting there.
     """
 
     VIX_KEY = "^VIX:vix"
@@ -35,18 +43,39 @@ class CachedMarketProvider:
         provider: YahooMarketProvider | None = None,
         cache: JsonCache | None = None,
         ttl: timedelta = timedelta(minutes=15),
-        failure_ttl: timedelta = timedelta(minutes=30),
+        acquires: bool = True,
     ) -> None:
         self._provider = provider or YahooMarketProvider()
         self._cache = cache or JsonCache("data/cache/quotes")
         self._ttl = ttl
 
-        # A symbol the provider cannot price is remembered too, briefly. Some
-        # instruments are simply not priceable under their current ticker —
-        # crypto needs a -USD suffix, eToro futures have no Yahoo listing —
-        # and retrying them on every request spent the rate limit that the
-        # priceable securities needed.
-        self._failure_ttl = failure_ttl
+        self._acquires = acquires
+
+    @classmethod
+    def stored(
+        cls,
+        cache: JsonCache | None = None,
+    ) -> CachedMarketProvider:
+        """
+        The prices this platform has already read, and nothing it has not.
+
+        The read-only door, for surfaces rather than for acquisition —
+        the same door `CompanyKnowledgeService.established` is for the
+        filings. A page view that acquires is a page view that decides,
+        on the investor's behalf and without being asked, to spend a
+        rate limit and wait for a provider: one dossier downloaded a
+        year of daily closes eleven times over, and `SPY` thirteen
+        times, because the benchmark is read once per batch and the page
+        asked in batches of one.
+
+        Freshness is not enforced here, and that is the point. A stored
+        quote keeps the moment it was taken, so what a surface serves is
+        "Yahoo Finance, three hours ago" — old evidence, dated, which
+        this platform already prefers to a wait or a blank. A symbol
+        never acquired has no quote, and an absence is reported as one.
+        """
+
+        return cls(cache=cache, acquires=False)
 
     async def snapshot(self) -> MarketData:
         return MarketData(
@@ -57,10 +86,13 @@ class CachedMarketProvider:
     async def vix(self) -> float | None:
         entry = self._cache.read(self.VIX_KEY)
 
-        if entry is not None and entry.is_fresh(self._ttl):
+        if entry is not None and (not self._acquires or entry.is_fresh(self._ttl)):
             value = entry.value.get("vix")
 
             return float(value) if isinstance(value, (int, float)) else None
+
+        if not self._acquires:
+            return None
 
         vix = await self._provider.vix()
 
@@ -80,34 +112,26 @@ class CachedMarketProvider:
         for instrument in selected:
             entry = self._cache.read(instrument.yahoo_symbol)
 
-            if entry is not None:
-                if entry.value.get("unavailable") is True:
-                    if entry.is_fresh(self._failure_ttl):
-                        continue
-                elif entry.is_fresh(self._ttl):
-                    quote = self._restore(entry.value)
+            if entry is not None and (not self._acquires or entry.is_fresh(self._ttl)):
+                quote = self._restore(entry.value)
 
-                    if quote is not None:
-                        cached[instrument.movrvest_symbol] = quote
-                        continue
+                if quote is not None:
+                    cached[instrument.movrvest_symbol] = quote
+                    continue
 
             missing.append(instrument)
 
-        if missing:
+        if missing and self._acquires:
             try:
                 fetched = await self._provider.quotes(tuple(missing))
             except Exception:
                 # Every missing instrument failed. Whatever was already
                 # priced recently still stands; the rest simply has no
                 # quote, which is reported as absent further up.
-                self._remember_failures(missing, ())
-
                 if not cached:
                     raise
 
                 fetched = ()
-            else:
-                self._remember_failures(missing, fetched)
 
             by_symbol = {
                 instrument.movrvest_symbol: instrument for instrument in missing
@@ -130,26 +154,13 @@ class CachedMarketProvider:
             if instrument.movrvest_symbol in cached
         )
 
-        if not ordered:
+        # An acquisition that priced nothing failed; a store that holds
+        # nothing is simply empty. Only the first is an error — the second
+        # is an absence, and absences are reported, not raised.
+        if not ordered and self._acquires:
             raise RuntimeError("Yahoo Finance returned no usable market quotes")
 
         return ordered
-
-    def _remember_failures(
-        self,
-        requested: list[YahooInstrument],
-        fetched: tuple[MarketQuote, ...],
-    ) -> None:
-        """Record which instruments the provider could not price."""
-
-        priced = {quote.symbol for quote in fetched}
-
-        for instrument in requested:
-            if instrument.movrvest_symbol not in priced:
-                self._cache.write(
-                    instrument.yahoo_symbol,
-                    {"unavailable": True},
-                )
 
     @staticmethod
     def _encode(
