@@ -102,6 +102,64 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Financial statements become a knowledge domain, and playbooks stop
+  being the only classification** (August 2026, branch
+  `feature/financial-statement-domain`, 8 commits). The statement stream
+  grew from one statement to three, gained the layer
+  `BusinessUnderstanding` occupies over narrative consensus, and then
+  gained a consumer that knows which of its questions are worth asking.
+
+  **Three statements, located as a run.** `StatementKind` grew to income
+  statement, balance sheet and cash flow on a named demand — the four
+  financial analysts' rule tables. Three separations are enforced: one
+  reading sees one statement, one consensus covers one statement, one
+  concept belongs to one statement. Location moved off title-matching
+  entirely: `statement_locator` resolves the most coherent *progression*
+  of statements, scored by **substance** — how many different statements
+  a run carries above a listing's width. One measure separates a
+  contents page (three statements, no substance), an MD&A discussion
+  (substance, one statement), a pointer item (no title at all) and the
+  audited block (both). No fallback, and no tiebreak: two
+  indistinguishable runs resolve to nothing.
+
+  That repaired a measured defect. JPMorgan's balance-sheet figures had
+  been read from the MD&A's *Selected Consolidated balance sheets data*
+  — genuine, internally consistent, the filer's own, and **not the
+  audited statement**. Right figures, wrong provenance claim. Store
+  schema 2 and a corpus re-read followed, because schema-1 balance-sheet
+  readings had been shown different text.
+
+  **`FinancialUnderstanding`** measures what the statements say and never
+  scores it: margins, growth, ratios and cash flow computed by this
+  platform from two checked cells apiece, each carrying the narrowest
+  agreement beneath it. Four arithmetic forms hold one rule — one table
+  is one scale, one column is one period. Growth cost no reading at all;
+  the anchored row was already expanded, so prior periods were evidence
+  in hand.
+
+  **Playbooks own interpretation, and then stopped being the owner.**
+  The owner's ruling: a bank is not a highly levered industrial, so the
+  fix is not a threshold that knows about banks. A `FinancialModel`
+  selects which questions are meaningful, supplies the rule by naming
+  the analyst that owns it, and the analyst executes what it is handed.
+  Three outcomes, and the last two never collapse: *answered*, *not
+  answerable from established facts*, *not applicable*.
+
+  Then the measurement embarrassed the assumption underneath. JPMorgan's
+  grounded playbook is **Diversified** — its own filing says lending,
+  services and transaction lead together within 5% — so it never reaches
+  the bank questions. The owner refused the obvious repair: that the
+  bank questions read JPM better is not evidence that JPM is a bank.
+  So `FinancialModel` is a **second classification**, kept apart from
+  `PlaybookKind`, coupled today by a route that says it is a coupling.
+
+  **JPM measured, all three statements at quorum:** net margin 31.3%,
+  revenue growth +2.8%, earnings growth −2.4%, liabilities-to-equity
+  11.21x, operating cash flow −147,782. Revenue and net income settle
+  10/10 over ten independent readings. Every absence is a fact about a
+  bank: no gross profit line, no operating income line, an unclassified
+  balance sheet, capex folded into other investing — each 5/5.
+
 - **The grounded selector is measured before it is extended** (August
   2026). `movrvest playbook-coverage`, a read-only measurement over the
   portfolio and watchlists: the knowledge store is consulted as it

@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1335 tests, fast
+python -m pytest -q            # ~1367 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -84,11 +84,13 @@ statements are three quorums and are asked for one at a time),
 `movrvest observe-statements SYMBOL [--statement KIND]` (the statement
 stream's explicit spend, to the quorum of 5; stops on the count, never
 the content),
-`movrvest financials SYMBOL` (what those statements *measure* —
-margins, growth, ratios and cash flow computed by this platform from
-two checked cells apiece, each with the narrowest agreement beneath it
-— and the four financial analysts' answers over exactly those facts;
-read-only, never observes).
+`movrvest financials SYMBOL [--model generic|bank]` (what those
+statements *measure* — margins, growth, ratios and cash flow computed
+by this platform from two checked cells apiece, each with the narrowest
+agreement beneath it — and then the governing financial model's
+questions over exactly those facts: answered, not yet answerable, or
+not applicable with the evidence that would answer it. Read-only, never
+observes; `--model` is inspection and never changes what governs).
 
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see
@@ -96,19 +98,29 @@ reading presented as the account: see
 (accepted). The store holds `CompanyKnowledgeObservation`s (schema 11,
 append-only); `consensus_of` derives on read; the decision path consumes
 `CompanyKnowledgeConsensus` only. Financial statement facts are their
-own observation stream (schema 1, `data/statements`, never pooled with
+own observation stream (schema 2, `data/statements`, never pooled with
 segment readings), one quorum per statement, with
 `FinancialUnderstanding` above them as the arithmetic layer
 `BusinessUnderstanding` is above narrative consensus: see
 [`docs/architecture/FINANCIAL_STATEMENT_ACQUISITION.md`](docs/architecture/FINANCIAL_STATEMENT_ACQUISITION.md).
 
 The financial analysts have **two routes that never blend**: the
-filing-grade route (`app/analysts/filing_analysts.py`, reading
-established facts, absence stated in the filing's own words) and the
-provider-fed route (`app/analysts/*_analyst.py`, reading
-`CompanyFacts`). The first outgrows the second one authoritative case
-at a time — never by wrapping it, which is the Yahoo boundary in
+filing-grade route (reading established facts, absence stated in the
+filing's own words) and the provider-fed route
+(`app/analysts/*_analyst.py`, reading `CompanyFacts`). The first
+outgrows the second one authoritative case at a time — never by
+wrapping it, which is the Yahoo boundary in
 [`docs/architecture/INVESTMENT_ASSESSMENT.md`](docs/architecture/INVESTMENT_ASSESSMENT.md).
+
+**What a company is and how it is read financially are two
+classifications.** `PlaybookKind` answers the first from business
+understanding; `FinancialModel` (`app/domain/financial_question.py`)
+answers the second and owns the financial question set — which
+questions are meaningful, which facts answer them, and which generic
+questions are refused. They are coupled today by `model_for`, which
+says it is a coupling. **Never change a playbook route to fix a
+financial interpretation**: see
+[`docs/architecture/PLAYBOOK_SELECTION.md`](docs/architecture/PLAYBOOK_SELECTION.md).
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)

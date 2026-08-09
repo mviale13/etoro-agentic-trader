@@ -94,6 +94,16 @@ Orchestration lives in `app/application/workspace`:
 | `app/services/company_knowledge_reader.py` | Which model reads a filing — configured apart from the one that words a case |
 | `app/domain/company_archetype.py` | What kind of business a company is: the conclusion, every rule that reached it, and what was not established |
 | `app/services/archetype_engine.py` | The rules themselves — a pure function over `CompanyKnowledge`, no model, no industry |
+| `app/providers/section_locator.py` | Where a filing's numbered **items** are: candidates discovered typography-blind, scored on named structural evidence, resolved as the most coherent progression of items |
+| `app/providers/statement_locator.py` | Where its audited **statements** are, by the same architecture pointed at a second vocabulary: a statement is selected because it belongs to the highest-quality structural run, never because its title matched first |
+| `app/domain/financial_statements.py` | One reading of one primary statement: the statement vocabulary, the concepts, and the row labels each concept accepts |
+| `app/domain/financial_statement_consensus.py` | What repeated readings of one statement agree the filer printed — the consensus architecture pointed at a second claim set |
+| `app/services/financial_statement_extractor.py`, `financial_statement_service.py` | Reading one named statement of one document, and the counted spend that fills its quorum |
+| `app/domain/financial_understanding.py` | What the statements **measure** — the layer `BusinessUnderstanding` occupies over narrative consensus. Facts and arithmetic; it never scores |
+| `app/services/financial_engine.py` | The arithmetic itself: recipes over checked cells, deterministic, no model |
+| `app/domain/financial_question.py` | Which financial questions are meaningful, who owns them, and `FinancialModel` — the second classification, kept apart from `PlaybookKind` |
+| `app/services/financial_questions.py` | Executing a question a model chose against facts it did not read: answered, an evidence gap, or an explicit refusal |
+| `app/analysts/filing_analysts.py` | The filing-grade analyst route, reading established facts and never a provider's. Legacy plumbing since the questions layer; retained until a second financial model exists |
 | `app/infrastructure/cache` | `JsonCache` — what a provider already told us |
 | `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |
