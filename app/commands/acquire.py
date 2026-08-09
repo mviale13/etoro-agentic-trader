@@ -50,6 +50,16 @@ def _render(acquired: MarketAcquisition) -> None:
     print(f"  Market strip {len(acquired.instruments)} instruments")
     print(f"  VIX          {acquired.vix if acquired.vix is not None else 'not read'}")
 
+    # The rate the account's euro figures are converted at. Absent here
+    # means absent on the page: no rate is invented to fill them.
+    if acquired.rate is not None:
+        print(
+            f"  USD -> EUR   {acquired.rate.rate:.4f}  "
+            f"({acquired.rate.reading.stated()})"
+        )
+    else:
+        print("  USD -> EUR   not read, so the euro figures stay absent")
+
     thin = [
         security
         for security in acquired.securities

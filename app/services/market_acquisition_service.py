@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from app.domain.asset_class import AssetClass
+from app.domain.exchange_rate import ExchangeRate
 from app.domain.market_acquisition import AcquiredSecurity, MarketAcquisition
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.research_candidate import ResearchCandidate
@@ -14,6 +15,7 @@ from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.earnings_provider import CachedEarningsProvider
+from app.providers.exchange_rate_provider import CachedExchangeRateProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
 
@@ -51,6 +53,7 @@ class MarketAcquisitionService:
         quotes: Any | None = None,
         valuations: Any | None = None,
         calendars: Any | None = None,
+        rates: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -76,6 +79,11 @@ class MarketAcquisitionService:
         self._quotes = quotes or CachedMarketProvider()
         self._valuations = valuations or CachedValueProvider()
         self._calendars = calendars or CachedEarningsProvider()
+
+        # The account is reported in dollars and read in euros, so the
+        # rate is one more thing a page must find already read rather
+        # than go and fetch.
+        self._rates = rates or CachedExchangeRateProvider()
 
     async def acquire(
         self,
@@ -120,7 +128,16 @@ class MarketAcquisitionService:
                 if instrument.movrvest_symbol.upper().strip() in priced
             ),
             vix=await self._quotes.vix(),
+            rate=await asyncio.to_thread(self._read_rate),
         )
+
+    def _read_rate(self) -> ExchangeRate | None:
+        """The currency rate the portfolio's euro figures are converted at."""
+
+        try:
+            return self._rates.usd_to_eur()
+        except Exception:
+            return None
 
     def _company(
         self,
@@ -131,10 +148,12 @@ class MarketAcquisitionService:
         """
         Everything one security is asked for, in the order it is read.
 
-        Fundamentals are read under the resolved ticker and the calendar
-        under the investor's own symbol, because that is how the pages ask
-        for them — a cycle that filled either under a different key would
-        fill a store nothing reads from.
+        Both fundamentals and the calendar are read under the resolved
+        ticker, because that is how the pages ask for them — a cycle that
+        filled either under a different key would fill a store nothing
+        reads from. The calendar used the broker's symbol until the
+        readers moved to the provider's, which left Nestlé's cycle
+        warming a key no page would ever look at.
         """
 
         return AcquiredSecurity(
@@ -142,7 +161,7 @@ class MarketAcquisitionService:
             priced=instrument.movrvest_symbol.upper().strip() in priced,
             fundamentals=self._fundamentals(instrument.yahoo_symbol),
             calendar=(
-                self._calendar(instrument.movrvest_symbol)
+                self._calendar(instrument.yahoo_symbol)
                 if asset_class is AssetClass.STOCK
                 else None
             ),

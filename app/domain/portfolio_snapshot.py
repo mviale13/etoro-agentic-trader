@@ -22,13 +22,15 @@ class PortfolioSnapshot:
     largest_position: str | None
     largest_position_pct: float
     risk_flags: tuple[str, ...]
-    total_value_eur: float = 0.0
+    #: Absent where no rate has been read. A conversion is derived
+    #: from a measurement, and without one it is not filled in.
+    total_value_eur: float | None = None
 
     # Real dashboard values.
     available_cash_usd: float = 0.0
-    available_cash_eur: float = 0.0
+    available_cash_eur: float | None = None
     invested_usd: float = 0.0
-    invested_eur: float = 0.0
+    invested_eur: float | None = None
     liquidity_pct: float = 0.0
     last_sync: datetime | None = None
 

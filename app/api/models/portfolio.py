@@ -13,11 +13,11 @@ class AllocationResponse(BaseModel):
 
 class PortfolioResponse(BaseModel):
     total_value: float
-    total_value_eur: float
+    total_value_eur: float | None
     available_cash_usd: float
-    available_cash_eur: float
+    available_cash_eur: float | None
     invested_usd: float
-    invested_eur: float
+    invested_eur: float | None
     liquidity_pct: float
     positions: int
     allocation: AllocationResponse

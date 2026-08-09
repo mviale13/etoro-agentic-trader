@@ -33,6 +33,17 @@ const usdFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+/**
+ * The euro figure, or a stated absence.
+ *
+ * Converted at a rate this platform read and dated. Where none has been
+ * read the figure is absent rather than converted at a constant, which
+ * is what it used to be.
+ */
+function inEuros(amount: number | null): string {
+  return amount === null ? "EUR not converted" : eurFormatter.format(amount);
+}
+
 const eurFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "EUR",
@@ -179,21 +190,21 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
         <MetricCard
           label="Total portfolio value"
           value={usdFormatter.format(portfolio.totalValueUsd)}
-          secondary={eurFormatter.format(portfolio.totalValueEur)}
+          secondary={inEuros(portfolio.totalValueEur)}
           icon={Landmark}
         />
 
         <MetricCard
           label="Available cash"
           value={usdFormatter.format(portfolio.availableCashUsd)}
-          secondary={eurFormatter.format(portfolio.availableCashEur)}
+          secondary={inEuros(portfolio.availableCashEur)}
           icon={WalletCards}
         />
 
         <MetricCard
           label="Invested capital"
           value={usdFormatter.format(portfolio.investedUsd)}
-          secondary={eurFormatter.format(portfolio.investedEur)}
+          secondary={inEuros(portfolio.investedEur)}
           icon={CircleDollarSign}
         />
 

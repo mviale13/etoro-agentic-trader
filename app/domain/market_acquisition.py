@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.domain.exchange_rate import ExchangeRate
+
 
 @dataclass(frozen=True, slots=True)
 class AcquiredSecurity:
@@ -53,6 +55,10 @@ class MarketAcquisition:
     instruments: tuple[str, ...]
 
     vix: float | None
+
+    #: The currency rate the account's euro figures are converted at.
+    #: Absent where none could be read, and the figures are absent with it.
+    rate: ExchangeRate | None = None
 
     @property
     def priced(self) -> tuple[AcquiredSecurity, ...]:
