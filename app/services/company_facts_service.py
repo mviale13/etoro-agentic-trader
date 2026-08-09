@@ -75,7 +75,7 @@ class CompanyFactsService:
         quotes, valuation, earnings = await asyncio.gather(
             quotes_task,
             self._valuation(instrument.yahoo_symbol),
-            self._earnings(item.symbol, asset_class),
+            self._earnings(instrument.yahoo_symbol, asset_class),
         )
 
         quote = self._find_quote(
@@ -194,6 +194,11 @@ class CompanyFactsService:
         The read is the one the book's calendar already takes, from the
         same daily cache under the same key, so a company that appears on
         both the Markets page and its own dossier reports on one date.
+
+        That key is the ticker Yahoo lists the company under, not the
+        broker's — asking a provider with a symbol it does not carry can
+        only ever come back empty, which for Nestlé looked exactly like a
+        company that publishes no date.
         """
 
         if asset_class is not AssetClass.STOCK:

@@ -11,6 +11,7 @@ from app.application.brain.perception.portfolio_perception import (
 from app.domain.asset_class import AssetClass
 from app.domain.earnings_calendar import EarningsCalendar, EarningsDate
 from app.providers.earnings_provider import CachedEarningsProvider
+from app.providers.yahoo_market_provider import YahooInstrument
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
 
 
@@ -48,8 +49,16 @@ class EarningsCalendarService:
 
         symbols = sorted(companies)
 
+        # Asked for under the ticker Yahoo carries, and reported back under
+        # the symbol the investor knows. The two differ wherever the broker
+        # and the provider name a venue differently, and asking with the
+        # broker's word can only come back empty — which reads as a company
+        # publishing no date rather than as a question badly put.
         reads = await asyncio.gather(
-            *(asyncio.to_thread(self._provider.read, symbol) for symbol in symbols),
+            *(
+                asyncio.to_thread(self._provider.read, companies[symbol][2])
+                for symbol in symbols
+            ),
             return_exceptions=True,
         )
 
@@ -71,7 +80,7 @@ class EarningsCalendarService:
                 unscheduled.append(symbol)
                 continue
 
-            name, held = companies[symbol]
+            name, held, _ = companies[symbol]
 
             entry = EarningsDate(
                 symbol=symbol,
@@ -96,8 +105,8 @@ class EarningsCalendarService:
             unread=tuple(unread),
         )
 
-    async def _companies(self) -> dict[str, tuple[str, bool]]:
-        """Every company in the book: symbol -> (name, held)."""
+    async def _companies(self) -> dict[str, tuple[str, bool, str]]:
+        """Every company in the book: symbol -> (name, held, yahoo ticker)."""
 
         portfolio = await self._portfolio_perception.execute()
 
@@ -105,7 +114,14 @@ class EarningsCalendarService:
             tuple(holding.instrument_id for holding in portfolio.holdings)
         )
 
-        companies: dict[str, tuple[str, bool]] = {}
+        companies: dict[str, tuple[str, bool, str]] = {}
+
+        def ticker(symbol: str, name: str) -> str:
+            return YahooInstrument.for_security(
+                symbol,
+                name,
+                AssetClass.STOCK,
+            ).yahoo_symbol
 
         for holding in portfolio.holdings:
             if not holding.is_resolved:
@@ -116,9 +132,12 @@ class EarningsCalendarService:
 
             item = instruments.get(holding.instrument_id)
 
+            name = item.name if item is not None and item.name else holding.symbol
+
             companies[holding.symbol] = (
-                item.name if item is not None and item.name else holding.symbol,
+                name,
                 True,
+                ticker(holding.symbol, name),
             )
 
         for item in instruments.values():
@@ -128,6 +147,8 @@ class EarningsCalendarService:
             if not item.symbol or item.symbol in companies:
                 continue
 
-            companies[item.symbol] = (item.name or item.symbol, False)
+            name = item.name or item.symbol
+
+            companies[item.symbol] = (name, False, ticker(item.symbol, name))
 
         return companies

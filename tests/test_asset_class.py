@@ -57,3 +57,67 @@ def test_everything_else_trades_under_its_own_ticker() -> None:
 
     assert instrument.yahoo_symbol == "MSFT"
     assert instrument.movrvest_symbol == "MSFT"
+
+
+def test_a_venue_the_two_vendors_name_differently_is_translated() -> None:
+    """
+    Nestlé is `NESN.ZU` at the broker and `NESN.SW` at Yahoo.
+
+    Asked for under the broker's word it came back with a single empty
+    field — which the platform reported as a company with no measured
+    quality, no price and no published earnings date, for a security it
+    could have read in full the whole time.
+    """
+
+    instrument = YahooInstrument.for_security(
+        "NESN.ZU",
+        "Nestle SA",
+        AssetClass.STOCK,
+    )
+
+    assert instrument.yahoo_symbol == "NESN.SW"
+
+    # And reported back under the symbol the investor watches.
+    assert instrument.movrvest_symbol == "NESN.ZU"
+
+
+def test_every_other_venue_on_the_book_is_passed_through_untouched() -> None:
+    """
+    The suffixes measured against Yahoo before Zurich was translated.
+
+    Each of these returned a full payload under the broker's own word, so
+    translating them would move a security to a venue nobody checked —
+    which is the way this kind of table goes wrong.
+    """
+
+    for symbol in (
+        "UMI.BR",
+        "VOW3.DE",
+        "NOVO-B.CO",
+        "AIR.PA",
+        "BP.L",
+        "GRE.MC",
+        "LDO.MI",
+    ):
+        assert (
+            YahooInstrument.for_security(
+                symbol,
+                symbol,
+                AssetClass.STOCK,
+            ).yahoo_symbol
+            == symbol
+        )
+
+
+def test_a_venue_is_translated_only_at_the_suffix() -> None:
+    """A ticker that merely contains the letters is not a Zurich listing."""
+
+    for symbol in ("ZU", "ZUO", "AZU", "ZU.L"):
+        assert (
+            YahooInstrument.for_security(
+                symbol,
+                symbol,
+                AssetClass.STOCK,
+            ).yahoo_symbol
+            == symbol
+        )
