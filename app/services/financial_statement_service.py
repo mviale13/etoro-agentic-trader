@@ -227,6 +227,31 @@ class FinancialStatementService:
             absent_because=refused,
         )
 
+    def established(
+        self, symbol: str
+    ) -> dict[StatementKind, FinancialStatementConsensus]:
+        """Every statement already observed, without reading or spending.
+
+        The read-only door, and the reason it exists is the same one
+        `CompanyKnowledgeService.established` gives: `statements`
+        resolves the current filing and reads it where it is new, which
+        must never sit behind a page view.
+
+        Returns only the statements this platform holds. A statement
+        absent from the mapping was never observed, which a consumer
+        reports as an absence rather than filling in.
+        """
+
+        held = {}
+
+        for statement in StatementKind:
+            consensus = self._latest(symbol, statement)
+
+            if consensus is not None:
+                held[statement] = consensus
+
+        return held
+
     def _latest(
         self, symbol: str, statement: StatementKind
     ) -> FinancialStatementConsensus | None:

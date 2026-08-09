@@ -167,6 +167,97 @@ export interface DossierViewModel {
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
   narrativeAbsent: string | null;
+
+  /**
+   * What the platform understands about the company from its own filing.
+   *
+   * Beside the case, never inside it: nothing here reached the decision
+   * above. Null only when the backend predates the field.
+   */
+  understanding: DossierUnderstanding | null;
+}
+
+/** How firmly one claim is held, as the readings counted. */
+export interface DossierAgreement {
+  agreeing: number;
+  readings: number;
+  settled: boolean;
+}
+
+/** One part of the business, as the filing's consensus establishes it. */
+export interface DossierSegment {
+  name: string;
+  /** The settled share of revenue. Null with the reason beside it. */
+  share: number | null;
+  unmeasuredBecause: string | null;
+  earns: readonly string[];
+  earnsBecause: string | null;
+}
+
+/** One way the business earns, and how much of it earns that way. */
+export interface DossierMechanism {
+  model: string;
+  through: readonly string[];
+  /** Coverage of measured revenue — never a split of revenue. */
+  coverage: number | null;
+  support: DossierAgreement;
+}
+
+/** One thing the rules needed about a segment and did not have. */
+export interface DossierUnestablished {
+  segment: string;
+  dimension: string;
+  because: string;
+}
+
+export interface DossierBusinessUnderstanding {
+  source: string;
+  read: string;
+  quorate: boolean;
+  observationCount: number;
+  quorum: number;
+  engine: string;
+  archetype: string | null;
+  undecidedBecause: string | null;
+  /** The narrowest claim beneath the conclusion. */
+  narrowest: DossierAgreement | null;
+  segments: readonly DossierSegment[];
+  segmentsBecause: string | null;
+  mechanisms: readonly DossierMechanism[];
+  notEstablished: readonly DossierUnestablished[];
+}
+
+/** One measure, computed from checked cells or absent with its reason. */
+export interface DossierMeasure {
+  measure: string;
+  label: string;
+  value: number | null;
+  /** "fraction", "multiple" or "currency" — how to read the number. */
+  unit: string;
+  /** The arithmetic, as it can be checked against the filing. */
+  stated: string;
+  support: DossierAgreement | null;
+  absentBecause: string | null;
+}
+
+export interface DossierFinancialUnderstanding {
+  source: string;
+  read: string;
+  quorate: boolean;
+  observationCount: number;
+  quorum: number;
+  statements: readonly string[];
+  /** The financial language the income statement establishes. */
+  language: string | null;
+  languageBecause: string | null;
+  measures: readonly DossierMeasure[];
+}
+
+export interface DossierUnderstanding {
+  business: DossierBusinessUnderstanding | null;
+  businessAbsentBecause: string | null;
+  financial: DossierFinancialUnderstanding | null;
+  financialAbsentBecause: string | null;
 }
 
 export interface DossierResult {
@@ -304,6 +395,227 @@ function parseCommittees(
         }))
       : [],
   }));
+}
+
+function parseAgreement(
+  value: unknown,
+  field: string,
+): DossierAgreement | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error(`${field} is not a JSON object.`);
+  }
+
+  return {
+    agreeing: requireNumber(value.agreeing, `${field}.agreeing`),
+    readings: requireNumber(value.readings, `${field}.readings`),
+    settled: requireBoolean(value.settled, `${field}.settled`),
+  };
+}
+
+function parseBusinessUnderstanding(
+  value: unknown,
+): DossierBusinessUnderstanding | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("understanding.business is not a JSON object.");
+  }
+
+  const segments = Array.isArray(value.segments) ? value.segments : [];
+  const mechanisms = Array.isArray(value.mechanisms) ? value.mechanisms : [];
+  const missing = Array.isArray(value.not_established)
+    ? value.not_established
+    : [];
+
+  return {
+    source: requireString(value.source, "understanding.business.source"),
+    read: requireString(value.read, "understanding.business.read"),
+    quorate: requireBoolean(value.quorate, "understanding.business.quorate"),
+    observationCount: requireNumber(
+      value.observation_count,
+      "understanding.business.observation_count",
+    ),
+    quorum: requireNumber(value.quorum, "understanding.business.quorum"),
+    engine: requireString(value.engine, "understanding.business.engine"),
+    archetype: optionalString(value.archetype, "understanding.business.archetype"),
+    undecidedBecause: optionalString(
+      value.undecided_because,
+      "understanding.business.undecided_because",
+    ),
+    narrowest: parseAgreement(
+      value.narrowest,
+      "understanding.business.narrowest",
+    ),
+    segments: segments.map((segment, index) => {
+      if (!isRecord(segment)) {
+        throw new Error(`understanding.business.segments[${index}] is not an object.`);
+      }
+
+      return {
+        name: requireString(
+          segment.name,
+          `understanding.business.segments[${index}].name`,
+        ),
+        share: optionalNumber(segment.share),
+        unmeasuredBecause: optionalString(
+          segment.unmeasured_because,
+          `understanding.business.segments[${index}].unmeasured_because`,
+        ),
+        earns: stringList(segment.earns),
+        earnsBecause: optionalString(
+          segment.earns_because,
+          `understanding.business.segments[${index}].earns_because`,
+        ),
+      };
+    }),
+    segmentsBecause: optionalString(
+      value.segments_because,
+      "understanding.business.segments_because",
+    ),
+    mechanisms: mechanisms.map((mechanism, index) => {
+      if (!isRecord(mechanism)) {
+        throw new Error(
+          `understanding.business.mechanisms[${index}] is not an object.`,
+        );
+      }
+
+      const support = parseAgreement(
+        mechanism.support,
+        `understanding.business.mechanisms[${index}].support`,
+      );
+
+      if (support === null) {
+        throw new Error(
+          `understanding.business.mechanisms[${index}].support is missing.`,
+        );
+      }
+
+      return {
+        model: requireString(
+          mechanism.model,
+          `understanding.business.mechanisms[${index}].model`,
+        ),
+        through: stringList(mechanism.through),
+        coverage: optionalNumber(mechanism.coverage),
+        support,
+      };
+    }),
+    notEstablished: missing.map((item, index) => {
+      if (!isRecord(item)) {
+        throw new Error(
+          `understanding.business.not_established[${index}] is not an object.`,
+        );
+      }
+
+      return {
+        segment: requireString(
+          item.segment,
+          `understanding.business.not_established[${index}].segment`,
+        ),
+        dimension: requireString(
+          item.dimension,
+          `understanding.business.not_established[${index}].dimension`,
+        ),
+        because: requireString(
+          item.because,
+          `understanding.business.not_established[${index}].because`,
+        ),
+      };
+    }),
+  };
+}
+
+function parseFinancialUnderstanding(
+  value: unknown,
+): DossierFinancialUnderstanding | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("understanding.financial is not a JSON object.");
+  }
+
+  const measures = Array.isArray(value.measures) ? value.measures : [];
+
+  return {
+    source: requireString(value.source, "understanding.financial.source"),
+    read: requireString(value.read, "understanding.financial.read"),
+    quorate: requireBoolean(value.quorate, "understanding.financial.quorate"),
+    observationCount: requireNumber(
+      value.observation_count,
+      "understanding.financial.observation_count",
+    ),
+    quorum: requireNumber(value.quorum, "understanding.financial.quorum"),
+    statements: stringList(value.statements),
+    language: optionalString(value.language, "understanding.financial.language"),
+    languageBecause: optionalString(
+      value.language_because,
+      "understanding.financial.language_because",
+    ),
+    measures: measures.map((measure, index) => {
+      if (!isRecord(measure)) {
+        throw new Error(`understanding.financial.measures[${index}] is not an object.`);
+      }
+
+      return {
+        measure: requireString(
+          measure.measure,
+          `understanding.financial.measures[${index}].measure`,
+        ),
+        label: requireString(
+          measure.label,
+          `understanding.financial.measures[${index}].label`,
+        ),
+        value: optionalNumber(measure.value),
+        unit: requireString(
+          measure.unit,
+          `understanding.financial.measures[${index}].unit`,
+        ),
+        stated: requireString(
+          measure.stated,
+          `understanding.financial.measures[${index}].stated`,
+        ),
+        support: parseAgreement(
+          measure.support,
+          `understanding.financial.measures[${index}].support`,
+        ),
+        absentBecause: optionalString(
+          measure.absent_because,
+          `understanding.financial.measures[${index}].absent_because`,
+        ),
+      };
+    }),
+  };
+}
+
+function parseUnderstanding(value: unknown): DossierUnderstanding | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("understanding is not a JSON object.");
+  }
+
+  return {
+    business: parseBusinessUnderstanding(value.business),
+    businessAbsentBecause: optionalString(
+      value.business_absent_because,
+      "understanding.business_absent_because",
+    ),
+    financial: parseFinancialUnderstanding(value.financial),
+    financialAbsentBecause: optionalString(
+      value.financial_absent_because,
+      "understanding.financial_absent_because",
+    ),
+  };
 }
 
 function parseNarrative(value: unknown): DossierNarrative | null {
@@ -477,6 +789,7 @@ function parseDossier(payload: unknown): DossierViewModel {
       payload.narrative_absent,
       "narrative_absent",
     ),
+    understanding: parseUnderstanding(payload.understanding),
   };
 }
 

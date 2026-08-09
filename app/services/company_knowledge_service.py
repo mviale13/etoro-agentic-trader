@@ -295,6 +295,41 @@ class CompanyKnowledgeService:
             absent_because=refused,
         )
 
+    def established(self, symbol: str) -> KnowledgeOutcome:
+        """What is already known, without reading, fetching or spending.
+
+        The read-only door, for surfaces rather than for acquisition.
+        `knowledge` resolves the current document and reads it where it
+        is new, which is right for a command an operator invoked and
+        wrong for a page an investor loaded: it would put a network
+        fetch and a model call behind a page view, and would quietly
+        make the dashboard the thing that decides when this platform
+        spends money.
+
+        So this asks the store only. What comes back is the consensus
+        over the newest filing this platform has already observed, which
+        may be older than the filing that exists — a surface saying so
+        is honest, and a surface that went and got it would not be a
+        surface.
+        """
+
+        consensus = self._latest(symbol)
+
+        if consensus is None:
+            return KnowledgeOutcome(
+                state=KnowledgeState.UNAVAILABLE,
+                absent_because=(
+                    f"No filing has been read for {symbol.upper().strip()}. "
+                    "Reading one is an explicit spend, and no surface takes "
+                    "it — `movrvest observe` does."
+                ),
+            )
+
+        return KnowledgeOutcome(
+            state=KnowledgeState.AVAILABLE_CACHED,
+            knowledge=consensus,
+        )
+
     def _latest(self, symbol: str) -> CompanyKnowledgeConsensus | None:
         """Consensus over the newest document's observations, if any."""
 
