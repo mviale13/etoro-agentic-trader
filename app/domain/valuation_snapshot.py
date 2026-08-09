@@ -53,3 +53,28 @@ class ValuationSnapshot:
         """When this was read, if it says."""
 
         return self.reading.observed_at if self.reading is not None else None
+
+    @property
+    def carries_nothing(self) -> bool:
+        """
+        True when the payload this was read from held no figure at all.
+
+        The distinction between a reading and a failed one, which the
+        fundamentals provider cannot make for itself: `Ticker.info` does
+        not raise when the provider refuses, it answers with a payload
+        that has nothing in it. Read literally that becomes a snapshot
+        where every figure is absent, dated now — a completed reading
+        which happens to say that nothing is true about the company.
+
+        No security answers with nothing. Not a delisted one, not a
+        token: a payload this empty is the provider declining, and a
+        caller that cannot tell the two apart caches the refusal as
+        knowledge. McDonald's spent a day reported as a company whose
+        quality had not been measured, from one rate-limited call.
+        """
+
+        return not any(
+            value is not None
+            for field, value in vars(self).items()
+            if field != "reading"
+        )

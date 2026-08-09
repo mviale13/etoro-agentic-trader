@@ -76,8 +76,21 @@ class CachedValueProvider:
         key = symbol.upper().strip()
         entry = self._cache.read(key)
 
-        if entry is not None and (not self._acquires or entry.is_from_today()):
-            return self._restore(entry)
+        held = self._restore(entry) if entry is not None else None
+
+        # An entry carrying no figure at all is a refusal that was cached
+        # as a reading, before the provider learned to raise on one. It is
+        # treated as nothing held, so an acquisition reads the company
+        # again instead of being told it already has it — twelve companies
+        # were stored this way, and `is_from_today` would have served
+        # McDonald's as unmeasured until midnight.
+        if held is not None and held.carries_nothing:
+            held = None
+            entry = None
+
+        if held is not None and entry is not None:
+            if not self._acquires or entry.is_from_today():
+                return held
 
         if not self._acquires:
             return UNREAD
