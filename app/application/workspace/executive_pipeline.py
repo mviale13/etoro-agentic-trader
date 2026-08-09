@@ -192,6 +192,9 @@ class ExecutivePipeline:
             # The scores today's decision was made on, so the thesis can
             # say what moved since the last one — not merely that it did.
             evidence=workspace.evidence,
+            # What kind of security this is, so a change in a token's
+            # quality is worded as its dossier words the score.
+            asset_class=brain.asset_class_for(symbol),
         )
 
         # What to consider doing about it. Not the decision restated: a

@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from app.domain.company_facts import CompanyFacts
 from app.domain.finding import Sense, statements, statements_where
+from app.domain.provenance import Provenance
 from app.services.crypto_quality_signal_service import (
     CryptoQualitySignalService,
 )
@@ -112,10 +113,45 @@ def test_a_token_is_never_called_a_company() -> None:
     lines = statements(build().evidence)
 
     assert not any("company" in line.lower() for line in lines)
-    assert any("Network value" in line for line in lines)
+    assert any("market value" in line for line in lines)
 
 
-def test_a_provider_zero_is_an_absence_and_never_a_network_value() -> None:
+def test_a_scale_reading_is_the_providers_claim_and_says_so() -> None:
+    """
+    The scale figure is one field read from one source, and it is worded
+    as that source's claim rather than as a network measurement.
+
+    "Network value is only $8,105" stood as Hyperliquid's invalidation
+    condition — a provider error dressed in this platform's most
+    authoritative vocabulary. The reading is kept; the dressing is not.
+    """
+
+    signal = build(
+        fundamentals_reading=Provenance(
+            source="Yahoo Finance",
+            observed_at=datetime.now(UTC),
+        ),
+    )
+
+    lines = statements(signal.evidence)
+
+    assert any(
+        line.startswith("Yahoo Finance reports a market value") for line in lines
+    )
+    assert not any("Network value" in line for line in lines)
+
+
+def test_an_unattributed_scale_reading_still_names_a_source() -> None:
+    """A reading with no named source is still somebody's claim."""
+
+    lines = statements(build().evidence)
+
+    assert any(
+        line.startswith("The data provider reports a market value") for line in lines
+    )
+
+
+def test_a_provider_zero_is_an_absence_and_never_a_market_value() -> None:
     """
     Bittensor came back with a market cap of exactly 0.
 
@@ -129,11 +165,11 @@ def test_a_provider_zero_is_an_absence_and_never_a_network_value() -> None:
 
     signal = build(market_cap=0.0, volume_24h=144.0)
 
-    assert not any("Network value" in line for line in statements(signal.evidence))
+    assert not any("market value" in line for line in statements(signal.evidence))
     assert not any("$0.00bn" in line for line in statements(signal.evidence))
 
 
-def test_a_network_value_is_shown_at_a_unit_that_shows_it() -> None:
+def test_a_market_value_is_shown_at_a_unit_that_shows_it() -> None:
     """
     Hyperliquid came back as 8,105 dollars, which printed as "$0.00bn".
 

@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.asset_class import AssetClass
 from app.domain.finding import Sense
 
 
@@ -89,6 +90,36 @@ SCORE_LABELS: dict[str, str] = {
     "safety": "Safety",
     "portfolio_fit": "Portfolio fit",
 }
+
+
+#: The same five scores, named for a security with no business behind it.
+#:
+#: A token's quality score counts network scale, liquidity, issuance and
+#: age — real measurements, and none of them about a business. Labelling
+#: that column "Business quality" presented a crypto reading as a company
+#: judgment nobody made. Only the name changes: the score, its bands and
+#: its journal key are identical, which is why this is a second label map
+#: and not a second score.
+ASSET_SCORE_LABELS: dict[str, str] = {
+    **SCORE_LABELS,
+    "quality": "Asset quality",
+}
+
+
+def score_labels_for(asset_class: AssetClass | None) -> dict[str, str]:
+    """What each score is called for this kind of security.
+
+    Keyed on the one positive fact the platform holds about kind:
+    `has_no_company`. An UNKNOWN asset class keeps the company labels —
+    saying "Asset quality" about an unclassified security would assert a
+    kind nobody established, the same substitution the asset classes
+    themselves refuse.
+    """
+
+    if asset_class is not None and asset_class.has_no_company:
+        return ASSET_SCORE_LABELS
+
+    return SCORE_LABELS
 
 
 @dataclass(frozen=True, slots=True)

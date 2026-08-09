@@ -19,6 +19,34 @@ from app.api.models.synthesis import DecisionSynthesisResponse
 from app.api.models.understanding import UnderstandingResponse
 
 
+class DossierDefinitionResponse(BaseModel):
+    """What kind of investment case this dossier is, declared by the backend.
+
+    The asset-specific definition beneath the shared shell: what the case
+    is titled, how the classification card is headed, and whether
+    filing-grade sections apply to this subject at all. The page renders
+    these strings and decides nothing — an equity and a crypto dossier
+    differ because the domain says so, never because a surface inferred
+    an asset class.
+    """
+
+    kind: str
+
+    #: What the case is called at the top of the page.
+    title: str
+
+    #: The heading over the playbook card. A company has a company type;
+    #: a token has an asset type.
+    classification_heading: str
+
+    #: Whether filing-grade understanding belongs on this dossier. False
+    #: where the subject publishes no filings — then the reason says so
+    #: as a property of the asset class, never as missing evidence, and
+    #: the understanding sections are not sent at all.
+    filings_apply: bool
+    filings_inapplicable_because: str | None
+
+
 class ProvenanceResponse(BaseModel):
     """Where a reading came from, and how old it is."""
 
@@ -230,6 +258,13 @@ class ScoreResponse(BaseModel):
 
     value: int | None
 
+    #: What this score is called on this dossier, worded by the domain's
+    #: dossier definition. The same reading is "Business quality" on an
+    #: equity and "Asset quality" on a token: the number and its bands
+    #: are identical, and the label is what stops a network reading
+    #: presenting itself as a judgment about a business.
+    label: str
+
     #: The one sentence that turns the reading into the number, worded
     #: where the score is computed. Never assembled here.
     basis: str
@@ -311,6 +346,12 @@ class DossierResponse(BaseModel):
     """One complete investment case, as the Artificial CIO holds it."""
 
     symbol: str
+
+    # ── What kind of case this is ───────────────────────────────────
+    #: The asset-specific definition beneath the shared shell: title,
+    #: classification heading, and which sections belong. Declared here
+    #: so no surface infers an asset class from the shape of the data.
+    definition: DossierDefinitionResponse
 
     # ── The decision ────────────────────────────────────────────────
     decision_state: str
