@@ -31,6 +31,9 @@ SETTINGS_READERS = (
     "app.services.executive_writer_service",
     "app.services.company_knowledge_reader",
     "app.services.narrative_providers",
+    # Not a model, but the same failure mode: a metered third-party
+    # key whose allowance a test could quietly spend.
+    "app.providers.token_insight_provider",
 )
 
 #: Every variable that could turn a reading or a drafting on, or hand it
@@ -44,6 +47,7 @@ MODEL_ENVIRONMENT = (
     "OPENAI_API_KEY",
     "ANTHROPIC_API_KEY",
     "ANTHROPIC_AUTH_TOKEN",
+    "TOKENINSIGHT_API_KEY",
 )
 
 

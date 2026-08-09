@@ -35,6 +35,37 @@ class ProvenanceResponse(BaseModel):
     last_known: bool
 
 
+class RatingDimensionResponse(BaseModel):
+    label: str
+    score: float
+
+
+class TokenRatingResponse(BaseModel):
+    """A named third party's published rating, carried as theirs.
+
+    Not evidence and not this platform's judgement. It is rendered
+    attributed and linked, and it reaches no score, no playbook and no
+    decision — the Yahoo boundary, applied to an opinion instead of a
+    label.
+    """
+
+    source: str
+    name: str
+    level: str
+    score: float
+    dimensions: list[RatingDimensionResponse]
+
+    #: When the rater last reviewed it, which is the date that matters.
+    reviewed_at: datetime | None
+
+    #: Where the investor can go and check it themselves.
+    page_url: str | None
+    report_url: str | None
+
+    #: When this platform read it.
+    read: ProvenanceResponse
+
+
 class CommitteeUncertaintyResponse(BaseModel):
     """One thing a committee could not settle, and whether looking again helps."""
 
@@ -351,6 +382,10 @@ class DossierResponse(BaseModel):
     # ── Provenance ──────────────────────────────────────────────────
     #: When the security's own evidence was read. None where none was.
     evidence_as_of: ProvenanceResponse | None
+
+    #: A third party's published rating of this token, where one has
+    #: been read. Shown, attributed, and consumed by nothing.
+    token_rating: TokenRatingResponse | None = None
 
     # ── The narrative (Communication layer, optional) ───────────────
     #: The case in words, or null with the reason beside it. Exactly one

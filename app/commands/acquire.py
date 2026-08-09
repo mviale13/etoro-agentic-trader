@@ -60,6 +60,16 @@ def _render(acquired: MarketAcquisition) -> None:
     else:
         print("  USD -> EUR   not read, so the euro figures stay absent")
 
+    # Somebody else's published rating, read for the tokens this platform
+    # can say least about. Counted, because it is a metered allowance.
+    rated = [security for security in acquired.securities if security.rating]
+
+    if rated:
+        print(
+            f"  Ratings      {len(rated)} tokens "
+            f"({', '.join(security.symbol for security in rated)})"
+        )
+
     thin = [
         security
         for security in acquired.securities

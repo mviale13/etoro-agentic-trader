@@ -32,6 +32,11 @@ class AcquiredSecurity:
     #: not knowing.
     calendar: bool | None
 
+    #: The store now holds a third party's published rating. `None`
+    #: where the question does not apply — only a token is rated, and
+    #: the rating is context the platform shows, never evidence it uses.
+    rating: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""

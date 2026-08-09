@@ -24,6 +24,7 @@ import type {
   DossierScore,
   DossierSynthesis,
   DossierSynthesisFact,
+  DossierTokenRating,
   DossierUnderstanding,
   DossierViewModel,
 } from "@/lib/api/dossier";
@@ -131,7 +132,129 @@ function Unavailable({
  * from one it failed to answer — so coverage lists every analysis,
  * including the ones the playbook does not run, each with its reason.
  */
-function Playbook({ playbook }: { playbook: DossierPlaybook }) {
+/**
+ * The one reason every skipped analyst gives, where they all give it.
+ *
+ * Null as soon as they differ — then each analyst's own reason is the
+ * only honest thing to print beside it.
+ */
+function sharedReason(playbook: DossierPlaybook): string | null {
+  const skipped = playbook.coverage.filter((item) => !item.covered);
+
+  if (skipped.length < 2 || skipped.length !== playbook.coverage.length) {
+    return null;
+  }
+
+  const reasons = new Set(skipped.map((item) => item.reason ?? ""));
+
+  const only = [...reasons][0];
+
+  return reasons.size === 1 && only ? only : null;
+}
+
+/**
+ * Somebody else's rating of this token, under their name.
+ *
+ * Where this platform's own analysts have nothing to read — a token
+ * publishes no financial statements — a rater who publishes six
+ * dimensions and a review date says more than an empty card does. It is
+ * attributed and linked so the investor can check it, and it is
+ * consumed by nothing: no score, no playbook, no decision.
+ */
+function TokenRating({ rating }: { rating: DossierTokenRating }) {
+  const reviewed = rating.reviewedAt
+    ? new Date(rating.reviewedAt).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
+  return (
+    <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Third-party rating
+        </p>
+
+        <p className="text-xs text-slate-500">
+          {rating.source}&apos;s opinion, not this platform&apos;s
+        </p>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-baseline gap-3">
+        <span className="text-3xl font-semibold tracking-[-0.03em] text-slate-950">
+          {rating.level}
+        </span>
+
+        <span className="text-lg text-slate-600">
+          {rating.score.toFixed(0)}/100
+        </span>
+
+        {/* The date the rating was reviewed, not the date it was read.
+            A rating reviewed two years ago is a two-year-old opinion
+            however recently it was fetched. */}
+        {reviewed ? (
+          <span className="text-sm text-slate-500">
+            last reviewed {reviewed}
+          </span>
+        ) : null}
+      </div>
+
+      <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {rating.dimensions.map((dimension) => (
+          <div key={dimension.label}>
+            <dt className="text-xs text-slate-500">{dimension.label}</dt>
+
+            <dd className="mt-0.5 text-lg font-medium tabular-nums text-slate-900">
+              {dimension.score.toFixed(0)}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-5 text-xs leading-5 text-slate-500">
+        Published by {rating.source} and shown as read. It is not evidence
+        this platform gathered and reaches none of its scores or decisions.
+        {rating.read ? ` Read ${rating.read.age}.` : ""}
+      </p>
+
+      {rating.pageUrl || rating.reportUrl ? (
+        <p className="mt-2 flex flex-wrap gap-4 text-sm font-medium">
+          {rating.pageUrl ? (
+            <a
+              className="text-slate-900 underline underline-offset-4"
+              href={rating.pageUrl}
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              {rating.source} rating page
+            </a>
+          ) : null}
+
+          {rating.reportUrl ? (
+            <a
+              className="text-slate-900 underline underline-offset-4"
+              href={rating.reportUrl}
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              Full report
+            </a>
+          ) : null}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function Playbook({
+  playbook,
+  rating,
+}: {
+  playbook: DossierPlaybook;
+  rating: DossierTokenRating | null;
+}) {
   return (
     <section
       aria-labelledby="playbook-heading"
@@ -207,7 +330,12 @@ function Playbook({ playbook }: { playbook: DossierPlaybook }) {
                 >
                   {item.label}
 
-                  {item.reason ? (
+                  {/* A reason every skipped analyst shares is printed once,
+                      below. Four analysts each saying "a digital asset
+                      publishes no financial statements" is one fact, told
+                      four times, filling the card a token has least to
+                      put in. */}
+                  {item.reason && !sharedReason(playbook) ? (
                     <span className="block text-slate-500">
                       Not applicable — {item.reason}
                     </span>
@@ -216,8 +344,16 @@ function Playbook({ playbook }: { playbook: DossierPlaybook }) {
               </li>
             ))}
           </ul>
+
+          {sharedReason(playbook) ? (
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              None of them apply: {sharedReason(playbook)}
+            </p>
+          ) : null}
         </div>
       ) : null}
+
+      {rating ? <TokenRating rating={rating} /> : null}
     </section>
   );
 }
@@ -235,7 +371,9 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
         <NarrativeAbsence reason={dossier.narrativeAbsent} />
       ) : null}
 
-      {dossier.playbook ? <Playbook playbook={dossier.playbook} /> : null}
+      {dossier.playbook ? (
+        <Playbook playbook={dossier.playbook} rating={dossier.tokenRating} />
+      ) : null}
 
       <WhatChanged dossier={dossier} />
       <Recommendation dossier={dossier} />
