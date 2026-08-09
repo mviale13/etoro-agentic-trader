@@ -5,9 +5,9 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
-from app.application.committees.models.committee_opinion import CommitteeOpinion
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.config import get_settings
+from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.thesis.investment_thesis import InvestmentThesis
 from app.providers.narrative_provider import NarrativeProvider

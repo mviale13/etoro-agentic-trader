@@ -7,13 +7,12 @@ from dataclasses import dataclass
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
-from app.application.committees.models.committee_opinion import (
-    CommitteeOpinion,
-)
 from app.brain.brain import Brain
+from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive.executive_brief import ExecutiveBrief
 from app.domain.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.finding import FindingLedger
 from app.domain.thesis import InvestmentThesis
 
 
@@ -28,6 +27,11 @@ class ExecutiveWorkspace:
     symbol: str
     brain: Brain
     reasoning: ReasoningSnapshot | None = None
+
+    #: Every finding read about this security, addressable. Gathered
+    #: before the committees so their opinions can reference it.
+    findings: FindingLedger = FindingLedger()
+
     committee_opinions: tuple[CommitteeOpinion, ...] = ()
     #: The scores the decision was actually made on.
     evidence: DecisionEvidence | None = None

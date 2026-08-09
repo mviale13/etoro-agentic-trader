@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.cio.decision_state import DecisionState
 from app.domain.asset_class import AssetClass
+from app.domain.committee.opinion import CommitteeOpinion
+from app.domain.finding import FindingLedger
 from app.domain.provenance import Provenance
 from app.domain.score_basis import ScoreBases
 
@@ -116,6 +118,23 @@ class DecisionEvidence(BaseModel):
     #: The findings that argue against this security.
     risks: tuple[str, ...] = ()
 
+    #: The canonical findings themselves, each addressable.
+    #:
+    #: `evidence_weighed`, `strengths` and `risks` above are this
+    #: ledger flattened to text, kept because every existing surface
+    #: reads them. They are a projection, not a second source: anything
+    #: that needs to know which reading produced a finding, or to point
+    #: at one without restating it, asks the ledger.
+    findings: FindingLedger = FindingLedger()
+
+    #: What each committee concluded, and on which findings.
+    #:
+    #: Carried on the evidence so the Artificial CIO can preserve them
+    #: verbatim on the decision. A committee's position is part of the
+    #: record of how a decision was reached, and a record that kept
+    #: only the outcome could never show that a committee dissented.
+    opinions: tuple[CommitteeOpinion, ...] = ()
+
     #: Risks belonging to the account and the market rather than to the
     #: security, plus the behavioural risks of acting against policy.
     #: Identical under every symbol, and kept apart for that reason.
@@ -141,6 +160,13 @@ class ExecutiveDecision(BaseModel):
     evidence_weighed: tuple[str, ...] = ()
     key_strengths: tuple[str, ...] = ()
     key_risks: tuple[str, ...] = ()
+
+    #: The findings this decision was reached over, addressable, and the
+    #: committee positions taken on them — preserved verbatim, including
+    #: the ones that did not prevail. A decision that recorded only its
+    #: own outcome could be read but not audited.
+    findings: FindingLedger = FindingLedger()
+    opinions: tuple[CommitteeOpinion, ...] = ()
     context_risks: tuple[str, ...] = ()
     missing_evidence: tuple[str, ...] = ()
     catalysts: tuple[str, ...] = ()

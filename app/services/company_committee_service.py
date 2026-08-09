@@ -1,5 +1,6 @@
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_signals import CompanySignals
+from app.domain.finding import Dimension
 
 
 class CompanyCommitteeService:
@@ -24,10 +25,15 @@ class CompanyCommitteeService:
         recommendation = self._recommendation(score)
         confidence = round(50 + abs(score) * 50)
 
+        # Attributed here because here is where the producing signal is
+        # known by name. A later layer reading this flat list cannot tell
+        # a valuation finding from a quality one except by its wording,
+        # and a committee whose remit was matched on wording would be
+        # guessing at exactly the thing this composition already knows.
         evidence = (
-            *signals.value.evidence,
-            *signals.quality.evidence,
-            *signals.momentum.evidence,
+            *(item.about(Dimension.VALUATION) for item in signals.value.evidence),
+            *(item.about(Dimension.QUALITY) for item in signals.quality.evidence),
+            *(item.about(Dimension.MOMENTUM) for item in signals.momentum.evidence),
         )
 
         return CompanyRecommendation(

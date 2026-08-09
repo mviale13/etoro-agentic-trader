@@ -9,20 +9,24 @@ from typing import Any
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
-from app.application.committees.models.committee_opinion import (
-    CommitteeOpinion,
-    Recommendation,
-)
 from app.application.executive.portfolio_fit import (
     PortfolioFit,
     PortfolioFitMeasure,
 )
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
+from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_research import CompanyResearch
 from app.domain.executive_decision import DecisionEvidence
-from app.domain.finding import Finding, Sense, statements, statements_where
+from app.domain.finding import (
+    Dimension,
+    Finding,
+    FindingLedger,
+    Sense,
+    statements,
+    statements_where,
+)
 from app.domain.opinion import Opinion
 from app.domain.risk_signal import RiskSignal
 from app.domain.score_basis import ScoreBases, ScoreBasis, ScoreKind
@@ -68,12 +72,39 @@ class DecisionEvidenceBuilder:
         "EXPENSIVE": 25,
     }
 
+    def ledger(
+        self,
+        symbol: str,
+        brain: Brain,
+        today: date | None = None,
+    ) -> FindingLedger:
+        """Every finding read about this security, each one addressable.
+
+        Built before the committees run, because a committee states its
+        position by *reference* into this ledger and cannot compose one
+        against a list that does not exist yet. The evidence builder
+        owns it because the evidence builder is where the findings were
+        already being gathered — this only stops them being flattened
+        into strings on the way out.
+        """
+
+        company = brain.security_evidence(symbol)
+
+        return FindingLedger.of(
+            self._company_findings(
+                company,
+                today if today is not None else datetime.now(UTC).date(),
+            )
+        )
+
     def build(
         self,
         symbol: str,
         brain: Brain,
         reasoning: ReasoningSnapshot,
         committee_opinions: tuple[CommitteeOpinion, ...],
+        findings: FindingLedger | None = None,
+        today: date | None = None,
     ) -> DecisionEvidence:
         portfolio = reasoning.portfolio
         market = reasoning.market
@@ -83,7 +114,10 @@ class DecisionEvidenceBuilder:
 
         # Scheduling is measured against a day, and the day is read once
         # here so every sentence in this case counts from the same one.
-        today = datetime.now(UTC).date()
+        # A caller that already built the ledger passes its own day in,
+        # so the ledger the committees pointed at and the evidence built
+        # beside it cannot straddle midnight and disagree.
+        today = today if today is not None else datetime.now(UTC).date()
 
         investment = next(
             (
@@ -126,13 +160,15 @@ class DecisionEvidenceBuilder:
         # reader nothing about the one in front of them. They are still
         # weighed — as scores, and as the context the case is set in — but
         # they are not evidence about a security.
-        findings = tuple(dict.fromkeys(self._company_findings(company, today)))
+        ledger = findings if findings is not None else self.ledger(symbol, brain, today)
 
-        evidence_weighed = statements(findings)
+        weighed = ledger.findings
 
-        strengths = statements_where(findings, Sense.FAVOURABLE)
+        evidence_weighed = statements(weighed)
 
-        risks = statements_where(findings, Sense.ADVERSE)
+        strengths = statements_where(weighed, Sense.FAVOURABLE)
+
+        risks = statements_where(weighed, Sense.ADVERSE)
 
         context_risks = tuple(
             dict.fromkeys(
@@ -185,6 +221,12 @@ class DecisionEvidenceBuilder:
             evidence_weighed=evidence_weighed,
             strengths=strengths,
             risks=risks,
+            # The same findings, unflattened, plus the positions the
+            # committees took over them. Carried so the decision can
+            # preserve both and the synthesis can name which committee
+            # each part of its reasoning came from.
+            findings=ledger,
+            opinions=committee_opinions,
             context_risks=context_risks,
             missing_evidence=self._missing_evidence(company, symbol, asset_class),
             catalysts=catalysts,
@@ -517,9 +559,14 @@ class DecisionEvidenceBuilder:
         if company is not None:
             return company.recommendation == "BUY"
 
-        return investment is not None and investment.recommendation in (
-            Recommendation.BUY,
-            Recommendation.STRONG_BUY,
+        # A committee states a position, never an action, so what stands
+        # in for a missing security verdict is the direction its opinion
+        # points. An abstention is not a positive stance and never
+        # clears this: `stance` is None there, and None is not positive.
+        return (
+            investment is not None
+            and investment.stance is not None
+            and investment.stance.is_positive
         )
 
     @staticmethod
@@ -564,9 +611,16 @@ class DecisionEvidenceBuilder:
 
         risk = company.signals.risk
 
+        # `company.evidence` arrives already attributed, by the service
+        # that composed it from the value, quality and momentum signals.
+        # The three below are attributed here for the same reason: this
+        # is the site that knows which reading produced them.
         return (
             *company.evidence,
-            *(risk.evidence if risk is not None else ()),
+            *(
+                item.about(Dimension.RISK)
+                for item in (risk.evidence if risk is not None else ())
+            ),
             *DecisionEvidenceBuilder._research_findings(company.signals.research),
             *DecisionEvidenceBuilder._earnings_findings(company, today),
         )
@@ -602,7 +656,8 @@ class DecisionEvidenceBuilder:
         if schedule.window is None:
             return (
                 Finding.neutral(
-                    f"No upcoming earnings date is published for {company.symbol}."
+                    f"No upcoming earnings date is published for {company.symbol}.",
+                    Dimension.SCHEDULE,
                 ),
             )
 
@@ -611,7 +666,8 @@ class DecisionEvidenceBuilder:
 
         return (
             Finding.neutral(
-                f"{schedule.window.stated(today)} No next date is published yet."
+                f"{schedule.window.stated(today)} No next date is published yet.",
+                Dimension.SCHEDULE,
             ),
         )
 
@@ -668,12 +724,12 @@ class DecisionEvidenceBuilder:
         )
 
         if opinion.score >= 75:
-            return Finding.favourable(statement)
+            return Finding.favourable(statement, Dimension.RESEARCH)
 
         if opinion.score <= 40:
-            return Finding.adverse(statement)
+            return Finding.adverse(statement, Dimension.RESEARCH)
 
-        return Finding.neutral(statement)
+        return Finding.neutral(statement, Dimension.RESEARCH)
 
     @staticmethod
     def _missing_evidence(

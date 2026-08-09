@@ -163,14 +163,20 @@ def test_the_reading_names_its_subject_as_data_not_only_in_prose() -> None:
 
 
 def committee_evidence(asset_class: str | None) -> tuple[str, ...]:
-    """The facts the Investment Committee weighed about one holding."""
+    """The context facts that bear on a holding of this class.
+
+    This used to read the Investment Committee's own evidence list,
+    because that is where the defect appeared. The committee no longer
+    carries context at all — it states a position over findings in its
+    remit, and the portfolio and the market reach the investor as
+    context, labelled as context — so the filter is exercised where it
+    now lives. The claim under test is unchanged.
+    """
 
     from dataclasses import replace
 
     from app.application.brain.reasoning import ReasoningService
-    from app.application.committees.investment_committee import (
-        InvestmentCommittee,
-    )
+    from app.application.brain.reasoning.models.assessment import evidence_about
     from app.domain.portfolio_position import PortfolioPosition
     from tests.test_security_evidence import make_company
 
@@ -193,13 +199,62 @@ def committee_evidence(asset_class: str | None) -> tuple[str, ...]:
         evidence={"MSFT": (make_company("MSFT"),)},
     ).build()
 
-    opinion = InvestmentCommittee().review(
-        knowledge,
-        ReasoningService().reason(knowledge),
-        "MSFT",
+    reasoning = ReasoningService().reason(knowledge)
+
+    bearing = evidence_about(
+        (*reasoning.portfolio.evidence, *reasoning.market.evidence),
+        knowledge.asset_class_for("MSFT"),
     )
 
-    return tuple(item.description for item in opinion.evidence)
+    return tuple(item.description for item in bearing)
+
+
+def test_a_committee_carries_no_market_context_at_all() -> None:
+    """
+    The structural repair, above and beyond the filter.
+
+    A committee that weighed the account and the market held an opinion
+    that was partly about neither the security nor anything the investor
+    asked about — identical under every symbol. It now states a position
+    over findings in its own remit and carries nothing else, so the
+    class of defect the filter catches cannot reach a committee at all.
+    """
+
+    from dataclasses import replace
+
+    from app.application.committees.investment_committee import (
+        InvestmentCommittee,
+    )
+    from app.application.executive.decision_evidence_builder import (
+        DecisionEvidenceBuilder,
+    )
+    from app.domain.portfolio_position import PortfolioPosition
+    from tests.test_security_evidence import make_company
+
+    holding = PortfolioPosition(
+        symbol="MSFT",
+        quantity=1.0,
+        invested_usd=100.0,
+        market_value_usd=100.0,
+        unrealized_pnl_usd=0.0,
+        asset_class="stock",
+        instrument_id=1,
+    )
+
+    knowledge = BrainBuilder(
+        portfolio=replace(make_portfolio(), holdings=(holding,)),
+        market=perceive(SentimentStub(reading())),
+        investment_policy=make_policy(),
+        evidence={"MSFT": (make_company("MSFT"),)},
+    ).build()
+
+    ledger = DecisionEvidenceBuilder().ledger("MSFT", knowledge)
+
+    opinion = InvestmentCommittee().review(knowledge, "MSFT", ledger)
+
+    # Everything it stands on resolves to a finding read about MSFT.
+    for ref in (*opinion.supporting, *opinion.opposing):
+        assert ledger.resolve(ref) is not None
 
 
 def test_a_stock_is_never_judged_beside_the_crypto_fear_index() -> None:

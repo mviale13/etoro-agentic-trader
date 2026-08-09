@@ -24,20 +24,34 @@ export interface DossierProvenance {
   lastKnown: boolean;
 }
 
-export interface DossierCommitteeEvidence {
-  statement: string;
-  source: string;
+/** One thing a committee could not settle, and whether looking again helps. */
+export interface DossierCommitteeUncertainty {
+  kind: string;
+  about: string;
+  /** False for a question no layer of the platform answers. Never shown
+      as pending: that would promise a measurement that is not coming. */
+  resolvable: boolean;
 }
 
 export interface DossierCommitteeOpinion {
   committee: string;
-  recommendation: string;
-  /** How sure the committee is of its own view. Null when it abstained. */
-  confidence: number | null;
+  /** Where the committee stands — never what to do about it. Null when
+      it abstained. Only the Artificial CIO names an action. */
+  stance: string | null;
   /** An abstention is not opposition, and is never rendered as one. */
   abstained: boolean;
+  abstainedBecause: string | null;
+  /** Worded by the backend with its own counts. Never a bare percentage:
+      it measures the reading, not the security. */
+  confidence: string | null;
+  /** The named rule that produced the stance. */
+  decidedBy: string;
   summary: string;
-  evidence: readonly DossierCommitteeEvidence[];
+  /** The findings the position stands on, resolved from the case's own
+      ledger. The order is the order read, and is not a ranking. */
+  supporting: readonly string[];
+  opposing: readonly string[];
+  uncertainty: readonly DossierCommitteeUncertainty[];
 }
 
 /**
@@ -191,6 +205,25 @@ export interface DossierSynthesisFact {
   statement: string;
   /** "established" — from the filing, checked. "assessed" — an analyst. */
   origin: string;
+  /** Which committee stood on it. Null where no remit covers it. */
+  committee: string | null;
+}
+
+/** One thing a named committee could not settle. */
+export interface DossierUncertainty {
+  committee: string;
+  kind: string;
+  about: string;
+  resolvable: boolean;
+}
+
+/** Why this conclusion prevailed over the one that did not. */
+export interface DossierDeliberation {
+  agreement: string;
+  prevailed: string;
+  /** The position that did not carry. Null where none contradicted it. */
+  over: string | null;
+  because: string;
 }
 
 /** A named condition for looking at the decision again. */
@@ -210,10 +243,17 @@ export interface DossierSynthesis {
   despiteAbsent: string | null;
   reviewIf: readonly DossierReviewCondition[];
   reviewIfAbsent: string | null;
+  /** What is not yet known — its own part, never a reason against. */
+  uncertainty: readonly DossierUncertainty[];
+  uncertaintyAbsent: string | null;
+  /** Why the positives outweigh the negatives, or the reverse. */
+  deliberation: DossierDeliberation | null;
   /** What the filing establishes — carried, and not consumed by the decision. */
   established: readonly DossierSynthesisFact[];
   /** Whether the investor is given anything to disagree with. */
   challengeable: boolean;
+  /** Whether the conclusion shows an argument rather than a checklist. */
+  deliberated: boolean;
 }
 
 /** How firmly one claim is held, as the readings counted. */
@@ -414,26 +454,49 @@ function parseCommittees(
 
   return value.filter(isRecord).map((opinion, index) => ({
     committee: requireString(opinion.committee, `committees[${index}].committee`),
-    recommendation: requireString(
-      opinion.recommendation,
-      `committees[${index}].recommendation`,
-    ),
-    confidence: optionalNumber(opinion.confidence),
+    stance: optionalString(opinion.stance, `committees[${index}].stance`),
     abstained: opinion.abstained === true,
+    abstainedBecause: optionalString(
+      opinion.abstained_because,
+      `committees[${index}].abstained_because`,
+    ),
+    confidence: optionalString(
+      opinion.confidence,
+      `committees[${index}].confidence`,
+    ),
+    decidedBy: requireString(
+      opinion.decided_by,
+      `committees[${index}].decided_by`,
+    ),
     summary: requireString(opinion.summary, `committees[${index}].summary`),
-    evidence: Array.isArray(opinion.evidence)
-      ? opinion.evidence.filter(isRecord).map((item, itemIndex) => ({
-          statement: requireString(
-            item.statement,
-            `committees[${index}].evidence[${itemIndex}].statement`,
+    supporting: parseStatements(
+      opinion.supporting,
+      `committees[${index}].supporting`,
+    ),
+    opposing: parseStatements(
+      opinion.opposing,
+      `committees[${index}].opposing`,
+    ),
+    uncertainty: Array.isArray(opinion.uncertainty)
+      ? opinion.uncertainty.filter(isRecord).map((item, itemIndex) => ({
+          kind: requireString(
+            item.kind,
+            `committees[${index}].uncertainty[${itemIndex}].kind`,
           ),
-          source: requireString(
-            item.source,
-            `committees[${index}].evidence[${itemIndex}].source`,
+          about: requireString(
+            item.about,
+            `committees[${index}].uncertainty[${itemIndex}].about`,
           ),
+          resolvable: item.resolvable === true,
         }))
       : [],
   }));
+}
+
+function parseStatements(value: unknown, field: string): string[] {
+  const items = Array.isArray(value) ? value : [];
+
+  return items.map((item, index) => requireString(item, `${field}[${index}]`));
 }
 
 function parseAgreement(
@@ -671,6 +734,7 @@ function parseSynthesisFacts(
     return {
       statement: requireString(item.statement, `${field}[${index}].statement`),
       origin: requireString(item.origin, `${field}[${index}].origin`),
+      committee: optionalString(item.committee, `${field}[${index}].committee`),
     };
   });
 }
@@ -723,6 +787,44 @@ function parseSynthesis(value: unknown): DossierSynthesis | null {
       value.review_if_absent,
       "synthesis.review_if_absent",
     ),
+    uncertainty: (Array.isArray(value.uncertainty) ? value.uncertainty : [])
+      .filter(isRecord)
+      .map((item, index) => ({
+        committee: requireString(
+          item.committee,
+          `synthesis.uncertainty[${index}].committee`,
+        ),
+        kind: requireString(item.kind, `synthesis.uncertainty[${index}].kind`),
+        about: requireString(
+          item.about,
+          `synthesis.uncertainty[${index}].about`,
+        ),
+        resolvable: item.resolvable === true,
+      })),
+    uncertaintyAbsent: optionalString(
+      value.uncertainty_absent,
+      "synthesis.uncertainty_absent",
+    ),
+    deliberation: isRecord(value.deliberation)
+      ? {
+          agreement: requireString(
+            value.deliberation.agreement,
+            "synthesis.deliberation.agreement",
+          ),
+          prevailed: requireString(
+            value.deliberation.prevailed,
+            "synthesis.deliberation.prevailed",
+          ),
+          over: optionalString(
+            value.deliberation.over,
+            "synthesis.deliberation.over",
+          ),
+          because: requireString(
+            value.deliberation.because,
+            "synthesis.deliberation.because",
+          ),
+        }
+      : null,
     established: parseSynthesisFacts(
       value.established,
       "synthesis.established",
@@ -731,6 +833,7 @@ function parseSynthesis(value: unknown): DossierSynthesis | null {
       value.challengeable,
       "synthesis.challengeable",
     ),
+    deliberated: value.deliberated === true,
   };
 }
 

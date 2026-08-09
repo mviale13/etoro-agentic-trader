@@ -25,8 +25,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from app.application.committees.models.committee_opinion import CommitteeOpinion
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.executive_narrative import (
     NARRATIVE_SECTIONS,
     ExecutiveNarrative,
@@ -183,20 +183,27 @@ def build_findings(
     committee_statements: list[tuple[str, str]] = []
 
     for opinion in opinions:
-        if opinion.confidence is None:
+        if opinion.stance is None or opinion.confidence is None:
             committee_statements.append(
                 (
-                    f"The {opinion.committee} committee abstained — an "
-                    f"abstention, not opposition. {opinion.summary}",
+                    f"The {opinion.committee} abstained — an abstention, "
+                    f"not opposition. {opinion.abstained_because}",
                     f"CommitteeOpinion — {opinion.committee}",
                 )
             )
         else:
+            # A stance, never an action: a committee that told the writer
+            # it "recommends SELL" was handing a model the CIO's word.
+            #
+            # The confidence is stated by the object, which prints its
+            # own counts. Formatted here it was `{confidence:.0f}` over a
+            # 0-to-1 float, so every committee reported confidence 0 or 1
+            # to the model that wrote the investor's narrative.
             committee_statements.append(
                 (
-                    f"The {opinion.committee} committee recommends "
-                    f"{opinion.recommendation.value} at confidence "
-                    f"{opinion.confidence:.0f}. {opinion.summary}",
+                    f"The {opinion.committee} is {opinion.stance.stated} on "
+                    f"this security, at {opinion.confidence.stated()}, by "
+                    f"rule {opinion.decided_by}. {opinion.summary}",
                     f"CommitteeOpinion — {opinion.committee}",
                 )
             )
