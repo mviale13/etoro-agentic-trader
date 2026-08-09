@@ -1,0 +1,1206 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 12,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenues",
+            "printed": "58,283",
+            "value": 58283.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenues",
+              "printed": "58,283",
+              "value": 58283.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenues",
+              "printed": "53,512",
+              "value": 53512.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenues",
+              "printed": "46,254",
+              "value": 46254.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net earnings",
+            "printed": "17,176",
+            "value": 17176.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net earnings",
+              "printed": "17,176",
+              "value": 17176.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net earnings",
+              "printed": "14,276",
+              "value": 14276.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net earnings",
+              "printed": "8,516",
+              "value": 8516.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:20.852799+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 12,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenues",
+            "printed": "58,283",
+            "value": 58283.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenues",
+              "printed": "58,283",
+              "value": 58283.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenues",
+              "printed": "53,512",
+              "value": 53512.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenues",
+              "printed": "46,254",
+              "value": 46254.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net earnings",
+            "printed": "17,176",
+            "value": 17176.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net earnings",
+              "printed": "17,176",
+              "value": 17176.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net earnings",
+              "printed": "14,276",
+              "value": 14276.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net earnings",
+              "printed": "8,516",
+              "value": 8516.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:26.218278+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 12,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenues",
+            "printed": "58,283",
+            "value": 58283.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenues",
+              "printed": "58,283",
+              "value": 58283.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenues",
+              "printed": "53,512",
+              "value": 53512.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenues",
+              "printed": "46,254",
+              "value": 46254.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net earnings",
+            "printed": "17,176",
+            "value": 17176.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net earnings",
+              "printed": "17,176",
+              "value": 17176.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net earnings",
+              "printed": "14,276",
+              "value": 14276.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net earnings",
+              "printed": "8,516",
+              "value": 8516.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:32.436463+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 12,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenues",
+            "printed": "58,283",
+            "value": 58283.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenues",
+              "printed": "58,283",
+              "value": 58283.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenues",
+              "printed": "53,512",
+              "value": 53512.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenues",
+              "printed": "46,254",
+              "value": 46254.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net earnings",
+            "printed": "17,176",
+            "value": 17176.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net earnings",
+              "printed": "17,176",
+              "value": 17176.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net earnings",
+              "printed": "14,276",
+              "value": 14276.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net earnings",
+              "printed": "8,516",
+              "value": 8516.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:38.194764+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 12,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenues",
+            "printed": "58,283",
+            "value": 58283.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenues",
+              "printed": "58,283",
+              "value": 58283.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenues",
+              "printed": "53,512",
+              "value": 53512.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 12,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenues",
+              "printed": "46,254",
+              "value": 46254.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net earnings",
+            "printed": "17,176",
+            "value": 17176.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net earnings",
+              "printed": "17,176",
+              "value": 17176.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net earnings",
+              "printed": "14,276",
+              "value": 14276.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net earnings",
+              "printed": "8,516",
+              "value": 8516.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:44.270202+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "1,684,348",
+            "value": 1684348.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "1,684,348",
+              "value": 1684348.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "1,553,976",
+              "value": 1553976.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "124,972",
+            "value": 124972.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "124,972",
+              "value": 124972.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "121,996",
+              "value": 121996.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:51.319391+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "1,684,348",
+            "value": 1684348.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "1,684,348",
+              "value": 1684348.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "1,553,976",
+              "value": 1553976.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "124,972",
+            "value": 124972.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "124,972",
+              "value": 124972.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "121,996",
+              "value": 121996.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:21:56.535138+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "1,684,348",
+            "value": 1684348.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "1,684,348",
+              "value": 1684348.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "1,553,976",
+              "value": 1553976.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "124,972",
+            "value": 124972.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "124,972",
+              "value": 124972.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "121,996",
+              "value": 121996.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:01.101247+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "1,684,348",
+            "value": 1684348.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "1,684,348",
+              "value": 1684348.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "1,553,976",
+              "value": 1553976.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "124,972",
+            "value": 124972.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "124,972",
+              "value": 124972.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "121,996",
+              "value": 121996.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:05.484966+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "1,684,348",
+            "value": 1684348.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "1,684,348",
+              "value": 1684348.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "1,553,976",
+              "value": 1553976.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "124,972",
+            "value": 124972.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "124,972",
+              "value": 124972.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 6,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "121,996",
+              "value": 121996.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:10.180766+00:00",
+        "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "GOLDMAN SACHS GROUP INC",
+    "document_format": "html",
+    "identifier": "10-K 0000886982-26-000091",
+    "key": "0000886982-26-000091",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/886982/000088698226000091/gs-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-25",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "GS",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "GS"
+}

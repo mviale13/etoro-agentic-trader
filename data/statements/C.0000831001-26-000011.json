@@ -1,0 +1,196 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_equity",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        }
+      ],
+      "located_among": 2,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:27.257458+00:00",
+        "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_equity",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        }
+      ],
+      "located_among": 2,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:30.642970+00:00",
+        "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_equity",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        }
+      ],
+      "located_among": 2,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:33.160542+00:00",
+        "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_equity",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        }
+      ],
+      "located_among": 2,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:35.145802+00:00",
+        "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_equity",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        }
+      ],
+      "located_among": 2,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:38.173671+00:00",
+        "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "CITIGROUP INC",
+    "document_format": "html",
+    "identifier": "10-K 0000831001-26-000011",
+    "key": "0000831001-26-000011",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/831001/000083100126000011/c-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-20",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "C",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "C"
+}

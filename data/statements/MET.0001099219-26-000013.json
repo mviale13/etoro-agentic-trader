@@ -1,0 +1,676 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "77,084",
+            "value": 77084.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "77,084",
+              "value": 77084.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "70,986",
+              "value": 70986.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "66,905",
+              "value": 66905.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income (loss)",
+            "printed": "3,403",
+            "value": 3403.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income (loss)",
+              "printed": "3,403",
+              "value": 3403.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income (loss)",
+              "printed": "4,444",
+              "value": 4444.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income (loss)",
+              "printed": "1,602",
+              "value": 1602.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:06.641654+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "77,084",
+            "value": 77084.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "77,084",
+              "value": 77084.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "70,986",
+              "value": 70986.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "66,905",
+              "value": 66905.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income (loss)",
+            "printed": "3,403",
+            "value": 3403.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income (loss)",
+              "printed": "3,403",
+              "value": 3403.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income (loss)",
+              "printed": "4,444",
+              "value": 4444.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income (loss)",
+              "printed": "1,602",
+              "value": 1602.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:11.935708+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "77,084",
+            "value": 77084.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "77,084",
+              "value": 77084.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "70,986",
+              "value": 70986.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "66,905",
+              "value": 66905.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income (loss)",
+            "printed": "3,403",
+            "value": 3403.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income (loss)",
+              "printed": "3,403",
+              "value": 3403.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income (loss)",
+              "printed": "4,444",
+              "value": 4444.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income (loss)",
+              "printed": "1,602",
+              "value": 1602.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:16.162415+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "77,084",
+            "value": 77084.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "77,084",
+              "value": 77084.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "70,986",
+              "value": 70986.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "66,905",
+              "value": 66905.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income (loss)",
+            "printed": "3,403",
+            "value": 3403.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income (loss)",
+              "printed": "3,403",
+              "value": 3403.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income (loss)",
+              "printed": "4,444",
+              "value": 4444.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income (loss)",
+              "printed": "1,602",
+              "value": 1602.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:20.933178+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "77,084",
+            "value": 77084.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "77,084",
+              "value": 77084.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "70,986",
+              "value": 70986.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "66,905",
+              "value": 66905.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income (loss)",
+            "printed": "3,403",
+            "value": 3403.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income (loss)",
+              "printed": "3,403",
+              "value": 3403.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income (loss)",
+              "printed": "4,444",
+              "value": 4444.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income (loss)",
+              "printed": "1,602",
+              "value": 1602.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:26.130358+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "METLIFE INC",
+    "document_format": "html",
+    "identifier": "10-K 0001099219-26-000013",
+    "key": "0001099219-26-000013",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1099219/000109921926000013/met-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-19",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "MET",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "MET"
+}

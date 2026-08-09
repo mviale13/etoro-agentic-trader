@@ -1,0 +1,436 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:17.182959+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:24.854975+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:33.840907+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:42.878214+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "Years Ended December 31,",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "Years Ended December 31,",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:22:48.953127+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "HONEYWELL INTERNATIONAL INC",
+    "document_format": "html",
+    "identifier": "10-K 0000773840-26-000013",
+    "key": "0000773840-26-000013",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/773840/000077384026000013/hon-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-17",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "HON",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "HON"
+}

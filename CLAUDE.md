@@ -84,6 +84,12 @@ statements are three quorums and are asked for one at a time),
 `movrvest observe-statements SYMBOL [--statement KIND]` (the statement
 stream's explicit spend, to the quorum of 5; stops on the count, never
 the content),
+`movrvest statement-shape SYMBOL` (which figures the filer prints a line
+for, which it prints under a label this platform cannot read, and which
+statement was never located — the distinction a consensus's "no figure
+located" hides. Deterministic, no model, stores nothing; an absence
+counts as the filer's only where the statement was also *read*, which
+MUFG's 20-F earned),
 `movrvest financials SYMBOL [--model generic|bank]` (what those
 statements *measure* — margins, growth, ratios and cash flow computed
 by this platform from two checked cells apiece, each with the narrowest
