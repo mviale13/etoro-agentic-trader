@@ -536,6 +536,9 @@ async def dossier(
         thesis=thesis,
         evidence=evidence,
         opinions=workspace.committee_opinions,
+        # What kind of security this is, so a case with no company behind
+        # it is left as measured rather than written up.
+        asset_class=brain.asset_class_for(normalized_symbol),
     )
 
     return DossierResponse(

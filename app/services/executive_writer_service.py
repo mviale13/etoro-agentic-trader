@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.config import get_settings
+from app.domain.asset_class import AssetClass
 from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.thesis.investment_thesis import InvestmentThesis
@@ -124,7 +125,29 @@ class ExecutiveWriterService:
         thesis: InvestmentThesis,
         evidence: DecisionEvidence,
         opinions: tuple[CommitteeOpinion, ...],
+        asset_class: AssetClass | None = None,
     ) -> NarrativeOutcome:
+        # A security with no company behind it is not worded. Its case is
+        # ten findings, most of them absences, and asked to write five
+        # sections over that the writer filled the space with work this
+        # platform does not do: "prepare diligence and sizing plans",
+        # "build operational readiness and risk controls". No such
+        # diligence, sizing or controls exist. Every other sentence
+        # restated a finding printed directly beneath it.
+        #
+        # So the case stands as measured. It costs the investor fifteen
+        # seconds and a model call less, and loses no reading the
+        # structured case did not already give.
+        if asset_class is not None and asset_class.has_no_company:
+            return NarrativeOutcome(
+                narrative=None,
+                absent_reason=(
+                    "A digital asset's case is a short list of measurements "
+                    "and absences, and wording it added nothing the case "
+                    "below does not already say. It is left as measured."
+                ),
+            )
+
         if not self.enabled():
             return NarrativeOutcome(
                 narrative=None,

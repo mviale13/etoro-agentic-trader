@@ -1,18 +1,22 @@
 """The Executive Writer: language only, grounded or absent."""
 
+import asyncio
 from datetime import UTC, datetime
 
 import pytest
 
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.asset_class import AssetClass
 from app.domain.committee.opinion import (
     CommitteeOpinion,
     Confidence,
     Stance,
 )
 from app.domain.decision_history import DecisionTrend, TrendDirection
+from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.finding import Dimension
+from app.domain.provenance import Provenance
 from app.domain.thesis.investment_thesis import InvestmentThesis
 from app.providers.narrative_provider import (
     Draft,
@@ -483,3 +487,72 @@ async def test_a_rejected_draft_surfaces_its_reason(monkeypatch) -> None:
 
     assert outcome.narrative is None
     assert "different recommendation" in (outcome.absent_reason or "")
+
+
+def test_a_digital_asset_is_left_as_measured(monkeypatch) -> None:
+    """
+    A token's case is not worded, and not because the flag is off.
+
+    Asked to write five sections over ten findings — most of them
+    absences — the writer filled the space with work this platform does
+    not do: "prepare diligence and sizing plans", "build operational
+    readiness and risk controls". No such diligence, no sizing, no
+    controls. The rest restated findings printed directly beneath it,
+    for fifteen seconds and a model call per dossier.
+    """
+
+    monkeypatch.setenv(FLAG, "on")
+
+    class NeverAsked:
+        async def write(self, **_: object):  # pragma: no cover
+            raise AssertionError("a digital asset is not written up")
+
+    outcome = asyncio.run(
+        ExecutiveWriterService(writer=NeverAsked()).narrate(  # type: ignore[arg-type]
+            symbol="BTC",
+            decision=make_decision(),
+            thesis=make_thesis(),
+            evidence=make_evidence(),
+            opinions=(),
+            asset_class=AssetClass.CRYPTO,
+        )
+    )
+
+    assert outcome.narrative is None
+    assert outcome.absent_reason is not None
+    assert "left as measured" in outcome.absent_reason
+
+
+def test_a_company_is_still_written_up(monkeypatch) -> None:
+    """The rule is about securities with no company, not about the writer."""
+
+    monkeypatch.setenv(FLAG, "on")
+
+    asked: list[str] = []
+
+    class Recording:
+        async def write(self, *, symbol: str, **_: object):
+            asked.append(symbol)
+
+            return ExecutiveNarrative(
+                symbol=symbol,
+                headline="A headline",
+                recommendation="PREPARE",
+                sections=(),
+                findings=(),
+                model="stub",
+                written=Provenance(source="stub", observed_at=datetime.now(UTC)),
+            )
+
+    asyncio.run(
+        ExecutiveWriterService(writer=Recording()).narrate(  # type: ignore[arg-type]
+            symbol="AAPL",
+            decision=make_decision(),
+            thesis=make_thesis(),
+            evidence=make_evidence(),
+            opinions=(),
+            asset_class=AssetClass.STOCK,
+        )
+    )
+
+    assert asked == ["AAPL"]
