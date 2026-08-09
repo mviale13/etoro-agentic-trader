@@ -104,7 +104,7 @@ reading presented as the account: see
 (accepted). The store holds `CompanyKnowledgeObservation`s (schema 11,
 append-only); `consensus_of` derives on read; the decision path consumes
 `CompanyKnowledgeConsensus` only. Financial statement facts are their
-own observation stream (schema 2, `data/statements`, never pooled with
+own observation stream (schema 3, `data/statements`, never pooled with
 segment readings), one quorum per statement, with
 `FinancialUnderstanding` above them as the arithmetic layer
 `BusinessUnderstanding` is above narrative consensus: see
@@ -127,6 +127,25 @@ questions are refused. They are coupled today by `model_for`, which
 says it is a coupling. **Never change a playbook route to fix a
 financial interpretation**: see
 [`docs/architecture/PLAYBOOK_SELECTION.md`](docs/architecture/PLAYBOOK_SELECTION.md).
+
+Two measurements govern what may eventually replace that coupling, and
+both are load-bearing:
+
+- **Statement shape identifies a financial-institution family and
+  cannot select `BANK`** — 8 banks and 5 insurers match the JPMorgan
+  triad identically, and so does a filing this platform failed to read
+  ([`FINANCIAL_LANGUAGE_CORPUS.md`](docs/architecture/FINANCIAL_LANGUAGE_CORPUS.md)).
+- **Bank behaviour needs positive evidence of bank financial language,
+  never the absence of generic industrial concepts.** `StatementLanguage`
+  (`app/domain/statement_language.py`) supplies it from two printed
+  lines — a net interest subtotal, a premium revenue line — at 5/5 over
+  24 companies with no false positive either way
+  ([`FINANCIAL_LANGUAGE_EVIDENCE.md`](docs/architecture/FINANCIAL_LANGUAGE_EVIDENCE.md)).
+  It is acquired and **connected to nothing**; `model_for` is untouched.
+
+The standing guard on both: **a concept's absence is evidence only where
+the statement was located *and* read.** A statement establishing nothing
+looks identical to a bank's, an insurer's and an ordinary company's.
 
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)
