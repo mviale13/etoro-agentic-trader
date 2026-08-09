@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -101,15 +101,14 @@ class JsonEventRepository(EventRepository):
 
         return data
 
-    @staticmethod
+    @classmethod
     def _events_from_records(
+        cls,
         records: list[dict[str, Any]],
     ) -> list[Event]:
         return [
             Event(
-                timestamp=datetime.fromisoformat(
-                    str(record["timestamp"]),
-                ),
+                timestamp=cls._recorded_at(record["timestamp"]),
                 event_type=str(record["event_type"]),
                 symbol=(
                     str(record["symbol"]) if record.get("symbol") is not None else None
@@ -118,3 +117,25 @@ class JsonEventRepository(EventRepository):
             )
             for record in records
         ]
+
+    @staticmethod
+    def _recorded_at(timestamp: object) -> datetime:
+        """
+        When an event was recorded, as something the journal can order.
+
+        A stored timestamp with no zone is read as UTC. Every writer on
+        this platform stamps an aware one, so this is repair rather than
+        policy — and it is repair the journal cannot do without: one
+        writer stamped `datetime.now()` with no zone, and from the moment
+        that single event was written, sorting the journal raised and
+        every page built on the Brain returned a 500. One naive event out
+        of 475 took down the Brain and the dashboard permanently, because
+        nothing that reads the journal can get past it.
+
+        `JsonCache` already reads its own timestamps this way. A journal
+        is the one store that must survive its own history.
+        """
+
+        recorded = datetime.fromisoformat(str(timestamp))
+
+        return recorded if recorded.tzinfo is not None else recorded.replace(tzinfo=UTC)
