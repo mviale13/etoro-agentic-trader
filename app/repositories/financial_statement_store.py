@@ -60,7 +60,15 @@ from app.repositories.source_codec import (
 #: protocols would have to be re-argued at every locator change. The
 #: corpus is re-read instead; the cost of that discipline here is
 #: fifteen readings of one company.
-STATEMENT_SCHEMA_VERSION = 2
+#:
+#: 3 — the income statement is asked two more concepts, `net_interest_income`
+#: and `premium_revenue`, and the balance sheet accepts the parent's
+#: equity stated with the filer's own name. Both change what a reading is
+#: *asked*, not merely what it may answer: a schema-2 income-statement
+#: reading was never shown the two new concepts, so pooling it with a
+#: schema-3 one would report a concept as unaddressed by half the quorum
+#: and call that a property of the filing. The corpus is re-read.
+STATEMENT_SCHEMA_VERSION = 3
 
 
 class FinancialStatementStore(ABC):

@@ -73,11 +73,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:24.533292+00:00",
+        "observed_at": "2026-08-09T06:51:48.265128+00:00",
         "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -155,11 +167,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:30.121966+00:00",
+        "observed_at": "2026-08-09T06:51:54.089515+00:00",
         "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -237,11 +261,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:35.125009+00:00",
+        "observed_at": "2026-08-09T06:52:00.682285+00:00",
         "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -319,11 +355,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:40.504040+00:00",
+        "observed_at": "2026-08-09T06:52:07.152169+00:00",
         "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -401,17 +449,559 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:45.309188+00:00",
+        "observed_at": "2026-08-09T06:52:15.113365+00:00",
         "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 30,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "89,169",
+            "value": 89169.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "89,169",
+              "value": 89169.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "90,250",
+              "value": 90250.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total Allstate shareholders\u2019 equity",
+            "printed": "30,610",
+            "value": 30610.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "30,610",
+              "value": 30610.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "21,442",
+              "value": 21442.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:18.222608+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 30,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "89,169",
+            "value": 89169.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "89,169",
+              "value": 89169.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "90,250",
+              "value": 90250.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total Allstate shareholders\u2019 equity",
+            "printed": "30,610",
+            "value": 30610.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "30,610",
+              "value": 30610.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "21,442",
+              "value": 21442.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:23.055247+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 30,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "89,169",
+            "value": 89169.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "89,169",
+              "value": 89169.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "90,250",
+              "value": 90250.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total Allstate shareholders\u2019 equity",
+            "printed": "30,610",
+            "value": 30610.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "30,610",
+              "value": 30610.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "21,442",
+              "value": 21442.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:26.995020+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 30,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "89,169",
+            "value": 89169.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "89,169",
+              "value": 89169.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "90,250",
+              "value": 90250.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total Allstate shareholders\u2019 equity",
+            "printed": "30,610",
+            "value": 30610.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "30,610",
+              "value": 30610.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "21,442",
+              "value": 21442.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:31.753940+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 30,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "89,169",
+            "value": 89169.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "89,169",
+              "value": 89169.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "90,250",
+              "value": 90250.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Financial Position",
+            "cell": {
+              "column": 3,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total Allstate shareholders\u2019 equity",
+            "printed": "30,610",
+            "value": 30610.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "30,610",
+              "value": 30610.0
+            },
+            {
+              "caption": "Consolidated Statements of Financial Position",
+              "cell": {
+                "column": 5,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total Allstate shareholders\u2019 equity",
+              "printed": "21,442",
+              "value": 21442.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:36.876686+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "ALLSTATE CORP",

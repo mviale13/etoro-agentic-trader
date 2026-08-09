@@ -1,0 +1,736 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 3,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Gross Profit",
+            "printed": "29,544",
+            "value": 29544.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Gross Profit",
+              "printed": "29,544",
+              "value": 29544.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Gross Profit",
+              "printed": "28,737",
+              "value": 28737.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Gross Profit",
+              "printed": "27,234",
+              "value": 27234.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 6,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating Income",
+            "printed": "13,762",
+            "value": 13762.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating Income",
+              "printed": "13,762",
+              "value": 13762.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating Income",
+              "printed": "9,992",
+              "value": 9992.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating Income",
+              "printed": "11,311",
+              "value": 11311.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:55:03.120665+00:00",
+        "source": "10-K 0001628280-26-010047 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 3,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Gross Profit",
+            "printed": "29,544",
+            "value": 29544.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Gross Profit",
+              "printed": "29,544",
+              "value": 29544.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Gross Profit",
+              "printed": "28,737",
+              "value": 28737.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Gross Profit",
+              "printed": "27,234",
+              "value": 27234.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 6,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating Income",
+            "printed": "13,762",
+            "value": 13762.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating Income",
+              "printed": "13,762",
+              "value": 13762.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating Income",
+              "printed": "9,992",
+              "value": 9992.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating Income",
+              "printed": "11,311",
+              "value": 11311.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:55:09.470847+00:00",
+        "source": "10-K 0001628280-26-010047 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 3,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Gross Profit",
+            "printed": "29,544",
+            "value": 29544.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Gross Profit",
+              "printed": "29,544",
+              "value": 29544.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Gross Profit",
+              "printed": "28,737",
+              "value": 28737.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Gross Profit",
+              "printed": "27,234",
+              "value": 27234.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 6,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating Income",
+            "printed": "13,762",
+            "value": 13762.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating Income",
+              "printed": "13,762",
+              "value": 13762.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating Income",
+              "printed": "9,992",
+              "value": 9992.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating Income",
+              "printed": "11,311",
+              "value": 11311.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:55:28.106153+00:00",
+        "source": "10-K 0001628280-26-010047 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 3,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Gross Profit",
+            "printed": "29,544",
+            "value": 29544.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Gross Profit",
+              "printed": "29,544",
+              "value": 29544.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Gross Profit",
+              "printed": "28,737",
+              "value": 28737.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Gross Profit",
+              "printed": "27,234",
+              "value": 27234.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 6,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating Income",
+            "printed": "13,762",
+            "value": 13762.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating Income",
+              "printed": "13,762",
+              "value": 13762.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating Income",
+              "printed": "9,992",
+              "value": 9992.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating Income",
+              "printed": "11,311",
+              "value": 11311.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:55:36.514471+00:00",
+        "source": "10-K 0001628280-26-010047 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 3,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Gross Profit",
+            "printed": "29,544",
+            "value": 29544.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Gross Profit",
+              "printed": "29,544",
+              "value": 29544.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Gross Profit",
+              "printed": "28,737",
+              "value": 28737.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 3,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Gross Profit",
+              "printed": "27,234",
+              "value": 27234.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 6,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating Income",
+            "printed": "13,762",
+            "value": 13762.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating Income",
+              "printed": "13,762",
+              "value": 13762.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating Income",
+              "printed": "9,992",
+              "value": 9992.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME (In millions except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 6,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating Income",
+              "printed": "11,311",
+              "value": 11311.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:55:42.338849+00:00",
+        "source": "10-K 0001628280-26-010047 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 3,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "COCA COLA CO",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-010047",
+    "key": "0001628280-26-010047",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/21344/000162828026010047/ko-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-20",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "KO",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "KO"
+}

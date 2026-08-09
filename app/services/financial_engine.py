@@ -41,6 +41,7 @@ from app.domain.financial_understanding import (
     FinancialUnderstanding,
 )
 from app.domain.provenance import Provenance
+from app.domain.statement_language import language_of
 from app.domain.tabular_evidence import (
     MeasuredChange,
     MeasuredNet,
@@ -188,6 +189,14 @@ def measure(
         measures=tuple(
             _measured(name, recipe, statements.get(recipe.statement))
             for name, recipe in RECIPES.items()
+        ),
+        # Derived here rather than by a caller, so that every consumer of
+        # an understanding sees the same language for the same document.
+        # Nothing selects on it; see `EstablishedLanguage`.
+        language=(
+            language_of(income)
+            if (income := statements.get(StatementKind.INCOME_STATEMENT)) is not None
+            else None
         ),
     )
 

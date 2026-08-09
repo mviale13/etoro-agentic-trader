@@ -4,54 +4,54 @@
       "facts": [
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 7,
+              "row": 9,
               "table": 0
             },
             "column_header": "2025",
             "label": "Total revenues",
-            "printed": "48,828",
-            "value": 48828.0
+            "printed": "59,402",
+            "value": 59402.0
           },
           "concept": "total_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Total revenues",
-              "printed": "48,828",
-              "value": 48828.0
+              "printed": "59,402",
+              "value": 59402.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Total revenues",
-              "printed": "46,423",
-              "value": 46423.0
+              "printed": "55,753",
+              "value": 55753.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Total revenues",
-              "printed": "41,364",
-              "value": 41364.0
+              "printed": "49,735",
+              "value": 49735.0
             }
           ],
           "unlocated_because": null
@@ -70,54 +70,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 16,
+              "row": 22,
               "table": 0
             },
             "column_header": "2025",
             "label": "Net income",
-            "printed": "$ 6,288",
-            "value": 6288.0
+            "printed": "$ 10,622",
+            "value": 10622.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net income",
-              "printed": "$ 6,288",
-              "value": 6288.0
+              "printed": "$ 10,622",
+              "value": 10622.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Net income",
-              "printed": "$ 4,999",
-              "value": 4999.0
+              "printed": "$ 9,640",
+              "value": 9640.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Net income",
-              "printed": "$ 2,991",
-              "value": 2991.0
+              "printed": "$ 9,015",
+              "value": 9015.0
             }
           ],
           "unlocated_because": null
@@ -130,54 +130,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 2,
+              "row": 5,
               "table": 0
             },
             "column_header": "2025",
-            "label": "Premiums",
-            "printed": "$ 43,914",
-            "value": 43914.0
+            "label": "Net premiums earned",
+            "printed": "53,014",
+            "value": 53014.0
           },
           "concept": "premium_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2025",
-              "label": "Premiums",
-              "printed": "$ 43,914",
-              "value": 43914.0
+              "label": "Net premiums earned",
+              "printed": "53,014",
+              "value": 53014.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2024",
-              "label": "Premiums",
-              "printed": "$ 41,941",
-              "value": 41941.0
+              "label": "Net premiums earned",
+              "printed": "49,846",
+              "value": 49846.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2023",
-              "label": "Premiums",
-              "printed": "$ 37,761",
-              "value": 37761.0
+              "label": "Net premiums earned",
+              "printed": "45,712",
+              "value": 45712.0
             }
           ],
           "unlocated_because": null
@@ -185,8 +185,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:49:00.797625+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:03:08.299154+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -194,54 +194,54 @@
       "facts": [
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 7,
+              "row": 9,
               "table": 0
             },
             "column_header": "2025",
             "label": "Total revenues",
-            "printed": "48,828",
-            "value": 48828.0
+            "printed": "59,402",
+            "value": 59402.0
           },
           "concept": "total_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Total revenues",
-              "printed": "48,828",
-              "value": 48828.0
+              "printed": "59,402",
+              "value": 59402.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Total revenues",
-              "printed": "46,423",
-              "value": 46423.0
+              "printed": "55,753",
+              "value": 55753.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Total revenues",
-              "printed": "41,364",
-              "value": 41364.0
+              "printed": "49,735",
+              "value": 49735.0
             }
           ],
           "unlocated_because": null
@@ -260,54 +260,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 16,
+              "row": 22,
               "table": 0
             },
             "column_header": "2025",
             "label": "Net income",
-            "printed": "$ 6,288",
-            "value": 6288.0
+            "printed": "$ 10,622",
+            "value": 10622.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net income",
-              "printed": "$ 6,288",
-              "value": 6288.0
+              "printed": "$ 10,622",
+              "value": 10622.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Net income",
-              "printed": "$ 4,999",
-              "value": 4999.0
+              "printed": "$ 9,640",
+              "value": 9640.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Net income",
-              "printed": "$ 2,991",
-              "value": 2991.0
+              "printed": "$ 9,015",
+              "value": 9015.0
             }
           ],
           "unlocated_because": null
@@ -320,54 +320,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 2,
+              "row": 5,
               "table": 0
             },
             "column_header": "2025",
-            "label": "Premiums",
-            "printed": "$ 43,914",
-            "value": 43914.0
+            "label": "Net premiums earned",
+            "printed": "53,014",
+            "value": 53014.0
           },
           "concept": "premium_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2025",
-              "label": "Premiums",
-              "printed": "$ 43,914",
-              "value": 43914.0
+              "label": "Net premiums earned",
+              "printed": "53,014",
+              "value": 53014.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2024",
-              "label": "Premiums",
-              "printed": "$ 41,941",
-              "value": 41941.0
+              "label": "Net premiums earned",
+              "printed": "49,846",
+              "value": 49846.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2023",
-              "label": "Premiums",
-              "printed": "$ 37,761",
-              "value": 37761.0
+              "label": "Net premiums earned",
+              "printed": "45,712",
+              "value": 45712.0
             }
           ],
           "unlocated_because": null
@@ -375,8 +375,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:49:04.483229+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:03:12.367221+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -384,54 +384,54 @@
       "facts": [
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 7,
+              "row": 9,
               "table": 0
             },
             "column_header": "2025",
             "label": "Total revenues",
-            "printed": "48,828",
-            "value": 48828.0
+            "printed": "59,402",
+            "value": 59402.0
           },
           "concept": "total_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Total revenues",
-              "printed": "48,828",
-              "value": 48828.0
+              "printed": "59,402",
+              "value": 59402.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Total revenues",
-              "printed": "46,423",
-              "value": 46423.0
+              "printed": "55,753",
+              "value": 55753.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Total revenues",
-              "printed": "41,364",
-              "value": 41364.0
+              "printed": "49,735",
+              "value": 49735.0
             }
           ],
           "unlocated_because": null
@@ -450,54 +450,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 16,
+              "row": 22,
               "table": 0
             },
             "column_header": "2025",
             "label": "Net income",
-            "printed": "$ 6,288",
-            "value": 6288.0
+            "printed": "$ 10,622",
+            "value": 10622.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net income",
-              "printed": "$ 6,288",
-              "value": 6288.0
+              "printed": "$ 10,622",
+              "value": 10622.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Net income",
-              "printed": "$ 4,999",
-              "value": 4999.0
+              "printed": "$ 9,640",
+              "value": 9640.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Net income",
-              "printed": "$ 2,991",
-              "value": 2991.0
+              "printed": "$ 9,015",
+              "value": 9015.0
             }
           ],
           "unlocated_because": null
@@ -510,54 +510,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 2,
+              "row": 5,
               "table": 0
             },
             "column_header": "2025",
-            "label": "Premiums",
-            "printed": "$ 43,914",
-            "value": 43914.0
+            "label": "Net premiums earned",
+            "printed": "53,014",
+            "value": 53014.0
           },
           "concept": "premium_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2025",
-              "label": "Premiums",
-              "printed": "$ 43,914",
-              "value": 43914.0
+              "label": "Net premiums earned",
+              "printed": "53,014",
+              "value": 53014.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2024",
-              "label": "Premiums",
-              "printed": "$ 41,941",
-              "value": 41941.0
+              "label": "Net premiums earned",
+              "printed": "49,846",
+              "value": 49846.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2023",
-              "label": "Premiums",
-              "printed": "$ 37,761",
-              "value": 37761.0
+              "label": "Net premiums earned",
+              "printed": "45,712",
+              "value": 45712.0
             }
           ],
           "unlocated_because": null
@@ -565,8 +565,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:49:10.290457+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:03:17.409653+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -574,54 +574,54 @@
       "facts": [
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 7,
+              "row": 9,
               "table": 0
             },
             "column_header": "2025",
             "label": "Total revenues",
-            "printed": "48,828",
-            "value": 48828.0
+            "printed": "59,402",
+            "value": 59402.0
           },
           "concept": "total_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Total revenues",
-              "printed": "48,828",
-              "value": 48828.0
+              "printed": "59,402",
+              "value": 59402.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Total revenues",
-              "printed": "46,423",
-              "value": 46423.0
+              "printed": "55,753",
+              "value": 55753.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Total revenues",
-              "printed": "41,364",
-              "value": 41364.0
+              "printed": "49,735",
+              "value": 49735.0
             }
           ],
           "unlocated_because": null
@@ -640,54 +640,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 16,
+              "row": 22,
               "table": 0
             },
             "column_header": "2025",
             "label": "Net income",
-            "printed": "$ 6,288",
-            "value": 6288.0
+            "printed": "$ 10,622",
+            "value": 10622.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net income",
-              "printed": "$ 6,288",
-              "value": 6288.0
+              "printed": "$ 10,622",
+              "value": 10622.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Net income",
-              "printed": "$ 4,999",
-              "value": 4999.0
+              "printed": "$ 9,640",
+              "value": 9640.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Net income",
-              "printed": "$ 2,991",
-              "value": 2991.0
+              "printed": "$ 9,015",
+              "value": 9015.0
             }
           ],
           "unlocated_because": null
@@ -700,54 +700,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 2,
+              "row": 5,
               "table": 0
             },
             "column_header": "2025",
-            "label": "Premiums",
-            "printed": "$ 43,914",
-            "value": 43914.0
+            "label": "Net premiums earned",
+            "printed": "53,014",
+            "value": 53014.0
           },
           "concept": "premium_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2025",
-              "label": "Premiums",
-              "printed": "$ 43,914",
-              "value": 43914.0
+              "label": "Net premiums earned",
+              "printed": "53,014",
+              "value": 53014.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2024",
-              "label": "Premiums",
-              "printed": "$ 41,941",
-              "value": 41941.0
+              "label": "Net premiums earned",
+              "printed": "49,846",
+              "value": 49846.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2023",
-              "label": "Premiums",
-              "printed": "$ 37,761",
-              "value": 37761.0
+              "label": "Net premiums earned",
+              "printed": "45,712",
+              "value": 45712.0
             }
           ],
           "unlocated_because": null
@@ -755,8 +755,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:49:15.983627+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:03:21.495770+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -764,54 +764,54 @@
       "facts": [
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 7,
+              "row": 9,
               "table": 0
             },
             "column_header": "2025",
             "label": "Total revenues",
-            "printed": "48,828",
-            "value": 48828.0
+            "printed": "59,402",
+            "value": 59402.0
           },
           "concept": "total_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Total revenues",
-              "printed": "48,828",
-              "value": 48828.0
+              "printed": "59,402",
+              "value": 59402.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Total revenues",
-              "printed": "46,423",
-              "value": 46423.0
+              "printed": "55,753",
+              "value": 55753.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 7,
+                "row": 9,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Total revenues",
-              "printed": "41,364",
-              "value": 41364.0
+              "printed": "49,735",
+              "value": 49735.0
             }
           ],
           "unlocated_because": null
@@ -830,54 +830,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 16,
+              "row": 22,
               "table": 0
             },
             "column_header": "2025",
             "label": "Net income",
-            "printed": "$ 6,288",
-            "value": 6288.0
+            "printed": "$ 10,622",
+            "value": 10622.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net income",
-              "printed": "$ 6,288",
-              "value": 6288.0
+              "printed": "$ 10,622",
+              "value": 10622.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2024",
               "label": "Net income",
-              "printed": "$ 4,999",
-              "value": 4999.0
+              "printed": "$ 9,640",
+              "value": 9640.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 16,
+                "row": 22,
                 "table": 0
               },
               "column_header": "2023",
               "label": "Net income",
-              "printed": "$ 2,991",
-              "value": 2991.0
+              "printed": "$ 9,015",
+              "value": 9015.0
             }
           ],
           "unlocated_because": null
@@ -890,54 +890,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
             "cell": {
               "column": 3,
-              "row": 2,
+              "row": 5,
               "table": 0
             },
             "column_header": "2025",
-            "label": "Premiums",
-            "printed": "$ 43,914",
-            "value": 43914.0
+            "label": "Net premiums earned",
+            "printed": "53,014",
+            "value": 53014.0
           },
           "concept": "premium_revenue",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 3,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2025",
-              "label": "Premiums",
-              "printed": "$ 43,914",
-              "value": 43914.0
+              "label": "Net premiums earned",
+              "printed": "53,014",
+              "value": 53014.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 4,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2024",
-              "label": "Premiums",
-              "printed": "$ 41,941",
-              "value": 41941.0
+              "label": "Net premiums earned",
+              "printed": "49,846",
+              "value": 49846.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENT OF INCOME (in millions, except per share amounts)",
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME Chubb Limited and Subsidiaries",
               "cell": {
                 "column": 5,
-                "row": 2,
+                "row": 5,
                 "table": 0
               },
               "column_header": "2023",
-              "label": "Premiums",
-              "printed": "$ 37,761",
-              "value": 37761.0
+              "label": "Net premiums earned",
+              "printed": "45,712",
+              "value": 45712.0
             }
           ],
           "unlocated_because": null
@@ -945,8 +945,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:49:21.031954+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:03:26.525638+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -966,84 +966,84 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 29,
+              "column": 9,
+              "row": 40,
               "table": 0
             },
-            "column_header": "2025",
+            "column_header": "December 31, 2025",
             "label": "Total liabilities",
-            "printed": "110,814",
-            "value": 110814.0
+            "printed": "192,548",
+            "value": 192548.0
           },
           "concept": "total_liabilities",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 29,
+                "column": 9,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2025",
+              "column_header": "December 31, 2025",
               "label": "Total liabilities",
-              "printed": "110,814",
-              "value": 110814.0
+              "printed": "192,548",
+              "value": 192548.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 29,
+                "column": 10,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2024",
+              "column_header": "December 31, 2024",
               "label": "Total liabilities",
-              "printed": "105,325",
-              "value": 105325.0
+              "printed": "178,154",
+              "value": 178154.0
             }
           ],
           "unlocated_because": null
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 35,
+              "column": 9,
+              "row": 48,
               "table": 0
             },
-            "column_header": "2025",
-            "label": "Total shareholders\u2019 equity",
-            "printed": "32,894",
-            "value": 32894.0
+            "column_header": "December 31, 2025",
+            "label": "Total Chubb shareholders' equity",
+            "printed": "73,757",
+            "value": 73757.0
           },
           "concept": "total_equity",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 35,
+                "column": 9,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2025",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "32,894",
-              "value": 32894.0
+              "column_header": "December 31, 2025",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "73,757",
+              "value": 73757.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 35,
+                "column": 10,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2024",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "27,864",
-              "value": 27864.0
+              "column_header": "December 31, 2024",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "64,021",
+              "value": 64021.0
             }
           ],
           "unlocated_because": null
@@ -1051,8 +1051,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T07:05:21.943996+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:05:11.893092+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     },
@@ -1072,84 +1072,84 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 29,
+              "column": 9,
+              "row": 40,
               "table": 0
             },
-            "column_header": "2025",
+            "column_header": "December 31, 2025",
             "label": "Total liabilities",
-            "printed": "110,814",
-            "value": 110814.0
+            "printed": "192,548",
+            "value": 192548.0
           },
           "concept": "total_liabilities",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 29,
+                "column": 9,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2025",
+              "column_header": "December 31, 2025",
               "label": "Total liabilities",
-              "printed": "110,814",
-              "value": 110814.0
+              "printed": "192,548",
+              "value": 192548.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 29,
+                "column": 10,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2024",
+              "column_header": "December 31, 2024",
               "label": "Total liabilities",
-              "printed": "105,325",
-              "value": 105325.0
+              "printed": "178,154",
+              "value": 178154.0
             }
           ],
           "unlocated_because": null
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 35,
+              "column": 9,
+              "row": 48,
               "table": 0
             },
-            "column_header": "2025",
-            "label": "Total shareholders\u2019 equity",
-            "printed": "32,894",
-            "value": 32894.0
+            "column_header": "December 31, 2025",
+            "label": "Total Chubb shareholders' equity",
+            "printed": "73,757",
+            "value": 73757.0
           },
           "concept": "total_equity",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 35,
+                "column": 9,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2025",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "32,894",
-              "value": 32894.0
+              "column_header": "December 31, 2025",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "73,757",
+              "value": 73757.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 35,
+                "column": 10,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2024",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "27,864",
-              "value": 27864.0
+              "column_header": "December 31, 2024",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "64,021",
+              "value": 64021.0
             }
           ],
           "unlocated_because": null
@@ -1157,8 +1157,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T07:05:27.776765+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:05:17.119000+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     },
@@ -1178,84 +1178,84 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 29,
+              "column": 9,
+              "row": 40,
               "table": 0
             },
-            "column_header": "2025",
+            "column_header": "December 31, 2025",
             "label": "Total liabilities",
-            "printed": "110,814",
-            "value": 110814.0
+            "printed": "192,548",
+            "value": 192548.0
           },
           "concept": "total_liabilities",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 29,
+                "column": 9,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2025",
+              "column_header": "December 31, 2025",
               "label": "Total liabilities",
-              "printed": "110,814",
-              "value": 110814.0
+              "printed": "192,548",
+              "value": 192548.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 29,
+                "column": 10,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2024",
+              "column_header": "December 31, 2024",
               "label": "Total liabilities",
-              "printed": "105,325",
-              "value": 105325.0
+              "printed": "178,154",
+              "value": 178154.0
             }
           ],
           "unlocated_because": null
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 35,
+              "column": 9,
+              "row": 48,
               "table": 0
             },
-            "column_header": "2025",
-            "label": "Total shareholders\u2019 equity",
-            "printed": "32,894",
-            "value": 32894.0
+            "column_header": "December 31, 2025",
+            "label": "Total Chubb shareholders' equity",
+            "printed": "73,757",
+            "value": 73757.0
           },
           "concept": "total_equity",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 35,
+                "column": 9,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2025",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "32,894",
-              "value": 32894.0
+              "column_header": "December 31, 2025",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "73,757",
+              "value": 73757.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 35,
+                "column": 10,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2024",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "27,864",
-              "value": 27864.0
+              "column_header": "December 31, 2024",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "64,021",
+              "value": 64021.0
             }
           ],
           "unlocated_because": null
@@ -1263,8 +1263,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T07:05:33.474511+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:05:24.004415+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     },
@@ -1284,84 +1284,84 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 29,
+              "column": 9,
+              "row": 40,
               "table": 0
             },
-            "column_header": "2025",
+            "column_header": "December 31, 2025",
             "label": "Total liabilities",
-            "printed": "110,814",
-            "value": 110814.0
+            "printed": "192,548",
+            "value": 192548.0
           },
           "concept": "total_liabilities",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 29,
+                "column": 9,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2025",
+              "column_header": "December 31, 2025",
               "label": "Total liabilities",
-              "printed": "110,814",
-              "value": 110814.0
+              "printed": "192,548",
+              "value": 192548.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 29,
+                "column": 10,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2024",
+              "column_header": "December 31, 2024",
               "label": "Total liabilities",
-              "printed": "105,325",
-              "value": 105325.0
+              "printed": "178,154",
+              "value": 178154.0
             }
           ],
           "unlocated_because": null
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 35,
+              "column": 9,
+              "row": 48,
               "table": 0
             },
-            "column_header": "2025",
-            "label": "Total shareholders\u2019 equity",
-            "printed": "32,894",
-            "value": 32894.0
+            "column_header": "December 31, 2025",
+            "label": "Total Chubb shareholders' equity",
+            "printed": "73,757",
+            "value": 73757.0
           },
           "concept": "total_equity",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 35,
+                "column": 9,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2025",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "32,894",
-              "value": 32894.0
+              "column_header": "December 31, 2025",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "73,757",
+              "value": 73757.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 35,
+                "column": 10,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2024",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "27,864",
-              "value": 27864.0
+              "column_header": "December 31, 2024",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "64,021",
+              "value": 64021.0
             }
           ],
           "unlocated_because": null
@@ -1369,8 +1369,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T07:05:38.522434+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:05:30.614699+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     },
@@ -1390,84 +1390,84 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 29,
+              "column": 9,
+              "row": 40,
               "table": 0
             },
-            "column_header": "2025",
+            "column_header": "December 31, 2025",
             "label": "Total liabilities",
-            "printed": "110,814",
-            "value": 110814.0
+            "printed": "192,548",
+            "value": 192548.0
           },
           "concept": "total_liabilities",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 29,
+                "column": 9,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2025",
+              "column_header": "December 31, 2025",
               "label": "Total liabilities",
-              "printed": "110,814",
-              "value": 110814.0
+              "printed": "192,548",
+              "value": 192548.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 29,
+                "column": 10,
+                "row": 40,
                 "table": 0
               },
-              "column_header": "2024",
+              "column_header": "December 31, 2024",
               "label": "Total liabilities",
-              "printed": "105,325",
-              "value": 105325.0
+              "printed": "178,154",
+              "value": 178154.0
             }
           ],
           "unlocated_because": null
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+            "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
             "cell": {
-              "column": 3,
-              "row": 35,
+              "column": 9,
+              "row": 48,
               "table": 0
             },
-            "column_header": "2025",
-            "label": "Total shareholders\u2019 equity",
-            "printed": "32,894",
-            "value": 32894.0
+            "column_header": "December 31, 2025",
+            "label": "Total Chubb shareholders' equity",
+            "printed": "73,757",
+            "value": 73757.0
           },
           "concept": "total_equity",
           "row": [
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 3,
-                "row": 35,
+                "column": 9,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2025",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "32,894",
-              "value": 32894.0
+              "column_header": "December 31, 2025",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "73,757",
+              "value": 73757.0
             },
             {
-              "caption": "CONSOLIDATED BALANCE SHEET (in millions)",
+              "caption": "CONSOLIDATED BALANCE SHEETS Chubb Limited and Subsidiaries",
               "cell": {
-                "column": 4,
-                "row": 35,
+                "column": 10,
+                "row": 48,
                 "table": 0
               },
-              "column_header": "2024",
-              "label": "Total shareholders\u2019 equity",
-              "printed": "27,864",
-              "value": 27864.0
+              "column_header": "December 31, 2024",
+              "label": "Total Chubb shareholders' equity",
+              "printed": "64,021",
+              "value": 64021.0
             }
           ],
           "unlocated_because": null
@@ -1475,8 +1475,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T07:05:42.983627+00:00",
-        "source": "10-K 0000086312-26-000065 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T07:05:35.651254+00:00",
+        "source": "10-K 0000896159-26-000005 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     }
@@ -1484,23 +1484,23 @@
   "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
-    "company": "TRAVELERS COMPANIES, INC.",
+    "company": "Chubb Ltd",
     "document_format": "html",
-    "identifier": "10-K 0000086312-26-000065",
-    "key": "0000086312-26-000065",
+    "identifier": "10-K 0000896159-26-000005",
+    "key": "0000896159-26-000005",
     "language": "en",
-    "location": "https://www.sec.gov/Archives/edgar/data/86312/000008631226000065/trv-20251231.htm",
+    "location": "https://www.sec.gov/Archives/edgar/data/896159/000089615926000005/cb-20251231.htm",
     "provider": "SEC EDGAR",
-    "published_on": "2026-02-12",
+    "published_on": "2026-02-27",
     "reporting_period": {
       "ends_on": "2025-12-31",
       "starts_on": null
     },
     "source_type": "annual_report",
-    "symbol": "TRV",
+    "symbol": "CB",
     "verification": [
       "register_indexed"
     ]
   },
-  "symbol": "TRV"
+  "symbol": "CB"
 }

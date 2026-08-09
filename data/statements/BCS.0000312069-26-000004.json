@@ -28,54 +28,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+            "caption": "Consolidated income statement",
             "cell": {
-              "column": 7,
-              "row": 18,
+              "column": 2,
+              "row": 4,
               "table": 0
             },
-            "column_header": "2026",
+            "column_header": "2025",
             "label": "Net interest income",
-            "printed": "3,684,254",
-            "value": 3684254.0
+            "printed": "14,501",
+            "value": 14501.0
           },
           "concept": "net_interest_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 3,
-                "row": 18,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net interest income",
-              "printed": "2,624,923",
-              "value": 2624923.0
-            },
-            {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
-              "cell": {
-                "column": 5,
-                "row": 18,
+                "column": 2,
+                "row": 4,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net interest income",
-              "printed": "3,088,197",
-              "value": 3088197.0
+              "printed": "14,501",
+              "value": 14501.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 7,
-                "row": 18,
+                "column": 3,
+                "row": 4,
                 "table": 0
               },
-              "column_header": "2026",
+              "column_header": "2024",
               "label": "Net interest income",
-              "printed": "3,684,254",
-              "value": 3684254.0
+              "printed": "12,936",
+              "value": 12936.0
+            },
+            {
+              "caption": "Consolidated income statement",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "12,709",
+              "value": 12709.0
             }
           ],
           "unlocated_because": null
@@ -87,10 +87,10 @@
           "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:50:26.707664+00:00",
-        "source": "20-F 0001628280-26-047095 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:57:21.264700+00:00",
+        "source": "20-F 0000312069-26-000004 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -122,54 +122,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+            "caption": "Consolidated income statement",
             "cell": {
-              "column": 7,
-              "row": 18,
+              "column": 2,
+              "row": 4,
               "table": 0
             },
-            "column_header": "2026",
+            "column_header": "2025",
             "label": "Net interest income",
-            "printed": "3,684,254",
-            "value": 3684254.0
+            "printed": "14,501",
+            "value": 14501.0
           },
           "concept": "net_interest_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 3,
-                "row": 18,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net interest income",
-              "printed": "2,624,923",
-              "value": 2624923.0
-            },
-            {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
-              "cell": {
-                "column": 5,
-                "row": 18,
+                "column": 2,
+                "row": 4,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net interest income",
-              "printed": "3,088,197",
-              "value": 3088197.0
+              "printed": "14,501",
+              "value": 14501.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 7,
-                "row": 18,
+                "column": 3,
+                "row": 4,
                 "table": 0
               },
-              "column_header": "2026",
+              "column_header": "2024",
               "label": "Net interest income",
-              "printed": "3,684,254",
-              "value": 3684254.0
+              "printed": "12,936",
+              "value": 12936.0
+            },
+            {
+              "caption": "Consolidated income statement",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "12,709",
+              "value": 12709.0
             }
           ],
           "unlocated_because": null
@@ -181,10 +181,10 @@
           "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:50:34.218593+00:00",
-        "source": "20-F 0001628280-26-047095 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:57:28.329331+00:00",
+        "source": "20-F 0000312069-26-000004 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -216,54 +216,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+            "caption": "Consolidated income statement",
             "cell": {
-              "column": 7,
-              "row": 18,
+              "column": 2,
+              "row": 4,
               "table": 0
             },
-            "column_header": "2026",
+            "column_header": "2025",
             "label": "Net interest income",
-            "printed": "3,684,254",
-            "value": 3684254.0
+            "printed": "14,501",
+            "value": 14501.0
           },
           "concept": "net_interest_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 3,
-                "row": 18,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net interest income",
-              "printed": "2,624,923",
-              "value": 2624923.0
-            },
-            {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
-              "cell": {
-                "column": 5,
-                "row": 18,
+                "column": 2,
+                "row": 4,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net interest income",
-              "printed": "3,088,197",
-              "value": 3088197.0
+              "printed": "14,501",
+              "value": 14501.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 7,
-                "row": 18,
+                "column": 3,
+                "row": 4,
                 "table": 0
               },
-              "column_header": "2026",
+              "column_header": "2024",
               "label": "Net interest income",
-              "printed": "3,684,254",
-              "value": 3684254.0
+              "printed": "12,936",
+              "value": 12936.0
+            },
+            {
+              "caption": "Consolidated income statement",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "12,709",
+              "value": 12709.0
             }
           ],
           "unlocated_because": null
@@ -275,10 +275,10 @@
           "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:50:40.609807+00:00",
-        "source": "20-F 0001628280-26-047095 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:57:33.742944+00:00",
+        "source": "20-F 0000312069-26-000004 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -310,54 +310,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+            "caption": "Consolidated income statement",
             "cell": {
-              "column": 7,
-              "row": 18,
+              "column": 2,
+              "row": 4,
               "table": 0
             },
-            "column_header": "2026",
+            "column_header": "2025",
             "label": "Net interest income",
-            "printed": "3,684,254",
-            "value": 3684254.0
+            "printed": "14,501",
+            "value": 14501.0
           },
           "concept": "net_interest_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 3,
-                "row": 18,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net interest income",
-              "printed": "2,624,923",
-              "value": 2624923.0
-            },
-            {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
-              "cell": {
-                "column": 5,
-                "row": 18,
+                "column": 2,
+                "row": 4,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net interest income",
-              "printed": "3,088,197",
-              "value": 3088197.0
+              "printed": "14,501",
+              "value": 14501.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 7,
-                "row": 18,
+                "column": 3,
+                "row": 4,
                 "table": 0
               },
-              "column_header": "2026",
+              "column_header": "2024",
               "label": "Net interest income",
-              "printed": "3,684,254",
-              "value": 3684254.0
+              "printed": "12,936",
+              "value": 12936.0
+            },
+            {
+              "caption": "Consolidated income statement",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "12,709",
+              "value": 12709.0
             }
           ],
           "unlocated_because": null
@@ -369,10 +369,10 @@
           "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:50:49.306799+00:00",
-        "source": "20-F 0001628280-26-047095 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:57:39.113917+00:00",
+        "source": "20-F 0000312069-26-000004 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
@@ -404,54 +404,54 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+            "caption": "Consolidated income statement",
             "cell": {
-              "column": 7,
-              "row": 18,
+              "column": 2,
+              "row": 4,
               "table": 0
             },
-            "column_header": "2026",
+            "column_header": "2025",
             "label": "Net interest income",
-            "printed": "3,684,254",
-            "value": 3684254.0
+            "printed": "14,501",
+            "value": 14501.0
           },
           "concept": "net_interest_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 3,
-                "row": 18,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net interest income",
-              "printed": "2,624,923",
-              "value": 2624923.0
-            },
-            {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
-              "cell": {
-                "column": 5,
-                "row": 18,
+                "column": 2,
+                "row": 4,
                 "table": 0
               },
               "column_header": "2025",
               "label": "Net interest income",
-              "printed": "3,088,197",
-              "value": 3088197.0
+              "printed": "14,501",
+              "value": 14501.0
             },
             {
-              "caption": "CONSOLIDATED STATEMENTS OF INCOME FOR THE FISCAL YEARS ENDED MARCH 31, 2024, 2025 AND 2026",
+              "caption": "Consolidated income statement",
               "cell": {
-                "column": 7,
-                "row": 18,
+                "column": 3,
+                "row": 4,
                 "table": 0
               },
-              "column_header": "2026",
+              "column_header": "2024",
               "label": "Net interest income",
-              "printed": "3,684,254",
-              "value": 3684254.0
+              "printed": "12,936",
+              "value": 12936.0
+            },
+            {
+              "caption": "Consolidated income statement",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "12,709",
+              "value": 12709.0
             }
           ],
           "unlocated_because": null
@@ -463,10 +463,10 @@
           "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:50:56.582780+00:00",
-        "source": "20-F 0001628280-26-047095 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:57:45.221996+00:00",
+        "source": "20-F 0000312069-26-000004 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     }
@@ -474,23 +474,23 @@
   "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
-    "company": "MITSUBISHI UFJ FINANCIAL GROUP INC",
+    "company": "BARCLAYS PLC",
     "document_format": "html",
-    "identifier": "20-F 0001628280-26-047095",
-    "key": "0001628280-26-047095",
+    "identifier": "20-F 0000312069-26-000004",
+    "key": "0000312069-26-000004",
     "language": "en",
-    "location": "https://www.sec.gov/Archives/edgar/data/67088/000162828026047095/mufg-20260331.htm",
+    "location": "https://www.sec.gov/Archives/edgar/data/312069/000031206926000004/bcs-20251231.htm",
     "provider": "SEC EDGAR",
-    "published_on": "2026-07-06",
+    "published_on": "2026-02-10",
     "reporting_period": {
-      "ends_on": "2026-03-31",
+      "ends_on": "2025-12-31",
       "starts_on": null
     },
     "source_type": "annual_report",
-    "symbol": "MUFG",
+    "symbol": "BCS",
     "verification": [
       "register_indexed"
     ]
   },
-  "symbol": "MUFG"
+  "symbol": "BCS"
 }

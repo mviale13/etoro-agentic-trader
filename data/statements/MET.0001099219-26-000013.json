@@ -121,11 +121,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 2,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Premiums",
+            "printed": "$ 49,779",
+            "value": 49779.0
+          },
+          "concept": "premium_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Premiums",
+              "printed": "$ 49,779",
+              "value": 49779.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Premiums",
+              "printed": "$ 44,945",
+              "value": 44945.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Premiums",
+              "printed": "$ 44,283",
+              "value": 44283.0
+            }
+          ],
+          "unlocated_because": null
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:06.641654+00:00",
+        "observed_at": "2026-08-09T06:49:57.031599+00:00",
         "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -251,11 +311,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 2,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Premiums",
+            "printed": "$ 49,779",
+            "value": 49779.0
+          },
+          "concept": "premium_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Premiums",
+              "printed": "$ 49,779",
+              "value": 49779.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Premiums",
+              "printed": "$ 44,945",
+              "value": 44945.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Premiums",
+              "printed": "$ 44,283",
+              "value": 44283.0
+            }
+          ],
+          "unlocated_because": null
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:11.935708+00:00",
+        "observed_at": "2026-08-09T06:50:01.736223+00:00",
         "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -381,11 +501,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 2,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Premiums",
+            "printed": "$ 49,779",
+            "value": 49779.0
+          },
+          "concept": "premium_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Premiums",
+              "printed": "$ 49,779",
+              "value": 49779.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Premiums",
+              "printed": "$ 44,945",
+              "value": 44945.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Premiums",
+              "printed": "$ 44,283",
+              "value": 44283.0
+            }
+          ],
+          "unlocated_because": null
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:16.162415+00:00",
+        "observed_at": "2026-08-09T06:50:15.215295+00:00",
         "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -511,11 +691,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 2,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Premiums",
+            "printed": "$ 49,779",
+            "value": 49779.0
+          },
+          "concept": "premium_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Premiums",
+              "printed": "$ 49,779",
+              "value": 49779.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Premiums",
+              "printed": "$ 44,945",
+              "value": 44945.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Premiums",
+              "printed": "$ 44,283",
+              "value": 44283.0
+            }
+          ],
+          "unlocated_because": null
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:20.933178+00:00",
+        "observed_at": "2026-08-09T06:50:23.454002+00:00",
         "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -641,17 +881,607 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 2,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Premiums",
+            "printed": "$ 49,779",
+            "value": 49779.0
+          },
+          "concept": "premium_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Premiums",
+              "printed": "$ 49,779",
+              "value": 49779.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Premiums",
+              "printed": "$ 44,945",
+              "value": 44945.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations Years Ended December 31, 2025, 2024 and 2023 (In millions, except per share data)",
+              "cell": {
+                "column": 6,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Premiums",
+              "printed": "$ 44,283",
+              "value": 44283.0
+            }
+          ],
+          "unlocated_because": null
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:26.130358+00:00",
+        "observed_at": "2026-08-09T06:50:28.610303+00:00",
         "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 40,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "716,245",
+            "value": 716245.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "716,245",
+              "value": 716245.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "649,754",
+              "value": 649754.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 52,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+            "printed": "28,398",
+            "value": 28398.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "28,398",
+              "value": 28398.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "27,445",
+              "value": 27445.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:44.734688+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 40,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "716,245",
+            "value": 716245.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "716,245",
+              "value": 716245.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "649,754",
+              "value": 649754.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 52,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+            "printed": "28,398",
+            "value": 28398.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "28,398",
+              "value": 28398.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "27,445",
+              "value": 27445.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:49.180009+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 40,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "716,245",
+            "value": 716245.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "716,245",
+              "value": 716245.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "649,754",
+              "value": 649754.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 52,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+            "printed": "28,398",
+            "value": 28398.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "28,398",
+              "value": 28398.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "27,445",
+              "value": 27445.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:54.181413+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 40,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "716,245",
+            "value": 716245.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "716,245",
+              "value": 716245.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "649,754",
+              "value": 649754.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 52,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+            "printed": "28,398",
+            "value": 28398.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "28,398",
+              "value": 28398.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "27,445",
+              "value": 27445.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:04:58.438651+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 40,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities",
+            "printed": "716,245",
+            "value": 716245.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities",
+              "printed": "716,245",
+              "value": 716245.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "649,754",
+              "value": 649754.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+            "cell": {
+              "column": 3,
+              "row": 52,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+            "printed": "28,398",
+            "value": 28398.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 3,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "28,398",
+              "value": 28398.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets December 31, 2025 and 2024 (In millions, except share and per share data)",
+              "cell": {
+                "column": 5,
+                "row": 52,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total MetLife, Inc.\u2019s stockholders\u2019 equity",
+              "printed": "27,445",
+              "value": 27445.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:05:03.662927+00:00",
+        "source": "10-K 0001099219-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "METLIFE INC",

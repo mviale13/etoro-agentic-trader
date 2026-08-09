@@ -8,6 +8,7 @@ from typing import Any
 
 from app.domain.evidence import EvidenceNotApplicable
 from app.domain.financial_statements import (
+    CONCEPT_LABELS,
     CONCEPT_QUESTIONS,
     STATEMENT_NAMES,
     FinancialStatementObservation,
@@ -137,10 +138,7 @@ def statement_prompt(document: SourceDocument, statement: StatementKind) -> str:
             "",
             "Concepts to locate, each as one cell for the most recent "
             "period or date the statement reports:",
-            *(
-                f"- {concept.value}: {CONCEPT_QUESTIONS[concept]}"
-                for concept in concepts_of(statement)
-            ),
+            *(_asked(concept) for concept in concepts_of(statement)),
             "",
             "Locate each concept's cell in the tables below, or omit a "
             "concept whose figure is not there.",
@@ -150,6 +148,52 @@ def statement_prompt(document: SourceDocument, statement: StatementKind) -> str:
             "--- TABLES END ---",
         )
     )
+
+
+def _asked(concept: StatementConcept) -> str:
+    """One concept as the reading is asked it: the question and the rows.
+
+    The accepted row labels are stated because withholding them made the
+    reading guess, and a guess costs the whole observation rather than
+    the one concept — `_validated` discards a reading that fails any
+    check, deliberately, and that rule is not relaxed here.
+
+    Measured: five corpus filings lost every figure on their income
+    statement to a single mislabelled citation. Allstate cited "Property
+    and casualty insurance premiums" for premium revenue, Citigroup and
+    American Express cited "Total revenues, net of interest expense" for
+    revenue, Deutsche Bank cited "Profit (loss)" for net income and
+    Coca-Cola cited "Net Operating Revenues" — each of them a real row,
+    read correctly, that this platform does not accept as answering the
+    concept. The instruction to omit rather than guess was already
+    there; what was missing was the fact needed to obey it.
+
+    This grants the reading nothing. Every cited cell is still read back
+    out of the document, its label still checked against `CONCEPT_LABELS`
+    and its address still required to be distinct — so a label named
+    here that the statement does not print cannot become a figure. The
+    only outcome it can change is a guess into an omission.
+    """
+
+    accepted = ", ".join(f'"{form}"' for form in CONCEPT_LABELS[concept])
+
+    lines = [f"- {concept.value}: {CONCEPT_QUESTIONS[concept]}"]
+    lines.append(f"    Accepted row labels: {accepted}.")
+
+    if concept is StatementConcept.TOTAL_EQUITY:
+        lines.append(
+            "    Also accepted: the same line with the company's own name "
+            'inside it, such as "Total Example Group shareholders\' equity". '
+            "Never a row that also names liabilities or noncontrolling "
+            "interests — that is the balance sheet's grand total, not equity."
+        )
+
+    lines.append(
+        "    A row labelled anything else is not this concept. Omit the "
+        "concept rather than citing the closest row you can find."
+    )
+
+    return "\n".join(lines)
 
 
 class FinancialStatementExtractor:

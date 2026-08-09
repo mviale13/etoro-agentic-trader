@@ -84,6 +84,47 @@ class FinancialsCommand:
         return 0
 
 
+def _render_language(understanding: FinancialUnderstanding) -> None:
+    """Which financial language the income statement establishes, and from what.
+
+    Printed with the rows it rests on, and printed apart from the
+    governing model on purpose: this observation does not choose the
+    model and is not consulted when the model is chosen. A reader who
+    saw them together without that said would reasonably assume one
+    followed from the other.
+    """
+
+    established = understanding.language
+
+    if established is None:
+        return
+
+    print()
+    print(f"financial language: {established.language.value}")
+
+    for marker in established.markers:
+        if marker.is_established and marker.figure is not None:
+            counted = marker.agreement
+            width = (
+                f" ({counted.agreeing} of {counted.readings})"
+                if counted is not None
+                else ""
+            )
+            print(
+                f"  {marker.concept.value}: {marker.figure.label!r} = "
+                f"{marker.figure.printed} at {marker.figure.cell.stated()}{width}"
+            )
+
+    if established.absent_because:
+        print(f"  {established.absent_because}")
+
+    print(
+        "  This says which language the statements are written in. It does "
+        "not select the financial model below, which is still derived from "
+        "the business playbook."
+    )
+
+
 def _render(
     understanding: FinancialUnderstanding,
     held: dict[StatementKind, FinancialStatementConsensus],
@@ -120,6 +161,8 @@ def _render(
 
         if caveat is not None:
             print(f"  PROVENANCE UNCERTAIN ({STATEMENT_NAMES[kind]}): {caveat}")
+
+    _render_language(understanding)
 
     print()
     print("measured")

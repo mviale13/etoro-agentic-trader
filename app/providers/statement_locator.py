@@ -68,6 +68,24 @@ TITLES: dict[StatementKind, tuple[str, ...]] = {
         "consolidated statement of operations",
         "consolidated statements of earnings",
         "consolidated statement of earnings",
+        # The IFRS word order, which is not a stylistic variant of the
+        # US one: a filer reporting under IFRS titles the statement
+        # "Consolidated income statement" and never the other way round.
+        # Without these two forms this platform located no income
+        # statement for any European bank it holds.
+        #
+        # Measured before it was added, against JPMorgan, Goldman Sachs,
+        # Apple and Travelers: none of their statements moved. It
+        # located Barclays' and NatWest's audited income statements,
+        # both of which begin at the interest lines. On Santander it
+        # resolves to the statement of recognised income and expense
+        # instead — a mislocation, and one that claims nothing, because
+        # no concept is located in it and an absence in an unread
+        # statement is not evidence. That guard is what makes adding a
+        # discovery form safe: coverage may improve without any
+        # boundary rule being relaxed to let it.
+        "consolidated income statements",
+        "consolidated income statement",
     ),
     StatementKind.BALANCE_SHEET: (
         "consolidated balance sheets",

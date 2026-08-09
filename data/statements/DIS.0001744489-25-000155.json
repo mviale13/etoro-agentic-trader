@@ -121,11 +121,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:24.094761+00:00",
+        "observed_at": "2026-08-09T06:51:32.897984+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -251,11 +263,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:29.750179+00:00",
+        "observed_at": "2026-08-09T06:51:38.869927+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -381,11 +405,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:36.988040+00:00",
+        "observed_at": "2026-08-09T06:51:44.360687+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -511,11 +547,23 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:41.597764+00:00",
+        "observed_at": "2026-08-09T06:51:51.938540+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -641,17 +689,739 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:46.374581+00:00",
+        "observed_at": "2026-08-09T06:51:56.223535+00:00",
         "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "24,267",
+            "value": 24267.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "24,267",
+              "value": 24267.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "25,241",
+              "value": 25241.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "34,162",
+            "value": 34162.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "34,162",
+              "value": 34162.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "34,599",
+              "value": 34599.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total Disney Shareholders\u2019 equity",
+            "printed": "109,869",
+            "value": 109869.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "109,869",
+              "value": 109869.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "100,696",
+              "value": 100696.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:05:42.188361+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "24,267",
+            "value": 24267.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "24,267",
+              "value": 24267.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "25,241",
+              "value": 25241.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "34,162",
+            "value": 34162.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "34,162",
+              "value": 34162.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "34,599",
+              "value": 34599.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total Disney Shareholders\u2019 equity",
+            "printed": "109,869",
+            "value": 109869.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "109,869",
+              "value": 109869.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "100,696",
+              "value": 100696.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:05:53.268111+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "24,267",
+            "value": 24267.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "24,267",
+              "value": 24267.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "25,241",
+              "value": 25241.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "34,162",
+            "value": 34162.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "34,162",
+              "value": 34162.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "34,599",
+              "value": 34599.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total Disney Shareholders\u2019 equity",
+            "printed": "109,869",
+            "value": 109869.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "109,869",
+              "value": 109869.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "100,696",
+              "value": 100696.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:05:57.963366+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "24,267",
+            "value": 24267.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "24,267",
+              "value": 24267.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "25,241",
+              "value": 25241.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "34,162",
+            "value": 34162.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "34,162",
+              "value": 34162.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "34,599",
+              "value": 34599.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total Disney Shareholders\u2019 equity",
+            "printed": "109,869",
+            "value": 109869.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "109,869",
+              "value": 109869.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "100,696",
+              "value": 100696.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:06:03.131998+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "24,267",
+            "value": 24267.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "24,267",
+              "value": 24267.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "25,241",
+              "value": 25241.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "34,162",
+            "value": 34162.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "34,162",
+              "value": 34162.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "34,599",
+              "value": 34599.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+            "cell": {
+              "column": 3,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total Disney Shareholders\u2019 equity",
+            "printed": "109,869",
+            "value": 109869.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "109,869",
+              "value": 109869.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (in millions, except share data)",
+              "cell": {
+                "column": 5,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total Disney Shareholders\u2019 equity",
+              "printed": "100,696",
+              "value": 100696.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:06:07.828146+00:00",
+        "source": "10-K 0001744489-25-000155 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "Walt Disney Co",

@@ -4,174 +4,354 @@
       "facts": [
         {
           "anchor": null,
-          "concept": "total_current_assets",
+          "concept": "total_revenue",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_current_liabilities",
+          "concept": "gross_profit",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_liabilities",
+          "concept": "operating_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_equity",
+          "concept": "net_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years ended December 31,",
+            "label": "Net interest income",
+            "printed": "$ 59,792",
+            "value": 59792.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years ended December 31,",
+              "label": "Net interest income",
+              "printed": "$ 59,792",
+              "value": 59792.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:27.257458+00:00",
+        "observed_at": "2026-08-09T06:52:26.552018+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "balance_sheet"
+      "statement": "income_statement"
     },
     {
       "facts": [
         {
           "anchor": null,
-          "concept": "total_current_assets",
+          "concept": "total_revenue",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_current_liabilities",
+          "concept": "gross_profit",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_liabilities",
+          "concept": "operating_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_equity",
+          "concept": "net_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years ended December 31,",
+            "label": "Net interest income",
+            "printed": "$ 59,792",
+            "value": 59792.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years ended December 31,",
+              "label": "Net interest income",
+              "printed": "$ 59,792",
+              "value": 59792.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:30.642970+00:00",
+        "observed_at": "2026-08-09T06:52:38.049606+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "balance_sheet"
+      "statement": "income_statement"
     },
     {
       "facts": [
         {
           "anchor": null,
-          "concept": "total_current_assets",
+          "concept": "total_revenue",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_current_liabilities",
+          "concept": "gross_profit",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_liabilities",
+          "concept": "operating_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_equity",
+          "concept": "net_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years ended December 31,",
+            "label": "Net interest income",
+            "printed": "$ 59,792",
+            "value": 59792.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years ended December 31,",
+              "label": "Net interest income",
+              "printed": "$ 59,792",
+              "value": 59792.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:33.160542+00:00",
+        "observed_at": "2026-08-09T06:52:58.771863+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "balance_sheet"
+      "statement": "income_statement"
     },
     {
       "facts": [
         {
           "anchor": null,
-          "concept": "total_current_assets",
+          "concept": "total_revenue",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_current_liabilities",
+          "concept": "gross_profit",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_liabilities",
+          "concept": "operating_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_equity",
+          "concept": "net_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years ended December 31,",
+            "label": "Net interest income",
+            "printed": "$ 59,792",
+            "value": 59792.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years ended December 31,",
+              "label": "Net interest income",
+              "printed": "$ 59,792",
+              "value": 59792.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:35.145802+00:00",
+        "observed_at": "2026-08-09T06:53:08.751211+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "balance_sheet"
+      "statement": "income_statement"
     },
     {
       "facts": [
         {
           "anchor": null,
-          "concept": "total_current_assets",
+          "concept": "total_revenue",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_current_liabilities",
+          "concept": "gross_profit",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_liabilities",
+          "concept": "operating_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
-          "concept": "total_equity",
+          "concept": "net_income",
           "row": [],
-          "unlocated_because": "The reading located no cell holding the total equity attributable to the company's shareholders at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Years ended December 31,",
+            "label": "Net interest income",
+            "printed": "$ 59,792",
+            "value": 59792.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF INCOME Citigroup Inc. and Subsidiaries",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Years ended December 31,",
+              "label": "Net interest income",
+              "printed": "$ 59,792",
+              "value": 59792.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
-      "located_among": 2,
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:38.173671+00:00",
+        "observed_at": "2026-08-09T06:53:16.073654+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "balance_sheet"
+      "statement": "income_statement"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "CITIGROUP INC",

@@ -121,11 +121,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "13,559",
+            "value": 13559.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "13,559",
+              "value": 13559.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "8,056",
+              "value": 8056.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "6,351",
+              "value": 6351.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:20.852799+00:00",
+        "observed_at": "2026-08-09T06:49:27.857366+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -251,11 +311,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "13,559",
+            "value": 13559.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "13,559",
+              "value": 13559.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "8,056",
+              "value": 8056.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "6,351",
+              "value": 6351.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:26.218278+00:00",
+        "observed_at": "2026-08-09T06:49:32.517081+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -381,11 +501,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "13,559",
+            "value": 13559.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "13,559",
+              "value": 13559.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "8,056",
+              "value": 8056.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "6,351",
+              "value": 6351.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:32.436463+00:00",
+        "observed_at": "2026-08-09T06:49:36.554182+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -511,11 +691,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "13,559",
+            "value": 13559.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "13,559",
+              "value": 13559.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "8,056",
+              "value": 8056.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "6,351",
+              "value": 6351.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:38.194764+00:00",
+        "observed_at": "2026-08-09T06:49:41.532269+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -641,11 +881,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "13,559",
+            "value": 13559.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "13,559",
+              "value": 13559.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 9,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "8,056",
+              "value": 8056.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 15,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "6,351",
+              "value": 6351.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:44.270202+00:00",
+        "observed_at": "2026-08-09T06:49:45.784324+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -751,7 +1051,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:51.319391+00:00",
+        "observed_at": "2026-08-09T07:04:57.559925+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -857,7 +1157,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:21:56.535138+00:00",
+        "observed_at": "2026-08-09T07:05:01.756504+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -963,7 +1263,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:01.101247+00:00",
+        "observed_at": "2026-08-09T07:05:05.915914+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -1069,7 +1369,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:05.484966+00:00",
+        "observed_at": "2026-08-09T07:05:10.741479+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -1175,13 +1475,13 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:10.180766+00:00",
+        "observed_at": "2026-08-09T07:05:15.069384+00:00",
         "source": "10-K 0000886982-26-000091 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "GOLDMAN SACHS GROUP INC",
