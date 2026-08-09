@@ -11,6 +11,7 @@ from app.api.models.dossier import (
     DossierResponse,
     EvidenceScoresResponse,
     NarrativeFindingResponse,
+    NarrativeOutcomeResponse,
     NarrativeResponse,
     NarrativeSectionResponse,
     PlaybookCoverageResponse,
@@ -471,6 +472,71 @@ def _score(
 
 
 @router.get(
+    "/{symbol}/narrative",
+    response_model=NarrativeOutcomeResponse,
+)
+async def narrative(
+    symbol: str,
+    builder: BrainBuilderService = Depends(get_brain_builder_service),
+) -> NarrativeOutcomeResponse:
+    """
+    The Artificial CIO's case, put into words.
+
+    Its own request because it is its own wait. The dossier's evidence
+    is ready in under two seconds and this takes fifteen to twenty, all
+    of it one model call — so asking for them together made the investor
+    wait on communication for a case that was already decided.
+
+    The case is rebuilt here rather than carried over. That costs the
+    reasoning twice, and it is the honest trade: the alternative is
+    holding a decided case in memory between two requests, where it
+    could be worded from something the second request would no longer
+    decide.
+    """
+
+    normalized_symbol = symbol.upper().strip()
+
+    brain = await builder.build(focus_symbols=(normalized_symbol,))
+
+    workspace = ExecutivePipeline.with_memory().execute(
+        symbol=normalized_symbol,
+        brain=brain,
+    )
+
+    decision = workspace.decision
+    thesis = workspace.thesis
+    evidence = workspace.evidence
+
+    if decision is None or thesis is None or evidence is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"The Artificial CIO could not produce a decision for "
+                f"{normalized_symbol}."
+            ),
+        )
+
+    # Communication only, and strictly after the judgment: the writer
+    # receives the finished canonical objects and cannot change them.
+    outcome = await ExecutiveWriterService().narrate(
+        symbol=normalized_symbol,
+        decision=decision,
+        thesis=thesis,
+        evidence=evidence,
+        opinions=workspace.committee_opinions,
+        # What kind of security this is, so a case with no company behind
+        # it is left as measured rather than written up.
+        asset_class=brain.asset_class_for(normalized_symbol),
+    )
+
+    return NarrativeOutcomeResponse(
+        symbol=normalized_symbol,
+        narrative=_narrative(outcome.narrative),
+        narrative_absent=outcome.absent_reason,
+    )
+
+
+@router.get(
     "/{symbol}/dossier",
     response_model=DossierResponse,
 )
@@ -528,18 +594,13 @@ async def dossier(
         CachedTokenInsightProvider.stored().rating(normalized_symbol)
     )
 
-    # Communication only, and strictly after the judgment: the writer
-    # receives the finished canonical objects and cannot change them.
-    outcome = await ExecutiveWriterService().narrate(
-        symbol=normalized_symbol,
-        decision=decision,
-        thesis=thesis,
-        evidence=evidence,
-        opinions=workspace.committee_opinions,
-        # What kind of security this is, so a case with no company behind
-        # it is left as measured rather than written up.
-        asset_class=brain.asset_class_for(normalized_symbol),
-    )
+    # The narrative is not written here. It is communication, it is
+    # optional, and it took fifteen to twenty seconds of a request whose
+    # evidence took under two — so the case is served as soon as it is
+    # decided, and `/{symbol}/narrative` words it separately.
+    #
+    # Nothing is lost by that: the conclusion below is deterministic and
+    # already stands without a writer.
 
     return DossierResponse(
         symbol=normalized_symbol,
@@ -613,8 +674,9 @@ async def dossier(
         ],
         evidence_as_of=_provenance(decision.evidence_as_of),
         token_rating=token_rating,
-        narrative=_narrative(outcome.narrative),
-        narrative_absent=outcome.absent_reason,
+        # Both null on purpose: this route no longer words the case.
+        narrative=None,
+        narrative_absent=None,
         # Composed after the decision and consumed by none of it. Read
         # from the stores only, so this adds no fetch and no model call
         # to a page view — a company nothing has been observed for

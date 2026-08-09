@@ -416,3 +416,17 @@ class DossierResponse(BaseModel):
     #: what argues against it, and what would occasion a second look —
     #: or reports plainly that the case records no such condition.
     synthesis: DecisionSynthesisResponse | None = None
+
+
+class NarrativeOutcomeResponse(BaseModel):
+    """The written case, or the worded reason there is none. Never both.
+
+    Its own resource because it is its own wait: the dossier's evidence
+    is ready in under two seconds and the wording takes fifteen to
+    twenty, all of it one model call. A reader gets the decided case
+    immediately and the prose when it arrives.
+    """
+
+    symbol: str
+    narrative: NarrativeResponse | None
+    narrative_absent: str | None
