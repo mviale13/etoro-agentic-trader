@@ -14,6 +14,27 @@ from app.domain.market_sensitivity import MarketSensitivity, measure_sensitivity
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
 
+#: Venues the broker and Yahoo name differently.
+#:
+#: eToro suffixes a listing with the city; Yahoo suffixes it with the
+#: exchange's own code. Where the two words name one venue the local
+#: ticker is identical and only the suffix differs, so this translates a
+#: venue's name and nothing else.
+#:
+#: Measured before it was written, and every other suffix on this book
+#: measured with it: `.BR`, `.DE`, `.CO`, `.PA`, `.L`, `.MC` and `.MI`
+#: are the same word at both vendors and are passed through untouched.
+#: Only Zurich differed — `NESN.ZU` returns a single empty field, and
+#: `NESN.SW` returns Nestlé with 169 of them and a market cap of $208bn.
+#:
+#: What this does not do is check that the security at the translated
+#: ticker is the one intended. That is the trust this platform already
+#: extends to every ticker it passes through unchanged, and it is why an
+#: entry is added here only after being checked against the provider by
+#: hand — a venue guessed rather than verified is how a platform ends up
+#: pricing another company's listing and cannot see that it did.
+VENUES = {"ZU": "SW"}
+
 
 @dataclass(frozen=True, slots=True)
 class YahooInstrument:
@@ -34,17 +55,31 @@ class YahooInstrument:
         Most securities trade under the symbol the broker already uses.
         Cryptocurrencies do not: Yahoo quotes them against a currency, so
         `BTC` prices as `BTC-USD` and the bare ticker returns nothing at
-        all. The security keeps its own symbol everywhere else, so evidence
-        still comes back under the name the investor knows.
+        all. Nor does a listing at a venue the two vendors name
+        differently. The security keeps its own symbol everywhere else,
+        so evidence still comes back under the name the investor knows.
         """
 
         return cls(
             yahoo_symbol=(
-                f"{symbol}-USD" if asset_class is AssetClass.CRYPTO else symbol
+                f"{symbol}-USD"
+                if asset_class is AssetClass.CRYPTO
+                else cls._at_venue(symbol)
             ),
             movrvest_symbol=symbol,
             name=name,
         )
+
+    @staticmethod
+    def _at_venue(symbol: str) -> str:
+        """The same local ticker, at the venue under Yahoo's name for it."""
+
+        local, separator, venue = symbol.rpartition(".")
+
+        if not separator or venue not in VENUES:
+            return symbol
+
+        return f"{local}.{VENUES[venue]}"
 
 
 class YahooMarketProvider:
