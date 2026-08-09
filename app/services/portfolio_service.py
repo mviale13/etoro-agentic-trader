@@ -138,6 +138,16 @@ class PortfolioService:
                 "the platform cannot classify",
             )
 
+        # Named here as well as measured here. The holdings only learn
+        # their symbols a step before this, so this is the first point at
+        # which the largest holding can be both summed by instrument and
+        # called by name — and one place answering it is the reason the
+        # name and the percentage cannot describe different holdings.
+        largest_position, largest_position_pct = cls._largest_position(
+            snapshot.holdings,
+            equity,
+        )
+
         return replace(
             snapshot,
             allocation=replace(
@@ -147,6 +157,8 @@ class PortfolioService:
                 crypto=cls._percentage(totals[AssetClass.CRYPTO], equity),
                 unclassified=unclassified_pct,
             ),
+            largest_position=largest_position,
+            largest_position_pct=largest_position_pct,
             risk_flags=risk_flags,
         )
 
@@ -173,23 +185,33 @@ class PortfolioService:
         twice arrives as two rows. Measuring the biggest row measures a
         transaction, and the investor's policy limits a *security*: two
         BTC buys of 20.0% and 0.5% were read as a 20.0% holding exactly
-        at a 20% limit, when the holding was 20.5% and over it. A breach
+        at a 20% limit, when the holding was 20.5% and over it — a breach
         of the investor's own policy reported as compliance.
+
+        Summed by instrument, never by symbol. The broker reports every
+        position with an empty symbol and a real instrument id; symbols
+        are resolved from the watchlists a step later. Summing by symbol
+        therefore collapsed the entire account into one nameless holding
+        and reported it as the largest — the identity is the id, and the
+        symbol is a label put on it afterwards.
         """
 
         if not positions:
             return None, 0.0
 
-        held: dict[str, float] = {}
+        held: dict[int, tuple[str, float]] = {}
 
         for position in positions:
-            held[position.symbol] = (
-                held.get(position.symbol, 0.0) + position.market_value_usd
+            symbol, value = held.get(position.instrument_id, ("", 0.0))
+
+            held[position.instrument_id] = (
+                symbol or position.symbol,
+                value + position.market_value_usd,
             )
 
-        symbol, value = max(held.items(), key=lambda holding: holding[1])
+        symbol, value = max(held.values(), key=lambda holding: holding[1])
 
-        return symbol, cls._percentage(value, equity_usd)
+        return symbol or None, cls._percentage(value, equity_usd)
 
     @staticmethod
     def _percentage(value: float, total: float) -> float:

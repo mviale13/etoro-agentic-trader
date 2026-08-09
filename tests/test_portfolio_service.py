@@ -90,14 +90,21 @@ def test_percentage_rounding():
     assert portfolio.allocation.unclassified == 66.67
 
 
-def held(symbol: str, value: float) -> PortfolioPosition:
+#: The broker's identifier per security, which is what identifies a
+#: holding. Two buys of one security share it; the symbol does not
+#: distinguish them and, before resolution, is not there at all.
+INSTRUMENTS = {"BTC": 100_000, "ETH": 100_001, "SPCX": 15_618}
+
+
+def held(symbol: str, value: float, named: bool = True) -> PortfolioPosition:
     return PortfolioPosition(
-        symbol=symbol,
+        symbol=symbol if named else "",
         quantity=1.0,
         invested_usd=value,
         market_value_usd=value,
         unrealized_pnl_usd=0.0,
         asset_class="crypto",
+        instrument_id=INSTRUMENTS[symbol],
     )
 
 
@@ -148,3 +155,28 @@ def test_the_largest_holding_can_be_one_the_broker_split() -> None:
 
     assert snapshot.largest_position == "BTC"
     assert snapshot.largest_position_pct == 12.0
+
+
+def test_holdings_are_summed_by_instrument_not_by_symbol() -> None:
+    """
+    The regression this nearly shipped as a fix.
+
+    The broker reports every position with an **empty** symbol and a real
+    instrument id; symbols are resolved from the watchlists a step later.
+    Summing by symbol therefore collapsed all twelve holdings into one
+    nameless bucket and reported the entire invested balance — 33.2% of
+    the account — as the largest holding.
+    """
+
+    account = replace(
+        build_account(equity=100_000.0, cash=0.0, invested=100_000.0, positions=3),
+        positions=(
+            held("BTC", 20_000.0, named=False),
+            held("ETH", 10_000.0, named=False),
+            held("BTC", 500.0, named=False),
+        ),
+    )
+
+    snapshot = PortfolioService().analyze(account)
+
+    assert snapshot.largest_position_pct == 20.5
