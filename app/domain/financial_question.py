@@ -305,6 +305,22 @@ class QuestionDecline:
     #: Named rather than built: these are acquisition demands, in the
     #: same currency every other demand on this platform is stated in,
     #: and naming one is not the same as inventing a threshold for it.
+    #:
+    #: **Every entry names a fact, never a verdict.** A demand is
+    #: something a filer prints, or something this platform computes from
+    #: figures a filer printed — "the liquidity coverage ratio",
+    #: "customer deposits", "their share of total liabilities". It is
+    #: never a judgment about what those figures show. The distinction
+    #: is not pedantry: a decline exists because the question cannot be
+    #: answered yet, so a demand phrased as a conclusion asks to be
+    #: handed the very answer the question would produce, and the gap
+    #: could never close on evidence.
+    #:
+    #: Learned from "deposit funding quality", which stood here until a
+    #: corpus established that no filer prints it and that it bundles
+    #: three separate claims — deposits exist, deposits fund most of the
+    #: book, deposit funding is strong. Quality is the analyst's to
+    #: conclude; this field supplies what it concludes from.
     needs: tuple[str, ...] = ()
 
 
@@ -408,8 +424,16 @@ OWNED: dict[FinancialModel, PlaybookQuestions] = {
                     "is established and reported; the industrial rule for "
                     "reading it is not applied."
                 ),
+                # "deposit funding quality" stood here, and it was three
+                # claims wearing one name: deposits exist, deposits fund
+                # most of the book, deposit funding is strong. Only the
+                # first is printed and only the second is arithmetic; the
+                # third is the verdict this question exists to reach, so
+                # demanding it as evidence asked the analyst to be handed
+                # its own answer. Corrected to the two facts beneath it.
                 needs=(
-                    "deposit funding quality",
+                    "customer deposits",
+                    "their share of total liabilities",
                     "the liquidity coverage ratio",
                 ),
             ),
