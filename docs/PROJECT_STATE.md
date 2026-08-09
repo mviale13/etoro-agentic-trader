@@ -14,6 +14,17 @@ MOVRvest recommends. The investor decides.
 
 ---
 
+# How to read this document
+
+Under the architecture freeze (Constitution §23–24), **an item recorded
+here as missing is not a mandate to build it.** This document says what
+the platform holds; whether a gap is worth closing is decided by one
+question, asked before the work starts:
+
+> Which investor-facing decision becomes better because of this change?
+
+---
+
 # Current Status
 
 ## Product

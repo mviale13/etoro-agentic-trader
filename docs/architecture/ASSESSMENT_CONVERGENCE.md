@@ -332,14 +332,37 @@ replacing it. Steps 2 and 4 below *are* its steps 1 and 2.
 | 4 | **Kind #1, Business Quality** (contract step 2): the course vocabulary is fixed, and `assessment_of` is written | yes — first admissible assessment |
 | 5 | **The adjudication successor** (contract step 3) | yes — `RECOMMEND` becomes reachable |
 
-Steps 0 and 1 are behaviour-free and could be taken at any time. They
-are listed first because they are what make step 3 a small change
-rather than a redesign — and because a committee that has declared its
-question is a committee whose convergence can be checked rather than
-asserted.
-
 **Nothing in this document is implemented.** It was produced on the
 ruling, and the ruling said not to merge.
+
+### The sequence under the gate (2026-08-09)
+
+Constitution §23 arrived immediately after this document and reorders
+it. The gate — *which investor-facing decision becomes better?* — is
+applied here first, because this sequence is the nearest thing the
+repository has to a standing invitation to do structural work.
+
+| # | Answer to the gate | Verdict |
+|---|---|---|
+| 0 | none — the committees describe themselves better | **do not take alone** |
+| 1 | none — every finding today is `ASSESSED`, so nothing moves | **do not take alone** |
+| 3 | *the recommendation is more trustworthy, because the Quality Committee reasons from what the filing establishes rather than from a provider's ratios* | **ship it** |
+
+Steps 0 and 1 are behaviour-free, which was written above as though it
+were a virtue — *they could be taken at any time*. Under the gate it
+is the opposite: behaviour-free means no investor-facing decision
+improves, so they are not slices. They are **preparation that travels
+inside step 3**, where the benefit is visible and their cost is
+charged against it.
+
+Step 3's answer is, word for word, the owner's own example of an
+answer worth shipping. That is not a coincidence — it is the one point
+in this architecture where converging the shape and improving a
+recommendation are the same act.
+
+So the sequence is not a queue to be worked through. It is the map for
+one slice: **a quality dimension fed by `FinancialUnderstanding`**,
+carrying with it whatever of steps 0 and 1 that slice actually needs.
 
 ---
 

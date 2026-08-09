@@ -13,7 +13,7 @@ short, and keep it true — everything here is checkable.
 
 | Question | Document |
 |---|---|
-| How do we work? | [`docs/ENGINEERING_CONSTITUTION.md`](docs/ENGINEERING_CONSTITUTION.md) |
+| How do we work? | [`docs/ENGINEERING_CONSTITUTION.md`](docs/ENGINEERING_CONSTITUTION.md) — **§23–24 first** |
 | Which package owns what? | [`docs/architecture/REPOSITORY_INVENTORY.md`](docs/architecture/REPOSITORY_INVENTORY.md) |
 | What is built, what is missing? | [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) |
 | What is next, and what is open? | [`docs/architecture/MIGRATION_PLAN.md`](docs/architecture/MIGRATION_PLAN.md) |
@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1367 tests, fast
+python -m pytest -q            # ~1500 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -290,6 +290,27 @@ you make something real, update its pill.
 ---
 
 ## Before you build
+
+**Answer this first, out loud, before any work starts:**
+
+> **Which investor-facing decision becomes better because of this change?**
+
+Name the decision, the mechanism, and what an investor could see afterwards
+that they could not before. *"The recommendation is more trustworthy because
+the Quality Committee now reasons from established business understanding"*
+is an answer. *"None, but the architecture is cleaner"* is not — push back,
+and say so.
+
+A decision currently getting a **wrong** answer counts: a defect, a seam that
+could spend money in tests, a dependency that fails only in CI. That is the
+same question answered in the negative, not an exception to it.
+
+**The core architecture is frozen** — deliberately, not forever. Enough
+exists to build several investor-facing capabilities. No new layers,
+canonical objects, taxonomies or re-factored seams, and no completing a
+designed step merely because it is designed. Structural work a passing slice
+genuinely needs travels *inside* that slice. Constitution §23–24 carries the
+full rule; only the owner lifts the freeze.
 
 **Verify the import graph before believing any document, including this one.**
 

@@ -3,7 +3,25 @@
 > Living roadmap for converging the repository toward the canonical
 > architecture.
 
-Status: Active
+Status: **Active, under the architecture freeze** (2026-08-09).
+
+---
+
+# The gate that comes before this plan
+
+Constitution §23–24, and it outranks everything below.
+
+> **Which investor-facing decision becomes better because of this
+> change?**
+
+The core architecture is **frozen** — deliberately, not forever. No
+new layers, canonical objects, taxonomies or re-factored seams, and no
+completing a designed step because it is designed. Structural work a
+passing slice genuinely needs travels inside that slice.
+
+**Nothing in this plan is a mandate to act.** It records what remains
+structurally open, so that a slice which *does* answer the gate knows
+what ground it is standing on. An item here is not a reason to start.
 
 ---
 
@@ -11,15 +29,22 @@ Status: Active
 
 Every sprint must make the repository:
 
+- More explainable
 - Simpler
 - More consistent
-- More explainable
 - Easier to extend
 
 Rule:
 
 > Migrate before deleting.
 > Delete only after verification.
+
+**Only the first is a reason on its own**, and only when the thing
+made more explainable is a decision the investor sees. The other three
+are good properties of work already justified by the gate above —
+§23 supersedes them as sufficient justification. They were written
+when converging a duplicated repository *was* the investor-facing
+problem; that convergence is done.
 
 ---
 
