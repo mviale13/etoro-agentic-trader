@@ -230,6 +230,55 @@ def test_a_declined_question_names_what_would_answer_it() -> None:
     assert "the regulatory leverage ratio" in leverage.needs
 
 
+def test_a_demand_names_the_facts_beneath_a_judgment_not_the_judgment() -> None:
+    """Cash generation asks for deposits and their share, never their quality.
+
+    "deposit funding quality" stood in this tuple until a corpus
+    established that no filer prints it. A decline exists because a
+    question cannot be answered yet, so a demand phrased as a conclusion
+    asks to be handed the answer and can never be satisfied by evidence.
+    """
+
+    cash = answer(FinancialModel.BANK, FinancialQuestionKey.CASH_GENERATION)
+
+    assert cash.state is AnswerState.NOT_APPLICABLE_FOR_PLAYBOOK
+    assert "customer deposits" in cash.needs
+    assert "their share of total liabilities" in cash.needs
+    assert "the liquidity coverage ratio" in cash.needs
+
+
+#: Words that name a conclusion rather than a figure. One-directional:
+#: a demand containing one is wrong, and a demand containing none is not
+#: thereby proved right — the list guards against the mistake already
+#: made, and is not a definition of evidence.
+JUDGMENT_WORDS = (
+    "quality",
+    "strength",
+    "strong",
+    "weak",
+    "adequacy",
+    "adequate",
+    "health",
+    "healthy",
+    "sustainable",
+    "attractive",
+)
+
+
+def test_no_model_demands_a_judgment_as_evidence() -> None:
+    """The contract's evidence field holds facts, across every model."""
+
+    for model, questions in OWNED.items():
+        for decline in questions.declines:
+            for demand in decline.needs:
+                for word in JUDGMENT_WORDS:
+                    assert word not in demand.casefold(), (
+                        f"{model.value} asks for {demand!r} to answer "
+                        f"{decline.question.value}, which names a conclusion "
+                        "rather than a fact this platform could establish."
+                    )
+
+
 # ── what BANK answers, without copying a threshold ───────────────────
 
 

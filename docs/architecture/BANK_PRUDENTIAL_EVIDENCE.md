@@ -52,7 +52,8 @@ statements. It is not a new document class, and it is not the notes.
 | **Tier 1 capital** | same table | **amount** | same | balance-sheet date | yes | **no** |
 | **regulatory leverage ratio** | capital tables; US banks print a supplementary leverage ratio | **ratio** | 1 of 10 — and see the trap below | balance-sheet date | yes, under different names | **no** |
 | **liquidity coverage ratio** | liquidity-risk section | **ratio** | **0 of 10** | **not the statement's period** — commonly an average over the final quarter, so it does not share the filing's reporting period and cannot be treated as a year-end figure | yes | **no** |
-| **deposit funding quality** | nowhere — no filer prints it | **analytical conclusion** | never | — | — | — |
+| **deposit funding quality** *(the contract's wording when this was measured; since corrected — see below)* | nowhere — no filer prints it | **analytical conclusion** | never | — | — | — |
+| **customer deposits** *(the wording that replaced it)* | face of the balance sheet | **amount** | not yet — the label collides with an asset, see below | balance-sheet date | yes, under many labels | not yet |
 
 **Question six deserves its own sentence, because it is a safety
 result.** Absence cannot be safely interpreted for any of these facts
@@ -130,10 +131,10 @@ acquiring any concept from it: the region is what disambiguates the word.
 
 ---
 
-## The wording correction, proposed and not made
+## The wording correction — proposed here, applied 2026-08-09
 
-`BANK` names its cash-generation demand **`deposit funding quality`**.
-No filer prints that. It is three claims wearing one name, and only the
+`BANK` named its cash-generation demand **`deposit funding quality`**.
+No filer prints that. It was three claims wearing one name, and only the
 first is a fact:
 
 ```text
@@ -142,16 +143,23 @@ deposits fund most of the book  — arithmetic over two rows
 deposit funding is strong       — an analyst's verdict
 ```
 
-The smallest correction, **proposed for the owner and deliberately not
-applied in this slice**: replace the single demand with
+Demanding the third as *evidence* asked the analyst to be handed the
+very answer the question would produce, so the gap could never have
+closed on evidence however much this platform acquired.
 
-- **`customer deposits`** — a printed amount, and
-- **`deposit funding share`** — `customer deposits ÷ total liabilities`,
-  arithmetic this platform performs over two checked cells, exactly as
-  every `FinancialMeasure` is derived,
+**Applied** in a later contract-correction slice, which changed the
+wording and nothing else. The demand now reads:
 
-with *quality* remaining what it is: an analyst's judgment over those
-facts, belonging to a rule table and not to the evidence layer.
+- **`customer deposits`** — a printed amount;
+- **`their share of total liabilities`** — arithmetic this platform
+  performs over two checked cells, exactly as every `FinancialMeasure`
+  is derived;
+- **`the liquidity coverage ratio`** — unchanged.
+
+*Quality* remains what it always was: an analyst's judgment over those
+facts, belonging to a rule table and not to the evidence layer. Nothing
+was acquired to satisfy the new wording, no analyst changed, and which
+questions `BANK` answers and declines is exactly as before.
 
 **Deposits were not acquired either, and the corpus says why.** They are
 on the face of the balance sheet, but the contract is materially harder

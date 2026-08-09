@@ -204,7 +204,12 @@ carries (`app/domain/financial_question.py`):
 |---|---|---|
 | narrows profitability to net margin | "a bank's income statement prints neither a gross profit line nor an operating income line" | **yes** — this *is* the shape fact, and it holds for insurers too |
 | declines **leverage**, needing CET1, Tier 1 capital, the regulatory leverage ratio | "a deposit-taking bank… the liabilities that make it look levered are the deposits it exists to take" | **no** — deposit funding is nowhere in the statement shape |
-| declines **cash generation**, needing deposit funding quality, LCR | "a bank's operating cash flow is dominated by deposit and lending flows" | **no** |
+| declines **cash generation**, needing customer deposits, their share of total liabilities, the LCR | "a bank's operating cash flow is dominated by deposit and lending flows" | **no** |
+
+*(That last row read "needing deposit funding quality, LCR" when this
+was measured. The phrase was later found to name a verdict rather than a
+fact and was corrected; the finding above is unaffected, since neither
+wording is evidenced by statement shape.)*
 
 `BANK` bundles a statement-shape claim with two deposit-funding claims.
 Selecting it from shape alone would license the second pair from
