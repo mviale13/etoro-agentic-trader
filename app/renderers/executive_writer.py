@@ -43,9 +43,37 @@ from app.providers.narrative_provider import (
 )
 
 #: Words per section beyond which a draft is rejected. The prompt asks
-#: for at most 120; the validator allows headroom for connectives but
+#: for at most 60; the validator allows headroom for connectives but
 #: refuses essays — a narrative is a memorandum, not a report.
-MAX_SECTION_WORDS = 160
+#:
+#: Halved after reading three: at 120 words a section restates findings
+#: printed directly beneath it and then reaches for filler to fill the
+#: rest. The findings are the evidence; this is the reading of them.
+MAX_SECTION_WORDS = 90
+
+#: Language that describes work this platform does not do, or advice it
+#: has said it never gives.
+#:
+#: `PortfolioBriefing` states the rule the writer was never told: "a
+#: consideration, never an instruction: MOVRvest recommends and the
+#: investor decides. No size, price or quantity is ever suggested."
+#: Left to the prompt alone the writer wrote "position sizing should
+#: reflect balance-sheet and volatility risks", "preparing detailed
+#: entry criteria and sizing guidelines", and — for a token — "build
+#: operational readiness and risk controls". There is no sizing, no
+#: entry criteria and no controls work anywhere in this platform.
+#:
+#: So it is refused rather than requested. A rejected draft costs the
+#: narrative and leaves the deterministic case standing, which is the
+#: safe direction to fail in.
+FORBIDDEN_LANGUAGE = (
+    "sizing",
+    "position size",
+    "entry criteria",
+    "diligence",
+    "risk controls",
+    "operational readiness",
+)
 
 SYSTEM_PROMPT = """\
 You are the communication specialist of the Artificial CIO, an
@@ -72,7 +100,14 @@ Rules:
 - Mention both supporting and opposing evidence.
 - Explain trade-offs plainly.
 - Prefer institutional investment language, in complete sentences.
-- At most 120 words per section.
+- At most 60 words per section. Say the reading, not the findings
+  again: the reader sees every finding printed beneath your text.
+- Never suggest a position size, a quantity, a price to pay, or when to
+  trade. MOVRvest recommends and the investor decides.
+- Never describe work this platform does not do. There is no diligence,
+  no sizing guideline, no risk-control programme and no entry criteria
+  here — only the reasoning you were given. Do not write that anyone
+  will prepare, monitor, model or review anything.
 - Where the findings state that something is missing or unmeasured,
   say so — absence is part of the case, not a gap to write around.
 """
@@ -341,6 +376,20 @@ def narrative_from_payload(
             raise NarrativeRejected(
                 f"Section {name} exceeded {MAX_SECTION_WORDS} words."
             )
+
+        # Refused, not requested. The rule that this platform suggests no
+        # size, price or quantity is older than the writer and was never
+        # in its contract; asked politely, the writer wrote about sizing
+        # guidelines and diligence anyway.
+        spoken = text.lower()
+
+        for phrase in FORBIDDEN_LANGUAGE:
+            if phrase in spoken:
+                raise NarrativeRejected(
+                    f"Section {name} wrote about {phrase!r}. This platform "
+                    "suggests no size, price or quantity, and does no work "
+                    "the narrative can describe."
+                )
 
         if not cited:
             raise NarrativeRejected(
