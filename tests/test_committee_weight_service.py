@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.domain.event import Event
@@ -23,7 +23,7 @@ def test_empty_weights(tmp_path: Path) -> None:
 def test_weight_equals_accuracy(tmp_path: Path) -> None:
     repository = JsonEventRepository(tmp_path)
 
-    recommendation_timestamp = datetime(2026, 7, 20, 9)
+    recommendation_timestamp = datetime(2026, 7, 20, 9, tzinfo=UTC)
 
     repository.save(
         Event(
@@ -46,7 +46,7 @@ def test_weight_equals_accuracy(tmp_path: Path) -> None:
 
     repository.save(
         Event(
-            timestamp=datetime(2026, 7, 27, 9),
+            timestamp=datetime(2026, 7, 27, 9, tzinfo=UTC),
             event_type=EventType.RECOMMENDATION_OUTCOME_RECORDED,
             symbol="MSFT",
             payload={

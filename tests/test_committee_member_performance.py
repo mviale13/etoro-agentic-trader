@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.domain.event import Event
@@ -19,7 +19,7 @@ def test_members_are_scored_using_their_own_votes(
     tmp_path: Path,
 ) -> None:
     repository = JsonEventRepository(tmp_path)
-    recommendation_timestamp = datetime(2026, 7, 20, 9, 0)
+    recommendation_timestamp = datetime(2026, 7, 20, 9, 0, tzinfo=UTC)
 
     repository.save(
         Event(
@@ -55,7 +55,7 @@ def test_members_are_scored_using_their_own_votes(
 
     repository.save(
         Event(
-            timestamp=datetime(2026, 7, 27, 9, 0),
+            timestamp=datetime(2026, 7, 27, 9, 0, tzinfo=UTC),
             event_type=EventType.RECOMMENDATION_OUTCOME_RECORDED,
             symbol="MSFT",
             payload={
@@ -89,7 +89,7 @@ def test_hold_vote_succeeds_inside_tolerance(
     tmp_path: Path,
 ) -> None:
     repository = JsonEventRepository(tmp_path)
-    recommendation_timestamp = datetime(2026, 7, 20, 9, 0)
+    recommendation_timestamp = datetime(2026, 7, 20, 9, 0, tzinfo=UTC)
 
     repository.save(
         Event(
@@ -113,7 +113,7 @@ def test_hold_vote_succeeds_inside_tolerance(
 
     repository.save(
         Event(
-            timestamp=datetime(2026, 7, 27, 9, 0),
+            timestamp=datetime(2026, 7, 27, 9, 0, tzinfo=UTC),
             event_type=EventType.RECOMMENDATION_OUTCOME_RECORDED,
             symbol="SPY",
             payload={

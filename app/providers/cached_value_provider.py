@@ -9,6 +9,18 @@ from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 from app.providers.value_provider import ValueProvider
 
+#: A company this platform has never read the fundamentals of.
+#:
+#: Every figure absent and undated, which is what it is. Not a snapshot of
+#: zeroes and not one dated now: the analysts already read an absent figure
+#: as unknown, and an undated one cannot be mistaken for a reading.
+UNREAD = ValuationSnapshot(
+    forward_pe=None,
+    trailing_pe=None,
+    peg_ratio=None,
+    dividend_yield=None,
+)
+
 
 class CachedValueProvider:
     """
@@ -32,9 +44,30 @@ class CachedValueProvider:
         self,
         provider: ValueProvider | None = None,
         cache: JsonCache | None = None,
+        acquires: bool = True,
     ) -> None:
         self._provider = provider or ValueProvider()
         self._cache = cache or JsonCache("data/cache/fundamentals")
+        self._acquires = acquires
+
+    @classmethod
+    def stored(
+        cls,
+        cache: JsonCache | None = None,
+    ) -> CachedValueProvider:
+        """
+        The fundamentals this platform has already read, and no others.
+
+        The read-only door. A company read some days ago is served as
+        read some days ago — this class already believed old evidence is
+        still evidence when it carries its date, and this is that rule
+        with the fetch removed.
+
+        A company never read carries nothing, and every figure derived
+        from it is absent rather than estimated.
+        """
+
+        return cls(cache=cache, acquires=False)
 
     def snapshot(
         self,
@@ -43,8 +76,11 @@ class CachedValueProvider:
         key = symbol.upper().strip()
         entry = self._cache.read(key)
 
-        if entry is not None and entry.is_from_today():
+        if entry is not None and (not self._acquires or entry.is_from_today()):
             return self._restore(entry)
+
+        if not self._acquires:
+            return UNREAD
 
         try:
             snapshot = self._provider.snapshot(symbol)

@@ -96,7 +96,22 @@ by this platform from two checked cells apiece, each with the narrowest
 agreement beneath it — and then the governing financial model's
 questions over exactly those facts: answered, not yet answerable, or
 not applicable with the evidence that would answer it. Read-only, never
-observes; `--model` is inspection and never changes what governs).
+observes; `--model` is inspection and never changes what governs),
+`movrvest acquire [--candidates N]` (read the market for every holding,
+the research candidates and the market strip **in one batch**, and fill
+the store the surfaces serve from — the provider half of the same
+explicit spend `observe` is for filings).
+
+**A page view reads what has been acquired, and acquires nothing.** Not
+a preference: it is why a dossier took 21 seconds and Research 60. Both
+halves now hold — `CompanyResearchService` opens
+`CompanyKnowledgeService.established`, and `CompanyFactsService` and
+`MarketPerception` open the providers' `stored()` doors — so no surface
+resolves a filing, prices a security or asks a model. A stored price is
+served with the moment it was taken ("Yahoo Finance, 3 hours ago"), and
+a security never acquired has no price rather than a stale-looking one.
+Acquisition is `movrvest acquire` and `movrvest observe`; a fresh clone
+shows absences until one of them is run, which is what it is.
 
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see

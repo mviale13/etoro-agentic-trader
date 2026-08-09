@@ -11,6 +11,10 @@ from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 
 
+class EarningsNotRead(LookupError):
+    """This platform has no calendar for the company, and did not ask for one."""
+
+
 class EarningsDatesProvider:
     """Read a company's published earnings window from Yahoo Finance."""
 
@@ -78,16 +82,39 @@ class CachedEarningsProvider:
         self,
         provider: EarningsDatesProvider | None = None,
         cache: JsonCache | None = None,
+        acquires: bool = True,
     ) -> None:
         self._provider = provider or EarningsDatesProvider()
         self._cache = cache or JsonCache("data/cache/earnings")
+        self._acquires = acquires
+
+    @classmethod
+    def stored(
+        cls,
+        cache: JsonCache | None = None,
+    ) -> CachedEarningsProvider:
+        """
+        The calendars this platform has already read, and no others.
+
+        The read-only door. A company whose calendar was never read
+        raises, exactly as one whose provider could not be reached does,
+        because the caller draws the same conclusion from both: this
+        platform has no calendar for the company. What it must never
+        conclude is that the company published no date — that is a fact
+        about the company, and nothing here has evidenced it.
+        """
+
+        return cls(cache=cache, acquires=False)
 
     def read(self, symbol: str) -> ReadDates:
         key = symbol.upper().strip()
         entry = self._cache.read(key)
 
-        if entry is not None and entry.is_from_today():
+        if entry is not None and (not self._acquires or entry.is_from_today()):
             return self._restore(entry)
+
+        if not self._acquires:
+            raise EarningsNotRead(f"No earnings calendar has been read for {key}.")
 
         try:
             dates = self._provider.dates(key)

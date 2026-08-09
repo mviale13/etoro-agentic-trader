@@ -41,9 +41,18 @@ class CompanyFactsService:
         valuation_provider: ValuationProvider | None = None,
         earnings_provider: EarningsProvider | None = None,
     ) -> None:
-        self._market_provider = market_provider or CachedMarketProvider()
-        self._valuation_provider = valuation_provider or CachedValueProvider()
-        self._earnings_provider = earnings_provider or CachedEarningsProvider()
+        # The read-only doors, because this runs once per security on
+        # every page view. Acquiring here made opening a page the act
+        # that spends a rate limit and waits for a provider: a single
+        # dossier downloaded a year of daily closes for every holding
+        # and `SPY` thirteen times over, and the investor waited.
+        #
+        # A caller that means to acquire says so by passing the
+        # acquiring door — `MarketAcquisitionService` is the one that
+        # does, and it asks for the whole book in one batch.
+        self._market_provider = market_provider or CachedMarketProvider.stored()
+        self._valuation_provider = valuation_provider or CachedValueProvider.stored()
+        self._earnings_provider = earnings_provider or CachedEarningsProvider.stored()
 
     async def build(
         self,

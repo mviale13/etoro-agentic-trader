@@ -4,6 +4,7 @@ from collections.abc import Callable, Coroutine
 from typing import Any, NoReturn
 
 from app.commands import (
+    acquire,
     archetype,
     brain,
     committee,
@@ -395,6 +396,28 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    acquire_parser = subparsers.add_parser(
+        "acquire",
+        help="Read the market for the whole book, and fill the store pages serve from",
+        description=(
+            "Price every holding, the research candidates and the market "
+            "strip in one reading, and store what came back. Every surface "
+            "serves what this left behind and reaches no provider itself, "
+            "so this is the act that makes a page current — and the one "
+            "place a rate limit is spent"
+        ),
+    )
+    acquire_parser.add_argument(
+        "--candidates",
+        type=int,
+        default=acquire.DEFAULT_CANDIDATE_BUDGET,
+        help=(
+            "How many watched-but-unheld securities to price. The research "
+            "page's own default, so the page it serves finds every security "
+            "it evidences already priced"
+        ),
+    )
+
     statement_shape_parser = subparsers.add_parser(
         "statement-shape",
         help="Show what shape a filer's own statements have, and whose each absence is",
@@ -465,6 +488,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "observe":
         return await observe.run(args.symbol, args.to)
+
+    if args.command == "acquire":
+        return await acquire.run(args.candidates)
 
     if args.command == "statements":
         return await statements.run(args.symbol, StatementKind(args.statement))
