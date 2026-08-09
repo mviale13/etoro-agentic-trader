@@ -17,6 +17,12 @@ enumeration left deliberately open at acceptance stays open exactly
 as decided: the course vocabulary is fixed with kind #1, under the
 two standing rules recorded in decision 2.
 
+**Amendment 1 (2026-08-09)** names `CommitteeOpinion` the reference
+implementation of this layer, without merging the pipelines and
+without relaxing anything here. It is recorded before the
+implementation sequence at the end; the architecture carrying it out
+is [`ASSESSMENT_CONVERGENCE.md`](ASSESSMENT_CONVERGENCE.md).
+
 ---
 
 ## Why this document exists
@@ -457,6 +463,55 @@ constitutional property beside *establishes*, *implies*,
 *concludes*, recorded in full above. An assessment emits only what
 it can positively establish, and never infers the logical opposite
 from absence.
+
+---
+
+## Amendment 1 — the reference implementation (the owner's ruling, 2026-08-09)
+
+Recorded here because this document is frozen and requires it:
+amending the object, the boundaries or the sequence is an owner's
+decision written into this file, never a side effect of
+implementation.
+
+The executive pipeline's committee layer was rebuilt (PR #77) and the
+question it raised — two live decision paths, and which one the
+committee work belongs to — was put to the owner as three options.
+The ruling:
+
+> **`CommitteeOpinion` becomes the reference implementation of the
+> future Assessment layer. Do not merge the pipelines yet.**
+
+What the ruling changes, and what it does not:
+
+- **The Reconciliation clause above now has a named target.** It
+  already said `CommitteeOpinion` is this layer's ancestor, whose
+  durable idea *survives as assessment kinds once each meets the
+  contract*. The ruling fixes which object is carried toward that
+  bar, so no second candidate shape is designed in parallel.
+- **Nothing in the contract is relaxed.** The object, the four
+  admissibility checks, the directional property, the Yahoo boundary
+  and the independence rule all hold unchanged. The reference
+  implementation converges on them; they do not bend toward it.
+- **The two foreclosures the Reconciliation named still bite.** The
+  committee layer's free-text findings are gone — an opinion now
+  carries content-addressed references into a canonical ledger — and
+  its per-opinion confidence **does not cross the seam**. `Confidence`
+  remains on the opinion for the dossier and is not projected: what it
+  counts is carried into an assessment as absences, in the one
+  uncertainty vocabulary this contract permits.
+- **The pipelines stay apart.** Convergence is by *projection*, not by
+  merger: the executive pipeline keeps producing opinions for the
+  dossier, and the decision layer reads the same object through a
+  pure, total projection when its first kind is earned. Neither
+  pipeline learns about the other.
+
+The architecture that carries this out —the five declarations a
+committee kind must make, the direction-to-course seam, the evidence
+class that decides what a kind may offer, and the laws that keep
+future kinds converged — is
+[`ASSESSMENT_CONVERGENCE.md`](ASSESSMENT_CONVERGENCE.md). It changes
+nothing in the sequence below: its own first step is additive and
+behaviour-free, and its warranting step is step 2 here.
 
 ---
 

@@ -2,9 +2,14 @@
 
 Status: **Implemented** (2026-08-09). The object, its rules and the
 Executive synthesis that consumes it are live on the executive
-pipeline. Two things in this document are **not** implemented and are
-recorded here as decisions for the owner: the investment-profile
-determination (§4) and the two-stack question (§5).
+pipeline.
+
+Two things here are **not** implemented. The investment-profile
+determination (§4) stands as a determination with nothing built. The
+two-stack question (§5) has since been **ruled by the owner —
+option (b)**: this object is the reference implementation of the
+future Assessment layer, and the pipelines do not merge. See
+[`ASSESSMENT_CONVERGENCE.md`](ASSESSMENT_CONVERGENCE.md).
 
 ---
 
@@ -330,6 +335,35 @@ referenced evidence, named rule, worded absence, no cross-talk — and
 the only real divergence is `Confidence`, which the assessment
 contract bans as a number and this object derives entirely from
 counts. That is a narrower gap than two parallel stacks.
+
+### Ruled: (b), 2026-08-09
+
+> **`CommitteeOpinion` becomes the reference implementation of the
+> future Assessment layer. Do not merge the pipelines yet.**
+
+Recorded as Amendment 1 in
+[`INVESTMENT_ASSESSMENT.md`](INVESTMENT_ASSESSMENT.md), because that
+contract is frozen and requires amendments to be written into it.
+Nothing there is relaxed: the object, the four admissibility checks,
+the directional property, the Yahoo boundary and total independence
+all hold, and this object converges on them rather than the reverse.
+
+The architecture carrying it out is
+[`ASSESSMENT_CONVERGENCE.md`](ASSESSMENT_CONVERGENCE.md) — convergence
+by **projection, not merger**; the five declarations a committee kind
+must make; the direction-to-course seam; and the finding that decides
+the frontier: **shape converges, but only evidence class admits.** A
+committee assessment cannot warrant today, because every remit is fed
+by provider-reported fundamentals, which the Yahoo boundary forecloses
+from any warranting basis. That is the same frontier the frozen
+contract found from the other direction, which is the best available
+evidence that the convergence is real rather than arranged.
+
+One consequence lands back here: `Confidence` **does not cross the
+seam**. It stays on the opinion for the dossier, and what it counts
+crosses as absences, in the one uncertainty vocabulary the contract
+permits — under the general law that no field may carry information
+the projection loses.
 
 ---
 
