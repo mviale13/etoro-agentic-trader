@@ -1,0 +1,976 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 1,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET SALES",
+            "printed": "$ 87,032",
+            "value": 87032.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET SALES",
+              "printed": "$ 87,032",
+              "value": 87032.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET SALES",
+              "printed": "$ 84,284",
+              "value": 84284.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET SALES",
+              "printed": "$ 84,039",
+              "value": 84039.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "OPERATING INCOME",
+            "printed": "19,748",
+            "value": 19748.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "OPERATING INCOME",
+              "printed": "19,748",
+              "value": 19748.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "OPERATING INCOME",
+              "printed": "20,451",
+              "value": 20451.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "OPERATING INCOME",
+              "printed": "18,545",
+              "value": 18545.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET EARNINGS",
+            "printed": "16,144",
+            "value": 16144.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET EARNINGS",
+              "printed": "16,144",
+              "value": 16144.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET EARNINGS",
+              "printed": "16,065",
+              "value": 16065.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET EARNINGS",
+              "printed": "14,974",
+              "value": 14974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:50:19.872566+00:00",
+        "source": "10-K 0000080424-26-000103 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 1,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET SALES",
+            "printed": "$ 87,032",
+            "value": 87032.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET SALES",
+              "printed": "$ 87,032",
+              "value": 87032.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET SALES",
+              "printed": "$ 84,284",
+              "value": 84284.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET SALES",
+              "printed": "$ 84,039",
+              "value": 84039.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "OPERATING INCOME",
+            "printed": "19,748",
+            "value": 19748.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "OPERATING INCOME",
+              "printed": "19,748",
+              "value": 19748.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "OPERATING INCOME",
+              "printed": "20,451",
+              "value": 20451.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "OPERATING INCOME",
+              "printed": "18,545",
+              "value": 18545.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET EARNINGS",
+            "printed": "16,144",
+            "value": 16144.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET EARNINGS",
+              "printed": "16,144",
+              "value": 16144.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET EARNINGS",
+              "printed": "16,065",
+              "value": 16065.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET EARNINGS",
+              "printed": "14,974",
+              "value": 14974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:50:27.778776+00:00",
+        "source": "10-K 0000080424-26-000103 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 1,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET SALES",
+            "printed": "$ 87,032",
+            "value": 87032.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET SALES",
+              "printed": "$ 87,032",
+              "value": 87032.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET SALES",
+              "printed": "$ 84,284",
+              "value": 84284.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET SALES",
+              "printed": "$ 84,039",
+              "value": 84039.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "OPERATING INCOME",
+            "printed": "19,748",
+            "value": 19748.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "OPERATING INCOME",
+              "printed": "19,748",
+              "value": 19748.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "OPERATING INCOME",
+              "printed": "20,451",
+              "value": 20451.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "OPERATING INCOME",
+              "printed": "18,545",
+              "value": 18545.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET EARNINGS",
+            "printed": "16,144",
+            "value": 16144.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET EARNINGS",
+              "printed": "16,144",
+              "value": 16144.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET EARNINGS",
+              "printed": "16,065",
+              "value": 16065.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET EARNINGS",
+              "printed": "14,974",
+              "value": 14974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:50:34.386243+00:00",
+        "source": "10-K 0000080424-26-000103 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 1,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET SALES",
+            "printed": "$ 87,032",
+            "value": 87032.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET SALES",
+              "printed": "$ 87,032",
+              "value": 87032.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET SALES",
+              "printed": "$ 84,284",
+              "value": 84284.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET SALES",
+              "printed": "$ 84,039",
+              "value": 84039.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "OPERATING INCOME",
+            "printed": "19,748",
+            "value": 19748.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "OPERATING INCOME",
+              "printed": "19,748",
+              "value": 19748.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "OPERATING INCOME",
+              "printed": "20,451",
+              "value": 20451.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "OPERATING INCOME",
+              "printed": "18,545",
+              "value": 18545.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET EARNINGS",
+            "printed": "16,144",
+            "value": 16144.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET EARNINGS",
+              "printed": "16,144",
+              "value": 16144.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET EARNINGS",
+              "printed": "16,065",
+              "value": 16065.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET EARNINGS",
+              "printed": "14,974",
+              "value": 14974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:50:40.744169+00:00",
+        "source": "10-K 0000080424-26-000103 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 1,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET SALES",
+            "printed": "$ 87,032",
+            "value": 87032.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET SALES",
+              "printed": "$ 87,032",
+              "value": 87032.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET SALES",
+              "printed": "$ 84,284",
+              "value": 84284.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 1,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET SALES",
+              "printed": "$ 84,039",
+              "value": 84039.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "OPERATING INCOME",
+            "printed": "19,748",
+            "value": 19748.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "OPERATING INCOME",
+              "printed": "19,748",
+              "value": 19748.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "OPERATING INCOME",
+              "printed": "20,451",
+              "value": 20451.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "OPERATING INCOME",
+              "printed": "18,545",
+              "value": 18545.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Earnings",
+            "cell": {
+              "column": 3,
+              "row": 11,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "NET EARNINGS",
+            "printed": "16,144",
+            "value": 16144.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 3,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "NET EARNINGS",
+              "printed": "16,144",
+              "value": 16144.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 5,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "NET EARNINGS",
+              "printed": "16,065",
+              "value": 16065.0
+            },
+            {
+              "caption": "Consolidated Statements of Earnings",
+              "cell": {
+                "column": 7,
+                "row": 11,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "NET EARNINGS",
+              "printed": "14,974",
+              "value": 14974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:50:46.691959+00:00",
+        "source": "10-K 0000080424-26-000103 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 3,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "PROCTER & GAMBLE Co",
+    "document_format": "html",
+    "identifier": "10-K 0000080424-26-000103",
+    "key": "0000080424-26-000103",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/80424/000008042426000103/pg-20260630.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-08-04",
+    "reporting_period": {
+      "ends_on": "2026-06-30",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "PG",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "PG"
+}

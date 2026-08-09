@@ -45,6 +45,7 @@ from enum import StrEnum
 from app.domain.agreement import Agreement
 from app.domain.financial_statements import StatementKind
 from app.domain.provenance import Provenance
+from app.domain.statement_language import EstablishedLanguage
 from app.domain.tabular_evidence import ReportedFigure
 
 
@@ -214,6 +215,18 @@ class FinancialUnderstanding:
     #: worded absence, so a reader never infers whether a missing entry
     #: was refused, unestablished, or never attempted.
     measures: tuple[EstablishedMeasure, ...]
+
+    #: Which financial language the income statement establishes, from
+    #: the lines the filer printed. Reported, and consumed by nothing:
+    #: `model_for` still derives the financial model from the business
+    #: playbook, and this observation is not wired to it. What it would
+    #: take to earn that connection is recorded in
+    #: `docs/architecture/FINANCIAL_LANGUAGE_CORPUS.md`.
+    #:
+    #: None where no income-statement consensus was given, which is a
+    #: different fact from a statement that was read and established
+    #: neither marker.
+    language: EstablishedLanguage | None = None
 
     def of(self, measure: FinancialMeasure) -> EstablishedMeasure | None:
         """This platform's answer for one measure."""

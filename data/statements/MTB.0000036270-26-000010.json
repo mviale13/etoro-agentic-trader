@@ -3,34 +3,10 @@
     {
       "facts": [
         {
-          "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-            "cell": {
-              "column": 3,
-              "row": 5,
-              "table": 0
-            },
-            "column_header": "Years Ended December 31,",
-            "label": "Net sales",
-            "printed": "37,442",
-            "value": 37442.0
-          },
+          "anchor": null,
           "concept": "total_revenue",
-          "row": [
-            {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-              "cell": {
-                "column": 3,
-                "row": 5,
-                "table": 0
-              },
-              "column_header": "Years Ended December 31,",
-              "label": "Net sales",
-              "printed": "37,442",
-              "value": 37442.0
-            }
-          ],
-          "unlocated_because": null
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
@@ -46,39 +22,63 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "caption": "Consolidated Statement of Income",
             "cell": {
               "column": 3,
-              "row": 21,
+              "row": 38,
               "table": 0
             },
-            "column_header": "Years Ended December 31,",
+            "column_header": "Year Ended December 31,",
             "label": "Net income",
-            "printed": "4,772",
-            "value": 4772.0
+            "printed": "$ 2,851",
+            "value": 2851.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "caption": "Consolidated Statement of Income",
               "cell": {
                 "column": 3,
-                "row": 21,
+                "row": 38,
                 "table": 0
               },
-              "column_header": "Years Ended December 31,",
+              "column_header": "Year Ended December 31,",
               "label": "Net income",
-              "printed": "4,772",
-              "value": 4772.0
+              "printed": "$ 2,851",
+              "value": 2851.0
             }
           ],
           "unlocated_because": null
         },
         {
-          "anchor": null,
+          "anchor": {
+            "caption": "Consolidated Statement of Income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31,",
+            "label": "Net interest income",
+            "printed": "6,948",
+            "value": 6948.0
+          },
           "concept": "net_interest_income",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+          "row": [
+            {
+              "caption": "Consolidated Statement of Income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Net interest income",
+              "printed": "6,948",
+              "value": 6948.0
+            }
+          ],
+          "unlocated_because": null
         },
         {
           "anchor": null,
@@ -89,42 +89,18 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:52:04.524958+00:00",
-        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:51:35.737476+00:00",
+        "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
     {
       "facts": [
         {
-          "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-            "cell": {
-              "column": 3,
-              "row": 5,
-              "table": 0
-            },
-            "column_header": "Years Ended December 31,",
-            "label": "Net sales",
-            "printed": "37,442",
-            "value": 37442.0
-          },
+          "anchor": null,
           "concept": "total_revenue",
-          "row": [
-            {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-              "cell": {
-                "column": 3,
-                "row": 5,
-                "table": 0
-              },
-              "column_header": "Years Ended December 31,",
-              "label": "Net sales",
-              "printed": "37,442",
-              "value": 37442.0
-            }
-          ],
-          "unlocated_because": null
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
@@ -140,39 +116,63 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "caption": "Consolidated Statement of Income",
             "cell": {
               "column": 3,
-              "row": 21,
+              "row": 38,
               "table": 0
             },
-            "column_header": "Years Ended December 31,",
+            "column_header": "Year Ended December 31,",
             "label": "Net income",
-            "printed": "4,772",
-            "value": 4772.0
+            "printed": "$ 2,851",
+            "value": 2851.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "caption": "Consolidated Statement of Income",
               "cell": {
                 "column": 3,
-                "row": 21,
+                "row": 38,
                 "table": 0
               },
-              "column_header": "Years Ended December 31,",
+              "column_header": "Year Ended December 31,",
               "label": "Net income",
-              "printed": "4,772",
-              "value": 4772.0
+              "printed": "$ 2,851",
+              "value": 2851.0
             }
           ],
           "unlocated_because": null
         },
         {
-          "anchor": null,
+          "anchor": {
+            "caption": "Consolidated Statement of Income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31,",
+            "label": "Net interest income",
+            "printed": "6,948",
+            "value": 6948.0
+          },
           "concept": "net_interest_income",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+          "row": [
+            {
+              "caption": "Consolidated Statement of Income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Net interest income",
+              "printed": "6,948",
+              "value": 6948.0
+            }
+          ],
+          "unlocated_because": null
         },
         {
           "anchor": null,
@@ -183,42 +183,18 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:52:14.008983+00:00",
-        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:51:40.285402+00:00",
+        "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
     {
       "facts": [
         {
-          "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-            "cell": {
-              "column": 3,
-              "row": 5,
-              "table": 0
-            },
-            "column_header": "Years Ended December 31,",
-            "label": "Net sales",
-            "printed": "37,442",
-            "value": 37442.0
-          },
+          "anchor": null,
           "concept": "total_revenue",
-          "row": [
-            {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-              "cell": {
-                "column": 3,
-                "row": 5,
-                "table": 0
-              },
-              "column_header": "Years Ended December 31,",
-              "label": "Net sales",
-              "printed": "37,442",
-              "value": 37442.0
-            }
-          ],
-          "unlocated_because": null
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
@@ -234,39 +210,63 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "caption": "Consolidated Statement of Income",
             "cell": {
               "column": 3,
-              "row": 21,
+              "row": 38,
               "table": 0
             },
-            "column_header": "Years Ended December 31,",
+            "column_header": "Year Ended December 31,",
             "label": "Net income",
-            "printed": "4,772",
-            "value": 4772.0
+            "printed": "$ 2,851",
+            "value": 2851.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "caption": "Consolidated Statement of Income",
               "cell": {
                 "column": 3,
-                "row": 21,
+                "row": 38,
                 "table": 0
               },
-              "column_header": "Years Ended December 31,",
+              "column_header": "Year Ended December 31,",
               "label": "Net income",
-              "printed": "4,772",
-              "value": 4772.0
+              "printed": "$ 2,851",
+              "value": 2851.0
             }
           ],
           "unlocated_because": null
         },
         {
-          "anchor": null,
+          "anchor": {
+            "caption": "Consolidated Statement of Income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31,",
+            "label": "Net interest income",
+            "printed": "6,948",
+            "value": 6948.0
+          },
           "concept": "net_interest_income",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+          "row": [
+            {
+              "caption": "Consolidated Statement of Income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Net interest income",
+              "printed": "6,948",
+              "value": 6948.0
+            }
+          ],
+          "unlocated_because": null
         },
         {
           "anchor": null,
@@ -277,42 +277,18 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:52:20.576769+00:00",
-        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:51:45.757325+00:00",
+        "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
     {
       "facts": [
         {
-          "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-            "cell": {
-              "column": 3,
-              "row": 5,
-              "table": 0
-            },
-            "column_header": "Years Ended December 31,",
-            "label": "Net sales",
-            "printed": "37,442",
-            "value": 37442.0
-          },
+          "anchor": null,
           "concept": "total_revenue",
-          "row": [
-            {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-              "cell": {
-                "column": 3,
-                "row": 5,
-                "table": 0
-              },
-              "column_header": "Years Ended December 31,",
-              "label": "Net sales",
-              "printed": "37,442",
-              "value": 37442.0
-            }
-          ],
-          "unlocated_because": null
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
@@ -328,39 +304,63 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "caption": "Consolidated Statement of Income",
             "cell": {
               "column": 3,
-              "row": 21,
+              "row": 38,
               "table": 0
             },
-            "column_header": "Years Ended December 31,",
+            "column_header": "Year Ended December 31,",
             "label": "Net income",
-            "printed": "4,772",
-            "value": 4772.0
+            "printed": "$ 2,851",
+            "value": 2851.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "caption": "Consolidated Statement of Income",
               "cell": {
                 "column": 3,
-                "row": 21,
+                "row": 38,
                 "table": 0
               },
-              "column_header": "Years Ended December 31,",
+              "column_header": "Year Ended December 31,",
               "label": "Net income",
-              "printed": "4,772",
-              "value": 4772.0
+              "printed": "$ 2,851",
+              "value": 2851.0
             }
           ],
           "unlocated_because": null
         },
         {
-          "anchor": null,
+          "anchor": {
+            "caption": "Consolidated Statement of Income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31,",
+            "label": "Net interest income",
+            "printed": "6,948",
+            "value": 6948.0
+          },
           "concept": "net_interest_income",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+          "row": [
+            {
+              "caption": "Consolidated Statement of Income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Net interest income",
+              "printed": "6,948",
+              "value": 6948.0
+            }
+          ],
+          "unlocated_because": null
         },
         {
           "anchor": null,
@@ -371,42 +371,18 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:52:27.182653+00:00",
-        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:51:51.326294+00:00",
+        "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     },
     {
       "facts": [
         {
-          "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-            "cell": {
-              "column": 3,
-              "row": 5,
-              "table": 0
-            },
-            "column_header": "Years Ended December 31,",
-            "label": "Net sales",
-            "printed": "37,442",
-            "value": 37442.0
-          },
+          "anchor": null,
           "concept": "total_revenue",
-          "row": [
-            {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
-              "cell": {
-                "column": 3,
-                "row": 5,
-                "table": 0
-              },
-              "column_header": "Years Ended December 31,",
-              "label": "Net sales",
-              "printed": "37,442",
-              "value": 37442.0
-            }
-          ],
-          "unlocated_because": null
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total revenue for the most recent period the statement reports in the tables printed under the income statement's title."
         },
         {
           "anchor": null,
@@ -422,39 +398,63 @@
         },
         {
           "anchor": {
-            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "caption": "Consolidated Statement of Income",
             "cell": {
               "column": 3,
-              "row": 21,
+              "row": 38,
               "table": 0
             },
-            "column_header": "Years Ended December 31,",
+            "column_header": "Year Ended December 31,",
             "label": "Net income",
-            "printed": "4,772",
-            "value": 4772.0
+            "printed": "$ 2,851",
+            "value": 2851.0
           },
           "concept": "net_income",
           "row": [
             {
-              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "caption": "Consolidated Statement of Income",
               "cell": {
                 "column": 3,
-                "row": 21,
+                "row": 38,
                 "table": 0
               },
-              "column_header": "Years Ended December 31,",
+              "column_header": "Year Ended December 31,",
               "label": "Net income",
-              "printed": "4,772",
-              "value": 4772.0
+              "printed": "$ 2,851",
+              "value": 2851.0
             }
           ],
           "unlocated_because": null
         },
         {
-          "anchor": null,
+          "anchor": {
+            "caption": "Consolidated Statement of Income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31,",
+            "label": "Net interest income",
+            "printed": "6,948",
+            "value": 6948.0
+          },
           "concept": "net_interest_income",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+          "row": [
+            {
+              "caption": "Consolidated Statement of Income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31,",
+              "label": "Net interest income",
+              "printed": "6,948",
+              "value": 6948.0
+            }
+          ],
+          "unlocated_because": null
         },
         {
           "anchor": null,
@@ -465,8 +465,8 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:52:33.821060+00:00",
-        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+        "observed_at": "2026-08-09T06:51:55.784565+00:00",
+        "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
     }
@@ -474,23 +474,23 @@
   "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
-    "company": "HONEYWELL INTERNATIONAL INC",
+    "company": "M&T BANK CORP",
     "document_format": "html",
-    "identifier": "10-K 0000773840-26-000013",
-    "key": "0000773840-26-000013",
+    "identifier": "10-K 0000036270-26-000010",
+    "key": "0000036270-26-000010",
     "language": "en",
-    "location": "https://www.sec.gov/Archives/edgar/data/773840/000077384026000013/hon-20251231.htm",
+    "location": "https://www.sec.gov/Archives/edgar/data/36270/000003627026000010/mtb-20251231.htm",
     "provider": "SEC EDGAR",
-    "published_on": "2026-02-17",
+    "published_on": "2026-02-18",
     "reporting_period": {
       "ends_on": "2025-12-31",
       "starts_on": null
     },
     "source_type": "annual_report",
-    "symbol": "HON",
+    "symbol": "MTB",
     "verification": [
       "register_indexed"
     ]
   },
-  "symbol": "HON"
+  "symbol": "MTB"
 }

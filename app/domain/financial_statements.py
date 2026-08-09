@@ -83,6 +83,26 @@ class StatementConcept(StrEnum):
     OPERATING_INCOME = "operating_income"
     NET_INCOME = "net_income"
 
+    #: The two lines that say, positively, which financial language a
+    #: statement is written in. They are not margins and no analyst
+    #: scores them: their consumer is `StatementLanguage`, which needs
+    #: *positive* evidence because the corpus proved absence cannot
+    #: supply it — a filing printing no gross profit, no operating
+    #: income and an unclassified balance sheet is equally a bank, an
+    #: insurer and a section this platform failed to read
+    #: (`docs/architecture/FINANCIAL_LANGUAGE_CORPUS.md`).
+    #:
+    #: Deliberately two, out of six candidates measured. Interest income
+    #: and interest expense were refused: Coca-Cola, Tesla, Walmart and
+    #: Procter & Gamble all print them, so they separate nothing.
+    #: Claims, policyholder benefits and insurance reserves were refused
+    #: for a different reason — five insurers print five different
+    #: labels for them and Citigroup prints "Total provisions for credit
+    #: losses and for benefits and claims", so there is no row to ground
+    #: and a false positive waiting in the one bank that has insurance.
+    NET_INTEREST_INCOME = "net_interest_income"
+    PREMIUM_REVENUE = "premium_revenue"
+
     TOTAL_CURRENT_ASSETS = "total_current_assets"
     TOTAL_CURRENT_LIABILITIES = "total_current_liabilities"
     TOTAL_LIABILITIES = "total_liabilities"
@@ -104,6 +124,8 @@ CONCEPT_STATEMENT: dict[StatementConcept, StatementKind] = {
     StatementConcept.GROSS_PROFIT: StatementKind.INCOME_STATEMENT,
     StatementConcept.OPERATING_INCOME: StatementKind.INCOME_STATEMENT,
     StatementConcept.NET_INCOME: StatementKind.INCOME_STATEMENT,
+    StatementConcept.NET_INTEREST_INCOME: StatementKind.INCOME_STATEMENT,
+    StatementConcept.PREMIUM_REVENUE: StatementKind.INCOME_STATEMENT,
     StatementConcept.TOTAL_CURRENT_ASSETS: StatementKind.BALANCE_SHEET,
     StatementConcept.TOTAL_CURRENT_LIABILITIES: StatementKind.BALANCE_SHEET,
     StatementConcept.TOTAL_LIABILITIES: StatementKind.BALANCE_SHEET,
@@ -203,6 +225,20 @@ CONCEPT_QUESTIONS: dict[StatementConcept, str] = {
     StatementConcept.NET_INCOME: (
         "the company's net income for the most recent period the statement reports"
     ),
+    StatementConcept.NET_INTEREST_INCOME: (
+        "the net interest income the statement reports for the most recent "
+        "period — interest earned less interest paid, as a single line the "
+        "statement prints — where the statement prints that line. Not a "
+        "subtotal struck after it, such as net interest income after a "
+        "provision for credit losses"
+    ),
+    StatementConcept.PREMIUM_REVENUE: (
+        "the insurance premium revenue the statement reports for the most "
+        "recent period, as a revenue line of the statement, where the "
+        "statement prints that line. Not premiums written, and not a "
+        "movement in unearned premiums — both are amounts other than the "
+        "revenue the period earned"
+    ),
     StatementConcept.TOTAL_CURRENT_ASSETS: (
         "the company's total current assets at the most recent date the "
         "balance sheet reports, where the balance sheet is classified"
@@ -272,6 +308,35 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         "total operating income",
         "operating income from continuing operations",
     ),
+    #: One form, and the exactness is the whole contract. Ten of the
+    #: eleven banks whose income statement this platform reads print
+    #: "Net interest income" and six of them *also* print "Net interest
+    #: income after provision for credit losses" directly beneath it —
+    #: a different quantity, struck after an expense. Equality after
+    #: `normalised` accepts the first and refuses the second, which is
+    #: why no containment rule may ever be used here.
+    StatementConcept.NET_INTEREST_INCOME: ("net interest income",),
+    #: Two forms, because US filers print the earned-premium revenue
+    #: line two ways: bare on a life or multiline insurer's statement
+    #: (Travelers, MetLife, AIG) and named in full on a property and
+    #: casualty one (Chubb).
+    #:
+    #: What is refused matters more. "Net premiums written" is not
+    #: revenue — it is a production statistic printed immediately above
+    #: the revenue line, and Chubb prints all three of written, the
+    #: movement in unearned, and earned. "Preferred stock redemption
+    #: premium" is not insurance at all, and MetLife and AIG both print
+    #: it further down the same statement. Equality refuses each.
+    #:
+    #: Claimed for US GAAP filings only, because the corpus holds no
+    #: IFRS insurer. An IFRS 17 filer prints "Insurance revenue", which
+    #: is a differently-defined quantity and is deliberately not listed
+    #: here: it would be flattening two accounting concepts because they
+    #: are economically similar.
+    StatementConcept.PREMIUM_REVENUE: (
+        "premiums",
+        "net premiums earned",
+    ),
     StatementConcept.TOTAL_CURRENT_ASSETS: ("total current assets",),
     StatementConcept.TOTAL_CURRENT_LIABILITIES: ("total current liabilities",),
     StatementConcept.TOTAL_LIABILITIES: ("total liabilities",),
@@ -291,6 +356,12 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
     #: filing that uses it as a heading over a breakdown, that row
     #: prints no number, and a cell that prints no number is already
     #: refused as measuring nothing before any label is compared.
+    #:
+    #: The form a filer builds out of its own name — "Total Allstate
+    #: shareholders' equity" — is not listed and cannot be: it is one
+    #: form per company. It is accepted by `names_its_own_equity`
+    #: instead, which is a rule rather than a list, and which replaced
+    #: an entry that had hard-coded one company's wording by name.
     StatementConcept.TOTAL_EQUITY: (
         "total stockholders' equity",
         "total stockholders equity",
@@ -298,7 +369,6 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         "total shareholders equity",
         "total shareowners' equity",
         "total common stockholders' equity",
-        "total jpmorgan chase stockholders' equity",
         "stockholders' equity",
         "shareholders' equity",
         "shareowners' equity",
@@ -355,6 +425,81 @@ def without_footnote(label: str) -> str:
     return _FOOTNOTE.sub("", label.strip())
 
 
+#: The words a filer uses for the people who own it.
+_HOLDERS = frozenset({"stockholders", "shareholders", "shareowners"})
+
+#: Words that, standing between "Total" and the equity phrase, prove the
+#: row is *not* the parent's equity. "Total liabilities and stockholders'
+#: equity" is the balance sheet's grand total and is many times larger;
+#: reading it as equity would divide by the wrong number everywhere it is
+#: used. Every one of these was taken off a real row in the corpus.
+_NOT_THE_PARENTS = frozenset(
+    {
+        "liabilities",
+        "liability",
+        "and",
+        "equity",
+        "including",
+        "noncontrolling",
+        "redeemable",
+        "mezzanine",
+        "deficit",
+        "temporary",
+        "permanent",
+        "preferred",
+    }
+)
+
+#: Splits a label into words, unlike `normalised`, which removes the
+#: spaces along with the punctuation. A rule about which words sit
+#: *between* two others cannot be written on a form that has lost the
+#: word boundaries — on `normalised` output, "total liabilities and
+#: stockholders equity" and "total stockholders equity" differ only by
+#: characters in the middle, and any bounded wildcard admits both.
+_WORDS = re.compile(r"[^a-z0-9]+")
+
+
+def _words(label: str) -> tuple[str, ...]:
+    """A row label as its words, lowercased, punctuation dropped."""
+
+    return tuple(word for word in _WORDS.split(label.casefold()) if word)
+
+
+def names_its_own_equity(label: str) -> bool:
+    """Whether this row is the parent's equity, stated with the filer's name.
+
+    "Total Allstate shareholders' equity", "Total Honeywell shareowners'
+    equity", "Total MetLife, Inc.'s stockholders' equity" — one form per
+    company, so a list cannot hold them and a rule must.
+
+    The rule is deliberately narrow, and reads as a shape rather than as
+    a name: the row opens with *Total*, closes with a holder word and
+    *equity*, and carries at least one word between them that is none of
+    `_NOT_THE_PARENTS`. This platform never learns what a company calls
+    itself — it only accepts that *something* stands where a name would.
+
+    Measured against every row of all forty-four corpus filings, this
+    accepts nine rows and every one is the parent's equity. It refuses
+    every grand total in the corpus, including MetLife's "Total
+    liabilities, mezzanine equity and equity", Walmart's "Total
+    liabilities, redeemable noncontrolling interest, and shareholders'
+    equity", and Barclays' "Total equity excluding non-controlling
+    interests".
+    """
+
+    words = _words(without_footnote(label))
+
+    if len(words) < 4:
+        return False
+
+    if words[0] != "total" or words[-1] != "equity" or words[-2] not in _HOLDERS:
+        return False
+
+    between = words[1:-2]
+
+    return bool(between) and not (set(between) & _NOT_THE_PARENTS)
+
+
 def matches_concept(concept: StatementConcept, label: str) -> bool:
     """Whether a filer's row label answers this concept.
 
@@ -366,11 +511,19 @@ def matches_concept(concept: StatementConcept, label: str) -> bool:
 
     A trailing footnote marker is removed before comparing, because it
     is typography rather than the line's name.
+
+    One concept has a rule beside its list, and only because a list
+    cannot express it: the parent's equity as a filer builds it out of
+    its own name. `names_its_own_equity` states what that row looks
+    like, and refuses everything else the same way an absent form does.
     """
 
     printed = normalised(without_footnote(label))
 
-    return any(printed == normalised(form) for form in CONCEPT_LABELS[concept])
+    if any(printed == normalised(form) for form in CONCEPT_LABELS[concept]):
+        return True
+
+    return concept is StatementConcept.TOTAL_EQUITY and names_its_own_equity(label)
 
 
 @dataclass(frozen=True, slots=True)

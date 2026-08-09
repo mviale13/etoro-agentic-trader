@@ -1,0 +1,1206 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Total revenues",
+            "printed": "713,163",
+            "value": 713163.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Total revenues",
+              "printed": "713,163",
+              "value": 713163.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Operating income",
+            "printed": "29,825",
+            "value": 29825.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Operating income",
+              "printed": "29,825",
+              "value": 29825.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:57:41.939447+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Total revenues",
+            "printed": "713,163",
+            "value": 713163.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Total revenues",
+              "printed": "713,163",
+              "value": 713163.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Operating income",
+            "printed": "29,825",
+            "value": 29825.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Operating income",
+              "printed": "29,825",
+              "value": 29825.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:57:49.660136+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Total revenues",
+            "printed": "713,163",
+            "value": 713163.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Total revenues",
+              "printed": "713,163",
+              "value": 713163.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Operating income",
+            "printed": "29,825",
+            "value": 29825.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Operating income",
+              "printed": "29,825",
+              "value": 29825.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:57:57.124780+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Total revenues",
+            "printed": "713,163",
+            "value": 713163.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Total revenues",
+              "printed": "713,163",
+              "value": 713163.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Operating income",
+            "printed": "29,825",
+            "value": 29825.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Operating income",
+              "printed": "29,825",
+              "value": 29825.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:58:03.008014+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Total revenues",
+            "printed": "713,163",
+            "value": 713163.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Total revenues",
+              "printed": "713,163",
+              "value": 713163.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Income",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "Fiscal Years Ended January 31,",
+            "label": "Operating income",
+            "printed": "29,825",
+            "value": 29825.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Income",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "Fiscal Years Ended January 31,",
+              "label": "Operating income",
+              "printed": "29,825",
+              "value": 29825.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's net income for the most recent period the statement reports in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:58:26.256678+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current assets",
+            "printed": "84,874",
+            "value": 84874.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current assets",
+              "printed": "84,874",
+              "value": 84874.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current assets",
+              "printed": "79,458",
+              "value": 79458.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 24,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current liabilities",
+            "printed": "107,469",
+            "value": 107469.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current liabilities",
+              "printed": "107,469",
+              "value": 107469.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current liabilities",
+              "printed": "96,584",
+              "value": 96584.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 36,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total Walmart shareholders' equity",
+            "printed": "99,617",
+            "value": 99617.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "99,617",
+              "value": 99617.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "91,013",
+              "value": 91013.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:06:47.244138+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current assets",
+            "printed": "84,874",
+            "value": 84874.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current assets",
+              "printed": "84,874",
+              "value": 84874.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current assets",
+              "printed": "79,458",
+              "value": 79458.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 24,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current liabilities",
+            "printed": "107,469",
+            "value": 107469.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current liabilities",
+              "printed": "107,469",
+              "value": 107469.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current liabilities",
+              "printed": "96,584",
+              "value": 96584.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 36,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total Walmart shareholders' equity",
+            "printed": "99,617",
+            "value": 99617.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "99,617",
+              "value": 99617.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "91,013",
+              "value": 91013.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:06:55.026659+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current assets",
+            "printed": "84,874",
+            "value": 84874.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current assets",
+              "printed": "84,874",
+              "value": 84874.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current assets",
+              "printed": "79,458",
+              "value": 79458.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 24,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current liabilities",
+            "printed": "107,469",
+            "value": 107469.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current liabilities",
+              "printed": "107,469",
+              "value": 107469.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current liabilities",
+              "printed": "96,584",
+              "value": 96584.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 36,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total Walmart shareholders' equity",
+            "printed": "99,617",
+            "value": 99617.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "99,617",
+              "value": 99617.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "91,013",
+              "value": 91013.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:07:02.489084+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current assets",
+            "printed": "84,874",
+            "value": 84874.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current assets",
+              "printed": "84,874",
+              "value": 84874.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current assets",
+              "printed": "79,458",
+              "value": 79458.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 24,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current liabilities",
+            "printed": "107,469",
+            "value": 107469.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current liabilities",
+              "printed": "107,469",
+              "value": 107469.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current liabilities",
+              "printed": "96,584",
+              "value": 96584.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 36,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total Walmart shareholders' equity",
+            "printed": "99,617",
+            "value": 99617.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "99,617",
+              "value": 99617.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "91,013",
+              "value": 91013.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:07:09.761229+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current assets",
+            "printed": "84,874",
+            "value": 84874.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current assets",
+              "printed": "84,874",
+              "value": 84874.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current assets",
+              "printed": "79,458",
+              "value": 79458.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 24,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total current liabilities",
+            "printed": "107,469",
+            "value": 107469.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total current liabilities",
+              "printed": "107,469",
+              "value": 107469.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 24,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total current liabilities",
+              "printed": "96,584",
+              "value": 96584.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "total_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total liabilities at the most recent date the balance sheet reports in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheets",
+            "cell": {
+              "column": 3,
+              "row": 36,
+              "table": 0
+            },
+            "column_header": "2026",
+            "label": "Total Walmart shareholders' equity",
+            "printed": "99,617",
+            "value": 99617.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 3,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2026",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "99,617",
+              "value": 99617.0
+            },
+            {
+              "caption": "Consolidated Balance Sheets",
+              "cell": {
+                "column": 4,
+                "row": 36,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total Walmart shareholders' equity",
+              "printed": "91,013",
+              "value": 91013.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T07:07:17.931525+00:00",
+        "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    }
+  ],
+  "schema_version": 3,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Walmart Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0000104169-26-000055",
+    "key": "0000104169-26-000055",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000055/wmt-20260131.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-03-13",
+    "reporting_period": {
+      "ends_on": "2026-01-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "WMT",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "WMT"
+}

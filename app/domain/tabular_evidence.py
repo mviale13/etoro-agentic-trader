@@ -48,6 +48,30 @@ _HAS_DIGIT = re.compile(r"\d")
 
 _THOUSANDS = re.compile(r"^\d{1,3}(?:([.,])\d{3})+$")
 
+#: A letter, which is what tells a phrase from a figure.
+#:
+#: Deliberately any alphabetic character rather than a list of scale
+#: words: a filing may be in German or Dutch, and a rule that knew
+#: "Year" would not know "Geschäftsjahr".
+_HAS_LETTER = re.compile(r"[^\W\d_]", re.UNICODE)
+
+
+def prints_only_a_number(printed: str) -> bool:
+    """Whether this cell is a figure rather than a phrase containing one.
+
+    `read_number` answers a different question, and answers it leniently
+    on purpose: it must find 53021 in "$ 53,021" and -26 in "( 26 )", so
+    it strips everything that is not a digit and reads what is left.
+    That leniency is right where a cell is already known to be a figure
+    and wrong where the question is whether it is one — it finds 31 in
+    "Year Ended December 31".
+
+    Currency symbols, separators, spaces and accountants' parentheses
+    are all typography a figure may wear. A letter is not.
+    """
+
+    return read_number(printed) is not None and not _HAS_LETTER.search(printed)
+
 
 def read_number(printed: str) -> float | None:
     """
@@ -190,12 +214,24 @@ class SourceTable:
         table whose first row labels no column is a table with no
         header, and refusing its figures is the correct outcome rather
         than a reason to promote a row of data into the role.
+
+        "That string is words" is tested by `prints_only_a_number`
+        rather than by `read_number`, and the difference is not
+        pedantic. `read_number` is deliberately lenient because it must
+        read "$ 53,021" and "( 26 )" out of real cells, so it also reads
+        31 out of "Year Ended December 31" — and Capital One, Truist,
+        AIG and Chubb all span exactly that phrase across the row above
+        the one carrying their periods. Treating it as a number made it
+        the header, left the real header row to be read as data, and
+        refused every figure in those four statements as sitting under
+        an unnamed column. A phrase that merely contains a digit is a
+        title; only a cell that is *nothing but* a number is a number.
         """
 
         for index, row in enumerate(self.rows):
             named = {cell.strip() for cell in row.cells if cell.strip()}
 
-            if len(named) == 1 and read_number(next(iter(named))) is None:
+            if len(named) == 1 and not prints_only_a_number(next(iter(named))):
                 continue
 
             return index

@@ -121,11 +121,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:12:12.586053+00:00",
+        "observed_at": "2026-08-09T06:48:56.552198+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -251,11 +311,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:12:16.991819+00:00",
+        "observed_at": "2026-08-09T06:49:02.083368+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -381,11 +501,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:12:21.385529+00:00",
+        "observed_at": "2026-08-09T06:49:09.336850+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -511,11 +691,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:12:25.938359+00:00",
+        "observed_at": "2026-08-09T06:49:14.654449+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -641,11 +881,71 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:12:30.469407+00:00",
+        "observed_at": "2026-08-09T06:49:20.461475+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -653,356 +953,6 @@
     {
       "facts": [
         {
-          "anchor": {
-            "caption": "Consolidated statements of cash flows",
-            "cell": {
-              "column": 3,
-              "row": 20,
-              "table": 0
-            },
-            "column_header": "2025",
-            "label": "Net cash (used in)/provided by operating activities",
-            "printed": "( 147,782 )",
-            "value": -147782.0
-          },
-          "concept": "operating_cash_flow",
-          "row": [
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 3,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2025",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 147,782 )",
-              "value": -147782.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 5,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 42,012 )",
-              "value": -42012.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 6,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2023",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "12,974",
-              "value": 12974.0
-            }
-          ],
-          "unlocated_because": null
-        },
-        {
-          "anchor": null,
-          "concept": "capital_expenditures",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
-        }
-      ],
-      "located_among": 1,
-      "reading": {
-        "observed_at": "2026-08-08T20:13:04.884928+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "statement": "cash_flow_statement"
-    },
-    {
-      "facts": [
-        {
-          "anchor": {
-            "caption": "Consolidated statements of cash flows",
-            "cell": {
-              "column": 3,
-              "row": 20,
-              "table": 0
-            },
-            "column_header": "2025",
-            "label": "Net cash (used in)/provided by operating activities",
-            "printed": "( 147,782 )",
-            "value": -147782.0
-          },
-          "concept": "operating_cash_flow",
-          "row": [
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 3,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2025",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 147,782 )",
-              "value": -147782.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 5,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 42,012 )",
-              "value": -42012.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 6,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2023",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "12,974",
-              "value": 12974.0
-            }
-          ],
-          "unlocated_because": null
-        },
-        {
-          "anchor": null,
-          "concept": "capital_expenditures",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
-        }
-      ],
-      "located_among": 1,
-      "reading": {
-        "observed_at": "2026-08-08T20:13:08.783682+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "statement": "cash_flow_statement"
-    },
-    {
-      "facts": [
-        {
-          "anchor": {
-            "caption": "Consolidated statements of cash flows",
-            "cell": {
-              "column": 3,
-              "row": 20,
-              "table": 0
-            },
-            "column_header": "2025",
-            "label": "Net cash (used in)/provided by operating activities",
-            "printed": "( 147,782 )",
-            "value": -147782.0
-          },
-          "concept": "operating_cash_flow",
-          "row": [
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 3,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2025",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 147,782 )",
-              "value": -147782.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 5,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 42,012 )",
-              "value": -42012.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 6,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2023",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "12,974",
-              "value": 12974.0
-            }
-          ],
-          "unlocated_because": null
-        },
-        {
-          "anchor": null,
-          "concept": "capital_expenditures",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
-        }
-      ],
-      "located_among": 1,
-      "reading": {
-        "observed_at": "2026-08-08T20:13:11.817313+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "statement": "cash_flow_statement"
-    },
-    {
-      "facts": [
-        {
-          "anchor": {
-            "caption": "Consolidated statements of cash flows",
-            "cell": {
-              "column": 3,
-              "row": 20,
-              "table": 0
-            },
-            "column_header": "2025",
-            "label": "Net cash (used in)/provided by operating activities",
-            "printed": "( 147,782 )",
-            "value": -147782.0
-          },
-          "concept": "operating_cash_flow",
-          "row": [
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 3,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2025",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 147,782 )",
-              "value": -147782.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 5,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 42,012 )",
-              "value": -42012.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 6,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2023",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "12,974",
-              "value": 12974.0
-            }
-          ],
-          "unlocated_because": null
-        },
-        {
-          "anchor": null,
-          "concept": "capital_expenditures",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
-        }
-      ],
-      "located_among": 1,
-      "reading": {
-        "observed_at": "2026-08-08T20:13:15.960904+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "statement": "cash_flow_statement"
-    },
-    {
-      "facts": [
-        {
-          "anchor": {
-            "caption": "Consolidated statements of cash flows",
-            "cell": {
-              "column": 3,
-              "row": 20,
-              "table": 0
-            },
-            "column_header": "2025",
-            "label": "Net cash (used in)/provided by operating activities",
-            "printed": "( 147,782 )",
-            "value": -147782.0
-          },
-          "concept": "operating_cash_flow",
-          "row": [
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 3,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2025",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 147,782 )",
-              "value": -147782.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 5,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2024",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "( 42,012 )",
-              "value": -42012.0
-            },
-            {
-              "caption": "Consolidated statements of cash flows",
-              "cell": {
-                "column": 6,
-                "row": 20,
-                "table": 0
-              },
-              "column_header": "2023",
-              "label": "Net cash (used in)/provided by operating activities",
-              "printed": "12,974",
-              "value": 12974.0
-            }
-          ],
-          "unlocated_because": null
-        },
-        {
-          "anchor": null,
-          "concept": "capital_expenditures",
-          "row": [],
-          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
-        }
-      ],
-      "located_among": 1,
-      "reading": {
-        "observed_at": "2026-08-08T20:13:20.968575+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "statement": "cash_flow_statement"
-    },
-    {
-      "facts": [
-        {
           "anchor": null,
           "concept": "total_current_assets",
           "row": [],
@@ -1101,7 +1051,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:14:26.003022+00:00",
+        "observed_at": "2026-08-09T07:04:23.076237+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -1207,7 +1157,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:14:35.305739+00:00",
+        "observed_at": "2026-08-09T07:04:31.195459+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -1313,7 +1263,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:14:39.179549+00:00",
+        "observed_at": "2026-08-09T07:04:36.380671+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -1419,7 +1369,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:14:45.544420+00:00",
+        "observed_at": "2026-08-09T07:04:41.042806+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -1525,13 +1475,13 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T20:14:52.353031+00:00",
+        "observed_at": "2026-08-09T07:04:48.809822+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "JPMORGAN CHASE & CO",

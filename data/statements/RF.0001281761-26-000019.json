@@ -49,11 +49,47 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31",
+            "label": "Net interest income",
+            "printed": "4,991",
+            "value": 4991.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31",
+              "label": "Net interest income",
+              "printed": "4,991",
+              "value": 4991.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:16.323402+00:00",
+        "observed_at": "2026-08-09T06:48:57.193892+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -107,11 +143,47 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31",
+            "label": "Net interest income",
+            "printed": "4,991",
+            "value": 4991.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31",
+              "label": "Net interest income",
+              "printed": "4,991",
+              "value": 4991.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:21.250438+00:00",
+        "observed_at": "2026-08-09T06:49:02.203014+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -165,11 +237,47 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31",
+            "label": "Net interest income",
+            "printed": "4,991",
+            "value": 4991.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31",
+              "label": "Net interest income",
+              "printed": "4,991",
+              "value": 4991.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:26.385928+00:00",
+        "observed_at": "2026-08-09T06:49:09.058743+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -223,11 +331,47 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31",
+            "label": "Net interest income",
+            "printed": "4,991",
+            "value": 4991.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31",
+              "label": "Net interest income",
+              "printed": "4,991",
+              "value": 4991.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:31.074687+00:00",
+        "observed_at": "2026-08-09T06:49:16.043851+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -281,11 +425,47 @@
             }
           ],
           "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "Year Ended December 31",
+            "label": "Net interest income",
+            "printed": "4,991",
+            "value": 4991.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "Year Ended December 31",
+              "label": "Net interest income",
+              "printed": "4,991",
+              "value": 4991.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
         }
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:36.014087+00:00",
+        "observed_at": "2026-08-09T06:49:21.331545+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -312,7 +492,7 @@
               "row": 30,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total liabilities",
             "printed": "139,711",
             "value": 139711.0
@@ -326,10 +506,22 @@
                 "row": 30,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total liabilities",
               "printed": "139,711",
               "value": 139711.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "139,392",
+              "value": 139392.0
             }
           ],
           "unlocated_because": null
@@ -342,7 +534,7 @@
               "row": 40,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total shareholders\u2019 equity",
             "printed": "19,043",
             "value": 19043.0
@@ -356,10 +548,22 @@
                 "row": 40,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total shareholders\u2019 equity",
               "printed": "19,043",
               "value": 19043.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "17,879",
+              "value": 17879.0
             }
           ],
           "unlocated_because": null
@@ -367,7 +571,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:42.620199+00:00",
+        "observed_at": "2026-08-09T07:06:29.924108+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -394,7 +598,7 @@
               "row": 30,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total liabilities",
             "printed": "139,711",
             "value": 139711.0
@@ -408,10 +612,22 @@
                 "row": 30,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total liabilities",
               "printed": "139,711",
               "value": 139711.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "139,392",
+              "value": 139392.0
             }
           ],
           "unlocated_because": null
@@ -424,7 +640,7 @@
               "row": 40,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total shareholders\u2019 equity",
             "printed": "19,043",
             "value": 19043.0
@@ -438,10 +654,22 @@
                 "row": 40,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total shareholders\u2019 equity",
               "printed": "19,043",
               "value": 19043.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "17,879",
+              "value": 17879.0
             }
           ],
           "unlocated_because": null
@@ -449,7 +677,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:47.126086+00:00",
+        "observed_at": "2026-08-09T07:06:34.188918+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -476,7 +704,7 @@
               "row": 30,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total liabilities",
             "printed": "139,711",
             "value": 139711.0
@@ -490,10 +718,22 @@
                 "row": 30,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total liabilities",
               "printed": "139,711",
               "value": 139711.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "139,392",
+              "value": 139392.0
             }
           ],
           "unlocated_because": null
@@ -506,7 +746,7 @@
               "row": 40,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total shareholders\u2019 equity",
             "printed": "19,043",
             "value": 19043.0
@@ -520,10 +760,22 @@
                 "row": 40,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total shareholders\u2019 equity",
               "printed": "19,043",
               "value": 19043.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "17,879",
+              "value": 17879.0
             }
           ],
           "unlocated_because": null
@@ -531,7 +783,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:50.896500+00:00",
+        "observed_at": "2026-08-09T07:06:38.608905+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -558,7 +810,7 @@
               "row": 30,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total liabilities",
             "printed": "139,711",
             "value": 139711.0
@@ -572,10 +824,22 @@
                 "row": 30,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total liabilities",
               "printed": "139,711",
               "value": 139711.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "139,392",
+              "value": 139392.0
             }
           ],
           "unlocated_because": null
@@ -588,7 +852,7 @@
               "row": 40,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total shareholders\u2019 equity",
             "printed": "19,043",
             "value": 19043.0
@@ -602,10 +866,22 @@
                 "row": 40,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total shareholders\u2019 equity",
               "printed": "19,043",
               "value": 19043.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "17,879",
+              "value": 17879.0
             }
           ],
           "unlocated_because": null
@@ -613,7 +889,7 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:54.961467+00:00",
+        "observed_at": "2026-08-09T07:06:43.349118+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
@@ -640,7 +916,7 @@
               "row": 30,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total liabilities",
             "printed": "139,711",
             "value": 139711.0
@@ -654,10 +930,22 @@
                 "row": 30,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total liabilities",
               "printed": "139,711",
               "value": 139711.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 30,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities",
+              "printed": "139,392",
+              "value": 139392.0
             }
           ],
           "unlocated_because": null
@@ -670,7 +958,7 @@
               "row": 40,
               "table": 0
             },
-            "column_header": "December 31",
+            "column_header": "2025",
             "label": "Total shareholders\u2019 equity",
             "printed": "19,043",
             "value": 19043.0
@@ -684,10 +972,22 @@
                 "row": 40,
                 "table": 0
               },
-              "column_header": "December 31",
+              "column_header": "2025",
               "label": "Total shareholders\u2019 equity",
               "printed": "19,043",
               "value": 19043.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS",
+              "cell": {
+                "column": 9,
+                "row": 40,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "17,879",
+              "value": 17879.0
             }
           ],
           "unlocated_because": null
@@ -695,13 +995,13 @@
       ],
       "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-09T06:22:59.701147+00:00",
+        "observed_at": "2026-08-09T07:06:47.357542+00:00",
         "source": "10-K 0001281761-26-000019 via SEC EDGAR, read by gpt-5"
       },
       "statement": "balance_sheet"
     }
   ],
-  "schema_version": 2,
+  "schema_version": 3,
   "source": {
     "authority": "regulator_filed",
     "company": "REGIONS FINANCIAL CORP",
