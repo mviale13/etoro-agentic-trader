@@ -79,11 +79,12 @@ export interface PortfolioHolding {
 
 export interface PortfolioOverview {
   totalValueUsd: number;
-  totalValueEur: number;
+  /** Absent where no rate has been read. Never a zero. */
+  totalValueEur: number | null;
   availableCashUsd: number;
-  availableCashEur: number;
+  availableCashEur: number | null;
   investedUsd: number;
-  investedEur: number;
+  investedEur: number | null;
   liquidityPct: number;
   positions: number;
   lastSync: string | null;
@@ -104,6 +105,26 @@ export interface PortfolioOverviewResult {
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A number the backend may not have.
+ *
+ * `numberValue` falls back to zero, which is right for a count and wrong
+ * for a conversion: a portfolio worth nothing and a portfolio whose rate
+ * was never read are different claims, and only one of them is true.
+ */
+function optionalNumberValue(
+  record: UnknownRecord,
+  key: string,
+): number | null {
+  const value = record[key];
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  return null;
 }
 
 function numberValue(
@@ -307,11 +328,11 @@ export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
     return {
       portfolio: {
         totalValueUsd: numberValue(portfolio, "total_value"),
-        totalValueEur: numberValue(portfolio, "total_value_eur"),
+        totalValueEur: optionalNumberValue(portfolio, "total_value_eur"),
         availableCashUsd: numberValue(portfolio, "available_cash_usd"),
-        availableCashEur: numberValue(portfolio, "available_cash_eur"),
+        availableCashEur: optionalNumberValue(portfolio, "available_cash_eur"),
         investedUsd: numberValue(portfolio, "invested_usd"),
-        investedEur: numberValue(portfolio, "invested_eur"),
+        investedEur: optionalNumberValue(portfolio, "invested_eur"),
         liquidityPct: numberValue(portfolio, "liquidity_pct"),
         positions: numberValue(portfolio, "positions"),
         lastSync: stringValue(portfolio, "last_sync") || null,

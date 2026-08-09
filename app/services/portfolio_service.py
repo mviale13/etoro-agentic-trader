@@ -45,9 +45,15 @@ class PortfolioService:
         if invested_pct > 0:
             risk_flags.append("Invested assets are not yet classified by asset type")
 
-        total_value_eur = self._exchange_rate_service.usd_to_eur(equity_usd)
-        available_cash_eur = self._exchange_rate_service.usd_to_eur(cash_usd)
-        invested_eur = self._exchange_rate_service.usd_to_eur(invested_usd)
+        # Read once, so every euro figure on the page is converted at one
+        # rate. Absent where no rate has been read: a conversion is
+        # derived from a measurement, and without the measurement the
+        # figure is absent rather than filled in from a constant.
+        rate = self._exchange_rate_service.rate()
+
+        total_value_eur = self._exchange_rate_service.usd_to_eur(equity_usd, rate)
+        available_cash_eur = self._exchange_rate_service.usd_to_eur(cash_usd, rate)
+        invested_eur = self._exchange_rate_service.usd_to_eur(invested_usd, rate)
 
         largest_position, largest_position_pct = self._largest_position(
             account.positions,
@@ -63,11 +69,11 @@ class PortfolioService:
                 unclassified=invested_pct,
             ),
             total_value=round(equity_usd, 2),
-            total_value_eur=round(total_value_eur, 2),
+            total_value_eur=total_value_eur,
             available_cash_usd=round(cash_usd, 2),
-            available_cash_eur=round(available_cash_eur, 2),
+            available_cash_eur=available_cash_eur,
             invested_usd=round(invested_usd, 2),
-            invested_eur=round(invested_eur, 2),
+            invested_eur=invested_eur,
             liquidity_pct=cash_pct,
             positions=account.positions_count,
             largest_position=largest_position,

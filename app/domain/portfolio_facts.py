@@ -5,7 +5,7 @@ from datetime import datetime
 @dataclass(frozen=True, slots=True)
 class PortfolioFacts:
     total_value_usd: float
-    total_value_eur: float
+    total_value_eur: float | None
 
     cash_usd: float
     invested_usd: float
