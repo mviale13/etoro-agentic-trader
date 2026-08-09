@@ -15,6 +15,7 @@ from app.api.models.portfolio_briefing import (
     ConvictionChangeResponse,
     TrendResponse,
 )
+from app.api.models.understanding import UnderstandingResponse
 
 
 class ProvenanceResponse(BaseModel):
@@ -266,3 +267,18 @@ class DossierResponse(BaseModel):
     #: and an absence always says why.
     narrative: NarrativeResponse | None = None
     narrative_absent: str | None = None
+
+    # ── What this platform understands about the company ────────────
+    #: The two understandings derived from the company's own filing:
+    #: how the business creates value, and what its statements measure.
+    #:
+    #: Beside the case, never inside it. Nothing here reached the
+    #: decision above — no analyst consumes an understanding, and the
+    #: recommendation would be identical if this field were absent. It
+    #: is here so an investor can see the filing-grade facts the
+    #: platform holds, and the gaps it holds instead.
+    #:
+    #: Read from the stores only. Composing a dossier never reads a
+    #: filing or asks a model, so a company nothing has been observed
+    #: for arrives with both halves absent and their reasons worded.
+    understanding: UnderstandingResponse | None = None

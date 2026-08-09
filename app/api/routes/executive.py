@@ -31,6 +31,7 @@ from app.api.models.portfolio_briefing import (
     TodayBriefingResponse,
     TrendResponse,
 )
+from app.api.models.understanding_adapter import understanding_response
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.brief.today_briefing_builder import TodayBriefingBuilder
 from app.application.change_feed.change_feed_service import ChangeFeedService
@@ -58,6 +59,7 @@ from app.renderers.brief_language import (
     urgency_band,
 )
 from app.repositories.json_event_repository import JsonEventRepository
+from app.services.company_understanding_service import CompanyUnderstandingService
 from app.services.executive_writer_service import ExecutiveWriterService
 
 router = APIRouter(
@@ -517,6 +519,13 @@ async def dossier(
         evidence_as_of=_provenance(decision.evidence_as_of),
         narrative=_narrative(outcome.narrative),
         narrative_absent=outcome.absent_reason,
+        # Composed after the decision and consumed by none of it. Read
+        # from the stores only, so this adds no fetch and no model call
+        # to a page view — a company nothing has been observed for
+        # arrives with both halves absent and their reasons worded.
+        understanding=understanding_response(
+            CompanyUnderstandingService().understanding(normalized_symbol)
+        ),
     )
 
 

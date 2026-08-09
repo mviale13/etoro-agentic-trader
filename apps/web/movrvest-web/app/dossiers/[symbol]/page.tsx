@@ -13,10 +13,15 @@ import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { getDossier } from "@/lib/api/dossier";
 import type {
+  DossierAgreement,
+  DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
+  DossierFinancialUnderstanding,
+  DossierMeasure,
   DossierPlaybook,
   DossierNarrative,
   DossierScore,
+  DossierUnderstanding,
   DossierViewModel,
 } from "@/lib/api/dossier";
 
@@ -232,7 +237,323 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       <WhatChanged dossier={dossier} />
       <Recommendation dossier={dossier} />
       <InvestorContext dossier={dossier} />
+
+      {dossier.understanding ? (
+        <Understanding
+          understanding={dossier.understanding}
+          symbol={dossier.symbol}
+        />
+      ) : null}
+
       <WhyTrustThis dossier={dossier} />
+    </div>
+  );
+}
+
+/**
+ * What this platform has read out of the company's own filing.
+ *
+ * Placed beside the case rather than inside it, and labelled so, because
+ * none of it reached the recommendation above: no analyst consumes an
+ * understanding, and the decision would be identical if this section
+ * were removed. It is here so an investor can see the filing-grade facts
+ * the platform holds — and, just as much, the ones it does not.
+ *
+ * Every claim carries how firmly it is known, next to the claim. A
+ * business that earns three ways where one of those rests on three
+ * readings out of five is a different finding from one where all five
+ * agreed, and a surface that showed only the first half would be the
+ * confident-sounding page this platform exists to avoid.
+ */
+function Understanding({
+  understanding,
+  symbol,
+}: {
+  understanding: DossierUnderstanding;
+  symbol: string;
+}) {
+  return (
+    <section aria-labelledby="understanding-heading">
+      <SectionHeading id="understanding-heading">
+        What its own filing establishes
+      </SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        Read from {symbol}&rsquo;s own published accounts, and shown beside the
+        case rather than inside it — none of this reached the recommendation
+        above. Each claim carries the readings that agreed on it.
+      </p>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <BusinessUnderstandingCard
+          business={understanding.business}
+          absent={understanding.businessAbsentBecause}
+        />
+
+        <FinancialUnderstandingCard
+          financial={understanding.financial}
+          absent={understanding.financialAbsentBecause}
+        />
+      </div>
+    </section>
+  );
+}
+
+/** How firmly a claim is held, in the readings' own counts. */
+function Width({ agreement }: { agreement: DossierAgreement | null }) {
+  if (agreement === null) {
+    return null;
+  }
+
+  return (
+    <span
+      className={
+        agreement.settled
+          ? "shrink-0 text-xs tabular-nums text-slate-400"
+          : "shrink-0 text-xs font-semibold tabular-nums text-amber-700"
+      }
+      title={
+        agreement.settled
+          ? "Every reading that addressed this agreed."
+          : "Some readings disagreed. The claim is served at this width, not as settled."
+      }
+    >
+      {agreement.agreeing}/{agreement.readings}
+    </span>
+  );
+}
+
+/** A card that says what is missing and why, and substitutes nothing. */
+function NotRead({ title, reason }: { title: string; reason: string | null }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+      <p className="text-sm font-semibold text-slate-800">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-500">
+        {reason ?? "Nothing has been read for this security."}
+      </p>
+    </div>
+  );
+}
+
+function Quorum({
+  quorate,
+  count,
+  quorum,
+}: {
+  quorate: boolean;
+  count: number;
+  quorum: number;
+}) {
+  return (
+    <p className="mt-1 text-xs text-slate-500">
+      {quorate
+        ? `Settled over ${count} independent readings.`
+        : `${count} of the ${quorum} readings this platform wants before calling anything settled — everything below is at that width.`}
+    </p>
+  );
+}
+
+function BusinessUnderstandingCard({
+  business,
+  absent,
+}: {
+  business: DossierBusinessUnderstanding | null;
+  absent: string | null;
+}) {
+  if (business === null) {
+    return <NotRead title="How it creates value" reason={absent} />;
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+      <p className="text-sm font-semibold text-slate-800">
+        How it creates value
+      </p>
+
+      <Quorum
+        quorate={business.quorate}
+        count={business.observationCount}
+        quorum={business.quorum}
+      />
+
+      <p className="mt-3 text-sm leading-6 text-slate-700">{business.engine}</p>
+
+      {business.archetype ? (
+        <p className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+          <span>
+            The rules read this as{" "}
+            <span className="font-semibold text-slate-800">
+              {business.archetype}
+            </span>
+          </span>
+          <Width agreement={business.narrowest} />
+        </p>
+      ) : business.undecidedBecause ? (
+        <p className="mt-2 text-sm leading-6 text-slate-500">
+          {business.undecidedBecause}
+        </p>
+      ) : null}
+
+      {business.segments.length > 0 ? (
+        <ul className="mt-4 space-y-1.5">
+          {business.segments.map((segment) => (
+            <li
+              key={segment.name}
+              className="flex items-baseline justify-between gap-3 text-sm"
+            >
+              <span className="text-slate-700">{segment.name}</span>
+              <span className="shrink-0 tabular-nums text-slate-500">
+                {segment.share === null
+                  ? "unmeasured"
+                  : `${(segment.share * 100).toFixed(1)}%`}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : business.segmentsBecause ? (
+        <p className="mt-4 text-sm leading-6 text-slate-500">
+          {business.segmentsBecause}
+        </p>
+      ) : null}
+
+      {business.mechanisms.length > 0 ? (
+        <div className="mt-4 border-t border-slate-100 pt-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            How it earns
+          </p>
+
+          <ul className="mt-2 space-y-1.5">
+            {business.mechanisms.map((mechanism) => (
+              <li
+                key={mechanism.model}
+                className="flex items-baseline justify-between gap-3 text-sm"
+              >
+                <span className="text-slate-700">{mechanism.model}</span>
+
+                <span className="flex shrink-0 items-baseline gap-2">
+                  {mechanism.coverage === null ? (
+                    <span className="text-slate-400">coverage unmeasured</span>
+                  ) : (
+                    <span
+                      className="tabular-nums text-slate-500"
+                      title="The share of measured revenue whose segments earn this way. Not a split of revenue between ways of earning — no filing states that."
+                    >
+                      {(mechanism.coverage * 100).toFixed(0)}% covered
+                    </span>
+                  )}
+                  <Width agreement={mechanism.support} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {business.notEstablished.length > 0 ? (
+        <details className="mt-4 border-t border-slate-100 pt-3">
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Not established ({business.notEstablished.length})
+          </summary>
+
+          <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-500">
+            {business.notEstablished.map((item) => (
+              <li key={`${item.segment}-${item.dimension}`}>
+                <span className="font-medium text-slate-700">
+                  {item.segment}
+                </span>{" "}
+                — {item.because}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+
+      <p className="mt-4 text-xs leading-5 text-slate-400">{business.source}</p>
+    </div>
+  );
+}
+
+/** How a measure's number should be read, worded by the backend's unit. */
+function measureValue(measure: DossierMeasure): string {
+  if (measure.value === null) {
+    return "not established";
+  }
+
+  if (measure.unit === "fraction") {
+    return `${(measure.value * 100).toFixed(1)}%`;
+  }
+
+  if (measure.unit === "multiple") {
+    return `${measure.value.toFixed(2)}×`;
+  }
+
+  return measure.value.toLocaleString();
+}
+
+function FinancialUnderstandingCard({
+  financial,
+  absent,
+}: {
+  financial: DossierFinancialUnderstanding | null;
+  absent: string | null;
+}) {
+  if (financial === null) {
+    return <NotRead title="What its statements measure" reason={absent} />;
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+      <p className="text-sm font-semibold text-slate-800">
+        What its statements measure
+      </p>
+
+      <Quorum
+        quorate={financial.quorate}
+        count={financial.observationCount}
+        quorum={financial.quorum}
+      />
+
+      {financial.language ? (
+        <p
+          className="mt-3 text-sm leading-6 text-slate-700"
+          title="Which financial language the income statement is written in, from the lines the filer printed. It does not select how this security is read — that is still derived from the business playbook."
+        >
+          Its income statement speaks a{" "}
+          <span className="font-semibold text-slate-800">
+            {financial.language}
+          </span>{" "}
+          language.
+        </p>
+      ) : null}
+
+      <dl className="mt-4 space-y-2">
+        {financial.measures.map((measure) => (
+          <div key={measure.measure}>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <dt className="text-slate-700">{measure.label}</dt>
+
+              <dd className="flex shrink-0 items-baseline gap-2">
+                <span
+                  className={
+                    measure.value === null
+                      ? "text-slate-400"
+                      : "font-semibold tabular-nums text-slate-800"
+                  }
+                >
+                  {measureValue(measure)}
+                </span>
+                <Width agreement={measure.support} />
+              </dd>
+            </div>
+
+            <p className="mt-0.5 text-xs leading-5 text-slate-400">
+              {measure.value === null ? measure.absentBecause : measure.stated}
+            </p>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-4 text-xs leading-5 text-slate-400">{financial.source}</p>
     </div>
   );
 }
