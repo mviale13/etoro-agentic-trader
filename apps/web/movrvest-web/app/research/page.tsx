@@ -1,5 +1,6 @@
 import {
   Binoculars,
+  ChevronDown,
   CircleAlert,
   Search,
   Sparkles,
@@ -165,86 +166,95 @@ function Funnel({ funnel }: { funnel: ResearchFunnelViewModel }) {
 }
 
 /**
- * The watched securities this cycle could not judge, named.
+ * A roll of watched securities, folded away until it is asked for.
  *
- * The funnel above counts them; this section says which they are. Every
- * symbol here is one the investor chose to watch, so leaving it silently
- * off the page would read as considered-and-dismissed.
+ * Sixty-odd symbols that nobody looked at is a footnote, not a section:
+ * printed open it was most of the page, and the twelve securities the
+ * cycle actually judged were somewhere underneath it. Folded, it still
+ * names every one — a security silently absent reads as
+ * considered-and-dismissed, which is a different claim from "nobody
+ * looked".
  */
-function LeftOut({
-  unevidenced,
-  notReviewed,
+function WatchedRoll({
+  title,
+  explanation,
+  candidates,
+  tone,
 }: {
-  unevidenced: readonly WatchedCandidateViewModel[];
-  notReviewed: readonly WatchedCandidateViewModel[];
+  title: string;
+  explanation: string;
+  candidates: readonly WatchedCandidateViewModel[];
+  tone: "amber" | "neutral";
 }) {
-  if (unevidenced.length === 0 && notReviewed.length === 0) {
+  if (candidates.length === 0) {
     return null;
   }
 
+  const amber = tone === "amber";
+
   return (
-    <div className="mt-7 grid gap-4 lg:grid-cols-2">
-      {unevidenced.length > 0 ? (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
-          <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-amber-900">
-            <CircleAlert className="h-4 w-4" />
-            Reviewed, but nothing could be evidenced
-          </h3>
+    <details
+      className={`group overflow-hidden rounded-2xl border ${
+        amber
+          ? "border-amber-200 bg-amber-50/80"
+          : "border-neutral-200 bg-neutral-50"
+      }`}
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
+        <span className="flex items-center gap-2">
+          {amber ? <CircleAlert className="h-4 w-4 text-amber-900" /> : null}
 
-          <p className="mt-2 text-sm leading-6 text-amber-950">
-            A fundamentals request was spent on each of these, and no
-            evidence came back. They were deliberately not judged — a
-            verdict without security-level evidence would only be
-            describing your portfolio.
-          </p>
+          <span
+            className={`text-xs font-bold uppercase tracking-[0.15em] ${
+              amber ? "text-amber-900" : "text-neutral-600"
+            }`}
+          >
+            {title}
+          </span>
 
-          <ul className="mt-4 space-y-2">
-            {unevidenced.map((candidate) => (
-              <li
-                className="flex flex-wrap items-baseline gap-x-2 text-sm text-amber-950"
-                key={candidate.symbol}
-              >
-                <span className="font-semibold">{candidate.symbol}</span>
-                <span>{candidate.name}</span>
-                <span className="text-xs text-amber-800">
-                  named by {candidate.source}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+          <span
+            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+              amber
+                ? "bg-amber-200/70 text-amber-900"
+                : "bg-neutral-200 text-neutral-700"
+            }`}
+          >
+            {candidates.length}
+          </span>
+        </span>
 
-      {notReviewed.length > 0 ? (
-        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-          <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-neutral-600">
-            Not reviewed this cycle
-          </h3>
+        <ChevronDown
+          aria-hidden="true"
+          className={`h-4 w-4 shrink-0 transition group-open:rotate-180 ${
+            amber ? "text-amber-800" : "text-neutral-500"
+          }`}
+        />
+      </summary>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
-            Each review costs a request against a rate-limited provider, so
-            a cycle covers a capped number of securities. These were outside
-            this cycle&apos;s budget — nobody looked, and nothing was
-            decided about them.
-          </p>
+      <div className="px-5 pb-5">
+        <p
+          className={`text-sm leading-6 ${
+            amber ? "text-amber-950" : "text-neutral-600"
+          }`}
+        >
+          {explanation}
+        </p>
 
-          <ul className="mt-4 space-y-2">
-            {notReviewed.map((candidate) => (
-              <li
-                className="flex flex-wrap items-baseline gap-x-2 text-sm text-neutral-800"
-                key={candidate.symbol}
-              >
-                <span className="font-semibold">{candidate.symbol}</span>
-                <span>{candidate.name}</span>
-                <span className="text-xs text-neutral-500">
-                  named by {candidate.source}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </div>
+        <ul className="mt-4 grid gap-x-8 gap-y-2 sm:grid-cols-2 xl:grid-cols-3">
+          {candidates.map((candidate) => (
+            <li
+              className={`flex flex-wrap items-baseline gap-x-2 text-sm ${
+                amber ? "text-amber-950" : "text-neutral-800"
+              }`}
+              key={candidate.symbol}
+            >
+              <span className="font-semibold">{candidate.symbol}</span>
+              <span>{candidate.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </details>
   );
 }
 
@@ -266,6 +276,21 @@ function CandidateCard({
       reviewHref={candidate.dossierHref}
     >
       <Lifecycle state={candidate.recommendation} />
+
+      {/* The card ends here until it is asked to go on. Twelve candidates
+          printed whole is a page nobody scans: the identity, the state and
+          the conviction are what the eye compares between securities, and
+          the reasoning underneath is what it reads about one of them. */}
+      <details className="group/case mt-6">
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-neutral-600 transition hover:text-neutral-950">
+          <ChevronDown
+            aria-hidden="true"
+            className="h-4 w-4 transition group-open/case:rotate-180"
+          />
+
+          <span className="group-open/case:hidden">Why this verdict</span>
+          <span className="hidden group-open/case:inline">Hide the reasoning</span>
+        </summary>
 
       <div className="mt-7 grid gap-4 border-y border-neutral-200 py-6 lg:grid-cols-2">
         {candidate.evidenceWeighed.length > 0 ? (
@@ -329,20 +354,21 @@ function CandidateCard({
         <Metric label="Evidence" value={String(candidate.evidenceScore)} />
       </div>
 
-      <ReasonList title="Still missing" reasons={candidate.missingEvidence} />
-      <ReasonList title="Catalysts" reasons={candidate.catalysts} />
+        <ReasonList title="Still missing" reasons={candidate.missingEvidence} />
+        <ReasonList title="Catalysts" reasons={candidate.catalysts} />
 
-      {candidate.nextTrigger ? (
-        <p className="mt-6 text-sm leading-6 text-neutral-700">
-          <span className="font-semibold">Next trigger:</span>{" "}
-          {candidate.nextTrigger}
+        {candidate.nextTrigger ? (
+          <p className="mt-6 text-sm leading-6 text-neutral-700">
+            <span className="font-semibold">Next trigger:</span>{" "}
+            {candidate.nextTrigger}
+          </p>
+        ) : null}
+
+        <p className="mt-6 text-xs text-neutral-500">
+          Research candidate only. No capital deployment is currently
+          recommended.
         </p>
-      ) : null}
-
-      <p className="mt-6 text-xs text-neutral-500">
-        Research candidate only. No capital deployment is currently
-        recommended.
-      </p>
+      </details>
     </DecisionCard>
   );
 }
@@ -472,13 +498,6 @@ export default async function ResearchPage() {
                   } therefore not judged — a verdict without security-level evidence would only be describing your portfolio.`
                 : ""}
             </p>
-
-            {pipeline ? (
-              <LeftOut
-                unevidenced={pipeline.unevidenced}
-                notReviewed={pipeline.notReviewed}
-              />
-            ) : null}
           </section>
         ) : null}
 
@@ -514,6 +533,26 @@ export default async function ResearchPage() {
               ))}
             </div>
           )}
+
+          {/* The rest of the watchlist, after the securities that were
+              actually judged rather than before them. */}
+          {pipeline ? (
+            <div className="mt-8 space-y-4">
+              <WatchedRoll
+                title="Reviewed, but nothing could be evidenced"
+                tone="amber"
+                candidates={pipeline.unevidenced}
+                explanation="A fundamentals request was spent on each of these, and no evidence came back. They were deliberately not judged — a verdict without security-level evidence would only be describing your portfolio."
+              />
+
+              <WatchedRoll
+                title="Not reviewed this cycle"
+                tone="neutral"
+                candidates={pipeline.notReviewed}
+                explanation="Each review costs a request against a rate-limited provider, so a cycle covers a capped number of securities. These were outside this cycle's budget — nobody looked, and nothing was decided about them."
+              />
+            </div>
+          ) : null}
 
           <div className="mt-8 flex items-start gap-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
             <Search className="mt-1 h-5 w-5 text-emerald-800" />

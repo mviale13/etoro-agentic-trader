@@ -53,6 +53,12 @@ class CryptoQualitySignalService:
     ESTABLISHED_YEARS = 5.0
     YOUNG_YEARS = 2.0
 
+    #: How many of the four a band needs, exactly as `MINIMUM_ANSWERED`
+    #: requires of a business. One reading is as easily a gap as a
+    #: verdict, and a token judged on its age alone was being banded
+    #: MEDIUM on the single fact that it had not disappeared yet.
+    MINIMUM_MEASURED = 2
+
     def build(
         self,
         company: CompanyFacts,
@@ -74,11 +80,17 @@ class CryptoQualitySignalService:
             score += point
             evidence.append(finding)
 
-        if not measured:
+        if measured < self.MINIMUM_MEASURED:
             return QualitySignal(
                 quality="UNKNOWN",
                 confidence=20,
-                evidence=(Finding.neutral("Insufficient quality data."),),
+                evidence=tuple(evidence)
+                or (
+                    Finding.neutral(
+                        "This platform has read nothing about this token's "
+                        "network, so its quality is not assessed."
+                    ),
+                ),
             )
 
         # Judged against what could be measured, so a token missing one
@@ -105,18 +117,43 @@ class CryptoQualitySignalService:
     ) -> tuple[int, Finding | None]:
         value = company.market_cap
 
-        if value is None:
+        # A provider reporting zero is a provider reporting nothing. A
+        # network cannot be worth nothing while trading, so this is the
+        # absence it looks like — and it was being scored as an adverse
+        # measurement, printed as "$0.00bn", which is a figure nobody
+        # measured on an investment page.
+        if not value:
             return 0, None
 
-        billions = value / 1_000_000_000
-
         if value >= cls.LARGE_NETWORK:
-            return 1, Finding.favourable(f"Network value is ${billions:,.1f}bn.")
+            return 1, Finding.favourable(f"Network value is {cls._money(value)}.")
 
         if value >= cls.SMALL_NETWORK:
-            return 0, Finding.neutral(f"Network value is ${billions:,.1f}bn.")
+            return 0, Finding.neutral(f"Network value is {cls._money(value)}.")
 
-        return -1, Finding.adverse(f"Network value is only ${billions:,.2f}bn.")
+        return -1, Finding.adverse(f"Network value is only {cls._money(value)}.")
+
+    @staticmethod
+    def _money(value: float) -> str:
+        """
+        An amount at a unit that shows it.
+
+        Billions are the right unit for a network and the wrong one for
+        what the provider returns when it has lost track of a token:
+        Hyperliquid came back as 8,105 dollars and printed as "$0.00bn",
+        which reads as a rounding rather than as the nonsense it is. A
+        figure is shown at the unit where it is still visible, so an
+        investor can see that the provider is wrong instead of reading a
+        zero the platform appeared to have measured.
+        """
+
+        if value >= 1_000_000_000:
+            return f"${value / 1_000_000_000:,.1f}bn"
+
+        if value >= 1_000_000:
+            return f"${value / 1_000_000:,.0f}m"
+
+        return f"${value:,.0f}"
 
     @classmethod
     def _liquidity(
@@ -126,7 +163,11 @@ class CryptoQualitySignalService:
         volume = company.volume_24h
         value = company.market_cap
 
-        if volume is None or not value:
+        # Zero on either side is the provider's absence, not a still
+        # market: a token nobody traded all day and a token the provider
+        # has no figure for are the same zero, and only one of them is a
+        # measurement this platform may report.
+        if not volume or not value:
             return 0, None
 
         turnover = volume / value

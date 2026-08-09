@@ -24,10 +24,30 @@ class ValueProvider:
         self,
         symbol: str,
     ) -> ValuationSnapshot:
-        return self.from_info(
+        """
+        The fundamentals this provider reports, or a raised failure.
+
+        `Ticker.info` does not raise when the provider refuses — it
+        answers with a payload carrying nothing, which read literally
+        becomes a completed reading in which every figure is absent. The
+        caller then caches a refusal as knowledge for the rest of the
+        day. So a payload that carries nothing is raised here as what it
+        is, exactly as the quote path raises on an empty frame, and the
+        caller's existing failure handling serves the last real reading
+        marked as last known.
+        """
+
+        snapshot = self.from_info(
             yf.Ticker(symbol).info,
             reading=Provenance(source=self.SOURCE, observed_at=datetime.now(UTC)),
         )
+
+        if snapshot.carries_nothing:
+            raise RuntimeError(
+                f"{self.SOURCE} returned no usable fundamentals for {symbol}"
+            )
+
+        return snapshot
 
     @classmethod
     def from_info(

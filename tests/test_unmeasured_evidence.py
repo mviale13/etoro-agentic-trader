@@ -178,13 +178,19 @@ def test_unmeasured_risk_cannot_reach_a_recommendation() -> None:
 
 
 def test_unmeasured_risk_reaches_the_investor_as_missing_evidence() -> None:
-    """A security whose price history says nothing reports that."""
+    """
+    A security whose price history says nothing reports that.
+
+    Worded as what this platform has read, not as how much history
+    exists — "too short" was a claim about the security that nothing
+    here had checked.
+    """
 
     brain = make_brain(evidence={"SHORT": (make_company("SHORT"),)})
 
     missing = build_evidence(brain, "SHORT").missing_evidence
 
-    assert any("too short to measure risk" in item for item in missing)
+    assert any("price history has been read" in item for item in missing)
 
 
 def _brain():

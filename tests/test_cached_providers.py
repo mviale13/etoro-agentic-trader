@@ -445,3 +445,69 @@ def test_a_replayed_quote_keeps_its_measured_market_sensitivity(tmp_path) -> Non
     replayed = asyncio.run(provider.quotes())
 
     assert replayed[0].market_sensitivity == measured
+
+
+class RefusingValueProvider:
+    """Answers the way `Ticker.info` does when the provider refuses.
+
+    Not with an exception — with a payload carrying nothing, which read
+    literally is a completed reading in which every figure is absent.
+    """
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def snapshot(self, symbol: str) -> ValuationSnapshot:
+        self.calls += 1
+
+        return ValuationSnapshot(
+            forward_pe=None,
+            trailing_pe=None,
+            peg_ratio=None,
+            dividend_yield=None,
+        )
+
+
+def test_a_refusal_is_never_cached_as_a_reading(tmp_path: Path) -> None:
+    """
+    McDonald's spent a day reported as a company nobody had measured.
+
+    One rate-limited call returned a payload with nothing in it. Stored
+    as a reading, `is_from_today` then refused to read the company again
+    until midnight, and every figure downstream was unknown — while
+    Yahoo had 181 fields for MCD the whole time.
+    """
+
+    real = CountingValueProvider()
+
+    # The refusal is stored the way it used to be, before the provider
+    # raised on one.
+    cache = JsonCache(tmp_path)
+    cache.write(
+        "MCD",
+        {"forward_pe": None, "source": "Yahoo Finance", "observed_at": None},
+    )
+
+    snapshot = CachedValueProvider(
+        provider=real,  # type: ignore[arg-type]
+        cache=cache,
+    ).snapshot("MCD")
+
+    # Read again rather than served, though the entry is from today.
+    assert real.calls == 1
+    assert snapshot.forward_pe is not None
+
+
+def test_a_stored_refusal_is_not_served_as_evidence(tmp_path: Path) -> None:
+    """The read-only door reports it unread rather than as measured."""
+
+    cache = JsonCache(tmp_path)
+    cache.write(
+        "MCD",
+        {"forward_pe": None, "source": "Yahoo Finance", "observed_at": None},
+    )
+
+    snapshot = CachedValueProvider.stored(cache).snapshot("MCD")
+
+    assert snapshot.carries_nothing
+    assert snapshot.reading is None
