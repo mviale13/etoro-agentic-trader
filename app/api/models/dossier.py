@@ -15,6 +15,7 @@ from app.api.models.portfolio_briefing import (
     ConvictionChangeResponse,
     TrendResponse,
 )
+from app.api.models.synthesis import DecisionSynthesisResponse
 from app.api.models.understanding import UnderstandingResponse
 
 
@@ -282,3 +283,11 @@ class DossierResponse(BaseModel):
     #: filing or asks a model, so a company nothing has been observed
     #: for arrives with both halves absent and their reasons worded.
     understanding: UnderstandingResponse | None = None
+
+    # ── The conclusion, stated so it can be challenged ──────────────
+    #: The decision as because / despite / review if, composed from the
+    #: canonical objects above and deciding nothing. Where `rationale`
+    #: says which gate the case reached, this says what it rests on,
+    #: what argues against it, and what would occasion a second look —
+    #: or reports plainly that the case records no such condition.
+    synthesis: DecisionSynthesisResponse | None = None

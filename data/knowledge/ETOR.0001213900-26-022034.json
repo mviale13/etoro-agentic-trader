@@ -1,0 +1,34 @@
+{
+  "observations": [
+    {
+      "description": "Not applicable.",
+      "reading": {
+        "observed_at": "2026-08-09T08:24:03.974231+00:00",
+        "source": "20-F 0001213900-26-022034 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": []
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "eToro Group Ltd.",
+    "document_format": "html",
+    "identifier": "20-F 0001213900-26-022034",
+    "key": "0001213900-26-022034",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1493318/000121390026022034/ea0278371-20f_etoro.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-03-02",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "ETOR",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "ETOR"
+}
