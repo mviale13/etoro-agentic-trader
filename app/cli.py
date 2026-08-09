@@ -29,6 +29,7 @@ from app.commands import (
     reader_defects,
     reader_stability,
     record,
+    statement_shape,
     statements,
     status,
     today,
@@ -394,6 +395,22 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    statement_shape_parser = subparsers.add_parser(
+        "statement-shape",
+        help="Show what shape a filer's own statements have, and whose each absence is",
+        description=(
+            "Measure the shape of a company's primary statements: which "
+            "figures the filer prints a line for, which it prints under a "
+            "label this platform does not read, and which statement was "
+            "never located. A measurement of this platform, not of the "
+            "company: it costs a fetch, asks no model and stores nothing"
+        ),
+    )
+    statement_shape_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example JPM",
+    )
+
     reader_stability_parser = subparsers.add_parser(
         "reader-stability",
         help="Read one filing repeatedly and report how far the readings agree",
@@ -442,6 +459,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "reader-stability":
         return await reader_stability.run(args.symbol, args.readings)
+
+    if args.command == "statement-shape":
+        return statement_shape.run(args.symbol)
 
     if args.command == "observe":
         return await observe.run(args.symbol, args.to)
