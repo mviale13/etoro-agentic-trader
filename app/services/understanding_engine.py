@@ -87,7 +87,11 @@ def _engine(archetype: CompanyArchetype) -> str:
         )
 
     if not archetype.is_decided:
-        return "not established"
+        # Names what *is* established, because the segments and their
+        # sizes are shown directly beneath this line. "Not established"
+        # alone read as though the platform knew nothing about the
+        # business, while three checked segment shares sat under it.
+        return "how it earns is not established — its segments and their sizes are"
 
     if archetype.is_ranked:
         top = archetype.coverage[0]
