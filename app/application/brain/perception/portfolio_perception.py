@@ -121,19 +121,12 @@ class PortfolioPerception:
             for holding in snapshot.holdings
         )
 
-        largest = max(
-            holdings,
-            key=lambda holding: holding.market_value_usd,
-            default=None,
-        )
-
-        return self._portfolio_service.allocate(
-            replace(
-                snapshot,
-                holdings=holdings,
-                largest_position=largest.symbol if largest else None,
-            )
-        )
+        # The largest holding is named by `allocate`, which sums by
+        # instrument as the policy does. Naming it here was a second
+        # implementation of the same question, and it answered by row —
+        # so it named the biggest single trade while the percentage
+        # beside it measured something else.
+        return self._portfolio_service.allocate(replace(snapshot, holdings=holdings))
 
     @staticmethod
     def _asset_class_for(
