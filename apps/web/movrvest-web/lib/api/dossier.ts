@@ -175,6 +175,45 @@ export interface DossierViewModel {
    * above. Null only when the backend predates the field.
    */
   understanding: DossierUnderstanding | null;
+
+  /**
+   * The conclusion as because / despite / review if.
+   *
+   * Where `rationale` says which gate the case reached, this says what
+   * the decision rests on and what would occasion a second look. Null
+   * only when the backend predates the field.
+   */
+  synthesis: DossierSynthesis | null;
+}
+
+/** One fact in the conclusion, and how far it goes. */
+export interface DossierSynthesisFact {
+  statement: string;
+  /** "established" — from the filing, checked. "assessed" — an analyst. */
+  origin: string;
+}
+
+/** A named condition for looking at the decision again. */
+export interface DossierReviewCondition {
+  condition: string;
+  origin: string;
+  /** What it would change. Null where it names a gap, not an alternative. */
+  wouldChange: string | null;
+}
+
+export interface DossierSynthesis {
+  state: string;
+  conviction: number;
+  because: readonly DossierSynthesisFact[];
+  becauseAbsent: string | null;
+  despite: readonly DossierSynthesisFact[];
+  despiteAbsent: string | null;
+  reviewIf: readonly DossierReviewCondition[];
+  reviewIfAbsent: string | null;
+  /** What the filing establishes — carried, and not consumed by the decision. */
+  established: readonly DossierSynthesisFact[];
+  /** Whether the investor is given anything to disagree with. */
+  challengeable: boolean;
 }
 
 /** How firmly one claim is held, as the readings counted. */
@@ -618,6 +657,83 @@ function parseUnderstanding(value: unknown): DossierUnderstanding | null {
   };
 }
 
+function parseSynthesisFacts(
+  value: unknown,
+  field: string,
+): DossierSynthesisFact[] {
+  const items = Array.isArray(value) ? value : [];
+
+  return items.map((item, index) => {
+    if (!isRecord(item)) {
+      throw new Error(`${field}[${index}] is not an object.`);
+    }
+
+    return {
+      statement: requireString(item.statement, `${field}[${index}].statement`),
+      origin: requireString(item.origin, `${field}[${index}].origin`),
+    };
+  });
+}
+
+function parseSynthesis(value: unknown): DossierSynthesis | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("synthesis is not a JSON object.");
+  }
+
+  const conditions = Array.isArray(value.review_if) ? value.review_if : [];
+
+  return {
+    state: requireString(value.state, "synthesis.state"),
+    conviction: requireNumber(value.conviction, "synthesis.conviction"),
+    because: parseSynthesisFacts(value.because, "synthesis.because"),
+    becauseAbsent: optionalString(
+      value.because_absent,
+      "synthesis.because_absent",
+    ),
+    despite: parseSynthesisFacts(value.despite, "synthesis.despite"),
+    despiteAbsent: optionalString(
+      value.despite_absent,
+      "synthesis.despite_absent",
+    ),
+    reviewIf: conditions.map((item, index) => {
+      if (!isRecord(item)) {
+        throw new Error(`synthesis.review_if[${index}] is not an object.`);
+      }
+
+      return {
+        condition: requireString(
+          item.condition,
+          `synthesis.review_if[${index}].condition`,
+        ),
+        origin: requireString(
+          item.origin,
+          `synthesis.review_if[${index}].origin`,
+        ),
+        wouldChange: optionalString(
+          item.would_change,
+          `synthesis.review_if[${index}].would_change`,
+        ),
+      };
+    }),
+    reviewIfAbsent: optionalString(
+      value.review_if_absent,
+      "synthesis.review_if_absent",
+    ),
+    established: parseSynthesisFacts(
+      value.established,
+      "synthesis.established",
+    ),
+    challengeable: requireBoolean(
+      value.challengeable,
+      "synthesis.challengeable",
+    ),
+  };
+}
+
 function parseNarrative(value: unknown): DossierNarrative | null {
   if (value === null || value === undefined) {
     return null;
@@ -790,6 +906,7 @@ function parseDossier(payload: unknown): DossierViewModel {
       "narrative_absent",
     ),
     understanding: parseUnderstanding(payload.understanding),
+    synthesis: parseSynthesis(payload.synthesis),
   };
 }
 

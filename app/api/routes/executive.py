@@ -31,11 +31,13 @@ from app.api.models.portfolio_briefing import (
     TodayBriefingResponse,
     TrendResponse,
 )
+from app.api.models.synthesis import synthesis_response
 from app.api.models.understanding_adapter import understanding_response
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.brief.today_briefing_builder import TodayBriefingBuilder
 from app.application.change_feed.change_feed_service import ChangeFeedService
 from app.application.change_feed.holding_exposures import holding_exposures
+from app.application.executive.decision_synthesis_builder import synthesise
 from app.application.executive.executive_service import ExecutiveService
 from app.application.learning.decision_journal import DecisionJournal
 from app.application.market import MarketSnapshotArchive
@@ -446,6 +448,11 @@ async def dossier(
     # path that stated none says so rather than leaving the scores bare.
     bases = evidence.score_bases or ScoreBases.unrecorded()
 
+    # Read from the stores only — no fetch, no model — and composed
+    # before the narrative so the conclusion below is available whether
+    # or not the optional writer runs.
+    understanding = CompanyUnderstandingService().understanding(normalized_symbol)
+
     # Communication only, and strictly after the judgment: the writer
     # receives the finished canonical objects and cannot change them.
     outcome = await ExecutiveWriterService().narrate(
@@ -523,9 +530,11 @@ async def dossier(
         # from the stores only, so this adds no fetch and no model call
         # to a page view — a company nothing has been observed for
         # arrives with both halves absent and their reasons worded.
-        understanding=understanding_response(
-            CompanyUnderstandingService().understanding(normalized_symbol)
-        ),
+        understanding=understanding_response(understanding),
+        # Composed from the decision, the thesis and the understanding
+        # already in hand. Deterministic, and complete without the
+        # writer: the dossier's conclusion never depends on a model.
+        synthesis=synthesis_response(synthesise(decision, understanding)),
     )
 
 

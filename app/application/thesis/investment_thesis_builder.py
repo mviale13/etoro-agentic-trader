@@ -33,7 +33,6 @@ class InvestmentThesisBuilder:
     ) -> InvestmentThesis:
         portfolio = reasoning.portfolio
         market = reasoning.market
-        risk = reasoning.risk
 
         confidence = self._committee_confidence(
             committee_opinions,
@@ -64,11 +63,26 @@ class InvestmentThesisBuilder:
         # context, and they are stated as context above.
         catalysts = self._unique(decision.catalysts)
 
+        # The security's own, for the same reason the catalysts above are.
+        # These used to be the portfolio's weaknesses, the market's risks
+        # and the risk analyst's account-level factors — which are the same
+        # under every symbol, and are *already* on this page as context:
+        # `decision.context_risks` is built from those exact three sources.
+        # So the dossier answered "what would invalidate this thesis?" with
+        # "Limited diversification" and "Cash concentration" under NVIDIA,
+        # under JPMorgan, and under everything else, while printing the
+        # identical strings correctly labelled as portfolio context a few
+        # inches away.
+        #
+        # An invalidation condition is about the security or it is not one.
+        # What the platform holds that qualifies is the security's own
+        # adverse findings and the trigger the decision named; where it
+        # holds neither, the honest answer is none, and `DecisionSynthesis`
+        # states that rather than borrowing the account's.
         invalidation_conditions = self._unique(
             (
-                *portfolio.weaknesses,
-                *market.risks,
-                *risk.risk_factors,
+                *((decision.next_trigger,) if decision.next_trigger else ()),
+                *decision.key_risks,
             )
         )
 

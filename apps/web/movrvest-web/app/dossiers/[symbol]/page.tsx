@@ -21,6 +21,8 @@ import type {
   DossierPlaybook,
   DossierNarrative,
   DossierScore,
+  DossierSynthesis,
+  DossierSynthesisFact,
   DossierUnderstanding,
   DossierViewModel,
 } from "@/lib/api/dossier";
@@ -881,6 +883,174 @@ function WhatChanged({ dossier }: { dossier: DossierViewModel }) {
 }
 
 /** Questions 2 and 4 — why it matters, and what the CIO recommends. */
+/**
+ * The conclusion, in the three parts an investor needs to argue with it.
+ *
+ * This replaces a single sentence — "The investment case satisfies
+ * quality, evidence, valuation, risk, and portfolio gates" — which was
+ * true, identical under every recommendation, and named nothing about
+ * the company. That sentence is still shown, once, as what it actually
+ * is: the gate the case cleared.
+ *
+ * Every string here is composed by the backend from canonical objects.
+ * This component groups and labels; it selects no fact, writes no
+ * sentence and infers no conclusion.
+ */
+function Synthesis({
+  synthesis,
+  gate,
+}: {
+  synthesis: DossierSynthesis;
+  gate: string;
+}) {
+  return (
+    <div className="mt-4 overflow-hidden rounded-[24px] border border-slate-200">
+      <SynthesisPart
+        title="Because"
+        facts={synthesis.because}
+        absent={synthesis.becauseAbsent}
+      />
+
+      <SynthesisPart
+        title="Despite"
+        facts={synthesis.despite}
+        absent={synthesis.despiteAbsent}
+        emphasis
+      />
+
+      <div className="border-t border-slate-200 bg-white px-6 py-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          Review if
+        </p>
+
+        {synthesis.reviewIf.length > 0 ? (
+          <ul className="mt-3 space-y-3">
+            {synthesis.reviewIf.map((condition) => (
+              <li key={condition.condition} className="text-sm leading-6">
+                <span className="flex items-start gap-2">
+                  <OriginMark origin={condition.origin} />
+                  <span className="text-slate-800">{condition.condition}</span>
+                </span>
+
+                {condition.wouldChange ? (
+                  <span className="mt-1 block pl-[3.75rem] text-xs leading-5 text-slate-500">
+                    {condition.wouldChange}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            {synthesis.reviewIfAbsent}
+          </p>
+        )}
+      </div>
+
+      {synthesis.established.length > 0 ? (
+        <details className="border-t border-slate-200 bg-slate-50 px-6 py-5">
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            What its own filing establishes ({synthesis.established.length})
+          </summary>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            Read from the company&rsquo;s published accounts. None of it
+            reached the decision above.
+          </p>
+
+          <ul className="mt-3 space-y-2">
+            {synthesis.established.map((fact) => (
+              <li
+                key={fact.statement}
+                className="flex items-start gap-2 text-sm leading-6 text-slate-700"
+              >
+                <OriginMark origin={fact.origin} />
+                <span>{fact.statement}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+
+      <p className="border-t border-slate-200 bg-slate-50 px-6 py-3 text-xs leading-5 text-slate-500">
+        Gate cleared: {gate}
+      </p>
+    </div>
+  );
+}
+
+/** One part of the conclusion, or the backend's reason it is empty. */
+function SynthesisPart({
+  title,
+  facts,
+  absent,
+  emphasis,
+}: {
+  title: string;
+  facts: readonly DossierSynthesisFact[];
+  absent: string | null;
+  emphasis?: boolean;
+}) {
+  return (
+    <div
+      className={`px-6 py-5 ${emphasis ? "border-t border-slate-200 bg-amber-50/40" : "bg-white"}`}
+    >
+      <p
+        className={`text-xs font-semibold uppercase tracking-[0.15em] ${
+          emphasis ? "text-amber-800" : "text-slate-500"
+        }`}
+      >
+        {title}
+      </p>
+
+      {facts.length > 0 ? (
+        <ul className="mt-3 space-y-2">
+          {facts.map((fact) => (
+            <li
+              key={fact.statement}
+              className="flex items-start gap-2 text-sm leading-6 text-slate-800"
+            >
+              <OriginMark origin={fact.origin} />
+              <span>{fact.statement}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-slate-500">{absent}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Where a fact came from, and therefore how far it goes.
+ *
+ * A figure read out of an audited filing and an analyst's reading of
+ * market data are both true and are not the same kind of claim. Printed
+ * side by side without this, the weaker borrows the stronger's
+ * authority — which is the whole reason the backend attaches an origin.
+ */
+function OriginMark({ origin }: { origin: string }) {
+  const established = origin === "established";
+
+  return (
+    <span
+      className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+        established
+          ? "bg-slate-800 text-white"
+          : "bg-slate-100 text-slate-500"
+      }`}
+      title={
+        established
+          ? "Read from the company's own filing and checked against the cell it sits in."
+          : "This platform's analysts, reading market and provider data."
+      }
+    >
+      {established ? "filed" : "assessed"}
+    </span>
+  );
+}
+
 function Recommendation({ dossier }: { dossier: DossierViewModel }) {
   return (
     <section aria-labelledby="recommendation-heading">
@@ -888,19 +1058,23 @@ function Recommendation({ dossier }: { dossier: DossierViewModel }) {
         The recommendation, and why
       </SectionHeading>
 
-      <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-6">
-        <p className="text-sm leading-7 text-slate-800">{dossier.summary}</p>
+      {dossier.synthesis ? (
+        <Synthesis synthesis={dossier.synthesis} gate={dossier.rationale} />
+      ) : (
+        <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50 p-6">
+          <p className="text-sm leading-7 text-slate-800">{dossier.summary}</p>
 
-        {/* The thesis summary is built from the decision rationale, so
-            the two are often the identical sentence. Saying it twice
-            reads as a bug, not as emphasis — the rationale is shown
-            only where it adds words the summary does not have. */}
-        {dossier.rationale !== dossier.summary ? (
-          <p className="mt-4 border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600">
-            {dossier.rationale}
-          </p>
-        ) : null}
-      </div>
+          {/* The thesis summary is built from the decision rationale, so
+              the two are often the identical sentence. Saying it twice
+              reads as a bug, not as emphasis — the rationale is shown
+              only where it adds words the summary does not have. */}
+          {dossier.rationale !== dossier.summary ? (
+            <p className="mt-4 border-t border-slate-200 pt-4 text-sm leading-7 text-slate-600">
+              {dossier.rationale}
+            </p>
+          ) : null}
+        </div>
+      )}
 
       <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
