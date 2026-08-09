@@ -3,8 +3,18 @@
 An observation about a document, derived from consensus figures by a
 pure function. It is deliberately *not* a financial model, and nothing
 here may be handed to `model_for`: what language a statement speaks and
-which model should read a company are two questions, and this slice
+which model should read a company are two questions, and this module
 answers only the first.
+
+**That separation is now a ruled boundary rather than a pending
+connection** (`docs/architecture/FINANCIAL_DOMAIN_BOUNDARY.md`,
+accepted). Financial statements establish financial language; they do
+not establish prudential regulatory status. `INTEREST_BASED` is true of
+mortgage REITs, which no regulator supervises as banks, and `BANK` is a
+contract about deposit funding and regulatory capital. Connecting this
+enum to `FinancialModel` — even as one term of a larger rule — is
+forbidden until a Prudential Understanding layer exists to supply the
+other term.
 
 ## Why this exists, and why it is positive
 

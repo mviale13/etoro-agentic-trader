@@ -175,9 +175,17 @@ class FinancialModel(StrEnum):
     may not: JPMorgan's business archetype is *Diversified* — its
     lending, services and transaction engines lead together within 5%,
     which is what its own filing says — while the financial language
-    that reads its statements sensibly is a bank's. Those are two
-    different true statements, and collapsing them would mean bending
-    the business ontology to suit an analyst, which is backwards.
+    that reads its statements sensibly is not the generic one. Those are
+    two different true statements, and collapsing them would mean
+    bending the business ontology to suit an analyst, which is backwards.
+
+    What the statements establish is a **language**, and only that:
+    JPMorgan's are *interest-based*, which its net interest subtotal
+    proves and which mortgage REITs prove too. Whether the `BANK`
+    contract *applies* is a further question about deposit funding and
+    regulatory capital that no statement answers, so this enum is never
+    chosen from statement evidence. The boundary is accepted and
+    recorded in `docs/architecture/FINANCIAL_DOMAIN_BOUNDARY.md`.
 
     **Two members, not a mirror of every playbook.** A financial model
     enters when a real case shows the generic language reading a company
@@ -219,23 +227,43 @@ class FinancialModelSelection:
     because: str
 
     #: Whether this model differs from the one its business playbook
-    #: implies. False everywhere today: no divergence rule has been
-    #: earned, and the standing candidate — JPMorgan, whose archetype is
-    #: Diversified and whose statements are a bank's — is exactly the
-    #: case that would earn the first one.
+    #: implies. False everywhere, and no longer merely for want of a
+    #: rule. JPMorgan was the standing candidate for the first
+    #: divergence — archetype Diversified, statements a bank's — and the
+    #: corpus showed the second half of that sentence to be wrong: its
+    #: statements are a financial institution's, indistinguishable from
+    #: an insurer's on every canonical concept. Divergence selected from
+    #: statement evidence is not unearned but ruled out, by the boundary
+    #: in `docs/architecture/FINANCIAL_DOMAIN_BOUNDARY.md`.
     diverged: bool = False
 
 
 def model_for(playbook: PlaybookKind) -> FinancialModelSelection:
     """The financial language this company's business playbook implies.
 
-    The only route today, and it is a coupling rather than a conclusion:
-    the financial model follows the business playbook because no
-    evidence has yet earned it not to. A rule that selected a financial
-    model from the statements themselves — a filing printing no gross
-    profit, no operating income and an unclassified balance sheet is
-    speaking a bank's language whatever its segments say — is the
-    natural second route, and it is not invented here.
+    The only route, and it is a coupling rather than a conclusion: the
+    financial model follows the business playbook. What has changed is
+    why. This once read that no evidence had *yet* earned another route,
+    and offered the obvious one — a filing printing no gross profit, no
+    operating income and an unclassified balance sheet is speaking a
+    bank's language whatever its segments say.
+
+    **That route was built as a corpus and refused.** Eight banks and
+    five insurers print exactly that shape, and so does a filing this
+    platform failed to read; the shape identifies a financial-institution
+    family and cannot name which member. Nor is the language enough:
+    `StatementLanguage` establishes *interest-based* from a net interest
+    subtotal, and mortgage REITs establish it too, being interest-spread
+    lenders that no regulator supervises as banks.
+
+    The reason the coupling stands is now a boundary rather than a gap.
+    Financial statements establish financial language; they do not
+    establish prudential regulatory status, and `BANK` is a contract
+    about deposit funding and regulatory capital. Selecting it from
+    statements would assert those on evidence that never mentioned them.
+    See `docs/architecture/FINANCIAL_DOMAIN_BOUNDARY.md` — accepted; the
+    layer that could replace this is Prudential Understanding, and it
+    does not exist.
     """
 
     implied = IMPLIED_BY_PLAYBOOK.get(playbook, FinancialModel.GENERIC)

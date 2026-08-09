@@ -76,6 +76,15 @@ class StatementConcept(StrEnum):
     concept was added for return on equity or invested capital: no
     rule table asks for them today, and a concept acquired ahead of its
     consumer is the taxonomy-first move the door stays shut against.
+
+    And no prudential concept is here — not CET1, not Tier 1 capital,
+    not a regulatory leverage ratio, not the liquidity coverage ratio,
+    not the NSFR — because no filer prints one on the face of a primary
+    statement. Measured across the corpus in four jurisdictions: zero
+    occurrences. They belong to a separate evidence domain sourced from
+    a filing's regulatory sections, and adding one here would be
+    inventing a location the documents do not have. The boundary is
+    accepted: `docs/architecture/FINANCIAL_DOMAIN_BOUNDARY.md`.
     """
 
     TOTAL_REVENUE = "total_revenue"
