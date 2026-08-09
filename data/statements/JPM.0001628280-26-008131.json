@@ -57,6 +57,18 @@
           "unlocated_because": null
         },
         {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
           "anchor": {
             "caption": "Consolidated statements of income",
             "cell": {
@@ -111,8 +123,9 @@
           "unlocated_because": null
         }
       ],
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T14:09:43.119825+00:00",
+        "observed_at": "2026-08-08T20:12:12.586053+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -174,6 +187,18 @@
           "unlocated_because": null
         },
         {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
           "anchor": {
             "caption": "Consolidated statements of income",
             "cell": {
@@ -228,8 +253,9 @@
           "unlocated_because": null
         }
       ],
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T14:09:46.035076+00:00",
+        "observed_at": "2026-08-08T20:12:16.991819+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -291,6 +317,18 @@
           "unlocated_because": null
         },
         {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
           "anchor": {
             "caption": "Consolidated statements of income",
             "cell": {
@@ -345,8 +383,9 @@
           "unlocated_because": null
         }
       ],
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T14:09:49.814480+00:00",
+        "observed_at": "2026-08-08T20:12:21.385529+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -408,6 +447,18 @@
           "unlocated_because": null
         },
         {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
           "anchor": {
             "caption": "Consolidated statements of income",
             "cell": {
@@ -462,8 +513,9 @@
           "unlocated_because": null
         }
       ],
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T14:09:55.110846+00:00",
+        "observed_at": "2026-08-08T20:12:25.938359+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
@@ -525,6 +577,18 @@
           "unlocated_because": null
         },
         {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
           "anchor": {
             "caption": "Consolidated statements of income",
             "cell": {
@@ -579,14 +643,895 @@
           "unlocated_because": null
         }
       ],
+      "located_among": 1,
       "reading": {
-        "observed_at": "2026-08-08T14:09:59.492179+00:00",
+        "observed_at": "2026-08-08T20:12:30.469407+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:13:04.884928+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:13:08.783682+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:13:11.817313+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:13:15.960904+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated statements of cash flows",
+            "cell": {
+              "column": 3,
+              "row": 20,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net cash (used in)/provided by operating activities",
+            "printed": "( 147,782 )",
+            "value": -147782.0
+          },
+          "concept": "operating_cash_flow",
+          "row": [
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 3,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 147,782 )",
+              "value": -147782.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 5,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "( 42,012 )",
+              "value": -42012.0
+            },
+            {
+              "caption": "Consolidated statements of cash flows",
+              "cell": {
+                "column": 6,
+                "row": 20,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net cash (used in)/provided by operating activities",
+              "printed": "12,974",
+              "value": 12974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "capital_expenditures",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the cash the company spent on purchases of property, plant and equipment for the most recent period the statement reports in the tables printed under the cash flow statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:13:20.968575+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "cash_flow_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities (a)",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities (a)",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities (a)",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 35,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:14:26.003022+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities (a)",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities (a)",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities (a)",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 35,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:14:35.305739+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities (a)",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities (a)",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities (a)",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 35,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:14:39.179549+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities (a)",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities (a)",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities (a)",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 35,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:14:45.544420+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 26,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total liabilities (a)",
+            "printed": "4,062,462",
+            "value": 4062462.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total liabilities (a)",
+              "printed": "4,062,462",
+              "value": 4062462.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 26,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total liabilities (a)",
+              "printed": "3,658,056",
+              "value": 3658056.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated balance sheets",
+            "cell": {
+              "column": 3,
+              "row": 35,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total stockholders\u2019 equity",
+            "printed": "362,438",
+            "value": 362438.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 3,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "362,438",
+              "value": 362438.0
+            },
+            {
+              "caption": "Consolidated balance sheets",
+              "cell": {
+                "column": 4,
+                "row": 35,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total stockholders\u2019 equity",
+              "printed": "344,758",
+              "value": 344758.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-08T20:14:52.353031+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
     }
   ],
-  "schema_version": 1,
+  "schema_version": 2,
   "source": {
     "authority": "regulator_filed",
     "company": "JPMORGAN CHASE & CO",

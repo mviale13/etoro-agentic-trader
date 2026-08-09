@@ -287,7 +287,16 @@ Corp and the related notes.</p>
 <p>Consolidated statements of income</p>
 <table>
   <tr><td>(in millions)</td><td>2025</td><td>2024</td></tr>
+  <tr><td>Investment banking fees</td><td>8,415</td><td>7,124</td></tr>
+  <tr><td>Principal transactions</td><td>27,411</td><td>24,268</td></tr>
+  <tr><td>Lending- and deposit-related fees</td><td>7,608</td><td>7,340</td></tr>
+  <tr><td>Asset management fees</td><td>19,353</td><td>17,201</td></tr>
+  <tr><td>Total noninterest revenue</td><td>85,201</td><td>78,143</td></tr>
+  <tr><td>Net interest income</td><td>92,218</td><td>84,735</td></tr>
   <tr><td>Total net revenue</td><td>177,419</td><td>162,878</td></tr>
+  <tr><td>Compensation expense</td><td>46,678</td><td>42,213</td></tr>
+  <tr><td>Total noninterest expense</td><td>91,313</td><td>87,172</td></tr>
+  <tr><td>Income before income tax expense</td><td>72,106</td><td>61,610</td></tr>
   <tr><td>Net income</td><td>58,471</td><td>49,552</td></tr>
 </table>
 <p>Consolidated statements of comprehensive income</p>
@@ -316,7 +325,11 @@ def test_locating_the_statement_puts_its_table_within_reach() -> None:
     tables = read(STATEMENTS).income_statement_tables
 
     assert len(tables) == 1
-    assert tables[0].rows[1].label == "Total net revenue"
+
+    labels = [row.label for row in tables[0].rows]
+
+    assert "Total net revenue" in labels
+    assert "Net income" in labels
 
 
 def test_a_filing_without_statements_leaves_them_unstated() -> None:

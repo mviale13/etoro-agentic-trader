@@ -252,3 +252,139 @@ The segment corpus is not re-read, and no other company is observed
 in this slice — breadth is Operation First Reading's economy, and
 statement coverage follows the same three streams once the mechanism
 is proven on one company.
+
+---
+
+## The second slice: three statements, and a layer above them (2026-08-08)
+
+The vocabulary grew because a consumer named its demand. The four
+financial analysts' rule tables ask for figures the income statement
+does not print, so the balance sheet and the cash flow statement
+entered — the same locator, the same tabular chain, the same quorum,
+their own stores.
+
+Three separations were added, and each is load-bearing:
+
+- **One reading sees one statement.** A reading handed all of Item 8
+  could locate "total revenue" on a cash flow supplementary schedule
+  and pass every check, because the checks prove where a figure sits
+  and never which statement it belongs to.
+- **One consensus covers one statement**, so three quorums share a
+  document key without meeting.
+- **One concept belongs to one statement**, enforced on the way in.
+
+**`FinancialUnderstanding` is the layer `BusinessUnderstanding`
+occupies over narrative consensus.** Deterministic, traceable to two
+checked cells per number, and never compensating. Four arithmetic
+forms carry it, all holding one discipline — one table is one scale,
+one column is one period, stated once in `comparable`:
+`MeasuredRatio` (margins, ratios), `MeasuredNet` (free cash flow,
+subtracting the *magnitude* so a filer's sign convention cannot decide
+what the company spent), `MeasuredChange` (growth, dated from the
+filer's own column headers so an oldest-first filing is not read as a
+decline), and the printed level.
+
+**Growth cost no reading.** The anchored row was already expanded by
+the platform, so prior periods were evidence already in hand.
+
+### The measurement (JPM, three statements at quorum)
+
+| Statement | Width | Settled | Absent, 5/5 |
+|---|---|---|---|
+| Income | 10 | revenue 10/10, net income 10/10 | gross profit, operating income |
+| Balance sheet | 5 | total liabilities, equity | current assets, current liabilities |
+| Cash flow | 5 | operating cash flow | capital expenditures |
+
+Every absence is a fact about a bank rather than about the reader: a
+bank's income statement prints no gross profit line, its balance sheet
+is unclassified, and its cash flow statement folds property purchases
+into other investing activities. Measured: net margin 31.3%, revenue
+growth +2.8%, earnings growth −2.4%, liabilities-to-equity 11.21×,
+operating cash flow −147,782.
+
+`TOTAL_EQUITY` gained three label forms by the mechanism the design
+names: a live refusal. JPMorgan condenses equity to one line labelled
+"Stockholders' equity" and prints no "Total" beside it, so the reading
+pointed at the right cell and this platform refused it for the filer's
+wording — which is the sentence that earns the entry.
+
+### Closed: the statements are resolved as the run they form (2026-08-08)
+
+The defect below was repaired the way the owner ruled it had to be —
+in the locator, not the reader, and by generalising the boundary
+architecture rather than by a fourth anchor guess.
+
+**The acceptance criterion, which is the whole design:**
+
+> Every authoritative financial statement is selected because it
+> belongs to the highest-quality structural run, never because its
+> title matched first.
+
+`app/providers/statement_locator.py` resolves the most coherent
+progression of *statements*, exactly as `section_locator` resolves the
+most coherent progression of *numbered items*. A run's quality is its
+**substance**: how many *different* statements it carries at more than
+a listing's width. That single measure separates every shape, with no
+clause written for any of them:
+
+| Shape | Substance | Why |
+|---|---|---|
+| Contents page | 0 | Three statements, each a few characters to the next — a progression of nothing. |
+| MD&A discussion | 1 | Wide, block-beginning, and isolated: no sibling statements around it. |
+| Pointer item | — | Item 8's "appear on pages 162–314" holds no statement title, so it is a candidate for nothing. |
+| Audited statements | 3 | Several different statements, each thousands of characters. |
+
+Two refusals are built in. **No fallback**: a statement absent from the
+selected run is absent, even where its title appears elsewhere in the
+document. And **no tiebreak**: two structurally indistinguishable runs
+resolve to nothing, because choosing between them by position or
+capitalisation is the localised repair this architecture exists to
+avoid. `RUN_GAP` errs deliberately small for the same reason — too
+small splits a real block and reports an honest absence; too large lets
+a discussion join the run and produces a wrong provenance claim.
+
+**Measured on JPM.** The balance sheet moved from the MD&A's *Selected
+Consolidated balance sheets data* (8,479 characters) to the audited
+*Consolidated balance sheets* (3,554), and every statement now resolves
+with exactly one contender, so the provenance caveat is silent. The
+figures are unchanged — 4,062,462 and 362,438 — which says the MD&A
+summary was accurate and says nothing about whether the platform was
+entitled to call it the audited statement.
+
+Two vocabulary entries were earned by live refusals along the way, both
+by the mechanism the design names. The bare form "Stockholders' equity"
+(JPMorgan's MD&A summary prints no "Total"), and **a trailing footnote
+marker is typography, not a label** — the audited statement labels its
+line "Total liabilities (a)" where the summary labels it "Total
+liabilities", so a platform reading the marker as part of the name
+would have refused the audited statement and accepted the discussion of
+it, which is exactly backwards. The rule is bounded to one to three
+letters or digits in brackets, so "Net income (loss)" is untouched.
+
+Store schema 2: schema-1 balance-sheet readings were shown different
+text, so the corpus was re-read rather than pooled. The bump covers the
+whole stream even though two of the three statements resolve to
+byte-identical sections, because the *protocol* changed — a version
+tracking outcomes rather than protocols would have to be re-argued at
+every locator change.
+
+### Repaired: the balance-sheet locator found the MD&A first
+
+**Measured on JPM, and not repaired here.** The opening anchor
+`consolidated balance sheet` matches the MD&A heading *"CONSOLIDATED
+BALANCE SHEETS AND CASH FLOWS ANALYSIS"*, which begins a block and
+wins the widest-pair contest against the audited statement in Item 8.
+The figures acquired are genuine, internally consistent (4,062,462 +
+362,438 = 4,424,900) and the filer's own — but they come from a table
+the filer labels *"Selected Consolidated balance sheets data"*, and
+the platform records them as the audited balance sheet. **A figure
+that is right whose provenance claim is wrong** is precisely the class
+invariant 2 exists for.
+
+Deliberately not repaired with a fourth anchor guess. The migration
+plan records two naive locator repairs already refused by the
+Reference Corpus, and the principled fix — the candidate-and-ranker
+boundary detector — is **built and merged (PR #67) and not yet
+wired**. Wiring it is its own slice, carrying a schema bump and a
+corpus re-read. The income statement and cash flow statement are
+unaffected on this filing: both located their audited statements.

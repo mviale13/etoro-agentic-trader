@@ -8,6 +8,7 @@ from app.domain.financial_statement_consensus import (
     FinancialStatementConsensus,
     statement_consensus_of,
 )
+from app.domain.financial_statements import StatementKind
 from app.domain.knowledge_consensus import QUORUM
 from app.domain.primary_source import (
     PrimarySourceProviderError,
@@ -78,8 +79,17 @@ class FinancialStatementService:
             else:
                 self._extractor = resolved
 
-    async def statements(self, symbol: str) -> StatementOutcome:
-        """The statement consensus, reading the filing only if new."""
+    async def statements(
+        self,
+        symbol: str,
+        statement: StatementKind = StatementKind.INCOME_STATEMENT,
+    ) -> StatementOutcome:
+        """One statement's consensus, reading the filing only if new.
+
+        One statement at a time, always. The three primary statements
+        are three quorums that share a document key, and serving them
+        together would hide which of them a caller has paid for.
+        """
 
         try:
             source, provider = self._sources.resolve(symbol)
@@ -90,11 +100,11 @@ class FinancialStatementService:
                     if isinstance(unavailable, PrimarySourceProviderError)
                     else KnowledgeState.UNAVAILABLE
                 ),
-                statements=self._latest(symbol),
+                statements=self._latest(symbol, statement),
                 absent_because=str(unavailable),
             )
 
-        observations = self._store.read(symbol, source.key)
+        observations = self._store.read(symbol, source.key, statement)
 
         if observations:
             return StatementOutcome(
@@ -105,7 +115,7 @@ class FinancialStatementService:
         if self._extractor is None:
             return StatementOutcome(
                 state=KnowledgeState.UNAVAILABLE,
-                statements=self._latest(symbol),
+                statements=self._latest(symbol, statement),
                 absent_because=(
                     f"{source.stated()} has not been read. {self._unreadable}"
                     if self._unreadable
@@ -125,18 +135,18 @@ class FinancialStatementService:
                     if isinstance(failure, PrimarySourceProviderError)
                     else KnowledgeState.UNAVAILABLE
                 ),
-                statements=self._latest(symbol),
+                statements=self._latest(symbol, statement),
                 absent_because=str(failure),
             )
 
         try:
-            extracted = await self._extractor.extract(symbol, document)
+            extracted = await self._extractor.extract(symbol, document, statement)
         except ExtractionRejected as rejected:
             # Nothing from a reading that failed its checks is stored,
             # in part or at all.
             return StatementOutcome(
                 state=KnowledgeState.INVALID_EXTRACTION,
-                statements=self._latest(symbol),
+                statements=self._latest(symbol, statement),
                 absent_because=str(rejected),
             )
 
@@ -145,12 +155,17 @@ class FinancialStatementService:
         return StatementOutcome(
             state=KnowledgeState.AVAILABLE_ACQUIRED,
             statements=statement_consensus_of(
-                self._store.read(symbol, extracted.source.key)
+                self._store.read(symbol, extracted.source.key, statement)
             ),
         )
 
-    async def observe(self, symbol: str, target: int = QUORUM) -> StatementOutcome:
-        """Take statement observations of the current document up to a count.
+    async def observe(
+        self,
+        symbol: str,
+        statement: StatementKind = StatementKind.INCOME_STATEMENT,
+        target: int = QUORUM,
+    ) -> StatementOutcome:
+        """Take observations of one statement of the current document.
 
         The explicit spend that fills the statement consensus. The
         stopping rule references only the count, fixed before anything
@@ -179,15 +194,15 @@ class FinancialStatementService:
                     if isinstance(unavailable, PrimarySourceProviderError)
                     else KnowledgeState.UNAVAILABLE
                 ),
-                statements=self._latest(symbol),
+                statements=self._latest(symbol, statement),
                 absent_because=str(unavailable),
             )
 
         refused: str | None = None
 
-        while len(self._store.read(symbol, source.key)) < target:
+        while len(self._store.read(symbol, source.key, statement)) < target:
             try:
-                observation = await self._extractor.extract(symbol, document)
+                observation = await self._extractor.extract(symbol, document, statement)
             except ExtractionRejected as rejected:
                 # One refusal ends the run rather than looping on a
                 # document that resists reading; what was already
@@ -197,7 +212,7 @@ class FinancialStatementService:
 
             self._store.append(observation)
 
-        observations = self._store.read(symbol, source.key)
+        observations = self._store.read(symbol, source.key, statement)
 
         if not observations:
             return StatementOutcome(
@@ -212,9 +227,11 @@ class FinancialStatementService:
             absent_because=refused,
         )
 
-    def _latest(self, symbol: str) -> FinancialStatementConsensus | None:
+    def _latest(
+        self, symbol: str, statement: StatementKind
+    ) -> FinancialStatementConsensus | None:
         """Consensus over the newest document's observations, if any."""
 
-        observations = self._store.latest(symbol)
+        observations = self._store.latest(symbol, statement)
 
         return statement_consensus_of(observations) if observations else None

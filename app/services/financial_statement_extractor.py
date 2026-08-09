@@ -9,11 +9,16 @@ from typing import Any
 from app.domain.evidence import EvidenceNotApplicable
 from app.domain.financial_statements import (
     CONCEPT_QUESTIONS,
+    STATEMENT_NAMES,
     FinancialStatementObservation,
     StatementConcept,
     StatementFact,
     StatementKind,
+    concepts_of,
     matches_concept,
+    statement_contenders,
+    statement_tables,
+    statement_text,
 )
 from app.domain.primary_source import SourceDocument
 from app.domain.provenance import Provenance
@@ -54,8 +59,8 @@ Rules:
   figure for the MOST RECENT period the table reports. The most recent
   period is named by the column headers; read them.
 - Cite the statement's own line, not a subtotal of part of it, not a
-  per-share figure, not a note. "Total net revenue" is the revenue
-  line; "Net income" is the net income line.
+  per-share figure, not a note. The line the statement prints under the
+  label the concept describes is the line, and nothing else is.
 - Never cite the naming row, any row above it, or column `c0`. They
   name the rows and columns and measure nothing.
 - `value` is the number that cell prints, written plainly: no
@@ -67,13 +72,17 @@ Rules:
 """
 
 
-def statement_schema() -> dict[str, Any]:
+def statement_schema(statement: StatementKind) -> dict[str, Any]:
     """The contract a statement reading must fill: cells, never answers.
 
     A figure is not something the reading asserts; it is something the
     reading points at, which this platform then reads for itself. The
     `value` field exists so a misaddressed citation becomes a
     disagreement between the reading and the document, which is caught.
+
+    The concept enumeration is this statement's own. A reading of the
+    cash flow statement cannot name a balance-sheet concept, because the
+    schema it answers under does not contain one.
     """
 
     return {
@@ -86,7 +95,9 @@ def statement_schema() -> dict[str, Any]:
                     "properties": {
                         "concept": {
                             "type": "string",
-                            "enum": [concept.value for concept in StatementConcept],
+                            "enum": [
+                                concept.value for concept in concepts_of(statement)
+                            ],
                         },
                         "table": {"type": "integer"},
                         "row": {"type": "integer"},
@@ -109,22 +120,33 @@ def statement_schema() -> dict[str, Any]:
     }
 
 
-def statement_prompt(document: SourceDocument) -> str:
+def statement_prompt(document: SourceDocument, statement: StatementKind) -> str:
+    """One statement's tables and one statement's concepts, and no more.
+
+    The partition matters as much as the wording. A reading shown all of
+    Item 8 could find "total revenue" on a cash flow statement's
+    supplementary schedule and pass every check this platform runs,
+    because the checks prove where a figure sits and never which
+    statement it belongs to. Showing one statement is what proves it.
+    """
+
     return "\n".join(
         (
             f"Company: {document.source.company}",
+            f"Statement: the audited {STATEMENT_NAMES[statement]}.",
             "",
-            "Concepts to locate, each as one cell for the most recent period:",
+            "Concepts to locate, each as one cell for the most recent "
+            "period or date the statement reports:",
             *(
                 f"- {concept.value}: {CONCEPT_QUESTIONS[concept]}"
-                for concept in StatementConcept
+                for concept in concepts_of(statement)
             ),
             "",
             "Locate each concept's cell in the tables below, or omit a "
             "concept whose figure is not there.",
             "",
             "--- TABLES BEGIN ---",
-            *(table.stated() for table in document.income_statement_tables),
+            *(table.stated() for table in statement_tables(document, statement)),
             "--- TABLES END ---",
         )
     )
@@ -146,41 +168,47 @@ class FinancialStatementExtractor:
         self._provider = provider
 
     async def extract(
-        self, symbol: str, document: SourceDocument
+        self,
+        symbol: str,
+        document: SourceDocument,
+        statement: StatementKind = StatementKind.INCOME_STATEMENT,
     ) -> FinancialStatementObservation:
         """
-        Read this document's income statement, retrying a refused reading.
+        Read one named statement of this document, retrying a refusal.
 
-        A document in which this platform located no statement yields a
-        deterministic observation — every concept absent, the reason
-        worded, no model call and no spend. That absence is a finding
-        to store and serve, not a failure: which fact it states (no
-        statement located, or a located statement with no readable
+        A document in which this platform located no such statement
+        yields a deterministic observation — every concept absent, the
+        reason worded, no model call and no spend. That absence is a
+        finding to store and serve, not a failure: which fact it states
+        (no statement located, or a located statement with no readable
         table) travels in the wording.
         """
 
-        if not document.income_statement_tables:
-            return self._unlocated(symbol, document)
+        if not statement_tables(document, statement):
+            return self._unlocated(symbol, document, statement)
 
         rejection: ExtractionRejected | None = None
 
         for _ in range(MAX_ATTEMPTS):
             try:
-                return await self._attempt(symbol, document)
+                return await self._attempt(symbol, document, statement)
             except ExtractionRejected as rejected:
                 rejection = rejected
 
-        raise rejection or ExtractionRejected("The statement could not be read.")
+        raise rejection or ExtractionRejected(
+            f"The {STATEMENT_NAMES[statement]} could not be read."
+        )
 
     async def _attempt(
         self,
         symbol: str,
         document: SourceDocument,
+        statement: StatementKind,
     ) -> FinancialStatementObservation:
         request = DraftRequest(
             system_prompt=STATEMENT_SYSTEM_PROMPT,
-            user_prompt=statement_prompt(document),
-            schema=statement_schema(),
+            user_prompt=statement_prompt(document, statement),
+            schema=statement_schema(statement),
             max_tokens=MAX_TOKENS,
         )
 
@@ -196,12 +224,15 @@ class FinancialStatementExtractor:
                 "The statement reader returned unreadable output."
             ) from error
 
-        facts = self._validated(document.income_statement_tables, payload)
+        facts = self._validated(
+            statement_tables(document, statement), payload, statement
+        )
 
         return FinancialStatementObservation(
             symbol=symbol.upper().strip(),
-            statement=StatementKind.INCOME_STATEMENT,
+            statement=statement,
             facts=facts,
+            located_among=statement_contenders(document, statement),
             source=document.source,
             reading=Provenance(
                 source=(
@@ -216,6 +247,7 @@ class FinancialStatementExtractor:
         self,
         tables: tuple[SourceTable, ...],
         payload: dict[str, Any],
+        statement: StatementKind,
     ) -> tuple[StatementFact, ...]:
         """
         Each located concept checked against the cell it cites, in order:
@@ -237,6 +269,13 @@ class FinancialStatementExtractor:
                     "platform never asked for."
                 ) from unknown
 
+            if concept not in concepts_of(statement):
+                raise ExtractionRejected(
+                    f"The reading located {concept.value!r} in the "
+                    f"{STATEMENT_NAMES[statement]}, which is not the "
+                    "statement this platform reads that figure from."
+                )
+
             if concept in located:
                 raise ExtractionRejected(
                     f"The reading located {concept.value!r} twice, so at "
@@ -248,7 +287,7 @@ class FinancialStatementExtractor:
         facts = []
         cited: set[CellReference] = set()
 
-        for concept in StatementConcept:
+        for concept in concepts_of(statement):
             raw = located.get(concept)
 
             if raw is None:
@@ -259,7 +298,8 @@ class FinancialStatementExtractor:
                         unlocated_because=(
                             f"The reading located no cell holding "
                             f"{CONCEPT_QUESTIONS[concept]} in the tables "
-                            "printed under the statement's title."
+                            f"printed under the {STATEMENT_NAMES[statement]}'s "
+                            "title."
                         ),
                     )
                 )
@@ -303,23 +343,24 @@ class FinancialStatementExtractor:
 
     @staticmethod
     def _unlocated(
-        symbol: str, document: SourceDocument
+        symbol: str, document: SourceDocument, statement: StatementKind
     ) -> FinancialStatementObservation:
         """Every concept absent, each absence saying which fact it states."""
 
-        because = _no_statement(document)
+        because = _no_statement(document, statement)
 
         return FinancialStatementObservation(
             symbol=symbol.upper().strip(),
-            statement=StatementKind.INCOME_STATEMENT,
+            statement=statement,
             facts=tuple(
                 StatementFact(
                     concept=concept,
                     anchor=None,
                     unlocated_because=because,
                 )
-                for concept in StatementConcept
+                for concept in concepts_of(statement)
             ),
+            located_among=statement_contenders(document, statement),
             source=document.source,
             reading=Provenance(
                 source=(
@@ -332,7 +373,7 @@ class FinancialStatementExtractor:
         )
 
 
-def _no_statement(document: SourceDocument) -> str:
+def _no_statement(document: SourceDocument, statement: StatementKind) -> str:
     """Why a document yielded no statement table to read.
 
     Two different facts, worded apart, and only one of them might be
@@ -340,14 +381,16 @@ def _no_statement(document: SourceDocument) -> str:
     located statement that printed no table this platform could read.
     """
 
-    if not document.income_statement_text.strip():
+    named = STATEMENT_NAMES[statement]
+
+    if not statement_text(document, statement).strip():
         return (
-            "This platform located no income statement in this document — "
-            "no statement title begins a block here — so it read no figure. "
+            f"This platform located no {named} in this document — no "
+            f"{named} title begins a block here — so it read no figure. "
             "This is a fact about the reading, not about the company."
         )
 
     return (
-        "This document prints an income statement title, and no table this "
-        "platform could read appears under it, so no figure was read."
+        f"This document prints a {named} title, and no table this platform "
+        "could read appears under it, so no figure was read."
     )

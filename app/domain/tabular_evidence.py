@@ -416,6 +416,280 @@ class MeasuredShare:
         )
 
 
+#: A calendar year inside a column header, bounded so it cannot match
+#: part of a longer number. Two centuries only, because a filing that
+#: reports 1899 or 2100 is not a filing this platform is reading.
+_YEAR = re.compile(r"(?<!\d)(?:19|20)\d{2}(?!\d)")
+
+
+def stated_year(header: str) -> int | None:
+    """The calendar year a column header names, where it names exactly one.
+
+    Read off the filer's own words rather than inferred from where the
+    column sits. `None` where the header names no year or names more
+    than one — an ambiguous header establishes no period, and a period
+    this platform cannot read is one it does not claim.
+    """
+
+    found = _YEAR.findall(header)
+
+    return int(found[0]) if len(found) == 1 else None
+
+
+def preceding(
+    row: tuple[ReportedFigure, ...], anchor: ReportedFigure
+) -> ReportedFigure | None:
+    """The same line's figure for the closest earlier year the row prints.
+
+    The chronology comes from the headers, so a filer printing its
+    oldest year on the left is read correctly and one printing an
+    unreadable header yields nothing rather than a guess. Where two
+    columns name the same earlier year — a restatement printed beside
+    the original — neither is chosen: two figures could answer, so
+    none does, which is the rule structural ownership already applies.
+    """
+
+    named = stated_year(anchor.column_header)
+
+    if named is None:
+        return None
+
+    earlier = [
+        (year, figure)
+        for figure in row
+        if figure.cell != anchor.cell
+        and (year := stated_year(figure.column_header)) is not None
+        and year < named
+    ]
+
+    if not earlier:
+        return None
+
+    closest = max(year for year, _ in earlier)
+    candidates = [figure for year, figure in earlier if year == closest]
+
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def comparable(first: ReportedFigure, second: ReportedFigure) -> None:
+    """Refuse two figures not known to share a scale and a period.
+
+    The single statement of the rule two of the arithmetic forms below
+    both hold to, so there is one place it can be read and one place it
+    could ever change. One **table** is one scale, without a caption
+    having to be parsed to discover what the scale was. One **column**
+    is one period, so a computation cannot silently combine two years.
+    Two **different rows** is what makes them two quantities rather than
+    one quantity and itself.
+
+    Raises `EvidenceNotApplicable`, which is the type this platform
+    already uses for evidence that cannot support what it was cited for.
+    """
+
+    here, there = first.cell, second.cell
+
+    if here.table != there.table:
+        raise EvidenceNotApplicable(
+            f'"{first.label}" was measured against "{second.label}" in '
+            "another table, so the two are not known to share a scale."
+        )
+
+    if here.column != there.column:
+        raise EvidenceNotApplicable(
+            f'"{first.label}" under "{first.column_header}" was measured '
+            f'against "{second.label}" under "{second.column_header}", '
+            "which is a different column, so the two are not known to "
+            "share a period."
+        )
+
+    if here.row == there.row:
+        raise EvidenceNotApplicable(f'"{first.label}" was measured against itself.')
+
+
+@dataclass(frozen=True, slots=True)
+class MeasuredRatio:
+    """
+    One printed quantity divided by another printed quantity.
+
+    A sibling of `MeasuredShare`, not a generalisation of it, because
+    the two state different things. A share says a part is *part of* a
+    whole and is bounded by that claim: a segment cannot earn 130% of
+    revenue, so a computation that says it did has gone wrong and
+    `MeasuredShare` refuses it. A ratio relates two quantities that
+    stand apart — total liabilities against equity, net income against
+    revenue — where 130% and −8% are ordinary readings of a real
+    company. Folding the two together would mean dropping the bound
+    that catches a bad share.
+
+    What both hold identically is the discipline that makes the
+    arithmetic checkable. Both figures come from **one table**, so one
+    scale governs them and no caption has to be parsed to discover
+    what it was, and from **one column**, so one period governs them
+    and the ratio is not a comparison of two different years wearing a
+    single number.
+    """
+
+    numerator: ReportedFigure
+    denominator: ReportedFigure
+
+    def __post_init__(self) -> None:
+        comparable(self.numerator, self.denominator)
+
+        if self.denominator.value == 0:
+            raise EvidenceNotApplicable(
+                f'"{self.denominator.label}" is {self.denominator.printed}, '
+                "which nothing can be measured against."
+            )
+
+    @property
+    def ratio(self) -> float:
+        """The quotient, computed here from two figures already checked."""
+
+        return self.numerator.value / self.denominator.value
+
+    @property
+    def period(self) -> str:
+        """The column header both figures carry, in the filer's words."""
+
+        return self.numerator.column_header
+
+    def stated(self) -> str:
+        """The relationship as an investor would check it, in full."""
+
+        return (
+            f'"{self.numerator.label}" {self.numerator.printed} over '
+            f'"{self.denominator.label}" {self.denominator.printed}, '
+            f'under "{self.period}" '
+            f"({self.numerator.caption or 'no caption'}, "
+            f"table {self.numerator.cell.table})"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class MeasuredNet:
+    """
+    One printed quantity less the magnitude of another.
+
+    Free cash flow is the case that earned this: operating cash flow
+    less what the company spent on plant and equipment, two lines of
+    one cash flow statement, subtracted by this platform.
+
+    **The magnitude is subtracted, never the signed value.** A filer is
+    free to print capital expenditure as `(12,345)` — an outflow in
+    accountants' parentheses, which this platform already reads as
+    negative — or as `12,345` under a heading that says the section is
+    uses of cash. Both are the same event, and a subtraction that
+    trusted the sign would add the spending back on half the filings
+    and report a company as generating cash it in fact spent. What the
+    caller asserts by choosing this form is that `deducted` is an
+    outflow, which is a property of the concept it was located for and
+    not of the cell.
+    """
+
+    #: The quantity being reduced.
+    gross: ReportedFigure
+
+    #: The outflow, subtracted by magnitude whichever sign it carries.
+    deducted: ReportedFigure
+
+    def __post_init__(self) -> None:
+        comparable(self.gross, self.deducted)
+
+    @property
+    def net(self) -> float:
+        """The remainder, computed here from two figures already checked."""
+
+        return self.gross.value - abs(self.deducted.value)
+
+    @property
+    def period(self) -> str:
+        """The column header both figures carry, in the filer's words."""
+
+        return self.gross.column_header
+
+    def stated(self) -> str:
+        """The subtraction as an investor would check it, in full."""
+
+        return (
+            f'"{self.gross.label}" {self.gross.printed} less '
+            f'"{self.deducted.label}" {self.deducted.printed}, '
+            f'under "{self.period}" '
+            f"({self.gross.caption or 'no caption'}, "
+            f"table {self.gross.cell.table})"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class MeasuredChange:
+    """
+    One printed quantity against the same line in an earlier period.
+
+    Growth needed no new concept and no new reading: the anchored row
+    is already read cell by cell by this platform, so the prior
+    period's figure is evidence that arrived with the current one.
+
+    The two figures must sit on **one row of one table** — the same
+    line item, at the same scale — and in **different columns**, which
+    is what makes one of them earlier. Which one is earlier is read
+    off the column headers the filer printed, never off column
+    position: a filer is free to print its oldest year on the left,
+    and a platform that assumed otherwise would report a decline as
+    growth without anything catching it.
+
+    A base that is zero or negative yields no change. A rise from a
+    loss to a profit is a real and important event, and dividing by a
+    loss expresses it as a percentage that reads like growth and is
+    not one — so it is refused, and the two figures stay legible.
+    """
+
+    later: ReportedFigure
+    earlier: ReportedFigure
+
+    def __post_init__(self) -> None:
+        here, there = self.later.cell, self.earlier.cell
+
+        if here.table != there.table:
+            raise EvidenceNotApplicable(
+                f'"{self.later.label}" was compared with a figure in another '
+                "table, so the two are not known to share a scale."
+            )
+
+        if here.row != there.row:
+            raise EvidenceNotApplicable(
+                f'"{self.later.label}" was compared with '
+                f'"{self.earlier.label}", which is a different line.'
+            )
+
+        if here.column == there.column:
+            raise EvidenceNotApplicable(
+                f'"{self.later.label}" was compared with itself.'
+            )
+
+        if self.earlier.value <= 0:
+            raise EvidenceNotApplicable(
+                f'"{self.earlier.label}" was {self.earlier.printed} under '
+                f'"{self.earlier.column_header}", and a change measured '
+                "against a base that is not positive is not a growth rate."
+            )
+
+    @property
+    def change(self) -> float:
+        """The fraction gained or lost, computed from two checked figures."""
+
+        return (self.later.value - self.earlier.value) / self.earlier.value
+
+    def stated(self) -> str:
+        """The change as an investor would check it, in full."""
+
+        return (
+            f'"{self.later.label}" {self.later.printed} under '
+            f'"{self.later.column_header}" against {self.earlier.printed} '
+            f'under "{self.earlier.column_header}" '
+            f"({self.later.caption or 'no caption'}, "
+            f"table {self.later.cell.table})"
+        )
+
+
 def cited_reference(raw: dict[str, Any]) -> CellReference:
     """The address a reading gave, as an address.
 

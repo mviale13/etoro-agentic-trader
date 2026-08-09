@@ -8,6 +8,7 @@ from datetime import date
 
 import httpx
 
+from app.domain.financial_statements import StatementKind
 from app.domain.prose_evidence import Region
 from app.domain.tabular_evidence import SourceTable
 from app.providers.document_text import (
@@ -18,6 +19,8 @@ from app.providers.document_text import (
     read_tables,
     typesets_blocks,
 )
+from app.providers.statement_locator import LocatedStatements
+from app.providers.statement_locator import locate as locate_statements
 
 #: SEC's fair-access policy requires a request to identify who is making
 #: it. A platform that scraped anonymously would be asking a public
@@ -63,40 +66,10 @@ _ITEM_7A = (
     "report of independent registered public accounting firm",
 )
 
-#: The audited income statement is located by the title the filer
-#: typeset over it, never by "Item 8": that item's heading often
-#: stands over an index or a pointer while the statements themselves
-#: are printed under their own names — which is the structural-section
-#: rule's third application. The openings are the titles filers give
-#: the statement; the closings are the titles of the statements that
-#: follow it under either convention, and the notes heading that
-#: follows them all. A title in the table of contents or quoted inside
-#: the auditor's report does not begin a block, so the same discipline
-#: that locates Items 1 and 7 separates the statement from every
-#: mention of it.
-_INCOME_STATEMENT = (
-    "consolidated statements of income",
-    "consolidated statement of income",
-    "consolidated statements of operations",
-    "consolidated statement of operations",
-    "consolidated statements of earnings",
-    "consolidated statement of earnings",
-)
-_INCOME_STATEMENT_ENDS = (
-    "consolidated statements of comprehensive income",
-    "consolidated statement of comprehensive income",
-    "consolidated balance sheet",
-    "consolidated statements of financial position",
-    "consolidated statement of financial position",
-    "consolidated statements of cash flows",
-    "consolidated statement of cash flows",
-    "consolidated statements of changes in",
-    "consolidated statement of changes in",
-    "consolidated statements of stockholders",
-    "consolidated statements of shareholders",
-    "notes to consolidated financial statements",
-    "notes to the consolidated financial statements",
-)
+#: Where the primary financial statements are is resolved structurally,
+#: as the run they form, in `app.providers.statement_locator`. The title
+#: anchors that used to live here selected by widest-title-match and
+#: chose a discussion of the balance sheet over the balance sheet.
 
 #: How a filer says that what a section would contain is printed
 #: elsewhere in the same document, immediately before naming the place.
@@ -206,6 +179,25 @@ class Filing:
     #: its structure kept.
     income_statement_tables: tuple[SourceTable, ...] = ()
 
+    #: The audited balance sheet and cash flow statement, located by the
+    #: identical rule and empty for the identical reason. Three fields
+    #: apiece rather than one mapping because a statement this platform
+    #: did not locate must be distinguishable from one it never looked
+    #: for, and an absent key cannot say which it was.
+    balance_sheet_text: str = ""
+    balance_sheet_tables: tuple[SourceTable, ...] = ()
+
+    cash_flow_text: str = ""
+    cash_flow_tables: tuple[SourceTable, ...] = ()
+
+    #: How many places in the filing could have opened each statement.
+    #: One means the location is not in doubt; several means the choice
+    #: among them was an interpretation nothing downstream has checked,
+    #: and every figure read from that section carries the caveat.
+    income_statement_contenders: int = 0
+    balance_sheet_contenders: int = 0
+    cash_flow_contenders: int = 0
+
 
 class EdgarFilings:
     """
@@ -293,8 +285,21 @@ class EdgarFilings:
 
         business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
         discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
-        statement, statement_tables, _ = self._section(
-            document, flat, _INCOME_STATEMENT, _INCOME_STATEMENT_ENDS
+        # The statements are resolved together, as the run they are.
+        # A title match is not a location: this document prints
+        # "consolidated balance sheets" in five block-beginning
+        # positions, and the widest of them is a discussion of the
+        # statement rather than the statement.
+        statements = locate_statements(document, flat)
+
+        income, income_tables = self._statement(
+            document, flat, statements, StatementKind.INCOME_STATEMENT
+        )
+        balance, balance_tables = self._statement(
+            document, flat, statements, StatementKind.BALANCE_SHEET
+        )
+        cash_flow, cash_flow_tables = self._statement(
+            document, flat, statements, StatementKind.CASH_FLOW_STATEMENT
         )
 
         referenced, referred_regions, referred_tables = self._referenced(
@@ -322,8 +327,49 @@ class EdgarFilings:
             # exactly those: mixing another chapter's in beside them
             # would put two tables' totals in one reading's reach.
             discussion_tables=tables or referred_tables,
-            income_statement_text=statement,
-            income_statement_tables=statement_tables,
+            income_statement_text=income,
+            income_statement_tables=income_tables,
+            balance_sheet_text=balance,
+            balance_sheet_tables=balance_tables,
+            cash_flow_text=cash_flow,
+            cash_flow_tables=cash_flow_tables,
+            income_statement_contenders=statements.contenders.get(
+                StatementKind.INCOME_STATEMENT, 0
+            ),
+            balance_sheet_contenders=statements.contenders.get(
+                StatementKind.BALANCE_SHEET, 0
+            ),
+            cash_flow_contenders=statements.contenders.get(
+                StatementKind.CASH_FLOW_STATEMENT, 0
+            ),
+        )
+
+    @staticmethod
+    def _statement(
+        document: str,
+        flat: Flattened,
+        statements: LocatedStatements,
+        statement: StatementKind,
+    ) -> tuple[str, tuple[SourceTable, ...]]:
+        """One resolved statement, as its prose and as its tables.
+
+        Empty where the run does not hold this statement. That is the
+        whole of the fallback policy: a statement absent from the
+        audited run is absent, even where its title appears elsewhere
+        in the document, because reading a discussion of a statement as
+        the statement is the failure the resolver exists to stop.
+        """
+
+        span = statements.span(statement)
+
+        if span is None:
+            return ("", ())
+
+        opens, closes = flat.markup_span(*span)
+
+        return (
+            flat.text[span[0] : span[1]].strip(),
+            read_tables(document[opens:closes]),
         )
 
     @staticmethod

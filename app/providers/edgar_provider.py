@@ -90,4 +90,11 @@ class EdgarProvider:
             performance_tables=filing.discussion_tables,
             income_statement_text=filing.income_statement_text,
             income_statement_tables=filing.income_statement_tables,
+            balance_sheet_text=filing.balance_sheet_text,
+            balance_sheet_tables=filing.balance_sheet_tables,
+            cash_flow_text=filing.cash_flow_text,
+            cash_flow_tables=filing.cash_flow_tables,
+            income_statement_contenders=filing.income_statement_contenders,
+            balance_sheet_contenders=filing.balance_sheet_contenders,
+            cash_flow_contenders=filing.cash_flow_contenders,
         )

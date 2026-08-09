@@ -44,7 +44,23 @@ from app.repositories.source_codec import (
 #: 1 — the stream begins: the income statement located where the filer
 #: typeset its title, anchors checked by `figure_at`, rows read by the
 #: platform.
-STATEMENT_SCHEMA_VERSION = 1
+#:
+#: 2 — the statements are located as the run they form
+#: (`app.providers.statement_locator`) rather than by the widest title
+#: match. On JPMorgan that moves the balance sheet from the MD&A's
+#: *Selected Consolidated balance sheets data* to the audited statement,
+#: which is a different 3,554 characters — so schema-1 balance-sheet
+#: readings and schema-2 ones were shown different text, and pooling
+#: them would measure two strings and call the difference instability.
+#:
+#: The bump covers the whole stream rather than the one statement whose
+#: text moved. The income statement and cash flow statement happen to
+#: resolve to byte-identical sections, but *the protocol that produced
+#: them changed*, and a version that tracked outcomes instead of
+#: protocols would have to be re-argued at every locator change. The
+#: corpus is re-read instead; the cost of that discipline here is
+#: fifteen readings of one company.
+STATEMENT_SCHEMA_VERSION = 2
 
 
 class FinancialStatementStore(ABC):
@@ -57,8 +73,17 @@ class FinancialStatementStore(ABC):
     """
 
     @abstractmethod
-    def read(self, symbol: str, key: str) -> tuple[FinancialStatementObservation, ...]:
-        """Every statement observation of this exact document, oldest first."""
+    def read(
+        self, symbol: str, key: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
+        """This statement's observations of this exact document, oldest first.
+
+        Partitioned by statement, because a consensus is a property of
+        one statement and `statement_consensus_of` refuses a mixed set
+        outright. One document's three statements are three separate
+        quorums that happen to share a key, and the store is where they
+        are kept from meeting.
+        """
 
     @abstractmethod
     def append(self, observation: FinancialStatementObservation) -> None:
@@ -70,8 +95,10 @@ class FinancialStatementStore(ABC):
         """
 
     @abstractmethod
-    def latest(self, symbol: str) -> tuple[FinancialStatementObservation, ...]:
-        """The most recent filing's statement observations for this company."""
+    def latest(
+        self, symbol: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
+        """This statement's observations of the most recent filing."""
 
 
 class JsonFinancialStatementStore(FinancialStatementStore):
@@ -83,13 +110,15 @@ class JsonFinancialStatementStore(FinancialStatementStore):
     ) -> None:
         self.directory = Path(directory)
 
-    def read(self, symbol: str, key: str) -> tuple[FinancialStatementObservation, ...]:
+    def read(
+        self, symbol: str, key: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
         path = self._path(symbol, key)
 
         if not path.exists():
             return ()
 
-        return self._restore(path)
+        return _only(self._restore(path), statement)
 
     def append(self, observation: FinancialStatementObservation) -> None:
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -107,11 +136,13 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             encoding="utf-8",
         )
 
-    def latest(self, symbol: str) -> tuple[FinancialStatementObservation, ...]:
+    def latest(
+        self, symbol: str, statement: StatementKind
+    ) -> tuple[FinancialStatementObservation, ...]:
         known = [
             restored
             for path in self.directory.glob(f"{self._safe(symbol)}.*.json")
-            if (restored := self._restore(path))
+            if (restored := _only(self._restore(path), statement))
         ]
 
         if not known:
@@ -149,6 +180,7 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             "observations": [
                 {
                     "statement": observation.statement.value,
+                    "located_among": observation.located_among,
                     "facts": [
                         {
                             "concept": fact.concept.value,
@@ -201,6 +233,25 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             return ()
 
 
+def _only(
+    observations: tuple[FinancialStatementObservation, ...],
+    statement: StatementKind,
+) -> tuple[FinancialStatementObservation, ...]:
+    """One statement's readings, in the order they were taken.
+
+    One file holds one filing, and a filing has three statements — so
+    the partition is applied on the way out rather than by writing three
+    files. Which keeps the store's unit what it has always been: the
+    immutable document.
+    """
+
+    return tuple(
+        observation
+        for observation in observations
+        if observation.statement is statement
+    )
+
+
 def _observation(
     symbol: str,
     source: PrimarySource,
@@ -211,6 +262,11 @@ def _observation(
     return FinancialStatementObservation(
         symbol=symbol,
         statement=StatementKind(stored["statement"]),
+        # Defaulted, never invented: an entry written before the count
+        # existed records 0, which reads as "not recorded" rather than
+        # as "one contender". Upgrading it in place would be filling in
+        # what the reading never captured.
+        located_among=int(stored.get("located_among", 0)),
         facts=tuple(
             StatementFact(
                 concept=StatementConcept(fact["concept"]),

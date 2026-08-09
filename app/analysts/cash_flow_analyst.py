@@ -7,6 +7,24 @@ from app.domain.cash_flow_opinion import (
 from app.domain.company_facts import CompanyFacts
 
 
+def money(value: float) -> str:
+    """A cash flow at reading width, not to the penny.
+
+    Two decimals turn a hundred-billion-dollar cash flow into a wall of
+    digits. Cash flow is scored by its sign, so the magnitude is stated
+    compactly rather than exactly.
+    """
+
+    sign = "-" if value < 0 else ""
+    magnitude = abs(value)
+
+    for threshold, suffix in ((1e12, "T"), (1e9, "B"), (1e6, "M")):
+        if magnitude >= threshold:
+            return f"{sign}${magnitude / threshold:.1f}{suffix}"
+
+    return f"{sign}${magnitude:,.0f}"
+
+
 class CashFlowAnalyst(Analyst[CompanyFacts, CashFlowOpinion]):
     @property
     def expected_observation_count(self) -> int:
@@ -62,18 +80,7 @@ class CashFlowAnalyst(Analyst[CompanyFacts, CashFlowOpinion]):
         magnitude is stated compactly rather than exactly.
         """
 
-        return f"{observation.label} is {CashFlowAnalyst._money(observation.value)}."
-
-    @staticmethod
-    def _money(value: float) -> str:
-        sign = "-" if value < 0 else ""
-        magnitude = abs(value)
-
-        for threshold, suffix in ((1e12, "T"), (1e9, "B"), (1e6, "M")):
-            if magnitude >= threshold:
-                return f"{sign}${magnitude / threshold:.1f}{suffix}"
-
-        return f"{sign}${magnitude:,.0f}"
+        return f"{observation.label} is {money(observation.value)}."
 
     def uncertainty(
         self,

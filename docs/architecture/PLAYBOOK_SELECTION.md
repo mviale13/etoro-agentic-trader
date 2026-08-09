@@ -195,3 +195,59 @@ The research path (`ResearchStrategyFactory`, dossiers, committees)
 keeps consuming the industry selector unchanged. The flip is a later
 slice, gated as [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md) records: a
 thicker quorate population, and this mapping proven on it first.
+
+---
+
+## What this selector does *not* decide (2026-08-08)
+
+A playbook says **what a company is**. It does not say **which financial
+language reads its statements**. The bank slice separated the two, and
+the separation is now a boundary rather than an observation.
+
+```text
+Business understanding  → Business playbook  → what company is this?
+Financial understanding → Financial model    → which financial language
+                                               should the CIO speak?
+```
+
+`FinancialModel` (`app/domain/financial_question.py`) owns the financial
+question set — which questions are meaningful for a kind of company,
+which established facts answer them, and which generic questions must be
+refused outright. `PlaybookKind` owns none of that.
+
+**The case that forced it.** JPMorgan's grounded playbook is
+*Diversified*: its own filing says lending, services and transaction
+lead together within 5%, and the `(SERVICE_BUSINESS, LENDER)` pair the
+BANK rule is keyed on was never reached. So JPM does not receive a
+bank's financial questions, and under the generic model it still
+receives the industrial leverage score on a liabilities-to-equity of
+11.21×.
+
+The obvious repair was to promote JPM to `BANK`. The owner refused it:
+
+> That `--model bank` produces a much more sensible financial
+> assessment is not evidence that JPM should classify as BANK. It is
+> evidence that the BANK financial questions are better than the
+> industrial ones for deposit-taking institutions. Those are different
+> claims.
+
+Changing a selector because the downstream interpretation looks better
+is reasoning backwards from the desired outcome, and it would bend the
+business ontology to suit an analyst. **A playbook route is earned by
+evidence about the company, never by the convenience of what consumes
+it.**
+
+**How they are coupled today.** `model_for(playbook)` is the only route
+between the layers, and it is a coupling *stated as one*: the financial
+model follows the business playbook because no evidence has earned it
+not to. `PlaybookKind.BANK` is its single non-generic entry; everything
+else is `GENERIC`.
+
+**The divergence that is not built.** A financial model selected from
+the statements themselves — a filing printing no gross profit line, no
+operating income line and an unclassified balance sheet is speaking a
+bank's language whatever its segments say — is the natural second route.
+Every one of those facts is already established on JPMorgan at 5/5. It
+is not invented here: one company's statements are not a corpus, and
+writing the rule now would be the same backwards reasoning in a new
+place.
