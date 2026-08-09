@@ -69,6 +69,9 @@ export interface DossierContribution {
   points: number;
   /** "favourable" | "neutral" | "adverse" — what a zero actually means. */
   sense: string;
+  /** The rule table's own word. Carried as data, never recovered by
+      splitting a sentence on this side. */
+  verdict: string | null;
 }
 
 /** How a counted score reached its number. Absent where there is no
@@ -88,6 +91,12 @@ export interface DossierDerivation {
   cappedByUnreadableFactors: boolean;
   /** The arithmetic as one line, worded by the backend. */
   stated: string;
+  /** How much of what the score asks for could be read. A different
+      question from how much of what was read was favourable. */
+  establishedFactors: number | null;
+  candidateFactors: number | null;
+  /** The same, worded by the backend. Never composed here. */
+  coverage: string | null;
 }
 
 export interface DossierScore {
@@ -490,6 +499,10 @@ function parseDerivation(
         item.sense,
         `${field}.contributions[${index}].sense`,
       ),
+      verdict: optionalString(
+        item.verdict,
+        `${field}.contributions[${index}].verdict`,
+      ),
     })),
     earned: requireNumber(value.earned, `${field}.earned`),
     available: requireNumber(value.available, `${field}.available`),
@@ -501,6 +514,9 @@ function parseDerivation(
     required: optionalNumber(value.required),
     cappedByUnreadableFactors: value.capped_by_unreadable_factors === true,
     stated: requireString(value.stated, `${field}.stated`),
+    establishedFactors: optionalNumber(value.established_factors),
+    candidateFactors: optionalNumber(value.candidate_factors),
+    coverage: optionalString(value.coverage, `${field}.coverage`),
   };
 }
 

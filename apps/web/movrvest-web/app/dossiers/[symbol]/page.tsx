@@ -1302,6 +1302,55 @@ function WhyTrustThis({ dossier }: { dossier: DossierViewModel }) {
  * explanation.
  */
 /**
+ * What separates two scores that landed on the same number.
+ *
+ * A dot per factor, coloured by the sense the backend recorded, then
+ * the two counts it computed: how much of what was read came back
+ * favourable, and how much of the question set could be read at all.
+ * They answer different questions — the first about the business, the
+ * second about this platform — and a page showing only the score shows
+ * neither.
+ *
+ * Every value is a field. Nothing here parses a sentence, compares a
+ * threshold or decides what a verdict means.
+ */
+function VerdictStrip({ derivation }: { derivation: DossierDerivation }) {
+  const tone: Record<string, string> = {
+    favourable: "bg-emerald-500",
+    adverse: "bg-rose-400",
+    neutral: "bg-slate-300",
+  };
+
+  return (
+    <span className="flex items-center gap-2 text-xs text-slate-500">
+      <span aria-hidden className="flex items-center gap-1">
+        {derivation.contributions.map((item, index) => (
+          <span
+            key={`${item.statement}-${index}`}
+            className={`h-1.5 w-1.5 rounded-full ${
+              tone[item.sense] ?? "bg-slate-300"
+            }`}
+          />
+        ))}
+      </span>
+
+      <span className="tabular-nums">
+        {derivation.earned} of {derivation.available} favourable
+      </span>
+
+      {derivation.coverage ? (
+        <>
+          <span aria-hidden className="text-slate-300">
+            ·
+          </span>
+          <span className="tabular-nums">{derivation.coverage}</span>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
+/**
  * Why the number is the number: the factors counted, and what each was worth.
  *
  * Every figure here is the backend's. This lays them out and adds no
@@ -1331,6 +1380,14 @@ function ScoreBreakdown({ derivation }: { derivation: DossierDerivation }) {
               }
             >
               {item.statement}
+
+              {/* The analyst's own word, shown rather than folded into
+                  the sentence above it. */}
+              {item.verdict ? (
+                <span className="ml-2 text-xs uppercase tracking-wide text-slate-400">
+                  {item.verdict}
+                </span>
+              ) : null}
             </span>
 
             {/* A zero is not one thing: a factor that does not apply and
@@ -1427,17 +1484,28 @@ function Scores({ dossier }: { dossier: DossierViewModel }) {
                 <span className="sr-only">Why this score</span>
               </span>
 
-              {/* Null is not zero: a score nobody measured says so. */}
-              <span
-                className={
-                  row.score.value === null
-                    ? "font-medium text-slate-400"
-                    : "font-semibold text-slate-950"
-                }
-              >
-                {row.score.value === null
-                  ? "Not measured"
-                  : `${row.score.value} / 100`}
+              <span className="ml-auto flex items-center gap-3">
+                {/* Two scores can coincide on entirely different
+                    evidence — three companies sat at 62 on a
+                    favourable-of-answered of 1 of 3, and only the
+                    verdicts told them apart. Every value here is a
+                    backend field; nothing is parsed or judged. */}
+                {row.score.derivation ? (
+                  <VerdictStrip derivation={row.score.derivation} />
+                ) : null}
+
+                {/* Null is not zero: a score nobody measured says so. */}
+                <span
+                  className={
+                    row.score.value === null
+                      ? "font-medium text-slate-400"
+                      : "font-semibold text-slate-950"
+                  }
+                >
+                  {row.score.value === null
+                    ? "Not measured"
+                    : `${row.score.value} / 100`}
+                </span>
               </span>
             </summary>
 

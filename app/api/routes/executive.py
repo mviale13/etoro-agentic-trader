@@ -417,6 +417,7 @@ def _score(
                         statement=item.statement,
                         points=item.points,
                         sense=item.sense.value,
+                        verdict=item.verdict,
                     )
                     for item in derivation.contributions
                 ],
@@ -430,6 +431,9 @@ def _score(
                     derivation.is_capped_by_unreadable_factors
                 ),
                 stated=derivation.stated(),
+                established_factors=derivation.established_factors,
+                candidate_factors=derivation.candidate_factors,
+                coverage=derivation.coverage,
             )
         ),
     )

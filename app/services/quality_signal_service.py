@@ -26,6 +26,12 @@ class QualitySignalService:
 
     LARGE_CAP_THRESHOLD = 10_000_000_000
 
+    #: How many factors this score consults given everything. Declared
+    #: so a surface can say how much of the question set was readable —
+    #: two of three read is a statement about this platform, and it must
+    #: not be mistaken for a statement about the company.
+    FACTORS = 3
+
     #: Points needed for each band, hardest first. Kept as data because
     #: the derivation shows the reader the whole ruler, and a ruler
     #: written twice is a ruler that comes to disagree with itself.

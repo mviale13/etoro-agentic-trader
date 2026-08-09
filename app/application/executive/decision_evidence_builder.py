@@ -37,6 +37,7 @@ from app.domain.score_basis import (
     ScoreDerivation,
     ScoreKind,
 )
+from app.services.quality_signal_service import QualitySignalService
 
 
 @dataclass(slots=True)
@@ -462,6 +463,8 @@ class DecisionEvidenceBuilder:
             score=score,
             scale=tuple(cls.QUALITY_SCORES.items()),
             required=signal.next_band_needs,
+            established_factors=signal.available,
+            candidate_factors=QualitySignalService.FACTORS,
         )
 
     @classmethod
@@ -536,9 +539,10 @@ class DecisionEvidenceBuilder:
         return ScoreDerivation(
             contributions=tuple(
                 Contribution(
-                    statement=f"{factor.asks} — {factor.verdict}",
+                    statement=factor.asks,
                     points=factor.points,
                     sense=factor.sense,
+                    verdict=factor.verdict,
                 )
                 for factor in answered
             ),
@@ -550,6 +554,10 @@ class DecisionEvidenceBuilder:
             band=grounded.band.value,
             score=grounded.score,
             scale=tuple((band.value, value) for band, value in BAND_SCORES.items()),
+            # How much of the quality question set could be read at all,
+            # which is not what `earned` over `available` measures.
+            established_factors=grounded.answered,
+            candidate_factors=len(grounded.factors),
         )
 
     @classmethod
