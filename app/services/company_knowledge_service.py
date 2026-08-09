@@ -128,16 +128,30 @@ class CompanyKnowledgeService:
         # `resolve_reader` returns the worded reason when it cannot be
         # built, and that sentence is carried to the surface exactly as
         # an outage or a gap in coverage is.
+        #
+        # Composed on first use rather than here. This service is built
+        # once per security on every page view, and composing the reader
+        # resolves configuration and credentials into a live model
+        # client — for a page that will only ever open the read-only
+        # door. Only the two doors that can read a filing ask for it.
         self._extractor = extractor
         self._unreadable: str | None = None
+        self._reader_composed = extractor is not None
 
-        if extractor is None:
-            resolved = resolve_reader()
+    def _compose_reader(self) -> None:
+        """Resolve the configured reader, the first time one is needed."""
 
-            if isinstance(resolved, str):
-                self._unreadable = resolved
-            else:
-                self._extractor = resolved
+        if self._reader_composed:
+            return
+
+        self._reader_composed = True
+
+        resolved = resolve_reader()
+
+        if isinstance(resolved, str):
+            self._unreadable = resolved
+        else:
+            self._extractor = resolved
 
     async def knowledge(self, symbol: str) -> KnowledgeOutcome:
         """What is known about this company, reading a filing only if new.
@@ -149,6 +163,8 @@ class CompanyKnowledgeService:
         every company's filing is a spend the platform takes knowingly
         rather than as a side effect of asking what it knows.
         """
+
+        self._compose_reader()
 
         try:
             source, provider = self._sources.resolve(symbol)
@@ -241,6 +257,8 @@ class CompanyKnowledgeService:
         bounded retries: the attempt is reported, and the observations
         that do exist keep serving at their stated width.
         """
+
+        self._compose_reader()
 
         if self._extractor is None:
             return KnowledgeOutcome(

@@ -801,7 +801,7 @@ def test_portfolio_fit_lists_every_term_including_the_unmeasured_ones() -> None:
 class _NoKnowledge:
     """A unit test reads no filings and calls no model."""
 
-    async def knowledge(self, symbol: str):
+    def established(self, symbol: str):
         from app.services.company_knowledge_service import (
             KnowledgeOutcome,
             KnowledgeState,
