@@ -128,10 +128,18 @@ class ExecutivePipeline:
             reasoning if reasoning is not None else self.reasoning.reason(brain)
         )
 
+        # The findings are gathered once, before anything states a
+        # position over them, so that a committee's references and the
+        # evidence built beside them point into the same ledger. Built
+        # twice they could differ — the earnings calendar is read
+        # against a day, and two calls either side of midnight would
+        # leave an opinion referencing a finding the case does not hold.
+        workspace.findings = self.evidence_builder.ledger(symbol, brain)
+
         workspace.committee_opinions = self.committees.review(
             brain,
-            workspace.reasoning,
             symbol,
+            workspace.findings,
         )
 
         workspace.evidence = self.evidence_builder.build(
@@ -139,6 +147,7 @@ class ExecutivePipeline:
             brain,
             workspace.reasoning,
             workspace.committee_opinions,
+            findings=workspace.findings,
         )
 
         workspace.decision = self.decision_engine.decide(

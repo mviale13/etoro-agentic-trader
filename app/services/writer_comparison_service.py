@@ -5,8 +5,8 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 
-from app.application.committees.models.committee_opinion import CommitteeOpinion
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.thesis.investment_thesis import InvestmentThesis
 from app.domain.writer_comparison import ProviderRun, WriterComparison
 from app.providers.model_prices import PRICES_STATED_ON, cost_usd

@@ -117,13 +117,22 @@ def make_holding(symbol: str, market_value_usd: float = 100.0) -> PortfolioPosit
 
 def build_evidence(brain: Brain, symbol: str):
     reasoning = ReasoningService().reason(brain)
-    opinions = CommitteeService().review(brain, reasoning, symbol)
 
-    return DecisionEvidenceBuilder().build(
+    # Gathered once, before anything states a position over it, exactly
+    # as the pipeline does — so a committee's references and the
+    # evidence built beside them point into the same ledger.
+    builder = DecisionEvidenceBuilder()
+
+    findings = builder.ledger(symbol, brain)
+
+    opinions = CommitteeService().review(brain, symbol, findings)
+
+    return builder.build(
         symbol,
         brain,
         reasoning,
         opinions,
+        findings=findings,
     )
 
 

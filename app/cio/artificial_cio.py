@@ -70,6 +70,12 @@ class ArtificialCIO:
             evidence_weighed=evidence.evidence_weighed,
             key_strengths=evidence.strengths,
             key_risks=evidence.risks,
+            # Carried through untouched. The CIO gates on scores; it
+            # neither reads a committee's position nor edits one, and
+            # preserving them here is what lets the synthesis show an
+            # investor which committee dissented from what was decided.
+            findings=evidence.findings,
+            opinions=evidence.opinions,
             context_risks=evidence.context_risks,
             missing_evidence=evidence.missing_evidence,
             catalysts=evidence.catalysts,

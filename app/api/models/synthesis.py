@@ -25,6 +25,10 @@ class SynthesisFactResponse(BaseModel):
     #: weaker claim borrows the stronger's authority.
     origin: str
 
+    #: Which committee stood on this fact. Null where no committee's
+    #: remit covers it — never guessed at from the wording.
+    committee: str | None = None
+
 
 class ReviewConditionResponse(BaseModel):
     """A named condition for looking at this decision again."""
@@ -35,6 +39,32 @@ class ReviewConditionResponse(BaseModel):
     #: What it would change, where the platform can say so. Null where
     #: the condition names a gap rather than an alternative conclusion.
     would_change: str | None
+
+
+class UncertaintyResponse(BaseModel):
+    """One thing a named committee could not settle."""
+
+    committee: str
+    kind: str
+    about: str
+
+    #: Whether another cycle of the same work could close it. False for
+    #: a question no layer of this platform answers, so a surface never
+    #: promises a measurement that is not coming.
+    resolvable: bool
+
+
+class DeliberationResponse(BaseModel):
+    """Why this conclusion prevailed over the one that did not."""
+
+    agreement: str
+    prevailed: str
+
+    #: The position that did not carry. Null where no committee
+    #: contradicted the decision — preserved, never discarded.
+    over: str | None
+
+    because: str
 
 
 class DecisionSynthesisResponse(BaseModel):
@@ -58,6 +88,17 @@ class DecisionSynthesisResponse(BaseModel):
     review_if: list[ReviewConditionResponse]
     review_if_absent: str | None
 
+    #: What is not yet known. Its own part of the conclusion, never
+    #: folded into the opposing case: a fact against the security is a
+    #: reason to hesitate, and something unmeasured is a reason the
+    #: platform cannot yet say.
+    uncertainty: list[UncertaintyResponse]
+    uncertainty_absent: str | None
+
+    #: Why the positives currently outweigh the negatives, or the
+    #: reverse. Null only where no committee took a position.
+    deliberation: DeliberationResponse | None
+
     #: What the company's own filing establishes, carried beside the
     #: decision and marked as not having reached it.
     established: list[SynthesisFactResponse]
@@ -66,6 +107,10 @@ class DecisionSynthesisResponse(BaseModel):
     #: opposing fact or a condition for review. Reported rather than
     #: inferred on screen.
     challengeable: bool
+
+    #: Whether the conclusion shows an argument rather than a checklist:
+    #: something named as unresolved, or a position that did not carry.
+    deliberated: bool
 
 
 def synthesis_response(synthesis: DecisionSynthesis) -> DecisionSynthesisResponse:
@@ -87,10 +132,35 @@ def synthesis_response(synthesis: DecisionSynthesis) -> DecisionSynthesisRespons
             for condition in synthesis.review_if
         ],
         review_if_absent=synthesis.review_if_absent,
+        uncertainty=[
+            UncertaintyResponse(
+                committee=item.committee,
+                kind=item.uncertainty.kind.value,
+                about=item.about,
+                resolvable=item.is_resolvable,
+            )
+            for item in synthesis.uncertainty
+        ],
+        uncertainty_absent=synthesis.uncertainty_absent,
+        deliberation=(
+            None
+            if synthesis.deliberation is None
+            else DeliberationResponse(
+                agreement=synthesis.deliberation.agreement,
+                prevailed=synthesis.deliberation.prevailed,
+                over=synthesis.deliberation.over,
+                because=synthesis.deliberation.because,
+            )
+        ),
         established=[_fact(fact) for fact in synthesis.established],
         challengeable=synthesis.is_challengeable,
+        deliberated=synthesis.is_deliberated,
     )
 
 
 def _fact(fact: SynthesisFact) -> SynthesisFactResponse:
-    return SynthesisFactResponse(statement=fact.statement, origin=fact.origin.value)
+    return SynthesisFactResponse(
+        statement=fact.statement,
+        origin=fact.origin.value,
+        committee=fact.committee,
+    )

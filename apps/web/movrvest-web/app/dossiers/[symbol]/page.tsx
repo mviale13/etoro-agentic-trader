@@ -947,6 +947,69 @@ function Synthesis({
         )}
       </div>
 
+      {/* What is not yet known — its own part, deliberately after the
+          two cases and before the decision. A fact against the security
+          is a reason to hesitate; something unmeasured is a reason the
+          platform cannot yet say, and folding the second into the first
+          is how not knowing turns into bearishness. */}
+      <div className="border-t border-slate-200 bg-white px-6 py-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          Uncertainty
+        </p>
+
+        {synthesis.uncertainty.length > 0 ? (
+          <ul className="mt-3 space-y-3">
+            {synthesis.uncertainty.map((item) => (
+              <li key={item.about} className="text-sm leading-6">
+                <span className="text-slate-800">{item.about}</span>
+
+                <span className="mt-1 block text-xs leading-5 text-slate-500">
+                  {item.committee}
+                  {" — "}
+                  {item.resolvable
+                    ? "a measurement would settle it"
+                    : "not a question this platform can answer"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            {synthesis.uncertaintyAbsent}
+          </p>
+        )}
+      </div>
+
+      {/* Why this conclusion and not the other. The part a scoring
+          engine cannot write: a conviction figure is the same number
+          whether a committee objected or none did. */}
+      {synthesis.deliberation ? (
+        <div className="border-t border-slate-200 bg-white px-6 py-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Decision
+          </p>
+
+          <p className="mt-3 text-sm leading-6 text-slate-800">
+            {synthesis.deliberation.prevailed}
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {synthesis.deliberation.agreement}
+          </p>
+
+          {/* The position that did not carry, preserved. */}
+          {synthesis.deliberation.over ? (
+            <p className="mt-2 border-l-2 border-slate-300 pl-3 text-sm leading-6 text-slate-600">
+              {synthesis.deliberation.over}
+            </p>
+          ) : null}
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            {synthesis.deliberation.because}
+          </p>
+        </div>
+      ) : null}
+
       {synthesis.established.length > 0 ? (
         <details className="border-t border-slate-200 bg-slate-50 px-6 py-5">
           <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
@@ -1324,6 +1387,39 @@ function Scores({ dossier }: { dossier: DossierViewModel }) {
   );
 }
 
+/**
+ * The findings a committee's position stands on, in the order read.
+ *
+ * Deliberately not numbered or ranked: this platform does not measure
+ * how strong a finding is, and a list presented as strongest-first
+ * would be an ordering nobody took.
+ */
+function CommitteeGrounds({
+  label,
+  statements,
+}: {
+  label: string;
+  statements: readonly string[];
+}) {
+  if (statements.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 border-t border-slate-100 pt-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+        {label}
+      </p>
+
+      <ul className="mt-2 space-y-1.5 text-sm leading-6 text-slate-600">
+        {statements.map((statement) => (
+          <li key={statement}>{statement}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Committees({
   committees,
 }: {
@@ -1349,41 +1445,58 @@ function Committees({
               {opinion.committee}
             </span>
 
-            {/* An abstention is not opposition: it is labelled as an
-                inability to form a view, never rendered as a "sell". */}
-            {opinion.abstained ? (
-              <StatusPill status="partial" label="Could not form a view" />
+            {/* A stance, never an action: only the Artificial CIO says
+                what to do. An abstention is labelled as an inability to
+                take a position, and never rendered as a negative one. */}
+            {opinion.abstained || opinion.stance === null ? (
+              <StatusPill status="partial" label="Took no position" />
             ) : (
               <>
                 <span className="font-medium uppercase tracking-wide text-slate-600">
-                  {opinion.recommendation.replace(/_/g, " ")}
+                  {opinion.stance}
                 </span>
 
+                {/* The backend words this with its own counts. It
+                    measures the reading, not the security. */}
                 <span className="text-xs text-slate-500">
-                  {opinion.confidence === null
-                    ? null
-                    : `${Math.round(opinion.confidence * 100)}% confident`}
+                  {opinion.confidence}
                 </span>
               </>
             )}
           </summary>
 
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            {opinion.summary}
+            {opinion.abstained
+              ? (opinion.abstainedBecause ?? opinion.summary)
+              : opinion.summary}
           </p>
 
-          {opinion.evidence.length > 0 ? (
+          {/* The findings the position stands on. Each one is resolved
+              by the backend from the case's own ledger, so nothing here
+              is prose a committee composed about itself. */}
+          <CommitteeGrounds label="For" statements={opinion.supporting} />
+          <CommitteeGrounds label="Against" statements={opinion.opposing} />
+
+          {opinion.uncertainty.length > 0 ? (
             <ul className="mt-3 space-y-1.5 border-t border-slate-100 pt-3 text-sm leading-6 text-slate-600">
-              {opinion.evidence.map((item) => (
-                <li key={`${item.source}-${item.statement}`}>
-                  {item.statement}
+              {opinion.uncertainty.map((item) => (
+                <li key={item.about}>
+                  <span className="text-slate-500">{item.about}</span>
+
+                  {/* Never shown as pending where nothing is coming. */}
                   <span className="ml-2 text-xs text-slate-400">
-                    {item.source}
+                    {item.resolvable
+                      ? "a measurement would settle it"
+                      : "not a question this platform can answer"}
                   </span>
                 </li>
               ))}
             </ul>
           ) : null}
+
+          <p className="mt-3 text-xs text-slate-400">
+            Decided by rule {opinion.decidedBy}
+          </p>
         </details>
       ))}
     </div>

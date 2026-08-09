@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_brain_builder_service
 from app.api.models.dossier import (
-    CommitteeEvidenceResponse,
     CommitteeOpinionResponse,
+    CommitteeUncertaintyResponse,
     DossierResponse,
     EvidenceScoresResponse,
     NarrativeFindingResponse,
@@ -47,6 +47,7 @@ from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
 from app.brain import Brain
+from app.domain.committee.panel import Panel
 from app.domain.decision_history import ConvictionChange, DecisionTrend
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
@@ -73,19 +74,21 @@ router = APIRouter(
 def _committee_agreement(
     workspace: ExecutiveWorkspace,
 ) -> int:
-    """Mean committee confidence, as a whole percentage."""
+    """How far the committees that spoke pointed the same way, as a percentage.
 
-    # A committee that could not form a view is silent, not opposed.
-    stated = [
-        opinion.confidence
-        for opinion in workspace.committee_opinions
-        if opinion.confidence is not None
-    ]
+    This used to average their confidence floats while being called
+    agreement, so two committees flatly contradicting each other on
+    well-read evidence outscored two agreeing on thin evidence.
 
-    if not stated:
-        return 0
+    A committee that could not form a view is silent, not opposed, and
+    is not counted either way.
+    """
 
-    return max(0, min(100, round(sum(stated) / len(stated) * 100)))
+    agreement = Panel(opinions=workspace.committee_opinions).agreement_pct
+
+    # Nobody spoke. Zero would say they disagreed completely, which is
+    # the opposite of what an empty panel means.
+    return 0 if agreement is None else agreement
 
 
 @router.get(
@@ -507,18 +510,28 @@ async def dossier(
         committees=[
             CommitteeOpinionResponse(
                 committee=opinion.committee,
-                recommendation=opinion.recommendation.value,
-                confidence=opinion.confidence,
+                stance=None if opinion.stance is None else opinion.stance.stated,
                 # An abstention is not opposition, and is marked so no
                 # surface has to infer the difference from a null.
-                abstained=opinion.confidence is None,
+                abstained=not opinion.has_opinion,
+                abstained_because=opinion.abstained_because,
+                confidence=(
+                    None if opinion.confidence is None else opinion.confidence.stated()
+                ),
+                decided_by=opinion.decided_by,
                 summary=opinion.summary,
-                evidence=[
-                    CommitteeEvidenceResponse(
-                        statement=item.description,
-                        source=item.source,
+                # Resolved through the decision's own ledger, so what the
+                # investor reads is the finding the committee pointed at
+                # and can never be prose the committee composed itself.
+                supporting=list(decision.findings.statements_for(opinion.supporting)),
+                opposing=list(decision.findings.statements_for(opinion.opposing)),
+                uncertainty=[
+                    CommitteeUncertaintyResponse(
+                        kind=item.kind.value,
+                        about=item.about,
+                        resolvable=item.is_resolvable,
                     )
-                    for item in opinion.evidence
+                    for item in opinion.uncertainty
                 ],
             )
             for opinion in workspace.committee_opinions

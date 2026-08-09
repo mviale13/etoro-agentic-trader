@@ -35,28 +35,56 @@ class ProvenanceResponse(BaseModel):
     last_known: bool
 
 
-class CommitteeEvidenceResponse(BaseModel):
-    """A traceable fact a committee weighed."""
+class CommitteeUncertaintyResponse(BaseModel):
+    """One thing a committee could not settle, and whether looking again helps."""
 
-    statement: str
-    source: str
+    kind: str
+    about: str
+
+    #: Whether another cycle of the same work could close it. False for a
+    #: question this platform has no layer for, so a surface never
+    #: promises a measurement that is not coming.
+    resolvable: bool
 
 
 class CommitteeOpinionResponse(BaseModel):
-    """One committee's view — or its honest inability to form one."""
+    """One committee's position — or its honest inability to take one."""
 
     committee: str
-    recommendation: str
 
-    #: How sure the committee is of its own view. None when it abstained.
-    confidence: float | None
+    #: Where the committee stands, never what to do about it. This field
+    #: was `recommendation` and carried BUY/SELL, which is the Artificial
+    #: CIO's word: a committee naming an action is a committee deciding.
+    #:
+    #: None when the committee abstained.
+    stance: str | None
 
-    #: True when the committee could not form a view at all. An abstention
-    #: is not opposition, and no surface may render it as one.
+    #: True when the committee could not take a position at all. An
+    #: abstention is not opposition, and no surface may render it as one.
     abstained: bool
+    abstained_because: str | None
+
+    #: How well evidenced the position is, worded with its own counts —
+    #: never a bare percentage. It measures the reading, not the
+    #: security: a low figure says less was seen, never that the business
+    #: is worse.
+    confidence: str | None
+
+    #: The named rule that produced the stance.
+    decided_by: str
 
     summary: str
-    evidence: list[CommitteeEvidenceResponse]
+
+    #: The findings behind the position, resolved from the case's own
+    #: ledger. Never the committee's own prose, and never the portfolio
+    #: and market context that used to sit here — that is identical under
+    #: every symbol and is shown, correctly labelled, elsewhere.
+    #:
+    #: The order is the order the signals reported, not a ranking.
+    supporting: list[str]
+    opposing: list[str]
+
+    uncertainty: list[CommitteeUncertaintyResponse]
 
 
 class PlaybookCoverageResponse(BaseModel):

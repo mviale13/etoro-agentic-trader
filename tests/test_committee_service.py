@@ -1,5 +1,7 @@
-from app.application.brain.reasoning import ReasoningService
 from app.application.committees.committee_service import CommitteeService
+from app.application.executive.decision_evidence_builder import (
+    DecisionEvidenceBuilder,
+)
 from app.brain import BrainBuilder
 from tests.test_brain_context import (
     make_market,
@@ -16,12 +18,10 @@ def test_committees_review_reasoning():
         investment_policy=make_policy(),
     ).build()
 
-    reasoning = ReasoningService().reason(brain)
-
     opinions = CommitteeService().review(
         brain,
-        reasoning,
         "MSFT",
+        DecisionEvidenceBuilder().ledger("MSFT", brain),
     )
 
     assert len(opinions) == 2

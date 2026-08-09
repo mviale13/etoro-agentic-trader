@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
-from app.application.committees.models.committee_opinion import (
+from app.domain.committee.opinion import (
     CommitteeOpinion,
 )
 from app.domain.executive_decision import ExecutiveDecision

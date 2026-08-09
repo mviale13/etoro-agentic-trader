@@ -2,93 +2,67 @@
 
 from __future__ import annotations
 
-from app.application.brain.reasoning.reasoning_snapshot import (
-    ReasoningSnapshot,
-)
-from app.application.committees.models.committee_opinion import (
-    CommitteeOpinion,
-    Recommendation,
-)
+from app.application.committees.opinion_builder import Input, build
 from app.brain import Brain
+from app.domain.committee.opinion import CommitteeOpinion
+from app.domain.finding import Dimension, FindingLedger
+
+#: One reading, and only one. This committee speaks for what the
+#: security's own price history says about holding it.
+REMIT = frozenset({Dimension.RISK})
 
 
 class RiskCommittee:
     """
     Reviews the risk of holding this security.
 
-    It used to review only the account's risk, which needs position history
-    nothing records, so it abstained on every symbol — including securities
-    whose own volatility and deepest fall had been measured from a year of
-    prices. Where the security's risk is known it is what this committee
-    speaks to; the account's risk is the fallback, and silence is what
-    remains when neither was measured.
+    It used to review only the account's risk, which needs position
+    history nothing records, so it abstained on every symbol —
+    including securities whose own volatility and deepest fall had been
+    measured from a year of prices.
+
+    Two things it no longer does, both of which it had to be taught.
+    It does not return a neutral position when it measured nothing:
+    saying *hold* there read as *risk is acceptable*, which is a claim
+    about a security nobody had measured. And it does not fall back to
+    the account's risk, which is identical under every symbol — a
+    committee that answered a question about this security with a fact
+    about the portfolio was answering a different question.
     """
 
     def review(
         self,
         brain: Brain,
-        reasoning: ReasoningSnapshot,
         symbol: str,
+        findings: FindingLedger,
     ) -> CommitteeOpinion:
 
         company = brain.security_evidence(symbol)
 
-        if company is not None and company.signals.risk is not None:
-            security_risk = company.signals.risk
+        signal = company.signals.risk if company is not None else None
 
-            if security_risk.severity is not None:
-                return CommitteeOpinion(
-                    committee="Risk Committee",
-                    recommendation=self._recommendation(security_risk.severity),
-                    confidence=security_risk.confidence / 100.0,
-                    summary=(
-                        f"{symbol} carries {security_risk.level.lower()} risk on "
-                        "its own price history."
-                    ),
-                    evidence=(),
-                )
+        measured = signal is not None and signal.severity is not None
 
-        risk = reasoning.risk
-        overall = risk.overall_risk_score
-
-        if overall is None:
-            # Nothing measurable to hold an opinion about. Recommending HOLD
-            # here would read as "risk is acceptable", which is a claim.
-            #
-            # The confidence was 0.0, which read as a claim too — that this
-            # committee was as good as certain of nothing. Averaged into
-            # committee agreement it halved the figure, so an unmeasurable
-            # portfolio risk looked like a committee voting against.
-            return CommitteeOpinion(
+        if not measured:
+            return build(
                 committee="Risk Committee",
-                recommendation=Recommendation.HOLD,
-                confidence=None,
-                summary="Portfolio risk could not be measured.",
-                evidence=risk.evidence,
+                remit=REMIT,
+                ledger=findings,
+                abstain_because=(
+                    f"The price history for {symbol} is too short to measure "
+                    "its risk, so the Risk Committee takes no position. An "
+                    "unmeasured risk is never reported as a safe security."
+                ),
             )
 
-        recommendation = self._recommendation(overall)
-
-        # How well the risk was measured, not how low it came out. Under
-        # `1.0 - overall` a clearly measured, severe risk reported low
-        # confidence — the committee was surest of its SELL exactly when it
-        # claimed to be least sure.
-        return CommitteeOpinion(
+        return build(
             committee="Risk Committee",
-            recommendation=recommendation,
-            confidence=risk.confidence,
-            summary="Portfolio risk evaluated.",
-            evidence=risk.evidence,
+            remit=REMIT,
+            ledger=findings,
+            inputs=(
+                Input(
+                    name="price history",
+                    value=1,
+                ),
+            ),
         )
-
-    @staticmethod
-    def _recommendation(severity: float) -> Recommendation:
-        """The same bands whether the risk is the security's or the account's."""
-
-        if severity >= 0.75:
-            return Recommendation.SELL
-
-        if severity >= 0.50:
-            return Recommendation.REDUCE
-
-        return Recommendation.HOLD

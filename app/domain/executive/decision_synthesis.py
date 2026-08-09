@@ -43,6 +43,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.committee.opinion import Uncertainty
 from app.domain.decision_state import DecisionState
 
 
@@ -65,6 +66,16 @@ class SynthesisFact:
 
     statement: str
     origin: FactOrigin
+
+    #: Which committee's position this fact stands under, where one
+    #: does. An investor weighing a reservation reads it differently
+    #: when they can see it was the Risk Committee's ground rather than
+    #: an unattributed line: attribution is what turns a list of facts
+    #: back into a discussion.
+    #:
+    #: None for a fact no committee's remit covers — the established
+    #: facts below, which no analyst consumed.
+    committee: str | None = None
 
     @property
     def is_established(self) -> bool:
@@ -89,6 +100,60 @@ class ReviewCondition:
     #: knows the conclusion its alternative reaches; a missing
     #: measurement only knows that it is missing.
     would_change: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CommitteeUncertainty:
+    """One thing a named committee could not settle.
+
+    Attributed, because *which* committee cannot see something tells an
+    investor what the gap costs: the Risk Committee unable to measure
+    volatility and the Investment Committee unable to read a valuation
+    are both absences, and they hold back different halves of the case.
+    """
+
+    committee: str
+    uncertainty: Uncertainty
+
+    @property
+    def is_resolvable(self) -> bool:
+        return self.uncertainty.is_resolvable
+
+    @property
+    def about(self) -> str:
+        return self.uncertainty.about
+
+
+@dataclass(frozen=True, slots=True)
+class Deliberation:
+    """Why this conclusion prevailed over the one that did not.
+
+    The part a scoring engine could never write. A gate report says
+    which thresholds were cleared; it cannot say that two committees
+    concurred, or that one dissented and was overruled by a named rule,
+    because a score carries no record of a position having been taken.
+
+    Nothing here re-decides. The decision was made before this object
+    existed and is unchanged by it: `prevailed` restates the verdict in
+    the words of the rule that reached it, and `over` states the
+    position that did not carry — preserved, because a conclusion whose
+    losing side was discarded can be read but not audited.
+    """
+
+    #: How far the committees that spoke pointed the same way, worded.
+    agreement: str
+
+    #: The course the decision took, and the rule that took it.
+    prevailed: str
+
+    #: The position that did not carry, where one was held. None when
+    #: no committee dissented — which is not the same as a case with no
+    #: opposition, and is worded rather than left silent.
+    over: str | None
+
+    #: Why. Composed only from the counts and the named rules already
+    #: recorded above — never an argument this layer invents.
+    because: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +192,20 @@ class DecisionSynthesis:
     #: read market data, did not consume.
     established: tuple[SynthesisFact, ...]
 
+    #: What is not yet known, carried from the committees' own
+    #: uncertainties. Its own part of the conclusion rather than a
+    #: footnote to the opposing case, because they are different
+    #: claims: a fact against the security is a reason to hesitate, and
+    #: something unmeasured is a reason the platform cannot yet say.
+    #: Folding the second into the first is how not knowing becomes
+    #: bearishness.
+    uncertainty: tuple[CommitteeUncertainty, ...] = ()
+    uncertainty_absent: str | None = None
+
+    #: Why the conclusion is what it is, given both sides. None only
+    #: where no committee spoke at all.
+    deliberation: Deliberation | None = None
+
     @property
     def is_challengeable(self) -> bool:
         """Whether an investor is given something to disagree with.
@@ -137,3 +216,18 @@ class DecisionSynthesis:
         """
 
         return bool(self.despite) or bool(self.review_if)
+
+    @property
+    def is_deliberated(self) -> bool:
+        """Whether the conclusion shows an argument rather than a checklist.
+
+        The bar this slice set for itself, and the one the acceptance
+        case is measured against: a synthesis that can name what
+        prevailed, over what, and what remains unresolved is an
+        investment committee's account of a decision. One that cannot
+        is a gate report with better headings.
+        """
+
+        return self.deliberation is not None and (
+            bool(self.uncertainty) or self.deliberation.over is not None
+        )

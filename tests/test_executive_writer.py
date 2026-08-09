@@ -4,13 +4,15 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.application.committees.models.committee_opinion import (
-    CommitteeOpinion,
-    Recommendation,
-)
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.committee.opinion import (
+    CommitteeOpinion,
+    Confidence,
+    Stance,
+)
 from app.domain.decision_history import DecisionTrend, TrendDirection
+from app.domain.finding import Dimension
 from app.domain.thesis.investment_thesis import InvestmentThesis
 from app.providers.narrative_provider import (
     Draft,
@@ -83,18 +85,34 @@ def make_evidence() -> DecisionEvidence:
 def make_opinions() -> tuple[CommitteeOpinion, ...]:
     return (
         CommitteeOpinion(
-            committee="Quality",
-            recommendation=Recommendation.BUY,
-            confidence=74.0,
+            committee="Quality Committee",
+            remit=frozenset({Dimension.QUALITY}),
+            stance=Stance.POSITIVE,
+            abstained_because=None,
+            supporting=("finding:abc",),
+            opposing=(),
+            uncertainty=(),
+            confidence=Confidence(
+                inputs_measured=1,
+                inputs_asked=1,
+                supporting=1,
+                opposing=0,
+                unresolved=0,
+            ),
+            decided_by="stance-positive-on-favourable-majority",
             summary="Profitability is broad and persistent.",
-            evidence=(),
         ),
         CommitteeOpinion(
-            committee="Risk",
-            recommendation=Recommendation.HOLD,
+            committee="Risk Committee",
+            remit=frozenset({Dimension.RISK}),
+            stance=None,
+            abstained_because="Portfolio risk could not be fully measured.",
+            supporting=(),
+            opposing=(),
+            uncertainty=(),
             confidence=None,
+            decided_by="stance-abstains-without-findings-in-remit",
             summary="Portfolio risk could not be fully measured.",
-            evidence=(),
         ),
     )
 
@@ -153,7 +171,7 @@ def test_findings_word_the_canonical_objects_with_stable_ids() -> None:
     assert "E1" in ids and "M1" in ids and "C1" in ids
 
     # An abstention is worded as an abstention, never as opposition.
-    abstained = next(f for f in findings if "Risk committee" in f.statement)
+    abstained = next(f for f in findings if "Risk Committee" in f.statement)
     assert "abstained" in abstained.statement
     assert "not opposition" in abstained.statement
 

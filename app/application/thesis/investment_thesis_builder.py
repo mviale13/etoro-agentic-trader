@@ -8,9 +8,10 @@ from datetime import UTC, datetime
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
-from app.application.committees.models.committee_opinion import (
+from app.domain.committee.opinion import (
     CommitteeOpinion,
 )
+from app.domain.committee.panel import Panel
 from app.domain.decision_history import DecisionHistory, RecordedScores
 from app.domain.executive_decision import DecisionEvidence, ExecutiveDecision
 from app.domain.thesis.investment_thesis import InvestmentThesis
@@ -140,18 +141,17 @@ class InvestmentThesisBuilder:
         A committee that could not form a view counts as silence, not as
         opposition. When none of them could, the answer is that agreement
         was not measured — reporting 0% would say they disagreed.
+
+        This now counts what its name always claimed. It used to average
+        the committees' confidence floats, which measured how much had
+        been *read* and never once whether the committees concurred: two
+        committees flatly contradicting each other on well-read evidence
+        scored higher than two agreeing on thin evidence.
         """
 
-        stated = [
-            opinion.confidence
-            for opinion in committee_opinions
-            if opinion.confidence is not None
-        ]
+        agreement = Panel(opinions=committee_opinions).agreement_pct
 
-        if not stated:
-            return None
-
-        return max(0.0, min(1.0, sum(stated) / len(stated)))
+        return None if agreement is None else agreement / 100.0
 
     @staticmethod
     def _unique(

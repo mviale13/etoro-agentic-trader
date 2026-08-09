@@ -17,8 +17,12 @@ order they are read in.
 from __future__ import annotations
 
 from app.domain.business_understanding import BusinessUnderstanding
+from app.domain.committee.panel import Panel
+from app.domain.decision_state import DecisionState
 from app.domain.executive.decision_synthesis import (
+    CommitteeUncertainty,
     DecisionSynthesis,
+    Deliberation,
     FactOrigin,
     ReviewCondition,
     SynthesisFact,
@@ -46,6 +50,10 @@ def synthesise(
 
     established = _established(understanding)
 
+    panel = Panel(opinions=decision.opinions)
+
+    uncertainty = _uncertainty(decision)
+
     return DecisionSynthesis(
         symbol=decision.symbol,
         state=decision.state,
@@ -56,6 +64,9 @@ def synthesise(
         despite_absent=_despite_absent(decision, understanding),
         review_if=_review_if(decision, understanding),
         review_if_absent=_review_if_absent(decision, understanding),
+        uncertainty=uncertainty,
+        uncertainty_absent=_uncertainty_absent(decision, uncertainty),
+        deliberation=_deliberation(decision, panel),
         established=established,
     )
 
@@ -75,7 +86,11 @@ def _because(decision: ExecutiveDecision) -> tuple[SynthesisFact, ...]:
     """
 
     return tuple(
-        SynthesisFact(statement=statement, origin=FactOrigin.ASSESSED)
+        SynthesisFact(
+            statement=statement,
+            origin=FactOrigin.ASSESSED,
+            committee=_committee_for(decision, statement, supporting=True),
+        )
         for statement in decision.key_strengths[:SUPPORTING]
     )
 
@@ -108,7 +123,11 @@ def _despite(
     """
 
     against = [
-        SynthesisFact(statement=statement, origin=FactOrigin.ASSESSED)
+        SynthesisFact(
+            statement=statement,
+            origin=FactOrigin.ASSESSED,
+            committee=_committee_for(decision, statement, supporting=False),
+        )
         for statement in decision.key_risks[:OPPOSING]
     ]
 
@@ -291,6 +310,203 @@ def _review_if_absent(
         "the market's, shown on this page as portfolio context; they "
         "would apply to any security and are not reasons to revisit this "
         "one."
+    )
+
+
+# ── who said it ─────────────────────────────────────────────────────
+
+
+def _committee_for(
+    decision: ExecutiveDecision,
+    statement: str,
+    *,
+    supporting: bool,
+) -> str | None:
+    """Which committee stood on this finding, where one did.
+
+    Resolved through the decision's own ledger rather than matched on
+    wording: the committee recorded a reference, the ledger holds the
+    statement that reference addresses, and this only walks between
+    them. A statement no committee's remit covers — or a case built
+    before opinions were recorded — attributes to nobody, and says so
+    by being None rather than by guessing.
+    """
+
+    for opinion in decision.opinions:
+        refs = opinion.supporting if supporting else opinion.opposing
+
+        if statement in decision.findings.statements_for(refs):
+            return opinion.committee
+
+    return None
+
+
+# ── what is not yet known ───────────────────────────────────────────
+
+
+def _uncertainty(decision: ExecutiveDecision) -> tuple[CommitteeUncertainty, ...]:
+    """Every committee's unresolved uncertainty, attributed and deduplicated.
+
+    Carried through verbatim from the committees. Nothing is reworded
+    on the way, so the sentence an investor reads here is the sentence
+    the layer that found the gap wrote — two surfaces describing one
+    absence differently is how a reader comes to believe there are two.
+    """
+
+    seen: set[str] = set()
+
+    attributed: list[CommitteeUncertainty] = []
+
+    for opinion in decision.opinions:
+        for item in opinion.uncertainty:
+            if item.about in seen:
+                continue
+
+            seen.add(item.about)
+
+            attributed.append(
+                CommitteeUncertainty(
+                    committee=opinion.committee,
+                    uncertainty=item,
+                )
+            )
+
+    return tuple(attributed)
+
+
+def _uncertainty_absent(
+    decision: ExecutiveDecision,
+    uncertainty: tuple[CommitteeUncertainty, ...],
+) -> str | None:
+    """Say plainly that nothing is outstanding, where nothing is.
+
+    Distinguished from *no committee looked*: an empty list under a
+    panel that never sat would read as a fully evidenced case, which is
+    the most flattering possible misreading of having read nothing.
+    """
+
+    if uncertainty:
+        return None
+
+    if not decision.opinions:
+        return (
+            "No committee reviewed this case, so nothing is recorded as "
+            "unresolved. That is an absence of review, not a complete "
+            "picture."
+        )
+
+    return (
+        "Every input the committees asked for was measured. Nothing here "
+        "says the picture is complete — only that nothing they asked for "
+        "is outstanding."
+    )
+
+
+# ── why this conclusion and not the other ───────────────────────────
+
+
+def _deliberation(
+    decision: ExecutiveDecision,
+    panel: Panel,
+) -> Deliberation | None:
+    """The conclusion set against the position that did not carry.
+
+    Composed entirely from counts and from rules already named by the
+    committees and the CIO. It states no argument of its own: every
+    clause here is either a number of committees, a stance one of them
+    recorded, or the decision's own rationale carried through.
+    """
+
+    if not panel.spoke:
+        return None
+
+    prevailed = (
+        f"The Artificial CIO decided {decision.state.value} at conviction "
+        f"{decision.conviction}/100. {decision.rationale}"
+    )
+
+    return Deliberation(
+        agreement=panel.stated(),
+        prevailed=prevailed,
+        over=_dissent(decision, panel),
+        because=_because_outweighed(decision, panel),
+    )
+
+
+def _dissent(decision: ExecutiveDecision, panel: Panel) -> str | None:
+    """The position that did not carry, named with the committee holding it.
+
+    Only a genuine contradiction counts. A positive committee beside a
+    neutral one is a difference of degree, and reporting it as a dissent
+    would tell an investor there was an argument where there was none.
+    """
+
+    if not panel.is_divided:
+        return None
+
+    # Which side the decision took, and therefore which side lost.
+    #
+    # `RECOMMEND` is the only state in which this platform acts on the
+    # bullish case; there the dissent is whoever was negative. Every
+    # other state declines to act now — including `PREPARE`, which is a
+    # case held back rather than a case taken — so the position that did
+    # not carry is the positive one. Reading this off
+    # `belongs_to_watchlist` named the wrong committee for four of the
+    # five states: that property is true for everything but `REJECT`.
+    acted_on_the_case = decision.state is DecisionState.RECOMMEND
+
+    against = panel.negative if acted_on_the_case else panel.positive
+
+    if not against:
+        return None
+
+    dissenting = against[0]
+
+    stance = dissenting.stance
+
+    return (
+        f"The {dissenting.committee} is "
+        f"{stance.stated if stance is not None else 'silent'} on this "
+        f"security, by rule {dissenting.decided_by}. That position did not "
+        "carry, and it is recorded rather than dropped."
+    )
+
+
+def _because_outweighed(decision: ExecutiveDecision, panel: Panel) -> str:
+    """Why the prevailing side prevailed — in counts and named rules only.
+
+    The honest answer on this platform is procedural, and it is stated
+    as procedural. The Artificial CIO does not weigh committee stances:
+    it gates on measured scores, and the committees' positions are the
+    evidence beside that judgment rather than an input to it. Writing a
+    sentence here that implied the stances had been tallied would
+    describe a deliberation that did not happen.
+    """
+
+    spoke = len(panel.spoke)
+
+    abstained = len(panel.abstained)
+
+    positions = (
+        f"{spoke} committee(s) took a position and {abstained} abstained"
+        if abstained
+        else f"{spoke} committee(s) took a position"
+    )
+
+    if panel.is_divided:
+        return (
+            f"{positions}, and they disagree. The Artificial CIO does not "
+            "count committee stances: it gated on the measured scores, and "
+            f"reached {decision.state.value} on the rule stated above. The "
+            "dissent is preserved so it can be weighed against that gate "
+            "rather than hidden by it."
+        )
+
+    return (
+        f"{positions}. The Artificial CIO gated on the measured scores "
+        f"rather than on those positions, and reached {decision.state.value} "
+        "on the rule stated above; the committees' agreement is corroboration, "
+        "not the thing that decided."
     )
 
 

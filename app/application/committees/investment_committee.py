@@ -2,106 +2,121 @@
 
 from __future__ import annotations
 
-from app.application.brain.reasoning.models.assessment import evidence_about
-from app.application.brain.reasoning.reasoning_snapshot import (
-    ReasoningSnapshot,
-)
-from app.application.committees.models.committee_opinion import (
-    CommitteeOpinion,
-    Recommendation,
-)
+from app.application.committees.opinion_builder import Input, build
 from app.brain import Brain
+from app.domain.committee.opinion import (
+    CommitteeOpinion,
+    Uncertainty,
+    UncertaintyKind,
+)
+from app.domain.finding import Dimension, FindingLedger
+
+#: The readings this committee speaks for: what the business is worth
+#: paying for. Risk is deliberately not here — it is another
+#: committee's remit, and a committee that weighed everything would
+#: leave the Executive layer nothing to adjudicate between.
+REMIT = frozenset(
+    {
+        Dimension.QUALITY,
+        Dimension.VALUATION,
+        Dimension.MOMENTUM,
+        Dimension.RESEARCH,
+    }
+)
 
 
 class InvestmentCommittee:
     """
     Reviews whether this security is an attractive investment.
 
-    It used to review only the portfolio and the market, which are the same
-    whichever security is being judged, so its opinion was identical under
-    every symbol and told the Artificial CIO nothing about the case in
-    front of it.
+    It used to review only the portfolio and the market, which are the
+    same whichever security is being judged, so its opinion was
+    identical under every symbol and told the Artificial CIO nothing
+    about the case in front of it. Then it weighed the security's own
+    verdict at 60% against that context — better, and still a score.
 
-    The security's own committee view leads; the account and the market are
-    the conditions it would be bought into. A security the Brain holds no
-    evidence about produces no opinion at all — reviewing a case on context
-    alone is precisely what this stopped doing.
+    It now states a position over the findings in its remit and shows
+    them. The portfolio and the market have left this object entirely:
+    they are the conditions a security would be bought into, they are
+    weighed where conditions belong, and a committee that folded them
+    into its own view was reporting the account's health as an opinion
+    about a company.
     """
-
-    #: What the security committee's own verdict is worth, as a ratio.
-    SECURITY_VIEWS = {
-        "BUY": 1.0,
-        "HOLD": 0.5,
-        "SELL": 0.0,
-    }
-
-    #: How far the security's own verdict outweighs its surroundings.
-    SECURITY_WEIGHT = 0.60
 
     def review(
         self,
         brain: Brain,
-        reasoning: ReasoningSnapshot,
         symbol: str,
+        findings: FindingLedger,
     ) -> CommitteeOpinion:
-
-        portfolio = reasoning.portfolio
-        market = reasoning.market
 
         company = brain.security_evidence(symbol)
 
         if company is None:
-            return CommitteeOpinion(
+            return build(
                 committee="Investment Committee",
-                recommendation=Recommendation.HOLD,
-                confidence=None,
-                summary=(f"No security-level evidence is available for {symbol}."),
-                evidence=(),
+                remit=REMIT,
+                ledger=findings,
+                abstain_because=(
+                    f"No security-level evidence is available for {symbol}, so "
+                    "the Investment Committee takes no position. That is an "
+                    "abstention, not a neutral view of the company."
+                ),
             )
 
-        context = portfolio.health_score * 0.60 + market.momentum_score * 0.40
+        signals = company.signals
 
-        security = self.SECURITY_VIEWS.get(company.recommendation, 0.5)
-
-        score = security * self.SECURITY_WEIGHT + context * (1.0 - self.SECURITY_WEIGHT)
-
-        if score >= 0.85:
-            recommendation = Recommendation.STRONG_BUY
-
-        elif score >= 0.70:
-            recommendation = Recommendation.BUY
-
-        elif score >= 0.40:
-            recommendation = Recommendation.HOLD
-
-        elif score >= 0.20:
-            recommendation = Recommendation.REDUCE
-
-        else:
-            recommendation = Recommendation.SELL
-
-        # The conditions this security would be bought into — and only the
-        # ones that describe it. The single sentiment index the platform
-        # reads is crypto's, and it was appearing among the facts weighed
-        # about a software company, correctly captioned and entirely
-        # irrelevant.
-        evidence = evidence_about(
-            (*portfolio.evidence, *market.evidence),
-            brain.asset_class_for(symbol),
+        return build(
+            committee="Investment Committee",
+            remit=REMIT,
+            ledger=findings,
+            # What this committee asks to have measured before it is
+            # fully evidenced. Named individually so an unmeasured one
+            # says which, rather than lowering a number nobody can
+            # decompose.
+            inputs=(
+                Input(
+                    name="business quality",
+                    value=None if signals.quality.quality == "UNKNOWN" else 1,
+                    absent_because=(
+                        f"Business quality could not be read for {symbol}."
+                    ),
+                ),
+                Input(
+                    name="valuation",
+                    value=None if signals.value.valuation == "UNKNOWN" else 1,
+                    absent_because=(f"Valuation could not be read for {symbol}."),
+                ),
+            ),
+            uncertainty=self._outside_knowledge(brain, symbol),
         )
 
-        # The score decides what to recommend. It is not how sure the
-        # committee is of it: reporting the score as confidence meant a
-        # bearish view was, by construction, a tentative one, and a SELL
-        # could never be stated with conviction. Confidence comes from how
-        # well the assessments behind the view were evidenced.
-        return CommitteeOpinion(
-            committee="Investment Committee",
-            recommendation=recommendation,
-            confidence=(
-                portfolio.confidence + market.confidence + company.confidence / 100.0
-            )
-            / 3.0,
-            summary=(f"{symbol} evaluated against the portfolio and the market."),
-            evidence=evidence,
+    @staticmethod
+    def _outside_knowledge(
+        brain: Brain,
+        symbol: str,
+    ) -> tuple[Uncertainty, ...]:
+        """Questions that will not be answered by looking harder.
+
+        An asset with no company behind it has no business quality and
+        no earnings to be priced against — ever. Reporting those as
+        *missing* would send an investor back to wait for a measurement
+        that is not coming, which is the same counterfeit as an
+        estimated figure, told in the future tense.
+        """
+
+        asset_class = brain.asset_class_for(symbol)
+
+        if asset_class is None or not asset_class.has_no_company:
+            return ()
+
+        return (
+            Uncertainty(
+                kind=UncertaintyKind.OUTSIDE_KNOWLEDGE,
+                about=(
+                    f"A {asset_class.noun} has no business quality and no "
+                    "earnings to be valued against, so neither is a question "
+                    "this committee can ever answer for it."
+                ),
+            ),
         )

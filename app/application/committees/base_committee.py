@@ -7,10 +7,10 @@ from typing import Protocol
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
-from app.application.committees.models.committee_opinion import (
+from app.brain import Brain
+from app.domain.committee.opinion import (
     CommitteeOpinion,
 )
-from app.brain import Brain
 
 
 class ExecutiveCommittee(Protocol):
