@@ -343,10 +343,27 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
             "evidence",
             "kind",
             "kind_stated",
+            # The arithmetic beneath the number, where the score counted
+            # factors. Null for a score that bands one reading or
+            # averages others — those have no decomposition, and a
+            # one-row table would dress a threshold up as a tally.
+            "derivation",
         }, name
         assert score["basis"], name
         assert score["kind_stated"], name
         assert isinstance(score["evidence"], list), name
+
+        derivation = score["derivation"]
+
+        if derivation is not None:
+            # A breakdown that did not add up to the score it sits under
+            # would be worse than none at all.
+            assert derivation["score"] == score["value"], name
+            assert derivation["earned"] <= derivation["available"], name
+            assert derivation["stated"], name
+            assert all(item["points"] >= 0 for item in derivation["contributions"]), (
+                name
+            )
 
     assert body["scores"]["portfolio_fit"]["kind"] == "policy"
     assert body["scores"]["quality"]["kind"] == "assessment"

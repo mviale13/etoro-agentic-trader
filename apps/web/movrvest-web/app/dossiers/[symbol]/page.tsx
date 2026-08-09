@@ -20,6 +20,7 @@ import type {
   DossierMeasure,
   DossierPlaybook,
   DossierNarrative,
+  DossierDerivation,
   DossierScore,
   DossierSynthesis,
   DossierSynthesisFact,
@@ -1300,6 +1301,92 @@ function WhyTrustThis({ dossier }: { dossier: DossierViewModel }) {
  * that scored it. Nothing here explains a score; it only discloses the
  * explanation.
  */
+/**
+ * Why the number is the number: the factors counted, and what each was worth.
+ *
+ * Every figure here is the backend's. This lays them out and adds no
+ * arithmetic of its own — a total computed on this side could disagree
+ * with the score it sits under, which is the one thing a breakdown must
+ * never do.
+ *
+ * There are no negative contributions, because the platform has none: a
+ * factor the company fails earns no point rather than subtracting one.
+ * That is said in words, since a column of zeroes otherwise reads as
+ * nothing having counted against.
+ */
+function ScoreBreakdown({ derivation }: { derivation: DossierDerivation }) {
+  const hasZero = derivation.contributions.some((item) => item.points === 0);
+
+  return (
+    <div className="mt-3 max-w-2xl">
+      <ul className="text-sm leading-6">
+        {derivation.contributions.map((item) => (
+          <li
+            key={item.statement}
+            className="flex items-baseline justify-between gap-4 border-b border-slate-200/70 py-1.5 last:border-0"
+          >
+            <span
+              className={
+                item.points > 0 ? "text-slate-700" : "text-slate-500"
+              }
+            >
+              {item.statement}
+            </span>
+
+            {/* A zero is not one thing: a factor that does not apply and
+                one the company failed are different, and the sense is
+                what tells them apart. */}
+            <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
+              {item.points === 0 ? (
+                <span className="text-xs text-slate-400">
+                  {item.sense === "adverse" ? "not earned" : "n/a"}
+                </span>
+              ) : null}
+
+              <span
+                className={
+                  item.points > 0
+                    ? "font-semibold text-slate-950"
+                    : "font-medium text-slate-400"
+                }
+              >
+                {item.points > 0 ? `+${item.points}` : "0"}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-2 text-sm font-medium text-slate-800">
+        {derivation.stated}
+      </p>
+
+      {/* The score was held down by what could be read, not by the
+          company. Worth saying outright: the investor would otherwise
+          read a middling band as a verdict on the business. */}
+      {derivation.cappedByUnreadableFactors ? (
+        <p className="mt-1.5 text-xs leading-5 text-amber-700">
+          This is a limit of what the platform could read, not a finding
+          about the company.
+        </p>
+      ) : null}
+
+      {hasZero ? (
+        <p className="mt-1.5 text-xs leading-5 text-slate-500">
+          Nothing subtracts: a factor the company does not meet earns no
+          point rather than losing one.
+        </p>
+      ) : null}
+
+      <p className="mt-1.5 text-xs leading-5 text-slate-400">
+        {derivation.scale
+          .map(([band, value]) => `${band} ${value}`)
+          .join(" · ")}
+      </p>
+    </div>
+  );
+}
+
 function Scores({ dossier }: { dossier: DossierViewModel }) {
   const rows: readonly { label: string; score: DossierScore }[] = [
     { label: "Business quality", score: dossier.scores.quality },
@@ -1366,7 +1453,14 @@ function Scores({ dossier }: { dossier: DossierViewModel }) {
                 {row.score.basis}
               </p>
 
-              {row.score.evidence.length > 0 ? (
+              {/* Where the score counted factors, they are shown with what
+                  each was worth — the same findings, with the arithmetic
+                  that produced the number. The plain list is the fallback
+                  for scores that band one reading, which have no
+                  decomposition to show. */}
+              {row.score.derivation ? (
+                <ScoreBreakdown derivation={row.score.derivation} />
+              ) : row.score.evidence.length > 0 ? (
                 <ul className="mt-3 space-y-1.5 text-sm leading-6 text-slate-600">
                   {row.score.evidence.map((item) => (
                     <li key={item} className="flex gap-2">

@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.finding import Sense
+
 
 class ScoreKind(StrEnum):
     """
@@ -59,6 +61,107 @@ SCORE_LABELS: dict[str, str] = {
 
 
 @dataclass(frozen=True, slots=True)
+class Contribution:
+    """One factor a score counted, and what it was worth.
+
+    Carried from the signal that counted it, never recomposed. The
+    statement is the finding's own words, so a contribution and the
+    finding beneath it cannot come to say different things.
+    """
+
+    statement: str
+
+    #: What this factor added. Never negative on this platform today,
+    #: and that is a fact about the scoring rather than about the
+    #: company: an adverse factor fails to earn its point rather than
+    #: subtracting one. Stated plainly, because a reader who sees only
+    #: positive numbers will otherwise assume nothing counted against.
+    points: int
+
+    #: How the signal read it. A zero-point factor is not one thing:
+    #: `NEUTRAL` is a factor that does not apply, `ADVERSE` is one the
+    #: company failed, and a column of bare zeroes cannot tell them
+    #: apart.
+    sense: Sense
+
+    @property
+    def earned(self) -> bool:
+        return self.points > 0
+
+
+@dataclass(frozen=True, slots=True)
+class ScoreDerivation:
+    """How a counted score reached its number, factor by factor.
+
+    The answer to *why 80?*, in arithmetic an investor can check rather
+    than a band name they must accept. It exists because the platform
+    was already computing it and throwing it away: the quality signal
+    counts a point per factor, collapses the count to a band, and the
+    band to a constant — so a number that began as `2 of 3` reached the
+    dashboard as `62` with nothing between.
+
+    Only for scores that genuinely count factors. A score that places
+    one reading in a band — a forward P/E against a threshold — has no
+    decomposition, and manufacturing a one-row table for it would dress
+    a threshold up as a tally. Those scores carry no derivation, and
+    their basis says what they are instead.
+    """
+
+    contributions: tuple[Contribution, ...]
+
+    #: Points earned, and points that were available to earn. These are
+    #: not the same as the band's requirement, and the difference is the
+    #: honest part: a company whose dividend yield could not be read has
+    #: two factors available, and a band that asks for three is then out
+    #: of reach for a reason that is nothing to do with the business.
+    earned: int
+    available: int
+
+    #: The band the count fell in, and the number this platform assigns
+    #: it. Both stated, because the second is a house rule and a reader
+    #: who cannot see it cannot tell it from a measurement.
+    band: str
+    score: int
+
+    #: Every band and its number, so the reader sees the whole ruler.
+    scale: tuple[tuple[str, int], ...]
+
+    #: What the band required. Where `earned` reached `available` and
+    #: still fell short, this is what says so.
+    required: int | None = None
+
+    @property
+    def is_capped_by_unreadable_factors(self) -> bool:
+        """Whether a higher band was unreachable for want of data.
+
+        The case worth flagging to an investor: every factor that could
+        be read was earned, and the score still is not the top one —
+        because the platform could not read enough of the company, not
+        because the company fell short.
+        """
+
+        return (
+            self.required is not None
+            and self.earned == self.available
+            and self.available < self.required
+        )
+
+    def stated(self) -> str:
+        """The arithmetic as one checkable line."""
+
+        counted = f"{self.earned} of {self.available} points earned"
+
+        if self.is_capped_by_unreadable_factors:
+            return (
+                f"{counted} — every factor that could be read scored, and "
+                f"{self.band} is as far as {self.available} factors reach; "
+                f"the next band needs {self.required}."
+            )
+
+        return f"{counted} → {self.band} → {self.score}."
+
+
+@dataclass(frozen=True, slots=True)
 class ScoreBasis:
     """
     The reading under one score, and the rule that turned it into a number.
@@ -88,6 +191,12 @@ class ScoreBasis:
     #: What kind of number this is. Assessed by default: most of these are
     #: an interpretation, and the ones that are not say so explicitly.
     kind: ScoreKind = ScoreKind.ASSESSMENT
+
+    #: The arithmetic beneath the score, where the score counted factors.
+    #: None for a score that bands a single reading or averages other
+    #: scores — those have no decomposition, and inventing one would be
+    #: the figure this whole object exists to prevent.
+    derivation: ScoreDerivation | None = None
 
 
 @dataclass(frozen=True, slots=True)

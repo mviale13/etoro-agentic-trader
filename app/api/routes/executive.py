@@ -6,6 +6,8 @@ from app.api.dependencies import get_brain_builder_service
 from app.api.models.dossier import (
     CommitteeOpinionResponse,
     CommitteeUncertaintyResponse,
+    ContributionResponse,
+    DerivationResponse,
     DossierResponse,
     EvidenceScoresResponse,
     NarrativeFindingResponse,
@@ -398,12 +400,38 @@ def _score(
     from where the score was computed.
     """
 
+    derivation = basis.derivation
+
     return ScoreResponse(
         value=value,
         basis=basis.basis,
         evidence=list(basis.evidence),
         kind=basis.kind.value,
         kind_stated=basis.kind.stated,
+        derivation=(
+            None
+            if derivation is None
+            else DerivationResponse(
+                contributions=[
+                    ContributionResponse(
+                        statement=item.statement,
+                        points=item.points,
+                        sense=item.sense.value,
+                    )
+                    for item in derivation.contributions
+                ],
+                earned=derivation.earned,
+                available=derivation.available,
+                band=derivation.band,
+                score=derivation.score,
+                scale=list(derivation.scale),
+                required=derivation.required,
+                capped_by_unreadable_factors=(
+                    derivation.is_capped_by_unreadable_factors
+                ),
+                stated=derivation.stated(),
+            )
+        ),
     )
 
 
