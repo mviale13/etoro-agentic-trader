@@ -15,6 +15,7 @@ from app.application.executive.portfolio_fit import (
 )
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
+from app.domain.business_quality import BAND_SCORES, BusinessQuality
 from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_research import CompanyResearch
@@ -30,6 +31,7 @@ from app.domain.finding import (
 from app.domain.opinion import Opinion
 from app.domain.risk_signal import RiskSignal
 from app.domain.score_basis import (
+    Contribution,
     ScoreBases,
     ScoreBasis,
     ScoreDerivation,
@@ -110,6 +112,7 @@ class DecisionEvidenceBuilder:
         committee_opinions: tuple[CommitteeOpinion, ...],
         findings: FindingLedger | None = None,
         today: date | None = None,
+        quality_assessment: BusinessQuality | None = None,
     ) -> DecisionEvidence:
         portfolio = reasoning.portfolio
         market = reasoning.market
@@ -133,7 +136,7 @@ class DecisionEvidenceBuilder:
             None,
         )
 
-        quality = self._quality_score(company)
+        quality = self._quality_value(company, quality_assessment)
 
         cognitive_confidence = (
             portfolio.confidence + market.confidence + risk.confidence
@@ -204,7 +207,7 @@ class DecisionEvidenceBuilder:
             # measurement, and a reader who cannot see it cannot tell the
             # two apart.
             score_bases=ScoreBases(
-                quality=self._quality_basis(company),
+                quality=self._quality_basis(company, quality_assessment),
                 evidence=self._evidence_basis(
                     company,
                     reasoning,
@@ -236,6 +239,28 @@ class DecisionEvidenceBuilder:
             missing_evidence=self._missing_evidence(company, symbol, asset_class),
             catalysts=catalysts,
         )
+
+    @classmethod
+    def _quality_value(
+        cls,
+        company: CompanyRecommendation | None,
+        grounded: BusinessQuality | None,
+    ) -> int | None:
+        """How good the business is, from the filing where it was read.
+
+        The two routes never blend. A grounded assessment governs
+        outright where the statements support one — including when it
+        bands `UNKNOWN`, which is a real answer meaning *too little was
+        established to say*, and must not fall through to a provider's
+        three proxies. Falling back there would let a company the
+        filing could not describe borrow a score from its market
+        capitalisation.
+        """
+
+        if grounded is not None:
+            return grounded.score
+
+        return cls._quality_score(company)
 
     @classmethod
     def _quality_score(
@@ -349,8 +374,12 @@ class DecisionEvidenceBuilder:
     def _quality_basis(
         cls,
         company: CompanyRecommendation | None,
+        grounded: BusinessQuality | None = None,
     ) -> ScoreBasis:
         """How good the business is, and by whose ruler."""
+
+        if grounded is not None:
+            return cls._grounded_quality_basis(grounded)
 
         if company is None:
             return ScoreBasis(
@@ -433,6 +462,94 @@ class DecisionEvidenceBuilder:
             score=score,
             scale=tuple(cls.QUALITY_SCORES.items()),
             required=signal.next_band_needs,
+        )
+
+    @classmethod
+    def _grounded_quality_basis(
+        cls,
+        grounded: BusinessQuality,
+    ) -> ScoreBasis:
+        """The filing-grade quality reading, with its whole arithmetic.
+
+        The label is deliberately narrow. This measures grounded
+        profitability and growth quality under currently established
+        evidence — not business quality entire, which would need
+        returns on capital, capital allocation and a moat this platform
+        has no canonical measure for. Calling it the larger thing would
+        be the overstatement every other honesty rule here exists to
+        prevent.
+        """
+
+        scored = [factor for factor in grounded.factors if factor.is_answered]
+
+        evidence: list[str] = []
+
+        for factor in grounded.factors:
+            if factor.is_answered:
+                evidence.extend(factor.evidence)
+                continue
+
+            # An unavailable or inapplicable factor keeps its own
+            # layer's wording, and stays out of the denominator.
+            evidence.append(
+                f"{factor.asks} — {factor.status}: "
+                f"{factor.because or 'no reason recorded'}"
+            )
+
+        # Named where a reader would otherwise read the omission as an
+        # oversight, or as the platform having found nothing to say.
+        evidence.extend(
+            f"{excluded.name} is not part of this score. {excluded.because}"
+            for excluded in grounded.excluded
+        )
+
+        return ScoreBasis(
+            basis=(
+                f"{grounded.stated()} This measures {grounded.label} from "
+                f"{grounded.source}, over the {len(scored)} of "
+                f"{len(grounded.factors)} questions its financial model "
+                "could answer from established figures. It is not a "
+                "complete measure of business quality."
+            ),
+            evidence=tuple(evidence),
+            derivation=cls._grounded_derivation(grounded),
+        )
+
+    @staticmethod
+    def _grounded_derivation(
+        grounded: BusinessQuality,
+    ) -> ScoreDerivation | None:
+        """The factors that scored, in the shape the dossier already shows.
+
+        Only the answered ones carry a row: an unavailable factor is
+        not a zero-point factor, and putting it in the table beside one
+        that scored nothing would be the very conflation this design
+        keeps apart. The unanswered ones are worded in the evidence
+        above instead.
+        """
+
+        if grounded.score is None:
+            return None
+
+        answered = [factor for factor in grounded.factors if factor.is_answered]
+
+        return ScoreDerivation(
+            contributions=tuple(
+                Contribution(
+                    statement=f"{factor.asks} — {factor.verdict}",
+                    points=factor.points,
+                    sense=factor.sense,
+                )
+                for factor in answered
+            ),
+            earned=grounded.favourable,
+            # The denominator is what was answered, never what was
+            # asked: a company whose growth could not be read is not
+            # thereby a worse business.
+            available=grounded.answered,
+            band=grounded.band.value,
+            score=grounded.score,
+            scale=tuple((band.value, value) for band, value in BAND_SCORES.items()),
         )
 
     @classmethod
