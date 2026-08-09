@@ -7,6 +7,7 @@ analysis is a separate concern, and nothing here estimates it.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
@@ -234,6 +235,7 @@ class DecisionHistory:
         self,
         conviction: int,
         scores: RecordedScores,
+        labels: Mapping[str, str] = SCORE_LABELS,
     ) -> ConvictionChange | None:
         """
         How today's conviction differs from the last recorded one, and why.
@@ -247,6 +249,10 @@ class DecisionHistory:
         is passed over rather than guessed at, and an earlier decision
         recorded before the scores were produces the movement with an
         honest silence about its causes.
+
+        `labels` is how the caller's dossier kind names the scores — a
+        token's quality moving is an asset-quality move, not a business-
+        quality one. The keys are the record's and never vary.
         """
 
         latest = self.latest
@@ -268,7 +274,7 @@ class DecisionHistory:
 
         because = []
 
-        for name, label in SCORE_LABELS.items():
+        for name, label in labels.items():
             before = getattr(latest.scores, name)
             after = getattr(scores, name)
 

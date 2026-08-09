@@ -3,11 +3,13 @@
 from datetime import UTC, datetime, timedelta
 
 from app.cio.decision_state import DecisionState
+from app.domain.asset_class import AssetClass
 from app.domain.decision_history import (
     DecisionHistory,
     DecisionRecord,
     RecordedScores,
 )
+from app.domain.score_basis import score_labels_for
 
 START = datetime(2026, 8, 1, 9, 0, tzinfo=UTC)
 
@@ -112,6 +114,27 @@ def test_each_reason_is_a_score_that_measurably_moved() -> None:
     # The two that did not move are not mentioned at all.
     assert not any("Evidence" in line for line in change.because)
     assert not any("Portfolio fit" in line for line in change.because)
+
+
+def test_a_tokens_quality_move_is_an_asset_quality_move() -> None:
+    """The reasons are worded the way this security's dossier names them.
+
+    The record's keys never vary; the labels do. A crypto dossier calls
+    the quality score "Asset quality", and a conviction move under it
+    saying "Business quality improved" would present a network reading
+    as a company judgment nobody made.
+    """
+
+    change = history(
+        recorded(70, RecordedScores(quality=62)),
+    ).conviction_change_against(
+        78,
+        RecordedScores(quality=80),
+        labels=score_labels_for(AssetClass.CRYPTO),
+    )
+
+    assert change is not None
+    assert change.because == ("Asset quality improved, 62 → 80",)
 
 
 def test_a_score_missing_on_either_side_is_passed_over() -> None:

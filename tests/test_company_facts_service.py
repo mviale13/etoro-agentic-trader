@@ -368,7 +368,7 @@ def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:
     signal = CryptoQualitySignalService().build(facts)
 
     assert "Large-cap company." not in statements(signal.evidence)
-    assert any("Network value" in line for line in statements(signal.evidence))
+    assert any("market value" in line for line in statements(signal.evidence))
 
 
 def test_a_token_carries_what_a_token_has() -> None:

@@ -250,9 +250,13 @@ function TokenRating({ rating }: { rating: DossierTokenRating }) {
 function Playbook({
   playbook,
   rating,
+  heading,
 }: {
   playbook: DossierPlaybook;
   rating: DossierTokenRating | null;
+  /** "Company type" on an equity, "Asset type" on a token — the backend's
+      dossier definition words it, this side only places it. */
+  heading: string;
 }) {
   return (
     <section
@@ -260,7 +264,7 @@ function Playbook({
       className="rounded-[28px] border border-slate-200 bg-white p-8"
     >
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-        Company type
+        {heading}
       </p>
 
       <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -369,7 +373,11 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       <ExecutiveNarrative symbol={dossier.symbol} />
 
       {dossier.playbook ? (
-        <Playbook playbook={dossier.playbook} rating={dossier.tokenRating} />
+        <Playbook
+          playbook={dossier.playbook}
+          rating={dossier.tokenRating}
+          heading={dossier.definition.classificationHeading}
+        />
       ) : null}
 
       <WhatChanged dossier={dossier} />
@@ -711,8 +719,12 @@ function FinancialUnderstandingCard({
 function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
   return (
     <section aria-labelledby="decision-heading">
+      {/* What kind of case this is — "Equity dossier", "Crypto dossier" —
+          declared by the backend's dossier definition. The first thing
+          that says one security is ownership in a business and another
+          is a crypto asset, before any section does. */}
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-        Investment dossier
+        {dossier.definition.title}
       </p>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
@@ -1501,13 +1513,16 @@ function ScoreBreakdown({ derivation }: { derivation: DossierDerivation }) {
 }
 
 function Scores({ dossier }: { dossier: DossierViewModel }) {
+  // Each score arrives carrying its own name from the backend's dossier
+  // definition — "Business quality" on an equity, "Asset quality" on a
+  // token. Naming them here made every dossier a company dossier.
   const rows: readonly { label: string; score: DossierScore }[] = [
-    { label: "Business quality", score: dossier.scores.quality },
-    { label: "Evidence strength", score: dossier.scores.evidence },
-    { label: "Valuation attractiveness", score: dossier.scores.valuation },
-    { label: "Safety", score: dossier.scores.safety },
-    { label: "Portfolio fit", score: dossier.scores.portfolioFit },
-  ];
+    dossier.scores.quality,
+    dossier.scores.evidence,
+    dossier.scores.valuation,
+    dossier.scores.safety,
+    dossier.scores.portfolioFit,
+  ].map((score) => ({ label: score.label, score }));
 
   return (
     <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">

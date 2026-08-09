@@ -101,6 +101,10 @@ export interface DossierDerivation {
 
 export interface DossierScore {
   value: number | null;
+  /** What this score is called on this dossier — "Business quality" on an
+      equity, "Asset quality" on a token. Worded by the backend's dossier
+      definition; this side never chooses a score's name. */
+  label: string;
   basis: string;
   evidence: readonly string[];
   /** "measurement" | "policy" | "assessment" — the backend's own word. */
@@ -206,8 +210,34 @@ export interface DossierPlaybook {
   classified: boolean;
 }
 
+/**
+ * What kind of investment case this dossier is, declared by the backend.
+ *
+ * The asset-specific definition beneath the shared shell: an equity and a
+ * crypto dossier differ because the domain says so. This side renders
+ * these strings and decides nothing — it does not infer an asset class,
+ * reinterpret a metric, or choose which sections apply.
+ */
+export interface DossierDefinition {
+  /** "equity" | "crypto" | "general" — the backend's own word. */
+  kind: string;
+  /** What the case is called at the top of the page. */
+  title: string;
+  /** The heading over the classification card: a company has a company
+      type, a token has an asset type. */
+  classificationHeading: string;
+  /** False where the subject publishes no filings — a property of the
+      asset class, never unread work. The understanding sections are then
+      not sent at all, and the reason is here. */
+  filingsApply: boolean;
+  filingsInapplicableBecause: string | null;
+}
+
 export interface DossierViewModel {
   symbol: string;
+
+  /** The dossier's own semantics: title, headings, which sections belong. */
+  definition: DossierDefinition;
 
   decisionState: string;
   conviction: number;
@@ -488,11 +518,42 @@ function parseScore(value: unknown, field: string): DossierScore {
 
   return {
     value: optionalNumber(value.value),
+    label: requireString(value.label, `${field}.label`),
     basis: requireString(value.basis, `${field}.basis`),
     evidence: stringList(value.evidence),
     kind: requireString(value.kind, `${field}.kind`),
     kindStated: requireString(value.kind_stated, `${field}.kind_stated`),
     derivation: parseDerivation(value.derivation, `${field}.derivation`),
+  };
+}
+
+/**
+ * The dossier's declared semantics, or a refusal to render without them.
+ *
+ * Required, not defaulted: a page that fell back to company wording when
+ * the definition was missing would be this side deciding the asset class
+ * — the exact inference this contract exists to remove.
+ */
+function parseDefinition(value: unknown): DossierDefinition {
+  if (!isRecord(value)) {
+    throw new Error("The dossier response has no definition object.");
+  }
+
+  return {
+    kind: requireString(value.kind, "definition.kind"),
+    title: requireString(value.title, "definition.title"),
+    classificationHeading: requireString(
+      value.classification_heading,
+      "definition.classification_heading",
+    ),
+    filingsApply: requireBoolean(
+      value.filings_apply,
+      "definition.filings_apply",
+    ),
+    filingsInapplicableBecause: optionalString(
+      value.filings_inapplicable_because,
+      "definition.filings_inapplicable_because",
+    ),
   };
 }
 
@@ -1064,6 +1125,7 @@ function parseDossier(payload: unknown): DossierViewModel {
 
   return {
     symbol: requireString(payload.symbol, "symbol"),
+    definition: parseDefinition(payload.definition),
     decisionState: requireString(payload.decision_state, "decision_state"),
     conviction: requireNumber(payload.conviction, "conviction"),
     convictionLabel: requireString(

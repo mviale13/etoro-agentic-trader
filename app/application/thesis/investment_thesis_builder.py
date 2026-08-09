@@ -8,12 +8,14 @@ from datetime import UTC, datetime
 from app.application.brain.reasoning.reasoning_snapshot import (
     ReasoningSnapshot,
 )
+from app.domain.asset_class import AssetClass
 from app.domain.committee.opinion import (
     CommitteeOpinion,
 )
 from app.domain.committee.panel import Panel
 from app.domain.decision_history import DecisionHistory, RecordedScores
 from app.domain.executive_decision import DecisionEvidence, ExecutiveDecision
+from app.domain.score_basis import score_labels_for
 from app.domain.thesis.investment_thesis import InvestmentThesis
 
 
@@ -31,6 +33,7 @@ class InvestmentThesisBuilder:
         decision: ExecutiveDecision,
         history: DecisionHistory | None = None,
         evidence: DecisionEvidence | None = None,
+        asset_class: AssetClass | None = None,
     ) -> InvestmentThesis:
         portfolio = reasoning.portfolio
         market = reasoning.market
@@ -110,6 +113,10 @@ class InvestmentThesisBuilder:
                 history.conviction_change_against(
                     decision.conviction,
                     self._scores(evidence),
+                    # Named the way this security's dossier names them: a
+                    # token's quality moving is an asset-quality move, not
+                    # a business-quality one.
+                    labels=score_labels_for(asset_class),
                 )
                 if history is not None
                 else None

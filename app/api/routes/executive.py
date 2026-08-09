@@ -8,6 +8,7 @@ from app.api.models.dossier import (
     CommitteeUncertaintyResponse,
     ContributionResponse,
     DerivationResponse,
+    DossierDefinitionResponse,
     DossierResponse,
     EvidenceScoresResponse,
     NarrativeFindingResponse,
@@ -54,6 +55,7 @@ from app.application.workspace.portfolio_briefing_service import (
 from app.brain import Brain
 from app.domain.committee.panel import Panel
 from app.domain.decision_history import ConvictionChange, DecisionTrend
+from app.domain.dossier_definition import DossierDefinition, definition_for
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.playbook import InvestmentPlaybook
@@ -421,21 +423,36 @@ def _token_rating(rating: TokenRating | None) -> TokenRatingResponse | None:
     )
 
 
+def _definition(definition: DossierDefinition) -> DossierDefinitionResponse:
+    """The dossier's own semantics, carried without rewording."""
+
+    return DossierDefinitionResponse(
+        kind=definition.kind.value,
+        title=definition.title,
+        classification_heading=definition.classification_heading,
+        filings_apply=definition.filings_apply,
+        filings_inapplicable_because=definition.filings_inapplicable_because,
+    )
+
+
 def _score(
     value: int | None,
     basis: ScoreBasis,
+    label: str,
 ) -> ScoreResponse:
     """
     Pair a score with the reasoning the pipeline already worded for it.
 
     Nothing is derived here and no sentence is written here: both come
-    from where the score was computed.
+    from where the score was computed, and the label from the dossier's
+    definition.
     """
 
     derivation = basis.derivation
 
     return ScoreResponse(
         value=value,
+        label=label,
         basis=basis.basis,
         evidence=list(basis.evidence),
         kind=basis.kind.value,
@@ -580,10 +597,25 @@ async def dossier(
     # path that stated none says so rather than leaving the scores bare.
     bases = evidence.score_bases or ScoreBases.unrecorded()
 
+    # What kind of investment case this is — equity, crypto, or the
+    # general default — and therefore what the sections below are called
+    # and which of them belong. Decided here, from the asset class the
+    # Brain already holds, so the page renders semantics it was told.
+    definition = definition_for(brain.asset_class_for(normalized_symbol))
+
     # Read from the stores only — no fetch, no model — and composed
     # before the narrative so the conclusion below is available whether
     # or not the optional writer runs.
-    understanding = CompanyUnderstandingService().understanding(normalized_symbol)
+    #
+    # Not composed at all where the subject publishes no filings: a
+    # token's dossier saying "no filing has been read yet" promised work
+    # nobody can do, and an inapplicable section is not sent rather than
+    # sent empty. The definition carries the reason.
+    understanding = (
+        CompanyUnderstandingService().understanding(normalized_symbol)
+        if definition.filings_apply
+        else None
+    )
 
     # A third party's published rating, read from the store and composed
     # here at the surface — deliberately not on `CompanyFacts`, not on
@@ -604,6 +636,7 @@ async def dossier(
 
     return DossierResponse(
         symbol=normalized_symbol,
+        definition=_definition(definition),
         decision_state=decision.state.value,
         conviction=decision.conviction,
         conviction_label=conviction_label(decision.conviction),
@@ -630,15 +663,32 @@ async def dossier(
         risks=list(decision.key_risks),
         missing_evidence=list(decision.missing_evidence),
         scores=EvidenceScoresResponse(
-            quality=_score(evidence.quality_score, bases.quality),
-            evidence=_score(evidence.evidence_score, bases.evidence),
-            valuation=_score(evidence.valuation_score, bases.valuation),
+            quality=_score(
+                evidence.quality_score,
+                bases.quality,
+                definition.score_labels["quality"],
+            ),
+            evidence=_score(
+                evidence.evidence_score,
+                bases.evidence,
+                definition.score_labels["evidence"],
+            ),
+            valuation=_score(
+                evidence.valuation_score,
+                bases.valuation,
+                definition.score_labels["valuation"],
+            ),
             # Safety, not risk: the same reading, turned once, so every
             # score on the page runs the same way.
-            safety=_score(evidence.safety_score, bases.safety),
+            safety=_score(
+                evidence.safety_score,
+                bases.safety,
+                definition.score_labels["safety"],
+            ),
             portfolio_fit=_score(
                 evidence.portfolio_fit_score,
                 bases.portfolio_fit,
+                definition.score_labels["portfolio_fit"],
             ),
         ),
         context_strengths=list(thesis.context_strengths),
@@ -681,7 +731,12 @@ async def dossier(
         # from the stores only, so this adds no fetch and no model call
         # to a page view — a company nothing has been observed for
         # arrives with both halves absent and their reasons worded.
-        understanding=understanding_response(understanding),
+        #
+        # Null where filings do not apply to the subject: an absent
+        # section, not an empty one, with the reason on the definition.
+        understanding=(
+            understanding_response(understanding) if understanding is not None else None
+        ),
         # Composed from the decision, the thesis and the understanding
         # already in hand. Deterministic, and complete without the
         # writer: the dossier's conclusion never depends on a model.

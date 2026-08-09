@@ -18,12 +18,16 @@ class CryptoQualitySignalService:
     What a token does have, the same provider call already returns. Four
     things, each measured and each meaning something an investor can check:
 
-    Scale — the value of the whole network. A large network is not thereby
-    a good one, but a small one is easier to move and easier to abandon.
+    Scale — the market value the provider reports for the token. Worded
+    with the provider's name on it, because that is what it is: one
+    field read from one source, not a network figure this platform
+    measured — and the source has already reported $8,105 for a token
+    worth billions. A large value is not thereby a good network, but a
+    small one is easier to move and easier to abandon.
 
-    Liquidity — a day's turnover against that scale. This is the question
-    of whether a position can be left, which for an asset with no earnings
-    is most of what "quality" can honestly mean.
+    Liquidity — a day's reported trading against that market value. This
+    is the question of whether a position can be left, which for an
+    asset with no earnings is most of what "quality" can honestly mean.
 
     Issuance — how much of the eventual supply exists already. A token 20%
     issued has five times its float still to come; the holder is diluted by
@@ -37,11 +41,11 @@ class CryptoQualitySignalService:
     reader can disagree with a threshold without doubting the measurement.
     """
 
-    #: Network value, in dollars.
+    #: Provider-reported market value, in dollars.
     LARGE_NETWORK = 10_000_000_000
     SMALL_NETWORK = 1_000_000_000
 
-    #: A day's volume as a share of network value.
+    #: A day's volume as a share of that market value.
     LIQUID = 0.02
     ILLIQUID = 0.002
 
@@ -125,13 +129,37 @@ class CryptoQualitySignalService:
         if not value:
             return 0, None
 
+        # The provider's name travels with the figure. This used to read
+        # "Network value is only $8,105." — one provider field, worded as
+        # a network measurement, standing as a thesis condition. The
+        # reading is kept (it is the only scale figure held), but it is
+        # never dressed as more than what it is: what the source reports.
+        source = cls._source(company)
+
         if value >= cls.LARGE_NETWORK:
-            return 1, Finding.favourable(f"Network value is {cls._money(value)}.")
+            return 1, Finding.favourable(
+                f"{source} reports a market value of {cls._money(value)}."
+            )
 
         if value >= cls.SMALL_NETWORK:
-            return 0, Finding.neutral(f"Network value is {cls._money(value)}.")
+            return 0, Finding.neutral(
+                f"{source} reports a market value of {cls._money(value)}."
+            )
 
-        return -1, Finding.adverse(f"Network value is only {cls._money(value)}.")
+        return -1, Finding.adverse(
+            f"{source} reports a market value of only {cls._money(value)}."
+        )
+
+    @staticmethod
+    def _source(company: CompanyFacts) -> str:
+        """Who reported the figures being read, by name where known."""
+
+        reading = company.fundamentals_reading
+
+        if reading is None or not reading.source:
+            return "The data provider"
+
+        return reading.source
 
     @staticmethod
     def _money(value: float) -> str:
@@ -172,19 +200,24 @@ class CryptoQualitySignalService:
 
         turnover = volume / value
 
+        # "Of the network" claimed a denominator this platform never
+        # measured. Both sides of this ratio are the provider's figures,
+        # and the sentence says which value the day is measured against.
         if turnover >= cls.LIQUID:
             return 1, Finding.favourable(
-                f"A day's trading turns over {turnover * 100:.1f}% of the network."
+                f"A day's reported trading turns over {turnover * 100:.1f}% "
+                "of its market value."
             )
 
         if turnover >= cls.ILLIQUID:
             return 0, Finding.neutral(
-                f"A day's trading turns over {turnover * 100:.1f}% of the network."
+                f"A day's reported trading turns over {turnover * 100:.1f}% "
+                "of its market value."
             )
 
         return -1, Finding.adverse(
-            f"A day's trading turns over only {turnover * 100:.2f}% of the "
-            "network, so a position may be hard to leave."
+            f"A day's reported trading turns over only {turnover * 100:.2f}% "
+            "of its market value, so a position may be hard to leave."
         )
 
     @classmethod

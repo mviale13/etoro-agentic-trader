@@ -8,6 +8,7 @@ an empty one — is what these tests measure.
 """
 
 from collections.abc import Iterator, Sequence
+from dataclasses import replace
 
 import pytest
 from fastapi.testclient import TestClient
@@ -38,6 +39,7 @@ from app.domain.market_intelligence import MarketIntelligence
 from app.domain.market_snapshot import MarketSnapshot
 from app.domain.observation import Observation
 from app.domain.portfolio_health import HealthCheck, PortfolioHealth
+from app.domain.portfolio_position import PortfolioPosition
 from app.domain.recommendation import Recommendation
 from tests.test_brain_context import make_market, make_policy, make_portfolio
 from tests.test_portfolio_service import build_account
@@ -339,6 +341,9 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
     for name, score in body["scores"].items():
         assert set(score) == {
             "value",
+            # What the score is called on this dossier, from the dossier's
+            # own definition — never chosen by a surface.
+            "label",
             "basis",
             "evidence",
             "kind",
@@ -349,6 +354,7 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
             # one-row table would dress a threshold up as a tally.
             "derivation",
         }, name
+        assert score["label"], name
         assert score["basis"], name
         assert score["kind_stated"], name
         assert isinstance(score["evidence"], list), name
@@ -375,6 +381,90 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
     # Context stays apart from security evidence — different keys entirely.
     assert "context_risks" in body
     assert "context_strengths" in body
+
+
+def test_a_dossier_declares_what_kind_of_case_it_is(
+    client: TestClient,
+) -> None:
+    """The backend states the dossier's semantics; no surface infers them.
+
+    The fixture brain names no asset class for MSFT, so the case arrives
+    as the general one — titled without claiming the subject is a
+    business, and with the filing-grade sections still applicable.
+    """
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        make_brain()
+    )
+
+    body = client.get("/executive/MSFT/dossier").json()
+
+    definition = body["definition"]
+
+    assert definition["kind"] == "general"
+    assert definition["title"] == "Investment dossier"
+    assert definition["classification_heading"] == "Investment type"
+    assert definition["filings_apply"] is True
+    assert definition["filings_inapplicable_because"] is None
+
+    assert body["scores"]["quality"]["label"] == "Business quality"
+
+
+def test_a_crypto_dossier_is_a_crypto_dossier(
+    client: TestClient,
+) -> None:
+    """A token's case is declared crypto, and company sections do not belong.
+
+    The three acceptance cases of the asset-class slice, at the wire:
+    the quality score is not called "Business quality"; the filings
+    sections are not sent as not-yet-read work — a token publishes no
+    filings, and the reason says it is a property of the asset class;
+    and the case is titled as what it is.
+    """
+
+    portfolio = make_portfolio()
+
+    crypto_portfolio = replace(
+        portfolio,
+        holdings=(
+            PortfolioPosition(
+                symbol="BTC",
+                quantity=1.0,
+                invested_usd=50_000.0,
+                market_value_usd=60_000.0,
+                unrealized_pnl_usd=10_000.0,
+                asset_class="crypto",
+            ),
+        ),
+    )
+
+    brain = BrainBuilder(
+        portfolio=crypto_portfolio,
+        market=make_market(),
+        investment_policy=make_policy(),
+    ).build()
+
+    app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
+        brain
+    )
+
+    body = client.get("/executive/BTC/dossier").json()
+
+    definition = body["definition"]
+
+    assert definition["kind"] == "crypto"
+    assert definition["title"] == "Crypto dossier"
+    assert definition["classification_heading"] == "Asset type"
+
+    # Not applicable is not missing: the sections are absent, and the
+    # reason is a property of the asset class rather than unread work.
+    assert definition["filings_apply"] is False
+    assert "publishes no filings" in definition["filings_inapplicable_because"]
+    assert body["understanding"] is None
+
+    # A network reading is asset quality. Calling it business quality
+    # presented a crypto score as a company judgment nobody made.
+    assert body["scores"]["quality"]["label"] == "Asset quality"
 
 
 def test_dossier_reports_an_unevidenced_symbol_as_unevidenced(
