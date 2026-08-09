@@ -833,10 +833,17 @@ function parseFinancialUnderstanding(
           measure.unit,
           `understanding.financial.measures[${index}].unit`,
         ),
-        stated: requireString(
-          measure.stated,
-          `understanding.financial.measures[${index}].stated`,
-        ),
+        // A measure the platform worded nothing for is a measure with
+        // nothing worded, not a corrupt payload. `requireString` refuses
+        // an empty string — and reports "expected a string, received
+        // string" while doing it — so two empty sentences on AAPL and
+        // five on DIS took the whole dossier down to "the backend is
+        // unreachable". The page already renders this conditionally.
+        stated:
+          optionalString(
+            measure.stated,
+            `understanding.financial.measures[${index}].stated`,
+          ) ?? "",
         support: parseAgreement(
           measure.support,
           `understanding.financial.measures[${index}].support`,

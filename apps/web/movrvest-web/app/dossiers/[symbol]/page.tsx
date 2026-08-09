@@ -3,11 +3,11 @@ import {
   ArrowLeft,
   ChevronDown,
   CircleAlert,
-  PenLine,
   Scale,
   ShieldAlert,
 } from "lucide-react";
 
+import { ExecutiveNarrative } from "@/components/executive/ExecutiveNarrative";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -19,7 +19,6 @@ import type {
   DossierFinancialUnderstanding,
   DossierMeasure,
   DossierPlaybook,
-  DossierNarrative,
   DossierDerivation,
   DossierScore,
   DossierSynthesis,
@@ -365,11 +364,9 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
 
       {dossier.securityEvidenced ? null : <UnevidencedNotice />}
 
-      {dossier.narrative ? (
-        <Narrative narrative={dossier.narrative} />
-      ) : dossier.narrativeAbsent ? (
-        <NarrativeAbsence reason={dossier.narrativeAbsent} />
-      ) : null}
+      {/* Asked for from the browser once this page is readable. The
+          case above does not wait on it and does not depend on it. */}
+      <ExecutiveNarrative symbol={dossier.symbol} />
 
       {dossier.playbook ? (
         <Playbook playbook={dossier.playbook} rating={dossier.tokenRating} />
@@ -699,13 +696,6 @@ function FinancialUnderstandingCard({
   );
 }
 
-const SECTION_TITLES: Record<string, string> = {
-  executive_summary: "Executive summary",
-  why_now: "Why now",
-  trade_off: "The trade-off",
-  committee_summary: "What the committees said",
-  thesis_invalidators: "What would invalidate this thesis",
-};
 
 /**
  * The case in words — communication, never judgment.
@@ -715,96 +705,7 @@ const SECTION_TITLES: Record<string, string> = {
  * in this prose is a backend-validated echo of the decision above it;
  * a draft that tried to change it never reached this page.
  */
-function Narrative({ narrative }: { narrative: DossierNarrative }) {
-  const findingById = new Map(
-    narrative.findings.map((finding) => [finding.id, finding]),
-  );
 
-  return (
-    <section
-      aria-labelledby="narrative-heading"
-      className="rounded-[28px] border border-slate-200 bg-white p-8"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
-            <PenLine aria-hidden="true" className="h-5 w-5" />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Executive narrative
-            </p>
-
-            <h2
-              id="narrative-heading"
-              className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950"
-            >
-              {narrative.headline}
-            </h2>
-          </div>
-        </div>
-
-        <StatusPill
-          status="partial"
-          label="AI-written, grounded"
-          explanation="Written by the Executive Writer from the Artificial CIO's own findings and nothing else. Every paragraph cites its findings; the recommendation is a validated echo of the decision. The writer never decides."
-        />
-      </div>
-
-      <div className="mt-6 space-y-6">
-        {narrative.sections.map((section) => (
-          <div key={section.section}>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500">
-              {SECTION_TITLES[section.section] ?? section.section}
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-700">{section.text}</p>
-
-            <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
-              <span>Grounded in</span>
-
-              {section.findingIds.map((id) => (
-                <span
-                  className="cursor-help rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-500"
-                  key={id}
-                  title={
-                    findingById.get(id)
-                      ? `${findingById.get(id)!.statement} — ${findingById.get(id)!.source}`
-                      : id
-                  }
-                >
-                  {id}
-                </span>
-              ))}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <p className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500">
-        {narrative.written}. Language only: the structured case below is
-        canonical, and the Artificial CIO owns every judgment in it.
-      </p>
-    </section>
-  );
-}
-
-/**
- * The backend-worded reason there is no narrative.
- *
- * The Executive Writer words every failure path — flag off, missing
- * credentials, a declined request, a discarded draft — precisely so a
- * surface can state it. Presenting that sentence is this page's whole
- * job here; it adds nothing and hides nothing.
- */
-function NarrativeAbsence({ reason }: { reason: string }) {
-  return (
-    <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-500">
-      {reason}
-    </p>
-  );
-}
 
 /** Level 1: the decision itself, before any data. */
 function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
