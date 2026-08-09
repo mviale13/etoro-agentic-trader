@@ -170,6 +170,32 @@ export interface PlaybookCoverage {
  * what actually determines the analysis — and therefore what a reader
  * needs in order to understand why one dossier looks unlike another.
  */
+export interface DossierRatingDimension {
+  label: string;
+  score: number;
+}
+
+/**
+ * A named third party's published rating of a token.
+ *
+ * Carried under their name and rendered with a link to their own page,
+ * because it is their opinion and not this platform's judgement. It
+ * reaches no score and no decision — the Yahoo boundary applied to an
+ * opinion instead of a label.
+ */
+export interface DossierTokenRating {
+  source: string;
+  name: string;
+  level: string;
+  score: number;
+  dimensions: readonly DossierRatingDimension[];
+  /** When the rater last reviewed it, which is the date that matters. */
+  reviewedAt: string | null;
+  pageUrl: string | null;
+  reportUrl: string | null;
+  read: DossierProvenance | null;
+}
+
 export interface DossierPlaybook {
   kind: string;
   name: string;
@@ -217,6 +243,9 @@ export interface DossierViewModel {
 
   /** When the security's evidence was read. Null where none was. */
   evidenceAsOf: DossierProvenance | null;
+
+  /** Somebody else's rating of this token. Beside the case, never in it. */
+  tokenRating: DossierTokenRating | null;
 
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
@@ -536,6 +565,36 @@ function parseProvenance(
     source: requireString(value.source, `${field}.source`),
     age: requireString(value.age, `${field}.age`),
     lastKnown: value.last_known === true,
+  };
+}
+
+function parseTokenRating(value: unknown): DossierTokenRating | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "token_rating".');
+  }
+
+  const dimensions = Array.isArray(value.dimensions) ? value.dimensions : [];
+
+  return {
+    source: requireString(value.source, "token_rating.source"),
+    name: requireString(value.name, "token_rating.name"),
+    level: requireString(value.level, "token_rating.level"),
+    score: typeof value.score === "number" ? value.score : 0,
+    dimensions: dimensions.flatMap((item) =>
+      isRecord(item) &&
+      typeof item.label === "string" &&
+      typeof item.score === "number"
+        ? [{ label: item.label, score: item.score }]
+        : [],
+    ),
+    reviewedAt: optionalString(value.reviewed_at, "token_rating.reviewed_at"),
+    pageUrl: optionalString(value.page_url, "token_rating.page_url"),
+    reportUrl: optionalString(value.report_url, "token_rating.report_url"),
+    read: parseProvenance(value.read, "token_rating.read"),
   };
 }
 
@@ -1097,6 +1156,7 @@ function parseDossier(payload: unknown): DossierViewModel {
     contextRisks: stringList(payload.context_risks),
     committees: parseCommittees(payload.committees),
     evidenceAsOf: parseProvenance(payload.evidence_as_of, "evidence_as_of"),
+    tokenRating: parseTokenRating(payload.token_rating),
     narrative: parseNarrative(payload.narrative),
     narrativeAbsent: optionalString(
       payload.narrative_absent,

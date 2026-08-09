@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     movrvest_reader_provider: str = ""
     movrvest_reader_model: str = ""
 
+    #: TokenInsight, whose published crypto ratings this platform shows
+    #: as a named third party's opinion and consumes nowhere.
+    tokeninsight_api_key: str = ""
+
     allowed_symbols: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["BTC", "ETH", "SOL", "SPY", "QQQ"]
     )

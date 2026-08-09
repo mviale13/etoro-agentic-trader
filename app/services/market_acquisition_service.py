@@ -16,6 +16,7 @@ from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.earnings_provider import CachedEarningsProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
+from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
 
@@ -54,6 +55,7 @@ class MarketAcquisitionService:
         valuations: Any | None = None,
         calendars: Any | None = None,
         rates: Any | None = None,
+        ratings: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -84,6 +86,10 @@ class MarketAcquisitionService:
         # rate is one more thing a page must find already read rather
         # than go and fetch.
         self._rates = rates or CachedExchangeRateProvider()
+
+        # A third party's published crypto rating. Read here so a page
+        # never spends a metered credit, exactly as with everything else.
+        self._ratings = ratings or CachedTokenInsightProvider()
 
     async def acquire(
         self,
@@ -165,7 +171,20 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.STOCK
                 else None
             ),
+            rating=(
+                self._rating(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
         )
+
+    def _rating(self, symbol: str) -> bool:
+        """Whether the store now holds a published rating for this token."""
+
+        try:
+            return self._ratings.rating(symbol) is not None
+        except Exception:
+            return False
 
     def _fundamentals(self, yahoo_symbol: str) -> bool:
         try:

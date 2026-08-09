@@ -16,7 +16,9 @@ from app.api.models.dossier import (
     PlaybookCoverageResponse,
     PlaybookResponse,
     ProvenanceResponse,
+    RatingDimensionResponse,
     ScoreResponse,
+    TokenRatingResponse,
 )
 from app.api.models.executive_brief import (
     ExecutiveBriefResponse,
@@ -57,6 +59,8 @@ from app.domain.playbook import InvestmentPlaybook
 from app.domain.provenance import Provenance
 from app.domain.research_plan import AnalystKey
 from app.domain.score_basis import ScoreBases, ScoreBasis
+from app.domain.token_rating import TokenRating
+from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
     conviction_label,
@@ -389,6 +393,33 @@ def _provenance(
     )
 
 
+def _token_rating(rating: TokenRating | None) -> TokenRatingResponse | None:
+    """Somebody else's rating, carried with their name on it or not at all."""
+
+    if rating is None:
+        return None
+
+    return TokenRatingResponse(
+        source=rating.reading.source,
+        name=rating.name,
+        level=rating.level,
+        score=rating.score,
+        dimensions=[
+            RatingDimensionResponse(label=dimension.label, score=dimension.score)
+            for dimension in rating.dimensions
+        ],
+        reviewed_at=rating.reviewed_at,
+        page_url=rating.page_url,
+        report_url=rating.report_url,
+        read=ProvenanceResponse(
+            source=rating.reading.source,
+            observed_at=rating.reading.observed_at,
+            age=rating.reading.stated(),
+            last_known=rating.reading.last_known,
+        ),
+    )
+
+
 def _score(
     value: int | None,
     basis: ScoreBasis,
@@ -488,6 +519,15 @@ async def dossier(
     # or not the optional writer runs.
     understanding = CompanyUnderstandingService().understanding(normalized_symbol)
 
+    # A third party's published rating, read from the store and composed
+    # here at the surface — deliberately not on `CompanyFacts`, not on
+    # the signals and not in the research package. Reaching it only at
+    # the edge is what makes "it never touches a selector" a fact about
+    # the code rather than a promise in a docstring.
+    token_rating = _token_rating(
+        CachedTokenInsightProvider.stored().rating(normalized_symbol)
+    )
+
     # Communication only, and strictly after the judgment: the writer
     # receives the finished canonical objects and cannot change them.
     outcome = await ExecutiveWriterService().narrate(
@@ -569,6 +609,7 @@ async def dossier(
             for opinion in workspace.committee_opinions
         ],
         evidence_as_of=_provenance(decision.evidence_as_of),
+        token_rating=token_rating,
         narrative=_narrative(outcome.narrative),
         narrative_absent=outcome.absent_reason,
         # Composed after the decision and consumed by none of it. Read
