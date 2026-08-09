@@ -337,15 +337,16 @@ ruling, and the ruling said not to merge.
 
 ### The sequence under the gate (2026-08-09)
 
-Constitution §23 arrived immediately after this document and reorders
-it. The gate — *which investor-facing decision becomes better?* — is
-applied here first, because this sequence is the nearest thing the
-repository has to a standing invitation to do structural work.
+Constitution §23–24 arrived immediately after this document and
+reorders it. *No new architecture without a product story*, and the
+question — *what becomes better for the investor?* — is applied here
+first, because this sequence is the nearest thing the repository has
+to a standing invitation to do structural work.
 
 | # | Answer to the gate | Verdict |
 |---|---|---|
-| 0 | none — the committees describe themselves better | **do not take alone** |
-| 1 | none — every finding today is `ASSESSED`, so nothing moves | **do not take alone** |
+| 0 | none — the committees describe themselves better | **waits** |
+| 1 | none — every finding today is `ASSESSED`, so nothing moves | **waits** |
 | 3 | *the recommendation is more trustworthy, because the Quality Committee reasons from what the filing establishes rather than from a provider's ratios* | **ship it** |
 
 Steps 0 and 1 are behaviour-free, which was written above as though it

@@ -11,8 +11,11 @@ Status: **Active, under the architecture freeze** (2026-08-09).
 
 Constitution §23–24, and it outranks everything below.
 
-> **Which investor-facing decision becomes better because of this
-> change?**
+> **What becomes better for the investor?**
+
+*No new architecture without a product story.* An item below with no
+product story does not become one by being written down — the PR
+waits.
 
 The core architecture is **frozen** — deliberately, not forever. No
 new layers, canonical objects, taxonomies or re-factored seams, and no
