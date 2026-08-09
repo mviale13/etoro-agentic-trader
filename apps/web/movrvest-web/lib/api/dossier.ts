@@ -61,6 +61,35 @@ export interface DossierCommitteeOpinion {
  * `basis` then says which measurement was missing. The basis is written
  * where the score is computed; nothing on this side composes it.
  */
+/** One factor a score counted, and what it was worth. */
+export interface DossierContribution {
+  statement: string;
+  /** Never negative: a failed factor earns no point rather than losing
+      one. A zero must never be rendered as a penalty. */
+  points: number;
+  /** "favourable" | "neutral" | "adverse" — what a zero actually means. */
+  sense: string;
+}
+
+/** How a counted score reached its number. Absent where there is no
+    decomposition — a banded reading or an average of other scores. */
+export interface DossierDerivation {
+  contributions: readonly DossierContribution[];
+  earned: number;
+  available: number;
+  band: string;
+  score: number;
+  /** Every band and its number — the whole ruler. */
+  scale: readonly (readonly [string, number])[];
+  /** Points the next band up needs. Null at the top band. */
+  required: number | null;
+  /** Every readable factor scored and the band still fell short: capped
+      by what could be read, not by the company. */
+  cappedByUnreadableFactors: boolean;
+  /** The arithmetic as one line, worded by the backend. */
+  stated: string;
+}
+
 export interface DossierScore {
   value: number | null;
   basis: string;
@@ -69,6 +98,8 @@ export interface DossierScore {
   kind: string;
   /** The same, worded for a reader. Never composed on this side. */
   kindStated: string;
+  /** The arithmetic beneath the number, where the score counted factors. */
+  derivation: DossierDerivation | null;
 }
 
 /**
@@ -423,6 +454,53 @@ function parseScore(value: unknown, field: string): DossierScore {
     evidence: stringList(value.evidence),
     kind: requireString(value.kind, `${field}.kind`),
     kindStated: requireString(value.kind_stated, `${field}.kind_stated`),
+    derivation: parseDerivation(value.derivation, `${field}.derivation`),
+  };
+}
+
+function parseDerivation(
+  value: unknown,
+  field: string,
+): DossierDerivation | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error(`Expected a derivation object at "${field}".`);
+  }
+
+  const contributions = Array.isArray(value.contributions)
+    ? value.contributions
+    : [];
+
+  const scale = Array.isArray(value.scale) ? value.scale : [];
+
+  return {
+    contributions: contributions.filter(isRecord).map((item, index) => ({
+      statement: requireString(
+        item.statement,
+        `${field}.contributions[${index}].statement`,
+      ),
+      points: requireNumber(
+        item.points,
+        `${field}.contributions[${index}].points`,
+      ),
+      sense: requireString(
+        item.sense,
+        `${field}.contributions[${index}].sense`,
+      ),
+    })),
+    earned: requireNumber(value.earned, `${field}.earned`),
+    available: requireNumber(value.available, `${field}.available`),
+    band: requireString(value.band, `${field}.band`),
+    score: requireNumber(value.score, `${field}.score`),
+    scale: scale
+      .filter((row): row is [string, number] => Array.isArray(row))
+      .map((row) => [String(row[0]), Number(row[1])] as const),
+    required: optionalNumber(value.required),
+    cappedByUnreadableFactors: value.capped_by_unreadable_factors === true,
+    stated: requireString(value.stated, `${field}.stated`),
   };
 }
 

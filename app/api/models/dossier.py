@@ -127,6 +127,50 @@ class PlaybookResponse(BaseModel):
     classified: bool
 
 
+class ContributionResponse(BaseModel):
+    """One factor a score counted, and what it was worth."""
+
+    statement: str
+
+    #: Never negative on this platform: a factor the company fails earns
+    #: no point rather than subtracting one. A surface must not render a
+    #: zero as a penalty.
+    points: int
+
+    #: Why it scored as it did. A zero is not one thing — `neutral` is a
+    #: factor that does not apply, `adverse` is one the company failed.
+    sense: str
+
+
+class DerivationResponse(BaseModel):
+    """How a counted score reached its number, factor by factor.
+
+    Absent for a score that bands a single reading or averages other
+    scores. Those have no decomposition, and a one-row table would dress
+    a threshold up as a tally.
+    """
+
+    contributions: list[ContributionResponse]
+    earned: int
+    available: int
+    band: str
+    score: int
+
+    #: Every band and its number, so the reader sees the whole ruler.
+    scale: list[tuple[str, int]]
+
+    #: Points the next band up needs, or null at the top band.
+    required: int | None
+
+    #: True where every readable factor scored and the band still fell
+    #: short — the score was capped by what could be read, not by the
+    #: company. Reported rather than left for a surface to infer.
+    capped_by_unreadable_factors: bool
+
+    #: The arithmetic as one checkable line, worded by the backend.
+    stated: str
+
+
 class ScoreResponse(BaseModel):
     """One score the decision was made on, and why it is that number.
 
@@ -147,6 +191,10 @@ class ScoreResponse(BaseModel):
 
     #: The findings the reading itself rests on.
     evidence: list[str]
+
+    #: The arithmetic beneath the score, where it counted factors.
+    #: Null where the score has no decomposition.
+    derivation: DerivationResponse | None = None
 
     #: What kind of number this is — measured, derived from the investor's
     #: policy, or assessed against this platform's bands. Printed side by

@@ -29,7 +29,12 @@ from app.domain.finding import (
 )
 from app.domain.opinion import Opinion
 from app.domain.risk_signal import RiskSignal
-from app.domain.score_basis import ScoreBases, ScoreBasis, ScoreKind
+from app.domain.score_basis import (
+    ScoreBases,
+    ScoreBasis,
+    ScoreDerivation,
+    ScoreKind,
+)
 
 
 @dataclass(slots=True)
@@ -369,12 +374,65 @@ class DecisionEvidenceBuilder:
                 evidence=evidence,
             )
 
+        derivation = cls._quality_derivation(company)
+
+        scale = cls._banded(cls.QUALITY_SCORES)
+
+        if derivation is None:
+            # No factors were carried out with the signal, so the band is
+            # all there is to report. Said as the band it is, rather than
+            # as arithmetic nobody can check.
+            return ScoreBasis(
+                basis=(
+                    f"Quality reads {signal.quality}, from the findings "
+                    f"below. This platform scores {scale}."
+                ),
+                evidence=evidence,
+            )
+
+        # The arithmetic leads, because "3 of 3 points earned → HIGH → 80"
+        # is checkable and "quality reads HIGH" is a band name a reader
+        # can only accept.
         return ScoreBasis(
             basis=(
-                f"Quality reads {signal.quality}, from the findings below. "
-                f"This platform scores {cls._banded(cls.QUALITY_SCORES)}."
+                f"{derivation.stated()} Quality counts one point per factor "
+                f"below and never subtracts one. This platform scores {scale}."
             ),
             evidence=evidence,
+            derivation=derivation,
+        )
+
+    @classmethod
+    def _quality_derivation(
+        cls,
+        company: CompanyRecommendation | None,
+    ) -> ScoreDerivation | None:
+        """The factors behind the quality score, where it counted any.
+
+        Composed here rather than in the signal because this is where a
+        band becomes a number: the signal counts and bands, and the
+        score constant is this layer's house rule. Both halves travel
+        together or the reader cannot check either.
+        """
+
+        if company is None:
+            return None
+
+        signal = company.signals.quality
+
+        score = cls._quality_score(company)
+
+        if score is None or not signal.contributions:
+            return None
+
+        return ScoreDerivation(
+            contributions=signal.contributions,
+            earned=signal.earned,
+            available=signal.available,
+            band=signal.quality,
+            score=score,
+            scale=tuple(cls.QUALITY_SCORES.items()),
+            required=signal.next_band_needs,
         )
 
     @classmethod
