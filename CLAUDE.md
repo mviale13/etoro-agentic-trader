@@ -169,6 +169,49 @@ statement establishing nothing looks identical to a bank's, an insurer's
 and an ordinary company's — and a prudential fact missing from every
 region this platform acquires is missing from places it never looked.
 
+---
+
+## Where the work is now: consuming the graph, not growing it
+
+**The Financial Statement Domain and its dossier consumption are
+complete for now.** The owner's standing direction is to stop expanding
+the knowledge graph and make what is known usable. Do not extend
+acquisition, add financial concepts, or alter model selection without a
+new ruling.
+
+The per-security dossier (`/executive/{symbol}/dossier`, rendered at
+`apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that
+consumes it:
+
+- **Both understandings are on it** — `CompanyUnderstandingService`
+  composes `BusinessUnderstanding` and `FinancialUnderstanding` beside
+  the case. No analyst consumes them and the recommendation is identical
+  without them.
+- **The conclusion is `DecisionSynthesis`** — *because / despite /
+  review if*, deterministic, from canonical objects only, complete with
+  the Executive Writer disabled.
+
+Two rules this phase established, both worth applying to any new surface:
+
+1. **A page view never fetches or asks a model.** Both knowledge
+   services expose a read-only `established()` door that asks the store
+   and stops; `knowledge()` and `statements()` acquire and must not sit
+   behind a page. Guarded by stubs in
+   `tests/test_company_understanding_service.py` that raise on any
+   resolve or extract — a change that reintroduces the spend fails
+   rather than bills.
+2. **A fact's origin travels with it.** `FactOrigin.ESTABLISHED` (read
+   from the filing and checked) versus `ASSESSED` (an analyst reading
+   market data). Printed side by side without it, the weaker claim
+   borrows the stronger's authority.
+
+And one defect shape to watch for: **when a field reads identically
+under every symbol, check whether it is built from portfolio or market
+facts rather than the security's.** It has now been found and fixed
+three times — in `context_strengths`, in `catalysts`, and in
+`invalidation_conditions`, which answered "what would invalidate this
+thesis?" with the account's own weaknesses under every company.
+
 Two model seams, configured apart because they are different jobs: the
 Executive Writer (`MOVRVEST_WRITER_*`, small model, opt-in behind a flag)
 and the knowledge reader (`MOVRVEST_READER_*`, no flag — reading is how
