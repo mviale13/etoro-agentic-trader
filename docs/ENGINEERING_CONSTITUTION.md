@@ -303,6 +303,99 @@ be dead is live.
 
 ---
 
+## 23. Every change names the decision it improves
+
+*The owner's rule, 2026-08-09. It is asked before the work starts, not
+at review — this is a scoping gate, not a review checklist.*
+
+> **Which investor-facing decision becomes better because of this
+> change?**
+
+An answer that names one, and names the mechanism, is a change worth
+making:
+
+> *The recommendation is more trustworthy because the Quality
+> Committee now reasons from established business understanding.*
+
+An answer that cannot is not:
+
+> *None, but the architecture is cleaner.*
+
+The second is the one to push back on, and it is the reason this
+principle exists rather than being obvious. Every repository accretes
+work that is locally correct, passes review, ships green, and moves no
+decision the investor ever sees. A platform whose product is
+**trust** cannot afford that work, because the investor is not paying
+for consistency — they are paying for a recommendation they can rely
+on and argue with.
+
+**What a good answer looks like.** It names (a) the decision, (b) the
+mechanism, and (c) what an investor could see afterwards that they
+could not see before. All three, or it is an assertion rather than an
+answer.
+
+**What still passes honestly.** The question has a second admissible
+answer, and pretending otherwise would get the rule quietly ignored:
+*a decision that is currently getting a wrong answer, or is at risk
+of one, and would stay that way.* A defect that corrupts a figure, a
+seam that could spend money in tests, a dependency that fails only in
+CI — each names a real investor-facing decision, in the negative.
+That is a legitimate answer, not an exception to the rule.
+
+**What does not pass.** Cleaner factoring, fewer files, better
+symmetry, consistency for its own sake, a layer completed because it
+felt incomplete, or a step taken because it appears in a sequence
+somewhere. If such work is genuinely needed, it is needed *by*
+something that passes — so it travels inside that slice, and its cost
+is visible where the benefit is.
+
+**Where this sits.** It sharpens §20: the North Star's five verbs are
+how the platform improves, and this names who has to be better off
+when it does. It also supersedes, as *sufficient* justification, the
+first, second and fourth bullets of the Migration Plan's mission —
+simpler, more consistent, easier to extend. Those remain good
+properties. None of them is a reason on its own.
+
+---
+
+## 24. The core architecture is frozen — deliberately, and not forever
+
+*The owner's declaration, 2026-08-09.*
+
+The evidence stack, the knowledge and understanding layers, the
+decision model, the assessment contract and the committee object are
+**closed for structural work.** Enough architecture exists to build
+several investor-facing capabilities; none of it needs to be more
+correct before that happens.
+
+The freeze is a direct consequence of §23 rather than a separate
+policy: while every change must name the decision it improves,
+architecture undertaken for its own sake cannot start.
+
+**What the freeze covers.** New layers, new canonical objects, new
+taxonomies, renamed or re-factored seams, and the completion of
+designed-but-unbuilt steps purely because they are designed.
+
+**What it does not cover.** Anything that answers §23 — including
+structural work that a passing slice genuinely requires, taken inside
+that slice. Defect repair is unaffected. So is acquisition that a
+named investor-facing capability is blocked on.
+
+**What lifts it.** The owner, on the same evidence any slice needs
+under §19a: a measured pattern, not a single frustration, and a live
+case where the missing structure is what blocks an investor-facing
+decision.
+
+The two accepted architectures left standing with nothing built —
+[`ASSESSMENT_CONVERGENCE.md`](architecture/ASSESSMENT_CONVERGENCE.md)
+and the profile determination in
+[`COMMITTEE_OPINION.md`](architecture/COMMITTEE_OPINION.md) — are
+correct and are **not** a backlog. They are the map for when a slice
+needs that ground, and their behaviour-free steps are not to be taken
+on their own.
+
+---
+
 ## The final principle
 
 We are not building a trading bot. We are not building a dashboard.
