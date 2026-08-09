@@ -36,10 +36,11 @@ class CompanyResearchService:
         self._profiler = profiler or CompanyProfiler()
         self._strategy_factory = strategy_factory or ResearchStrategyFactory()
 
-        # Cache-first and on demand. Acquisition and extraction stay
-        # behind this interface: nothing in the research pipeline calls a
-        # regulator or a model directly, and a company whose latest
-        # document is already read costs one small lookup.
+        # Read from the store, never acquired here. This service runs once
+        # per security on every page view, so the door it uses decides
+        # whether opening a page reaches a regulator and spends money.
+        # `established` asks the store and stops; acquisition is an
+        # explicit act, and `movrvest observe` is the one that takes it.
         self._knowledge = knowledge_service or CompanyKnowledgeService()
 
         if executor is not None:
@@ -90,22 +91,24 @@ class CompanyResearchService:
 
         opinions = self._executor.execute(plan, context) if plan.analyst_keys else ()
 
-        acquired = await self._structural_knowledge(playbook, company.symbol)
+        established = self._structural_knowledge(playbook, company.symbol)
 
         return CompanyResearch(
             playbook=playbook,
             opinions=dict(zip(plan.analyst_keys, opinions, strict=True)),
-            knowledge=acquired.knowledge if acquired is not None else None,
-            knowledge_state=acquired.state.value if acquired is not None else None,
+            knowledge=established.knowledge if established is not None else None,
+            knowledge_state=(
+                established.state.value if established is not None else None
+            ),
         )
 
-    async def _structural_knowledge(
+    def _structural_knowledge(
         self,
         playbook: InvestmentPlaybook,
         symbol: str,
     ) -> KnowledgeOutcome | None:
         """
-        The company's own account of itself, where there is a company.
+        The company's own account of itself, as already read.
 
         Only asked for securities whose playbook expects company
         accounts. A token and a fund do not publish them, and asking
@@ -115,6 +118,13 @@ class CompanyResearchService:
         real business, and reading it would have attached a fund's
         segments to a cryptocurrency.
 
+        The read-only door, because this runs on a page view. `knowledge`
+        resolves the company's current filing against a regulator before
+        it can answer, and reads it where the store has not seen it — a
+        network round trip per security, and a model call whenever a
+        company files something new. Both were happening behind a page
+        the investor merely opened.
+
         A failure here thins the analysis; it never stops it, because the
         financial analysts read figures that do not depend on it.
         """
@@ -122,4 +132,4 @@ class CompanyResearchService:
         if not playbook.analysts:
             return None
 
-        return await self._knowledge.knowledge(symbol)
+        return self._knowledge.established(symbol)

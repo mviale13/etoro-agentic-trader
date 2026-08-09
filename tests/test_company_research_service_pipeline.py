@@ -73,7 +73,7 @@ class KnowledgeStub:
     def __init__(self) -> None:
         self.asked: list[str] = []
 
-    async def knowledge(self, symbol: str) -> KnowledgeOutcome:
+    def established(self, symbol: str) -> KnowledgeOutcome:
         self.asked.append(symbol)
 
         return KnowledgeOutcome(state=KnowledgeState.UNAVAILABLE)
