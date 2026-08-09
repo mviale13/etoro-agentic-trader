@@ -1,0 +1,556 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total liabilities",
+            "printed": "1,357,588",
+            "value": 1357588.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total liabilities",
+              "printed": "1,357,588",
+              "value": 1357588.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total liabilities",
+              "printed": "1,309,168",
+              "value": 1309168.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "69,015",
+            "value": 69015.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "69,015",
+              "value": 69015.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "68,709",
+              "value": 68709.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 3,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:43.460027+00:00",
+        "source": "20-F 0001159508-26-000017 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total liabilities",
+            "printed": "1,357,588",
+            "value": 1357588.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total liabilities",
+              "printed": "1,357,588",
+              "value": 1357588.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total liabilities",
+              "printed": "1,309,168",
+              "value": 1309168.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "69,015",
+            "value": 69015.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "69,015",
+              "value": 69015.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "68,709",
+              "value": 68709.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 3,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:48.726374+00:00",
+        "source": "20-F 0001159508-26-000017 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total liabilities",
+            "printed": "1,357,588",
+            "value": 1357588.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total liabilities",
+              "printed": "1,357,588",
+              "value": 1357588.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total liabilities",
+              "printed": "1,309,168",
+              "value": 1309168.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "69,015",
+            "value": 69015.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "69,015",
+              "value": 69015.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "68,709",
+              "value": 68709.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 3,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:55.199438+00:00",
+        "source": "20-F 0001159508-26-000017 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total liabilities",
+            "printed": "1,357,588",
+            "value": 1357588.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total liabilities",
+              "printed": "1,357,588",
+              "value": 1357588.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total liabilities",
+              "printed": "1,309,168",
+              "value": 1309168.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "69,015",
+            "value": 69015.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "69,015",
+              "value": 69015.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "68,709",
+              "value": 68709.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 3,
+      "reading": {
+        "observed_at": "2026-08-09T06:24:00.389622+00:00",
+        "source": "20-F 0001159508-26-000017 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_current_assets",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current assets at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": null,
+          "concept": "total_current_liabilities",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's total current liabilities at the most recent date the balance sheet reports, where the balance sheet is classified in the tables printed under the balance sheet's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 38,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total liabilities",
+            "printed": "1,357,588",
+            "value": 1357588.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total liabilities",
+              "printed": "1,357,588",
+              "value": 1357588.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 38,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total liabilities",
+              "printed": "1,309,168",
+              "value": 1309168.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Balance Sheet",
+            "cell": {
+              "column": 2,
+              "row": 44,
+              "table": 0
+            },
+            "column_header": "Dec 31, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "69,015",
+            "value": 69015.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 2,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "69,015",
+              "value": 69015.0
+            },
+            {
+              "caption": "Consolidated Balance Sheet",
+              "cell": {
+                "column": 3,
+                "row": 44,
+                "table": 0
+              },
+              "column_header": "Dec 31, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "68,709",
+              "value": 68709.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 3,
+      "reading": {
+        "observed_at": "2026-08-09T06:24:05.803572+00:00",
+        "source": "20-F 0001159508-26-000017 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "DEUTSCHE BANK AKTIENGESELLSCHAFT",
+    "document_format": "html",
+    "identifier": "20-F 0001159508-26-000017",
+    "key": "0001159508-26-000017",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1159508/000115950826000017/db-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-03-12",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "DB",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "DB"
+}

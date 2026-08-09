@@ -1,0 +1,2046 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total net sales",
+            "printed": "416,161",
+            "value": 416161.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total net sales",
+              "printed": "416,161",
+              "value": 416161.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total net sales",
+              "printed": "391,035",
+              "value": 391035.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Total net sales",
+              "printed": "383,285",
+              "value": 383285.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Gross margin",
+            "printed": "195,201",
+            "value": 195201.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Gross margin",
+              "printed": "195,201",
+              "value": 195201.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Gross margin",
+              "printed": "180,683",
+              "value": 180683.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Gross margin",
+              "printed": "169,148",
+              "value": 169148.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Operating income",
+            "printed": "133,050",
+            "value": 133050.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Operating income",
+              "printed": "133,050",
+              "value": 133050.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Operating income",
+              "printed": "123,216",
+              "value": 123216.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Operating income",
+              "printed": "114,301",
+              "value": 114301.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Net income",
+            "printed": "$ 112,010",
+            "value": 112010.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Net income",
+              "printed": "$ 112,010",
+              "value": 112010.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Net income",
+              "printed": "$ 93,736",
+              "value": 93736.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Net income",
+              "printed": "$ 96,995",
+              "value": 96995.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:14.879432+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total net sales",
+            "printed": "416,161",
+            "value": 416161.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total net sales",
+              "printed": "416,161",
+              "value": 416161.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total net sales",
+              "printed": "391,035",
+              "value": 391035.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Total net sales",
+              "printed": "383,285",
+              "value": 383285.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Gross margin",
+            "printed": "195,201",
+            "value": 195201.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Gross margin",
+              "printed": "195,201",
+              "value": 195201.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Gross margin",
+              "printed": "180,683",
+              "value": 180683.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Gross margin",
+              "printed": "169,148",
+              "value": 169148.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Operating income",
+            "printed": "133,050",
+            "value": 133050.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Operating income",
+              "printed": "133,050",
+              "value": 133050.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Operating income",
+              "printed": "123,216",
+              "value": 123216.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Operating income",
+              "printed": "114,301",
+              "value": 114301.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Net income",
+            "printed": "$ 112,010",
+            "value": 112010.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Net income",
+              "printed": "$ 112,010",
+              "value": 112010.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Net income",
+              "printed": "$ 93,736",
+              "value": 93736.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Net income",
+              "printed": "$ 96,995",
+              "value": 96995.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:22.239014+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total net sales",
+            "printed": "416,161",
+            "value": 416161.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total net sales",
+              "printed": "416,161",
+              "value": 416161.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total net sales",
+              "printed": "391,035",
+              "value": 391035.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Total net sales",
+              "printed": "383,285",
+              "value": 383285.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Gross margin",
+            "printed": "195,201",
+            "value": 195201.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Gross margin",
+              "printed": "195,201",
+              "value": 195201.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Gross margin",
+              "printed": "180,683",
+              "value": 180683.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Gross margin",
+              "printed": "169,148",
+              "value": 169148.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Operating income",
+            "printed": "133,050",
+            "value": 133050.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Operating income",
+              "printed": "133,050",
+              "value": 133050.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Operating income",
+              "printed": "123,216",
+              "value": 123216.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Operating income",
+              "printed": "114,301",
+              "value": 114301.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Net income",
+            "printed": "$ 112,010",
+            "value": 112010.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Net income",
+              "printed": "$ 112,010",
+              "value": 112010.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Net income",
+              "printed": "$ 93,736",
+              "value": 93736.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Net income",
+              "printed": "$ 96,995",
+              "value": 96995.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:26.392449+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total net sales",
+            "printed": "416,161",
+            "value": 416161.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total net sales",
+              "printed": "416,161",
+              "value": 416161.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total net sales",
+              "printed": "391,035",
+              "value": 391035.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Total net sales",
+              "printed": "383,285",
+              "value": 383285.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Gross margin",
+            "printed": "195,201",
+            "value": 195201.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Gross margin",
+              "printed": "195,201",
+              "value": 195201.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Gross margin",
+              "printed": "180,683",
+              "value": 180683.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Gross margin",
+              "printed": "169,148",
+              "value": 169148.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Operating income",
+            "printed": "133,050",
+            "value": 133050.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Operating income",
+              "printed": "133,050",
+              "value": 133050.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Operating income",
+              "printed": "123,216",
+              "value": 123216.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Operating income",
+              "printed": "114,301",
+              "value": 114301.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Net income",
+            "printed": "$ 112,010",
+            "value": 112010.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Net income",
+              "printed": "$ 112,010",
+              "value": 112010.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Net income",
+              "printed": "$ 93,736",
+              "value": 93736.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Net income",
+              "printed": "$ 96,995",
+              "value": 96995.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:31.968273+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total net sales",
+            "printed": "416,161",
+            "value": 416161.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total net sales",
+              "printed": "416,161",
+              "value": 416161.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total net sales",
+              "printed": "391,035",
+              "value": 391035.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Total net sales",
+              "printed": "383,285",
+              "value": 383285.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 10,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Gross margin",
+            "printed": "195,201",
+            "value": 195201.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Gross margin",
+              "printed": "195,201",
+              "value": 195201.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Gross margin",
+              "printed": "180,683",
+              "value": 180683.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 10,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Gross margin",
+              "printed": "169,148",
+              "value": 169148.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Operating income",
+            "printed": "133,050",
+            "value": 133050.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Operating income",
+              "printed": "133,050",
+              "value": 133050.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Operating income",
+              "printed": "123,216",
+              "value": 123216.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Operating income",
+              "printed": "114,301",
+              "value": 114301.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+            "cell": {
+              "column": 3,
+              "row": 19,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Net income",
+            "printed": "$ 112,010",
+            "value": 112010.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 3,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Net income",
+              "printed": "$ 112,010",
+              "value": 112010.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 9,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Net income",
+              "printed": "$ 93,736",
+              "value": 93736.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF OPERATIONS (In millions, except number of shares, which are reflected in thousands, and per-share amounts)",
+              "cell": {
+                "column": 15,
+                "row": 19,
+                "table": 0
+              },
+              "column_header": "September 30, 2023",
+              "label": "Net income",
+              "printed": "$ 96,995",
+              "value": 96995.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:36.687828+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "147,957",
+            "value": 147957.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "147,957",
+              "value": 147957.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "152,987",
+              "value": 152987.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 23,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "165,631",
+            "value": 165631.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "165,631",
+              "value": 165631.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "176,392",
+              "value": 176392.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 28,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total liabilities",
+            "printed": "285,508",
+            "value": 285508.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total liabilities",
+              "printed": "285,508",
+              "value": 285508.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total liabilities",
+              "printed": "308,030",
+              "value": 308030.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 34,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "73,733",
+            "value": 73733.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "73,733",
+              "value": 73733.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "56,950",
+              "value": 56950.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:41.157891+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "147,957",
+            "value": 147957.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "147,957",
+              "value": 147957.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "152,987",
+              "value": 152987.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 23,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "165,631",
+            "value": 165631.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "165,631",
+              "value": 165631.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "176,392",
+              "value": 176392.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 28,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total liabilities",
+            "printed": "285,508",
+            "value": 285508.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total liabilities",
+              "printed": "285,508",
+              "value": 285508.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total liabilities",
+              "printed": "308,030",
+              "value": 308030.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 34,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "73,733",
+            "value": 73733.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "73,733",
+              "value": 73733.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "56,950",
+              "value": 56950.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:45.609222+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "147,957",
+            "value": 147957.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "147,957",
+              "value": 147957.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "152,987",
+              "value": 152987.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 23,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "165,631",
+            "value": 165631.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "165,631",
+              "value": 165631.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "176,392",
+              "value": 176392.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 28,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total liabilities",
+            "printed": "285,508",
+            "value": 285508.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total liabilities",
+              "printed": "285,508",
+              "value": 285508.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total liabilities",
+              "printed": "308,030",
+              "value": 308030.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 34,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "73,733",
+            "value": 73733.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "73,733",
+              "value": 73733.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "56,950",
+              "value": 56950.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:50.337451+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "147,957",
+            "value": 147957.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "147,957",
+              "value": 147957.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "152,987",
+              "value": 152987.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 23,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "165,631",
+            "value": 165631.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "165,631",
+              "value": 165631.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "176,392",
+              "value": 176392.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 28,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total liabilities",
+            "printed": "285,508",
+            "value": 285508.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total liabilities",
+              "printed": "285,508",
+              "value": 285508.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total liabilities",
+              "printed": "308,030",
+              "value": 308030.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 34,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "73,733",
+            "value": 73733.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "73,733",
+              "value": 73733.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "56,950",
+              "value": 56950.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:54.857857+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current assets",
+            "printed": "147,957",
+            "value": 147957.0
+          },
+          "concept": "total_current_assets",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current assets",
+              "printed": "147,957",
+              "value": 147957.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current assets",
+              "printed": "152,987",
+              "value": 152987.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 23,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total current liabilities",
+            "printed": "165,631",
+            "value": 165631.0
+          },
+          "concept": "total_current_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total current liabilities",
+              "printed": "165,631",
+              "value": 165631.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total current liabilities",
+              "printed": "176,392",
+              "value": 176392.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 28,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total liabilities",
+            "printed": "285,508",
+            "value": 285508.0
+          },
+          "concept": "total_liabilities",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total liabilities",
+              "printed": "285,508",
+              "value": 285508.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 28,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total liabilities",
+              "printed": "308,030",
+              "value": 308030.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+            "cell": {
+              "column": 3,
+              "row": 34,
+              "table": 0
+            },
+            "column_header": "September 27, 2025",
+            "label": "Total shareholders\u2019 equity",
+            "printed": "73,733",
+            "value": 73733.0
+          },
+          "concept": "total_equity",
+          "row": [
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 3,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 27, 2025",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "73,733",
+              "value": 73733.0
+            },
+            {
+              "caption": "CONSOLIDATED BALANCE SHEETS (In millions, except number of shares, which are reflected in thousands, and par value)",
+              "cell": {
+                "column": 9,
+                "row": 34,
+                "table": 0
+              },
+              "column_header": "September 28, 2024",
+              "label": "Total shareholders\u2019 equity",
+              "printed": "56,950",
+              "value": 56950.0
+            }
+          ],
+          "unlocated_because": null
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-09T06:23:59.309876+00:00",
+        "source": "10-K 0000320193-25-000079 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "balance_sheet"
+    }
+  ],
+  "schema_version": 2,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Apple Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0000320193-25-000079",
+    "key": "0000320193-25-000079",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2025-10-31",
+    "reporting_period": {
+      "ends_on": "2025-09-27",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "AAPL",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "AAPL"
+}
