@@ -128,8 +128,19 @@ says it is a coupling. **Never change a playbook route to fix a
 financial interpretation**: see
 [`docs/architecture/PLAYBOOK_SELECTION.md`](docs/architecture/PLAYBOOK_SELECTION.md).
 
-Two measurements govern what may eventually replace that coupling, and
-both are load-bearing:
+**The Financial Statement Domain ends at financial language.** Accepted
+boundary, on three measurements
+([`FINANCIAL_DOMAIN_BOUNDARY.md`](docs/architecture/FINANCIAL_DOMAIN_BOUNDARY.md)):
+statements establish *language* — generic, interest-based,
+insurance-based — and never prudential regulatory *status*. Prudential
+concepts (CET1, LCR, NSFR…) belong to a separate evidence domain sourced
+from a filing's regulatory sections, never to `StatementConcept`. So
+`FinancialModel.BANK` cannot be selected from statement evidence at all,
+and stays derived from business understanding until a **Prudential
+Understanding** layer exists. Connecting `StatementLanguage` to
+`FinancialModel` — even as one term of a larger rule — is forbidden.
+
+The three measurements beneath that ruling, each load-bearing:
 
 - **Statement shape identifies a financial-institution family and
   cannot select `BANK`** — 8 banks and 5 insurers match the JPMorgan
