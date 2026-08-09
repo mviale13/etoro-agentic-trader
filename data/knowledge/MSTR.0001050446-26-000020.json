@@ -1,0 +1,61 @@
+{
+  "observations": [
+    {
+      "description": "Strategy Inc is the world's first and largest Bitcoin Treasury Company and an industry leader in AI-powered enterprise analytics software.",
+      "reading": {
+        "observed_at": "2026-08-09T16:14:06.163273+00:00",
+        "source": "10-K 0001050446-26-000020 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
+        {
+          "description": {
+            "distance": 25,
+            "ownership": "proximity",
+            "quoted": "we execute on our bitcoin acquisitions, capital management and capital markets strategies",
+            "revenue_models": [],
+            "under": "bitcoin treasury operations"
+          },
+          "name": "bitcoin treasury operations",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 1,404 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 0,
+            "ownership": "proximity",
+            "quoted": "industry leader in AI-powered enterprise analytics software, advancing our vision",
+            "revenue_models": [],
+            "under": "AI-powered enterprise analytics software"
+          },
+          "name": "AI-powered enterprise analytics software",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 1,404 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    }
+  ],
+  "schema_version": 11,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Strategy Inc",
+    "document_format": "html",
+    "identifier": "10-K 0001050446-26-000020",
+    "key": "0001050446-26-000020",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1050446/000105044626000020/mstr-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-19",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "MSTR",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "MSTR"
+}
