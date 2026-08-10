@@ -22,6 +22,7 @@ from app.commands import (
     explain,
     financials,
     intelligence,
+    issuance,
     knowledge,
     market,
     morning,
@@ -355,6 +356,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example BTC or HYPE. Omit for the corpus matrix",
     )
 
+    issuance_parser = subparsers.add_parser(
+        "issuance",
+        help="Show how new supply enters a digital asset's system",
+        description=(
+            "For one token: the mechanism that creates new supply, every "
+            "parameter with the surface it was read from, what could "
+            "change the rule, and what the rule implies from here — "
+            "MOVRvest's arithmetic under the currently observed policy, "
+            "never a forecast. For an asset whose supply arrives by "
+            "allocation release, the specific evidence that is missing. "
+            "Without a symbol: the corpus. Nothing here is scored"
+        ),
+    )
+    issuance_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC or ADA. Omit for the corpus",
+    )
+
     subparsers.add_parser(
         "playbook-coverage",
         help="Measure the grounded selector over the portfolio and watchlists",
@@ -635,6 +655,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "crypto-quality":
         return await crypto_quality.run(args.symbol)
+
+    if args.command == "issuance":
+        return await issuance.run(args.symbol)
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

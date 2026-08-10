@@ -120,6 +120,12 @@ with its applicability and the evidence held against it, the declines
 each with its reason, and every mapped entity's value chain from use to
 the token; without one, the corpus as a matrix. Read-only, decides
 nothing — see below),
+`movrvest issuance [SYMBOL]` (how new supply enters a system: the
+mechanism, every parameter with the surface it was read from, what could
+change the rule, and what the rule implies from here — MOVRvest's
+arithmetic *under the currently observed policy*, never a forecast. An
+allocation-release asset gets the specific missing evidence named
+instead. Read-only, scores nothing),
 `movrvest crypto-quality [SYMBOL]` (which durable qualities of a digital
 asset this platform can actually judge: the band or the honest absence
 of one, the coverage and confidence beneath it, and every applicable
@@ -336,6 +342,23 @@ against a precise independent figure is **constant to the satoshi at
 unitemised. Allocation-release tokens (ARB, HYPE, 1INCH) get **no entry
 at all** rather than an empty one. Everything is CLAIMED, consumed by
 nothing, quorum still 2.
+
+**Predictability does not discriminate; magnitude does — and magnitude
+is not quality** (S5.3,
+[`CRYPTO_SUPPLY_POLICY_MEANING.md`](docs/architecture/CRYPTO_SUPPLY_POLICY_MEANING.md)).
+Measured, then declined. BTC, ADA and SOL are *equally* explicit and
+*equally* projectable — every one of eleven parameters read from a chain
+— so a predictability factor would give all three the same answer; only
+mutability separates them, and one protocol-fixed asset is not a corpus.
+Their five-year expansion runs **2.73% / 10.64% / 14.51%**, a factor of
+five. But **the same issuance figure is a security budget or a transfer
+depending on where it goes** — the S3 fee lesson mirrored — so magnitude
+is parked `OUTSIDE_ASSET_QUALITY` for a future tokenomics layer, not
+scored. **Factor #2 was not earned; crypto stays UNKNOWN.** BTC's flow
+rule is separately confirmed (89 of 89 daily intervals within the
+consensus bound, never once exceeded) while its historical stock stays
+unresolved — a stock residual does not block a flow rule.
+`movrvest issuance [SYMBOL]` renders all of it without scoring it.
 
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that

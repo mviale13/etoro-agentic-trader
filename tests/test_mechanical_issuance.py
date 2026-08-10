@@ -13,8 +13,6 @@ real provider.
 
 from __future__ import annotations
 
-import ast
-import inspect
 from typing import Any
 
 from app.domain.evidence_standing import EvidenceStanding
@@ -24,6 +22,7 @@ from app.domain.mechanical_issuance import (
     RuleMutability,
 )
 from app.providers.issuance_rule_provider import IssuanceRuleProvider
+from tests.reachability import reachable
 
 # ── the recorded readings ───────────────────────────────────────────
 
@@ -305,45 +304,14 @@ def test_the_taper_falls_towards_the_floor_and_never_below() -> None:
 # ── the boundaries ──────────────────────────────────────────────────
 
 
-def _identifiers(module: str) -> str:
-    """What a module can reach: names, attributes, imports. No prose.
-
-    Asked of what a module can *reach*, never of what it mentions. Both
-    modules below say in as many words that they score nothing and band
-    nothing, and a raw text search would forbid them from saying so —
-    the same trap the market-context and quality suites each had to
-    learn separately.
-    """
-
-    tree = ast.parse(inspect.getsource(__import__(module, fromlist=["x"])))
-
-    words: list[str] = []
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Name):
-            words.append(node.id)
-        elif isinstance(node, ast.Attribute):
-            words.append(node.attr)
-        elif isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
-            words.append(node.name)
-        elif isinstance(node, ast.alias):
-            words.append(f"{node.name} {node.asname or ''}")
-        elif isinstance(node, ast.ImportFrom):
-            words.append(node.module or "")
-        elif isinstance(node, ast.arg):
-            words.append(node.arg)
-
-    return "\n".join(words).casefold()
-
-
 def test_the_layer_scores_nothing() -> None:
     """A published rule is not thereby a good rule."""
 
     for module in (
-        "app.domain.mechanical_issuance",
-        "app.providers.issuance_rule_provider",
+        "app/domain/mechanical_issuance.py",
+        "app/providers/issuance_rule_provider.py",
     ):
-        code = _identifiers(module)
+        code = reachable(module)
 
         for forbidden in ("dilut", "band", "quality", "score", "verdict"):
             assert forbidden not in code, (module, forbidden)

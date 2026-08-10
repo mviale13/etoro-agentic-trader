@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import ast
 import inspect
-import pathlib
 from datetime import UTC, datetime
 
 from app.domain.asset_class import AssetClass
@@ -46,39 +45,9 @@ from app.services.crypto_asset_quality_service import (
 )
 from app.services.crypto_playbook_service import CryptoPlaybookService
 from app.services.protocol_fundamentals_service import ProtocolFundamentalsService
+from tests.reachability import reachable
 
 READ = datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
-
-
-def _identifiers(module: str) -> str:
-    """What a module can reach: names, attributes, imports. No prose.
-
-    Every guard below asks what a module can *reach*, never what it
-    mentions. The quality model says in as many words that it will not
-    read `CompanyFacts.circulating_supply`, and a raw text search would
-    forbid it from saying so — the same lesson the market-context suite
-    learned about naming the thing it refuses.
-    """
-
-    tree = ast.parse(pathlib.Path(module).read_text(encoding="utf-8"))
-
-    words: list[str] = []
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Name):
-            words.append(node.id)
-        elif isinstance(node, ast.Attribute):
-            words.append(node.attr)
-        elif isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
-            words.append(node.name)
-        elif isinstance(node, ast.alias):
-            words.append(f"{node.name} {node.asname or ''}")
-        elif isinstance(node, ast.ImportFrom):
-            words.append(node.module or "")
-        elif isinstance(node, ast.arg):
-            words.append(node.arg)
-
-    return "\n".join(words)
 
 
 # ── the recorded readings ───────────────────────────────────────────
@@ -266,7 +235,7 @@ def test_the_legacy_generic_circulating_field_is_not_the_scoring_authority() -> 
         "app/domain/crypto_quality.py",
         "app/services/crypto_asset_quality_service.py",
     ):
-        code = _identifiers(module)
+        code = reachable(module)
 
         assert "CompanyFacts" not in code, module
         assert "circulating_supply" not in code, module
