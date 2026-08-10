@@ -80,6 +80,19 @@ def _render(acquired: MarketAcquisition) -> None:
             f"({', '.join(security.symbol for security in facted)})"
         )
 
+    # The economics behind the tokens — a separate evidence family, read
+    # per mapped entity. A token with no entity mapped is not counted
+    # here at all rather than counted as empty.
+    with_protocols = [
+        security for security in acquired.securities if security.protocol_facts
+    ]
+
+    if with_protocols:
+        print(
+            f"  Protocols    {len(with_protocols)} tokens "
+            f"({', '.join(security.symbol for security in with_protocols)})"
+        )
+
     thin = [
         security
         for security in acquired.securities
