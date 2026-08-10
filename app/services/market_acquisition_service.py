@@ -23,6 +23,7 @@ from app.providers.coingecko_facts_provider import CachedCoinGeckoFactsProvider
 from app.providers.coingecko_market_provider import CachedCoinGeckoMarketProvider
 from app.providers.defillama_provider import CachedDefiLlamaProvider
 from app.providers.earnings_provider import CachedEarningsProvider
+from app.providers.etf_flow_provider import CachedEtfFlowProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
 from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
@@ -72,6 +73,7 @@ class MarketAcquisitionService:
         protocol_facts: Any | None = None,
         crypto_market: Any | None = None,
         primary_supply: Any | None = None,
+        capital_flows: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -130,6 +132,7 @@ class MarketAcquisitionService:
         # each chain answers differently, and only where a canonical
         # surface has been verified — four today.
         self._primary_supply = primary_supply or CachedPrimarySupplyProvider()
+        self._capital_flows = capital_flows or CachedEtfFlowProvider()
 
     async def acquire(
         self,
@@ -269,6 +272,11 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.CRYPTO
                 else None
             ),
+            capital_flows=(
+                self._flows(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
         )
 
     def _rating(self, symbol: str) -> bool:
@@ -309,6 +317,28 @@ class MarketAcquisitionService:
             return bool(self._primary_supply.facts(symbol))
         except Exception:
             return False
+
+    def _flows(self, symbol: str) -> bool | None:
+        """Fund flows and disclosed holdings, where a vehicle exists.
+
+        None for an asset with no fund group: Hyperliquid has no US spot
+        ETF, and reporting that as a failed acquisition would turn an
+        inapplicable question into an unmet demand.
+        """
+
+        held = False
+
+        try:
+            held = self._capital_flows.flows(symbol) is not None
+        except Exception:
+            return False
+
+        try:
+            held = self._capital_flows.treasuries(symbol) is not None or held
+        except Exception:
+            pass
+
+        return held or None
 
     def _protocols(self, symbol: str) -> bool | None:
         """Whether the store now holds the economics behind this token.

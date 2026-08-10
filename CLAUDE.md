@@ -360,6 +360,24 @@ consensus bound, never once exceeded) while its historical stock stays
 unresolved — a stock residual does not block a flow rule.
 `movrvest issuance [SYMBOL]` renders all of it without scoring it.
 
+**Asset Quality is not the product** (Crypto Intelligence,
+[`CRYPTO_INTELLIGENCE.md`](docs/architecture/CRYPTO_INTELLIGENCE.md)).
+A separate layer answering *what changed, what is driving it, why it
+matters, what to watch* — and **structurally unable to reach Asset
+Quality**, because every crypto asset reads UNKNOWN and an investor
+asking about Bitcoin is not served by silence. Four epistemic types
+travel with every claim (**measured / reported / attributed /
+inferred**), so a provider's *"inflows are supporting BTC"* decomposes
+into a reported flow, a measured price state, an inferred holdings
+reading and an attributed causal link. **A driver references claims and
+cannot be constructed without them** — `snapshot.grounded` is a checked
+property. Claims carry a relevance window and go stale. ETF flows and
+disclosed holdings are acquired free and keyless (SoSoValue,
+CoinGecko treasuries); **HYPE gets no ETF concepts and nothing says it
+is missing one**. Deterministic — no model is wired — and
+decision-neutral, guarded by an import test.
+`movrvest crypto-intelligence [SYMBOL] [--evidence]`.
+
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that
 consumes it:
