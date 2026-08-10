@@ -22,6 +22,7 @@ from app.commands import (
     explain,
     financials,
     intelligence,
+    intelligence_brief,
     issuance,
     knowledge,
     market,
@@ -375,6 +376,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example BTC or ADA. Omit for the corpus",
     )
 
+    brief_parser = subparsers.add_parser(
+        "crypto-intelligence",
+        help="Show what is happening to a digital asset, and why it matters",
+        description=(
+            "What changed, what appears to be driving it, what is "
+            "supportive and what is adverse, how it sits against the "
+            "market, and what to watch — each line labelled as a "
+            "measurement, a reported fact, an attributed view or this "
+            "platform's own reading. Independent of Asset Quality, and "
+            "it changes no recommendation"
+        ),
+    )
+    brief_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC or ETH. Omit for the corpus",
+    )
+    brief_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help=(
+            "Show the claim each driver rests on, and what each claim "
+            "does not establish"
+        ),
+    )
+
     subparsers.add_parser(
         "playbook-coverage",
         help="Measure the grounded selector over the portfolio and watchlists",
@@ -658,6 +685,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "issuance":
         return await issuance.run(args.symbol)
+
+    if args.command == "crypto-intelligence":
+        return await intelligence_brief.run(args.symbol, args.evidence)
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

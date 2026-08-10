@@ -52,6 +52,11 @@ class AcquiredSecurity:
     #: chain — which is different from a chain that answered nothing.
     primary_supply: bool | None = None
 
+    #: Whether the store now holds fund flows and disclosed holdings for
+    #: this asset. None where no fund group exists — which is the honest
+    #: answer for a token with no ETF, and different from a failed read.
+    capital_flows: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""
