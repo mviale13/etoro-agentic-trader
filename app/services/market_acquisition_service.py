@@ -14,6 +14,7 @@ from app.domain.research_candidate import ResearchCandidate
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
+from app.providers.coingecko_facts_provider import CachedCoinGeckoFactsProvider
 from app.providers.earnings_provider import CachedEarningsProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
@@ -58,6 +59,7 @@ class MarketAcquisitionService:
         rates: Any | None = None,
         ratings: Any | None = None,
         token_facts: Any | None = None,
+        coingecko_facts: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -93,10 +95,13 @@ class MarketAcquisitionService:
         # never spends a metered credit, exactly as with everything else.
         self._ratings = ratings or CachedTokenInsightProvider()
 
-        # The same vendor's factual market claims for a token — a
-        # separate stream from the rating, acquired here and judged by
-        # the validation gate when read. A page never fetches either.
+        # The factual market claims for a token — separate streams from
+        # the rating, acquired here and judged by the validation gate
+        # when read. Two independent claimants, because agreement
+        # inside one provider is not corroboration. A page never
+        # fetches any of them.
         self._token_facts = token_facts or CachedTokenFactsProvider()
+        self._coingecko_facts = coingecko_facts or CachedCoinGeckoFactsProvider()
 
     async def acquire(
         self,
@@ -199,7 +204,17 @@ class MarketAcquisitionService:
             return False
 
     def _facts(self, symbol: str) -> bool:
-        """Whether the store now holds the token's market claims."""
+        """Whether the stores now hold the token's market claims.
+
+        Both claimants are asked; the report is the crypto-native
+        store's, and a corroborator that could not be read leaves an
+        honest single-claimant pool rather than failing the cycle.
+        """
+
+        try:
+            self._coingecko_facts.claims(symbol)
+        except Exception:
+            pass
 
         try:
             return self._token_facts.claims(symbol) is not None

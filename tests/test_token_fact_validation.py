@@ -1,19 +1,19 @@
-"""A provider returning a value does not make that value a fact.
+"""A pool of claims, judged — agreement inside one provider is not corroboration.
 
-HYPE is the acceptance case throughout: Yahoo's stored reading priced
-an $18bn token at $8,105, gave it 1.5bn circulating against a real
-336.7m, and implied six years of history for a token that began trading
-in 2024 — every figure apparently valid, every figure wrong. The gate
-must reject them with their reasons retained, and must never let the
-platform choose a plausible value over UNKNOWN.
+The S1 acceptance cases live here. ARB is the staleness case: a vendor
+whose market value reproduces its own frozen circulating supply passes
+every intra-source check and is still wrong by 4×. HYPE is the
+methodology case: two coherent vendors 33–51% apart on what counts as
+circulating. Under the pool, the first cannot establish alone and the
+second is an honest conflict — and Yahoo's $8,105 still lands in the
+ledger on the way.
 """
 
 from datetime import UTC, datetime
 
 from app.domain.provenance import Provenance
 from app.domain.token_fact_validation import (
-    GeneralistTokenClaims,
-    NativeTokenClaims,
+    TokenClaimSet,
     judge,
 )
 from app.domain.token_facts import TokenFactStanding
@@ -21,14 +21,23 @@ from app.domain.token_facts import TokenFactStanding
 READ = datetime(2026, 8, 10, 9, 0, tzinfo=UTC)
 
 
-def native(**overrides: object) -> NativeTokenClaims:
-    """Hyperliquid as TokenInsight actually reported it, 2026-08-10."""
+def claim_set(source: str, **overrides: object) -> TokenClaimSet:
+    values: dict[str, object] = {
+        "source": source,
+        "read": Provenance(source=source, observed_at=READ),
+    }
+
+    values.update(overrides)
+
+    return TokenClaimSet(**values)  # type: ignore[arg-type]
+
+
+def tokeninsight(**overrides: object) -> TokenClaimSet:
+    """Hyperliquid as TokenInsight reported it — internally coherent."""
 
     values: dict[str, object] = {
-        "symbol": "HYPE",
+        "symbol_echo": "HYPE",
         "provider_id": "hyperliquid",
-        "source": "TokenInsight",
-        "read": Provenance(source="TokenInsight", observed_at=READ),
         "price": 54.23,
         "market_cap": 18_260_000_000.0,
         "circulating_supply": 336_685_219.0,
@@ -42,15 +51,34 @@ def native(**overrides: object) -> NativeTokenClaims:
 
     values.update(overrides)
 
-    return NativeTokenClaims(**values)  # type: ignore[arg-type]
+    return claim_set("TokenInsight", **values)
 
 
-def yahoo(**overrides: object) -> GeneralistTokenClaims:
-    """HYPE as Yahoo's stored fundamentals actually held it."""
+def coingecko(**overrides: object) -> TokenClaimSet:
+    """Hyperliquid as CoinGecko reported it — also coherent, 33% away."""
 
     values: dict[str, object] = {
-        "source": "Yahoo Finance",
-        "observed_at": READ,
+        "symbol_echo": "HYPE",
+        "provider_id": "hyperliquid",
+        "price": 54.63,
+        "market_cap": 12_150_000_000.0,
+        "circulating_supply": 222_445_714.0,
+        "total_supply": 955_307_079.0,
+        "max_supply": 1_000_000_000.0,
+        "fully_diluted_valuation": 54_630_000_000.0,
+        "rank": 10.0,
+        "market_volume_24h": 163_000_000.0,
+    }
+
+    values.update(overrides)
+
+    return claim_set("CoinGecko", **values)
+
+
+def yahoo(**overrides: object) -> TokenClaimSet:
+    """HYPE as Yahoo's stored fundamentals held it — the defective row."""
+
+    values: dict[str, object] = {
         "market_cap": 8_105.0,
         "circulating_supply": 1_500_000_000.0,
         "inception": datetime(2020, 12, 29, tzinfo=UTC),
@@ -58,7 +86,7 @@ def yahoo(**overrides: object) -> GeneralistTokenClaims:
 
     values.update(overrides)
 
-    return GeneralistTokenClaims(**values)  # type: ignore[arg-type]
+    return claim_set("Yahoo Finance", **values)
 
 
 def standing_of(outcome, fact):
@@ -67,307 +95,395 @@ def standing_of(outcome, fact):
     return held.standing
 
 
-# ── the HYPE acceptance case ────────────────────────────────────────
+# ── acceptance 1: N claims, not two slots ───────────────────────────
 
 
-def test_the_8105_dollar_market_cap_does_not_survive() -> None:
-    """The defective claim is not canonical, and it does not disappear."""
+def test_the_pool_accepts_any_number_of_claim_sets() -> None:
+    for sets in ([], [tokeninsight()], [tokeninsight(), coingecko(), yahoo()]):
+        outcome = judge("HYPE", sets)
 
-    outcome = judge("HYPE", native(), yahoo())
+        assert outcome.symbol == "HYPE"
+        assert len(outcome.facts) > 0
+
+
+# ── acceptance 4: ARB — staleness cannot establish alone ────────────
+
+
+def test_a_coherent_stale_vendor_cannot_establish_by_itself() -> None:
+    """Agreement inside one provider is not corroboration.
+
+    TokenInsight's ARB row reproduces its own arithmetic exactly —
+    price × the 2023 launch float — and under the pool that earns a
+    claim, never a fact.
+    """
+
+    stale = claim_set(
+        "TokenInsight",
+        symbol_echo="ARB",
+        provider_id="arbitrum",
+        price=0.08,
+        market_cap=102_000_000.0,
+        circulating_supply=1_275_000_000.0,
+        max_supply=10_000_000_000.0,
+        fully_diluted_valuation=800_000_000.0,
+    )
+
+    outcome = judge("ARB", [stale])
 
     market_cap = outcome.fact("market_cap")
 
     assert market_cap is not None
-    assert market_cap.standing is TokenFactStanding.ESTABLISHED
-    assert market_cap.value == 18_260_000_000.0
-    assert market_cap.source == "TokenInsight"
+    assert market_cap.standing is TokenFactStanding.CLAIMED
+    assert market_cap.because is not None
+    assert "not corroboration" in market_cap.because
 
-    # The rejected reading is retained with its reason — the trust
-    # ledger, not a silent replacement.
+    # A claim never reaches consumers as an established value.
+    assert outcome.established_value("market_cap") is None
+
+
+def test_a_second_credible_claimant_exposes_the_staleness() -> None:
+    """ARB with both vendors: the market value is an honest conflict."""
+
+    stale = claim_set(
+        "TokenInsight",
+        symbol_echo="ARB",
+        provider_id="arbitrum",
+        price=0.0799,
+        market_cap=101_973_146.0,
+        circulating_supply=1_275_000_000.0,
+        max_supply=10_000_000_000.0,
+        fully_diluted_valuation=799_000_000.0,
+    )
+
+    live = claim_set(
+        "CoinGecko",
+        symbol_echo="ARB",
+        provider_id="arbitrum",
+        price=0.0801,
+        market_cap=530_000_000.0,
+        circulating_supply=6_614_056_381.0,
+        max_supply=10_000_000_000.0,
+        fully_diluted_valuation=801_000_000.0,
+    )
+
+    outcome = judge("ARB", [stale, live])
+
+    market_cap = outcome.fact("market_cap")
+
+    assert market_cap is not None
+    assert market_cap.standing is TokenFactStanding.CONFLICTED
+    assert market_cap.value is None
+    assert market_cap.because is not None
+    assert "TokenInsight" in market_cap.because
+    assert "CoinGecko" in market_cap.because
+
+    assert standing_of(outcome, "circulating_supply") is (TokenFactStanding.CONFLICTED)
+
+    # The figures the vendors AGREE on still establish: the price is
+    # real; the supply is the dispute; the market value inherits it.
+    assert standing_of(outcome, "price") is TokenFactStanding.ESTABLISHED
+    assert standing_of(outcome, "max_supply") is TokenFactStanding.ESTABLISHED
+
+
+# ── acceptance 5: HYPE — methodology conflict, no winner ────────────
+
+
+def test_hype_circulating_methodology_is_an_honest_conflict() -> None:
+    outcome = judge("HYPE", [tokeninsight(), coingecko()])
+
+    for fact in ("market_cap", "circulating_supply"):
+        held = outcome.fact(fact)
+
+        assert held is not None, fact
+        assert held.standing is TokenFactStanding.CONFLICTED, fact
+
+        # No value served, no average, both claims named with times.
+        assert held.value is None
+        assert held.because is not None
+        assert "TokenInsight" in held.because
+        assert "CoinGecko" in held.because
+        assert "count the concept differently" in held.because
+
+    # What they agree on is established: the cap, and FDV within
+    # tolerance. The dilution *ratio* stays uncomputable — it needs an
+    # established market value.
+    assert standing_of(outcome, "max_supply") is TokenFactStanding.ESTABLISHED
+    assert (
+        standing_of(outcome, "fully_diluted_valuation") is TokenFactStanding.ESTABLISHED
+    )
+    assert outcome.fdv_to_market_cap is None
+    assert outcome.issued_share is None
+
+
+def test_the_8105_reading_is_still_rejected_on_the_way() -> None:
+    """Acceptance 8: the trust ledger survives the pool.
+
+    Yahoo's figure is not a third methodology — it is six orders from
+    both coherent claimants with no arithmetic of its own, and it is
+    rejected before conflict is even asked. The genuine two-way
+    methodology conflict remains.
+    """
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
+
     rejected = [item for item in outcome.rejected if item.fact == "market_cap"]
 
     assert len(rejected) == 1
     assert rejected[0].source == "Yahoo Finance"
     assert rejected[0].stated == "$8,105"
-    assert "conflicts with the corroborated market value" in rejected[0].because
+    assert "no arithmetic of its own" in rejected[0].because
+
+    assert standing_of(outcome, "market_cap") is TokenFactStanding.CONFLICTED
 
 
-def test_the_false_circulating_supply_is_rejected_too() -> None:
-    outcome = judge("HYPE", native(), yahoo())
-
-    circulating = outcome.fact("circulating_supply")
-
-    assert circulating is not None
-    assert circulating.standing is TokenFactStanding.ESTABLISHED
-    assert circulating.value == 336_685_219.0
-
-    rejected = [item for item in outcome.rejected if item.fact == "circulating_supply"]
-
-    assert len(rejected) == 1
-    assert rejected[0].stated == "1,500,000,000"
-
-
-def test_the_six_year_history_never_becomes_an_age() -> None:
-    """Unknown is preferable to an invented fact."""
-
-    outcome = judge("HYPE", native(), yahoo())
+def test_the_inception_field_is_rejected_from_any_set() -> None:
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
 
     age = outcome.fact("project_age")
 
     assert age is not None
     assert age.standing is TokenFactStanding.ABSENT
-    assert age.value is None
-    assert age.because is not None
-    assert "Unknown is the honest answer" in age.because
 
-    # The date claim is in the ledger with the semantic reason.
     rejected = [item for item in outcome.rejected if item.fact == "project_age"]
 
     assert len(rejected) == 1
     assert rejected[0].stated == "2020-12-29"
-    assert "never established" in rejected[0].because
 
 
-def test_a_disagreeing_yahoo_forfeits_the_volume_gate() -> None:
-    """A source shown wrong about the instrument keeps no sibling authority."""
-
-    outcome = judge("HYPE", native(), yahoo())
-
-    assert outcome.yahoo_market_cap_corroborated is False
+# ── acceptance 6: majors establish across the pool ──────────────────
 
 
-def test_hypes_dilution_context_is_established_arithmetic() -> None:
-    """FDV coheres with price × max, so the issuance story is measurable."""
-
-    outcome = judge("HYPE", native(), yahoo())
-
-    assert standing_of(outcome, "max_supply") is TokenFactStanding.ESTABLISHED
-    assert (
-        standing_of(outcome, "fully_diluted_valuation") is TokenFactStanding.ESTABLISHED
-    )
-
-    assert outcome.issued_share is not None
-    assert round(outcome.issued_share, 3) == 0.337
-
-    assert outcome.fdv_to_market_cap is not None
-    assert round(outcome.fdv_to_market_cap, 1) == 3.0
-
-
-# ── corroboration, the BTC shape ────────────────────────────────────
-
-
-def test_two_agreeing_sources_corroborate_and_open_the_volume_gate() -> None:
-    outcome = judge(
-        "BTC",
-        native(
-            symbol="BTC",
+def bitcoin_sets() -> list[TokenClaimSet]:
+    return [
+        claim_set(
+            "TokenInsight",
+            symbol_echo="BTC",
             provider_id="bitcoin",
             price=65_158.68,
             market_cap=1_307_620_300_898.0,
             circulating_supply=20_068_225.0,
             max_supply=21_000_000.0,
             fully_diluted_valuation=1_368_332_360_679.0,
+            rank=1.0,
+            spot_volume_24h=3_657_142_498.0,
         ),
-        yahoo(
+        claim_set(
+            "CoinGecko",
+            symbol_echo="BTC",
+            provider_id="bitcoin",
+            price=65_288.0,
+            market_cap=1_310_220_000_000.0,
+            circulating_supply=20_068_243.0,
+            total_supply=20_068_243.0,
+            max_supply=21_000_000.0,
+            fully_diluted_valuation=1_371_048_000_000.0,
+            rank=1.0,
+            market_volume_24h=14_200_000_000.0,
+        ),
+        claim_set(
+            "Yahoo Finance",
             market_cap=1_308_328_460_288.0,
             circulating_supply=20_067_944.0,
-            inception=None,
         ),
-    )
+    ]
+
+
+def test_agreeing_majors_establish_with_the_corroborators_named() -> None:
+    outcome = judge("BTC", bitcoin_sets())
 
     market_cap = outcome.fact("market_cap")
 
     assert market_cap is not None
     assert market_cap.standing is TokenFactStanding.ESTABLISHED
     assert market_cap.because is not None
-    assert "independently reports the same value" in market_cap.because
+    assert "CoinGecko" in market_cap.because
+    assert "Yahoo Finance" in market_cap.because
 
-    assert outcome.yahoo_market_cap_corroborated is True
+    # The printed figure is the crypto-native claimant's — a stated
+    # display choice inside the agreement corridor, not an authority.
+    assert market_cap.value == 1_307_620_300_898.0
+    assert market_cap.source == "TokenInsight"
+
+    for fact in ("price", "circulating_supply", "max_supply"):
+        assert standing_of(outcome, fact) is TokenFactStanding.ESTABLISHED, fact
+
     assert outcome.rejected == ()
+    assert outcome.yahoo_market_cap_corroborated is True
 
 
-# ── single-source establishment, the TAO shape ──────────────────────
+def test_a_conflicted_market_value_closes_the_volume_gate() -> None:
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
 
-
-def test_a_native_only_reading_is_established_by_its_own_arithmetic() -> None:
-    """Yahoo holds zeros for TAO — zeros are absence, never a claim."""
-
-    outcome = judge(
-        "TAO",
-        native(
-            symbol="TAO",
-            provider_id="bittensor",
-            price=208.0,
-            market_cap=1_798_121_936.0,
-            circulating_supply=8_644_817.0,
-            max_supply=21_000_000.0,
-            fully_diluted_valuation=4_368_000_000.0,
-        ),
-        None,
-    )
-
-    market_cap = outcome.fact("market_cap")
-
-    assert market_cap is not None
-    assert market_cap.standing is TokenFactStanding.ESTABLISHED
-    assert market_cap.because is not None
-    assert "No second source reports one" in market_cap.because
-
-    # Nothing corroborated Yahoo, because Yahoo claimed nothing.
     assert outcome.yahoo_market_cap_corroborated is False
 
 
-# ── the integrity checks themselves ─────────────────────────────────
+# ── acceptance 12: a third fake provider joins without validator changes ──
 
 
-def test_an_incoherent_triad_rejects_all_three_figures() -> None:
-    """Arithmetic cannot say which figure lied, so none survives."""
+def test_a_fake_third_provider_joins_the_pool_unchanged() -> None:
+    """A new claimant is a new TokenClaimSet, and nothing else.
 
-    outcome = judge(
-        "HYPE",
-        native(market_cap=2_000_000_000.0),  # price × circ says ~18.3bn
-        None,
+    The validator has no provider names in its establishment rules:
+    three agreeing sources establish exactly as two do, with the
+    newcomer named among the corroborators.
+    """
+
+    fake = claim_set(
+        "FakeLlama",
+        symbol_echo="BTC",
+        price=65_200.0,
+        market_cap=1_308_500_000_000.0,
+        circulating_supply=20_068_100.0,
     )
 
-    assert standing_of(outcome, "market_cap") is TokenFactStanding.ABSENT
-    assert standing_of(outcome, "price") is TokenFactStanding.ABSENT
-    assert standing_of(outcome, "circulating_supply") is TokenFactStanding.ABSENT
+    outcome = judge("BTC", [*bitcoin_sets(), fake])
+
+    market_cap = outcome.fact("market_cap")
+
+    assert market_cap is not None
+    assert market_cap.standing is TokenFactStanding.ESTABLISHED
+    assert market_cap.because is not None
+    assert "FakeLlama" in market_cap.because
+
+
+def test_a_fake_provider_can_also_be_the_dissenter() -> None:
+    """And when it materially disagrees, the fact conflicts — no
+    precedence, hidden or otherwise, resolves it."""
+
+    dissenter = claim_set(
+        "FakeLlama",
+        symbol_echo="BTC",
+        price=52_000.0,
+        market_cap=1_043_500_000_000.0,
+        circulating_supply=20_067_000.0,
+    )
+
+    outcome = judge("BTC", [*bitcoin_sets(), dissenter])
+
+    assert standing_of(outcome, "market_cap") is TokenFactStanding.CONFLICTED
+
+
+# ── the intra-set rules still hold ──────────────────────────────────
+
+
+def test_an_incoherent_triad_still_rejects_all_three_figures() -> None:
+    outcome = judge(
+        "HYPE",
+        [tokeninsight(market_cap=2_000_000_000.0)],
+    )
+
+    for fact in ("market_cap", "price", "circulating_supply"):
+        assert standing_of(outcome, fact) is TokenFactStanding.ABSENT, fact
 
     rejected = {item.fact for item in outcome.rejected}
 
     assert {"market_cap", "price", "circulating_supply"} <= rejected
 
-    reasons = {item.because for item in outcome.rejected if item.fact == "market_cap"}
 
-    assert any("arithmetic inconsistency" in reason for reason in reasons)
+def test_supply_chain_order_is_checked_within_a_set() -> None:
+    """circulating ≤ total ≤ maximum, inside one source's own claims."""
 
-
-def test_more_circulating_than_maximum_rejects_the_pair() -> None:
     outcome = judge(
         "HYPE",
-        native(
-            circulating_supply=1_200_000_000.0,
-            market_cap=1_200_000_000.0 * 54.23,
-            fully_diluted_valuation=None,
-        ),
-        None,
+        [
+            coingecko(
+                total_supply=100_000_000.0,  # below its own circulating
+                fully_diluted_valuation=None,
+            )
+        ],
     )
-
-    assert standing_of(outcome, "max_supply") is TokenFactStanding.ABSENT
 
     rejected = {item.fact for item in outcome.rejected}
 
-    assert "max_supply" in rejected
     assert "circulating_supply" in rejected
+    assert "total_supply" in rejected
 
 
-def test_an_fdv_that_fails_its_own_arithmetic_is_rejected() -> None:
+def test_identity_mismatch_rejects_the_whole_set() -> None:
     outcome = judge(
         "HYPE",
-        native(fully_diluted_valuation=9_000_000_000.0),  # price × max ≈ 54.2bn
-        None,
+        [tokeninsight(symbol_echo="SUPREME"), coingecko()],
     )
 
-    fdv = outcome.fact("fully_diluted_valuation")
-
-    assert fdv is not None
-    assert fdv.standing is TokenFactStanding.ABSENT
-
-    rejected = [
-        item for item in outcome.rejected if item.fact == "fully_diluted_valuation"
-    ]
-
-    assert len(rejected) == 1
-    assert "arithmetic inconsistency" in rejected[0].because
-
-
-def test_identity_mismatch_rejects_the_whole_native_reading() -> None:
-    """An answer about another token establishes nothing about this one."""
-
-    outcome = judge("HYPE", native(symbol="SUPREME"), yahoo())
-
-    # Nothing native survives; Yahoo's figures stand only as claims.
+    # Only CoinGecko's claims remain — single source, so claims only.
     market_cap = outcome.fact("market_cap")
 
     assert market_cap is not None
     assert market_cap.standing is TokenFactStanding.CLAIMED
-    assert market_cap.source == "Yahoo Finance"
+    assert market_cap.source == "CoinGecko"
 
     assert any("identity mismatch" in item.because for item in outcome.rejected)
 
 
-def test_timing_differences_inside_the_tolerances_still_corroborate() -> None:
-    """Two instants of a moving market are never exactly equal."""
+def test_timing_differences_inside_tolerance_still_corroborate() -> None:
+    sets = bitcoin_sets()
 
-    outcome = judge(
-        "BTC",
-        native(
-            symbol="BTC",
-            provider_id="bitcoin",
-            price=65_158.68,
-            market_cap=1_307_620_300_898.0,
-            circulating_supply=20_068_225.0,
-            max_supply=21_000_000.0,
-            fully_diluted_valuation=1_368_332_360_679.0,
-        ),
-        yahoo(
-            # 4% apart: a timing difference, not a conflict.
-            market_cap=1_307_620_300_898.0 * 1.04,
-            circulating_supply=None,
-            inception=None,
-        ),
+    nudged = claim_set(
+        "CoinGecko",
+        symbol_echo="BTC",
+        price=sets[0].price * 1.04 if sets[0].price else None,
+        market_cap=(sets[0].market_cap or 0) * 1.04,
+        circulating_supply=sets[0].circulating_supply,
+        max_supply=21_000_000.0,
+        fully_diluted_valuation=(sets[0].fully_diluted_valuation or 0) * 1.04,
     )
 
-    assert outcome.yahoo_market_cap_corroborated is True
-    assert outcome.rejected == ()
+    outcome = judge("BTC", [sets[0], nudged])
+
+    assert standing_of(outcome, "market_cap") is TokenFactStanding.ESTABLISHED
 
 
-# ── claims that nothing can check stay claims ───────────────────────
+# ── vendor-scoped figures never pool ────────────────────────────────
 
 
-def test_bare_figures_are_claims_and_never_facts() -> None:
-    outcome = judge("HYPE", native(), None)
+def test_scoped_figures_stay_claims_even_when_vendors_agree() -> None:
+    """Two vendors both ranking BTC #1 is a coincidence of universes."""
 
-    for fact in ("rank", "spot_volume_24h", "spot_volume_change_24h"):
-        held = outcome.fact(fact)
+    outcome = judge("BTC", bitcoin_sets())
 
-        assert held is not None, fact
-        assert held.standing is TokenFactStanding.CLAIMED, fact
+    rank = outcome.fact("rank")
 
-        # A claim is never served as an established value.
-        assert held.established_value is None, fact
-
-
-def test_spot_volume_keeps_its_narrow_meaning() -> None:
-    """Tracked spot volume is not total volume, and says so."""
-
-    outcome = judge("HYPE", native(), None)
+    assert rank is not None
+    assert rank.standing is TokenFactStanding.CLAIMED
+    assert rank.because is not None
+    assert "never pooled" in rank.because
 
     spot = outcome.fact("spot_volume_24h")
+    market_volume = outcome.fact("market_volume_24h")
 
-    assert spot is not None
-    assert spot.because is not None
-    assert "not mapped onto" in spot.because
+    assert spot is not None and spot.standing is TokenFactStanding.CLAIMED
+    assert spot.source == "TokenInsight"
+
+    assert market_volume is not None
+    assert market_volume.standing is TokenFactStanding.CLAIMED
+    assert market_volume.source == "CoinGecko"
+    assert market_volume.because is not None
+    assert "vendor-defined universe" in market_volume.because
 
 
-def test_derived_arithmetic_requires_established_inputs() -> None:
-    """A share of a claim would be a claim wearing arithmetic's authority."""
+# ── derived arithmetic still demands established inputs ─────────────
 
-    outcome = judge(
-        "HYPE",
-        native(fully_diluted_valuation=None),  # max supply stays a claim
-        None,
-    )
 
-    assert standing_of(outcome, "max_supply") is TokenFactStanding.CLAIMED
+def test_derived_ratios_require_established_inputs() -> None:
+    outcome = judge("HYPE", [tokeninsight(), coingecko()])
+
+    # Conflicted circulating and market value → no issued share, no
+    # dilution ratio. A ratio over a conflict would be a conflict
+    # wearing arithmetic's authority.
     assert outcome.issued_share is None
+    assert outcome.fdv_to_market_cap is None
+
+    corroborated = judge("BTC", bitcoin_sets())
+
+    assert corroborated.issued_share is not None
+    assert round(corroborated.issued_share, 3) == 0.956
 
 
 # ── nothing at all ──────────────────────────────────────────────────
 
 
 def test_no_sources_at_all_is_all_absences_with_reasons() -> None:
-    outcome = judge("HYPE", None, None)
+    outcome = judge("HYPE", [])
 
     for fact in outcome.facts:
         assert fact.standing is TokenFactStanding.ABSENT, fact.fact

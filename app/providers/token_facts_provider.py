@@ -23,7 +23,7 @@ import requests
 
 from app.config import get_settings
 from app.domain.provenance import Provenance
-from app.domain.token_fact_validation import NativeTokenClaims
+from app.domain.token_fact_validation import TokenClaimSet
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 from app.providers.token_insight_provider import API_KEY_ENV, TOKEN_IDS
 
@@ -61,7 +61,7 @@ class TokenFactsProvider:
 
         return str(configured or "")
 
-    def claims(self, symbol: str) -> NativeTokenClaims:
+    def claims(self, symbol: str) -> TokenClaimSet:
         normalized = symbol.upper().strip()
 
         key = self.key()
@@ -109,7 +109,7 @@ class TokenFactsProvider:
         symbol: str,
         token_id: str,
         data: dict[str, Any],
-    ) -> NativeTokenClaims:
+    ) -> TokenClaimSet:
         # Identity before anything is carried: an answer about another
         # token is refused, never distilled.
         answered = str(data.get("symbol", "")).upper().strip()
@@ -124,8 +124,8 @@ class TokenFactsProvider:
 
         usd = cls._usd_entry(market.get("price"))
 
-        return NativeTokenClaims(
-            symbol=answered or symbol,
+        return TokenClaimSet(
+            symbol_echo=answered or symbol,
             provider_id=str(data.get("id") or token_id),
             source=cls.SOURCE,
             # Dated by the provider's own data timestamp where it sends
@@ -238,7 +238,7 @@ class CachedTokenFactsProvider:
 
         return cls(cache=cache, acquires=False)
 
-    def claims(self, symbol: str) -> NativeTokenClaims | None:
+    def claims(self, symbol: str) -> TokenClaimSet | None:
         key = symbol.upper().strip()
         entry = self._cache.read(key)
 
@@ -263,9 +263,9 @@ class CachedTokenFactsProvider:
         return claims
 
     @staticmethod
-    def _encode(claims: NativeTokenClaims) -> dict[str, Any]:
+    def _encode(claims: TokenClaimSet) -> dict[str, Any]:
         return {
-            "symbol": claims.symbol,
+            "symbol": claims.symbol_echo,
             "provider_id": claims.provider_id,
             "source": claims.source,
             "observed_at": claims.read.observed_at.isoformat(),
@@ -281,7 +281,7 @@ class CachedTokenFactsProvider:
         }
 
     @staticmethod
-    def _restore(entry: CachedEntry) -> NativeTokenClaims | None:
+    def _restore(entry: CachedEntry) -> TokenClaimSet | None:
         value = entry.value
 
         symbol = value.get("symbol")
@@ -308,8 +308,8 @@ class CachedTokenFactsProvider:
         except ValueError:
             observed_at = entry.stored_at
 
-        return NativeTokenClaims(
-            symbol=symbol,
+        return TokenClaimSet(
+            symbol_echo=symbol,
             provider_id=str(value.get("provider_id", "")),
             source=str(value.get("source", TokenFactsProvider.SOURCE)),
             read=Provenance(
