@@ -38,6 +38,7 @@ from app.api.models.portfolio_briefing import (
     TodayBriefingResponse,
     TrendResponse,
 )
+from app.api.models.protocol_adapter import protocol_fundamentals_response
 from app.api.models.synthesis import synthesis_response
 from app.api.models.understanding_adapter import understanding_response
 from app.application.brain.brain_builder_service import BrainBuilderService
@@ -74,6 +75,9 @@ from app.renderers.brief_language import (
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.company_understanding_service import CompanyUnderstandingService
 from app.services.executive_writer_service import ExecutiveWriterService
+from app.services.protocol_fundamentals_service import (
+    ProtocolFundamentalsService,
+)
 from app.services.token_facts_service import TokenFactsService
 
 router = APIRouter(
@@ -617,6 +621,14 @@ async def dossier(
         asset_class,
     )
 
+    # The economics of the system behind the token — its own evidence
+    # family, read from the store only, independent of whether the
+    # market facts above reached agreement, and consumed by nothing.
+    protocol_facts = ProtocolFundamentalsService().established(
+        normalized_symbol,
+        asset_class,
+    )
+
     # Read from the stores only — no fetch, no model — and composed
     # before the narrative so the conclusion below is available whether
     # or not the optional writer runs.
@@ -739,6 +751,7 @@ async def dossier(
         evidence_as_of=_provenance(decision.evidence_as_of),
         token_rating=token_rating,
         asset_profile=asset_profile_response(token_facts),
+        protocol_fundamentals=protocol_fundamentals_response(protocol_facts),
         # Both null on purpose: this route no longer words the case.
         narrative=None,
         narrative_absent=None,

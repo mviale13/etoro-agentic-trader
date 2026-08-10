@@ -10,11 +10,13 @@ from app.domain.asset_class import AssetClass
 from app.domain.exchange_rate import ExchangeRate
 from app.domain.market_acquisition import AcquiredSecurity, MarketAcquisition
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.protocol_entities import entities_for
 from app.domain.research_candidate import ResearchCandidate
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.coingecko_facts_provider import CachedCoinGeckoFactsProvider
+from app.providers.defillama_provider import CachedDefiLlamaProvider
 from app.providers.earnings_provider import CachedEarningsProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
@@ -60,6 +62,7 @@ class MarketAcquisitionService:
         ratings: Any | None = None,
         token_facts: Any | None = None,
         coingecko_facts: Any | None = None,
+        protocol_facts: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -102,6 +105,11 @@ class MarketAcquisitionService:
         # fetches any of them.
         self._token_facts = token_facts or CachedTokenFactsProvider()
         self._coingecko_facts = coingecko_facts or CachedCoinGeckoFactsProvider()
+
+        # The economics of the systems behind the tokens — a separate
+        # evidence family, read per mapped entity rather than per
+        # security, because a security is not a protocol.
+        self._protocol_facts = protocol_facts or CachedDefiLlamaProvider()
 
     async def acquire(
         self,
@@ -193,6 +201,11 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.CRYPTO
                 else None
             ),
+            protocol_facts=(
+                self._protocols(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
         )
 
     def _rating(self, symbol: str) -> bool:
@@ -220,6 +233,29 @@ class MarketAcquisitionService:
             return self._token_facts.claims(symbol) is not None
         except Exception:
             return False
+
+    def _protocols(self, symbol: str) -> bool | None:
+        """Whether the store now holds the economics behind this token.
+
+        None where no economic system is mapped to the security — an
+        unmapped token is not a token with nothing to read, and the two
+        must not report the same word.
+        """
+
+        entities = entities_for(symbol)
+
+        if not entities:
+            return None
+
+        read = False
+
+        for entity in entities:
+            try:
+                read = self._protocol_facts.claims(entity.key) is not None or read
+            except Exception:
+                continue
+
+        return read
 
     def _fundamentals(self, yahoo_symbol: str) -> bool:
         try:

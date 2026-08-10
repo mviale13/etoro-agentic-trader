@@ -280,6 +280,10 @@ export interface DossierViewModel {
   /** The token's judged market facts. Null for anything not a crypto asset. */
   assetProfile: DossierAssetProfile | null;
 
+  /** The economics of the system behind the token. Its own evidence
+      family, independent of the market facts and consumed by nothing. */
+  protocolFundamentals: DossierProtocolFundamentals | null;
+
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
   narrativeAbsent: string | null;
@@ -474,6 +478,57 @@ export interface TokenFactGroup {
 export interface DossierAssetProfile {
   groups: readonly TokenFactGroup[];
   rejected: readonly string[];
+}
+
+/**
+ * One figure about the economic system behind a token.
+ *
+ * Availability and standing answer different questions and are shown
+ * apart: "not applicable" is not a gap, and a provider claim is not an
+ * established fact. Both words are the backend's.
+ */
+export interface ProtocolFactRow {
+  metric: string;
+  label: string;
+  /** capital | activity | value_generation | holder_accrual */
+  family: string;
+  stated: string | null;
+  /** The window the figure covers, or null for a level. */
+  window: string | null;
+  standing: string;
+  standingStated: string;
+  availability: string;
+  availabilityStated: string;
+  source: string | null;
+  age: string | null;
+  /** The provider's own definition, verbatim — the mechanism itself. */
+  providerMethodology: string | null;
+  because: string | null;
+}
+
+export interface ProtocolEntityView {
+  key: string;
+  name: string;
+  /** "chain" or "protocol". */
+  kind: string;
+  measures: string;
+  mappingBasis: string;
+  mappingSettled: boolean;
+  facts: readonly ProtocolFactRow[];
+}
+
+export interface DerivedFigureView {
+  label: string;
+  statedValue: string;
+  stated: string;
+  caveat: string;
+}
+
+/** The economics behind a token — evidence, never conclusions. */
+export interface DossierProtocolFundamentals {
+  entities: readonly ProtocolEntityView[];
+  derived: readonly DerivedFigureView[];
+  unmappedBecause: string | null;
 }
 
 export interface DossierResult {
@@ -736,6 +791,86 @@ function parseAssetProfile(value: unknown): DossierAssetProfile | null {
       .map((item, index) =>
         requireString(item.statement, `asset_profile.rejected[${index}].statement`),
       ),
+  };
+}
+
+function parseProtocolFundamentals(
+  value: unknown,
+): DossierProtocolFundamentals | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "protocol_fundamentals".');
+  }
+
+  const entities = Array.isArray(value.entities) ? value.entities : [];
+  const derived = Array.isArray(value.derived) ? value.derived : [];
+
+  return {
+    entities: entities.filter(isRecord).map((entity, index) => {
+      const field = `protocol_fundamentals.entities[${index}]`;
+
+      return {
+        key: requireString(entity.key, `${field}.key`),
+        name: requireString(entity.name, `${field}.name`),
+        kind: requireString(entity.kind, `${field}.kind`),
+        measures: requireString(entity.measures, `${field}.measures`),
+        mappingBasis: requireString(
+          entity.mapping_basis,
+          `${field}.mapping_basis`,
+        ),
+        mappingSettled: entity.mapping_settled === true,
+        facts: (Array.isArray(entity.facts) ? entity.facts : [])
+          .filter(isRecord)
+          .map((fact, factIndex) => {
+            const row = `${field}.facts[${factIndex}]`;
+
+            return {
+              metric: requireString(fact.metric, `${row}.metric`),
+              label: requireString(fact.label, `${row}.label`),
+              family: requireString(fact.family, `${row}.family`),
+              stated: optionalString(fact.stated, `${row}.stated`),
+              window: optionalString(fact.window, `${row}.window`),
+              standing: requireString(fact.standing, `${row}.standing`),
+              standingStated: requireString(
+                fact.standing_stated,
+                `${row}.standing_stated`,
+              ),
+              availability: requireString(
+                fact.availability,
+                `${row}.availability`,
+              ),
+              availabilityStated: requireString(
+                fact.availability_stated,
+                `${row}.availability_stated`,
+              ),
+              source: optionalString(fact.source, `${row}.source`),
+              age: optionalString(fact.age, `${row}.age`),
+              providerMethodology: optionalString(
+                fact.provider_methodology,
+                `${row}.provider_methodology`,
+              ),
+              because: optionalString(fact.because, `${row}.because`),
+            };
+          }),
+      };
+    }),
+    derived: derived.filter(isRecord).map((figure, index) => {
+      const field = `protocol_fundamentals.derived[${index}]`;
+
+      return {
+        label: requireString(figure.label, `${field}.label`),
+        statedValue: requireString(figure.stated_value, `${field}.stated_value`),
+        stated: requireString(figure.stated, `${field}.stated`),
+        caveat: requireString(figure.caveat, `${field}.caveat`),
+      };
+    }),
+    unmappedBecause: optionalString(
+      value.unmapped_because,
+      "protocol_fundamentals.unmapped_because",
+    ),
   };
 }
 
@@ -1307,6 +1442,9 @@ function parseDossier(payload: unknown): DossierViewModel {
     evidenceAsOf: parseProvenance(payload.evidence_as_of, "evidence_as_of"),
     tokenRating: parseTokenRating(payload.token_rating),
     assetProfile: parseAssetProfile(payload.asset_profile),
+    protocolFundamentals: parseProtocolFundamentals(
+      payload.protocol_fundamentals,
+    ),
     narrative: parseNarrative(payload.narrative),
     narrativeAbsent: optionalString(
       payload.narrative_absent,

@@ -42,6 +42,11 @@ class AcquiredSecurity:
     #: the question does not apply: only a token has them.
     token_facts: bool | None = None
 
+    #: The store now holds the economics of the systems behind this
+    #: token. `None` where no economic system is mapped to it — an
+    #: unmapped security is not one whose economics came back empty.
+    protocol_facts: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""

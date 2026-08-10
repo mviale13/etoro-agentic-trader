@@ -16,59 +16,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum
 
+from app.domain.evidence_standing import EvidenceStanding
 from app.domain.provenance import Provenance
 
-
-class TokenFactStanding(StrEnum):
-    """How far one token fact can be trusted, and why.
-
-    The distinction the Zero Fake Numbers contract needs: a surface that
-    cannot tell an established fact from an uncorroborated claim will
-    print both with the same authority, and the claim will borrow it.
-    """
-
-    #: Survived validation: identity confirmed, arithmetic coherent,
-    #: and corroborated as far as anything available can corroborate it.
-    ESTABLISHED = "established"
-
-    #: A source reports it and nothing this platform holds can either
-    #: corroborate or refute it. Served as the source's claim, never as
-    #: a measurement, and consumed by no score.
-    CLAIMED = "claimed"
-
-    #: Two sources make coherent, incompatible claims. Neither is
-    #: served as fact; both are retained.
-    CONFLICTED = "conflicted"
-
-    #: A claim failed validation. The value is not served; the claim
-    #: and its rejection reason are retained in the ledger.
-    REJECTED = "rejected"
-
-    #: Nobody reports it. Absent evidence is reported as absent.
-    ABSENT = "absent"
-
-    @property
-    def stated(self) -> str:
-        """The standing as a surface labels it, worded here once."""
-
-        return _STANDINGS[self]
-
-    @property
-    def serves_value(self) -> bool:
-        """Whether a value may be shown beside this standing at all."""
-
-        return self in (TokenFactStanding.ESTABLISHED, TokenFactStanding.CLAIMED)
-
-
-_STANDINGS = {
-    TokenFactStanding.ESTABLISHED: "Established",
-    TokenFactStanding.CLAIMED: "Provider claim",
-    TokenFactStanding.CONFLICTED: "Sources conflict",
-    TokenFactStanding.REJECTED: "Rejected",
-    TokenFactStanding.ABSENT: "Not reported",
-}
+#: How far a token fact can be trusted.
+#:
+#: The platform's one standing vocabulary, shared with every other
+#: evidence family since protocol fundamentals became the second —
+#: "established" must mean the same thing about a market value and
+#: about a protocol's fees. The name is kept as the token layer's own
+#: so the contract frozen after PR #101 reads unchanged.
+TokenFactStanding = EvidenceStanding
 
 
 #: The facts this domain knows how to hold, in display order. A name

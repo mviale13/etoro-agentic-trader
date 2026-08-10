@@ -155,6 +155,98 @@ class AssetProfileResponse(BaseModel):
     rejected: list[RejectedReadingResponse]
 
 
+class ProtocolFactResponse(BaseModel):
+    """One figure about the economic system behind a token."""
+
+    metric: str
+    label: str
+
+    #: What this metric is evidence about: capital, activity, value
+    #: generation, or what reaches holders. Never collapsed together.
+    family: str
+
+    stated: str | None
+
+    #: The window the figure covers, or null for a level.
+    window: str | None
+
+    standing: str
+    standing_stated: str
+
+    #: available | not_applicable | unavailable_free |
+    #: semantics_unresolved | identity_unresolved — five different
+    #: situations, never one "missing".
+    availability: str
+    availability_stated: str
+
+    source: str | None
+    age: str | None
+
+    #: The provider's own definition of this metric for this entity,
+    #: verbatim. The sentence that says a protocol keeps no fees and
+    #: sends 99% to a fund that buys the token is the mechanism, and
+    #: paraphrasing it would be this platform inventing one.
+    provider_methodology: str | None
+
+    because: str | None
+
+
+class ProtocolEntityResponse(BaseModel):
+    """One economic system, and the figures measured over it."""
+
+    key: str
+    name: str
+
+    #: "chain" or "protocol" — what kind of thing this is.
+    kind: str
+
+    #: What generated these figures, in one sentence.
+    measures: str
+
+    #: Why this entity is attached to this security. A shared name is
+    #: never a basis: the same name covers a venue with $842k of daily
+    #: fees and a chain with $3.8k.
+    mapping_basis: str
+
+    #: False where the entity is real and what its economics mean for
+    #: the token is not settled.
+    mapping_settled: bool
+
+    facts: list[ProtocolFactResponse]
+
+
+class DerivedFigureResponse(BaseModel):
+    """Arithmetic this platform performed over a protocol observation."""
+
+    label: str
+    stated_value: str
+
+    #: The arithmetic in one line, naming the observation beneath it.
+    stated: str
+
+    #: What this figure is not, said plainly. A run rate is not a year
+    #: that happened.
+    caveat: str
+
+
+class ProtocolFundamentalsResponse(BaseModel):
+    """The economics behind a token — evidence, never conclusions.
+
+    A separate evidence family from the token's own market facts, and
+    independent of them: a market value can be CONFLICTED while the
+    protocol's fees are perfectly well attributed. Consumed by no
+    score, no playbook and no decision.
+    """
+
+    entities: list[ProtocolEntityResponse]
+
+    #: This platform's own arithmetic, held apart from the observations.
+    derived: list[DerivedFigureResponse]
+
+    #: Why nothing is measured, where no economic system is mapped.
+    unmapped_because: str | None
+
+
 class CommitteeUncertaintyResponse(BaseModel):
     """One thing a committee could not settle, and whether looking again helps."""
 
@@ -493,6 +585,12 @@ class DossierResponse(BaseModel):
     #: standings, dates, sources and the rejection ledger. Null for
     #: anything that is not a cryptocurrency.
     asset_profile: AssetProfileResponse | None = None
+
+    #: The economics of the system behind the token, attributed and
+    #: dated. Its own evidence family, independent of the market facts
+    #: above and consumed by nothing. Null for anything that is not a
+    #: cryptocurrency.
+    protocol_fundamentals: ProtocolFundamentalsResponse | None = None
 
     # ── The narrative (Communication layer, optional) ───────────────
     #: The case in words, or null with the reason beside it. Exactly one

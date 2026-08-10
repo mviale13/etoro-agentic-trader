@@ -20,6 +20,7 @@ import type {
   DossierFinancialUnderstanding,
   DossierMeasure,
   DossierPlaybook,
+  DossierProtocolFundamentals,
   DossierDerivation,
   DossierScore,
   DossierSynthesis,
@@ -487,6 +488,176 @@ function AssetProfile({
   );
 }
 
+/**
+ * The economics of the system behind a token — evidence, not verdicts.
+ *
+ * Deliberately free of adjectives. Nothing here is called strong, weak,
+ * healthy, attractive or expensive: those are interpretations, and the
+ * layer entitled to make them does not exist yet. What the investor
+ * gets is what was measured, over which entity, by whom, when, under
+ * whose definition — and, where a figure is absent, which of the five
+ * kinds of absence it is.
+ */
+function ProtocolFundamentals({
+  fundamentals,
+  symbol,
+}: {
+  fundamentals: DossierProtocolFundamentals;
+  symbol: string;
+}) {
+  if (fundamentals.entities.length === 0) {
+    return (
+      <section aria-labelledby="protocol-heading">
+        <SectionHeading id="protocol-heading">
+          The economics behind it
+        </SectionHeading>
+
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
+          {fundamentals.unmappedBecause}
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-labelledby="protocol-heading">
+      <SectionHeading id="protocol-heading">
+        The economics behind it
+      </SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        What the systems behind {symbol} earn, and who receives it — read
+        from a source that publishes its own definitions, and shown beside
+        the case rather than inside it. None of this reached the
+        recommendation above, and nothing here is called strong or weak:
+        the evidence comes before any reading of it.
+      </p>
+
+      <div className="mt-4 space-y-4">
+        {fundamentals.entities.map((entity) => (
+          <div
+            key={entity.key}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-4"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold text-slate-800">
+                {entity.name}
+              </p>
+
+              <span className="text-xs uppercase tracking-[0.15em] text-slate-400">
+                {entity.kind}
+              </span>
+            </div>
+
+            {/* Which entity generated the figures is part of the
+                figures: the same name covers a venue and a chain whose
+                fees differ by two orders of magnitude. */}
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Measures {entity.measures}.
+            </p>
+
+            {entity.mappingSettled ? null : (
+              <p className="mt-2 text-xs leading-5 text-amber-700">
+                {entity.mappingBasis}
+              </p>
+            )}
+
+            <dl className="mt-4 space-y-2.5">
+              {entity.facts.map((fact) => (
+                <div key={fact.metric}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <dt className="text-slate-700">
+                      {fact.label}
+                      {fact.window ? (
+                        <span className="ml-1.5 text-xs text-slate-400">
+                          over {fact.window}
+                        </span>
+                      ) : null}
+                    </dt>
+
+                    <dd className="flex shrink-0 items-baseline gap-2">
+                      <span
+                        className={
+                          fact.stated === null
+                            ? "text-slate-400"
+                            : "font-semibold tabular-nums text-slate-800"
+                        }
+                      >
+                        {fact.stated ?? "—"}
+                      </span>
+
+                      <span
+                        className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                          fact.stated === null
+                            ? "bg-transparent text-slate-400"
+                            : "bg-slate-100 text-slate-500"
+                        }`}
+                        title={fact.because ?? undefined}
+                      >
+                        {fact.stated === null
+                          ? fact.availabilityStated
+                          : fact.standingStated}
+                      </span>
+                    </dd>
+                  </div>
+
+                  <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                    {fact.stated === null
+                      ? fact.because
+                      : (fact.age ?? fact.source)}
+                  </p>
+
+                  {/* The provider's own definition, verbatim. For a
+                      value-accrual figure this sentence *is* the
+                      mechanism — paraphrasing it would be inventing
+                      one. */}
+                  {fact.providerMethodology ? (
+                    <p className="mt-1 border-l-2 border-slate-200 pl-3 text-xs leading-5 text-slate-500">
+                      {fact.source} defines this as: {fact.providerMethodology}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+
+      {fundamentals.derived.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            MOVRvest arithmetic
+          </p>
+
+          <dl className="mt-3 space-y-3">
+            {fundamentals.derived.map((figure) => (
+              <div key={figure.label}>
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <dt className="text-slate-700">{figure.label}</dt>
+
+                  <dd className="shrink-0 font-semibold tabular-nums text-slate-800">
+                    {figure.statedValue}
+                  </dd>
+                </div>
+
+                <p className="mt-0.5 text-xs leading-5 text-slate-500">
+                  {figure.stated}
+                </p>
+
+                {/* Said every time it is shown: a run rate is not a
+                    year that happened. */}
+                <p className="mt-0.5 text-xs leading-5 text-amber-700">
+                  {figure.caveat}
+                </p>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
@@ -508,6 +679,13 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
 
       {dossier.assetProfile ? (
         <AssetProfile profile={dossier.assetProfile} symbol={dossier.symbol} />
+      ) : null}
+
+      {dossier.protocolFundamentals ? (
+        <ProtocolFundamentals
+          fundamentals={dossier.protocolFundamentals}
+          symbol={dossier.symbol}
+        />
       ) : null}
 
       <WhatChanged dossier={dossier} />
