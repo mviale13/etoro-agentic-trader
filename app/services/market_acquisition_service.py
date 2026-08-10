@@ -367,7 +367,32 @@ class MarketAcquisitionService:
         except Exception:
             return False
 
+        # One capture per acquisition, written after the evidence is in
+        # the store so the journal records what a surface would actually
+        # have served. Never fatal: a record that could fail an
+        # acquisition would make the platform's memory a liability.
+        try:
+            self._journal(symbol)
+        except Exception:
+            pass
+
         return True if feed.is_read else None
+
+    def _journal(self, symbol: str) -> None:
+        """Append what this cycle can now see, once."""
+
+        from app.domain.asset_class import AssetClass as _AssetClass
+        from app.services.crypto_intelligence_service import (
+            CryptoIntelligenceService,
+        )
+        from app.services.intelligence_journal_service import (
+            IntelligenceJournalService,
+        )
+
+        snapshot = CryptoIntelligenceService().snapshot(symbol, _AssetClass.CRYPTO)
+
+        if snapshot is not None and snapshot.live:
+            IntelligenceJournalService().record(snapshot)
 
     def _protocols(self, symbol: str) -> bool | None:
         """Whether the store now holds the economics behind this token.

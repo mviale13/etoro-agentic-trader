@@ -50,5 +50,14 @@ data/events/
 # decision events only.
 data/decisions/
 
+# The intelligence record — what this machine observed, and when. It is
+# the same kind of thing as the decision ledger and is ignored for the
+# same reason: a fresh clone has no history and must honestly say so
+# rather than inheriting someone else's captures. Committing it would
+# also make the record's own promise false — a file under version
+# control can be rewritten by a merge, and this one may never be
+# rewritten at all. Tests carry synthetic captures only.
+data/journal/
+
 # Claude Code: shared project settings are tracked; personal overrides are not.
 .claude/settings.local.json
