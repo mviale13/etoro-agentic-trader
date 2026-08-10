@@ -70,7 +70,27 @@ MODEL_ENVIRONMENT = (
 #: blocks the provider without pretending to know its internals. A test
 #: that wants a provider's behaviour passes a stub reader; a test that
 #: wants the parsing passes a recorded payload. Neither needs this.
-NETWORK_SEAMS = ("app.providers.coingecko_market_provider.CoinGeckoMarketProvider",)
+NETWORK_SEAMS = (
+    "app.providers.coingecko_market_provider.CoinGeckoMarketProvider",
+    # The S4.5 primary surfaces. Keyless every one of them, which is
+    # exactly why they need this: a credential guard would not have
+    # stopped a single call.
+    "app.providers.primary_sources.EthereumRpc",
+    "app.providers.primary_sources.HyperliquidInfo",
+    "app.providers.primary_sources.CardanoLedger",
+    "app.providers.primary_sources.BitcoinExplorer",
+)
+
+#: What each seam's wire method is called. Named per seam because these
+#: adapters speak different protocols — JSON-RPC posts, REST gets — and
+#: a guard that assumed one name would silently protect nothing.
+SEAM_METHODS = {
+    "app.providers.coingecko_market_provider.CoinGeckoMarketProvider": ("_request",),
+    "app.providers.primary_sources.EthereumRpc": ("_post",),
+    "app.providers.primary_sources.HyperliquidInfo": ("_post",),
+    "app.providers.primary_sources.CardanoLedger": ("_get",),
+    "app.providers.primary_sources.BitcoinExplorer": ("_get",),
+}
 
 
 @pytest.fixture(autouse=True)
@@ -93,12 +113,13 @@ def hermetic_model_configuration(monkeypatch):
         )
 
     for seam in NETWORK_SEAMS:
-        monkeypatch.setattr(f"{seam}._request", _refuse)
+        for method in SEAM_METHODS[seam]:
+            monkeypatch.setattr(f"{seam}.{method}", _refuse)
 
         # A blocked call still paced itself first: the batch sleeps
         # between requests to stay under a rate limit, and eight of those
         # turned a four-second suite into ninety-six. Refusing the wire
         # and leaving the wait in place is a guard that works and costs
         # more than the calls it prevented.
-        monkeypatch.setattr(f"{seam}.PACE", 0.0)
-        monkeypatch.setattr(f"{seam}.RATE_LIMIT_PAUSE", 0.0)
+        monkeypatch.setattr(f"{seam}.PACE", 0.0, raising=False)
+        monkeypatch.setattr(f"{seam}.RATE_LIMIT_PAUSE", 0.0, raising=False)

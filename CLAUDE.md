@@ -97,6 +97,12 @@ agreement beneath it — and then the governing financial model's
 questions over exactly those facts: answered, not yet answerable, or
 not applicable with the evidence that would answer it. Read-only, never
 observes; `--model` is inspection and never changes what governs),
+`movrvest primary [BTC|ETH|ADA|HYPE]` (read canonical chain state
+directly and report what it can settle: each figure with its evidence
+authority, window, formula, rule version, inputs and both
+reproducibility verdicts. A measurement of this platform, not of an
+asset — it costs a fetch, asks no model, stores nothing and decides
+nothing),
 `movrvest crypto-market [SYMBOL]` (the crypto environment as the last
 cycle read it — capitalisation, volume, dominance, breadth — and, with a
 symbol, that asset's place in it: its returns, its peer group and why
@@ -220,6 +226,22 @@ figure means the security budget on Bitcoin, a burn on Ethereum and a
 buyback on Hyperliquid, and the mechanism is recognised from the
 provider's own sentence rather than declared. Consumed by nothing:
 guarded by an import-graph test over fifteen reasoning paths.
+
+**Where a fact came from is a second axis, never a second standing**
+(S4.5, [`CRYPTO_EVIDENCE_AUTHORITY.md`](docs/architecture/CRYPTO_EVIDENCE_AUTHORITY.md)).
+`EvidenceAuthority` — primary observation, primary derived, secondary
+computation, secondary aggregate, provider-scoped aggregate, attributed
+opinion — explains *why* a standing rule applies and what would move it;
+`ESTABLISHED` keeps meaning what it meant. **Primary is not a synonym
+for true**: computed with the protocol constant this platform knew,
+Ethereum's blob base fee came out wrong by a factor of 850 million from
+canonical inputs, and Hyperliquid's own `totalSupply` includes 412m
+tokens that do not exist yet. **Circulating supply is not a chain
+primitive** — Cardano's ledger publishes four quantities and the three
+vendors S1 called CONFLICTED were each reporting a different one, the
+rejected reading matching `circulation` exactly. A provider-scoped
+aggregate (total market cap, rankings, breadth) **can never be
+corroborated** and its honest ceiling is permanent attribution.
 
 **Market context is not Asset Quality** (S4,
 [`CRYPTO_MARKET_CONTEXT.md`](docs/architecture/CRYPTO_MARKET_CONTEXT.md)).

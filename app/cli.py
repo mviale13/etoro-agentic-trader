@@ -29,6 +29,7 @@ from app.commands import (
     playbook,
     playbook_coverage,
     policy,
+    primary,
     reader_defects,
     reader_stability,
     record,
@@ -249,6 +250,24 @@ def build_parser() -> argparse.ArgumentParser:
     playbook_parser.add_argument(
         "symbol",
         help="Ticker symbol, for example DIS, NVDA or CAT",
+    )
+
+    primary_parser = subparsers.add_parser(
+        "primary",
+        help="Read canonical chain state directly and report what it can settle",
+        description=(
+            "The evidence-authority experiment: read primary state — "
+            "Ethereum's block headers, Hyperliquid's own API, Cardano's "
+            "ledger totals, and Bitcoin's fees for contrast — and report "
+            "each figure with everything needed to reproduce it. A "
+            "measurement of this platform, not of an asset: it costs a "
+            "fetch, asks no model, stores nothing and decides nothing"
+        ),
+    )
+    primary_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol: BTC, ETH, ADA or HYPE. Omit for all four",
     )
 
     crypto_market_parser = subparsers.add_parser(
@@ -558,6 +577,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "playbook":
         return await playbook.run(args.symbol)
+
+    if args.command == "primary":
+        return await primary.run(args.symbol)
 
     if args.command == "crypto-market":
         return await crypto_market.run(args.symbol)
