@@ -14,6 +14,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierAgreement,
+  DossierAssetProfile,
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
   DossierFinancialUnderstanding,
@@ -26,6 +27,7 @@ import type {
   DossierTokenRating,
   DossierUnderstanding,
   DossierViewModel,
+  TokenFactRow,
 } from "@/lib/api/dossier";
 
 export const dynamic = "force-dynamic";
@@ -361,6 +363,130 @@ function Playbook({
   );
 }
 
+/**
+ * The trust chip beside every asset-profile figure.
+ *
+ * Established, provider claim, MOVRvest-calculated, or absent — the
+ * distinction the Zero Fake Numbers contract exists for. The words are
+ * the backend's; this styles them so a claim can never borrow an
+ * established fact's look.
+ */
+function StandingMark({ row }: { row: TokenFactRow }) {
+  const styles: Record<string, string> = {
+    established: "bg-slate-800 text-white",
+    calculated: "bg-slate-200 text-slate-700",
+    claimed: "bg-slate-100 text-slate-500",
+    conflicted: "bg-amber-100 text-amber-800",
+    rejected: "bg-amber-100 text-amber-800",
+    absent: "bg-transparent text-slate-400",
+  };
+
+  return (
+    <span
+      className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+        styles[row.standing] ?? "bg-slate-100 text-slate-500"
+      }`}
+      title={row.because ?? undefined}
+    >
+      {row.standingStated}
+    </span>
+  );
+}
+
+/**
+ * What is measured about this asset — with how far each figure can be
+ * trusted, and the claims that failed validation kept in view.
+ *
+ * The crypto counterpart of the filing sections on a company dossier.
+ * Everything is worded by the backend: values, standings, ages,
+ * reasons, the rejection ledger. This groups and styles.
+ */
+function AssetProfile({
+  profile,
+  symbol,
+}: {
+  profile: DossierAssetProfile;
+  symbol: string;
+}) {
+  return (
+    <section aria-labelledby="asset-profile-heading">
+      <SectionHeading id="asset-profile-heading">
+        What is measured about this asset
+      </SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        Provider observations are dated and attributed, and served only as
+        far as they survived validation. Rows marked MOVRvest-calculated are
+        this platform&rsquo;s arithmetic over established figures — nothing
+        here turns a one-day movement into a conclusion about {symbol}.
+      </p>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {profile.groups.map((group) => (
+          <div
+            key={group.title}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+              {group.title}
+            </p>
+
+            <dl className="mt-3 space-y-2.5">
+              {group.rows.map((row) => (
+                <div key={row.label}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <dt className="text-slate-700">{row.label}</dt>
+
+                    <dd className="flex shrink-0 items-baseline gap-2">
+                      <span
+                        className={
+                          row.stated === null
+                            ? "text-slate-400"
+                            : "font-semibold tabular-nums text-slate-800"
+                        }
+                      >
+                        {row.stated ?? "unknown"}
+                      </span>
+
+                      <StandingMark row={row} />
+                    </dd>
+                  </div>
+
+                  {/* The observation's attribution — the age line already
+                      names its source — or, where no value is served, the
+                      backend's account of why. */}
+                  <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                    {row.stated === null ? row.because : (row.age ?? row.source)}
+                  </p>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+
+      {profile.rejected.length > 0 ? (
+        <details className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-4">
+          <summary className="cursor-pointer text-sm font-semibold text-amber-900">
+            Readings that failed validation ({profile.rejected.length})
+          </summary>
+
+          <p className="mt-2 text-xs leading-5 text-amber-800">
+            Retained rather than discarded: a claim that was wrong is a fact
+            about the source, and it is kept where it can be checked.
+          </p>
+
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-amber-900">
+            {profile.rejected.map((statement) => (
+              <li key={statement}>{statement}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </section>
+  );
+}
+
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
@@ -378,6 +504,10 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
           rating={dossier.tokenRating}
           heading={dossier.definition.classificationHeading}
         />
+      ) : null}
+
+      {dossier.assetProfile ? (
+        <AssetProfile profile={dossier.assetProfile} symbol={dossier.symbol} />
       ) : null}
 
       <WhatChanged dossier={dossier} />

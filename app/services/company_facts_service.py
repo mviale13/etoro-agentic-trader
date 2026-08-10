@@ -11,6 +11,7 @@ from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.earnings_provider import CachedEarningsProvider, ReadDates
 from app.providers.yahoo_market_provider import YahooInstrument
+from app.services.token_facts_service import TokenFactsService
 
 
 class MarketQuoteProvider(Protocol):
@@ -40,6 +41,7 @@ class CompanyFactsService:
         market_provider: MarketQuoteProvider | None = None,
         valuation_provider: ValuationProvider | None = None,
         earnings_provider: EarningsProvider | None = None,
+        token_facts: TokenFactsService | None = None,
     ) -> None:
         # The read-only doors, because this runs once per security on
         # every page view. Acquiring here made opening a page the act
@@ -53,6 +55,10 @@ class CompanyFactsService:
         self._market_provider = market_provider or CachedMarketProvider.stored()
         self._valuation_provider = valuation_provider or CachedValueProvider.stored()
         self._earnings_provider = earnings_provider or CachedEarningsProvider.stored()
+
+        # A token's market facts, judged through the validation gate on
+        # read. Stored doors throughout, so this adds no fetch.
+        self._token_facts = token_facts or TokenFactsService()
 
     async def build(
         self,
@@ -89,6 +95,18 @@ class CompanyFactsService:
         # kind of thing this is.
         is_token = asset_class.has_no_company
 
+        # A cryptocurrency's market facts come through the validation
+        # gate, never straight off a provider response: Yahoo priced an
+        # $18bn token at $8,105 without failing, and a value an API
+        # returned is a claim until something corroborates it. Only what
+        # the gate established is served; what it rejected is retained,
+        # with reasons, where the dossier can show it.
+        tokens = (
+            self._token_facts.established(item.symbol, item.name, asset_class)
+            if asset_class is AssetClass.CRYPTO
+            else None
+        )
+
         return CompanyFacts(
             instrument_id=item.instrument_id,
             symbol=item.symbol,
@@ -99,7 +117,12 @@ class CompanyFactsService:
             # requests to one provider and they age separately: a quote is
             # good for fifteen minutes, fundamentals for a day.
             price_reading=quote.reading if quote is not None else None,
-            fundamentals_reading=valuation.reading,
+            # For a token, the fundamentals are the judged token facts,
+            # and they are dated by that reading — never by a generalist
+            # response the gate may have rejected.
+            fundamentals_reading=(
+                tokens.read if tokens is not None else valuation.reading
+            ),
             # The identity's own reading, carried from the watchlist fetch
             # that named this instrument. It ages on its own cadence, apart
             # from the quote and the fundamentals beside it.
@@ -107,7 +130,11 @@ class CompanyFactsService:
             # Market
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
-            market_cap=valuation.market_cap,
+            market_cap=(
+                tokens.established_value("market_cap")
+                if tokens is not None
+                else valuation.market_cap
+            ),
             realized_volatility=(
                 quote.realized_volatility if quote is not None else None
             ),
@@ -119,11 +146,41 @@ class CompanyFactsService:
             # that does not report, because it was never asked.
             earnings=earnings,
             # What a token has. Absent for a company, which has the
-            # balance-sheet fields below instead.
-            circulating_supply=(valuation.circulating_supply if is_token else None),
-            max_supply=valuation.max_supply if is_token else None,
-            volume_24h=valuation.volume_24h if is_token else None,
-            inception=valuation.inception if is_token else None,
+            # balance-sheet fields below instead. For a cryptocurrency,
+            # served from the gate's established facts only — a claim
+            # that did not survive validation reads as absent here.
+            circulating_supply=(
+                tokens.established_value("circulating_supply")
+                if tokens is not None
+                else (valuation.circulating_supply if is_token else None)
+            ),
+            max_supply=(
+                tokens.established_value("max_supply")
+                if tokens is not None
+                else (valuation.max_supply if is_token else None)
+            ),
+            # The generalist's broader volume concept, kept as exactly
+            # that — tracked spot volume is a different measurement and
+            # is never mapped onto it. Consumed only where the same
+            # source's market-cap claim was independently corroborated:
+            # a provider shown wrong about this instrument does not keep
+            # its other claims' authority.
+            volume_24h=(
+                (valuation.volume_24h if tokens.yahoo_market_cap_corroborated else None)
+                if tokens is not None
+                else (valuation.volume_24h if is_token else None)
+            ),
+            # Never the provider's inception field for a cryptocurrency:
+            # what it measures for a token was never established, and it
+            # claimed six years of history for a token that began trading
+            # in 2024 — which scored a favourable age point. Project age
+            # is unknown until a source with established semantics
+            # exists, and unknown is preferable to an invented fact.
+            inception=(
+                None
+                if asset_class is AssetClass.CRYPTO
+                else (valuation.inception if is_token else None)
+            ),
             # Valuation. A token has no earnings to be priced against, so
             # these stay absent however populated the response was.
             forward_pe=valuation.forward_pe if not is_token else None,

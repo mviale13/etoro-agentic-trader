@@ -37,6 +37,11 @@ class AcquiredSecurity:
     #: the rating is context the platform shows, never evidence it uses.
     rating: bool | None = None
 
+    #: The store now holds the crypto-native provider's market claims —
+    #: the raw material the validation gate judges on read. `None` where
+    #: the question does not apply: only a token has them.
+    token_facts: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""

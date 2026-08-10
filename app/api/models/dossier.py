@@ -94,6 +94,67 @@ class TokenRatingResponse(BaseModel):
     read: ProvenanceResponse
 
 
+class TokenFactRowResponse(BaseModel):
+    """One market fact about a token, with its standing beside it.
+
+    `stated` is the value already worded — "$18.3bn", "336,685,219",
+    "33.7%" — or null where the standing serves none, and `because`
+    then says why. The standing is what stops a provider claim reading
+    with an established fact's authority, and a MOVRvest calculation
+    masquerading as a provider observation.
+    """
+
+    label: str
+
+    stated: str | None
+
+    #: "established" | "claimed" | "rejected" | "absent" | "calculated"
+    standing: str
+
+    #: The same, worded for a reader by the backend.
+    standing_stated: str
+
+    #: Who reported it. Null for MOVRvest-calculated rows and absences.
+    source: str | None
+
+    #: How old the observation is, worded by the domain. Null where
+    #: nothing was observed.
+    age: str | None
+
+    #: The account of the standing: what corroborated it, what nothing
+    #: could check, or why it is absent.
+    because: str | None
+
+
+class TokenFactGroupResponse(BaseModel):
+    """One group of the asset profile — Market, Supply, Dilution…"""
+
+    title: str
+    rows: list[TokenFactRowResponse]
+
+
+class RejectedReadingResponse(BaseModel):
+    """A claim that failed validation, retained rather than discarded."""
+
+    statement: str
+
+
+class AssetProfileResponse(BaseModel):
+    """What is measured about this asset, judged before it is served.
+
+    The crypto counterpart of the filing sections a company dossier
+    carries. Every provider observation is dated and attributed; every
+    derived figure identifies itself as this platform's arithmetic over
+    established inputs; and the claims that failed validation are
+    disclosed with their reasons rather than silently replaced.
+    """
+
+    groups: list[TokenFactGroupResponse]
+
+    #: The validation gate's rejection ledger, worded by the domain.
+    rejected: list[RejectedReadingResponse]
+
+
 class CommitteeUncertaintyResponse(BaseModel):
     """One thing a committee could not settle, and whether looking again helps."""
 
@@ -427,6 +488,11 @@ class DossierResponse(BaseModel):
     #: A third party's published rating of this token, where one has
     #: been read. Shown, attributed, and consumed by nothing.
     token_rating: TokenRatingResponse | None = None
+
+    #: The token's market facts, judged through the validation gate —
+    #: standings, dates, sources and the rejection ledger. Null for
+    #: anything that is not a cryptocurrency.
+    asset_profile: AssetProfileResponse | None = None
 
     # ── The narrative (Communication layer, optional) ───────────────
     #: The case in words, or null with the reason beside it. Exactly one

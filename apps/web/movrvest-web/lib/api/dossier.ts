@@ -277,6 +277,9 @@ export interface DossierViewModel {
   /** Somebody else's rating of this token. Beside the case, never in it. */
   tokenRating: DossierTokenRating | null;
 
+  /** The token's judged market facts. Null for anything not a crypto asset. */
+  assetProfile: DossierAssetProfile | null;
+
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
   narrativeAbsent: string | null;
@@ -436,6 +439,41 @@ export interface DossierUnderstanding {
   businessAbsentBecause: string | null;
   financial: DossierFinancialUnderstanding | null;
   financialAbsentBecause: string | null;
+}
+
+/**
+ * One market fact about a token, with its standing beside it.
+ *
+ * The standing is the trust label: an established fact, a provider
+ * claim nothing could corroborate, MOVRvest's own arithmetic over
+ * established inputs, or a worded absence. All worded by the backend —
+ * this side styles a chip and prints strings.
+ */
+export interface TokenFactRow {
+  label: string;
+  /** The value already worded — "$18.3bn" — or null with the reason. */
+  stated: string | null;
+  /** "established" | "claimed" | "rejected" | "absent" | "calculated" */
+  standing: string;
+  /** The same, worded by the backend. */
+  standingStated: string;
+  source: string | null;
+  age: string | null;
+  because: string | null;
+}
+
+export interface TokenFactGroup {
+  title: string;
+  rows: readonly TokenFactRow[];
+}
+
+/**
+ * What is measured about this asset, judged before it is served — and
+ * the claims that failed validation, disclosed rather than discarded.
+ */
+export interface DossierAssetProfile {
+  groups: readonly TokenFactGroup[];
+  rejected: readonly string[];
 }
 
 export interface DossierResult {
@@ -656,6 +694,48 @@ function parseTokenRating(value: unknown): DossierTokenRating | null {
     pageUrl: optionalString(value.page_url, "token_rating.page_url"),
     reportUrl: optionalString(value.report_url, "token_rating.report_url"),
     read: parseProvenance(value.read, "token_rating.read"),
+  };
+}
+
+function parseAssetProfile(value: unknown): DossierAssetProfile | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "asset_profile".');
+  }
+
+  const groups = Array.isArray(value.groups) ? value.groups : [];
+  const rejected = Array.isArray(value.rejected) ? value.rejected : [];
+
+  return {
+    groups: groups.filter(isRecord).map((group, index) => ({
+      title: requireString(group.title, `asset_profile.groups[${index}].title`),
+      rows: (Array.isArray(group.rows) ? group.rows : [])
+        .filter(isRecord)
+        .map((row, rowIndex) => {
+          const field = `asset_profile.groups[${index}].rows[${rowIndex}]`;
+
+          return {
+            label: requireString(row.label, `${field}.label`),
+            stated: optionalString(row.stated, `${field}.stated`),
+            standing: requireString(row.standing, `${field}.standing`),
+            standingStated: requireString(
+              row.standing_stated,
+              `${field}.standing_stated`,
+            ),
+            source: optionalString(row.source, `${field}.source`),
+            age: optionalString(row.age, `${field}.age`),
+            because: optionalString(row.because, `${field}.because`),
+          };
+        }),
+    })),
+    rejected: rejected
+      .filter(isRecord)
+      .map((item, index) =>
+        requireString(item.statement, `asset_profile.rejected[${index}].statement`),
+      ),
   };
 }
 
@@ -1226,6 +1306,7 @@ function parseDossier(payload: unknown): DossierViewModel {
     committees: parseCommittees(payload.committees),
     evidenceAsOf: parseProvenance(payload.evidence_as_of, "evidence_as_of"),
     tokenRating: parseTokenRating(payload.token_rating),
+    assetProfile: parseAssetProfile(payload.asset_profile),
     narrative: parseNarrative(payload.narrative),
     narrativeAbsent: optionalString(
       payload.narrative_absent,

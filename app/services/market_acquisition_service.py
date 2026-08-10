@@ -16,6 +16,7 @@ from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.earnings_provider import CachedEarningsProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
+from app.providers.token_facts_provider import CachedTokenFactsProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
@@ -56,6 +57,7 @@ class MarketAcquisitionService:
         calendars: Any | None = None,
         rates: Any | None = None,
         ratings: Any | None = None,
+        token_facts: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -90,6 +92,11 @@ class MarketAcquisitionService:
         # A third party's published crypto rating. Read here so a page
         # never spends a metered credit, exactly as with everything else.
         self._ratings = ratings or CachedTokenInsightProvider()
+
+        # The same vendor's factual market claims for a token — a
+        # separate stream from the rating, acquired here and judged by
+        # the validation gate when read. A page never fetches either.
+        self._token_facts = token_facts or CachedTokenFactsProvider()
 
     async def acquire(
         self,
@@ -176,6 +183,11 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.CRYPTO
                 else None
             ),
+            token_facts=(
+                self._facts(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
         )
 
     def _rating(self, symbol: str) -> bool:
@@ -183,6 +195,14 @@ class MarketAcquisitionService:
 
         try:
             return self._ratings.rating(symbol) is not None
+        except Exception:
+            return False
+
+    def _facts(self, symbol: str) -> bool:
+        """Whether the store now holds the token's market claims."""
+
+        try:
+            return self._token_facts.claims(symbol) is not None
         except Exception:
             return False
 

@@ -7,12 +7,14 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.finding import statements
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
+from app.domain.token_fact_validation import NativeTokenClaims
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.earnings_provider import ReadDates
 from app.providers.yahoo_market_provider import YahooInstrument
 from app.services.company_facts_service import CompanyFactsService
 from app.services.quality_signal_service import QualitySignalService
+from app.services.token_facts_service import TokenFactsService
 
 #: The suite's "today" is the real one: the facts are read against the
 #: current UTC date, and a pinned date would rot overnight.
@@ -290,8 +292,50 @@ BITCOIN = WatchlistItem(
 )
 
 
+class StubNativeClaims:
+    """The crypto-native provider's stored claims, coherent and offline."""
+
+    def __init__(self, claims: NativeTokenClaims | None) -> None:
+        self._claims = claims
+
+    def claims(self, symbol: str) -> NativeTokenClaims | None:
+        return self._claims
+
+
+def bitcoin_native_claims() -> NativeTokenClaims:
+    """BTC as the crypto-native provider reports it, arithmetic intact.
+
+    The market value matches the generalist's stored figure, so the
+    cross-source check corroborates — the healthy-provider shape.
+    """
+
+    market_cap = 1_255_684_964_352.0
+    circulating = 20_065_192.0
+    price = market_cap / circulating
+
+    return NativeTokenClaims(
+        symbol="BTC",
+        provider_id="bitcoin",
+        source="TokenInsight",
+        read=Provenance(
+            source="TokenInsight",
+            observed_at=datetime(2026, 8, 10, 8, 0, tzinfo=UTC),
+        ),
+        price=price,
+        market_cap=market_cap,
+        circulating_supply=circulating,
+        max_supply=21_000_000.0,
+        fully_diluted_valuation=price * 21_000_000.0,
+        rank=1.0,
+        spot_volume_24h=3_657_000_000.0,
+        spot_volume_change_24h=0.5,
+        price_change_24h=0.006,
+    )
+
+
 def build_crypto_facts(
     earnings: StubEarningsProvider | None = None,
+    native: NativeTokenClaims | None = None,
 ) -> tuple[
     CompanyFacts,
     RecordingMarketProvider,
@@ -314,6 +358,15 @@ def build_crypto_facts(
         market_provider=market,  # type: ignore[arg-type]
         valuation_provider=valuation,  # type: ignore[arg-type]
         earnings_provider=earnings or StubEarningsProvider(),  # type: ignore[arg-type]
+        # The gate judges the stubbed claims against the same stored
+        # generalist snapshot the assembly reads — its own provider
+        # instance, so request-recording tests count one read.
+        token_facts=TokenFactsService(
+            native=StubNativeClaims(
+                native if native is not None else bitcoin_native_claims()
+            ),
+            valuations=RecordingValuationProvider(),
+        ),
     )
 
     return asyncio.run(service.build(BITCOIN)), market, valuation
@@ -371,15 +424,82 @@ def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:
     assert any("market value" in line for line in statements(signal.evidence))
 
 
-def test_a_token_carries_what_a_token_has() -> None:
-    """Supply, issuance cap, turnover and age — all in the same response."""
+def test_a_token_carries_what_the_gate_established() -> None:
+    """Supply and turnover — served from validated facts, not responses.
+
+    The market value and supply are the gate's established figures. The
+    generalist's broader volume flows because its own market-cap claim
+    was independently corroborated — the sibling-authority rule.
+    """
 
     facts, _, _ = build_crypto_facts()
 
+    assert facts.market_cap == 1_255_684_964_352.0
     assert facts.circulating_supply == 20_065_192.0
     assert facts.max_supply == 21_000_000.0
     assert facts.volume_24h == 19_753_431_040.0
-    assert facts.inception == datetime(2010, 7, 13, tzinfo=UTC)
+
+
+def test_a_tokens_age_is_never_a_provider_inception_field() -> None:
+    """The bad-age regression: HYPE claimed six years it never traded.
+
+    The generalist's inception field claimed 2020 for a token that began
+    trading in 2024, and the age factor scored the fabrication as
+    favourable. What that field measures for a token was never
+    established, so a cryptocurrency's inception is never read from it —
+    even where, as with Bitcoin's 2010, it happens to look right.
+    """
+
+    facts, _, _ = build_crypto_facts()
+
+    assert facts.inception is None
+
+    # And therefore no quality factor can say "Traded for N years".
+    from app.services.crypto_quality_signal_service import (
+        CryptoQualitySignalService,
+    )
+
+    signal = CryptoQualitySignalService().build(facts)
+
+    assert not any("Traded for" in line for line in statements(signal.evidence))
+
+
+def test_a_rejected_market_cap_forfeits_the_volume_gate() -> None:
+    """The bad-market-cap regression, at the assembly.
+
+    When the generalist's market-cap claim conflicts with the
+    corroborated one — HYPE's $8,105 — its broader volume figure is not
+    consumed either: a source shown wrong about the instrument keeps no
+    sibling authority, and the liquidity factor reads absent rather
+    than a ratio of nonsense.
+    """
+
+    market_cap = 18_260_000_000.0
+    circulating = 336_685_219.0
+    price = market_cap / circulating
+
+    facts, _, _ = build_crypto_facts(
+        native=NativeTokenClaims(
+            symbol="BTC",  # the fixture's instrument, with HYPE's shape
+            provider_id="hyperliquid",
+            source="TokenInsight",
+            read=Provenance(
+                source="TokenInsight",
+                observed_at=datetime(2026, 8, 10, 8, 0, tzinfo=UTC),
+            ),
+            price=price,
+            market_cap=market_cap,
+            circulating_supply=circulating,
+            max_supply=1_000_000_000.0,
+            fully_diluted_valuation=price * 1_000_000_000.0,
+        ),
+    )
+
+    # The established value, not the generalist's conflicting claim.
+    assert facts.market_cap == market_cap
+
+    # And no volume: the conflicting source's sibling claim is refused.
+    assert facts.volume_24h is None
 
 
 def test_a_token_carries_no_company_fundamentals() -> None:
