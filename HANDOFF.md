@@ -4,18 +4,15 @@ Everything is committed and green. Start a fresh window here.
 
 ## State
 
-`main` is at `ba82d54` (S5.3). One PR is open and awaiting your ruling:
-
-| PR | What | State |
-|---|---|---|
-| [#108](https://github.com/mviale13/etoro-agentic-trader/pull/108) | Crypto Intelligence, slice 1 | **open, awaiting ruling** |
+`main` is at `436191f`. **Nothing is open.**
 
 Merged today, in order: `#103` (S5 asset quality — and it also carried
 S3/S4/S4.5/S4.6, which had never been pushed), `#104` (S5.1 Model C
 gate), `#105` (supply-schedule research), `#106` (S5.2 cache schema +
-mechanical issuance), `#107` (S5.3 supply policy meaning).
+mechanical issuance), `#107` (S5.3 supply policy meaning), `#108`
+(Crypto Intelligence, slice 1).
 
-Gates on `#108`: ruff, ruff format, mypy (532 files), **1845 tests**,
+Gates on `main`: ruff, ruff format, mypy (532 files), **1845 tests**,
 verified with `git archive HEAD` in isolation.
 
 ## Where the work is
