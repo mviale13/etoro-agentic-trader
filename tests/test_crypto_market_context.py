@@ -44,6 +44,7 @@ from app.providers.coingecko_market_provider import (
     UniverseClaim,
 )
 from app.services.crypto_market_service import CryptoMarketService
+from tests.reachability import reachable
 
 CORPUS = ("BTC", "ETH", "SOL", "ADA", "ARB", "1INCH", "HYPE", "TAO")
 
@@ -657,32 +658,6 @@ _QUALITY_MODULES = (
 )
 
 
-def _identifiers(module: str) -> str:
-    """What a module can reach: names, attributes, imports. No prose."""
-
-    root = pathlib.Path(__file__).resolve().parent.parent
-
-    tree = ast.parse((root / module).read_text(encoding="utf-8"))
-
-    words: list[str] = []
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Name):
-            words.append(node.id)
-        elif isinstance(node, ast.Attribute):
-            words.append(node.attr)
-        elif isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
-            words.append(node.name)
-        elif isinstance(node, ast.alias):
-            words.append(f"{node.name} {node.asname or ''}")
-        elif isinstance(node, ast.ImportFrom):
-            words.append(node.module or "")
-        elif isinstance(node, ast.arg):
-            words.append(node.arg)
-
-    return "\n".join(words)
-
-
 def test_no_market_context_can_reach_asset_quality() -> None:
     """Acceptance 6 of the S5 ruling, made structural.
 
@@ -693,7 +668,7 @@ def test_no_market_context_can_reach_asset_quality() -> None:
     """
 
     for target in _QUALITY_MODULES:
-        code = _identifiers(target).casefold()
+        code = reachable(target).casefold()
 
         for forbidden in (
             "crypto_market",
@@ -723,7 +698,7 @@ def test_no_valuation_can_reach_asset_quality() -> None:
     """
 
     for target in _QUALITY_MODULES:
-        code = _identifiers(target).casefold()
+        code = reachable(target).casefold()
 
         for forbidden in (
             "fully_diluted",
