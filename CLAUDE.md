@@ -97,6 +97,12 @@ agreement beneath it — and then the governing financial model's
 questions over exactly those facts: answered, not yet answerable, or
 not applicable with the evidence that would answer it. Read-only, never
 observes; `--model` is inspection and never changes what governs),
+`movrvest crypto-market [SYMBOL]` (the crypto environment as the last
+cycle read it — capitalisation, volume, dominance, breadth — and, with a
+symbol, that asset's place in it: its returns, its peer group and why
+that group, and the arithmetic between them at the one interval every
+side is published at. Read-only, and no band, traffic light or regime
+label appears),
 `movrvest crypto-playbook [SYMBOL]` (which investment questions a
 digital asset is asked *at all*, and which are the wrong instrument for
 it: with a symbol, the archetype and its grounded basis, every question
@@ -214,6 +220,20 @@ figure means the security budget on Bitcoin, a burn on Ethereum and a
 buyback on Hyperliquid, and the mechanism is recognised from the
 provider's own sentence rather than declared. Consumed by nothing:
 guarded by an import-graph test over fifteen reasoning paths.
+
+**Market context is not Asset Quality** (S4,
+[`CRYPTO_MARKET_CONTEXT.md`](docs/architecture/CRYPTO_MARKET_CONTEXT.md)).
+`CryptoMarketSnapshot` is a third crypto evidence family, unreachable
+from the other two in both directions. Two rules it carries: **an
+interval is part of a figure** — a level is INSTANT, a change names its
+window, and `relative_return` refuses unless both sides match — and **a
+capitalisation change is not a return**, so the comparator is MOVRvest's
+own cap-weighted return over a *named* universe (the provider's
+aggregate moved +0.05% where its top 250 returned +0.11%). A
+`MarketPeerGroup` is a vendor's category and **never** an
+`AnalyticalArchetype`: ETH is read as a smart-contract network and
+compared against a Layer 1 group containing Bitcoin, and the two modules
+cannot import each other.
 
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that

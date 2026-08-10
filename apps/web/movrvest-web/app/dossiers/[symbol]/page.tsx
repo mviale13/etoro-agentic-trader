@@ -17,6 +17,7 @@ import type {
   DossierAssetProfile,
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
+  DossierCryptoMarket,
   DossierCryptoPlaybook,
   DossierFinancialUnderstanding,
   DossierMeasure,
@@ -31,6 +32,7 @@ import type {
   DossierViewModel,
   TokenFactRow,
   CryptoQuestionView,
+  MarketObservationView,
   ValueChainView,
 } from "@/lib/api/dossier";
 
@@ -1063,6 +1065,277 @@ function ValueChain({ chain }: { chain: ValueChainView }) {
   );
 }
 
+/**
+ * What kind of crypto market this asset is trading inside.
+ *
+ * Deliberately its own section, below the asset's own evidence and
+ * outside every score on the page. The whole point of the boundary is
+ * that an investor can tell "this asset is weakening" from "crypto
+ * broadly is weakening", and a card that mixed the two would destroy
+ * exactly the distinction it exists to make.
+ *
+ * Three readings sit side by side and are never merged: the market, the
+ * peer group, and the asset's own return. The differences between them
+ * are arithmetic, stated in percentage points and wearing no adjective —
+ * no traffic light, no band, no regime label. A token that fell less
+ * than its peers is not thereby a better asset, and nothing here says
+ * it is.
+ */
+function CryptoMarketContext({
+  context,
+  symbol,
+}: {
+  context: DossierCryptoMarket;
+  symbol: string;
+}) {
+  if (context.unavailableBecause) {
+    return (
+      <section aria-labelledby="crypto-market-heading">
+        <SectionHeading id="crypto-market-heading">
+          Crypto market context
+        </SectionHeading>
+
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
+          {context.unavailableBecause}
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-labelledby="crypto-market-heading">
+      <SectionHeading id="crypto-market-heading">
+        Crypto market context
+      </SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        The environment {symbol} trades inside, and its place in it. This is
+        context and not quality: none of it reached the recommendation above,
+        and a token that fell less than its peers is not thereby a better
+        asset. Every figure is one provider&apos;s claim — a total market
+        capitalisation is not independently reproducible, because the universe
+        is the vendor&apos;s own.
+      </p>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm font-semibold text-slate-800">Crypto market</p>
+
+            <span className="text-xs text-slate-400">
+              {context.marketAge ?? context.marketSource}
+            </span>
+          </div>
+
+          <dl className="mt-3 space-y-2">
+            {context.market.map((item) => (
+              <MarketRow key={`${item.metric}-${item.interval}`} item={item} />
+            ))}
+          </dl>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+          <p className="text-sm font-semibold text-slate-800">
+            {symbol} — its own returns
+          </p>
+
+          <dl className="mt-3 space-y-2">
+            {context.returns.map((item) => (
+              <MarketRow key={`${item.metric}-${item.interval}`} item={item} />
+            ))}
+          </dl>
+
+          {/* An interval with a return and no comparator is a gap in the
+              comparator, not an asset that did not move. */}
+          {context.uncompared.length > 0 ? (
+            <p className="mt-3 text-xs leading-5 text-slate-400">
+              No comparator was published at{" "}
+              {context.uncompared.join(", ")}: the provider reports asset
+              returns at four intervals and market and category figures at
+              one, so 24 hours is the only window where a difference means
+              anything.
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      {/* The peer group is a vendor's category under the vendor's name.
+          It is not the analytical archetype above it, and the page says
+          so where a reader would otherwise assume they agree. */}
+      <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-4">
+        {context.peer ? (
+          <>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold text-slate-800">
+                Peer group — {context.peer.name}
+              </p>
+
+              <span className="text-xs uppercase tracking-[0.15em] text-slate-400">
+                {context.peer.provider}&apos;s category
+              </span>
+            </div>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Selected because {context.peer.selectedBecause}
+            </p>
+
+            {context.peer.caveats.map((caveat) => (
+              <p key={caveat} className="mt-2 text-xs leading-5 text-amber-700">
+                {caveat}
+              </p>
+            ))}
+
+            {context.peerObservations.length > 0 ? (
+              <dl className="mt-3 space-y-2">
+                {context.peerObservations.map((item) => (
+                  <MarketRow
+                    key={`${item.metric}-${item.interval}`}
+                    item={item}
+                  />
+                ))}
+              </dl>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-semibold text-slate-800">
+              Peer group — none
+            </p>
+
+            {/* A fake comparison would put a number on the page that
+                reads like a measurement. The reason is shown instead. */}
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              {context.peerUnavailableBecause}
+            </p>
+          </>
+        )}
+
+        {context.considered.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+              Considered and not used
+            </p>
+
+            <ul className="mt-1.5 space-y-1">
+              {context.considered.map((item) => (
+                <li key={item.name} className="text-xs leading-5 text-slate-500">
+                  <span className="font-medium text-slate-600">{item.name}</span>{" "}
+                  — {item.rejectedBecause}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      {context.relative.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Relative performance — MOVRvest arithmetic
+          </p>
+
+          <dl className="mt-3 space-y-3">
+            {context.relative.map((item) => (
+              <div key={`${item.comparator}-${item.interval}`}>
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <dt className="text-slate-700">
+                    Against {item.comparator}
+                    <span className="ml-1.5 text-xs text-slate-400">
+                      over {item.interval}
+                    </span>
+                  </dt>
+
+                  {/* No colour: a difference in percentage points is a
+                      measurement, and shading it green or red would be
+                      a verdict this platform has not earned. */}
+                  <dd className="shrink-0 font-semibold tabular-nums text-slate-800">
+                    {item.delta}
+                  </dd>
+                </div>
+
+                <p className="mt-0.5 text-xs leading-5 text-slate-500">
+                  {item.stated}
+                </p>
+
+                {item.caveat ? (
+                  <p className="mt-0.5 text-xs leading-5 text-amber-700">
+                    {item.caveat}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </dl>
+
+          {context.concentrations.length > 0 ? (
+            <div className="mt-4 border-t border-slate-200 pt-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                How much of each comparator this asset is
+              </p>
+
+              <ul className="mt-1.5 space-y-1">
+                {context.concentrations.map((item) => (
+                  <li
+                    key={item.comparator}
+                    className="text-xs leading-5 text-slate-500"
+                  >
+                    {item.stated}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function MarketRow({ item }: { item: MarketObservationView }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <dt className="text-slate-700">
+          {item.label}
+          {item.interval === "instant" ? null : (
+            <span className="ml-1.5 text-xs text-slate-400">
+              over {item.interval}
+            </span>
+          )}
+        </dt>
+
+        <dd className="flex shrink-0 items-baseline gap-2">
+          <span
+            className={
+              item.stated === null
+                ? "text-slate-400"
+                : "font-semibold tabular-nums text-slate-800"
+            }
+          >
+            {item.stated ?? "—"}
+          </span>
+
+          {/* Every figure here is one provider's claim, and the label
+              says so rather than letting a number look established. */}
+          <span
+            className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500"
+            title={item.because ?? undefined}
+          >
+            {item.standingStated}
+          </span>
+        </dd>
+      </div>
+
+      {/* An aggregate is an aggregate of something, and which assets
+          were counted is part of the number. */}
+      {item.derived && item.universe ? (
+        <p className="mt-0.5 text-xs leading-5 text-slate-400">
+          MOVRvest&apos;s arithmetic over {item.universe}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
@@ -1096,6 +1369,13 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       {dossier.cryptoPlaybook ? (
         <CryptoPlaybook
           playbook={dossier.cryptoPlaybook}
+          symbol={dossier.symbol}
+        />
+      ) : null}
+
+      {dossier.cryptoMarket ? (
+        <CryptoMarketContext
+          context={dossier.cryptoMarket}
           symbol={dossier.symbol}
         />
       ) : null}

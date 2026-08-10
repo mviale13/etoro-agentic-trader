@@ -19,6 +19,16 @@ never touched the network began reading a 10-K.
 
 So `SETTINGS_READERS` names every module that can reach a credential, and
 adding one means adding it here. The cost of forgetting is invisible.
+
+**A keyless provider needs the same guard for a different reason.** The
+crypto market endpoints answer without a credential, so silencing a key
+does nothing for them — and the acquisition cycle calls them
+unconditionally rather than only for a crypto security. A test that
+reached them would not fail: it would pass, eight HTTP calls and ninety
+seconds later, having spent a shared rate limit. It was caught exactly
+that way, by running the committed tree in isolation where no cache
+stood in the way. `NETWORK_SEAMS` blocks the wire itself, so a test that
+reaches for it goes red with the fix in the message.
 """
 
 from __future__ import annotations
@@ -54,6 +64,15 @@ MODEL_ENVIRONMENT = (
 )
 
 
+#: Every method that puts a request on the wire without needing a key.
+#:
+#: Each is the one place its provider touches the network, so blocking it
+#: blocks the provider without pretending to know its internals. A test
+#: that wants a provider's behaviour passes a stub reader; a test that
+#: wants the parsing passes a recorded payload. Neither needs this.
+NETWORK_SEAMS = ("app.providers.coingecko_market_provider.CoinGeckoMarketProvider",)
+
+
 @pytest.fixture(autouse=True)
 def hermetic_model_configuration(monkeypatch):
     from app.config import Settings
@@ -66,3 +85,20 @@ def hermetic_model_configuration(monkeypatch):
 
     for name in MODEL_ENVIRONMENT:
         monkeypatch.delenv(name, raising=False)
+
+    def _refuse(*args, **kwargs):
+        raise AssertionError(
+            "A test reached a live provider. Pass a stub reader or a "
+            "recorded claim set instead — see tests/conftest.py."
+        )
+
+    for seam in NETWORK_SEAMS:
+        monkeypatch.setattr(f"{seam}._request", _refuse)
+
+        # A blocked call still paced itself first: the batch sleeps
+        # between requests to stay under a rate limit, and eight of those
+        # turned a four-second suite into ninety-six. Refusing the wire
+        # and leaving the wait in place is a guard that works and costs
+        # more than the calls it prevented.
+        monkeypatch.setattr(f"{seam}.PACE", 0.0)
+        monkeypatch.setattr(f"{seam}.RATE_LIMIT_PAUSE", 0.0)

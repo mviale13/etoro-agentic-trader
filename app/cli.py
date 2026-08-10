@@ -10,6 +10,7 @@ from app.commands import (
     committee,
     company,
     credentials,
+    crypto_market,
     crypto_playbook,
     daily,
     decide,
@@ -248,6 +249,25 @@ def build_parser() -> argparse.ArgumentParser:
     playbook_parser.add_argument(
         "symbol",
         help="Ticker symbol, for example DIS, NVDA or CAT",
+    )
+
+    crypto_market_parser = subparsers.add_parser(
+        "crypto-market",
+        help="Show what kind of crypto market an asset is trading inside",
+        description=(
+            "The crypto environment as the last acquisition cycle read "
+            "it — total capitalisation, volume, dominance, breadth — and, "
+            "with a symbol, that asset's place in it: its returns, its "
+            "peer group and why that group, and the arithmetic between "
+            "them at the one interval every side is published at. "
+            "Read-only, and nothing here is a verdict: no band, no "
+            "traffic light and no regime label"
+        ),
+    )
+    crypto_market_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC or HYPE. Omit for the market itself",
     )
 
     crypto_playbook_parser = subparsers.add_parser(
@@ -538,6 +558,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "playbook":
         return await playbook.run(args.symbol)
+
+    if args.command == "crypto-market":
+        return await crypto_market.run(args.symbol)
 
     if args.command == "crypto-playbook":
         return await crypto_playbook.run(args.symbol)
