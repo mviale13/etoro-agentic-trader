@@ -48,7 +48,7 @@ HYPERLIQUID = {
 def test_the_payload_distills_into_unjudged_claims() -> None:
     claims = TokenFactsProvider._distill("HYPE", "hyperliquid", HYPERLIQUID)
 
-    assert claims.symbol == "HYPE"
+    assert claims.symbol_echo == "HYPE"
     assert claims.provider_id == "hyperliquid"
     assert claims.source == "TokenInsight"
     assert claims.price == 54.23

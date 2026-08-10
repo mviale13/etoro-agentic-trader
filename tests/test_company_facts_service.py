@@ -7,7 +7,7 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.finding import statements
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
-from app.domain.token_fact_validation import NativeTokenClaims
+from app.domain.token_fact_validation import TokenClaimSet
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.earnings_provider import ReadDates
@@ -292,50 +292,83 @@ BITCOIN = WatchlistItem(
 )
 
 
-class StubNativeClaims:
-    """The crypto-native provider's stored claims, coherent and offline."""
+class StubClaimSource:
+    """One pool claimant, offline."""
 
-    def __init__(self, claims: NativeTokenClaims | None) -> None:
+    def __init__(self, claims: TokenClaimSet | None) -> None:
         self._claims = claims
 
-    def claims(self, symbol: str) -> NativeTokenClaims | None:
+    def claim_set(self, symbol: str) -> TokenClaimSet | None:
         return self._claims
 
 
-def bitcoin_native_claims() -> NativeTokenClaims:
-    """BTC as the crypto-native provider reports it, arithmetic intact.
+BTC_MARKET_CAP = 1_255_684_964_352.0
+BTC_CIRCULATING = 20_065_192.0
+BTC_PRICE = BTC_MARKET_CAP / BTC_CIRCULATING
 
-    The market value matches the generalist's stored figure, so the
-    cross-source check corroborates — the healthy-provider shape.
-    """
 
-    market_cap = 1_255_684_964_352.0
-    circulating = 20_065_192.0
-    price = market_cap / circulating
+def bitcoin_claims(source: str, **overrides: object) -> TokenClaimSet:
+    """BTC as one claimant reports it, arithmetic intact."""
 
-    return NativeTokenClaims(
-        symbol="BTC",
-        provider_id="bitcoin",
-        source="TokenInsight",
-        read=Provenance(
-            source="TokenInsight",
+    values: dict[str, object] = {
+        "source": source,
+        "read": Provenance(
+            source=source,
             observed_at=datetime(2026, 8, 10, 8, 0, tzinfo=UTC),
         ),
-        price=price,
-        market_cap=market_cap,
-        circulating_supply=circulating,
-        max_supply=21_000_000.0,
-        fully_diluted_valuation=price * 21_000_000.0,
+        "symbol_echo": "BTC",
+        "price": BTC_PRICE,
+        "market_cap": BTC_MARKET_CAP,
+        "circulating_supply": BTC_CIRCULATING,
+        "max_supply": 21_000_000.0,
+        "fully_diluted_valuation": BTC_PRICE * 21_000_000.0,
+    }
+
+    values.update(overrides)
+
+    return TokenClaimSet(**values)  # type: ignore[arg-type]
+
+
+def bitcoin_pool() -> tuple[StubClaimSource, ...]:
+    """Two independent claimants agreeing, plus the generalist's voice.
+
+    Independent corroboration is what establishment now requires —
+    agreement inside one provider is not corroboration — and the
+    generalist's matching market-cap claim is what opens the volume
+    gate.
+    """
+
+    native = bitcoin_claims(
+        "TokenInsight",
+        provider_id="bitcoin",
         rank=1.0,
         spot_volume_24h=3_657_000_000.0,
         spot_volume_change_24h=0.5,
         price_change_24h=0.006,
     )
 
+    corroborator = bitcoin_claims("CoinGecko", provider_id="bitcoin")
+
+    generalist = TokenClaimSet(
+        source="Yahoo Finance",
+        read=Provenance(
+            source="Yahoo Finance",
+            observed_at=datetime(2026, 8, 10, 8, 0, tzinfo=UTC),
+        ),
+        market_cap=BTC_MARKET_CAP,
+        circulating_supply=BTC_CIRCULATING,
+    )
+
+    return (
+        StubClaimSource(native),
+        StubClaimSource(corroborator),
+        StubClaimSource(generalist),
+    )
+
 
 def build_crypto_facts(
     earnings: StubEarningsProvider | None = None,
-    native: NativeTokenClaims | None = None,
+    sources: tuple[StubClaimSource, ...] | None = None,
 ) -> tuple[
     CompanyFacts,
     RecordingMarketProvider,
@@ -358,14 +391,8 @@ def build_crypto_facts(
         market_provider=market,  # type: ignore[arg-type]
         valuation_provider=valuation,  # type: ignore[arg-type]
         earnings_provider=earnings or StubEarningsProvider(),  # type: ignore[arg-type]
-        # The gate judges the stubbed claims against the same stored
-        # generalist snapshot the assembly reads — its own provider
-        # instance, so request-recording tests count one read.
         token_facts=TokenFactsService(
-            native=StubNativeClaims(
-                native if native is not None else bitcoin_native_claims()
-            ),
-            valuations=RecordingValuationProvider(),
+            sources=sources if sources is not None else bitcoin_pool(),
         ),
     )
 
@@ -464,41 +491,69 @@ def test_a_tokens_age_is_never_a_provider_inception_field() -> None:
     assert not any("Traded for" in line for line in statements(signal.evidence))
 
 
-def test_a_rejected_market_cap_forfeits_the_volume_gate() -> None:
-    """The bad-market-cap regression, at the assembly.
+def test_a_conflicted_market_value_never_leaks_as_established() -> None:
+    """The S1 regression, at the assembly.
 
-    When the generalist's market-cap claim conflicts with the
-    corroborated one — HYPE's $8,105 — its broader volume figure is not
-    consumed either: a source shown wrong about the instrument keeps no
-    sibling authority, and the liquidity factor reads absent rather
-    than a ratio of nonsense.
+    Two coherent claimants disagreeing materially — the HYPE shape —
+    leave the market value CONFLICTED. The assembly serves None, never
+    one side of the argument, and the volume gate stays shut with it:
+    a conflicted market value corroborates nobody.
     """
 
-    market_cap = 18_260_000_000.0
-    circulating = 336_685_219.0
-    price = market_cap / circulating
+    def hype_shaped(
+        source: str, market_cap: float, circulating: float
+    ) -> TokenClaimSet:
+        price = market_cap / circulating
 
-    facts, _, _ = build_crypto_facts(
-        native=NativeTokenClaims(
-            symbol="BTC",  # the fixture's instrument, with HYPE's shape
-            provider_id="hyperliquid",
-            source="TokenInsight",
+        return TokenClaimSet(
+            source=source,
             read=Provenance(
-                source="TokenInsight",
+                source=source,
                 observed_at=datetime(2026, 8, 10, 8, 0, tzinfo=UTC),
             ),
+            symbol_echo="BTC",  # the fixture's instrument, HYPE's shape
             price=price,
             market_cap=market_cap,
             circulating_supply=circulating,
             max_supply=1_000_000_000.0,
             fully_diluted_valuation=price * 1_000_000_000.0,
+        )
+
+    facts, _, _ = build_crypto_facts(
+        sources=(
+            StubClaimSource(
+                hype_shaped("TokenInsight", 18_260_000_000.0, 336_685_219.0)
+            ),
+            StubClaimSource(hype_shaped("CoinGecko", 12_150_000_000.0, 222_445_714.0)),
         ),
     )
 
-    # The established value, not the generalist's conflicting claim.
-    assert facts.market_cap == market_cap
+    # Neither claimant's figure is served: the conflict does not leak.
+    assert facts.market_cap is None
+    assert facts.circulating_supply is None
 
-    # And no volume: the conflicting source's sibling claim is refused.
+    # And no volume: nothing corroborated the generalist's claim.
+    assert facts.volume_24h is None
+
+
+def test_a_single_claimant_cannot_establish_the_assembly_inputs() -> None:
+    """Agreement inside one provider is not corroboration.
+
+    A lone coherent claimant — the stale-ARB shape — yields claims,
+    and the assembly consumes established values only: every token
+    field reads absent, which is the honest state of single-source
+    knowledge.
+    """
+
+    facts, _, _ = build_crypto_facts(
+        sources=(
+            StubClaimSource(bitcoin_claims("TokenInsight", provider_id="bitcoin")),
+        ),
+    )
+
+    assert facts.market_cap is None
+    assert facts.circulating_supply is None
+    assert facts.max_supply is None
     assert facts.volume_24h is None
 
 

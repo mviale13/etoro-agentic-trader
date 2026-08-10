@@ -35,6 +35,7 @@ SETTINGS_READERS = (
     # key whose allowance a test could quietly spend.
     "app.providers.token_insight_provider",
     "app.providers.token_facts_provider",
+    "app.providers.coingecko_facts_provider",
 )
 
 #: Every variable that could turn a reading or a drafting on, or hand it
@@ -49,6 +50,7 @@ MODEL_ENVIRONMENT = (
     "ANTHROPIC_API_KEY",
     "ANTHROPIC_AUTH_TOKEN",
     "TOKENINSIGHT_API_KEY",
+    "COINGECKO_API_KEY",
 )
 
 

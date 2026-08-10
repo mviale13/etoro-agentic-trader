@@ -23,7 +23,12 @@ from app.domain.token_facts import TokenFact, TokenMarketFacts
 
 #: How each fact's value is worded. Formatting only — the judging that
 #: decided whether a value is served at all happened in the domain.
-_MONEY = ("market_cap", "spot_volume_24h", "fully_diluted_valuation")
+_MONEY = (
+    "market_cap",
+    "spot_volume_24h",
+    "market_volume_24h",
+    "fully_diluted_valuation",
+)
 _COUNT = ("circulating_supply", "total_supply", "max_supply")
 _SIGNED_SHARE = ("spot_volume_change_24h", "price_change_24h")
 
@@ -50,6 +55,7 @@ def asset_profile_response(
             rows=[
                 _row(outcome, "spot_volume_24h"),
                 _row(outcome, "spot_volume_change_24h"),
+                _row(outcome, "market_volume_24h"),
             ],
         ),
         TokenFactGroupResponse(

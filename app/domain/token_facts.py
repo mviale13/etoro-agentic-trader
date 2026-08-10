@@ -79,6 +79,7 @@ TOKEN_FACTS = (
     "price_change_24h",
     "spot_volume_24h",
     "spot_volume_change_24h",
+    "market_volume_24h",
     "circulating_supply",
     "total_supply",
     "max_supply",

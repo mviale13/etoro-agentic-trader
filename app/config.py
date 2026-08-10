@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     #: as a named third party's opinion and consumes nowhere.
     tokeninsight_api_key: str = ""
 
+    #: CoinGecko's optional free demo key — registered by the operator,
+    #: never by this platform. The keyless tier works, slowly; the key
+    #: lifts the rate limit for the daily acquisition batch.
+    coingecko_api_key: str = ""
+
     allowed_symbols: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["BTC", "ETH", "SOL", "SPY", "QQQ"]
     )
