@@ -967,7 +967,21 @@ def _flow_sentence(reading: EtfFlowReading, symbol: str) -> str:
 
     tail = f" — {_SHAPES[shape]}" if shape in _SHAPES else ""
 
-    return f"{head}; {extremes}{tail}."
+    # The run, where there is one. A month's shape and its most recent
+    # days are different questions, and an investor asking whether
+    # anything has changed lately is asking the second.
+    streak = ""
+
+    if reading.current_streak:
+        run = abs(reading.current_streak)
+
+        streak = (
+            f" The last {run} published session(s) were "
+            + ("inflows" if reading.current_streak > 0 else "outflows")
+            + "."
+        )
+
+    return f"{head}; {extremes}{tail}.{streak}"
 
 
 #: How each flow shape is worded. Three outcomes, and the wording is the

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     anthropic_auth_token: str = ""
     openai_api_key: str = ""
     movrvest_executive_writer: str = ""
+    movrvest_intelligence_synthesis: str = ""
     movrvest_writer_provider: str = ""
     movrvest_writer_model: str = ""
 

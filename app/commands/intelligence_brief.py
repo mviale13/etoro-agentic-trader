@@ -22,7 +22,9 @@ from app.domain.crypto_intelligence import (
     CryptoIntelligenceSnapshot,
     Driver,
 )
+from app.domain.intelligence_synthesis import IntelligenceSynthesis
 from app.services.crypto_intelligence_service import CryptoIntelligenceService
+from app.services.intelligence_synthesis_service import IntelligenceSynthesisService
 
 #: How each epistemic type appears beside a statement. Short, because
 #: the label must not outweigh the sentence it qualifies.
@@ -36,7 +38,7 @@ _MARK = {
 
 
 class IntelligenceBriefCommand:
-    def run(self, symbol: str | None = None, evidence: bool = False) -> int:
+    async def run(self, symbol: str | None = None, evidence: bool = False) -> int:
         service = CryptoIntelligenceService()
 
         if symbol is None:
@@ -51,12 +53,20 @@ class IntelligenceBriefCommand:
             print(f"{normalized} — no intelligence: this is not a digital asset.")
             return 1
 
-        _render(snapshot, evidence)
+        # The reading is asked for *after* the evidence is assembled and
+        # is allowed to be absent. Nothing below depends on it.
+        synthesis = await IntelligenceSynthesisService().synthesise(snapshot)
+
+        _render(snapshot, evidence, synthesis)
 
         return 0
 
 
-def _render(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> None:
+def _render(
+    snapshot: CryptoIntelligenceSnapshot,
+    evidence: bool,
+    synthesis: IntelligenceSynthesis | None = None,
+) -> None:
     assignment = archetype_for(snapshot.symbol)
 
     print(f"{snapshot.symbol} — current intelligence")
@@ -66,6 +76,12 @@ def _render(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> None:
         print()
         print(_wrap(snapshot.thin_because, "  "))
         return
+
+    # The answer first, the evidence second. A reader who wants only the
+    # reading stops here; a reader who wants to check it reads on, and
+    # every statement above names the findings it rests on.
+    if synthesis is not None:
+        _render_synthesis(synthesis, evidence)
 
     _section("What changed", _changes(snapshot, evidence))
     _section("Material developments", _events(snapshot, evidence))
@@ -88,6 +104,48 @@ def _render(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> None:
             "`attributed` is a source's opinion and `MOVRvest` is this "
             "platform's reading. Nothing here is a recommendation, and "
             "nothing here changes one.",
+            "  ",
+        )
+    )
+
+
+def _render_synthesis(synthesis: IntelligenceSynthesis, evidence: bool) -> None:
+    """The reading, or the worded reason there is none. Never both.
+
+    An absent synthesis is printed as a single line rather than
+    swallowed: an investor who cannot tell whether the model was off,
+    refused, or wrote something that failed grounding is being told less
+    than this platform knows.
+    """
+
+    if not synthesis.status.is_written:
+        print()
+        print(_wrap(f"MOVRvest reading — {synthesis.absent_because}", "  "))
+        return
+
+    for title, items in (
+        ("What matters now", synthesis.what_matters),
+        ("Why it matters", synthesis.why_it_matters),
+        ("Watch next", synthesis.watch_next),
+    ):
+        lines: list[str] = []
+
+        for item in items:
+            tail = f"\n      [{', '.join(item.refs)}]" if evidence else ""
+
+            label = f"{item.theme} — " if item.theme else ""
+
+            lines.append(f"{label}{item.stated}{tail}")
+
+        _section(title, lines)
+
+    print()
+    print(
+        _wrap(
+            f"The three sections above are a reading of the evidence below, "
+            f"written by {synthesis.model} over the findings this platform "
+            "holds and nothing else. Every statement cites them; run with "
+            "--evidence to see which. It is not a recommendation.",
             "  ",
         )
     )
@@ -291,4 +349,4 @@ def _wrap(text: str, indent: str, width: int = 78) -> str:
 
 
 async def run(symbol: str | None = None, evidence: bool = False) -> int:
-    return IntelligenceBriefCommand().run(symbol, evidence)
+    return await IntelligenceBriefCommand().run(symbol, evidence)

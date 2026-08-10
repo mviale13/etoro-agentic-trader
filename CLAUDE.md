@@ -421,6 +421,38 @@ of demand", so **the driver changed too** and BTC now has no flow
 tailwind. Cache schema 2, with the migration leaving the new figures
 **absent rather than zero**.
 
+**The LLM prioritises, connects and explains; it produces no evidence**
+(Crypto Intelligence slice 3,
+[`CRYPTO_INTELLIGENCE_SYNTHESIS.md`](docs/architecture/CRYPTO_INTELLIGENCE_SYNTHESIS.md),
+built and **off by default**). One call per asset over the findings
+already held — no tools, no web, no retrieval — returning *what matters
+/ why it matters / watch next*, **each item carrying its own refs**.
+`MOVRVEST_INTELLIGENCE_SYNTHESIS=on`; the provider and model are the
+Executive Writer's, the on switch is separate, and the seam, the
+`NarrativeFinding`, the fail-closed validation and the worded absence
+are all reused — **a different prompt and schema were expected; a second
+trust architecture was not.**
+
+**The validator is the slice, and calibrating it against live drafts was
+the work.** Six rules: unknown refs, unsupported figures (including a
+**rounded** one — the model wrote `5.61m` where evidence said
+`5,610,842`), unsupported names, guarded domain concepts (*proof of
+stake*, *21 million*, *the merge*), causal verbs without an attributed
+cause, and verdicts aimed at the reader. It was wrong in **both**
+directions against real output: it refused *"these funds already hold
+1,223,634 BTC"* because `hold` is also a verdict — **a verb is not a
+verdict** — and refused *"Operational signals are cautious"* because
+capitalised is not the same as a proper noun. Exempting the first word
+then let **"Coinbase led the buying."** through, which the failure
+demonstration caught. The resolution is measured, not argued: across
+nine live drafts every sentence-initial rejection was ordinary English
+and fabricated names appeared **zero** times, so the first word is
+challenged only when *shaped* like a name. **The residual limit is
+stated rather than hidden.** Also caught: `sent ` matches inside
+*absent* and *present*; `staking` must stem to *staked*; `AI's` must
+strip its possessive. **Acceptance 9 of 12 live drafts**, and a rejected
+draft renders the deterministic brief with one line saying why.
+
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
 attributes rather than layout, and reports `EventFeedHealth` when it
