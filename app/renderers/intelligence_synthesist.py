@@ -46,6 +46,7 @@ from typing import Any
 from app.domain.crypto_event import anchors_in
 from app.domain.crypto_intelligence import CryptoIntelligenceSnapshot
 from app.domain.executive_narrative import NarrativeFinding
+from app.domain.intelligence_journal import TemporalFact
 from app.domain.intelligence_synthesis import (
     MAX_THEME_WORDS,
     SynthesisItem,
@@ -768,6 +769,7 @@ class SynthesisRejected(Exception):
 
 def build_findings(
     snapshot: CryptoIntelligenceSnapshot,
+    history: tuple[TemporalFact, ...] = (),
 ) -> tuple[NarrativeFinding, ...]:
     """Word the snapshot as numbered findings — nothing else is supplied.
 
@@ -869,6 +871,26 @@ def build_findings(
         [
             (f"{item.stated} Measured by: {item.measured_by}", "Open question")
             for item in snapshot.watch_next
+        ],
+    )
+
+    # What the record says, and only what it says. Each carries its own
+    # journal entry ids, so a temporal claim in the synthesis is
+    # checkable against the observations that produced it — the model
+    # does not inspect history and decide what a trend is. **Code
+    # establishes history; the model explains grounded history.**
+    add(
+        "H",
+        [
+            (
+                fact.stated,
+                (
+                    f"Journal — {fact.status.stated}, from "
+                    f"{len(fact.entry_ids)} recorded observation(s): "
+                    + ", ".join(fact.entry_ids[-3:])
+                ),
+            )
+            for fact in history
         ],
     )
 
@@ -1337,10 +1359,11 @@ class IntelligenceSynthesist:
     async def synthesise(
         self,
         snapshot: CryptoIntelligenceSnapshot,
+        history: tuple[TemporalFact, ...] = (),
     ) -> tuple[tuple[tuple[SynthesisItem, ...], ...], str]:
         """The three validated sections and the model that wrote them."""
 
-        findings = build_findings(snapshot)
+        findings = build_findings(snapshot, history)
 
         request = DraftRequest(
             system_prompt=SYSTEM_PROMPT,

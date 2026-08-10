@@ -22,8 +22,10 @@ from app.domain.crypto_intelligence import (
     CryptoIntelligenceSnapshot,
     Driver,
 )
+from app.domain.intelligence_journal import TemporalFact
 from app.domain.intelligence_synthesis import IntelligenceSynthesis
 from app.services.crypto_intelligence_service import CryptoIntelligenceService
+from app.services.intelligence_journal_service import IntelligenceJournalService
 from app.services.intelligence_synthesis_service import IntelligenceSynthesisService
 
 #: How each epistemic type appears beside a statement. Short, because
@@ -53,11 +55,16 @@ class IntelligenceBriefCommand:
             print(f"{normalized} — no intelligence: this is not a digital asset.")
             return 1
 
+        # What the record says, deterministically, before any model is
+        # asked. History is evidence the synthesis may cite; it is never
+        # something the synthesis establishes.
+        history = IntelligenceJournalService().notable(normalized)
+
         # The reading is asked for *after* the evidence is assembled and
         # is allowed to be absent. Nothing below depends on it.
-        synthesis = await IntelligenceSynthesisService().synthesise(snapshot)
+        synthesis = await IntelligenceSynthesisService().synthesise(snapshot, history)
 
-        _render(snapshot, evidence, synthesis)
+        _render(snapshot, evidence, synthesis, history)
 
         return 0
 
@@ -66,6 +73,7 @@ def _render(
     snapshot: CryptoIntelligenceSnapshot,
     evidence: bool,
     synthesis: IntelligenceSynthesis | None = None,
+    history: tuple[TemporalFact, ...] = (),
 ) -> None:
     assignment = archetype_for(snapshot.symbol)
 
@@ -89,6 +97,7 @@ def _render(
     _section("Tailwinds", [_driver_line(d) for d in snapshot.tailwinds])
     _section("Headwinds", [_driver_line(d) for d in snapshot.headwinds])
     _section("What sources are saying", _narratives(snapshot))
+    _section("What the record says", _history(history, evidence))
     _section("Relative context", list(snapshot.relative_context))
     _section("Held in tension", list(snapshot.conflicting))
     _section("Foundation", list(snapshot.foundation.lines))
@@ -253,6 +262,25 @@ def _events(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> list[str]:
         for report in event.reports:
             if report.url:
                 lines.append(f"      {report.source}: {report.url}")
+
+    return lines
+
+
+def _history(history: tuple[TemporalFact, ...], evidence: bool) -> list[str]:
+    """What this platform has actually seen over time, and how often.
+
+    Every line says how many *captures* it rests on, never a duration
+    alone: three weekly looks are not three weeks of monitoring, and the
+    wording is where that honesty has to live.
+    """
+
+    lines: list[str] = []
+
+    for fact in history:
+        lines.append(f"{fact.stated}\n      ({fact.status.stated})")
+
+        if evidence:
+            lines.append(f"      journal: {', '.join(fact.entry_ids[-3:])}")
 
     return lines
 

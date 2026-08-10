@@ -139,6 +139,12 @@ reported it: what each account asserts, what it merely reads into
 things, which figures a second source independently carries, and how
 close to the event the reporting gets. Read-only, and it introduces no
 event from the press),
+`movrvest intelligence-journal [SYMBOL] [--evidence]` (the append-only
+record and the deterministic reading of it: how often this platform
+looked, the longest it went without looking, and per finding whether it
+is new, unchanged, changed, no longer produced or unreadable. Read-only,
+no model, and a count of captures is never presented as a duration of
+monitoring),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -452,6 +458,35 @@ stated rather than hidden.** Also caught: `sent ` matches inside
 *absent* and *present*; `staking` must stem to *staked*; `AI's` must
 strip its possessive. **Acceptance 9 of 12 live drafts**, and a rejected
 draft renders the deterministic brief with one line saying why.
+
+**This platform now has a memory, and it is observations rather than
+conclusions** (the Intelligence Journal,
+[`INTELLIGENCE_JOURNAL.md`](docs/architecture/INTELLIGENCE_JOURNAL.md)).
+Append-only JSON Lines per asset, written by `movrvest acquire`, read by
+a deterministic projection — **no model, ever**: *code establishes
+history; the model explains grounded history*. It answers *what did
+MOVRvest know about BTC on 1 August*, not *what would today's pipeline
+say about evidence dated 1 August*, so a later run appends and a
+correction is a **new entry naming what it corrects**. Schema rides on
+the line rather than the file, because a file that is never rewritten
+cannot be migrated.
+
+**Three things can change and conflating them would be the worst defect
+here**: the world moved (the source's own date advanced), the source
+revised itself (its date did not), or **our reading changed** — and the
+third is never an economic event. An `UNAVAILABLE` observation is never
+compared with a value, including with another `UNAVAILABLE`, which is
+what stops a provider outage arriving as *"holdings fell to zero"*.
+
+**And the hardest rule, which is honesty rather than correctness: three
+captures across three weeks are not three weeks of monitoring.** Every
+temporal sentence is worded from `ObservationSpan` — count, first, last
+and **largest gap** — so a run reads *"unchanged across the last 3
+capture(s)"* and never *"for three weeks"*. The surface leads with
+Coverage before any finding. Temporal facts reach the synthesis as `H`
+findings carrying their journal entry ids; delete the observations and
+the claim becomes **unavailable rather than reconstructable**.
+`movrvest intelligence-journal [SYMBOL] [--evidence]`.
 
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`

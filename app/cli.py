@@ -24,6 +24,7 @@ from app.commands import (
     financials,
     intelligence,
     intelligence_brief,
+    intelligence_journal,
     issuance,
     knowledge,
     market,
@@ -403,6 +404,31 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    journal_parser = subparsers.add_parser(
+        "intelligence-journal",
+        help="Show what this platform has observed over time, and how often",
+        description=(
+            "The append-only record and the deterministic reading of it: how "
+            "many times this platform looked, when, the longest it went "
+            "without looking, and for each finding whether it is new, "
+            "unchanged, changed, no longer produced, or unreadable — with "
+            "whether a change was the world moving, the source revising "
+            "itself, or this platform's own reading changing. Read-only, no "
+            "model, and a count of captures is never presented as a duration "
+            "of monitoring"
+        ),
+    )
+    journal_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC. Omit for the corpus",
+    )
+    journal_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show the journal entry ids each temporal fact rests on",
+    )
+
     events_parser = subparsers.add_parser(
         "crypto-events",
         help="Show the developments held for a digital asset, and their sources",
@@ -715,6 +741,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "crypto-events":
         return await crypto_events.run(args.symbol, args.evidence)
+
+    if args.command == "intelligence-journal":
+        return await intelligence_journal.run(args.symbol, args.evidence)
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

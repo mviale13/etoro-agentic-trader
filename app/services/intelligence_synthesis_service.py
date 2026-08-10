@@ -22,6 +22,7 @@ from datetime import UTC, datetime
 
 from app.config import get_settings
 from app.domain.crypto_intelligence import CryptoIntelligenceSnapshot
+from app.domain.intelligence_journal import TemporalFact
 from app.domain.intelligence_synthesis import (
     IntelligenceSynthesis,
     SynthesisStatus,
@@ -77,6 +78,7 @@ class IntelligenceSynthesisService:
     async def synthesise(
         self,
         snapshot: CryptoIntelligenceSnapshot,
+        history: tuple[TemporalFact, ...] = (),
     ) -> IntelligenceSynthesis:
         symbol = snapshot.symbol
 
@@ -88,7 +90,7 @@ class IntelligenceSynthesisService:
                 "canonical rendering, and always is.",
             )
 
-        if len(build_findings(snapshot)) < MINIMUM_FINDINGS:
+        if len(build_findings(snapshot, history)) < MINIMUM_FINDINGS:
             return absent(
                 symbol,
                 SynthesisStatus.THIN,
@@ -107,17 +109,18 @@ class IntelligenceSynthesisService:
 
             synthesist = IntelligenceSynthesist(provider=resolved)
 
-        return await self._written(snapshot, synthesist, symbol)
+        return await self._written(snapshot, synthesist, symbol, history)
 
     async def _written(
         self,
         snapshot: CryptoIntelligenceSnapshot,
         synthesist: IntelligenceSynthesist,
         symbol: str,
+        history: tuple[TemporalFact, ...] = (),
     ) -> IntelligenceSynthesis:
 
         try:
-            sections, model = await synthesist.synthesise(snapshot)
+            sections, model = await synthesist.synthesise(snapshot, history)
         except SynthesisRejected as rejection:
             # The guard worked. Say so plainly: a refused draft is a fact
             # about this platform's checking, not an embarrassment to
