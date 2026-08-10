@@ -17,6 +17,7 @@ import type {
   DossierAssetProfile,
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
+  DossierCryptoPlaybook,
   DossierFinancialUnderstanding,
   DossierMeasure,
   DossierPlaybook,
@@ -29,6 +30,8 @@ import type {
   DossierUnderstanding,
   DossierViewModel,
   TokenFactRow,
+  CryptoQuestionView,
+  ValueChainView,
 } from "@/lib/api/dossier";
 
 export const dynamic = "force-dynamic";
@@ -658,6 +661,408 @@ function ProtocolFundamentals({
   );
 }
 
+/**
+ * Which investment questions this kind of asset is asked at all.
+ *
+ * The section that answers a complaint the factor table could not: a
+ * token dossier used to show the same four readings whether the subject
+ * was Bitcoin or an exchange token, and an investor had no way to see
+ * that one of them is not asked about protocol revenue *by design* while
+ * the other's whole case turns on it.
+ *
+ * Three things are kept visibly apart here, because collapsing any two
+ * is how a page starts lying. Whether a question applies is decided from
+ * what kind of economic object this is, and from no figure at all.
+ * Whether anything answers it is decided from the evidence, and from no
+ * opinion of the question. And nothing on this page answers anything:
+ * there is no verdict, no band and no score, and a question with
+ * established evidence is not shown as better than one without.
+ */
+function CryptoPlaybook({
+  playbook,
+  symbol,
+}: {
+  playbook: DossierCryptoPlaybook;
+  symbol: string;
+}) {
+  const asked = playbook.questions.filter(
+    (question) =>
+      question.cell === "ask" || question.cell === "ask_evidence_insufficient",
+  );
+
+  const declined = playbook.questions.filter(
+    (question) => question.cell === "not_applicable",
+  );
+
+  const undetermined = playbook.questions.filter(
+    (question) => question.cell === "undetermined",
+  );
+
+  return (
+    <section aria-labelledby="crypto-playbook-heading">
+      <SectionHeading id="crypto-playbook-heading">
+        Which questions this asset is asked
+      </SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        What kind of economic object {symbol} is decides which investment
+        questions are legitimate for it, and which would be the wrong
+        instrument. That is settled before any figure is read, so a question
+        this platform cannot answer never quietly becomes one it does not
+        ask. Nothing here is an answer, and none of it reached the
+        recommendation above.
+      </p>
+
+      <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="text-sm font-semibold text-slate-800">{playbook.name}</p>
+
+          <span className="text-xs uppercase tracking-[0.15em] text-slate-400">
+            {playbook.confidenceStated}
+          </span>
+        </div>
+
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          {playbook.explanation}
+        </p>
+
+        <p className="mt-3 text-xs leading-5 text-slate-500">
+          {playbook.because}
+        </p>
+
+        {playbook.restsOn.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+              Rests on
+            </p>
+
+            <ul className="mt-1.5 space-y-1">
+              {playbook.restsOn.map((line) => (
+                <li key={line} className="text-xs leading-5 text-slate-500">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {/* A kind is not a verdict, and what the classification stops
+            short of is stated where the classification is made. */}
+        {playbook.doesNotEstablish.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+              Does not establish
+            </p>
+
+            <ul className="mt-1.5 space-y-1">
+              {playbook.doesNotEstablish.map((line) => (
+                <li key={line} className="text-xs leading-5 text-amber-700">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {playbook.alternatives.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+              Considered and not chosen
+            </p>
+
+            <ul className="mt-1.5 space-y-1">
+              {playbook.alternatives.map((alternative) => (
+                <li
+                  key={alternative.archetype}
+                  className="text-xs leading-5 text-slate-500"
+                >
+                  {alternative.notChosenBecause}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {/* Evidence held here and refused as a basis. A reader cannot
+            otherwise tell a label that was rejected from one nobody had. */}
+        {playbook.notClassifiedFrom.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+              Held here and not used to classify
+            </p>
+
+            <ul className="mt-1.5 space-y-1">
+              {playbook.notClassifiedFrom.map((line) => (
+                <li key={line} className="text-xs leading-5 text-slate-500">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        <div className="mt-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+            Read through
+          </p>
+
+          <ul className="mt-1.5 space-y-1">
+            {playbook.capabilities.map((capability) => (
+              <li key={capability.key} className="text-xs leading-5 text-slate-500">
+                <span className="font-medium text-slate-600">
+                  {capability.label}
+                </span>{" "}
+                — {capability.reads}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Declared for a kind whose own questions this platform has not
+            built. Saying so is what keeps it out of another kind's. */}
+        {playbook.unmodelled.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+              Its own questions, not modelled here
+            </p>
+
+            <ul className="mt-1.5 space-y-1">
+              {playbook.unmodelled.map((line) => (
+                <li key={line} className="text-xs leading-5 text-amber-700">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      {asked.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          {asked.map((question) => (
+            <CryptoQuestion key={question.key} question={question} />
+          ))}
+        </div>
+      ) : null}
+
+      {undetermined.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Undetermined — {undetermined.length} questions
+          </p>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            {undetermined[0].applicabilityBecause}
+          </p>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            {undetermined.map((question) => question.label).join(" · ")}
+          </p>
+        </div>
+      ) : null}
+
+      {/* Declines are shown, never omitted. An omitted question and a
+          refused one look identical to a reader, and they are opposite
+          statements about the case. */}
+      {declined.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Not asked of this kind of asset
+          </p>
+
+          <dl className="mt-3 space-y-3">
+            {declined.map((question) => (
+              <div key={question.key}>
+                <dt className="text-sm text-slate-700">{question.label}</dt>
+
+                <dd className="mt-0.5 text-xs leading-5 text-slate-500">
+                  {question.applicabilityBecause}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ) : null}
+
+      {playbook.chains.length > 0 ? (
+        <div className="mt-6">
+          <p className="text-sm font-semibold text-slate-800">
+            Where the value goes
+          </p>
+
+          {/* One chain per economic entity and never one per security:
+              Hyperliquid's venue and its chain are 224x apart on fees,
+              and a figure from either substituted for the other would
+              misstate the business by that factor. */}
+          <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-500">
+            One chain per economic system, never summed. The same word —
+            fees — means a different thing at each ending, and only the
+            source&apos;s own definition separates them.
+          </p>
+
+          <div className="mt-3 space-y-4">
+            {playbook.chains.map((chain) => (
+              <ValueChain key={chain.entity} chain={chain} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {playbook.unmappedBecause ? (
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
+          {playbook.unmappedBecause}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function CryptoQuestion({ question }: { question: CryptoQuestionView }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm font-semibold text-slate-800">{question.label}</p>
+
+        {/* The joined reading, worded by the backend. "Ask — evidence
+            insufficient" and "Not applicable" are different claims and
+            are never rendered with the same word. */}
+        <span
+          className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-500"
+          title={question.applicabilityBecause}
+        >
+          {question.cellStated}
+        </span>
+      </div>
+
+      <p className="mt-1 text-sm leading-6 text-slate-600">{question.asks}</p>
+
+      <p className="mt-1 text-xs leading-5 text-slate-400">
+        {question.mattersBecause}
+      </p>
+
+      <dl className="mt-3 space-y-2">
+        {question.evidence.map((item, index) => (
+          <div key={`${question.key}-${index}`}>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <dt
+                className={item.met ? "text-slate-700" : "text-slate-400"}
+              >
+                {item.met ? item.demand : `Needs: ${item.demand}`}
+              </dt>
+
+              {item.met ? (
+                <dd className="flex shrink-0 items-baseline gap-2">
+                  <span className="font-semibold tabular-nums text-slate-800">
+                    {item.stated ?? "—"}
+                  </span>
+
+                  <span
+                    className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500"
+                    title={item.because ?? undefined}
+                  >
+                    {item.standingStated}
+                  </span>
+                </dd>
+              ) : null}
+            </div>
+
+            {item.met && (item.entity || item.age || item.source) ? (
+              <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                {item.entity ? `${item.entity} — ` : ""}
+                {item.age ?? item.source}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function ValueChain({ chain }: { chain: ValueChainView }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm font-semibold text-slate-800">{chain.entity}</p>
+
+        <span className="text-xs uppercase tracking-[0.15em] text-slate-400">
+          {chain.kind}
+        </span>
+      </div>
+
+      <p className="mt-1 text-xs leading-5 text-slate-500">
+        Measures {chain.measures}.
+      </p>
+
+      <dl className="mt-3 space-y-2.5">
+        {chain.links.map((link) => (
+          <div key={link.stage}>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <dt className="text-slate-700">
+                {link.label}
+                {link.window ? (
+                  <span className="ml-1.5 text-xs text-slate-400">
+                    over {link.window}
+                  </span>
+                ) : null}
+              </dt>
+
+              <dd className="flex shrink-0 items-baseline gap-2">
+                <span
+                  className={
+                    link.stated === null
+                      ? "text-slate-400"
+                      : "font-semibold tabular-nums text-slate-800"
+                  }
+                >
+                  {link.stated ?? "—"}
+                </span>
+
+                <span
+                  className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                    link.stated === null
+                      ? "bg-transparent text-slate-400"
+                      : "bg-slate-100 text-slate-500"
+                  }`}
+                  title={link.because ?? undefined}
+                >
+                  {link.stated === null
+                    ? link.availabilityStated
+                    : link.standingStated}
+                </span>
+              </dd>
+            </div>
+
+            {/* The source's own definition, verbatim. For the last stage
+                this sentence *is* the mechanism, and paraphrasing it
+                would be this platform inventing one. */}
+            {link.methodology ? (
+              <p className="mt-1 border-l-2 border-slate-200 pl-3 text-xs leading-5 text-slate-500">
+                {link.methodology}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </dl>
+
+      <div className="mt-3 border-t border-slate-100 pt-3">
+        <p className="text-sm text-slate-700">
+          Reaching the token:{" "}
+          <span className="font-semibold">{chain.mechanismStated}</span>
+        </p>
+
+        <p className="mt-1 text-xs leading-5 text-slate-500">{chain.because}</p>
+
+        {chain.mappingSettled ? null : (
+          <p className="mt-1 text-xs leading-5 text-amber-700">
+            What this system&apos;s economics mean for the token is not settled.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
@@ -684,6 +1089,13 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       {dossier.protocolFundamentals ? (
         <ProtocolFundamentals
           fundamentals={dossier.protocolFundamentals}
+          symbol={dossier.symbol}
+        />
+      ) : null}
+
+      {dossier.cryptoPlaybook ? (
+        <CryptoPlaybook
+          playbook={dossier.cryptoPlaybook}
           symbol={dossier.symbol}
         />
       ) : null}

@@ -284,6 +284,11 @@ export interface DossierViewModel {
       family, independent of the market facts and consumed by nothing. */
   protocolFundamentals: DossierProtocolFundamentals | null;
 
+  /** Which investment questions this kind of digital asset is asked,
+      which are declined and why, and what evidence would answer each.
+      Applicability and evidence standing, never a verdict. */
+  cryptoPlaybook: DossierCryptoPlaybook | null;
+
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
   narrativeAbsent: string | null;
@@ -528,6 +533,106 @@ export interface DerivedFigureView {
 export interface DossierProtocolFundamentals {
   entities: readonly ProtocolEntityView[];
   derived: readonly DerivedFigureView[];
+  unmappedBecause: string | null;
+}
+
+export interface AnalyticalCapabilityView {
+  key: string;
+  label: string;
+  reads: string;
+}
+
+export interface ConsideredArchetypeView {
+  archetype: string;
+  notChosenBecause: string;
+}
+
+/** One evidence demand of one question, met or unmet. */
+export interface QuestionEvidenceView {
+  demand: string;
+  met: boolean;
+  stated: string | null;
+  standing: string;
+  standingStated: string;
+  source: string | null;
+  age: string | null;
+  /** Which economic entity supplied it, where more than one exists. */
+  entity: string | null;
+  because: string | null;
+}
+
+/**
+ * One investment question against one token.
+ *
+ * `cell` is the product of two independent facts and never a third
+ * judgment: whether the question applies to this kind of asset (decided
+ * from the archetype, with no figure consulted) and whether anything
+ * established answers it (decided from the evidence, with no opinion of
+ * the question consulted).
+ */
+export interface CryptoQuestionView {
+  key: string;
+  label: string;
+  asks: string;
+  mattersBecause: string;
+  /** ask | ask_evidence_insufficient | not_applicable | undetermined */
+  cell: string;
+  cellStated: string;
+  applicability: string;
+  applicabilityBecause: string;
+  askedBy: string | null;
+  bestStanding: string;
+  bestStandingStated: string;
+  evidence: readonly QuestionEvidenceView[];
+}
+
+export interface ValueChainLinkView {
+  stage: string;
+  label: string;
+  stated: string | null;
+  window: string | null;
+  standing: string;
+  standingStated: string;
+  availabilityStated: string;
+  /** The source's own definition, verbatim. */
+  methodology: string | null;
+  because: string | null;
+}
+
+/** How one entity's value moves, from use to the token. */
+export interface ValueChainView {
+  entity: string;
+  kind: string;
+  measures: string;
+  mappingSettled: boolean;
+  links: readonly ValueChainLinkView[];
+  mechanism: string;
+  mechanismStated: string;
+  mechanismSourceWording: string | null;
+  because: string;
+}
+
+/**
+ * Which investment questions this kind of digital asset is asked.
+ *
+ * Applicability, evidence demands and evidence standing — never a
+ * verdict. Nothing here is scored, banded or ranked.
+ */
+export interface DossierCryptoPlaybook {
+  archetype: string;
+  name: string;
+  explanation: string;
+  confidence: string;
+  confidenceStated: string;
+  because: string;
+  restsOn: readonly string[];
+  doesNotEstablish: readonly string[];
+  alternatives: readonly ConsideredArchetypeView[];
+  notClassifiedFrom: readonly string[];
+  capabilities: readonly AnalyticalCapabilityView[];
+  unmodelled: readonly string[];
+  questions: readonly CryptoQuestionView[];
+  chains: readonly ValueChainView[];
   unmappedBecause: string | null;
 }
 
@@ -870,6 +975,171 @@ function parseProtocolFundamentals(
     unmappedBecause: optionalString(
       value.unmapped_because,
       "protocol_fundamentals.unmapped_because",
+    ),
+  };
+}
+
+function parseCryptoPlaybook(value: unknown): DossierCryptoPlaybook | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "crypto_playbook".');
+  }
+
+  const strings = (raw: unknown): readonly string[] =>
+    (Array.isArray(raw) ? raw : []).filter(
+      (item): item is string => typeof item === "string",
+    );
+
+  return {
+    archetype: requireString(value.archetype, "crypto_playbook.archetype"),
+    name: requireString(value.name, "crypto_playbook.name"),
+    explanation: requireString(value.explanation, "crypto_playbook.explanation"),
+    confidence: requireString(value.confidence, "crypto_playbook.confidence"),
+    confidenceStated: requireString(
+      value.confidence_stated,
+      "crypto_playbook.confidence_stated",
+    ),
+    because: requireString(value.because, "crypto_playbook.because"),
+    restsOn: strings(value.rests_on),
+    doesNotEstablish: strings(value.does_not_establish),
+    alternatives: (Array.isArray(value.alternatives) ? value.alternatives : [])
+      .filter(isRecord)
+      .map((alternative, index) => ({
+        archetype: requireString(
+          alternative.archetype,
+          `crypto_playbook.alternatives[${index}].archetype`,
+        ),
+        notChosenBecause: requireString(
+          alternative.not_chosen_because,
+          `crypto_playbook.alternatives[${index}].not_chosen_because`,
+        ),
+      })),
+    notClassifiedFrom: strings(value.not_classified_from),
+    capabilities: (Array.isArray(value.capabilities) ? value.capabilities : [])
+      .filter(isRecord)
+      .map((capability, index) => ({
+        key: requireString(
+          capability.key,
+          `crypto_playbook.capabilities[${index}].key`,
+        ),
+        label: requireString(
+          capability.label,
+          `crypto_playbook.capabilities[${index}].label`,
+        ),
+        reads: requireString(
+          capability.reads,
+          `crypto_playbook.capabilities[${index}].reads`,
+        ),
+      })),
+    unmodelled: strings(value.unmodelled),
+    questions: (Array.isArray(value.questions) ? value.questions : [])
+      .filter(isRecord)
+      .map((question, index) => {
+        const field = `crypto_playbook.questions[${index}]`;
+
+        return {
+          key: requireString(question.key, `${field}.key`),
+          label: requireString(question.label, `${field}.label`),
+          asks: requireString(question.asks, `${field}.asks`),
+          mattersBecause: requireString(
+            question.matters_because,
+            `${field}.matters_because`,
+          ),
+          cell: requireString(question.cell, `${field}.cell`),
+          cellStated: requireString(question.cell_stated, `${field}.cell_stated`),
+          applicability: requireString(
+            question.applicability,
+            `${field}.applicability`,
+          ),
+          applicabilityBecause: requireString(
+            question.applicability_because,
+            `${field}.applicability_because`,
+          ),
+          askedBy: optionalString(question.asked_by, `${field}.asked_by`),
+          bestStanding: requireString(
+            question.best_standing,
+            `${field}.best_standing`,
+          ),
+          bestStandingStated: requireString(
+            question.best_standing_stated,
+            `${field}.best_standing_stated`,
+          ),
+          evidence: (Array.isArray(question.evidence) ? question.evidence : [])
+            .filter(isRecord)
+            .map((item, itemIndex) => {
+              const row = `${field}.evidence[${itemIndex}]`;
+
+              return {
+                demand: requireString(item.demand, `${row}.demand`),
+                met: item.met === true,
+                stated: optionalString(item.stated, `${row}.stated`),
+                standing: requireString(item.standing, `${row}.standing`),
+                standingStated: requireString(
+                  item.standing_stated,
+                  `${row}.standing_stated`,
+                ),
+                source: optionalString(item.source, `${row}.source`),
+                age: optionalString(item.age, `${row}.age`),
+                entity: optionalString(item.entity, `${row}.entity`),
+                because: optionalString(item.because, `${row}.because`),
+              };
+            }),
+        };
+      }),
+    chains: (Array.isArray(value.chains) ? value.chains : [])
+      .filter(isRecord)
+      .map((chain, index) => {
+        const field = `crypto_playbook.chains[${index}]`;
+
+        return {
+          entity: requireString(chain.entity, `${field}.entity`),
+          kind: requireString(chain.kind, `${field}.kind`),
+          measures: requireString(chain.measures, `${field}.measures`),
+          mappingSettled: chain.mapping_settled === true,
+          links: (Array.isArray(chain.links) ? chain.links : [])
+            .filter(isRecord)
+            .map((link, linkIndex) => {
+              const row = `${field}.links[${linkIndex}]`;
+
+              return {
+                stage: requireString(link.stage, `${row}.stage`),
+                label: requireString(link.label, `${row}.label`),
+                stated: optionalString(link.stated, `${row}.stated`),
+                window: optionalString(link.window, `${row}.window`),
+                standing: requireString(link.standing, `${row}.standing`),
+                standingStated: requireString(
+                  link.standing_stated,
+                  `${row}.standing_stated`,
+                ),
+                availabilityStated: requireString(
+                  link.availability_stated,
+                  `${row}.availability_stated`,
+                ),
+                methodology: optionalString(
+                  link.methodology,
+                  `${row}.methodology`,
+                ),
+                because: optionalString(link.because, `${row}.because`),
+              };
+            }),
+          mechanism: requireString(chain.mechanism, `${field}.mechanism`),
+          mechanismStated: requireString(
+            chain.mechanism_stated,
+            `${field}.mechanism_stated`,
+          ),
+          mechanismSourceWording: optionalString(
+            chain.mechanism_source_wording,
+            `${field}.mechanism_source_wording`,
+          ),
+          because: requireString(chain.because, `${field}.because`),
+        };
+      }),
+    unmappedBecause: optionalString(
+      value.unmapped_because,
+      "crypto_playbook.unmapped_because",
     ),
   };
 }
@@ -1445,6 +1715,7 @@ function parseDossier(payload: unknown): DossierViewModel {
     protocolFundamentals: parseProtocolFundamentals(
       payload.protocol_fundamentals,
     ),
+    cryptoPlaybook: parseCryptoPlaybook(payload.crypto_playbook),
     narrative: parseNarrative(payload.narrative),
     narrativeAbsent: optionalString(
       payload.narrative_absent,
