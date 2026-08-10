@@ -133,6 +133,12 @@ question with how it participated — scored against a named rule, shown
 with its standing and counted by nothing, or not yet answerable with
 what would answer it. Without a symbol, the readiness table and the
 corpus. Read-only),
+`movrvest crypto-events [SYMBOL] [--evidence]` (every current
+development held for an asset, deduplicated across the surfaces that
+reported it: what each account asserts, what it merely reads into
+things, which figures a second source independently carries, and how
+close to the event the reporting gets. Read-only, and it introduces no
+event from the press),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -377,6 +383,49 @@ CoinGecko treasuries); **HYPE gets no ETF concepts and nothing says it
 is missing one**. Deterministic — no model is wired — and
 decision-neutral, guarded by an import test.
 `movrvest crypto-intelligence [SYMBOL] [--evidence]`.
+
+**A hedge separates a fact from a reading; a number makes a fact
+*checkable*** (Crypto Intelligence slice 2,
+[`CRYPTO_EVENTS.md`](docs/architecture/CRYPTO_EVENTS.md)). Two different
+properties, and conflating them filed *"AUSTRAC suspended Cryptolink's
+VASP registration"* as an opinion. So a sentence that hedges, grades
+(*dominates*, *significant*) or claims a cause is an `Interpretation`
+carrying its author's name; everything else is an `EventFact`; and
+`anchors` — its normalised figures — are what make two accounts
+recognisable as one event. **An event's identity is its shared figure,
+not its words**: eight accounts of one MicroStrategy sale collapse into
+one development, matched on `1690`, because outlets never choose the
+same words and almost always quote the same number. Nine families, each
+observed in the live corpus before it was declared; **`GOVERNANCE`
+measured and declined**. **The press corroborates and may never
+introduce an event** — a keyword gate over headlines is a relevance
+model, and a bad one, and it produces the news feed the ruling forbids.
+Two guards the corpus forced: a press item must **name the asset** (four
+*bitcoin* ETF stories attached themselves to *Ethereum's* ETF event on
+four shared words and no shared subject), and a **small number is not an
+identity** (*"August 3-9"* yields `3` and `9`). **Price commentary is
+not an event** and is declined with a count — it is a worse reading of
+what S4 already measures. Stale events **leave** the brief rather than
+ranking last, and the empty state is a stated absence.
+`movrvest crypto-events [SYMBOL] [--evidence]`.
+
+**A net total is not a rate of demand.** Slice 1's handoff flagged that
+a 30-day flow sum without dispersion overstates persistence; the
+measurement was worse than the flag. **BTC's largest single day of
+selling was −$445m — 3.5× the whole month's +$128m net** — while ETH's
++$540m arrived on 21 of 30 sessions with no day above $92m:
+`concentrated` against `persistent`. Fixing the *sentence* alone left
+the brief contradicting itself, the claim saying "offsetting flows
+rather than accumulation" beside a driver still calling it "a net source
+of demand", so **the driver changed too** and BTC now has no flow
+tailwind. Cache schema 2, with the migration leaving the new figures
+**absent rather than zero**.
+
+**The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
+PRO-only and `status_updates` is 404 — so the parse reads `data-`
+attributes rather than layout, and reports `EventFeedHealth` when it
+breaks: **a surface returning nothing and a surface returning nothing
+*because it changed* must not look the same.**
 
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that

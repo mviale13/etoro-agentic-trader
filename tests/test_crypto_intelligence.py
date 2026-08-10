@@ -14,6 +14,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 from app.domain.asset_class import AssetClass
+from app.domain.crypto_event import EventFeed
 from app.domain.crypto_intelligence import (
     ClaimType,
     Direction,
@@ -215,6 +216,20 @@ class _NoFacts:
         return None
 
 
+class _NoEvents:
+    """No developments held.
+
+    Named rather than defaulted, because leaving it out made these tests
+    read the real event store — which is gitignored, so the suite passed
+    here and would have failed on a clean checkout. The identical trap
+    caught four tests in S3.
+    """
+
+    @staticmethod
+    def established(symbol: str, now: object | None = None) -> EventFeed:
+        return EventFeed()
+
+
 def _service(flows: object | None = None) -> CryptoIntelligenceService:
     return CryptoIntelligenceService(
         facts=_NoFacts(),  # type: ignore[arg-type]
@@ -222,6 +237,7 @@ def _service(flows: object | None = None) -> CryptoIntelligenceService:
         protocol=ProtocolFundamentalsService(sources=(_Claims(),)),
         supply=_NoSupply(),  # type: ignore[arg-type]
         flows=flows or _Flows(),  # type: ignore[arg-type]
+        events=_NoEvents(),  # type: ignore[arg-type]
     )
 
 
@@ -306,17 +322,26 @@ def test_eth_is_not_a_copy_of_btc() -> None:
 def test_hype_gets_no_etf_concepts_and_is_not_penalised_for_it() -> None:
     """Acceptance 4.
 
-    No fund group is mapped, so no flow claim exists — and *nothing* in
-    the snapshot says it is missing one. An absent question is not an
-    unmet demand.
+    No fund group is mapped, so **this platform reads no flow for it**
+    — and *nothing* in the snapshot says it is missing one. An absent
+    question is not an unmet demand.
+
+    Sharpened in slice 2, and the reason is worth keeping. The original
+    assertion was that no claim of any kind is a capital flow, and the
+    live corpus broke it honestly: a source published *"HYPE spot ETFs
+    record $2.84M net inflows"*, which arrives as an attributed event
+    about a vehicle this platform holds no reading for. That is not
+    MOVRvest asserting a fund group exists — it is MOVRvest reporting
+    that somebody else did, which is the distinction the whole layer is
+    built on. So the guard now says what it always meant: **no flow
+    reading**, and no sentence claiming one is absent.
     """
 
     snapshot = _snapshot("HYPE", flows=_NoFlows())
 
     assert snapshot.is_useful
 
-    for claim in snapshot.claims:
-        assert claim.kind is not EventKind.CAPITAL_FLOW
+    assert not [claim for claim in snapshot.claims if claim.ref.startswith("flow.")]
 
     rendered = " ".join(claim.stated for claim in snapshot.claims).casefold()
 

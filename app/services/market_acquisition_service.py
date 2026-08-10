@@ -29,6 +29,7 @@ from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
+from app.services.crypto_event_service import CryptoEventService
 from app.services.crypto_market_service import acquisition_targets
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
 
@@ -74,6 +75,7 @@ class MarketAcquisitionService:
         crypto_market: Any | None = None,
         primary_supply: Any | None = None,
         capital_flows: Any | None = None,
+        events: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -133,6 +135,11 @@ class MarketAcquisitionService:
         # surface has been verified — four today.
         self._primary_supply = primary_supply or CachedPrimarySupplyProvider()
         self._capital_flows = capital_flows or CachedEtfFlowProvider()
+
+        # Current developments: the insight timeline, the incident
+        # register, the release feeds, and the press held for
+        # corroboration. Per security, because the timeline is per asset.
+        self._events = events or CryptoEventService()
 
     async def acquire(
         self,
@@ -277,6 +284,11 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.CRYPTO
                 else None
             ),
+            events=(
+                self._developments(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
         )
 
     def _rating(self, symbol: str) -> bool:
@@ -339,6 +351,23 @@ class MarketAcquisitionService:
             pass
 
         return held or None
+
+    def _developments(self, symbol: str) -> bool | None:
+        """Recent developments, where any surface carries this asset.
+
+        None where no surface is mapped to it, which is a fact about the
+        asset rather than a failed read — the same distinction the flow
+        acquisition makes for a token with no fund vehicle. A surface
+        that answered and had nothing to report is `True` with an empty
+        feed: it was asked, and the answer was none.
+        """
+
+        try:
+            feed = self._events.acquire(symbol)
+        except Exception:
+            return False
+
+        return True if feed.is_read else None
 
     def _protocols(self, symbol: str) -> bool | None:
         """Whether the store now holds the economics behind this token.

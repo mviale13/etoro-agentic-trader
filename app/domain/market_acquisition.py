@@ -57,6 +57,12 @@ class AcquiredSecurity:
     #: answer for a token with no ETF, and different from a failed read.
     capital_flows: bool | None = None
 
+    #: Whether the store now holds this asset's recent developments.
+    #: `None` where no event surface is mapped to it: an asset nobody
+    #: publishes a timeline for was never asked, which is not the same
+    #: as one that was asked and answered nothing.
+    events: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""

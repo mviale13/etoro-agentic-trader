@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from app.domain.asset_class import AssetClass
 from app.domain.crypto_archetype import ASSIGNMENTS, archetype_for
+from app.domain.crypto_event import EventStatus
 from app.domain.crypto_intelligence import (
     ClaimType,
     CryptoIntelligenceSnapshot,
@@ -67,14 +68,17 @@ def _render(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> None:
         return
 
     _section("What changed", _changes(snapshot, evidence))
+    _section("Material developments", _events(snapshot, evidence))
     _section("What appears to be driving it", _drivers(snapshot, evidence))
     _section("Tailwinds", [_driver_line(d) for d in snapshot.tailwinds])
     _section("Headwinds", [_driver_line(d) for d in snapshot.headwinds])
+    _section("What sources are saying", _narratives(snapshot))
     _section("Relative context", list(snapshot.relative_context))
     _section("Held in tension", list(snapshot.conflicting))
     _section("Foundation", list(snapshot.foundation.lines))
     _section("Unresolved", list(snapshot.foundation.unresolved))
-    _section("Watch next", list(snapshot.watch_next))
+    _section("Watch next", _watch(snapshot))
+    _section("Surfaces not read", list(snapshot.surfaces_unread))
 
     print()
     print(
@@ -90,9 +94,22 @@ def _render(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> None:
 
 
 def _changes(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> list[str]:
+    """The readings, without the developments.
+
+    Every event is also a claim, so that a driver can reference one — but
+    printing it here as well as under *Material developments* said each
+    thing twice, and a brief that repeats itself reads as though it had
+    found twice as much.
+    """
+
+    events = {event.identity for event in snapshot.events}
+
     lines: list[str] = []
 
     for claim in snapshot.live:
+        if claim.ref in events:
+            continue
+
         stale = "" if claim.is_live else "  [stale]"
 
         lines.append(
@@ -122,6 +139,86 @@ def _drivers(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> list[str]:
 
                 if claim is not None:
                     lines.append(f"      ← {ref}: {claim.stated}")
+
+    return lines
+
+
+def _events(snapshot: CryptoIntelligenceSnapshot, evidence: bool) -> list[str]:
+    """The developments themselves.
+
+    The section §10 says must be allowed to be empty. Where nothing
+    survived the age and materiality rules the brief says so, because a
+    fortnight-old headline dressed as today's news is worse than a blank
+    line — and the reader cannot tell which they are looking at unless
+    the platform says.
+    """
+
+    if not snapshot.events:
+        return [
+            "No material current event identified. Nothing recent enough "
+            "and material enough was found — this is a stated absence, "
+            "not an empty section."
+        ]
+
+    lines: list[str] = []
+
+    for event in snapshot.events:
+        witnesses = (
+            f"{len(event.sources)} sources"
+            if event.is_multi_source
+            else event.sources[0]
+        )
+
+        when = f"{event.at:%-d %b %H:%M}" if event.at else "undated"
+
+        unsettled = (
+            "" if event.status is EventStatus.COMPLETED else f" · {event.status.stated}"
+        )
+
+        lines.append(
+            f"[{event.family.stated}] {event.headline}\n"
+            f"      ({when} · {witnesses} · {event.tier.stated}{unsettled})"
+        )
+
+        if not evidence:
+            continue
+
+        for fact in event.facts[:3]:
+            mark = (
+                f"  [corroborated by {', '.join(fact.corroborated_by)}]"
+                if fact.is_corroborated
+                else ""
+            )
+
+            lines.append(f"      fact: {fact.stated}{mark}")
+
+        for report in event.reports:
+            if report.url:
+                lines.append(f"      {report.source}: {report.url}")
+
+    return lines
+
+
+def _narratives(snapshot: CryptoIntelligenceSnapshot) -> list[str]:
+    """Published readings, each with its author, none of them promoted."""
+
+    lines: list[str] = []
+
+    for narrative in snapshot.narratives[:6]:
+        mark = " [asserts a cause — not checked here]" if narrative.is_causal else ""
+
+        lines.append(f"“{narrative.stated}”\n      — {narrative.source}{mark}")
+
+    return lines
+
+
+def _watch(snapshot: CryptoIntelligenceSnapshot) -> list[str]:
+    lines: list[str] = []
+
+    for item in snapshot.watch_next:
+        when = f" (scheduled {item.scheduled_for:%-d %B})" if item.is_scheduled else ""
+
+        lines.append(f"{item.stated}{when}\n      measured by: {item.measured_by}")
 
     return lines
 

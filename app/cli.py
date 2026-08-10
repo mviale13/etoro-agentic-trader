@@ -10,6 +10,7 @@ from app.commands import (
     committee,
     company,
     credentials,
+    crypto_events,
     crypto_market,
     crypto_playbook,
     crypto_quality,
@@ -402,6 +403,29 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    events_parser = subparsers.add_parser(
+        "crypto-events",
+        help="Show the developments held for a digital asset, and their sources",
+        description=(
+            "Every current development this platform holds for an asset, "
+            "deduplicated across the surfaces that reported it: what each "
+            "account asserts, what it merely reads into things, which "
+            "figures a second source independently carries, and how close "
+            "to the event the reporting gets. Read-only — it serves what "
+            "`movrvest acquire` stored and fetches nothing"
+        ),
+    )
+    events_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC or HYPE. Omit for the corpus",
+    )
+    events_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show every source's link and the event's identity key",
+    )
+
     subparsers.add_parser(
         "playbook-coverage",
         help="Measure the grounded selector over the portfolio and watchlists",
@@ -688,6 +712,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "crypto-intelligence":
         return await intelligence_brief.run(args.symbol, args.evidence)
+
+    if args.command == "crypto-events":
+        return await crypto_events.run(args.symbol, args.evidence)
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()
