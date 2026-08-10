@@ -320,6 +320,23 @@ Cardano is 86.2% emitted with 18.8% all named by the ledger — the ratio
 and the holder's exposure come apart, so a band would reward the larger
 overhang. Quorum stays 2, every asset stays UNKNOWN.
 
+**A mechanical issuance rule and a vesting schedule are two different
+economic objects** (S5.2,
+[`CRYPTO_MECHANICAL_ISSUANCE.md`](docs/architecture/CRYPTO_MECHANICAL_ISSUANCE.md)).
+`JsonCache` now owns a schema contract — five compatibility states,
+sequential migrations, and **no backward migration from a newer record**
+— because eleven per-store copies means the eleventh is forgotten.
+`MechanicalIssuance` then acquires the three rules primary state
+supports: **ADA reads all four parameters including the epoch length**
+(432,000 s, from the chain's own timestamps), **SOL is uncapped and
+publishes its entire schedule in one call** — uncapped is not unruled —
+and BTC's rule is consensus but its *total* stays CLAIMED: the residual
+against a precise independent figure is **constant to the satoshi at
+28.95844904 BTC**, so the rule is right and the composition is still
+unitemised. Allocation-release tokens (ARB, HYPE, 1INCH) get **no entry
+at all** rather than an empty one. Everything is CLAIMED, consumed by
+nothing, quorum still 2.
+
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that
 consumes it:

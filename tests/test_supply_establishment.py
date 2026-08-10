@@ -14,6 +14,7 @@ pushed through the real provider and the real gate.
 from __future__ import annotations
 
 import inspect
+import pathlib
 from datetime import UTC, datetime
 
 from app.domain.asset_class import AssetClass
@@ -462,38 +463,45 @@ def test_provenance_survives_the_store() -> None:
     assert assess(restored, _comparisons("ADA")).establishes
 
 
-def test_a_record_written_under_an_older_shape_is_treated_as_absent() -> None:
-    """Found the hard way, and worth a test of its own.
+def test_a_record_written_under_an_older_shape_is_treated_as_absent(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Found the hard way, and the guard now lives in the shared cache.
 
     Records written before `provenance` existed decoded into facts with
     none, every gate that needs it failed, and the store went on serving
-    them until the daily expiry. A shape marker turns that into a
-    re-read instead of a silent wrong answer.
+    them until the daily expiry. S5.2a moved the check into `JsonCache`,
+    so this asserts the *store's* behaviour end to end rather than a
+    private method: a version-1 record is a miss, and the store declares
+    no migration because a record without provenance has nothing to
+    bring forward.
     """
+
+    from app.infrastructure.cache.json_cache import JsonCache
+    from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
 
     assert SCHEMA == 2
 
-    from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
+    facts = [_encode(_of("ADA", SupplyConcept.EMITTED_SUPPLY))]
 
-    class _Entry:
-        value = {"facts": [_encode(_of("ADA", SupplyConcept.EMITTED_SUPPLY))]}
+    # A store at the old schema writes what the old code wrote.
+    JsonCache(tmp_path, schema=1).write("ADA", {"facts": facts})
 
-        @staticmethod
-        def is_from_today() -> bool:
-            return True
+    stale = CachedPrimarySupplyProvider.stored(cache=JsonCache(tmp_path, schema=SCHEMA))
 
-    assert CachedPrimarySupplyProvider._restore(_Entry()) is None  # type: ignore[arg-type]
+    assert stale.facts("ADA") == ()
 
-    class _Current(_Entry):
-        value = {
-            "schema": SCHEMA,
-            "facts": [_encode(_of("ADA", SupplyConcept.EMITTED_SUPPLY))],
-        }
+    # And the same record under the current schema is served in full.
+    JsonCache(tmp_path, schema=SCHEMA).write("ADA", {"facts": facts})
 
-    restored = CachedPrimarySupplyProvider._restore(_Current())  # type: ignore[arg-type]
+    current = CachedPrimarySupplyProvider.stored(
+        cache=JsonCache(tmp_path, schema=SCHEMA)
+    )
 
-    assert restored is not None
-    assert restored[0].provenance is not None
+    served = current.facts("ADA")
+
+    assert served
+    assert served[0].provenance is not None
 
 
 # ── the boundaries the ruling set ───────────────────────────────────
