@@ -302,6 +302,24 @@ UNKNOWN** and stops at INVESTIGATE. Age is gone, market context and
 valuation are unreachable by construction, and HYPE's economics are
 `VISIBLE_NOT_SCORED` — mechanism settled, amount claimed.
 
+**A chain reading may settle a figure alone, behind six gates** (S5.1,
+[`CRYPTO_SUPPLY_ESTABLISHMENT.md`](docs/architecture/CRYPTO_SUPPLY_ESTABLISHMENT.md)).
+Model C, and **not** *deterministic primary computation → ESTABLISHED*:
+identity, semantics, constants, reproducibility, perimeter, versioning —
+and **a gate that cannot be evaluated fails**, because "we did not check"
+is the state the blob fee was in. Two readings clear all six: Cardano's
+ledger reconciles to *zero lovelace* across seven published quantities,
+and its 45bn maximum falls out of `supply + reserves` exactly, so the cap
+stops being a vendor claim; Hyperliquid reproduces its own
+`circulatingSupply` and needs no denomination constant. Arbitrum fails
+**identity** (a hard-coded address returns a number and no name) and
+Bittensor fails **semantics** (one figure, nothing to reconcile).
+Supply structure still does not score, and the reason changed: **Arbitrum
+is 100% emitted with 33.9–87.2% of its maximum outside the market** while
+Cardano is 86.2% emitted with 18.8% all named by the ledger — the ratio
+and the holder's exposure come apart, so a band would reward the larger
+overhang. Quorum stays 2, every asset stays UNKNOWN.
+
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that
 consumes it:

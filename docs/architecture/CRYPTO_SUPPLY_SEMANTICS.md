@@ -1,6 +1,6 @@
 # S4.6 — Crypto supply semantics: what each number counts
 
-**Status: built and merged, 2026-08-10. No score, threshold, band,
+**Status: built 2026-08-10 (`b236a41`, merged locally as `2a493f0`). No score, threshold, band,
 factor or decision rule changed. `judge()` is untouched, so every
 standing a score reads is exactly what it was.**
 
@@ -13,6 +13,9 @@ Crypto supply is an accounting vocabulary, not one fact. Three vendors
 were each reporting a different Cardano ledger quantity, correctly, and
 this platform recorded the result as a data-quality failure because they
 shared a label.
+
+> **Provenance.** This slice reached GitHub only on 2026-08-10, inside the squash commit [`4cb9516`](https://github.com/mviale13/etoro-agentic-trader/commit/4cb9516) that merged [PR #103](https://github.com/mviale13/etoro-agentic-trader/pull/103). Its own merge commit carries a `(#NNN)` suffix that matches no pull request: the number was written by hand and never existed. The per-slice history is preserved on the `history/crypto-s3-to-s4.6` branch; the commit hashes above are the authority, not the suffix.
+
 
 ---
 

@@ -174,21 +174,29 @@ READINESS: dict[CryptoQuestionKey, ReadinessRuling] = {
     CryptoQuestionKey.SUPPLY_AND_DILUTION: ReadinessRuling(
         question=CryptoQuestionKey.SUPPLY_AND_DILUTION,
         readiness=QualityReadiness.VISIBLE_NOT_SCORED,
+        # S5 held this back for want of established evidence. S5.1 got
+        # the evidence — Cardano's and Hyperliquid's emitted supply both
+        # clear all six Model C gates — and the question still does not
+        # score, for a better reason: the ratio was measured against the
+        # thing it is supposed to stand for, and they come apart.
         because=(
-            "The emitted share of a protocol maximum is a real fact and "
-            "this platform can compute it for four assets, but it "
-            "corroborates for one. CoinGecko's `total_supply` equals the "
-            "protocol maximum exactly for 83 of the 145 capped assets in "
-            "the 250 largest — and where a chain reading exists to test "
-            "that, it was wrong twice in three: Cardano has emitted 86.2% "
-            "of its 45bn cap and Bittensor 53.4% of its 21m, both "
-            "published as 100%. So the vendor field cannot stand in for "
-            "emitted supply, and a chain reading is a single source."
+            "The emitted share of a protocol maximum now establishes for "
+            "two assets — Cardano's and Hyperliquid's chain readings "
+            "clear all six Model C gates — and it is still not scored, "
+            "because the corpus shows it does not measure what it looks "
+            "like it measures. Arbitrum is 100% emitted and between 33.9% "
+            "and 87.2% of its maximum is sitting in balances nobody names "
+            "as circulating; Cardano is 86.2% emitted with 18.8% "
+            "outstanding, all of it named by the ledger. Ranked by "
+            "emitted share Arbitrum comes second of six and ranked by "
+            "what is actually absent from the market it comes fourth. A "
+            "band on the ratio would reward the asset with the larger "
+            "overhang."
         ),
         would_change=(
-            "an owner ruling that a reproducible primary computation may "
-            "establish without a second vendor, or a second independent "
-            "reader of chain state"
+            "the issuance and unlock schedule — when the remainder "
+            "arrives and to whom — which no source this platform reads "
+            "publishes for any of the eight"
         ),
     ),
     CryptoQuestionKey.EVIDENCE_MATURITY: ReadinessRuling(
