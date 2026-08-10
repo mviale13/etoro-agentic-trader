@@ -30,6 +30,7 @@ from app.domain.watchlist_item import WatchlistItem
 from app.infrastructure.cache.json_cache import JsonCache
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
+from app.providers.coingecko_market_provider import MarketClaimSet, MarketStateClaim
 from app.providers.earnings_provider import ReadDates
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
 from app.services.company_facts_service import CompanyFactsService
@@ -402,9 +403,34 @@ def make_cycle(
         quotes=provider,
         valuations=ValuationStub(),
         calendars=CalendarStub(),
+        # The crypto market cycle runs on every acquisition rather than
+        # only for a crypto security, so it is the one provider a book of
+        # equities still reaches. Stubbed, or these tests would spend a
+        # shared rate limit on eight live calls to measure batching.
+        crypto_market=MarketCycleStub(),
     )
 
     return service, provider
+
+
+class MarketCycleStub:
+    """The crypto environment as a stub — read once per cycle, never fetched."""
+
+    def __init__(self) -> None:
+        self.cycles = 0
+
+    def claims(
+        self,
+        coin_ids: tuple[str, ...] = (),
+        category_keys: tuple[str, ...] = (),
+    ) -> MarketClaimSet:
+        self.cycles += 1
+
+        return MarketClaimSet(
+            source="CoinGecko",
+            read=Provenance(source="CoinGecko", observed_at=datetime.now(UTC)),
+            state=MarketStateClaim(total_market_cap=2_300_000_000_000.0),
+        )
 
 
 def candidate(instrument_id: int, symbol: str) -> ResearchCandidate:

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_brain_builder_service
 from app.api.models.asset_profile_adapter import asset_profile_response
+from app.api.models.crypto_market_adapter import crypto_market_response
 from app.api.models.crypto_playbook_adapter import crypto_playbook_response
 from app.api.models.dossier import (
     CommitteeOpinionResponse,
@@ -75,6 +76,7 @@ from app.renderers.brief_language import (
 )
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.company_understanding_service import CompanyUnderstandingService
+from app.services.crypto_market_service import CryptoMarketService
 from app.services.crypto_playbook_service import CryptoPlaybookService
 from app.services.executive_writer_service import ExecutiveWriterService
 from app.services.protocol_fundamentals_service import (
@@ -641,6 +643,15 @@ async def dossier(
         asset_class,
     )
 
+    # What kind of market this asset is trading inside — its own
+    # evidence family, read from the cycle the last acquisition stored.
+    # Market context is never Asset Quality: nothing below consumes it,
+    # and it is rendered in a section of its own.
+    crypto_market = CryptoMarketService().context(
+        normalized_symbol,
+        asset_class,
+    )
+
     # Read from the stores only — no fetch, no model — and composed
     # before the narrative so the conclusion below is available whether
     # or not the optional writer runs.
@@ -765,6 +776,7 @@ async def dossier(
         asset_profile=asset_profile_response(token_facts),
         protocol_fundamentals=protocol_fundamentals_response(protocol_facts),
         crypto_playbook=crypto_playbook_response(crypto_playbook),
+        crypto_market=crypto_market_response(crypto_market),
         # Both null on purpose: this route no longer words the case.
         narrative=None,
         narrative_absent=None,

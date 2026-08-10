@@ -409,6 +409,121 @@ class CryptoPlaybookResponse(BaseModel):
     unmapped_because: str | None
 
 
+class MarketObservationResponse(BaseModel):
+    """One market figure, with its interval and its universe."""
+
+    metric: str
+    label: str
+
+    #: What it covers in time. Never dropped, and never generalised into
+    #: a "trend" — that word is an interpretation nothing here makes.
+    interval: str
+    interval_stated: str
+
+    stated: str | None
+
+    standing: str
+    standing_stated: str
+
+    #: True where this platform computed it rather than read it.
+    derived: bool
+
+    #: The set of assets it was computed over, where it is an aggregate.
+    universe: str | None
+
+    source: str | None
+    age: str | None
+
+    because: str | None
+
+
+class RelativeReturnResponse(BaseModel):
+    """One asset's return against one comparator's, over the same interval."""
+
+    interval: str
+    comparator: str
+
+    subject_return: str
+    comparator_return: str
+
+    #: The difference in percentage points, already worded.
+    delta: str
+
+    standing: str
+
+    #: The arithmetic in one line, worded by the domain.
+    stated: str
+
+    caveat: str | None
+
+
+class ConcentrationResponse(BaseModel):
+    """How much of a comparator this asset itself is."""
+
+    comparator: str
+    stated: str
+
+
+class PeerGroupResponse(BaseModel):
+    """The externally observed group this asset is compared against.
+
+    A vendor's category, carried under the vendor's name. It is **not**
+    this platform's analytical archetype and never modifies one: an
+    asset read as a smart-contract network can sit in a market group
+    that contains Bitcoin, and both statements are true.
+    """
+
+    key: str
+    name: str
+    provider: str
+    selected_because: str
+    caveats: list[str]
+
+
+class ConsideredPeerGroupResponse(BaseModel):
+    """A group weighed and rejected, with what the measurement showed."""
+
+    name: str
+    rejected_because: str
+
+
+class CryptoMarketContextResponse(BaseModel):
+    """What the market did, what the peers did, and what this asset did.
+
+    Market context, never Asset Quality. Nothing here is banded, scored
+    or ranked, and a token that fell less than its peers is not thereby
+    a better asset.
+    """
+
+    #: The environment, shared by every token in the book.
+    market: list[MarketObservationResponse]
+
+    market_source: str | None
+    market_age: str | None
+
+    #: This asset's own returns, one per interval published.
+    returns: list[MarketObservationResponse]
+
+    peer: PeerGroupResponse | None
+
+    #: Why there is no peer group. Set exactly when `peer` is null — a
+    #: missing comparison is stated rather than left blank.
+    peer_unavailable_because: str | None
+
+    considered: list[ConsideredPeerGroupResponse]
+
+    peer_observations: list[MarketObservationResponse]
+
+    relative: list[RelativeReturnResponse]
+
+    concentrations: list[ConcentrationResponse]
+
+    #: Intervals this asset's return was read at and no comparator was.
+    uncompared: list[str]
+
+    unavailable_because: str | None
+
+
 class CommitteeUncertaintyResponse(BaseModel):
     """One thing a committee could not settle, and whether looking again helps."""
 
@@ -759,6 +874,12 @@ class DossierResponse(BaseModel):
     #: Applicability and evidence standing, never a verdict. Null for
     #: anything that is not a cryptocurrency.
     crypto_playbook: CryptoPlaybookResponse | None = None
+
+    #: What kind of crypto market this asset is trading inside, and its
+    #: place in it. Its own evidence family, separate from the token's
+    #: facts and from its protocol's, and consumed by nothing. Null for
+    #: anything that is not a cryptocurrency.
+    crypto_market: CryptoMarketContextResponse | None = None
 
     # ── The narrative (Communication layer, optional) ───────────────
     #: The case in words, or null with the reason beside it. Exactly one

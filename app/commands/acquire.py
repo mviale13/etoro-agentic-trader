@@ -93,6 +93,18 @@ def _render(acquired: MarketAcquisition) -> None:
             f"({', '.join(security.symbol for security in with_protocols)})"
         )
 
+    # The crypto environment — one cycle-level reading, not a per-token
+    # one. Counted in calls because that is what the rate limit spends,
+    # and a partial cycle says so rather than looking complete.
+    cycle = acquired.crypto_market
+
+    if cycle is not None:
+        groups = f", {len(cycle.peer_groups)} peer groups" if cycle.peer_groups else ""
+
+        print(
+            f"  Crypto market {cycle.answered} of {cycle.asked} calls answered{groups}"
+        )
+
     thin = [
         security
         for security in acquired.securities
