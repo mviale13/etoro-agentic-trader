@@ -53,6 +53,11 @@ from app.providers.primary_sources import (
 #: rather than handing back a fact with the new half missing.
 #:
 #: 2 — S5.1 added `provenance`, which the establishment gate reads.
+#:
+#: Enforced by `JsonCache` rather than by this module. S5.2a moved the
+#: check into the shared contract: this store was the only one that had
+#: it, and a guard eleven stores each have to remember is a guard ten of
+#: them will not.
 SCHEMA = 2
 
 
@@ -586,7 +591,14 @@ class CachedPrimarySupplyProvider:
         acquires: bool = True,
     ) -> None:
         self._provider = provider or PrimarySupplyProvider()
-        self._cache = cache or JsonCache("data/cache/primary_supply")
+        # Schema 2 with no migration from 1: a version-1 record carries
+        # no provenance, and the establishment gate reads provenance, so
+        # there is nothing to bring forward. It re-acquires instead —
+        # which is a keyless chain read, and cheap.
+        self._cache = cache or JsonCache(
+            "data/cache/primary_supply",
+            schema=SCHEMA,
+        )
         self._acquires = acquires
 
     @classmethod
@@ -618,24 +630,15 @@ class CachedPrimarySupplyProvider:
             return held or ()
 
         if facts:
-            self._cache.write(
-                key,
-                {"schema": SCHEMA, "facts": [_encode(fact) for fact in facts]},
-            )
+            self._cache.write(key, {"facts": [_encode(fact) for fact in facts]})
 
         return facts
 
     @staticmethod
     def _restore(entry: CachedEntry) -> tuple[SupplyFact, ...] | None:
-        # A record written under an older shape is treated as absent
-        # rather than decoded into a fact missing the fields a newer
-        # reader needs. Found the hard way: the establishment gate reads
-        # provenance, records written before it existed carried none,
-        # and every gate that needs it failed — silently, and only
-        # until the daily expiry, which is the worst kind of wrong.
-        if entry.value.get("schema") != SCHEMA:
-            return None
-
+        # No shape check here any more. `JsonCache` refuses a record
+        # written under a different schema before this method sees it,
+        # which is why the schema is declared where the cache is built.
         rows = entry.value.get("facts")
 
         if not isinstance(rows, list):

@@ -223,7 +223,16 @@ class CachedTokenInsightProvider:
         acquires: bool = True,
     ) -> None:
         self._provider = provider or TokenInsightProvider()
-        self._cache = cache or JsonCache("data/cache/ratings")
+        self._cache = cache or JsonCache(
+            "data/cache/ratings",
+            # Schema 1, and records written before this store
+            # declared one are accepted as schema 1 deliberately —
+            # their shape is what schema 1 describes. The next bump
+            # needs a migration or they re-acquire, which is the
+            # protection: the store cannot change shape by accident.
+            schema=1,
+            accepts_unversioned=True,
+        )
         self._acquires = acquires
 
     @classmethod

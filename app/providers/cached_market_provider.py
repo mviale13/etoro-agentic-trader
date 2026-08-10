@@ -46,7 +46,16 @@ class CachedMarketProvider:
         acquires: bool = True,
     ) -> None:
         self._provider = provider or YahooMarketProvider()
-        self._cache = cache or JsonCache("data/cache/quotes")
+        self._cache = cache or JsonCache(
+            "data/cache/quotes",
+            # Schema 1, and records written before this store
+            # declared one are accepted as schema 1 deliberately —
+            # their shape is what schema 1 describes. The next bump
+            # needs a migration or they re-acquire, which is the
+            # protection: the store cannot change shape by accident.
+            schema=1,
+            accepts_unversioned=True,
+        )
         self._ttl = ttl
 
         self._acquires = acquires
