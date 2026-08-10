@@ -145,6 +145,15 @@ looked, the longest it went without looking, and per finding whether it
 is new, unchanged, changed, no longer produced or unreadable. Read-only,
 no model, and a count of captures is never presented as a duration of
 monitoring),
+`movrvest judge [SYMBOL]` (convene the committee and **record** what it
+concluded — the explicit spend that writes judgment history, kept apart
+from every read-only surface so that opening a page can never
+manufacture a judgment event),
+`movrvest judgment-history [SYMBOL] [--evidence]` (what this committee
+concluded, when, and what changed since — the answer, the observation
+beneath it and the evidence itself as three separate facts, with a
+previous verdict never restated as today's. Read-only, no model, and a
+count of judgments is never presented as a duration of review),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -519,6 +528,41 @@ verdict chosen by the judge**, so more evidence raises confidence and
 cannot move the answer. The schema has three fields and no room for a
 score, a recommendation or a conviction.
 `movrvest committee-judgment [SYMBOL] [--evidence]`.
+
+**A number moving is not a conclusion moving** (Judgment History,
+[`JUDGMENT_HISTORY.md`](docs/architecture/JUDGMENT_HISTORY.md), accepted
+and built). The journal remembers evidence; this remembers *judgment*,
+and every transition carries **three axes, never one field** — what
+happened to the answer, to the count of observation beneath it, and to
+the evidence itself. **Evidence moving under a steady answer is the
+ordinary case** and renders as a sentence saying so, because a layer
+that collapsed them would announce a reversal roughly daily out of true
+parts. The first live run demonstrated the separation unprompted:
+HYPE's four eligible findings were **byte-identical across three
+judgments** while the answer moved from unanswered to
+`mechanism_evidenced` and back.
+
+**A historical verdict is never today's verdict.** `JudgmentStanding`
+enforces §5 structurally — `verdict` returns `None` unless today's
+committee answered, and the earlier record is reachable only through
+`previously` — so this platform says *"the previous judgment was that a
+mechanism is evidenced; today the committee did not run"* and can never
+say *"the mechanism remains evidenced"*. The transition beneath it is
+`BECAME_UNANSWERABLE`, worded *"unrefreshed rather than contradicted"*:
+**an unavailable today is not a reversal.**
+
+**Six postures, and four of them produce no verdict** — the owner's PR
+#112 catch carried into history, because BTC (wrong instrument) and TAO
+(applicability unestablished) both answer nothing and their problems are
+opposite. **Committee identity is a fingerprint derived from the live
+contract** (question, applicability rule, eligible claim types, verdict
+vocabulary), so a contract change makes old records visibly incomparable
+— and incomparability *short-circuits* the other two axes rather than
+hedging them. **No transition may inflate**: the schema has no field for
+a score or a stance, and because every sentence is built only from this
+layer's own enumerations the producible vocabulary is finite and a test
+enumerates all of it. The synthesist may explain a transition code
+established and cannot discover one.
 
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`

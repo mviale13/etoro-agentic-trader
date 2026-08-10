@@ -27,6 +27,8 @@ from app.commands import (
     intelligence_brief,
     intelligence_journal,
     issuance,
+    judge,
+    judgment_history,
     knowledge,
     market,
     morning,
@@ -428,6 +430,47 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show every eligible finding the committee was given",
     )
 
+    judge_parser = subparsers.add_parser(
+        "judge",
+        help="Convene the committee and record what it concluded",
+        description=(
+            "The explicit spend that writes judgment history. Runs the Value "
+            "Capture Committee, appends one judgment event to an append-only "
+            "record, and states what changed against the last comparable "
+            "judgment. Recording is separate from rendering on purpose: a "
+            "surface that wrote history would count page views as reviews"
+        ),
+    )
+    judge_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example ETH. Omit for the corpus",
+    )
+
+    judgment_history_parser = subparsers.add_parser(
+        "judgment-history",
+        help="Show how one bounded judgment has moved, and how far to trust it",
+        description=(
+            "What the committee concluded, when, and what changed since — "
+            "with the committee's answer, the observation beneath it and the "
+            "evidence itself kept as three separate facts, because evidence "
+            "moving under a steady answer is the ordinary case and is not a "
+            "changed conclusion. A previous verdict is never restated as "
+            "today's. Read-only, no model, and a count of judgments is never "
+            "presented as a duration of review"
+        ),
+    )
+    judgment_history_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example ETH. Omit for the corpus",
+    )
+    judgment_history_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show the record ids, the cited refs and both change axes",
+    )
+
     journal_parser = subparsers.add_parser(
         "intelligence-journal",
         help="Show what this platform has observed over time, and how often",
@@ -768,6 +811,12 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "committee-judgment":
         return await committee_judgment.run(args.symbol, args.evidence)
+
+    if args.command == "judge":
+        return await judge.run(args.symbol)
+
+    if args.command == "judgment-history":
+        return await judgment_history.run(args.symbol, args.evidence)
 
     if args.command == "intelligence-journal":
         return await intelligence_journal.run(args.symbol, args.evidence)

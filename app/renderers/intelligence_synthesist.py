@@ -51,6 +51,7 @@ from app.domain.intelligence_synthesis import (
     MAX_THEME_WORDS,
     SynthesisItem,
 )
+from app.domain.judgment_history import JudgmentTransition
 from app.providers.narrative_provider import (
     DraftRequest,
     NarrativeDeclined,
@@ -770,6 +771,7 @@ class SynthesisRejected(Exception):
 def build_findings(
     snapshot: CryptoIntelligenceSnapshot,
     history: tuple[TemporalFact, ...] = (),
+    judgments: tuple[JudgmentTransition, ...] = (),
 ) -> tuple[NarrativeFinding, ...]:
     """Word the snapshot as numbered findings — nothing else is supplied.
 
@@ -777,7 +779,8 @@ def build_findings(
     of thing was cited without looking it up: `C` a measured or reported
     claim, `E` a development, `A` an attributed reading, `R` relative
     market context, `F` durable foundation, `T` an unresolved tension,
-    `W` a deterministic watch item.
+    `W` a deterministic watch item, `H` what the record says over time,
+    and `J` a committee judgment that changed.
     """
 
     findings: list[NarrativeFinding] = []
@@ -891,6 +894,29 @@ def build_findings(
                 ),
             )
             for fact in history
+        ],
+    )
+
+    # What a committee concluded, and how that differs from the last
+    # comparable judgment. **Code establishes the transition; the model
+    # explains it** — the same division the `H` group rests on, applied
+    # one layer up. A transition is supplied only where the projection
+    # already decided one, so the model can word *"the committee now
+    # finds a mechanism where the previous comparable judgment found
+    # none"* and can never be the thing that noticed.
+    add(
+        "J",
+        [
+            (
+                transition.stated,
+                (
+                    f"Committee judgment — {transition.remit.stated}, "
+                    f"{transition.change.value}, from "
+                    f"{len(transition.record_ids)} recorded judgment(s): "
+                    + ", ".join(transition.record_ids)
+                ),
+            )
+            for transition in judgments
         ],
     )
 
@@ -1360,10 +1386,11 @@ class IntelligenceSynthesist:
         self,
         snapshot: CryptoIntelligenceSnapshot,
         history: tuple[TemporalFact, ...] = (),
+        judgments: tuple[JudgmentTransition, ...] = (),
     ) -> tuple[tuple[tuple[SynthesisItem, ...], ...], str]:
         """The three validated sections and the model that wrote them."""
 
-        findings = build_findings(snapshot, history)
+        findings = build_findings(snapshot, history, judgments)
 
         request = DraftRequest(
             system_prompt=SYSTEM_PROMPT,
