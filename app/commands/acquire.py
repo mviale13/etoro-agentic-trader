@@ -70,6 +70,16 @@ def _render(acquired: MarketAcquisition) -> None:
             f"({', '.join(security.symbol for security in rated)})"
         )
 
+    # The crypto-native provider's market claims — the raw material the
+    # validation gate judges on read. The same metered allowance.
+    facted = [security for security in acquired.securities if security.token_facts]
+
+    if facted:
+        print(
+            f"  Token facts  {len(facted)} tokens "
+            f"({', '.join(security.symbol for security in facted)})"
+        )
+
     thin = [
         security
         for security in acquired.securities

@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_brain_builder_service
+from app.api.models.asset_profile_adapter import asset_profile_response
 from app.api.models.dossier import (
     CommitteeOpinionResponse,
     CommitteeUncertaintyResponse,
@@ -73,6 +74,7 @@ from app.renderers.brief_language import (
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.company_understanding_service import CompanyUnderstandingService
 from app.services.executive_writer_service import ExecutiveWriterService
+from app.services.token_facts_service import TokenFactsService
 
 router = APIRouter(
     prefix="/executive",
@@ -601,7 +603,19 @@ async def dossier(
     # general default — and therefore what the sections below are called
     # and which of them belong. Decided here, from the asset class the
     # Brain already holds, so the page renders semantics it was told.
-    definition = definition_for(brain.asset_class_for(normalized_symbol))
+    asset_class = brain.asset_class_for(normalized_symbol)
+    definition = definition_for(asset_class)
+
+    # A token's market facts, judged through the validation gate on
+    # read: standings, dates, sources and the claims that failed. Read
+    # from the stores only — null for anything that is not a
+    # cryptocurrency, and the service itself refuses to promote an
+    # unclassified security to a token.
+    token_facts = TokenFactsService().established(
+        normalized_symbol,
+        normalized_symbol,
+        asset_class,
+    )
 
     # Read from the stores only — no fetch, no model — and composed
     # before the narrative so the conclusion below is available whether
@@ -724,6 +738,7 @@ async def dossier(
         ],
         evidence_as_of=_provenance(decision.evidence_as_of),
         token_rating=token_rating,
+        asset_profile=asset_profile_response(token_facts),
         # Both null on purpose: this route no longer words the case.
         narrative=None,
         narrative_absent=None,

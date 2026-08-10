@@ -409,6 +409,9 @@ def test_a_dossier_declares_what_kind_of_case_it_is(
 
     assert body["scores"]["quality"]["label"] == "Business quality"
 
+    # Market-fact judgment is a crypto concept; an equity case has none.
+    assert body["asset_profile"] is None
+
 
 def test_a_crypto_dossier_is_a_crypto_dossier(
     client: TestClient,
@@ -465,6 +468,28 @@ def test_a_crypto_dossier_is_a_crypto_dossier(
     # A network reading is asset quality. Calling it business quality
     # presented a crypto score as a company judgment nobody made.
     assert body["scores"]["quality"]["label"] == "Asset quality"
+
+    # The judged market facts travel with the case: grouped rows, each
+    # with a standing, and the rejection ledger beside them. Content
+    # depends on what the stores hold; the shape does not.
+    profile = body["asset_profile"]
+
+    assert profile is not None
+    assert [group["title"] for group in profile["groups"]] == [
+        "Market",
+        "Trading activity",
+        "Supply",
+        "Dilution context",
+        "History",
+    ]
+
+    for group in profile["groups"]:
+        for row in group["rows"]:
+            assert row["label"]
+            assert row["standing"]
+            assert row["standing_stated"]
+
+    assert isinstance(profile["rejected"], list)
 
 
 def test_dossier_reports_an_unevidenced_symbol_as_unevidenced(

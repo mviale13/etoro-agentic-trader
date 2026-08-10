@@ -34,6 +34,7 @@ SETTINGS_READERS = (
     # Not a model, but the same failure mode: a metered third-party
     # key whose allowance a test could quietly spend.
     "app.providers.token_insight_provider",
+    "app.providers.token_facts_provider",
 )
 
 #: Every variable that could turn a reading or a drafting on, or hand it
