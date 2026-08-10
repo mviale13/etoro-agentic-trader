@@ -25,3 +25,12 @@ class QualitySignal:
     #: What lets a surface say that a score was capped by unreadable
     #: data rather than by the company falling short.
     next_band_needs: int | None = None
+
+    #: The signal's own account of why it reads as it does, where it has
+    #: one. Carried because the composing layer cannot know it: asked to
+    #: explain an UNKNOWN, the executive builder said "the figures a
+    #: business is judged on could not be read" — about Bitcoin, which is
+    #: not a business and whose one scorable question was answered at the
+    #: top band. Absent here, that wording still stands for the company
+    #: path, where it is true.
+    basis: str | None = None

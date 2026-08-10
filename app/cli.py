@@ -12,6 +12,7 @@ from app.commands import (
     credentials,
     crypto_market,
     crypto_playbook,
+    crypto_quality,
     daily,
     decide,
     decision,
@@ -332,6 +333,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example BTC or HYPE. Omit for the corpus matrix",
     )
 
+    crypto_quality_parser = subparsers.add_parser(
+        "crypto-quality",
+        help=(
+            "Show which durable qualities of a digital asset this "
+            "platform can judge today"
+        ),
+        description=(
+            "For one token: the quality band or the honest absence of "
+            "one, the evidence coverage beneath it, and every applicable "
+            "question with how it participated — scored against a named "
+            "rule, shown with its standing and not scored, or not yet "
+            "answerable with what would answer it. With no symbol: the "
+            "question readiness table and the corpus as a matrix. "
+            "Read-only — nothing is fetched, asked of a model or stored"
+        ),
+    )
+    crypto_quality_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC or HYPE. Omit for the corpus matrix",
+    )
+
     subparsers.add_parser(
         "playbook-coverage",
         help="Measure the grounded selector over the portfolio and watchlists",
@@ -609,6 +632,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "crypto-playbook":
         return await crypto_playbook.run(args.symbol)
+
+    if args.command == "crypto-quality":
+        return await crypto_quality.run(args.symbol)
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

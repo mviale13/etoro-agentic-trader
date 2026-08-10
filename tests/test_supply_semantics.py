@@ -692,7 +692,6 @@ def test_no_score_or_decision_path_can_import_the_supply_layer() -> None:
         "app/services/business_quality_service.py",
         "app/services/company_facts_service.py",
         "app/services/company_signal_service.py",
-        "app/services/crypto_quality_signal_service.py",
         "app/services/quality_signal_service.py",
     )
 
@@ -728,18 +727,46 @@ def test_the_token_fact_gate_is_not_rewritten() -> None:
 
     The semantic layer explains a conflict; it does not resolve one in
     the store. `judge()` is untouched, so `CompanyFactsService` reads
-    exactly what it read before and no factor moves.
+    exactly what it read before.
     """
 
     code = _code("app/services/supply_semantics_service.py")
 
     assert "judge" not in code
 
-    from app.services.crypto_quality_signal_service import CryptoQualitySignalService
 
-    assert CryptoQualitySignalService.MOSTLY_ISSUED == 0.90
-    assert CryptoQualitySignalService.PARTLY_ISSUED == 0.60
-    assert CryptoQualitySignalService.MINIMUM_MEASURED == 2
+def test_the_quality_model_reads_supply_concepts_and_scores_none_of_them() -> None:
+    """Acceptance 12, restated for the slice that consumed S4.6.
+
+    S4.6 held the supply layer away from every score because a
+    re-judgment there would have moved a factor. S5 consumes the layer
+    by name — that was the ruling — and scores nothing from it, so the
+    factor that could have moved does not exist any more.
+
+    Two properties, and the second is the load-bearing one: the supply
+    question is shown rather than scored, and the word `dilution` never
+    reaches an investor from a ratio.
+    """
+
+    from app.domain.crypto_quality import QualityReadiness, readiness_for
+    from app.domain.crypto_questions import CryptoQuestionKey
+
+    ruling = readiness_for(CryptoQuestionKey.SUPPLY_AND_DILUTION)
+
+    assert ruling.readiness is QualityReadiness.VISIBLE_NOT_SCORED
+
+    # The emitted share is reported as an emitted share. Calling it
+    # dilution would claim what the arrival of the rest does to a
+    # holder, and neither when it arrives nor to whom is read.
+    code = _code("app/services/crypto_asset_quality_service.py")
+
+    shown = code.split("_supply_shown")[-1].split("def _scarcity_shown")[0]
+
+    assert "dilut" not in shown.casefold()
+    assert "emitted" in shown
+
+    # And the legacy generic field is not the route back in.
+    assert "circulating_supply" not in code
 
 
 def test_btc_is_unchanged_by_any_of_it() -> None:

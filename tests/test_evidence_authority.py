@@ -420,7 +420,7 @@ def test_no_score_or_decision_path_can_import_the_authority_experiment() -> None
         "app/services/business_quality_service.py",
         "app/services/company_facts_service.py",
         "app/services/company_signal_service.py",
-        "app/services/crypto_quality_signal_service.py",
+        "app/services/crypto_asset_quality_service.py",
         "app/services/playbook_selector.py",
         "app/services/quality_signal_service.py",
     )
@@ -452,18 +452,34 @@ def test_no_score_or_decision_path_can_import_the_authority_experiment() -> None
     assert offenders == []
 
 
-def test_the_crypto_quality_factor_table_is_still_untouched() -> None:
-    """Acceptance 10, on the numbers that could quietly move."""
+def test_no_quality_rule_reads_the_authority_axis() -> None:
+    """Acceptance 10, restated for the model that replaced the factors.
 
-    from app.services.crypto_quality_signal_service import CryptoQualitySignalService
+    S4.5's guard was written when a factor table existed to be held
+    still, and S5 replaced that table under an explicit ruling. What the
+    guard was protecting survives and is stronger stated positively:
+    **a rule gates on standing and never on authority.** Where a figure
+    came from explains why a standing applies; it is not a second
+    standing, and a primary reading is not thereby scorable.
+    """
 
-    assert CryptoQualitySignalService.LARGE_NETWORK == 10_000_000_000
-    assert CryptoQualitySignalService.SMALL_NETWORK == 1_000_000_000
-    assert CryptoQualitySignalService.LIQUID == 0.02
-    assert CryptoQualitySignalService.ILLIQUID == 0.002
-    assert CryptoQualitySignalService.MOSTLY_ISSUED == 0.90
-    assert CryptoQualitySignalService.PARTLY_ISSUED == 0.60
-    assert CryptoQualitySignalService.MINIMUM_MEASURED == 2
+    from app.domain.crypto_quality import RULES
+
+    # Every rule names the fact it reads, and no rule names a source,
+    # a provider or an authority.
+    for rule in RULES.values():
+        stated = f"{rule.measures} {rule.answers}".casefold()
+
+        for word in ("primary", "authority", "chain", "provider", "vendor"):
+            assert word not in stated, (rule.name, word)
+
+    # And the scoring gate is standing, at one place, by name.
+    code = pathlib.Path("app/services/crypto_asset_quality_service.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "EvidenceStanding.ESTABLISHED" in code
+    assert "EvidenceAuthority" not in code
 
 
 def test_the_experiment_stores_nothing() -> None:

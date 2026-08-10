@@ -621,28 +621,126 @@ def test_asset_liquidity_and_global_volume_can_never_be_divided() -> None:
         assert "liquidity" not in item.metric.value
 
 
-def test_the_crypto_quality_liquidity_reading_is_untouched() -> None:
-    """Acceptance 12 for S3's finding: the liquidity question did not move.
+def test_the_liquidity_reading_was_retired_rather_than_moved() -> None:
+    """Acceptance 12 for S3's finding, settled by measurement in S5.
 
-    S4 supplies another volume field and changes no liquidity rule. The
-    quality service's own bands are asserted at their values, and its
-    turnover still divides one provider's volume by that provider's
-    market value.
+    S4 supplied a second volume field and changed no liquidity rule. S5
+    measured the rule instead of preserving it, against CoinGecko's 250
+    largest assets: a day's volume over market capitalisation ranks
+    Bitcoin 158th of 233 and 1inch 52nd, while Bitcoin trades $14.8bn a
+    day and 1inch $7m. It is not a liquidity measure, so it is gone —
+    and the question it failed to answer stays open rather than being
+    answered by something else.
     """
 
-    from app.services.crypto_quality_signal_service import CryptoQualitySignalService
+    from app.domain.crypto_quality import RULES, QualityReadiness, readiness_for
+    from app.domain.crypto_questions import CryptoQuestionKey
 
-    assert CryptoQualitySignalService.LIQUID == 0.02
-    assert CryptoQualitySignalService.ILLIQUID == 0.002
+    assert (
+        readiness_for(CryptoQuestionKey.LIQUIDITY).readiness
+        is QualityReadiness.NOT_READY
+    )
+
+    assert CryptoQuestionKey.LIQUIDITY not in RULES
+
+
+#: The two modules S5 added. Both are asked what they can *reach*,
+#: never what they mention: the quality model states in as many words
+#: that market mood and cheapness are not its business, and a raw text
+#: search would forbid it from saying so. `_code` strips docstrings and
+#: is not enough here — a rule's investor-facing sentences live in
+#: dataclass fields, where "its price is a valuation rather than a
+#: quotation" is exactly the wording the boundary exists to earn.
+_QUALITY_MODULES = (
+    "app/domain/crypto_quality.py",
+    "app/services/crypto_asset_quality_service.py",
+)
+
+
+def _identifiers(module: str) -> str:
+    """What a module can reach: names, attributes, imports. No prose."""
 
     root = pathlib.Path(__file__).resolve().parent.parent
 
-    text = (root / "app/services/crypto_quality_signal_service.py").read_text(
-        encoding="utf-8"
-    )
+    tree = ast.parse((root / module).read_text(encoding="utf-8"))
 
-    assert "crypto_market" not in text
-    assert "total_volume" not in text
+    words: list[str] = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name):
+            words.append(node.id)
+        elif isinstance(node, ast.Attribute):
+            words.append(node.attr)
+        elif isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            words.append(node.name)
+        elif isinstance(node, ast.alias):
+            words.append(f"{node.name} {node.asname or ''}")
+        elif isinstance(node, ast.ImportFrom):
+            words.append(node.module or "")
+        elif isinstance(node, ast.arg):
+            words.append(node.arg)
+
+    return "\n".join(words)
+
+
+def test_no_market_context_can_reach_asset_quality() -> None:
+    """Acceptance 6 of the S5 ruling, made structural.
+
+    An asset's intrinsic quality must not change because the market
+    moved this morning. The quality model cannot reach the market family
+    at all, and no rule reads a return, a peer group, breadth, dominance
+    or sentiment.
+    """
+
+    for target in _QUALITY_MODULES:
+        code = _identifiers(target).casefold()
+
+        for forbidden in (
+            "crypto_market",
+            "market_peer",
+            "relative_return",
+            "dominance",
+            "breadth",
+            "sentiment",
+            "fear_greed",
+            "trending",
+            "regime",
+            "total_volume",
+            "change_24h",
+        ):
+            assert forbidden not in code, (target, forbidden)
+
+
+def test_no_valuation_can_reach_asset_quality() -> None:
+    """Acceptance 7 of the S5 ruling.
+
+    Fully-diluted valuation, capitalisation over revenue and
+    capitalisation over capital committed are all computable from facts
+    this platform already holds, and every one of them answers *what
+    price am I paying* rather than *what is this*. None is reachable
+    from the model, and the parking is deliberate rather than
+    accidental.
+    """
+
+    for target in _QUALITY_MODULES:
+        code = _identifiers(target).casefold()
+
+        for forbidden in (
+            "fully_diluted",
+            "price_to",
+            "per_revenue",
+            "cheap",
+            "expensive",
+            "overvalued",
+            "undervalued",
+        ):
+            assert forbidden not in code, (target, forbidden)
+
+    # And the fact itself: the one valuation quantity the platform holds
+    # for a token is never what a rule reads.
+    from app.services.crypto_asset_quality_service import _SCORED_DEMAND
+
+    assert "fully_diluted_valuation" not in set(_SCORED_DEMAND.values())
 
 
 # ── acceptance 8 and 9: no sentiment, no regime ─────────────────────
@@ -670,7 +768,7 @@ def test_sentiment_and_attention_are_not_in_the_factual_core() -> None:
         assert "greed" not in code, module
         assert "trending" not in code, module
 
-    quality = (root / "app/services/crypto_quality_signal_service.py").read_text(
+    quality = (root / "app/services/crypto_asset_quality_service.py").read_text(
         encoding="utf-8"
     )
 
@@ -756,7 +854,7 @@ def test_no_score_or_decision_path_can_import_the_market_family() -> None:
         "app/services/business_quality_service.py",
         "app/services/company_facts_service.py",
         "app/services/company_signal_service.py",
-        "app/services/crypto_quality_signal_service.py",
+        "app/services/crypto_asset_quality_service.py",
         "app/services/playbook_selector.py",
         "app/services/quality_signal_service.py",
     )

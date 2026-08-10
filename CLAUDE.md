@@ -120,6 +120,13 @@ with its applicability and the evidence held against it, the declines
 each with its reason, and every mapped entity's value chain from use to
 the token; without one, the corpus as a matrix. Read-only, decides
 nothing — see below),
+`movrvest crypto-quality [SYMBOL]` (which durable qualities of a digital
+asset this platform can actually judge: the band or the honest absence
+of one, the coverage and confidence beneath it, and every applicable
+question with how it participated — scored against a named rule, shown
+with its standing and counted by nothing, or not yet answerable with
+what would answer it. Without a symbol, the readiness table and the
+corpus. Read-only),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -273,6 +280,27 @@ aggregate moved +0.05% where its top 250 returned +0.11%). A
 `AnalyticalArchetype`: ETH is read as a smart-contract network and
 compared against a Layer 1 group containing Bitcoin, and the two modules
 cannot import each other.
+
+**One question of nineteen can carry a score** (S5,
+[`CRYPTO_ASSET_QUALITY.md`](docs/architecture/CRYPTO_ASSET_QUALITY.md)).
+The four-factor crypto signal is deleted, not repaired. A fourth
+vocabulary joins S3's three — **readiness**, a property of the *question*
+alone, so `readiness_for` has no parameter an asset could arrive through
+and no well-covered security can make a question scorable that stays
+unscorable elsewhere. Three measurements decided it: **volume over market
+cap is not liquidity** (it ranks BTC 158th of 233 and 1inch 52nd, while
+BTC trades $14.8bn a day and 1inch $7m), **a vendor's `total_supply` is
+the protocol maximum for 83 of 145 capped assets** in the top 250 — the
+chain impeached it for ADA and TAO — and **two sources agreeing to the
+last bit are one source** (TokenInsight's ADA figure is a bit-identical
+copy of the Cardano ledger's, so it cannot corroborate it; a *declared
+constant* matching exactly is the expected shape and a *measured*
+quantity matching exactly is replication). Only market robustness scores,
+on `market-significance-floor@1` ($10bn / $500m, measured against the 250
+largest); the quorum of 2 is inherited, so **every crypto asset now reads
+UNKNOWN** and stops at INVESTIGATE. Age is gone, market context and
+valuation are unreachable by construction, and HYPE's economics are
+`VISIBLE_NOT_SCORED` — mechanism settled, amount claimed.
 
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that

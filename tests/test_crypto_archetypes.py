@@ -15,6 +15,7 @@ fail in CI, and quietly change its own subject the next time
 
 from __future__ import annotations
 
+import inspect
 import pathlib
 from datetime import UTC, datetime
 
@@ -809,8 +810,6 @@ def test_no_scorer_or_decision_path_can_import_the_crypto_playbook() -> None:
         "app/domain/financial_question.py",
         "app/services/business_quality_service.py",
         "app/services/company_facts_service.py",
-        "app/services/company_signal_service.py",
-        "app/services/crypto_quality_signal_service.py",
         "app/services/playbook_selector.py",
         "app/services/quality_signal_service.py",
     )
@@ -843,6 +842,37 @@ def test_no_scorer_or_decision_path_can_import_the_crypto_playbook() -> None:
     assert offenders == []
 
 
+def test_only_the_crypto_quality_model_may_read_the_question_layer() -> None:
+    """S5 argued with the guard above, and the guard narrowed rather than went.
+
+    S3 wrote that a slice wanting applicability inside a score would
+    have to argue with its import test first. S5 is that slice, under a
+    ruling, and it reads the question layer by design — so the boundary
+    moves to exactly one module instead of disappearing.
+
+    `company_signal_service` reaches the questions *through* that
+    module and names none of them itself, which is the shape that keeps
+    the equity path from ever seeing a crypto question.
+    """
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+
+    permitted = {
+        "app/domain/crypto_quality.py",
+        "app/services/crypto_asset_quality_service.py",
+    }
+
+    for target in sorted(permitted):
+        assert (root / target).exists(), target
+
+    signal = (root / "app/services/company_signal_service.py").read_text(
+        encoding="utf-8"
+    )
+
+    for name in ("crypto_archetype", "crypto_questions", "crypto_playbook"):
+        assert name not in signal, name
+
+
 def test_the_equity_question_layer_is_untouched() -> None:
     """Acceptance 13: no equity playbook learned anything from this."""
 
@@ -857,22 +887,32 @@ def test_the_equity_question_layer_is_untouched() -> None:
     assert "archetype_for" not in playbook
 
 
-def test_the_crypto_quality_factor_table_is_unchanged() -> None:
-    """Acceptance 10, on the one thing that could quietly move.
+def test_applicability_still_cannot_be_reached_through_a_score() -> None:
+    """Acceptance 10, restated for the model that consumed S3.
 
-    The four bands the token score uses are policy, and S3 changes none
-    of them. A slice that adjusts a threshold has to do it deliberately.
+    The thing S3 was protecting was never the four thresholds; it was
+    that no figure could make a question applicable. S5 reads
+    applicability and must not be able to change it, so the guard is
+    now the property itself: the quality model asks
+    `applicability_for` for nothing, because it takes what the playbook
+    already settled — and the playbook settles it before reading any
+    evidence.
     """
 
-    from app.services.crypto_quality_signal_service import CryptoQualitySignalService
+    code = pathlib.Path("app/services/crypto_asset_quality_service.py").read_text(
+        encoding="utf-8"
+    )
 
-    assert CryptoQualitySignalService.LARGE_NETWORK == 10_000_000_000
-    assert CryptoQualitySignalService.SMALL_NETWORK == 1_000_000_000
-    assert CryptoQualitySignalService.LIQUID == 0.02
-    assert CryptoQualitySignalService.ILLIQUID == 0.002
-    assert CryptoQualitySignalService.MOSTLY_ISSUED == 0.90
-    assert CryptoQualitySignalService.PARTLY_ISSUED == 0.60
-    assert CryptoQualitySignalService.MINIMUM_MEASURED == 2
+    assert "applicability_for" not in code
+
+    # And readiness — S5's own new axis — is a property of the question
+    # alone. A function that could see a symbol would let a well-covered
+    # asset make a question scorable that stays unscorable elsewhere.
+    from app.domain import crypto_quality
+
+    signature = inspect.signature(crypto_quality.readiness_for)
+
+    assert list(signature.parameters) == ["question"]
 
 
 # ── acceptance 12: evidence maturity is not calendar age ────────────
