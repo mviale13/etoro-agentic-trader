@@ -97,6 +97,10 @@ agreement beneath it — and then the governing financial model's
 questions over exactly those facts: answered, not yet answerable, or
 not applicable with the evidence that would answer it. Read-only, never
 observes; `--model` is inspection and never changes what governs),
+`movrvest supply [SYMBOL]` (what each of a token's supply numbers
+actually counts — which quantity, whose definition, and whether two
+figures are a real disagreement or two different facts. Read-only, and
+it interprets nothing: dilution is not a word it knows),
 `movrvest primary [BTC|ETH|ADA|HYPE]` (read canonical chain state
 directly and report what it can settle: each figure with its evidence
 authority, window, formula, rule version, inputs and both
@@ -242,6 +246,19 @@ vendors S1 called CONFLICTED were each reporting a different one, the
 rejected reading matching `circulation` exactly. A provider-scoped
 aggregate (total market cap, rankings, breadth) **can never be
 corroborated** and its honest ceiling is permanent attribution.
+
+**Two numbers only conflict if they claim to represent the same thing**
+(S4.6, [`CRYPTO_SUPPLY_SEMANTICS.md`](docs/architecture/CRYPTO_SUPPLY_SEMANTICS.md)).
+Crypto supply is an accounting vocabulary: five concepts (max, emitted,
+future emissions, excluded balance, circulating estimate), each carrying
+a `SupplyMethodology` whose `disclosed` flag decides everything —
+**an undisclosed methodology is not a different methodology**, or any two
+numbers could avoid conflicting by being equally unexplained. ADA's
+three-way conflict dissolved (TokenInsight was reporting the ledger's
+`supply`, Yahoo its `circulation`); HYPE's stands because two vendors
+publish no exclusion set. **The re-judgment is reported, not written into
+`judge()`** — `CompanyFactsService` reads those standings and a score
+would move.
 
 **Market context is not Asset Quality** (S4,
 [`CRYPTO_MARKET_CONTEXT.md`](docs/architecture/CRYPTO_MARKET_CONTEXT.md)).

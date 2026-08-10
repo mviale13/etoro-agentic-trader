@@ -36,6 +36,7 @@ from app.commands import (
     statement_shape,
     statements,
     status,
+    supply,
     today,
     understanding,
     watchlist,
@@ -250,6 +251,25 @@ def build_parser() -> argparse.ArgumentParser:
     playbook_parser.add_argument(
         "symbol",
         help="Ticker symbol, for example DIS, NVDA or CAT",
+    )
+
+    supply_parser = subparsers.add_parser(
+        "supply",
+        help="Show what each of a token's supply numbers actually counts",
+        description=(
+            "Crypto supply is an accounting vocabulary rather than one "
+            "number. This shows which quantity each source reports, whose "
+            "definition decided it, and whether two figures are a real "
+            "disagreement or simply two different facts — two numbers "
+            "conflict only if they claim to represent the same thing. "
+            "Read-only, and it interprets nothing: dilution is not a word "
+            "it knows"
+        ),
+    )
+    supply_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example ADA or HYPE. Omit for the corpus",
     )
 
     primary_parser = subparsers.add_parser(
@@ -577,6 +597,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "playbook":
         return await playbook.run(args.symbol)
+
+    if args.command == "supply":
+        return await supply.run(args.symbol)
 
     if args.command == "primary":
         return await primary.run(args.symbol)

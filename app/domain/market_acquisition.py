@@ -47,6 +47,11 @@ class AcquiredSecurity:
     #: unmapped security is not one whose economics came back empty.
     protocol_facts: bool | None = None
 
+    #: The store now holds the chain's own supply quantities. `None`
+    #: where this platform has verified no canonical surface for the
+    #: chain — which is different from a chain that answered nothing.
+    primary_supply: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""
