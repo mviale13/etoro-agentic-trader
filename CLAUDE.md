@@ -488,6 +488,38 @@ findings carrying their journal entry ids; delete the observations and
 the claim becomes **unavailable rather than reconstructable**.
 `movrvest intelligence-journal [SYMBOL] [--evidence]`.
 
+**The first layer permitted to interpret evidence, and the fence around
+it** (the Value Capture Committee,
+[`VALUE_CAPTURE_COMMITTEE.md`](docs/architecture/VALUE_CAPTURE_COMMITTEE.md),
+built and **off by default**). One committee, one remit chosen by
+measurement — fees are the widest non-price evidence at 8/8, and the
+holder-revenue sibling is *established-and-empty* for three assets,
+which under S2's sibling rule is evidence of absence rather than absent
+evidence. **Eligibility is structural**: only `MEASURED`/`REPORTED`
+reach it, and `EligibleFinding` raises on anything else, so an
+`ATTRIBUTED` claim cannot be *constructed* as committee evidence.
+Synthesis prose is unreachable — *the synthesis is communication, not
+evidence*.
+
+**Three questions, never collapsed: applicability, evidence, judgment.**
+Applicability is decided *before* any evidence is read, and **the
+committee owns that rule rather than delegating to `applicability_for`**
+— forwarding to `TokenArchetype` would make this a generic
+crypto-quality judgment wearing a narrow remit, and it produced a
+concrete defect: BTC and TAO came out identical. They are not. BTC's
+role is established and the question is the wrong instrument
+(`NOT_ECONOMICALLY_APPLICABLE`, and **never adverse**); TAO's role is not
+established at all (`APPLICABILITY_UNESTABLISHED`).
+
+**Neither verdict is a grade and no share is banded.**
+`MECHANISM_EVIDENCED` is a structural fact, not "favourable" — 64%, 18%
+and 9% are contrast, and six observations do not establish a floor
+(S5.3's ruling, applied again). **Confidence is counted by code and the
+verdict chosen by the judge**, so more evidence raises confidence and
+cannot move the answer. The schema has three fields and no room for a
+score, a recommendation or a conviction.
+`movrvest committee-judgment [SYMBOL] [--evidence]`.
+
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
 attributes rather than layout, and reports `EventFeedHealth` when it

@@ -40,6 +40,7 @@ import pytest
 SETTINGS_READERS = (
     "app.services.executive_writer_service",
     "app.services.intelligence_synthesis_service",
+    "app.services.value_capture_committee",
     "app.services.company_knowledge_reader",
     "app.services.narrative_providers",
     # Not a model, but the same failure mode: a metered third-party
@@ -54,6 +55,7 @@ SETTINGS_READERS = (
 MODEL_ENVIRONMENT = (
     "MOVRVEST_EXECUTIVE_WRITER",
     "MOVRVEST_INTELLIGENCE_SYNTHESIS",
+    "MOVRVEST_COMMITTEE_JUDGMENT",
     "MOVRVEST_WRITER_PROVIDER",
     "MOVRVEST_WRITER_MODEL",
     "MOVRVEST_READER_PROVIDER",
