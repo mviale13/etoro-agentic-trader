@@ -28,6 +28,7 @@ from app.domain.intelligence_synthesis import (
     SynthesisStatus,
     absent,
 )
+from app.domain.judgment_history import JudgmentTransition
 from app.domain.provenance import Provenance
 from app.providers.narrative_provider import NarrativeProvider
 from app.renderers.intelligence_synthesist import (
@@ -79,6 +80,7 @@ class IntelligenceSynthesisService:
         self,
         snapshot: CryptoIntelligenceSnapshot,
         history: tuple[TemporalFact, ...] = (),
+        judgments: tuple[JudgmentTransition, ...] = (),
     ) -> IntelligenceSynthesis:
         symbol = snapshot.symbol
 
@@ -90,7 +92,7 @@ class IntelligenceSynthesisService:
                 "canonical rendering, and always is.",
             )
 
-        if len(build_findings(snapshot, history)) < MINIMUM_FINDINGS:
+        if len(build_findings(snapshot, history, judgments)) < MINIMUM_FINDINGS:
             return absent(
                 symbol,
                 SynthesisStatus.THIN,
@@ -109,7 +111,7 @@ class IntelligenceSynthesisService:
 
             synthesist = IntelligenceSynthesist(provider=resolved)
 
-        return await self._written(snapshot, synthesist, symbol, history)
+        return await self._written(snapshot, synthesist, symbol, history, judgments)
 
     async def _written(
         self,
@@ -117,10 +119,11 @@ class IntelligenceSynthesisService:
         synthesist: IntelligenceSynthesist,
         symbol: str,
         history: tuple[TemporalFact, ...] = (),
+        judgments: tuple[JudgmentTransition, ...] = (),
     ) -> IntelligenceSynthesis:
 
         try:
-            sections, model = await synthesist.synthesise(snapshot, history)
+            sections, model = await synthesist.synthesise(snapshot, history, judgments)
         except SynthesisRejected as rejection:
             # The guard worked. Say so plainly: a refused draft is a fact
             # about this platform's checking, not an embarrassment to

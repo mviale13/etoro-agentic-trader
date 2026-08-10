@@ -59,5 +59,13 @@ data/decisions/
 # rewritten at all. Tests carry synthetic captures only.
 data/journal/
 
+# The record of what a committee concluded, for exactly the same reasons
+# as the journal above — and one more. A judgment under version control
+# could be rewritten by a merge, and this record's only value is that
+# nobody can rewrite it: it is the sole evidence that the committee ever
+# held an earlier view, and running the committee again produces today's
+# answer from today's evidence rather than recovering the old one.
+data/judgments/
+
 # Claude Code: shared project settings are tracked; personal overrides are not.
 .claude/settings.local.json

@@ -256,6 +256,23 @@ class Confidence(StrEnum):
             ),
         }[self]
 
+    @property
+    def rank(self) -> int:
+        """The order `confidence_from` assigns these, made explicit.
+
+        **Not a score and not a scale**: the gap between 1 and 2 is not
+        the gap between 2 and 3, and no arithmetic may be done on these
+        numbers. The only thing they are for is telling two states apart
+        when a later judgment is compared with an earlier one, which
+        needs an order and nothing more.
+        """
+
+        return {
+            Confidence.SINGLE_OBSERVATION: 1,
+            Confidence.MULTIPLE_OBSERVATIONS: 2,
+            Confidence.OBSERVED_OVER_TIME: 3,
+        }[self]
+
 
 class AbstentionReason(StrEnum):
     """Why a committee could not answer. Three, and never collapsed.
@@ -345,6 +362,24 @@ class CommitteeJudgment:
 
     state: JudgmentState
 
+    #: Whether the question was economically meaningful here at all —
+    #: decided before any evidence was read, and carried rather than
+    #: discarded because it is not recoverable from the rest.
+    #:
+    #: A verdict implies applicability; an abstention's *reason* implies
+    #: it too. But an `UNAVAILABLE` judgment implies nothing, and
+    #: inferring it would eventually collapse *we know this question does
+    #: not apply* into *we do not know whether it applies* — the exact
+    #: distinction that made BTC and TAO come out identical when their
+    #: problems are opposite.
+    applicability: Applicability | None = None
+
+    #: The established economic role at the moment of judgment, where one
+    #: was established. Applicability is decided from it, so a later
+    #: comparison can only attribute a changed applicability to a changed
+    #: understanding if the understanding of the day was written down.
+    economic_role: str | None = None
+
     #: The answer, present exactly when `state` is JUDGED.
     verdict: Verdict | None = None
 
@@ -406,6 +441,8 @@ def abstain(
     remit: Remit,
     reason: AbstentionReason,
     because: str | None = None,
+    applicability: Applicability | None = None,
+    economic_role: str | None = None,
 ) -> CommitteeJudgment:
     """A committee that knows it cannot answer. A successful outcome.
 
@@ -418,18 +455,28 @@ def abstain(
         asset=asset,
         remit=remit,
         state=JudgmentState.ABSTAINED,
+        applicability=applicability,
+        economic_role=economic_role,
         abstained_because=reason,
         because=because,
     )
 
 
-def unavailable(asset: str, remit: Remit, because: str) -> CommitteeJudgment:
+def unavailable(
+    asset: str,
+    remit: Remit,
+    because: str,
+    applicability: Applicability | None = None,
+    economic_role: str | None = None,
+) -> CommitteeJudgment:
     """No judgment, because the machinery failed. Not an abstention."""
 
     return CommitteeJudgment(
         asset=asset,
         remit=remit,
         state=JudgmentState.UNAVAILABLE,
+        applicability=applicability,
+        economic_role=economic_role,
         unavailable_because=because,
     )
 
