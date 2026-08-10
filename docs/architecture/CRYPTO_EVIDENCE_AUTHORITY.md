@@ -1,6 +1,6 @@
 # S4.5 — Crypto evidence authority: what primary state can settle
 
-**Status: measured and built, 2026-08-10. No score, threshold, band,
+**Status: measured and built 2026-08-10 (`5d694a7`, merged locally as `fc17e38`). No score, threshold, band,
 factor or decision changed. `ESTABLISHED` was not weakened, and nothing
 in S1–S4 was re-judged.**
 
@@ -18,6 +18,9 @@ So this slice asked the ruling's question and measured it:
 Two of the four surfaces cleared every bar; one cleared none of them and
 looked identical from the outside; and one produced a figure that was
 canonical, deterministic and wrong by a factor of 850 million.
+
+> **Provenance.** This slice reached GitHub only on 2026-08-10, inside the squash commit [`4cb9516`](https://github.com/mviale13/etoro-agentic-trader/commit/4cb9516) that merged [PR #103](https://github.com/mviale13/etoro-agentic-trader/pull/103). Its own merge commit carries a `(#NNN)` suffix that matches no pull request: the number was written by hand and never existed. The per-slice history is preserved on the `history/crypto-s3-to-s4.6` branch; the commit hashes above are the authority, not the suffix.
+
 
 ---
 

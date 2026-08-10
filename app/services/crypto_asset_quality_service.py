@@ -52,7 +52,13 @@ from app.domain.evidence_standing import EvidenceStanding
 from app.domain.finding import Dimension, Finding, Sense
 from app.domain.quality_signal import QualitySignal
 from app.domain.score_basis import Contribution
-from app.domain.supply_semantics import Comparison, SupplyConcept, SupplyPicture
+from app.domain.supply_establishment import assess
+from app.domain.supply_semantics import (
+    Comparison,
+    SupplyConcept,
+    SupplyFact,
+    SupplyPicture,
+)
 from app.services.crypto_playbook_service import CryptoPlaybookService
 from app.services.supply_semantics_service import SupplySemanticsService
 
@@ -342,11 +348,32 @@ class CryptoAssetQualityService:
             if share is None:
                 continue
 
+            verdict = assess(fact, picture.comparisons)
+
             shown.append(
                 f"{share * 100:.1f}% of that maximum has been emitted — "
                 f"{fact.value:,.0f} tokens, {fact.source}, "
-                f"{fact.authority.stated.lower()}."
+                f"{fact.authority.stated.lower()}, "
+                f"{verdict.standing.stated.lower()}."
             )
+
+            if fact.authority.is_primary and not verdict.establishes:
+                blocking = verdict.blocking
+
+                shown.append(
+                    "That chain reading does not establish: it meets "
+                    f"{len(verdict.gates) - len(verdict.failed)} of the six "
+                    "requirements for canonical state to settle a figure on "
+                    f"its own, and fails on "
+                    f"{blocking.stated.lower() if blocking else 'one of them'} "
+                    f"— {verdict.failed[0].because}"
+                )
+
+        # What the ratio does *not* say. Measured, because the corpus
+        # proved the ratio and this quantity can move in opposite
+        # directions: Arbitrum is fully emitted and a third or more of
+        # its maximum sits in balances nobody names.
+        shown.extend(_overhang(picture, cap))
 
         for comparison in picture.comparisons:
             if comparison.left.concept is not SupplyConcept.EMITTED_SUPPLY:
@@ -625,6 +652,78 @@ def _no_headline_because(
 
 def _plural(count: int, singular: str, plural: str) -> str:
     return f"{count} {singular if count == 1 else plural}"
+
+
+def _overhang(picture: SupplyPicture, cap: SupplyFact) -> tuple[str, ...]:
+    """How much of the maximum is not in the market, and who names it.
+
+    The quantity the emitted share is mistaken for. It has two parts —
+    supply the protocol has not issued, and supply it has issued into
+    balances nobody counts as circulating — and only the first is what
+    "emitted" measures.
+
+    Stated as a range where the circulating estimates conflict, because
+    choosing one would be choosing the answer. Arbitrum's range is
+    33.9–87.2% of its maximum, on a token that is 100% emitted.
+    """
+
+    emitted = sorted(
+        picture.of(SupplyConcept.EMITTED_SUPPLY),
+        key=lambda fact: (not fact.authority.is_primary,),
+    )
+
+    circulating = picture.of(SupplyConcept.CIRCULATING_ESTIMATE)
+
+    if not emitted or not circulating or not cap.value:
+        return ()
+
+    established = [
+        fact for fact in circulating if assess(fact, picture.comparisons).establishes
+    ]
+
+    # A vendor figure above the protocol's own maximum is not a
+    # circulating estimate, whatever it is labelled. Yahoo publishes
+    # 1.5bn HYPE against a 1bn cap, and letting it into the arithmetic
+    # produced a negative overhang the first time this was measured.
+    usable = established or [fact for fact in circulating if fact.value <= cap.value]
+
+    if not usable:
+        return (
+            "Every circulating estimate held exceeds the protocol's own "
+            "maximum, so how much of the supply is in the market cannot "
+            "be stated at all.",
+        )
+
+    shares = sorted((cap.value - fact.value) / cap.value for fact in usable)
+
+    low, high = shares[0], shares[-1]
+
+    named = picture.of(SupplyConcept.EXCLUDED_BALANCE)
+
+    if abs(high - low) < 0.005:
+        extent = f"{low * 100:.1f}% of"
+        basis = (
+            f"the chain's own circulating figure ({established[0].source})"
+            if established
+            else f"{len(usable)} vendor estimates that agree"
+        )
+    else:
+        extent = f"Between {low * 100:.1f}% and {high * 100:.1f}% of"
+        basis = (
+            f"{len(usable)} vendor estimates that do not agree, so this is "
+            "a range rather than a figure"
+        )
+
+    return (
+        f"{extent} the maximum is not in the market — unissued supply "
+        "plus supply issued into balances nobody counts as circulating. "
+        f"Read from {basis}."
+        + (
+            f" The protocol names {len(named)} of those balances."
+            if named
+            else " No source names where it sits."
+        ),
+    )
 
 
 def _confidence(coverage: QualityCoverage) -> int:

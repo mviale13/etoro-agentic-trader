@@ -1,6 +1,6 @@
 # S3 — Crypto archetypes, applicability and investment questions
 
-**Status: built and merged, 2026-08-10. No score, threshold, band or
+**Status: built 2026-08-10 (`0fbc7ee`, merged locally as `1054b9e`). No score, threshold, band or
 decision rule changed. Every S1 conflict and every S2 claim stands
 exactly as it did.**
 
@@ -12,6 +12,9 @@ The ruling's question, and the one this slice answers:
 What follows is the S3 report — the archetype result, the question
 matrix, the mechanism map, the evidence coverage, and the four
 recommendations the ruling asked to be returned before S4.
+
+> **Provenance.** This slice reached GitHub only on 2026-08-10, inside the squash commit [`4cb9516`](https://github.com/mviale13/etoro-agentic-trader/commit/4cb9516) that merged [PR #103](https://github.com/mviale13/etoro-agentic-trader/pull/103). Its own merge commit carries a `(#NNN)` suffix that matches no pull request: the number was written by hand and never existed. The per-slice history is preserved on the `history/crypto-s3-to-s4.6` branch; the commit hashes above are the authority, not the suffix.
+
 
 ---
 

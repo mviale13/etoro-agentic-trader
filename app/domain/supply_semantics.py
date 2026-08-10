@@ -165,6 +165,123 @@ class SupplyMethodology:
 
 
 @dataclass(frozen=True, slots=True)
+class UnitConstant:
+    """A number a computation needed that was not in the data.
+
+    Ethereum's blob base fee is why this is a first-class field rather
+    than an implementation detail: computed from canonical inputs with
+    the protocol constant this platform *remembered*, it came out wrong
+    by a factor of about 850 million, and nothing downstream could have
+    noticed.
+
+    A constant is safe when the source states it — Hyperliquid publishes
+    `weiDecimals` beside the figures — or when a wrong value would have
+    produced something another source visibly contradicts. It is unsafe
+    when this platform simply knew it.
+    """
+
+    name: str
+    value: float
+
+    #: Whether the source published it in the same payload.
+    stated_by_source: bool
+
+    #: How a wrong value would have been caught, where it would. None
+    #: means nothing would have caught it.
+    cross_check: str | None = None
+
+    @property
+    def is_safe(self) -> bool:
+        return self.stated_by_source or self.cross_check is not None
+
+
+@dataclass(frozen=True, slots=True)
+class ComponentReconciliation:
+    """The protocol's own parts, added up and checked against its total.
+
+    Arithmetic rather than a promise. Cardano's ledger publishes seven
+    quantities that must sum to its `supply`, and they do — to the
+    lovelace. A figure with such an identity behind it cannot drift
+    quietly; one without has nowhere to fail.
+    """
+
+    #: The identity in one checkable line.
+    identity: str
+
+    #: Each named part and its raw integer value, in the chain's own base
+    #: unit. Integers, so the check is exact rather than floating.
+    components: tuple[tuple[str, int], ...]
+
+    #: What the parts sum to, and what the protocol says the total is.
+    total: int
+    against: int
+
+    #: The chain's base unit — lovelace, rao, wei, or the token itself.
+    base_unit: str
+
+    #: How far apart they may be and still be the same statement. Zero
+    #: for an integer ledger identity, which is the point: Cardano's
+    #: residual is not "small", it is nothing.
+    tolerance: int = 0
+
+    @property
+    def residual(self) -> int:
+        return self.total - self.against
+
+    @property
+    def holds(self) -> bool:
+        return abs(self.residual) <= self.tolerance
+
+    @property
+    def stated(self) -> str:
+        if self.holds and self.residual == 0:
+            return f"{self.identity} — exact, to the {self.base_unit}"
+
+        if self.holds:
+            return (
+                f"{self.identity} — {self.residual:+,} {self.base_unit}, "
+                "within tolerance"
+            )
+
+        return f"{self.identity} — {self.residual:+,} {self.base_unit}, unexplained"
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryProvenance:
+    """What the establishment gate needs and a value cannot carry alone.
+
+    Attached by the reader that took the reading, because that is the
+    only place the facts are known. Absent, every gate that depends on it
+    fails — which is the correct reading of a figure nobody recorded this
+    much about.
+    """
+
+    #: Whether the surface serves state anyone can verify, rather than a
+    #: figure only its operator computed.
+    surface_is_canonical: bool
+
+    #: How the source ties the figure to *this* asset. A chain endpoint
+    #: is the asset; a contract call needs an address; a shared name
+    #: never is.
+    identity_because: str
+
+    #: The rule that produced it, versioned.
+    rule_version: str
+
+    #: The transformation in one checkable line.
+    formula: str
+
+    reconciliation: ComponentReconciliation | None = None
+
+    constants: tuple[UnitConstant, ...] = ()
+
+    #: Why no reconciliation is available, where none is. Stated rather
+    #: than left blank, because "the protocol publishes one number" and
+    #: "nobody checked" look identical in an empty field.
+    unreconciled_because: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class SupplyFact:
     """One supply quantity, under one concept and one methodology."""
 
@@ -194,6 +311,12 @@ class SupplyFact:
 
     #: What would make a reader misread it.
     caveats: tuple[str, ...] = ()
+
+    #: Everything the establishment gate needs, where a chain reader
+    #: recorded it. None on every vendor figure, which is correct: a
+    #: vendor aggregate is judged by corroboration and is not offered
+    #: the primary route at all.
+    provenance: PrimaryProvenance | None = None
 
     @property
     def comparable_key(self) -> str:

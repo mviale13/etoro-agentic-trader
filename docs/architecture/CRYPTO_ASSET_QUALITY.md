@@ -3,6 +3,19 @@
 **Status: accepted, built, and consumed.** Replaces the four-factor crypto
 quality signal outright. Measured against the eight-asset corpus and, where
 eight was too few, against CoinGecko's 250 largest assets read on 2026-08-10.
+Built as `77ef4d8`; merged 2026-08-10 as
+[PR #103](https://github.com/mviale13/etoro-agentic-trader/pull/103),
+squash `4cb9516`.
+
+> **Provenance.** That squash is larger than this slice. S3, S4, S4.5 and
+> S4.6 had been merged only into a local `main` and never pushed, so the
+> squash of PR #103 carried all five slices to GitHub at once. Their own
+> merge commits name pull requests `#103`–`#106` that never existed; the
+> real numbering stops at `#102`, and GitHub then assigned `#103` to this
+> slice. The per-slice history is preserved on the
+> `history/crypto-s3-to-s4.6` branch. An identifier that looks plausible
+> is not evidence that the event happened — the same rule the evidence
+> layers live by, applied to the repository.
 
 ---
 

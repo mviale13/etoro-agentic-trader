@@ -1,6 +1,6 @@
 # S4 — CryptoMarketSnapshot: the market an asset trades inside
 
-**Status: built and merged, 2026-08-10. No score, threshold, band or
+**Status: built 2026-08-10 (`9ec2de4`, merged locally as `509eb68`). No score, threshold, band or
 decision rule changed. Every S1 conflict, S2 claim and S3 applicability
 stands untouched.**
 
@@ -12,6 +12,9 @@ The question S4 exists to make answerable:
 And the boundary it exists to protect: **market context is not Asset
 Quality.** A token that fell less than its peers is not thereby a better
 asset, and nothing built here says it is.
+
+> **Provenance.** This slice reached GitHub only on 2026-08-10, inside the squash commit [`4cb9516`](https://github.com/mviale13/etoro-agentic-trader/commit/4cb9516) that merged [PR #103](https://github.com/mviale13/etoro-agentic-trader/pull/103). Its own merge commit carries a `(#NNN)` suffix that matches no pull request: the number was written by hand and never existed. The per-slice history is preserved on the `history/crypto-s3-to-s4.6` branch; the commit hashes above are the authority, not the suffix.
+
 
 ---
 

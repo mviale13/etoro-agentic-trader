@@ -508,18 +508,43 @@ def test_hype_remains_methodology_dependent() -> None:
 def test_the_assistance_fund_is_not_merged_with_value_accrual() -> None:
     """Acceptance 9.
 
-    One address, two analytical relationships. The supply layer knows
-    it as a balance excluded from circulating and knows nothing about
-    fees; the protocol-economics layer knows the reverse.
+    One address, two analytical relationships. The supply layer knows it
+    as a balance excluded from circulating and knows nothing about what
+    the protocol earns; the protocol-economics layer knows the reverse.
+
+    **The bare word `fees` stopped being the test in S5.1**, and the
+    reason is this slice's own lesson one level down. Cardano's ledger
+    publishes a `fees` field — ADA sitting in the fee pot between
+    epochs — and it is a *supply component*: drop it from the identity
+    and the reconciliation misses by 29,001 ADA. That is a different
+    quantity from DefiLlama's `fees`, which is what users paid a
+    protocol over a day. Two sources, one word, two concepts: exactly
+    what S4.6 said about numbers, arriving as a field name. So the guard
+    names the protocol-economics vocabulary instead of a word both
+    domains legitimately use.
     """
 
     supply = _code("app/domain/supply_semantics.py") + _code(
         "app/providers/primary_supply_provider.py"
     )
 
-    assert "holder_revenue" not in supply
-    assert "protocol_revenue" not in supply
-    assert "fees" not in supply.casefold()
+    for forbidden in (
+        "holder_revenue",
+        "protocol_revenue",
+        "ProtocolMetric",
+        "protocol_fundamentals",
+        "defillama",
+        "dex_volume",
+        "open_interest",
+        "annualise",
+    ):
+        assert forbidden not in supply, forbidden
+
+    # And the only fee quantity reachable here is the ledger's own
+    # component, which is named as one.
+    from app.providers.primary_supply_provider import _CARDANO_PARTS
+
+    assert "fees" in _CARDANO_PARTS
 
 
 # ── acceptance 6: ARB staleness needs evidence ──────────────────────
