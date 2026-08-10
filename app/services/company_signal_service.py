@@ -9,8 +9,9 @@ from app.domain.quality_signal import QualitySignal
 from app.domain.watchlist_item import WatchlistItem
 from app.services.company_facts_service import CompanyFactsService
 from app.services.company_research_service import CompanyResearchService
-from app.services.crypto_quality_signal_service import (
-    CryptoQualitySignalService,
+from app.services.crypto_asset_quality_service import (
+    CryptoAssetQualityService,
+    signal_of,
 )
 from app.services.momentum_signal_service import MomentumSignalService
 from app.services.quality_signal_service import QualitySignalService
@@ -89,9 +90,25 @@ class CompanySignalService:
         Company quality is size, earnings and dividends. A token has none
         of the three, so every crypto asset scored UNKNOWN and stopped at
         research — for an asset class this investor's policy prefers.
+
+        A token is now asked the questions its *archetype* is asked, and
+        answered only where the evidence stands up. It reads the crypto
+        evidence families directly rather than through `CompanyFacts`:
+        the generic `circulating_supply` field is not a crypto concept
+        and the supply work proved a number without its concept cannot
+        be compared with anything. `facts` is still the equity route and
+        is untouched.
         """
 
-        if AssetClass.from_etoro(item.asset_type_id) is AssetClass.CRYPTO:
-            return CryptoQualitySignalService().build(facts)
+        asset_class = AssetClass.from_etoro(item.asset_type_id)
+
+        if asset_class is AssetClass.CRYPTO:
+            quality = CryptoAssetQualityService().established(
+                item.symbol,
+                asset_class,
+            )
+
+            if quality is not None:
+                return signal_of(quality)
 
         return QualitySignalService().build(facts)

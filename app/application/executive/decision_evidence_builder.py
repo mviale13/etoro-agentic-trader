@@ -397,7 +397,13 @@ class DecisionEvidenceBuilder:
 
         if cls._quality_score(company) is None:
             return ScoreBasis(
-                basis=(
+                # The signal's own account where it has one. Only the
+                # signal knows why it reads UNKNOWN, and the two reasons
+                # are not interchangeable: a company's figures could not
+                # be read, while a token's model can score one question
+                # of the nineteen it asks and needs two for a band.
+                basis=signal.basis
+                or (
                     f"Quality reads {signal.quality} — the figures a business "
                     "is judged on could not be read — so no score was given."
                 ),

@@ -1,6 +1,7 @@
 """What the platform knows about a company after one provider call."""
 
 import asyncio
+import pathlib
 from datetime import UTC, date, datetime, timedelta
 
 from app.domain.company_facts import CompanyFacts
@@ -440,15 +441,16 @@ def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:
 
     assert "Large-cap company." in statements(mistaken.evidence)
 
-    # The path a token actually takes asks it about itself.
-    from app.services.crypto_quality_signal_service import (
-        CryptoQualitySignalService,
+    # The path a token actually takes never reaches this signal at all.
+    # `CompanySignalService` routes a cryptocurrency to the asset-quality
+    # model, which reads the crypto evidence families directly and is
+    # not handed `CompanyFacts`.
+    signal_service = pathlib.Path("app/services/company_signal_service.py").read_text(
+        encoding="utf-8"
     )
 
-    signal = CryptoQualitySignalService().build(facts)
-
-    assert "Large-cap company." not in statements(signal.evidence)
-    assert any("market value" in line for line in statements(signal.evidence))
+    assert "CryptoAssetQualityService" in signal_service
+    assert "QualitySignalService().build(facts)" in signal_service
 
 
 def test_a_token_carries_what_the_gate_established() -> None:
@@ -481,14 +483,18 @@ def test_a_tokens_age_is_never_a_provider_inception_field() -> None:
 
     assert facts.inception is None
 
-    # And therefore no quality factor can say "Traded for N years".
-    from app.services.crypto_quality_signal_service import (
-        CryptoQualitySignalService,
-    )
+    # And the factor that consumed it no longer exists. S5 retired age
+    # outright: how much of a record has been observed is a property of
+    # the observation, so an old token cannot earn a quality point for
+    # being old.
+    for module in (
+        "app/domain/crypto_quality.py",
+        "app/services/crypto_asset_quality_service.py",
+    ):
+        code = pathlib.Path(module).read_text(encoding="utf-8").casefold()
 
-    signal = CryptoQualitySignalService().build(facts)
-
-    assert not any("Traded for" in line for line in statements(signal.evidence))
+        assert "inception" not in code, module
+        assert "traded for" not in code, module
 
 
 def test_a_conflicted_market_value_never_leaks_as_established() -> None:

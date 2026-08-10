@@ -387,7 +387,6 @@ def test_no_scorer_or_decision_path_can_import_protocol_fundamentals() -> None:
         "app/services/business_quality_service.py",
         "app/services/company_facts_service.py",
         "app/services/company_signal_service.py",
-        "app/services/crypto_quality_signal_service.py",
         "app/services/quality_signal_service.py",
     )
 
@@ -409,6 +408,30 @@ def test_no_scorer_or_decision_path_can_import_protocol_fundamentals() -> None:
                 offenders.append(str(source.relative_to(root)))
 
     assert offenders == []
+
+
+def test_protocol_economics_are_shown_by_the_quality_model_and_scored_by_none() -> None:
+    """S2 said S5 would decide what these facts mean. It decided: nothing.
+
+    The quality model reads protocol economics — fees, capital
+    committed, what a venue turns over, what reaches holders — and every
+    one of them is a single provider's claim, so not one contributes a
+    point. The guard above therefore narrows rather than lifts, and this
+    is the property that replaces it: no question whose evidence is a
+    protocol metric is scorable.
+    """
+
+    from app.domain.crypto_quality import readiness_for
+    from app.domain.crypto_questions import QUESTIONS
+
+    scored_from_protocol = [
+        key
+        for key, question in QUESTIONS.items()
+        if readiness_for(key).readiness.scores
+        and any(demand.protocol_metric is not None for demand in question.demands)
+    ]
+
+    assert scored_from_protocol == []
 
 
 def test_the_canonical_layer_holds_no_provider_types() -> None:

@@ -47,11 +47,41 @@ class AcquiredSecurity:
     #: unmapped security is not one whose economics came back empty.
     protocol_facts: bool | None = None
 
+    #: The store now holds the chain's own supply quantities. `None`
+    #: where this platform has verified no canonical surface for the
+    #: chain — which is different from a chain that answered nothing.
+    primary_supply: bool | None = None
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""
 
         return self.priced and self.fundamentals and self.calendar is not False
+
+
+@dataclass(frozen=True, slots=True)
+class MarketCycle:
+    """What one reading of the crypto environment cost and returned.
+
+    Reported so the operator can see the rate limit being spent. The
+    market half of a cycle is a fixed, deterministic number of calls —
+    the environment, the categories, the corpus's returns, one breadth
+    page, and one page per peer group in use — and a batch that lost
+    calls to a rate limit says so rather than looking complete.
+    """
+
+    #: How many provider calls the cycle intended to make.
+    asked: int
+
+    #: How many pieces of the cycle came back with something in them.
+    answered: int
+
+    #: The peer groups read, by the provider's own category identifier.
+    peer_groups: tuple[str, ...] = ()
+
+    @property
+    def complete(self) -> bool:
+        return self.answered == self.asked
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +104,13 @@ class MarketAcquisition:
     #: The currency rate the account's euro figures are converted at.
     #: Absent where none could be read, and the figures are absent with it.
     rate: ExchangeRate | None = None
+
+    #: How many provider calls the crypto market cycle made, and how
+    #: many answered. A cycle-level reading rather than a per-security
+    #: one: the environment is the same for every token, so it is read
+    #: once and the count belongs here rather than beside a symbol.
+    #: None where no market cycle was attempted.
+    crypto_market: MarketCycle | None = None
 
     @property
     def priced(self) -> tuple[AcquiredSecurity, ...]:

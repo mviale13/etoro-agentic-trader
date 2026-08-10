@@ -8,7 +8,11 @@ from typing import Any
 
 from app.domain.asset_class import AssetClass
 from app.domain.exchange_rate import ExchangeRate
-from app.domain.market_acquisition import AcquiredSecurity, MarketAcquisition
+from app.domain.market_acquisition import (
+    AcquiredSecurity,
+    MarketAcquisition,
+    MarketCycle,
+)
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.protocol_entities import entities_for
 from app.domain.research_candidate import ResearchCandidate
@@ -16,12 +20,15 @@ from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.coingecko_facts_provider import CachedCoinGeckoFactsProvider
+from app.providers.coingecko_market_provider import CachedCoinGeckoMarketProvider
 from app.providers.defillama_provider import CachedDefiLlamaProvider
 from app.providers.earnings_provider import CachedEarningsProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
+from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
+from app.services.crypto_market_service import acquisition_targets
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
 
 #: How many watched-but-unheld securities one cycle prices.
@@ -63,6 +70,8 @@ class MarketAcquisitionService:
         token_facts: Any | None = None,
         coingecko_facts: Any | None = None,
         protocol_facts: Any | None = None,
+        crypto_market: Any | None = None,
+        primary_supply: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -111,6 +120,17 @@ class MarketAcquisitionService:
         # security, because a security is not a protocol.
         self._protocol_facts = protocol_facts or CachedDefiLlamaProvider()
 
+        # The crypto environment every token trades inside — read once
+        # per cycle rather than once per security, because it is the
+        # same market for all of them. Its own evidence family: nothing
+        # here reaches token facts or protocol facts.
+        self._crypto_market = crypto_market or CachedCoinGeckoMarketProvider()
+
+        # The chains' own supply quantities. Read per security because
+        # each chain answers differently, and only where a canonical
+        # surface has been verified — four today.
+        self._primary_supply = primary_supply or CachedPrimarySupplyProvider()
+
     async def acquire(
         self,
         candidate_budget: int = DEFAULT_CANDIDATE_BUDGET,
@@ -155,6 +175,44 @@ class MarketAcquisitionService:
             ),
             vix=await self._quotes.vix(),
             rate=await asyncio.to_thread(self._read_rate),
+            crypto_market=await asyncio.to_thread(self._read_crypto_market),
+        )
+
+    def _read_crypto_market(self) -> MarketCycle | None:
+        """One reading of the crypto environment, paced against the limit.
+
+        Deterministic: the same calls in the same order every cycle, and
+        a partial answer is stored as a partial answer. A page view never
+        reaches this — it opens the stored door and stops.
+        """
+
+        coin_ids, category_keys = acquisition_targets()
+
+        # /global, /coins/categories, the corpus's returns, the breadth
+        # page, and one page per peer group in use.
+        asked = 4 + len(category_keys)
+
+        try:
+            claims = self._crypto_market.claims(coin_ids, category_keys)
+        except Exception:
+            return MarketCycle(asked=asked, answered=0, peer_groups=category_keys)
+
+        if claims is None:
+            return MarketCycle(asked=asked, answered=0, peer_groups=category_keys)
+
+        answered = sum(
+            (
+                claims.state is not None,
+                bool(claims.categories),
+                bool(claims.assets),
+                claims.universe is not None,
+            )
+        ) + len(claims.category_universes)
+
+        return MarketCycle(
+            asked=asked,
+            answered=answered,
+            peer_groups=category_keys,
         )
 
     def _read_rate(self) -> ExchangeRate | None:
@@ -201,6 +259,11 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.CRYPTO
                 else None
             ),
+            primary_supply=(
+                self._supply(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
             protocol_facts=(
                 self._protocols(instrument.movrvest_symbol)
                 if asset_class is AssetClass.CRYPTO
@@ -231,6 +294,19 @@ class MarketAcquisitionService:
 
         try:
             return self._token_facts.claims(symbol) is not None
+        except Exception:
+            return False
+
+    def _supply(self, symbol: str) -> bool | None:
+        """The chain's own supply quantities, where a surface is verified.
+
+        None rather than False for a chain nobody has verified a surface
+        for: an unread chain and an unreadable one are different states,
+        and only the second is a failure.
+        """
+
+        try:
+            return bool(self._primary_supply.facts(symbol))
         except Exception:
             return False
 

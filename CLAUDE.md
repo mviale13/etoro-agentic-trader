@@ -97,6 +97,36 @@ agreement beneath it — and then the governing financial model's
 questions over exactly those facts: answered, not yet answerable, or
 not applicable with the evidence that would answer it. Read-only, never
 observes; `--model` is inspection and never changes what governs),
+`movrvest supply [SYMBOL]` (what each of a token's supply numbers
+actually counts — which quantity, whose definition, and whether two
+figures are a real disagreement or two different facts. Read-only, and
+it interprets nothing: dilution is not a word it knows),
+`movrvest primary [BTC|ETH|ADA|HYPE]` (read canonical chain state
+directly and report what it can settle: each figure with its evidence
+authority, window, formula, rule version, inputs and both
+reproducibility verdicts. A measurement of this platform, not of an
+asset — it costs a fetch, asks no model, stores nothing and decides
+nothing),
+`movrvest crypto-market [SYMBOL]` (the crypto environment as the last
+cycle read it — capitalisation, volume, dominance, breadth — and, with a
+symbol, that asset's place in it: its returns, its peer group and why
+that group, and the arithmetic between them at the one interval every
+side is published at. Read-only, and no band, traffic light or regime
+label appears),
+`movrvest crypto-playbook [SYMBOL]` (which investment questions a
+digital asset is asked *at all*, and which are the wrong instrument for
+it: with a symbol, the archetype and its grounded basis, every question
+with its applicability and the evidence held against it, the declines
+each with its reason, and every mapped entity's value chain from use to
+the token; without one, the corpus as a matrix. Read-only, decides
+nothing — see below),
+`movrvest crypto-quality [SYMBOL]` (which durable qualities of a digital
+asset this platform can actually judge: the band or the honest absence
+of one, the coverage and confidence beneath it, and every applicable
+question with how it participated — scored against a named rule, shown
+with its standing and counted by nothing, or not yet answerable with
+what would answer it. Without a symbol, the readiness table and the
+corpus. Read-only),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -193,6 +223,84 @@ complete for now.** The owner's standing direction is to stop expanding
 the knowledge graph and make what is known usable. Do not extend
 acquisition, add financial concepts, or alter model selection without a
 new ruling.
+
+**A token's questions are chosen before its evidence is read** (S3,
+[`CRYPTO_ARCHETYPES.md`](docs/architecture/CRYPTO_ARCHETYPES.md)). A
+`TokenArchetype` is a *name for a set of `AnalyticalCapability` lenses*,
+and a question is owned by a lens — which is what lets HYPE compose the
+venue's questions and the chain's without a bespoke playbook, and what
+keeps Bitcoin from ever being asked what it pays its holders. Three
+vocabularies stay apart: **applicability** (from the archetype alone —
+`applicability_for` has no parameter a figure could arrive through),
+**evidence standing**, and **verdict** (nothing yet). The same fee
+figure means the security budget on Bitcoin, a burn on Ethereum and a
+buyback on Hyperliquid, and the mechanism is recognised from the
+provider's own sentence rather than declared. Consumed by nothing:
+guarded by an import-graph test over fifteen reasoning paths.
+
+**Where a fact came from is a second axis, never a second standing**
+(S4.5, [`CRYPTO_EVIDENCE_AUTHORITY.md`](docs/architecture/CRYPTO_EVIDENCE_AUTHORITY.md)).
+`EvidenceAuthority` — primary observation, primary derived, secondary
+computation, secondary aggregate, provider-scoped aggregate, attributed
+opinion — explains *why* a standing rule applies and what would move it;
+`ESTABLISHED` keeps meaning what it meant. **Primary is not a synonym
+for true**: computed with the protocol constant this platform knew,
+Ethereum's blob base fee came out wrong by a factor of 850 million from
+canonical inputs, and Hyperliquid's own `totalSupply` includes 412m
+tokens that do not exist yet. **Circulating supply is not a chain
+primitive** — Cardano's ledger publishes four quantities and the three
+vendors S1 called CONFLICTED were each reporting a different one, the
+rejected reading matching `circulation` exactly. A provider-scoped
+aggregate (total market cap, rankings, breadth) **can never be
+corroborated** and its honest ceiling is permanent attribution.
+
+**Two numbers only conflict if they claim to represent the same thing**
+(S4.6, [`CRYPTO_SUPPLY_SEMANTICS.md`](docs/architecture/CRYPTO_SUPPLY_SEMANTICS.md)).
+Crypto supply is an accounting vocabulary: five concepts (max, emitted,
+future emissions, excluded balance, circulating estimate), each carrying
+a `SupplyMethodology` whose `disclosed` flag decides everything —
+**an undisclosed methodology is not a different methodology**, or any two
+numbers could avoid conflicting by being equally unexplained. ADA's
+three-way conflict dissolved (TokenInsight was reporting the ledger's
+`supply`, Yahoo its `circulation`); HYPE's stands because two vendors
+publish no exclusion set. **The re-judgment is reported, not written into
+`judge()`** — `CompanyFactsService` reads those standings and a score
+would move.
+
+**Market context is not Asset Quality** (S4,
+[`CRYPTO_MARKET_CONTEXT.md`](docs/architecture/CRYPTO_MARKET_CONTEXT.md)).
+`CryptoMarketSnapshot` is a third crypto evidence family, unreachable
+from the other two in both directions. Two rules it carries: **an
+interval is part of a figure** — a level is INSTANT, a change names its
+window, and `relative_return` refuses unless both sides match — and **a
+capitalisation change is not a return**, so the comparator is MOVRvest's
+own cap-weighted return over a *named* universe (the provider's
+aggregate moved +0.05% where its top 250 returned +0.11%). A
+`MarketPeerGroup` is a vendor's category and **never** an
+`AnalyticalArchetype`: ETH is read as a smart-contract network and
+compared against a Layer 1 group containing Bitcoin, and the two modules
+cannot import each other.
+
+**One question of nineteen can carry a score** (S5,
+[`CRYPTO_ASSET_QUALITY.md`](docs/architecture/CRYPTO_ASSET_QUALITY.md)).
+The four-factor crypto signal is deleted, not repaired. A fourth
+vocabulary joins S3's three — **readiness**, a property of the *question*
+alone, so `readiness_for` has no parameter an asset could arrive through
+and no well-covered security can make a question scorable that stays
+unscorable elsewhere. Three measurements decided it: **volume over market
+cap is not liquidity** (it ranks BTC 158th of 233 and 1inch 52nd, while
+BTC trades $14.8bn a day and 1inch $7m), **a vendor's `total_supply` is
+the protocol maximum for 83 of 145 capped assets** in the top 250 — the
+chain impeached it for ADA and TAO — and **two sources agreeing to the
+last bit are one source** (TokenInsight's ADA figure is a bit-identical
+copy of the Cardano ledger's, so it cannot corroborate it; a *declared
+constant* matching exactly is the expected shape and a *measured*
+quantity matching exactly is replication). Only market robustness scores,
+on `market-significance-floor@1` ($10bn / $500m, measured against the 250
+largest); the quorum of 2 is inherited, so **every crypto asset now reads
+UNKNOWN** and stops at INVESTIGATE. Age is gone, market context and
+valuation are unreachable by construction, and HYPE's economics are
+`VISIBLE_NOT_SCORED` — mechanism settled, amount claimed.
 
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that

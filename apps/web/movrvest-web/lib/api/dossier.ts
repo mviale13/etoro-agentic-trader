@@ -284,6 +284,18 @@ export interface DossierViewModel {
       family, independent of the market facts and consumed by nothing. */
   protocolFundamentals: DossierProtocolFundamentals | null;
 
+  /** Which investment questions this kind of digital asset is asked,
+      which are declined and why, and what evidence would answer each.
+      Applicability and evidence standing, never a verdict. */
+  cryptoPlaybook: DossierCryptoPlaybook | null;
+
+  /** What kind of crypto market this asset is trading inside, and its
+      place in it. Market context — never Asset Quality. */
+  cryptoMarket: DossierCryptoMarket | null;
+
+  /** What each of this token's supply numbers actually counts. */
+  supply: DossierSupply | null;
+
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
   narrativeAbsent: string | null;
@@ -529,6 +541,226 @@ export interface DossierProtocolFundamentals {
   entities: readonly ProtocolEntityView[];
   derived: readonly DerivedFigureView[];
   unmappedBecause: string | null;
+}
+
+export interface AnalyticalCapabilityView {
+  key: string;
+  label: string;
+  reads: string;
+}
+
+export interface ConsideredArchetypeView {
+  archetype: string;
+  notChosenBecause: string;
+}
+
+/** One evidence demand of one question, met or unmet. */
+export interface QuestionEvidenceView {
+  demand: string;
+  met: boolean;
+  stated: string | null;
+  standing: string;
+  standingStated: string;
+  source: string | null;
+  age: string | null;
+  /** Which economic entity supplied it, where more than one exists. */
+  entity: string | null;
+  because: string | null;
+}
+
+/**
+ * One investment question against one token.
+ *
+ * `cell` is the product of two independent facts and never a third
+ * judgment: whether the question applies to this kind of asset (decided
+ * from the archetype, with no figure consulted) and whether anything
+ * established answers it (decided from the evidence, with no opinion of
+ * the question consulted).
+ */
+export interface CryptoQuestionView {
+  key: string;
+  label: string;
+  asks: string;
+  mattersBecause: string;
+  /** ask | ask_evidence_insufficient | not_applicable | undetermined */
+  cell: string;
+  cellStated: string;
+  applicability: string;
+  applicabilityBecause: string;
+  askedBy: string | null;
+  bestStanding: string;
+  bestStandingStated: string;
+  evidence: readonly QuestionEvidenceView[];
+}
+
+export interface ValueChainLinkView {
+  stage: string;
+  label: string;
+  stated: string | null;
+  window: string | null;
+  standing: string;
+  standingStated: string;
+  availabilityStated: string;
+  /** The source's own definition, verbatim. */
+  methodology: string | null;
+  because: string | null;
+}
+
+/** How one entity's value moves, from use to the token. */
+export interface ValueChainView {
+  entity: string;
+  kind: string;
+  measures: string;
+  mappingSettled: boolean;
+  links: readonly ValueChainLinkView[];
+  mechanism: string;
+  mechanismStated: string;
+  mechanismSourceWording: string | null;
+  because: string;
+}
+
+/**
+ * Which investment questions this kind of digital asset is asked.
+ *
+ * Applicability, evidence demands and evidence standing — never a
+ * verdict. Nothing here is scored, banded or ranked.
+ */
+export interface DossierCryptoPlaybook {
+  archetype: string;
+  name: string;
+  explanation: string;
+  confidence: string;
+  confidenceStated: string;
+  because: string;
+  restsOn: readonly string[];
+  doesNotEstablish: readonly string[];
+  alternatives: readonly ConsideredArchetypeView[];
+  notClassifiedFrom: readonly string[];
+  capabilities: readonly AnalyticalCapabilityView[];
+  unmodelled: readonly string[];
+  questions: readonly CryptoQuestionView[];
+  chains: readonly ValueChainView[];
+  unmappedBecause: string | null;
+}
+
+
+/** One market figure, with its interval and the universe behind it. */
+export interface MarketObservationView {
+  metric: string;
+  label: string;
+  /** What it covers in time. Never generalised into a "trend". */
+  interval: string;
+  intervalStated: string;
+  stated: string | null;
+  standing: string;
+  standingStated: string;
+  /** True where MOVRvest computed it rather than read it. */
+  derived: boolean;
+  universe: string | null;
+  source: string | null;
+  age: string | null;
+  because: string | null;
+}
+
+export interface RelativeReturnView {
+  interval: string;
+  comparator: string;
+  subjectReturn: string;
+  comparatorReturn: string;
+  delta: string;
+  standing: string;
+  stated: string;
+  caveat: string | null;
+}
+
+export interface ConcentrationView {
+  comparator: string;
+  stated: string;
+}
+
+/**
+ * The externally observed group this asset is compared against.
+ *
+ * A vendor's category under the vendor's name. It is NOT the analytical
+ * archetype and never modifies one — an asset read as a smart-contract
+ * network can sit in a market group containing Bitcoin.
+ */
+export interface PeerGroupView {
+  key: string;
+  name: string;
+  provider: string;
+  selectedBecause: string;
+  caveats: readonly string[];
+}
+
+export interface ConsideredPeerGroupView {
+  name: string;
+  rejectedBecause: string;
+}
+
+/** Market context — never Asset Quality. Nothing here is banded or scored. */
+export interface DossierCryptoMarket {
+  market: readonly MarketObservationView[];
+  marketSource: string | null;
+  marketAge: string | null;
+  returns: readonly MarketObservationView[];
+  peer: PeerGroupView | null;
+  peerUnavailableBecause: string | null;
+  considered: readonly ConsideredPeerGroupView[];
+  peerObservations: readonly MarketObservationView[];
+  relative: readonly RelativeReturnView[];
+  concentrations: readonly ConcentrationView[];
+  uncompared: readonly string[];
+  unavailableBecause: string | null;
+}
+
+
+/** One supply quantity, under one concept and one methodology. */
+export interface SupplyFigureView {
+  concept: string;
+  conceptStated: string;
+  stated: string;
+  /** Whose definition decided what is in the number. */
+  definedBy: string;
+  methodology: string;
+  /** Whether the platform knows what the definition leaves out. */
+  disclosed: boolean;
+  excludes: readonly string[];
+  source: string;
+  age: string | null;
+  reportedAs: string | null;
+  standing: string;
+  standingStated: string;
+  authority: string;
+  authorityStated: string;
+  because: string | null;
+  caveats: readonly string[];
+}
+
+/**
+ * What two supply figures are to each other.
+ *
+ * `coexist` is the state this layer exists to make possible: two numbers
+ * that differ because they count different things — information, not a
+ * contradiction.
+ */
+export interface SupplyComparisonView {
+  verdict: string;
+  verdictStated: string;
+  leftSource: string;
+  leftStated: string;
+  rightSource: string;
+  rightStated: string;
+  because: string;
+}
+
+/** A token's supply as a vocabulary. No dilution reading, no band. */
+export interface DossierSupply {
+  figures: readonly SupplyFigureView[];
+  comparisons: readonly SupplyComparisonView[];
+  methodologyDisagreement: boolean;
+  unresolved: readonly string[];
+  unavailableBecause: string | null;
 }
 
 export interface DossierResult {
@@ -870,6 +1102,354 @@ function parseProtocolFundamentals(
     unmappedBecause: optionalString(
       value.unmapped_because,
       "protocol_fundamentals.unmapped_because",
+    ),
+  };
+}
+
+function parseCryptoPlaybook(value: unknown): DossierCryptoPlaybook | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "crypto_playbook".');
+  }
+
+  const strings = (raw: unknown): readonly string[] =>
+    (Array.isArray(raw) ? raw : []).filter(
+      (item): item is string => typeof item === "string",
+    );
+
+  return {
+    archetype: requireString(value.archetype, "crypto_playbook.archetype"),
+    name: requireString(value.name, "crypto_playbook.name"),
+    explanation: requireString(value.explanation, "crypto_playbook.explanation"),
+    confidence: requireString(value.confidence, "crypto_playbook.confidence"),
+    confidenceStated: requireString(
+      value.confidence_stated,
+      "crypto_playbook.confidence_stated",
+    ),
+    because: requireString(value.because, "crypto_playbook.because"),
+    restsOn: strings(value.rests_on),
+    doesNotEstablish: strings(value.does_not_establish),
+    alternatives: (Array.isArray(value.alternatives) ? value.alternatives : [])
+      .filter(isRecord)
+      .map((alternative, index) => ({
+        archetype: requireString(
+          alternative.archetype,
+          `crypto_playbook.alternatives[${index}].archetype`,
+        ),
+        notChosenBecause: requireString(
+          alternative.not_chosen_because,
+          `crypto_playbook.alternatives[${index}].not_chosen_because`,
+        ),
+      })),
+    notClassifiedFrom: strings(value.not_classified_from),
+    capabilities: (Array.isArray(value.capabilities) ? value.capabilities : [])
+      .filter(isRecord)
+      .map((capability, index) => ({
+        key: requireString(
+          capability.key,
+          `crypto_playbook.capabilities[${index}].key`,
+        ),
+        label: requireString(
+          capability.label,
+          `crypto_playbook.capabilities[${index}].label`,
+        ),
+        reads: requireString(
+          capability.reads,
+          `crypto_playbook.capabilities[${index}].reads`,
+        ),
+      })),
+    unmodelled: strings(value.unmodelled),
+    questions: (Array.isArray(value.questions) ? value.questions : [])
+      .filter(isRecord)
+      .map((question, index) => {
+        const field = `crypto_playbook.questions[${index}]`;
+
+        return {
+          key: requireString(question.key, `${field}.key`),
+          label: requireString(question.label, `${field}.label`),
+          asks: requireString(question.asks, `${field}.asks`),
+          mattersBecause: requireString(
+            question.matters_because,
+            `${field}.matters_because`,
+          ),
+          cell: requireString(question.cell, `${field}.cell`),
+          cellStated: requireString(question.cell_stated, `${field}.cell_stated`),
+          applicability: requireString(
+            question.applicability,
+            `${field}.applicability`,
+          ),
+          applicabilityBecause: requireString(
+            question.applicability_because,
+            `${field}.applicability_because`,
+          ),
+          askedBy: optionalString(question.asked_by, `${field}.asked_by`),
+          bestStanding: requireString(
+            question.best_standing,
+            `${field}.best_standing`,
+          ),
+          bestStandingStated: requireString(
+            question.best_standing_stated,
+            `${field}.best_standing_stated`,
+          ),
+          evidence: (Array.isArray(question.evidence) ? question.evidence : [])
+            .filter(isRecord)
+            .map((item, itemIndex) => {
+              const row = `${field}.evidence[${itemIndex}]`;
+
+              return {
+                demand: requireString(item.demand, `${row}.demand`),
+                met: item.met === true,
+                stated: optionalString(item.stated, `${row}.stated`),
+                standing: requireString(item.standing, `${row}.standing`),
+                standingStated: requireString(
+                  item.standing_stated,
+                  `${row}.standing_stated`,
+                ),
+                source: optionalString(item.source, `${row}.source`),
+                age: optionalString(item.age, `${row}.age`),
+                entity: optionalString(item.entity, `${row}.entity`),
+                because: optionalString(item.because, `${row}.because`),
+              };
+            }),
+        };
+      }),
+    chains: (Array.isArray(value.chains) ? value.chains : [])
+      .filter(isRecord)
+      .map((chain, index) => {
+        const field = `crypto_playbook.chains[${index}]`;
+
+        return {
+          entity: requireString(chain.entity, `${field}.entity`),
+          kind: requireString(chain.kind, `${field}.kind`),
+          measures: requireString(chain.measures, `${field}.measures`),
+          mappingSettled: chain.mapping_settled === true,
+          links: (Array.isArray(chain.links) ? chain.links : [])
+            .filter(isRecord)
+            .map((link, linkIndex) => {
+              const row = `${field}.links[${linkIndex}]`;
+
+              return {
+                stage: requireString(link.stage, `${row}.stage`),
+                label: requireString(link.label, `${row}.label`),
+                stated: optionalString(link.stated, `${row}.stated`),
+                window: optionalString(link.window, `${row}.window`),
+                standing: requireString(link.standing, `${row}.standing`),
+                standingStated: requireString(
+                  link.standing_stated,
+                  `${row}.standing_stated`,
+                ),
+                availabilityStated: requireString(
+                  link.availability_stated,
+                  `${row}.availability_stated`,
+                ),
+                methodology: optionalString(
+                  link.methodology,
+                  `${row}.methodology`,
+                ),
+                because: optionalString(link.because, `${row}.because`),
+              };
+            }),
+          mechanism: requireString(chain.mechanism, `${field}.mechanism`),
+          mechanismStated: requireString(
+            chain.mechanism_stated,
+            `${field}.mechanism_stated`,
+          ),
+          mechanismSourceWording: optionalString(
+            chain.mechanism_source_wording,
+            `${field}.mechanism_source_wording`,
+          ),
+          because: requireString(chain.because, `${field}.because`),
+        };
+      }),
+    unmappedBecause: optionalString(
+      value.unmapped_because,
+      "crypto_playbook.unmapped_because",
+    ),
+  };
+}
+
+
+function parseMarketObservations(
+  value: unknown,
+  field: string,
+): readonly MarketObservationView[] {
+  return (Array.isArray(value) ? value : [])
+    .filter(isRecord)
+    .map((row, index) => {
+      const at = `${field}[${index}]`;
+
+      return {
+        metric: requireString(row.metric, `${at}.metric`),
+        label: requireString(row.label, `${at}.label`),
+        interval: requireString(row.interval, `${at}.interval`),
+        intervalStated: requireString(row.interval_stated, `${at}.interval_stated`),
+        stated: optionalString(row.stated, `${at}.stated`),
+        standing: requireString(row.standing, `${at}.standing`),
+        standingStated: requireString(row.standing_stated, `${at}.standing_stated`),
+        derived: row.derived === true,
+        universe: optionalString(row.universe, `${at}.universe`),
+        source: optionalString(row.source, `${at}.source`),
+        age: optionalString(row.age, `${at}.age`),
+        because: optionalString(row.because, `${at}.because`),
+      };
+    });
+}
+
+function parseCryptoMarket(value: unknown): DossierCryptoMarket | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "crypto_market".');
+  }
+
+  const peer = isRecord(value.peer) ? value.peer : null;
+
+  return {
+    market: parseMarketObservations(value.market, "crypto_market.market"),
+    marketSource: optionalString(value.market_source, "crypto_market.market_source"),
+    marketAge: optionalString(value.market_age, "crypto_market.market_age"),
+    returns: parseMarketObservations(value.returns, "crypto_market.returns"),
+    peer:
+      peer === null
+        ? null
+        : {
+            key: requireString(peer.key, "crypto_market.peer.key"),
+            name: requireString(peer.name, "crypto_market.peer.name"),
+            provider: requireString(peer.provider, "crypto_market.peer.provider"),
+            selectedBecause: requireString(
+              peer.selected_because,
+              "crypto_market.peer.selected_because",
+            ),
+            caveats: (Array.isArray(peer.caveats) ? peer.caveats : []).filter(
+              (item): item is string => typeof item === "string",
+            ),
+          },
+    peerUnavailableBecause: optionalString(
+      value.peer_unavailable_because,
+      "crypto_market.peer_unavailable_because",
+    ),
+    considered: (Array.isArray(value.considered) ? value.considered : [])
+      .filter(isRecord)
+      .map((row, index) => ({
+        name: requireString(row.name, `crypto_market.considered[${index}].name`),
+        rejectedBecause: requireString(
+          row.rejected_because,
+          `crypto_market.considered[${index}].rejected_because`,
+        ),
+      })),
+    peerObservations: parseMarketObservations(
+      value.peer_observations,
+      "crypto_market.peer_observations",
+    ),
+    relative: (Array.isArray(value.relative) ? value.relative : [])
+      .filter(isRecord)
+      .map((row, index) => {
+        const at = `crypto_market.relative[${index}]`;
+
+        return {
+          interval: requireString(row.interval, `${at}.interval`),
+          comparator: requireString(row.comparator, `${at}.comparator`),
+          subjectReturn: requireString(row.subject_return, `${at}.subject_return`),
+          comparatorReturn: requireString(
+            row.comparator_return,
+            `${at}.comparator_return`,
+          ),
+          delta: requireString(row.delta, `${at}.delta`),
+          standing: requireString(row.standing, `${at}.standing`),
+          stated: requireString(row.stated, `${at}.stated`),
+          caveat: optionalString(row.caveat, `${at}.caveat`),
+        };
+      }),
+    concentrations: (Array.isArray(value.concentrations) ? value.concentrations : [])
+      .filter(isRecord)
+      .map((row, index) => ({
+        comparator: requireString(
+          row.comparator,
+          `crypto_market.concentrations[${index}].comparator`,
+        ),
+        stated: requireString(
+          row.stated,
+          `crypto_market.concentrations[${index}].stated`,
+        ),
+      })),
+    uncompared: (Array.isArray(value.uncompared) ? value.uncompared : []).filter(
+      (item): item is string => typeof item === "string",
+    ),
+    unavailableBecause: optionalString(
+      value.unavailable_because,
+      "crypto_market.unavailable_because",
+    ),
+  };
+}
+
+
+function parseSupply(value: unknown): DossierSupply | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "supply".');
+  }
+
+  const strings = (raw: unknown): readonly string[] =>
+    (Array.isArray(raw) ? raw : []).filter(
+      (item): item is string => typeof item === "string",
+    );
+
+  return {
+    figures: (Array.isArray(value.figures) ? value.figures : [])
+      .filter(isRecord)
+      .map((row, index) => {
+        const at = `supply.figures[${index}]`;
+
+        return {
+          concept: requireString(row.concept, `${at}.concept`),
+          conceptStated: requireString(row.concept_stated, `${at}.concept_stated`),
+          stated: requireString(row.stated, `${at}.stated`),
+          definedBy: requireString(row.defined_by, `${at}.defined_by`),
+          methodology: requireString(row.methodology, `${at}.methodology`),
+          disclosed: row.disclosed === true,
+          excludes: strings(row.excludes),
+          source: requireString(row.source, `${at}.source`),
+          age: optionalString(row.age, `${at}.age`),
+          reportedAs: optionalString(row.reported_as, `${at}.reported_as`),
+          standing: requireString(row.standing, `${at}.standing`),
+          standingStated: requireString(row.standing_stated, `${at}.standing_stated`),
+          authority: requireString(row.authority, `${at}.authority`),
+          authorityStated: requireString(
+            row.authority_stated,
+            `${at}.authority_stated`,
+          ),
+          because: optionalString(row.because, `${at}.because`),
+          caveats: strings(row.caveats),
+        };
+      }),
+    comparisons: (Array.isArray(value.comparisons) ? value.comparisons : [])
+      .filter(isRecord)
+      .map((row, index) => {
+        const at = `supply.comparisons[${index}]`;
+
+        return {
+          verdict: requireString(row.verdict, `${at}.verdict`),
+          verdictStated: requireString(row.verdict_stated, `${at}.verdict_stated`),
+          leftSource: requireString(row.left_source, `${at}.left_source`),
+          leftStated: requireString(row.left_stated, `${at}.left_stated`),
+          rightSource: requireString(row.right_source, `${at}.right_source`),
+          rightStated: requireString(row.right_stated, `${at}.right_stated`),
+          because: requireString(row.because, `${at}.because`),
+        };
+      }),
+    methodologyDisagreement: value.methodology_disagreement === true,
+    unresolved: strings(value.unresolved),
+    unavailableBecause: optionalString(
+      value.unavailable_because,
+      "supply.unavailable_because",
     ),
   };
 }
@@ -1445,6 +2025,9 @@ function parseDossier(payload: unknown): DossierViewModel {
     protocolFundamentals: parseProtocolFundamentals(
       payload.protocol_fundamentals,
     ),
+    cryptoPlaybook: parseCryptoPlaybook(payload.crypto_playbook),
+    cryptoMarket: parseCryptoMarket(payload.crypto_market),
+    supply: parseSupply(payload.supply),
     narrative: parseNarrative(payload.narrative),
     narrativeAbsent: optionalString(
       payload.narrative_absent,
