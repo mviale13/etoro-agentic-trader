@@ -97,6 +97,13 @@ agreement beneath it — and then the governing financial model's
 questions over exactly those facts: answered, not yet answerable, or
 not applicable with the evidence that would answer it. Read-only, never
 observes; `--model` is inspection and never changes what governs),
+`movrvest crypto-playbook [SYMBOL]` (which investment questions a
+digital asset is asked *at all*, and which are the wrong instrument for
+it: with a symbol, the archetype and its grounded basis, every question
+with its applicability and the evidence held against it, the declines
+each with its reason, and every mapped entity's value chain from use to
+the token; without one, the corpus as a matrix. Read-only, decides
+nothing — see below),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -193,6 +200,20 @@ complete for now.** The owner's standing direction is to stop expanding
 the knowledge graph and make what is known usable. Do not extend
 acquisition, add financial concepts, or alter model selection without a
 new ruling.
+
+**A token's questions are chosen before its evidence is read** (S3,
+[`CRYPTO_ARCHETYPES.md`](docs/architecture/CRYPTO_ARCHETYPES.md)). A
+`TokenArchetype` is a *name for a set of `AnalyticalCapability` lenses*,
+and a question is owned by a lens — which is what lets HYPE compose the
+venue's questions and the chain's without a bespoke playbook, and what
+keeps Bitcoin from ever being asked what it pays its holders. Three
+vocabularies stay apart: **applicability** (from the archetype alone —
+`applicability_for` has no parameter a figure could arrive through),
+**evidence standing**, and **verdict** (nothing yet). The same fee
+figure means the security budget on Bitcoin, a burn on Ethereum and a
+buyback on Hyperliquid, and the mechanism is recognised from the
+provider's own sentence rather than declared. Consumed by nothing:
+guarded by an import-graph test over fifteen reasoning paths.
 
 The per-security dossier (`/executive/{symbol}/dossier`, rendered at
 `apps/web/movrvest-web/app/dossiers/[symbol]`) is the surface that

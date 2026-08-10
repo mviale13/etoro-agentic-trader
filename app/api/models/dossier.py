@@ -247,6 +247,168 @@ class ProtocolFundamentalsResponse(BaseModel):
     unmapped_because: str | None
 
 
+class AnalyticalCapabilityResponse(BaseModel):
+    """One analytical lens this asset is read through."""
+
+    key: str
+    label: str
+
+    #: What the lens looks at, in one sentence.
+    reads: str
+
+
+class ConsideredArchetypeResponse(BaseModel):
+    """An archetype weighed and not chosen, with the reason."""
+
+    archetype: str
+    not_chosen_because: str
+
+
+class QuestionEvidenceResponse(BaseModel):
+    """One evidence demand of one question, met or unmet."""
+
+    #: What would answer it, in words. Present whether or not anything
+    #: does — an unmet demand is the acquisition roadmap, and dropping
+    #: it would turn the roadmap into a list of things that worked.
+    demand: str
+
+    met: bool
+
+    #: The figure, or the source's own definition where the demand
+    #: asked for the definition rather than the figure.
+    stated: str | None
+
+    standing: str
+    standing_stated: str
+
+    source: str | None
+    age: str | None
+
+    #: Which economic entity supplied it. Never omitted for a security
+    #: with more than one.
+    entity: str | None
+
+    because: str | None
+
+
+class CryptoQuestionResponse(BaseModel):
+    """One investment question against one token."""
+
+    key: str
+    label: str
+    asks: str
+    matters_because: str
+
+    #: ask | ask_evidence_insufficient | not_applicable | undetermined.
+    #: The product of two independent facts: whether the question
+    #: applies to this kind of asset, and whether anything established
+    #: answers it. Neither was allowed to decide the other.
+    cell: str
+    cell_stated: str
+
+    #: The applicability alone, decided from the archetype and from no
+    #: figure whatsoever.
+    applicability: str
+    applicability_because: str
+
+    #: The lens that asks it, where it is asked.
+    asked_by: str | None
+
+    #: The firmest standing anything answering this reaches.
+    best_standing: str
+    best_standing_stated: str
+
+    evidence: list[QuestionEvidenceResponse]
+
+
+class ValueChainLinkResponse(BaseModel):
+    """One stage of one entity's value chain."""
+
+    stage: str
+    label: str
+
+    stated: str | None
+    window: str | None
+
+    standing: str
+    standing_stated: str
+    availability_stated: str
+
+    #: The source's own definition of this figure, verbatim.
+    methodology: str | None
+
+    because: str | None
+
+
+class ValueChainResponse(BaseModel):
+    """How one economic entity's value moves, from use to the token.
+
+    One per entity and never one per security: Hyperliquid's venue and
+    its chain are 224x apart on fees, and a chain that summed them
+    would misstate the business by that factor.
+    """
+
+    entity: str
+    kind: str
+    measures: str
+    mapping_settled: bool
+
+    links: list[ValueChainLinkResponse]
+
+    #: What the source's wording says happens at the last stage —
+    #: burned, buys the token, paid to holders, or no mechanism at all.
+    #: The word "fees" means a different thing at each.
+    mechanism: str
+    mechanism_stated: str
+
+    #: The source's own sentence, verbatim, where it published one.
+    mechanism_source_wording: str | None
+
+    because: str
+
+
+class CryptoPlaybookResponse(BaseModel):
+    """Which investment questions this token is asked, and which it is not.
+
+    Applicability, evidence demands and evidence standing — never a
+    verdict. Nothing here is scored, banded or ranked, and no factor
+    consumes any of it.
+    """
+
+    archetype: str
+    name: str
+    explanation: str
+
+    confidence: str
+    confidence_stated: str
+
+    because: str
+
+    #: The evidence the archetype rests on, each line checkable.
+    rests_on: list[str]
+
+    #: What the archetype does not establish. A kind is not a verdict.
+    does_not_establish: list[str]
+
+    alternatives: list[ConsideredArchetypeResponse]
+
+    #: Evidence held here and deliberately not used to classify.
+    not_classified_from: list[str]
+
+    capabilities: list[AnalyticalCapabilityResponse]
+
+    #: Questions this archetype is known to need and this platform has
+    #: not modelled — the boundary that keeps a future stablecoin out
+    #: of a monetary asset's questions.
+    unmodelled: list[str]
+
+    questions: list[CryptoQuestionResponse]
+
+    chains: list[ValueChainResponse]
+
+    unmapped_because: str | None
+
+
 class CommitteeUncertaintyResponse(BaseModel):
     """One thing a committee could not settle, and whether looking again helps."""
 
@@ -591,6 +753,12 @@ class DossierResponse(BaseModel):
     #: above and consumed by nothing. Null for anything that is not a
     #: cryptocurrency.
     protocol_fundamentals: ProtocolFundamentalsResponse | None = None
+
+    #: Which investment questions this kind of digital asset is asked,
+    #: which are declined and why, and what evidence would answer each.
+    #: Applicability and evidence standing, never a verdict. Null for
+    #: anything that is not a cryptocurrency.
+    crypto_playbook: CryptoPlaybookResponse | None = None
 
     # ── The narrative (Communication layer, optional) ───────────────
     #: The case in words, or null with the reason beside it. Exactly one
