@@ -94,9 +94,83 @@ class EtfFlowReading:
     inflow_days_30d: int | None = None
     days_counted_30d: int | None = None
 
+    #: The dispersion behind the sum.
+    #:
+    #: A total on its own is the wrong number to lead with, and slice 1
+    #: shipped exactly that defect: *"$128m over 30 days"* reads as
+    #: steady accumulation whether it arrived on one day or on
+    #: eighteen. These three say which — the biggest day either way, and
+    #: how many consecutive days the current run has held.
+    largest_inflow_day: float | None = None
+    largest_outflow_day: float | None = None
+
+    #: Positive for a run of inflow days, negative for outflows. The
+    #: most recent published day is day one.
+    current_streak: int | None = None
+
     @property
     def is_read(self) -> bool:
         return self.daily_net_flow is not None or self.total_net_assets is not None
+
+    @property
+    def concentration(self) -> float | None:
+        """What share of the window's net total the single biggest day is.
+
+        The number that separates the three shapes §13 asks about. Near
+        1 means one session carried the month; near 0 means many days
+        did. It is a ratio of a day to a net sum, so it can exceed 1 —
+        and that is informative rather than broken: a month whose
+        biggest day is larger than its net total spent the rest of the
+        month giving it back.
+        """
+
+        if not self.flow_30d or self.largest_inflow_day is None:
+            return None
+
+        biggest = max(
+            abs(self.largest_inflow_day), abs(self.largest_outflow_day or 0.0)
+        )
+
+        return biggest / abs(self.flow_30d)
+
+    @property
+    def persistence(self) -> float | None:
+        """The share of published days that were inflows."""
+
+        if not self.days_counted_30d or self.inflow_days_30d is None:
+            return None
+
+        return self.inflow_days_30d / self.days_counted_30d
+
+    @property
+    def shape(self) -> str | None:
+        """Which of §13's three shapes this window is, in words.
+
+        Deliberately three named outcomes rather than a score. The
+        thresholds are stated where they are used and they decide
+        wording only — nothing downstream reads this to rank, band or
+        recommend anything.
+        """
+
+        persistence = self.persistence
+        concentration = self.concentration
+
+        if persistence is None or concentration is None:
+            return None
+
+        # One session larger than the whole month's net total means the
+        # rest of the month largely cancelled out, whatever the day
+        # count says.
+        if concentration >= 1.0:
+            return "concentrated"
+
+        if persistence >= 0.65:
+            return "persistent"
+
+        if persistence <= 0.35:
+            return "persistently negative"
+
+        return "mixed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,6 +274,9 @@ class EtfFlowProvider:
             "flow_30d": sum(window) if len(window) >= 5 else None,
             "inflow_days_30d": sum(1 for value in window if value > 0),
             "days_counted_30d": len(window),
+            "largest_inflow_day": max((v for v in window if v > 0), default=None),
+            "largest_outflow_day": min((v for v in window if v < 0), default=None),
+            "current_streak": _streak(window),
         }
 
     def treasuries(self, symbol: str) -> TreasuryHolding | None:
@@ -260,8 +337,9 @@ class EtfFlowProvider:
 class CachedEtfFlowProvider:
     """Flows once a day, behind the platform's two doors."""
 
-    #: 1 — the shape S5.4 introduced.
-    SCHEMA = 1
+    #: 1 — the shape slice 1 introduced.
+    #: 2 — the flow distribution: biggest day either way, and the streak.
+    SCHEMA = 2
 
     def __init__(
         self,
@@ -273,6 +351,7 @@ class CachedEtfFlowProvider:
         self._cache = cache or JsonCache(
             "data/cache/etf_flows",
             schema=self.SCHEMA,
+            migrations={1: _to_schema_2},
         )
         self._acquires = acquires
 
@@ -334,6 +413,27 @@ class CachedEtfFlowProvider:
 # ── the store ───────────────────────────────────────────────────────
 
 
+def _to_schema_2(row: Any) -> Any:
+    """A schema-1 record read under schema 2.
+
+    The three dispersion figures cannot be recovered from a stored
+    total — they need the daily series, which schema 1 never kept — so
+    they are absent rather than reconstructed, and the reading renders
+    without its shape until the next acquisition. Absent is the correct
+    value here: a zero would say the biggest day was nothing.
+    """
+
+    if not isinstance(row, dict):
+        return row
+
+    return {
+        **row,
+        "largest_inflow_day": None,
+        "largest_outflow_day": None,
+        "current_streak": None,
+    }
+
+
 def _encode_flow(reading: EtfFlowReading) -> dict[str, Any]:
     return {
         "symbol": reading.symbol,
@@ -350,6 +450,9 @@ def _encode_flow(reading: EtfFlowReading) -> dict[str, Any]:
         "flow_30d": reading.flow_30d,
         "inflow_days_30d": reading.inflow_days_30d,
         "days_counted_30d": reading.days_counted_30d,
+        "largest_inflow_day": reading.largest_inflow_day,
+        "largest_outflow_day": reading.largest_outflow_day,
+        "current_streak": reading.current_streak,
     }
 
 
@@ -379,6 +482,13 @@ def _decode_flow(row: Any) -> EtfFlowReading | None:
             days_counted_30d=(
                 int(row["days_counted_30d"])
                 if row.get("days_counted_30d") is not None
+                else None
+            ),
+            largest_inflow_day=_number(row.get("largest_inflow_day")),
+            largest_outflow_day=_number(row.get("largest_outflow_day")),
+            current_streak=(
+                int(row["current_streak"])
+                if row.get("current_streak") is not None
                 else None
             ),
         )
@@ -414,6 +524,35 @@ def _decode_treasury(row: Any) -> TreasuryHolding | None:
         )
     except (KeyError, TypeError, ValueError):
         return None
+
+
+def _streak(window: list[float]) -> int | None:
+    """How many consecutive days the current run has held, newest first.
+
+    Positive for inflows, negative for outflows. A zero day ends a run
+    rather than continuing it: nothing moved, and calling that a
+    continuation would report a run the flows did not have.
+    """
+
+    if not window:
+        return None
+
+    first = window[0]
+
+    if first == 0:
+        return 0
+
+    sign = 1 if first > 0 else -1
+
+    length = 0
+
+    for value in window:
+        if (value > 0) != (sign > 0) or value == 0:
+            break
+
+        length += 1
+
+    return length * sign
 
 
 def _field(payload: dict[str, Any], name: str, key: str) -> Any:

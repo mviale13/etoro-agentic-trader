@@ -43,6 +43,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
+from app.domain.crypto_event import CryptoEvent
 from app.domain.evidence_authority import EvidenceAuthority
 from app.domain.evidence_standing import EvidenceStanding
 
@@ -122,6 +123,13 @@ class EventKind(StrEnum):
     #: A published view about the asset, always attributed.
     MARKET_NARRATIVE = "market_narrative"
 
+    #: An exploit, a drain, a key compromise. Added in slice 2, when a
+    #: register of incidents first gave this layer one to carry.
+    SECURITY_INCIDENT = "security_incident"
+
+    #: A regulator, court or supervisor acted.
+    REGULATORY_ACTION = "regulatory_action"
+
     @property
     def stated(self) -> str:
         return _EVENT_KINDS[self]
@@ -134,6 +142,8 @@ _EVENT_KINDS = {
     EventKind.NETWORK_ACTIVITY: "Network activity",
     EventKind.PROTOCOL_CHANGE: "Protocol change",
     EventKind.MARKET_NARRATIVE: "Market narrative",
+    EventKind.SECURITY_INCIDENT: "Security incident",
+    EventKind.REGULATORY_ACTION: "Regulatory action",
 }
 
 
@@ -269,6 +279,14 @@ class DriverSupport(StrEnum):
     #: A measured fact that is itself the change. No causal claim.
     OBSERVED = "observed"
 
+    #: Two things happened in the same window, and this platform says
+    #: only that. §12's vocabulary: *"ETF inflows were strongly positive
+    #: while BTC consolidated"* is permitted and *"inflows prevented BTC
+    #: from falling"* is not, and the difference between them is exactly
+    #: this member. It is the weakest support that still earns a place
+    #: in a brief, and it never becomes a stronger one by repetition.
+    COINCIDENT = "coincident"
+
     #: Several claims point the same way, and this platform says so.
     SUPPORTED = "supported"
 
@@ -288,6 +306,7 @@ class DriverSupport(StrEnum):
 
 _SUPPORT = {
     DriverSupport.OBSERVED: "Observed",
+    DriverSupport.COINCIDENT: "Coincident, not shown to be causal",
     DriverSupport.SUPPORTED: "Supported by several readings",
     DriverSupport.ATTRIBUTED_BY_SOURCE: "Attributed by the source",
     DriverSupport.INFERRED: "MOVRvest reading",
@@ -357,6 +376,62 @@ class Foundation:
 
 
 @dataclass(frozen=True, slots=True)
+class WatchItem:
+    """One thing that would materially change this view, and how to tell.
+
+    First-class in slice 2 because §16 asked for it, and because the
+    slice-1 version — a sentence in a list — could not distinguish
+    *"the upgrade activates on the 14th"* from *"keep an eye on flows"*.
+    The distinction that matters to an investor is whether there is a
+    **date** or only a **condition**, and the rule is unambiguous:
+    **never invent a future date.** Where nothing scheduled is known,
+    the item is a measurable condition on evidence this platform already
+    reads, and it says so.
+    """
+
+    stated: str
+
+    #: What would settle it — a figure this platform already reads, or a
+    #: named event whose date came from a source rather than from here.
+    measured_by: str
+
+    #: The claims or events this rests on. A watch item with nothing
+    #: beneath it is a guess, and cannot be constructed.
+    because: tuple[str, ...] = ()
+
+    #: Only ever from a source that published one. None is the ordinary
+    #: case, and an empty date is better than a plausible one.
+    scheduled_for: datetime | None = None
+
+    @property
+    def is_scheduled(self) -> bool:
+        return self.scheduled_for is not None
+
+
+@dataclass(frozen=True, slots=True)
+class AttributedNarrative:
+    """Somebody's published reading of the asset, carried with their name.
+
+    The `ATTRIBUTED` type had no live producer in slice 1. This is it:
+    a source's interpretation, kept whole and kept theirs. It is never
+    merged with another source's, never averaged, and never promoted —
+    if this platform ever agrees, it says so separately in its own voice
+    with its own evidence.
+    """
+
+    stated: str
+    source: str
+
+    #: Whether the sentence asserts one thing caused another. §12: kept,
+    #: marked, and never settled here.
+    is_causal: bool = False
+
+    #: The event it was published about, so a reader can reach the facts
+    #: the opinion was formed over.
+    about: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class CryptoIntelligenceSnapshot:
     """What changed, what may be driving it, and what to watch.
 
@@ -373,6 +448,14 @@ class CryptoIntelligenceSnapshot:
 
     drivers: tuple[Driver, ...] = ()
 
+    #: The developments themselves, whole, for drill-down. Claims carry
+    #: the sentences a brief prints; these carry the sources, the facts
+    #: and the readings beneath each one.
+    events: tuple[CryptoEvent, ...] = ()
+
+    #: Published opinions about the asset, each with its author.
+    narratives: tuple[AttributedNarrative, ...] = ()
+
     #: How it moved against the market and its peer group, in S4's
     #: interval-safe arithmetic. Sentences, already checked.
     relative_context: tuple[str, ...] = ()
@@ -383,11 +466,18 @@ class CryptoIntelligenceSnapshot:
     #: resolved into one label.
     conflicting: tuple[str, ...] = ()
 
-    #: The most useful open question, and never a prediction.
-    watch_next: tuple[str, ...] = ()
+    #: At most three things that would materially change this view.
+    #: Never a prediction, and never an invented date.
+    watch_next: tuple[WatchItem, ...] = ()
 
     #: Why the brief is thin, where it is.
     thin_because: str | None = None
+
+    #: Where a surface this brief depends on did not answer, or answered
+    #: in a shape it could not read. Carried so an empty section can say
+    #: which — an absence with no reason is the failure mode this
+    #: platform has been caught by before.
+    surfaces_unread: tuple[str, ...] = ()
 
     def claim(self, ref: str) -> IntelligenceClaim | None:
         for item in self.claims:
@@ -396,9 +486,22 @@ class CryptoIntelligenceSnapshot:
 
         return None
 
+    def event(self, identity: str) -> CryptoEvent | None:
+        for item in self.events:
+            if item.identity == identity:
+                return item
+
+        return None
+
     @property
     def live(self) -> tuple[IntelligenceClaim, ...]:
         return tuple(item for item in self.claims if item.is_live)
+
+    @property
+    def causal_claims(self) -> tuple[AttributedNarrative, ...]:
+        """Published assertions of cause, left unresolved on purpose."""
+
+        return tuple(item for item in self.narratives if item.is_causal)
 
     @property
     def tailwinds(self) -> tuple[Driver, ...]:
@@ -421,8 +524,22 @@ class CryptoIntelligenceSnapshot:
         The grounding contract, checkable rather than promised. A driver
         referencing a claim that is not here would be a sentence with no
         evidence behind it.
+
+        Slice 2 extends it to watch items and narratives, for the same
+        reason and against a new temptation: *"watch whether the upgrade
+        activates"* is worth nothing if no upgrade was ever read, and a
+        narrative attributed to a source this brief does not hold is an
+        opinion with no author.
         """
 
-        held = {item.ref for item in self.claims}
+        held = {item.ref for item in self.claims} | {
+            item.identity for item in self.events
+        }
 
-        return all(set(driver.claims) <= held for driver in self.drivers)
+        if not all(set(driver.claims) <= held for driver in self.drivers):
+            return False
+
+        if not all(set(item.because) <= held for item in self.watch_next):
+            return False
+
+        return all(item.about is None or item.about in held for item in self.narratives)
