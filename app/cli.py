@@ -8,6 +8,7 @@ from app.commands import (
     archetype,
     brain,
     committee,
+    committee_judgment,
     company,
     credentials,
     crypto_events,
@@ -404,6 +405,29 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    judgment_parser = subparsers.add_parser(
+        "committee-judgment",
+        help="Show what the Value Capture Committee judges, and from what",
+        description=(
+            "One committee, one question: does this network generate "
+            "evidenced fee activity, and does an evidenced mechanism capture "
+            "some of it for the token or its holders? Shows applicability, "
+            "eligible evidence and the judgment as three separate steps. "
+            "Neither answer is favourable or adverse, no share is banded, and "
+            "nothing here is a recommendation"
+        ),
+    )
+    judgment_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example ETH. Omit for the corpus",
+    )
+    judgment_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show every eligible finding the committee was given",
+    )
+
     journal_parser = subparsers.add_parser(
         "intelligence-journal",
         help="Show what this platform has observed over time, and how often",
@@ -741,6 +765,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "crypto-events":
         return await crypto_events.run(args.symbol, args.evidence)
+
+    if args.command == "committee-judgment":
+        return await committee_judgment.run(args.symbol, args.evidence)
 
     if args.command == "intelligence-journal":
         return await intelligence_journal.run(args.symbol, args.evidence)
