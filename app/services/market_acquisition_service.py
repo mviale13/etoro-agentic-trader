@@ -24,6 +24,7 @@ from app.providers.coingecko_market_provider import CachedCoinGeckoMarketProvide
 from app.providers.defillama_provider import CachedDefiLlamaProvider
 from app.providers.earnings_provider import CachedEarningsProvider
 from app.providers.exchange_rate_provider import CachedExchangeRateProvider
+from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
@@ -70,6 +71,7 @@ class MarketAcquisitionService:
         coingecko_facts: Any | None = None,
         protocol_facts: Any | None = None,
         crypto_market: Any | None = None,
+        primary_supply: Any | None = None,
     ) -> None:
         # Imported where they are used: the perceptions reach the broker
         # stack, which reaches the providers this module imports.
@@ -123,6 +125,11 @@ class MarketAcquisitionService:
         # same market for all of them. Its own evidence family: nothing
         # here reaches token facts or protocol facts.
         self._crypto_market = crypto_market or CachedCoinGeckoMarketProvider()
+
+        # The chains' own supply quantities. Read per security because
+        # each chain answers differently, and only where a canonical
+        # surface has been verified — four today.
+        self._primary_supply = primary_supply or CachedPrimarySupplyProvider()
 
     async def acquire(
         self,
@@ -252,6 +259,11 @@ class MarketAcquisitionService:
                 if asset_class is AssetClass.CRYPTO
                 else None
             ),
+            primary_supply=(
+                self._supply(instrument.movrvest_symbol)
+                if asset_class is AssetClass.CRYPTO
+                else None
+            ),
             protocol_facts=(
                 self._protocols(instrument.movrvest_symbol)
                 if asset_class is AssetClass.CRYPTO
@@ -282,6 +294,19 @@ class MarketAcquisitionService:
 
         try:
             return self._token_facts.claims(symbol) is not None
+        except Exception:
+            return False
+
+    def _supply(self, symbol: str) -> bool | None:
+        """The chain's own supply quantities, where a surface is verified.
+
+        None rather than False for a chain nobody has verified a surface
+        for: an unread chain and an unreadable one are different states,
+        and only the second is a failure.
+        """
+
+        try:
+            return bool(self._primary_supply.facts(symbol))
         except Exception:
             return False
 

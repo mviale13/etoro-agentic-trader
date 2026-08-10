@@ -8,10 +8,12 @@ serves them, and no score can see them. A source that later earns
 production use moves out of this module into one of its own.
 
 ```text
-Ethereum   execution RPC        canonical      base-fee burn, computable here
+Ethereum     execution RPC      canonical      base-fee burn, computable here
 Hyperliquid  protocol API       canonical      supply accounting, fund balance
-Cardano    ledger totals        canonical      the ledger's own supply concepts
-Bitcoin    explorer API         NOT canonical  fee totals only a node can derive
+Cardano      ledger totals      canonical      the ledger's own supply concepts
+Arbitrum     token contract     canonical      an ERC-20 total, from the contract
+Bittensor    Subtensor RPC      canonical      the chain's own TotalIssuance
+Bitcoin      explorer API       NOT canonical  fee totals only a node can derive
 ```
 
 **The Bitcoin row is the finding, not a gap.** A Bitcoin block carries no
@@ -28,6 +30,7 @@ explicit spend taken by `movrvest primary`.
 
 from __future__ import annotations
 
+import struct
 from datetime import UTC, datetime
 from typing import Any
 
@@ -682,5 +685,287 @@ class BitcoinExplorer:
                 "blockchain.info's published total_fees_btc was "
                 "**negative** when this was measured, which is what an "
                 "unreproducible figure failing silently looks like.",
+            ),
+        )
+
+
+# ── Arbitrum: an ERC-20 total, read from the token contract ─────────
+
+
+class ArbitrumRpc:
+    """ARB's own `totalSupply()`, called on the token contract.
+
+    The simplest primary reading in the corpus and a useful control: the
+    contract answers the same number from two unrelated endpoints, so a
+    wrong reading would have to be a wrong ledger rather than a wrong
+    vendor.
+    """
+
+    SURFACE = SourceSurface(
+        key="arbitrum-one-rpc",
+        name="Arbitrum One JSON-RPC",
+        network="arbitrum-one",
+        endpoint="https://arbitrum-one-rpc.publicnode.com",
+        canonical=True,
+        because=(
+            "the call is evaluated against Arbitrum's own state; "
+            "`totalSupply()` is a function of the token contract rather "
+            "than a figure any third party computed."
+        ),
+    )
+
+    RULE = "arb-total-supply/1"
+
+    #: The ARB token contract, confirmed by the reading agreeing across
+    #: two independent endpoints. A hard-coded address nobody re-checks
+    #: is how a reading ends up describing another token.
+    CONTRACT = "0x912CE59144191C1204E64559FE8253a0e49E6548"
+
+    #: `totalSupply()`, the first four bytes of its keccak signature.
+    SELECTOR = "0x18160ddd"
+
+    DECIMALS = 10**18
+
+    def __init__(self, endpoint: str | None = None) -> None:
+        self._endpoint = endpoint or self.SURFACE.endpoint
+
+    def _post(self, payload: Any) -> Any:
+        response = requests.post(
+            self._endpoint,
+            headers={
+                "content-type": "application/json",
+                "user-agent": "movrvest/1.0",
+            },
+            json=payload,
+            timeout=TIMEOUT,
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    def total_supply(self) -> PrimaryComputation:
+        answer = self._post(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "eth_call",
+                "params": [
+                    {"to": self.CONTRACT, "data": self.SELECTOR},
+                    "latest",
+                ],
+            }
+        )
+
+        result = answer.get("result")
+
+        if not isinstance(result, str) or not result.startswith("0x"):
+            raise LookupError(
+                "The token contract returned no total supply, so nothing was measured."
+            )
+
+        return PrimaryComputation(
+            key="arb-total-supply",
+            label="ARB emitted supply",
+            surface=self.SURFACE,
+            entity=f"ARB token contract {self.CONTRACT}",
+            window=ObservationWindow(kind="instant", observed_at=datetime.now(UTC)),
+            value=int(result, 16) / self.DECIMALS,
+            unit="ARB",
+            formula="eth_call totalSupply() ÷ 1e18",
+            rule_version=self.RULE,
+            authority=EvidenceAuthority.PRIMARY_OBSERVATION,
+            standing=EvidenceStanding.CLAIMED,
+            inputs=(f"eth_call({self.CONTRACT}, {self.SELECTOR}, latest)",),
+            because=_UNRULED,
+            caveats=(
+                "What exists, not what circulates. ARB is fully minted, "
+                "so every question about its circulating supply is a "
+                "question about which holdings to exclude — and the "
+                "contract has no opinion about that.",
+            ),
+        )
+
+
+# ── Bittensor: the chain's own issuance ─────────────────────────────
+
+
+def _xxh64(data: bytes, seed: int = 0) -> int:
+    """XXH64, because Substrate storage keys are hashed with it.
+
+    Implemented rather than imported: the alternative is a dependency
+    for forty lines of arithmetic, and CI installs only what
+    `pyproject` declares. Verified against the algorithm's own published
+    vectors by test — a wrong implementation produces a key the node
+    does not know, which returns null rather than a wrong number.
+    """
+
+    prime1 = 11400714785074694791
+    prime2 = 14029467366897019727
+    prime3 = 1609587929392839161
+    prime4 = 9650029242287828579
+    prime5 = 2870177450012600261
+
+    mask = (1 << 64) - 1
+
+    def rotate(value: int, bits: int) -> int:
+        return ((value << bits) | (value >> (64 - bits))) & mask
+
+    def round_(accumulator: int, lane: int) -> int:
+        return (rotate((accumulator + lane * prime2) & mask, 31) * prime1) & mask
+
+    length = len(data)
+    index = 0
+
+    if length >= 32:
+        first = (seed + prime1 + prime2) & mask
+        second = (seed + prime2) & mask
+        third = seed & mask
+        fourth = (seed - prime1) & mask
+
+        while index + 32 <= length:
+            first = round_(first, struct.unpack_from("<Q", data, index)[0])
+            second = round_(second, struct.unpack_from("<Q", data, index + 8)[0])
+            third = round_(third, struct.unpack_from("<Q", data, index + 16)[0])
+            fourth = round_(fourth, struct.unpack_from("<Q", data, index + 24)[0])
+            index += 32
+
+        digest = (
+            rotate(first, 1)
+            + rotate(second, 7)
+            + rotate(third, 12)
+            + rotate(fourth, 18)
+        ) & mask
+
+        for lane in (first, second, third, fourth):
+            digest = ((digest ^ round_(0, lane)) * prime1 + prime4) & mask
+    else:
+        digest = (seed + prime5) & mask
+
+    digest = (digest + length) & mask
+
+    while index + 8 <= length:
+        lane = round_(0, struct.unpack_from("<Q", data, index)[0])
+        digest = (rotate(digest ^ lane, 27) * prime1 + prime4) & mask
+        index += 8
+
+    if index + 4 <= length:
+        lane = (struct.unpack_from("<I", data, index)[0] * prime1) & mask
+        digest = (rotate(digest ^ lane, 23) * prime2 + prime3) & mask
+        index += 4
+
+    while index < length:
+        digest = (rotate(digest ^ ((data[index] * prime5) & mask), 11) * prime1) & mask
+        index += 1
+
+    digest ^= digest >> 33
+    digest = (digest * prime2) & mask
+    digest ^= digest >> 29
+    digest = (digest * prime3) & mask
+    digest ^= digest >> 32
+
+    return digest
+
+
+def storage_key(pallet: str, item: str) -> str:
+    """A Substrate storage key: twox128(pallet) ++ twox128(item)."""
+
+    def twox128(name: str) -> bytes:
+        raw = name.encode()
+
+        return struct.pack("<Q", _xxh64(raw, 0)) + struct.pack("<Q", _xxh64(raw, 1))
+
+    return "0x" + (twox128(pallet) + twox128(item)).hex()
+
+
+class SubtensorRpc:
+    """Bittensor's own chain state, over its public JSON-RPC endpoint.
+
+    The surface S4.5 could not find and S4.6 did: the network's own node
+    answers keylessly, and its `TotalIssuance` storage item is the
+    quantity every vendor's "supply" figure is an opinion about.
+    """
+
+    SURFACE = SourceSurface(
+        key="subtensor-rpc",
+        name="Bittensor Subtensor JSON-RPC",
+        network="bittensor-finney",
+        endpoint="https://entrypoint-finney.opentensor.ai",
+        canonical=True,
+        because=(
+            "the endpoint is the network's own entrypoint and the value "
+            "is read out of chain storage rather than from a party's "
+            "index of it."
+        ),
+    )
+
+    RULE = "tao-total-issuance/1"
+
+    PALLET = "SubtensorModule"
+    ITEM = "TotalIssuance"
+
+    #: Rao per TAO.
+    DECIMALS = 10**9
+
+    def __init__(self, endpoint: str | None = None) -> None:
+        self._endpoint = endpoint or self.SURFACE.endpoint
+
+    def _post(self, payload: Any) -> Any:
+        response = requests.post(
+            self._endpoint,
+            headers={
+                "content-type": "application/json",
+                "user-agent": "movrvest/1.0",
+            },
+            json=payload,
+            timeout=TIMEOUT,
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    def total_issuance(self) -> PrimaryComputation:
+        key = storage_key(self.PALLET, self.ITEM)
+
+        answer = self._post(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "state_getStorage",
+                "params": [key],
+            }
+        )
+
+        raw = answer.get("result")
+
+        if not isinstance(raw, str) or len(raw) < 18:
+            raise LookupError(
+                f"The chain returned no value at {self.PALLET}::{self.ITEM}. "
+                "A wrong storage key returns null rather than a wrong "
+                "number, so nothing is reported."
+            )
+
+        return PrimaryComputation(
+            key="tao-total-issuance",
+            label="TAO emitted supply",
+            surface=self.SURFACE,
+            entity=f"Bittensor {self.PALLET}::{self.ITEM}",
+            window=ObservationWindow(kind="instant", observed_at=datetime.now(UTC)),
+            value=int.from_bytes(bytes.fromhex(raw[2:])[:8], "little") / self.DECIMALS,
+            unit="TAO",
+            formula=(
+                f"state_getStorage(twox128({self.PALLET}) ++ "
+                f"twox128({self.ITEM})), first 8 bytes little-endian, ÷ 1e9"
+            ),
+            rule_version=self.RULE,
+            authority=EvidenceAuthority.PRIMARY_OBSERVATION,
+            standing=EvidenceStanding.CLAIMED,
+            inputs=(f"state_getStorage({key})",),
+            because=_UNRULED,
+            caveats=(
+                "Total issuance is what exists, and most of it is staked. "
+                "Whether staked TAO counts as circulating is a policy "
+                "question the chain does not answer.",
             ),
         )

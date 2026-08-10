@@ -18,6 +18,7 @@ import type {
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
   DossierCryptoMarket,
+  DossierSupply,
   DossierCryptoPlaybook,
   DossierFinancialUnderstanding,
   DossierMeasure,
@@ -33,6 +34,7 @@ import type {
   TokenFactRow,
   CryptoQuestionView,
   MarketObservationView,
+  SupplyFigureView,
   ValueChainView,
 } from "@/lib/api/dossier";
 
@@ -1336,6 +1338,214 @@ function MarketRow({ item }: { item: MarketObservationView }) {
   );
 }
 
+/**
+ * What each of this token's supply numbers actually counts.
+ *
+ * The section exists because "sources conflict" was hiding three
+ * correct readings of the same ledger. Cardano publishes four
+ * distinguishable quantities and three vendors were each reporting one
+ * of them, to within a rounding error — so the numbers differed, and
+ * nothing was wrong except the label they shared.
+ *
+ * What is rendered is therefore the vocabulary, in investor language:
+ * what can ever exist, what exists now, what is still to come, and what
+ * each party holds to be available. The provenance sits underneath.
+ *
+ * Nothing here is interpreted. Whether a supply structure is dilutive,
+ * attractive or a risk is a reading this platform has not earned, and
+ * no word on this card implies one.
+ */
+function Supply({
+  supply,
+  symbol,
+}: {
+  supply: DossierSupply;
+  symbol: string;
+}) {
+  if (supply.unavailableBecause) {
+    return (
+      <section aria-labelledby="supply-heading">
+        <SectionHeading id="supply-heading">Supply</SectionHeading>
+
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
+          {supply.unavailableBecause}
+        </p>
+      </section>
+    );
+  }
+
+  const groups = supply.figures.reduce<Map<string, SupplyFigureView[]>>(
+    (found, figure) => {
+      const rows = found.get(figure.conceptStated) ?? [];
+
+      rows.push(figure);
+      found.set(figure.conceptStated, rows);
+
+      return found;
+    },
+    new Map(),
+  );
+
+  const coexisting = supply.comparisons.filter(
+    (item) => item.verdict === "coexist",
+  );
+
+  const conflicts = supply.comparisons.filter(
+    (item) => item.verdict === "conflicted",
+  );
+
+  return (
+    <section aria-labelledby="supply-heading">
+      <SectionHeading id="supply-heading">Supply</SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        Crypto supply is an accounting vocabulary rather than one number.
+        Below is what each figure for {symbol} actually counts and whose
+        definition decided it — because two numbers only disagree if they
+        claim to represent the same thing.
+      </p>
+
+      {/* The headline an investor can act on: whether the estimates
+          differ for a reason anybody has published. Far more useful
+          than a bare "sources conflict". */}
+      <p
+        className={`mt-3 max-w-3xl text-sm leading-6 ${
+          supply.methodologyDisagreement ? "text-amber-700" : "text-slate-600"
+        }`}
+      >
+        {supply.methodologyDisagreement
+          ? `Circulating-supply estimates for ${symbol} differ, and at least one party does not publish which token buckets it excludes. The figures below are shown as what each one counts.`
+          : conflicts.length > 0
+            ? `The circulating-supply estimates for ${symbol} either agree or count different, stated quantities. One figure below still disagrees with the chain, and it is not about what circulates.`
+            : `Every figure below either agrees with the others or counts a different, stated quantity. Nothing about ${symbol}'s supply is in dispute.`}
+      </p>
+
+      <div className="mt-4 space-y-4">
+        {[...groups.entries()].map(([concept, figures]) => (
+          <div
+            key={concept}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-4"
+          >
+            <p className="text-sm font-semibold text-slate-800">{concept}</p>
+
+            <dl className="mt-3 space-y-3">
+              {figures.map((figure, index) => (
+                <div key={`${figure.source}-${figure.reportedAs}-${index}`}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <dt className="text-slate-700">
+                      {figure.source}
+                      {figure.reportedAs ? (
+                        <span className="ml-1.5 text-xs text-slate-400">
+                          as {figure.reportedAs}
+                        </span>
+                      ) : null}
+                    </dt>
+
+                    <dd className="flex shrink-0 items-baseline gap-2">
+                      <span className="font-semibold tabular-nums text-slate-800">
+                        {figure.stated}
+                      </span>
+
+                      <span
+                        className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500"
+                        title={figure.authorityStated}
+                      >
+                        {figure.standingStated}
+                      </span>
+                    </dd>
+                  </div>
+
+                  {/* The methodology is part of the fact: a circulating
+                      figure without it cannot be compared with anything. */}
+                  <p className="mt-0.5 text-xs leading-5 text-slate-500">
+                    {figure.definedBy}: {figure.methodology}
+                    {figure.disclosed ? null : " — not published"}
+                  </p>
+
+                  {figure.excludes.length > 0 ? (
+                    <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                      Excludes {figure.excludes.join("; ")}
+                    </p>
+                  ) : null}
+
+                  {figure.caveats.map((caveat) => (
+                    <p
+                      key={caveat}
+                      className="mt-1 text-xs leading-5 text-amber-700"
+                    >
+                      {caveat}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+
+      {/* Coexistence is the finding, so it is shown before the
+          conflicts: these numbers differ and both are right. */}
+      {coexisting.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Different numbers, both correct
+          </p>
+
+          <ul className="mt-2 space-y-2">
+            {coexisting.map((item, index) => (
+              <li
+                key={`${item.leftSource}-${item.rightSource}-${index}`}
+                className="text-xs leading-5 text-slate-600"
+              >
+                {item.because}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {conflicts.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Genuine disagreements
+          </p>
+
+          <ul className="mt-2 space-y-2">
+            {conflicts.map((item, index) => (
+              <li
+                key={`${item.leftSource}-${item.rightSource}-${index}`}
+                className="text-xs leading-5 text-slate-600"
+              >
+                <span className="font-medium text-slate-700">
+                  {item.leftSource} {item.leftStated} · {item.rightSource}{" "}
+                  {item.rightStated}
+                </span>{" "}
+                — {item.because}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {supply.unresolved.length > 0 ? (
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+            Unresolved
+          </p>
+
+          <ul className="mt-1.5 space-y-1">
+            {supply.unresolved.map((line) => (
+              <li key={line} className="text-xs leading-5 text-slate-500">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
@@ -1371,6 +1581,10 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
           playbook={dossier.cryptoPlaybook}
           symbol={dossier.symbol}
         />
+      ) : null}
+
+      {dossier.supply ? (
+        <Supply supply={dossier.supply} symbol={dossier.symbol} />
       ) : null}
 
       {dossier.cryptoMarket ? (

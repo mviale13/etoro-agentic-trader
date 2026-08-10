@@ -524,6 +524,82 @@ class CryptoMarketContextResponse(BaseModel):
     unavailable_because: str | None
 
 
+class SupplyFigureResponse(BaseModel):
+    """One supply quantity, under one concept and one methodology."""
+
+    concept: str
+    concept_stated: str
+
+    stated: str
+
+    #: Whose definition decided what is in the number.
+    defined_by: str
+    methodology: str
+
+    #: Whether this platform knows what the definition leaves out.
+    disclosed: bool
+
+    excludes: list[str]
+
+    source: str
+    age: str | None
+
+    #: The label the source published it under, where it differs.
+    reported_as: str | None
+
+    standing: str
+    standing_stated: str
+
+    #: primary_observation | primary_derived | secondary_aggregate …
+    authority: str
+    authority_stated: str
+
+    because: str | None
+    caveats: list[str]
+
+
+class SupplyComparisonResponse(BaseModel):
+    """What two supply figures are to each other.
+
+    `coexist` is the state this whole layer exists to make possible: two
+    numbers that differ because they count different things, which is
+    information rather than a contradiction.
+    """
+
+    verdict: str
+    verdict_stated: str
+
+    left_source: str
+    left_stated: str
+    right_source: str
+    right_stated: str
+
+    because: str
+
+
+class SupplyPictureResponse(BaseModel):
+    """A token's supply, read as a vocabulary rather than as one number.
+
+    Facts and relationships only. No dilution, no band, no verdict —
+    what a supply structure implies for an investment case is a question
+    for a layer that does not exist.
+    """
+
+    #: Grouped by concept, in reading order.
+    figures: list[SupplyFigureResponse]
+
+    comparisons: list[SupplyComparisonResponse]
+
+    #: True where two claims to the same quantity differ and at least
+    #: one party does not publish what it excludes.
+    methodology_disagreement: bool
+
+    #: What is still missing, named rather than left blank.
+    unresolved: list[str]
+
+    unavailable_because: str | None
+
+
 class CommitteeUncertaintyResponse(BaseModel):
     """One thing a committee could not settle, and whether looking again helps."""
 
@@ -880,6 +956,11 @@ class DossierResponse(BaseModel):
     #: facts and from its protocol's, and consumed by nothing. Null for
     #: anything that is not a cryptocurrency.
     crypto_market: CryptoMarketContextResponse | None = None
+
+    #: What each of this token's supply numbers actually counts, and
+    #: which of them really disagree. Facts and relationships; no
+    #: dilution reading. Null for anything that is not a cryptocurrency.
+    supply: SupplyPictureResponse | None = None
 
     # ── The narrative (Communication layer, optional) ───────────────
     #: The case in words, or null with the reason beside it. Exactly one

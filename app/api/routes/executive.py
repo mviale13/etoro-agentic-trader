@@ -41,6 +41,7 @@ from app.api.models.portfolio_briefing import (
     TrendResponse,
 )
 from app.api.models.protocol_adapter import protocol_fundamentals_response
+from app.api.models.supply_adapter import supply_response
 from app.api.models.synthesis import synthesis_response
 from app.api.models.understanding_adapter import understanding_response
 from app.application.brain.brain_builder_service import BrainBuilderService
@@ -82,6 +83,7 @@ from app.services.executive_writer_service import ExecutiveWriterService
 from app.services.protocol_fundamentals_service import (
     ProtocolFundamentalsService,
 )
+from app.services.supply_semantics_service import SupplySemanticsService
 from app.services.token_facts_service import TokenFactsService
 
 router = APIRouter(
@@ -652,6 +654,14 @@ async def dossier(
         asset_class,
     )
 
+    # What each supply number counts. Read from the same stores; the
+    # semantics explain a disagreement rather than resolving one, and
+    # no standing here reaches a score.
+    supply = SupplySemanticsService().established(
+        normalized_symbol,
+        asset_class,
+    )
+
     # Read from the stores only — no fetch, no model — and composed
     # before the narrative so the conclusion below is available whether
     # or not the optional writer runs.
@@ -777,6 +787,7 @@ async def dossier(
         protocol_fundamentals=protocol_fundamentals_response(protocol_facts),
         crypto_playbook=crypto_playbook_response(crypto_playbook),
         crypto_market=crypto_market_response(crypto_market),
+        supply=supply_response(supply),
         # Both null on purpose: this route no longer words the case.
         narrative=None,
         narrative_absent=None,

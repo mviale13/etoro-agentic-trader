@@ -293,6 +293,9 @@ export interface DossierViewModel {
       place in it. Market context — never Asset Quality. */
   cryptoMarket: DossierCryptoMarket | null;
 
+  /** What each of this token's supply numbers actually counts. */
+  supply: DossierSupply | null;
+
   /** The narrative, or null with the backend-worded reason beside it. */
   narrative: DossierNarrative | null;
   narrativeAbsent: string | null;
@@ -708,6 +711,55 @@ export interface DossierCryptoMarket {
   relative: readonly RelativeReturnView[];
   concentrations: readonly ConcentrationView[];
   uncompared: readonly string[];
+  unavailableBecause: string | null;
+}
+
+
+/** One supply quantity, under one concept and one methodology. */
+export interface SupplyFigureView {
+  concept: string;
+  conceptStated: string;
+  stated: string;
+  /** Whose definition decided what is in the number. */
+  definedBy: string;
+  methodology: string;
+  /** Whether the platform knows what the definition leaves out. */
+  disclosed: boolean;
+  excludes: readonly string[];
+  source: string;
+  age: string | null;
+  reportedAs: string | null;
+  standing: string;
+  standingStated: string;
+  authority: string;
+  authorityStated: string;
+  because: string | null;
+  caveats: readonly string[];
+}
+
+/**
+ * What two supply figures are to each other.
+ *
+ * `coexist` is the state this layer exists to make possible: two numbers
+ * that differ because they count different things — information, not a
+ * contradiction.
+ */
+export interface SupplyComparisonView {
+  verdict: string;
+  verdictStated: string;
+  leftSource: string;
+  leftStated: string;
+  rightSource: string;
+  rightStated: string;
+  because: string;
+}
+
+/** A token's supply as a vocabulary. No dilution reading, no band. */
+export interface DossierSupply {
+  figures: readonly SupplyFigureView[];
+  comparisons: readonly SupplyComparisonView[];
+  methodologyDisagreement: boolean;
+  unresolved: readonly string[];
   unavailableBecause: string | null;
 }
 
@@ -1335,6 +1387,73 @@ function parseCryptoMarket(value: unknown): DossierCryptoMarket | null {
   };
 }
 
+
+function parseSupply(value: unknown): DossierSupply | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "supply".');
+  }
+
+  const strings = (raw: unknown): readonly string[] =>
+    (Array.isArray(raw) ? raw : []).filter(
+      (item): item is string => typeof item === "string",
+    );
+
+  return {
+    figures: (Array.isArray(value.figures) ? value.figures : [])
+      .filter(isRecord)
+      .map((row, index) => {
+        const at = `supply.figures[${index}]`;
+
+        return {
+          concept: requireString(row.concept, `${at}.concept`),
+          conceptStated: requireString(row.concept_stated, `${at}.concept_stated`),
+          stated: requireString(row.stated, `${at}.stated`),
+          definedBy: requireString(row.defined_by, `${at}.defined_by`),
+          methodology: requireString(row.methodology, `${at}.methodology`),
+          disclosed: row.disclosed === true,
+          excludes: strings(row.excludes),
+          source: requireString(row.source, `${at}.source`),
+          age: optionalString(row.age, `${at}.age`),
+          reportedAs: optionalString(row.reported_as, `${at}.reported_as`),
+          standing: requireString(row.standing, `${at}.standing`),
+          standingStated: requireString(row.standing_stated, `${at}.standing_stated`),
+          authority: requireString(row.authority, `${at}.authority`),
+          authorityStated: requireString(
+            row.authority_stated,
+            `${at}.authority_stated`,
+          ),
+          because: optionalString(row.because, `${at}.because`),
+          caveats: strings(row.caveats),
+        };
+      }),
+    comparisons: (Array.isArray(value.comparisons) ? value.comparisons : [])
+      .filter(isRecord)
+      .map((row, index) => {
+        const at = `supply.comparisons[${index}]`;
+
+        return {
+          verdict: requireString(row.verdict, `${at}.verdict`),
+          verdictStated: requireString(row.verdict_stated, `${at}.verdict_stated`),
+          leftSource: requireString(row.left_source, `${at}.left_source`),
+          leftStated: requireString(row.left_stated, `${at}.left_stated`),
+          rightSource: requireString(row.right_source, `${at}.right_source`),
+          rightStated: requireString(row.right_stated, `${at}.right_stated`),
+          because: requireString(row.because, `${at}.because`),
+        };
+      }),
+    methodologyDisagreement: value.methodology_disagreement === true,
+    unresolved: strings(value.unresolved),
+    unavailableBecause: optionalString(
+      value.unavailable_because,
+      "supply.unavailable_because",
+    ),
+  };
+}
+
 function parseCommittees(
   value: unknown,
 ): readonly DossierCommitteeOpinion[] {
@@ -1908,6 +2027,7 @@ function parseDossier(payload: unknown): DossierViewModel {
     ),
     cryptoPlaybook: parseCryptoPlaybook(payload.crypto_playbook),
     cryptoMarket: parseCryptoMarket(payload.crypto_market),
+    supply: parseSupply(payload.supply),
     narrative: parseNarrative(payload.narrative),
     narrativeAbsent: optionalString(
       payload.narrative_absent,
