@@ -467,7 +467,16 @@ _NOISE = {
     "t",
 }
 
-_NUMBER = re.compile(r"(?<![\w.])(\d[\d,]*(?:\.\d+)?)\s*(%|percent|bps)?", re.I)
+#: A quantity, and the unit that makes it a proportion rather than a
+#: count. `pp` is in the list because a *"0.09 percentage points"*
+#: reading and a *"0.09pp"* restatement of it are one figure, and the
+#: synthesis validator compares exactly these strings — without it, a
+#: model quoting the evidence correctly looked like a model inventing a
+#: number.
+_NUMBER = re.compile(
+    r"(?<![\w.])(\d[\d,]*(?:\.\d+)?)\s*(%|percentage point|percent|pp|bps)?",
+    re.I,
+)
 
 #: A magnitude word, and it must be a **whole word**.
 #:

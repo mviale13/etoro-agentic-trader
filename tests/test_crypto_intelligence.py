@@ -530,17 +530,35 @@ def test_every_driver_resolves_to_claims_the_snapshot_holds() -> None:
 
 
 def test_the_whole_brief_renders_with_no_model_at_all() -> None:
-    """Acceptance 11. The deterministic layer is the implementation,
-    not a fallback bolted beside one — no writer is wired in this slice."""
+    """Acceptance 11, restated for slice 3 and still the same rule.
 
-    code = reachable("app/commands/intelligence_brief.py")
+    Slice 1 asserted that the command reaches no writer whatsoever,
+    which was true while none existed. A synthesis layer now sits above
+    the brief, so the assertion has to say what it always meant:
+    **the deterministic layer is the implementation, not a fallback
+    bolted beside one.** Two halves.
 
-    for forbidden in ("writer", "openai", "anthropic", "llm", "prompt"):
+    The command never touches a model client — the seam is a service
+    that returns a synthesis or a worded absence, so no prompt, schema
+    or SDK is reachable from the renderer.
+
+    And the whole brief renders from the snapshot alone. `_render` is
+    called here with no synthesis at all, which is precisely the state
+    every failure path produces.
+    """
+
+    code = reachable("app/commands/intelligence_brief.py", with_literals=True)
+
+    for forbidden in ("openai", "anthropic", "prompt", "schema", "draft"):
         assert forbidden not in code, forbidden
 
-    from app.commands.intelligence_brief import IntelligenceBriefCommand
+    from app.commands.intelligence_brief import _render
 
-    assert IntelligenceBriefCommand().run("BTC") == 0
+    snapshot = _snapshot("BTC")
+
+    _render(snapshot, evidence=False, synthesis=None)
+
+    assert snapshot.is_useful
 
 
 # ── 12, 13, 14: nothing else moved ──────────────────────────────────
