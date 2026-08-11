@@ -27,17 +27,19 @@ standing carries `previously` and its `verdict` property returns
 because there is no field that offers it as current.
 
 **A verdict means what its committee's contract made it mean.**
-`CommitteeVersion` carries a fingerprint over the remit question, the
-applicability rule, the eligible-evidence contract and the verdict
+`CommitteeIdentity` carries a fingerprint over the committee's question,
+its applicability rule, its eligible-evidence contract and its verdict
 vocabulary. Change any of them and two records stop being comparable —
 reported as `INCOMPARABLE_VERSION` and compared no further, because a
 transition computed across a redefinition is a fact about the
 redefinition wearing the clothes of a fact about the asset.
 
-**And nothing here is allowed to mean more than it says.**
-`NO_MECHANISM_EVIDENCED → MECHANISM_EVIDENCED` is that transition and
-nothing else: not an improvement, not a strengthened case, not a
-development worth acting on. Those readings need a layer with explicit
+**And nothing here is allowed to mean more than it says** — nor, since
+the protocol was extracted, is it *able* to. A verdict reaches this
+module as an opaque token with the committee's own sentence attached;
+one answer becoming another is that transition and nothing else, and
+this file could not tell you which of them was the favourable one if it
+were asked. Those readings need a layer with explicit
 permission to make them, and no such layer exists. The wording in this
 module is built only from the enumerations below, never from free text
 supplied elsewhere, so the vocabulary is finite and checkable — and a
@@ -52,154 +54,21 @@ from datetime import datetime, timedelta
 from enum import StrEnum
 
 from app.domain.committee_judgment import (
-    ELIGIBLE_CLAIM_TYPES,
     AbstentionReason,
     Applicability,
     CommitteeJudgment,
     Confidence,
     EligibleFinding,
     JudgmentState,
-    Remit,
-    Verdict,
 )
+from app.domain.committee_protocol import CommitteeIdentity, Comparability
 from app.domain.intelligence_journal import ObservationSpan
-
-# ── the committee's identity ────────────────────────────────────────
-
-
-def fingerprint_of(
-    question: str,
-    applicability_rule: str,
-    eligible: frozenset[str],
-    verdicts: tuple[str, ...],
-) -> str:
-    """A digest over everything that gives a verdict its meaning.
-
-    Four inputs, and each one is a way a verdict can silently change
-    meaning while keeping its name: the question it answers, the rule
-    deciding whether that question applies, the evidence admitted to it,
-    and the vocabulary of the answer itself.
-
-    Derived rather than declared, so it cannot drift from the code. A
-    record persists the fingerprint it was produced under; comparing it
-    with today's live one is what makes §6 structural instead of
-    remembered.
-    """
-
-    payload = "|".join(
-        (
-            question.strip(),
-            applicability_rule.strip(),
-            ",".join(sorted(eligible)),
-            ",".join(sorted(verdicts)),
-        )
-    )
-
-    return hashlib.sha256(payload.encode()).hexdigest()[:16]
-
-
-def eligible_contract() -> frozenset[str]:
-    """The claim types a committee may see, as the fingerprint sees them."""
-
-    return frozenset(claim.value for claim in ELIGIBLE_CLAIM_TYPES)
-
-
-def verdict_vocabulary() -> tuple[str, ...]:
-    """Every answer the committee can give, as the fingerprint sees it."""
-
-    return tuple(verdict.value for verdict in Verdict)
-
-
-@dataclass(frozen=True, slots=True)
-class CommitteeVersion:
-    """Which committee produced a judgment, and under what contract.
-
-    The version number is the declaration a human reads; the fingerprint
-    is what a comparison actually trusts. They are both carried because
-    they fail differently — a forgotten version bump is caught by the
-    fingerprint, and a fingerprint that happens to survive a meaning
-    change is caught by the reviewer who had to bump the number.
-    """
-
-    remit: Remit
-    version: int
-    fingerprint: str
-
-    @property
-    def stated(self) -> str:
-        return f"{self.remit.stated} v{self.version}"
-
-    def comparability(self, other: CommitteeVersion) -> Comparability:
-        """Whether a judgment under this contract may be compared with one
-        under the other's."""
-
-        if self.remit is not other.remit:
-            return Comparability.DIFFERENT_REMIT
-
-        if self.version != other.version:
-            return Comparability.DIFFERENT_VERSION
-
-        if self.fingerprint != other.fingerprint:
-            return Comparability.CONTRACT_CHANGED
-
-        return Comparability.COMPARABLE
-
-
-class Comparability(StrEnum):
-    """Whether two judgments answer the same question in the same terms.
-
-    §6. The two failures are told apart deliberately: a bumped version
-    is somebody declaring a change, and a changed fingerprint under an
-    unchanged version is a change nobody declared. The second is a
-    defect in this platform and saying so is more useful than treating
-    them as one.
-    """
-
-    COMPARABLE = "comparable"
-
-    #: A different question entirely.
-    DIFFERENT_REMIT = "different_remit"
-
-    #: The committee was versioned, so its verdicts may not mean the
-    #: same thing. Declared, and therefore honest.
-    DIFFERENT_VERSION = "different_version"
-
-    #: Same declared version, different contract. Nobody bumped the
-    #: number, and the fingerprint noticed.
-    CONTRACT_CHANGED = "contract_changed"
-
-    @property
-    def is_comparable(self) -> bool:
-        return self is Comparability.COMPARABLE
-
-    @property
-    def stated(self) -> str:
-        return {
-            Comparability.COMPARABLE: (
-                "both judgments were produced under the same committee contract"
-            ),
-            Comparability.DIFFERENT_REMIT: (
-                "the two judgments answer different questions, so neither "
-                "says anything about the other"
-            ),
-            Comparability.DIFFERENT_VERSION: (
-                "the committee was versioned between them, so a verdict "
-                "produced under the earlier version may not mean what the "
-                "same word means now"
-            ),
-            Comparability.CONTRACT_CHANGED: (
-                "the committee's contract changed without its version "
-                "changing, so the two are not compared and this platform "
-                "cannot say what the earlier verdict meant"
-            ),
-        }[self]
-
 
 # ── the five states that must never collapse ────────────────────────
 
 
 class JudgmentPosture(StrEnum):
-    """Where a recorded judgment actually stood. §2, made total.
+    """Where a recorded judgment stood — without reading its verdict.
 
     The distinction the ruling protects, and the reason it needs
     protecting: four of these produce no verdict, and a history that
@@ -209,11 +78,22 @@ class JudgmentPosture(StrEnum):
     *the question turned out not to apply* are opposite readings of the
     same missing verdict.
 
-    Six rather than five, because the committee already refuses to
-    collapse the last two: an abstention is the committee knowing its
-    limits and an unavailable judgment is the machinery failing, and
-    reporting a broken provider as intellectual honesty is exactly the
-    lie `JudgmentState` was built to prevent.
+    **Five rather than six, and the removed one is the finding.** PR
+    #113 split the answered case into `EVIDENCE_OF_PRESENCE` and
+    `EVIDENCE_OF_ABSENCE`, which required this module to read a Fee
+    Capture verdict and decide what it meant. Measuring it showed the
+    split was used for **wording only** — every decision in this file
+    runs on `is_answered`, on verdict *identity*, on applicability and
+    on contract comparability, and none of them ever asked which of the
+    two it was.
+
+    So the distinction did not need to be lost, only moved: a record
+    carries its verdict token and the committee's own sentence for it,
+    and *"answered `no_mechanism_evidenced`"* and *"answered
+    `mechanism_evidenced`"* are as distinct as they ever were —
+    distinguished by identity rather than by this file knowing which one
+    is presence. A committee whose answers do not divide into presence
+    and absence can now exist.
     """
 
     #: The question is the wrong instrument for this asset. **Never
@@ -230,13 +110,10 @@ class JudgmentPosture(StrEnum):
     #: judges did not run. A fact about this platform, not the asset.
     EXECUTION_UNAVAILABLE = "execution_unavailable"
 
-    #: The question applies and the answer is that no mechanism is
-    #: evidenced — evidence of absence, not absent evidence.
-    EVIDENCE_OF_ABSENCE = "evidence_of_absence"
-
-    #: The question applies and the answer is that a mechanism is
-    #: evidenced.
-    EVIDENCE_OF_PRESENCE = "evidence_of_presence"
+    #: The question applies and the committee gave one of its own
+    #: answers. **Which answer is the verdict's business, not this
+    #: enumeration's.**
+    ANSWERED = "answered"
 
     @property
     def stated(self) -> str:
@@ -244,10 +121,7 @@ class JudgmentPosture(StrEnum):
 
     @property
     def is_answered(self) -> bool:
-        return self in (
-            JudgmentPosture.EVIDENCE_OF_ABSENCE,
-            JudgmentPosture.EVIDENCE_OF_PRESENCE,
-        )
+        return self is JudgmentPosture.ANSWERED
 
 
 _POSTURES = {
@@ -266,24 +140,26 @@ _POSTURES = {
         "the question applies and the committee did not run, so there is no "
         "answer either way"
     ),
-    JudgmentPosture.EVIDENCE_OF_ABSENCE: (
-        "the question applies and the committee answered that no mechanism is evidenced"
-    ),
-    JudgmentPosture.EVIDENCE_OF_PRESENCE: (
-        "the question applies and the committee answered that a mechanism is evidenced"
-    ),
+    #: Deliberately incomplete on its own. The record appends the
+    #: committee's own sentence for the verdict, because this module has
+    #: no business finishing that sentence.
+    JudgmentPosture.ANSWERED: "the question applies and the committee answered",
 }
 
 
 def posture_of(
     applicability: Applicability,
     state: JudgmentState,
-    verdict: Verdict | None,
+    answered: bool,
 ) -> JudgmentPosture:
-    """Which of the six a judgment stood in. Total, and never a default.
+    """Which of the five a judgment stood in. Total, and never a default.
+
+    Takes *whether* there is an answer, never the answer itself — the
+    signature is the guard. A parameter typed as a verdict would invite
+    exactly the branch this slice removed.
 
     Applicability is read first and on its own, because it is the
-    question asked *before* any evidence — so an asset the question does
+    question asked *before* any evidence, so an asset the question does
     not fit can never fall through into an evidence state and look like
     a gap.
     """
@@ -294,12 +170,8 @@ def posture_of(
     if applicability is Applicability.NOT_ECONOMICALLY_APPLICABLE:
         return JudgmentPosture.KNOWN_NOT_APPLICABLE
 
-    if state is JudgmentState.JUDGED and verdict is not None:
-        return (
-            JudgmentPosture.EVIDENCE_OF_PRESENCE
-            if verdict is Verdict.MECHANISM_EVIDENCED
-            else JudgmentPosture.EVIDENCE_OF_ABSENCE
-        )
+    if state is JudgmentState.JUDGED and answered:
+        return JudgmentPosture.ANSWERED
 
     if state is JudgmentState.UNAVAILABLE:
         return JudgmentPosture.EXECUTION_UNAVAILABLE
@@ -340,7 +212,7 @@ class JudgmentRecord:
     """
 
     asset: str
-    committee: CommitteeVersion
+    committee: CommitteeIdentity
 
     #: When the committee reached it.
     judged_at: datetime
@@ -353,7 +225,20 @@ class JudgmentRecord:
     applicability: Applicability
     state: JudgmentState
 
-    verdict: Verdict | None = None
+    #: The committee's own answer token, stored verbatim and never
+    #: interpreted. A `str` rather than an enum on purpose: a record must
+    #: stay readable when the committee that produced it has been
+    #: reversioned or deleted, and reconstructing an enum member would
+    #: mean this module holding a registry of what every committee's
+    #: answers are called.
+    verdict: str | None = None
+
+    #: The committee's own sentence for that answer, quoted at the
+    #: moment of judgment. **Quoting is not interpreting** — it is what
+    #: lets this layer word an answer it is forbidden to understand, and
+    #: it keeps yesterday's wording with yesterday's judgment.
+    verdict_stated: str | None = None
+
     confidence: Confidence | None = None
 
     #: The refs the verdict cited.
@@ -392,13 +277,13 @@ class JudgmentRecord:
             "|".join(
                 (
                     self.asset,
-                    self.committee.remit.value,
+                    self.committee.key,
                     str(self.committee.version),
                     self.committee.fingerprint,
                     self.judged_at.isoformat(),
                     self.applicability.value,
                     self.state.value,
-                    self.verdict.value if self.verdict else "-",
+                    self.verdict or "-",
                     self.confidence.value if self.confidence else "-",
                     self.evidence_digest,
                 )
@@ -409,18 +294,37 @@ class JudgmentRecord:
 
     @property
     def posture(self) -> JudgmentPosture:
-        return posture_of(self.applicability, self.state, self.verdict)
+        return posture_of(self.applicability, self.state, self.verdict is not None)
+
+    @property
+    def answer(self) -> str:
+        """The answer as the committee worded it, or its bare token.
+
+        The fallback matters: a record written before wording was
+        persisted still names *which* answer it was, and naming it is
+        the whole of what this layer is allowed to do with it.
+        """
+
+        return self.verdict_stated or self.verdict or ""
 
     @property
     def stated(self) -> str:
-        """What this record says, and nothing beyond it."""
+        """What this record says, and nothing beyond it.
+
+        Where there is an answer the sentence ends in the committee's
+        own words. This module supplies *"the committee answered"* and
+        stops — finishing that sentence would mean knowing what was
+        answered.
+        """
+
+        if self.posture.is_answered and self.answer:
+            return f"{self.asset}: {self.posture.stated} that {self.answer}"
 
         return f"{self.asset}: {self.posture.stated}"
 
 
 def record_from(
     judgment: CommitteeJudgment,
-    committee: CommitteeVersion,
     evidence: tuple[EligibleFinding, ...],
     recorded_at: datetime,
 ) -> JudgmentRecord:
@@ -442,12 +346,15 @@ def record_from(
 
     return JudgmentRecord(
         asset=judgment.asset,
-        committee=committee,
+        # Taken from the judgment rather than from a caller: an identity
+        # supplied alongside is an identity that can disagree.
+        committee=judgment.contract.identity,
         judged_at=judgment.judged_at or recorded_at,
         recorded_at=recorded_at,
         applicability=judgment.applicability,
         state=judgment.state,
-        verdict=judgment.verdict,
+        verdict=judgment.verdict.value if judgment.verdict else None,
+        verdict_stated=judgment.verdict.stated if judgment.verdict else None,
         confidence=judgment.confidence,
         refs=judgment.refs,
         evidence_digest=evidence_digest_of(evidence),
@@ -672,7 +579,7 @@ class JudgmentTransition:
     """
 
     asset: str
-    remit: Remit
+    committee: str
 
     comparability: Comparability
 
@@ -703,19 +610,16 @@ class JudgmentTransition:
             # one side by side will read a change into them unless the
             # sentence says there is none to read.
             return (
-                f"{self.asset}: {self.current.posture.stated}. The previous "
-                f"judgment was recorded under {self.previous.committee.stated} "
-                f"and this one under {self.current.committee.stated}, so the "
-                f"two are not compared — {self.comparability.stated}."
+                f"{self.current.stated}. The previous judgment was recorded "
+                f"under {self.previous.committee.stated} and this one under "
+                f"{self.current.committee.stated}, so the two are not "
+                f"compared — {self.comparability.stated}."
             )
 
         if self.previous is None:
-            return (
-                f"{self.asset}: {self.current.posture.stated}. This is "
-                f"{self.change.stated}."
-            )
+            return f"{self.current.stated}. This is {self.change.stated}."
 
-        lines = [f"{self.asset}: {self.current.posture.stated}."]
+        lines = [f"{self.current.stated}."]
 
         lines.append(f"Compared with the previous judgment, {self.change.stated}.")
 
@@ -825,7 +729,7 @@ def _change(previous: JudgmentRecord, current: JudgmentRecord) -> JudgmentChange
     if answered_before and answered_now:
         return (
             JudgmentChange.VERDICT_UNCHANGED
-            if previous.verdict is current.verdict
+            if previous.verdict == current.verdict
             else JudgmentChange.VERDICT_CHANGED
         )
 
@@ -851,12 +755,12 @@ def compare(
     axes are set to `NOT_COMPARABLE` rather than computed and hedged.
     """
 
-    remit = current.committee.remit
+    committee = current.committee.key
 
     if previous is None:
         return JudgmentTransition(
             asset=current.asset,
-            remit=remit,
+            committee=committee,
             comparability=Comparability.COMPARABLE,
             change=JudgmentChange.FIRST_JUDGMENT,
             support=SupportChange.NOT_COMPARABLE,
@@ -872,7 +776,7 @@ def compare(
     if not comparability.is_comparable:
         return JudgmentTransition(
             asset=current.asset,
-            remit=remit,
+            committee=committee,
             comparability=comparability,
             change=JudgmentChange.INCOMPARABLE_VERSION,
             support=SupportChange.NOT_COMPARABLE,
@@ -884,7 +788,7 @@ def compare(
 
     return JudgmentTransition(
         asset=current.asset,
-        remit=remit,
+        committee=committee,
         comparability=comparability,
         change=_change(previous, current),
         support=_support_change(previous, current),
@@ -952,7 +856,7 @@ class JudgmentStanding:
     """
 
     asset: str
-    remit: Remit
+    committee: str
 
     kind: StandingKind
 
@@ -964,7 +868,7 @@ class JudgmentStanding:
     previously: JudgmentRecord | None = None
 
     @property
-    def verdict(self) -> Verdict | None:
+    def verdict(self) -> str | None:
         """Today's answer, and only today's."""
 
         if self.kind is not StandingKind.CURRENT:
@@ -975,13 +879,13 @@ class JudgmentStanding:
     @property
     def stated(self) -> str:
         if self.kind is StandingKind.CURRENT and self.current.verdict is not None:
-            return f"{self.asset}: {self.current.verdict.stated}."
+            return f"{self.asset}: {self.current.answer}."
 
         if self.kind is StandingKind.PREVIOUS_NOT_REFRESHED and self.previously:
             return (
                 f"{self.asset}: the previous judgment, on "
                 f"{self.previously.judged_at:%-d %B %Y}, was that "
-                f"{self.previously.verdict.stated if self.previously.verdict else ''}"
+                f"{self.previously.answer}"
                 f". Today {self.current.posture.stated}. The earlier answer is "
                 "therefore reported as what the committee concluded then, and "
                 "is not restated as a current finding."
@@ -1003,12 +907,12 @@ def standing(
     would have concluded under this one.
     """
 
-    remit = current.committee.remit
+    committee = current.committee.key
 
     if current.posture.is_answered:
         return JudgmentStanding(
             asset=current.asset,
-            remit=remit,
+            committee=committee,
             kind=StandingKind.CURRENT,
             current=current,
         )
@@ -1027,7 +931,7 @@ def standing(
 
         return JudgmentStanding(
             asset=current.asset,
-            remit=remit,
+            committee=committee,
             kind=StandingKind.PREVIOUS_NOT_REFRESHED,
             current=current,
             previously=record,
@@ -1035,7 +939,7 @@ def standing(
 
     return JudgmentStanding(
         asset=current.asset,
-        remit=remit,
+        committee=committee,
         kind=StandingKind.NONE,
         current=current,
     )
@@ -1057,7 +961,7 @@ class JudgmentCoverage:
     """
 
     asset: str
-    remit: Remit
+    committee: str
     span: ObservationSpan | None = None
     versions: tuple[str, ...] = field(default_factory=tuple)
 
@@ -1100,13 +1004,13 @@ class JudgmentCoverage:
 
 def coverage(
     asset: str,
-    remit: Remit,
+    committee: str,
     records: list[JudgmentRecord],
 ) -> JudgmentCoverage:
     """What the record can honestly say about its own reach."""
 
     if not records:
-        return JudgmentCoverage(asset=asset, remit=remit)
+        return JudgmentCoverage(asset=asset, committee=committee)
 
     ordered = sorted(records, key=lambda record: record.judged_at)
 
@@ -1116,7 +1020,7 @@ def coverage(
 
     return JudgmentCoverage(
         asset=asset,
-        remit=remit,
+        committee=committee,
         span=ObservationSpan(
             count=len(ordered),
             first_at=times[0],

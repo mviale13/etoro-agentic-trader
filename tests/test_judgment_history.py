@@ -22,17 +22,19 @@ import pytest
 from app.domain.committee_judgment import (
     AbstentionReason,
     Applicability,
+    ApplicabilityBasis,
     CommitteeJudgment,
     Confidence,
     EligibleFinding,
     JudgmentState,
-    Remit,
-    Verdict,
+)
+from app.domain.committee_protocol import (
+    CommitteeContract,
+    Comparability,
+    fingerprint_of,
 )
 from app.domain.crypto_intelligence import ClaimType
 from app.domain.judgment_history import (
-    CommitteeVersion,
-    Comparability,
     EvidenceMovement,
     JudgmentChange,
     JudgmentPosture,
@@ -42,37 +44,44 @@ from app.domain.judgment_history import (
     SupportChange,
     compare,
     coverage,
-    eligible_contract,
-    fingerprint_of,
     posture_of,
     record_from,
     standing,
     transitions,
-    verdict_vocabulary,
 )
 from app.infrastructure.evidence.judgment_history_store import JudgmentHistoryStore
 from app.services.judgment_history_service import JudgmentHistoryService
 from app.services.value_capture_committee import (
     APPLICABILITY_RULE,
-    VERSION,
+    CONTRACT,
     ValueCaptureCommittee,
+    Verdict,
 )
+
+#: The live contract's identity, as a record carries it.
+VERSION = CONTRACT.identity
 
 NOW = datetime(2026, 8, 10, tzinfo=UTC)
 
 #: A second committee contract, as a genuine redefinition would produce
-#: it: the verdict vocabulary gained a member, so the same word no
-#: longer means the same thing.
-V2 = CommitteeVersion(
-    remit=Remit.VALUE_CAPTURE,
+#: it: a different applicability rule and a verdict vocabulary that
+#: gained a member, so the same word no longer means the same thing.
+#:
+#: A real contract rather than a stub identity, because the fingerprint
+#: is *derived* — asserting incomparability against a hand-written
+#: digest would prove the test could type, not that the derivation
+#: notices.
+CONTRACT_V2 = CommitteeContract(
+    key=CONTRACT.key,
+    name=CONTRACT.name,
+    question=CONTRACT.question,
     version=2,
-    fingerprint=fingerprint_of(
-        question=Remit.VALUE_CAPTURE.question,
-        applicability_rule="something-else@2",
-        eligible=eligible_contract(),
-        verdicts=(*verdict_vocabulary(), "mechanism_partially_evidenced"),
-    ),
+    applicability_rule="something-else@2",
+    verdicts=(*CONTRACT.verdicts, "mechanism_partially_evidenced"),
+    eligible_claim_types=CONTRACT.eligible_claim_types,
 )
+
+V2 = CONTRACT_V2.identity
 
 
 # ── builders ────────────────────────────────────────────────────────
@@ -87,7 +96,7 @@ def _finding(ref: str, stated: str) -> EligibleFinding:
     )
 
 
-def _record(
+def _judgment(
     *,
     asset: str = "HYPE",
     at: datetime = NOW,
@@ -96,18 +105,20 @@ def _record(
     verdict: Verdict | None = Verdict.MECHANISM_EVIDENCED,
     confidence: Confidence | None = Confidence.SINGLE_OBSERVATION,
     refs: tuple[str, ...] = ("F.venue",),
-    evidence: tuple[EligibleFinding, ...] = (),
-    committee: CommitteeVersion = VERSION,
+    contract: CommitteeContract = CONTRACT,
     abstained: AbstentionReason | None = None,
     unavailable: str | None = None,
     role: str | None = "Exchange venue",
-) -> JudgmentRecord:
-    judgment = CommitteeJudgment(
+) -> CommitteeJudgment:
+    return CommitteeJudgment(
         asset=asset,
-        remit=Remit.VALUE_CAPTURE,
+        contract=contract,
         state=state,
-        applicability=applicability,
-        economic_role=role,
+        basis=ApplicabilityBasis(
+            applicability=applicability,
+            because="test fixture",
+            economic_role=role,
+        ),
         verdict=verdict,
         confidence=confidence,
         refs=refs,
@@ -116,7 +127,18 @@ def _record(
         judged_at=at,
     )
 
-    return record_from(judgment, committee, evidence, recorded_at=at)
+
+def _record(
+    *,
+    at: datetime = NOW,
+    evidence: tuple[EligibleFinding, ...] = (),
+    **kwargs: object,
+) -> JudgmentRecord:
+    return record_from(
+        _judgment(at=at, **kwargs),  # type: ignore[arg-type]
+        evidence,
+        recorded_at=at,
+    )
 
 
 def _service(tmp_path) -> JudgmentHistoryService:  # type: ignore[no-untyped-def]
@@ -200,9 +222,11 @@ def test_a_verdict_transition_is_reported_as_exactly_that_transition() -> None:
     assert transition.evidence is EvidenceMovement.CHANGED
     assert transition.change.is_verdict_movement
 
-    # The answer in the record's own words, and no reading of them: the
-    # sentence names the transition and stops there.
-    assert JudgmentPosture.EVIDENCE_OF_PRESENCE.stated in transition.stated
+    # The answer in the committee's own words, quoted rather than read:
+    # the framework says "the committee answered" and the committee
+    # finishes the sentence.
+    assert JudgmentPosture.ANSWERED.stated in transition.stated
+    assert Verdict.MECHANISM_EVIDENCED.stated in transition.stated
     assert JudgmentChange.VERDICT_CHANGED.stated in transition.stated
 
 
@@ -269,7 +293,7 @@ def test_a_previous_verdict_is_history_and_never_todays_answer(tmp_path) -> None
         evidence=(_finding("H.venue", "$535k reached token holders."),),
     )
 
-    service.record(_judgment_of(judged), VERSION, (), now=NOW)
+    service.record(_judgment(), (), now=NOW)
 
     today = _record(
         at=NOW + timedelta(days=5),
@@ -289,7 +313,7 @@ def test_a_previous_verdict_is_history_and_never_todays_answer(tmp_path) -> None
     # returns nothing.
     assert where.verdict is None
     assert where.previously is not None
-    assert where.previously.verdict is Verdict.MECHANISM_EVIDENCED
+    assert where.previously.verdict == Verdict.MECHANISM_EVIDENCED
 
     # The worded half.
     assert "the previous judgment" in where.stated
@@ -302,24 +326,6 @@ def test_a_previous_verdict_is_history_and_never_todays_answer(tmp_path) -> None
     assert transition.change is JudgmentChange.BECAME_UNANSWERABLE
     assert "rather than contradicted" in transition.change.stated
     assert transition.evidence is EvidenceMovement.WITHDRAWN
-
-
-def _judgment_of(record: JudgmentRecord) -> CommitteeJudgment:
-    """Rebuild the judgment a record came from, for the write path."""
-
-    return CommitteeJudgment(
-        asset=record.asset,
-        remit=record.committee.remit,
-        state=record.state,
-        applicability=record.applicability,
-        economic_role=record.economic_role,
-        verdict=record.verdict,
-        confidence=record.confidence,
-        refs=record.refs,
-        abstained_because=record.abstained_because,
-        unavailable_because=record.unavailable_because,
-        judged_at=record.judged_at,
-    )
 
 
 # ── 6. the five states that must never collapse ─────────────────────
@@ -456,12 +462,12 @@ def test_two_committee_contracts_are_not_compared_as_though_identical() -> None:
     redefinition is arithmetic over two different questions.
     """
 
-    old = _record(verdict=Verdict.NO_MECHANISM_EVIDENCED, committee=VERSION)
+    old = _record(verdict=Verdict.NO_MECHANISM_EVIDENCED, contract=CONTRACT)
 
     new = _record(
         at=NOW + timedelta(days=20),
         verdict=Verdict.MECHANISM_EVIDENCED,
-        committee=V2,
+        contract=CONTRACT_V2,
     )
 
     transition = compare(new, old)
@@ -480,13 +486,19 @@ def test_two_committee_contracts_are_not_compared_as_though_identical() -> None:
 def test_a_contract_that_changed_without_a_version_bump_is_caught() -> None:
     """The failure nobody declares, and the reason the fingerprint exists."""
 
-    silent = CommitteeVersion(
-        remit=Remit.VALUE_CAPTURE,
-        version=VERSION.version,
-        fingerprint="0000000000000000",
+    silent = CommitteeContract(
+        key=CONTRACT.key,
+        name=CONTRACT.name,
+        # Same declared version, different question: nobody bumped the
+        # number, and the derived fingerprint is what notices.
+        question=CONTRACT.question + " And is it large enough to matter?",
+        version=CONTRACT.version,
+        applicability_rule=CONTRACT.applicability_rule,
+        verdicts=CONTRACT.verdicts,
+        eligible_claim_types=CONTRACT.eligible_claim_types,
     )
 
-    transition = compare(_record(committee=silent), _record(committee=VERSION))
+    transition = compare(_record(contract=silent), _record(contract=CONTRACT))
 
     assert transition.comparability is Comparability.CONTRACT_CHANGED
     assert "without its version changing" in transition.comparability.stated
@@ -496,10 +508,10 @@ def test_the_live_fingerprint_is_derived_from_the_contract_it_describes() -> Non
     """A version that could drift from its own meaning would guarantee nothing."""
 
     assert VERSION.fingerprint == fingerprint_of(
-        question=Remit.VALUE_CAPTURE.question,
+        question=CONTRACT.question,
         applicability_rule=APPLICABILITY_RULE,
-        eligible=eligible_contract(),
-        verdicts=verdict_vocabulary(),
+        eligible=CONTRACT.eligible_claim_types,
+        verdicts=CONTRACT.verdicts,
     )
 
     # Change any one of the four and the fingerprint changes.
@@ -507,25 +519,25 @@ def test_the_live_fingerprint_is_derived_from_the_contract_it_describes() -> Non
         fingerprint_of(
             "a different question",
             APPLICABILITY_RULE,
-            eligible_contract(),
-            verdict_vocabulary(),
+            CONTRACT.eligible_claim_types,
+            CONTRACT.verdicts,
         ),
         fingerprint_of(
-            Remit.VALUE_CAPTURE.question,
+            CONTRACT.question,
             "another-rule@1",
-            eligible_contract(),
-            verdict_vocabulary(),
+            CONTRACT.eligible_claim_types,
+            CONTRACT.verdicts,
         ),
         fingerprint_of(
-            Remit.VALUE_CAPTURE.question,
+            CONTRACT.question,
             APPLICABILITY_RULE,
             frozenset({"measured"}),
-            verdict_vocabulary(),
+            CONTRACT.verdicts,
         ),
         fingerprint_of(
-            Remit.VALUE_CAPTURE.question,
+            CONTRACT.question,
             APPLICABILITY_RULE,
-            eligible_contract(),
+            CONTRACT.eligible_claim_types,
             ("mechanism_evidenced",),
         ),
     ):
@@ -537,7 +549,7 @@ def test_an_earlier_verdict_under_an_incomparable_contract_is_not_the_standing()
 ):
     """§5 and §6 together: nobody can say what that verdict would mean now."""
 
-    old = _record(committee=V2, verdict=Verdict.MECHANISM_EVIDENCED)
+    old = _record(contract=CONTRACT_V2, verdict=Verdict.MECHANISM_EVIDENCED)
 
     today = _record(
         at=NOW + timedelta(days=1),
@@ -569,10 +581,11 @@ def test_deleting_the_record_removes_the_ability_to_claim_the_earlier_view(  # t
 
     service = _service(tmp_path)
 
-    judged = _record(verdict=Verdict.MECHANISM_EVIDENCED)
-
-    assert service.record(_judgment_of(judged), VERSION, (), now=NOW) is not None
-    assert service.history("HYPE")
+    assert (
+        service.record(_judgment(verdict=Verdict.MECHANISM_EVIDENCED), (), now=NOW)
+        is not None
+    )
+    assert service.history("HYPE", CONTRACT.key)
 
     today = _record(
         at=NOW + timedelta(days=2),
@@ -586,13 +599,13 @@ def test_deleting_the_record_removes_the_ability_to_claim_the_earlier_view(  # t
 
     JudgmentHistoryStore(root=tmp_path).path_for("HYPE").unlink()
 
-    assert service.history("HYPE") == []
+    assert service.history("HYPE", CONTRACT.key) == []
     assert service.standing(today).kind is StandingKind.NONE
     assert service.standing(today).previously is None
     assert "no recorded judgment" not in service.standing(today).stated
 
-    assert service.coverage("HYPE").span is None
-    assert "recorded no judgment" in service.coverage("HYPE").stated
+    assert service.coverage("HYPE", CONTRACT.key).span is None
+    assert "recorded no judgment" in service.coverage("HYPE", CONTRACT.key).stated
 
 
 def test_the_store_appends_and_never_rewrites(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -630,11 +643,10 @@ def test_a_judgment_with_no_stated_applicability_is_refused() -> None:
         record_from(
             CommitteeJudgment(
                 asset="HYPE",
-                remit=Remit.VALUE_CAPTURE,
+                contract=CONTRACT,
                 state=JudgmentState.UNAVAILABLE,
                 unavailable_because="off",
             ),
-            VERSION,
             (),
             recorded_at=NOW,
         )
@@ -791,11 +803,11 @@ def _every_sentence() -> list[str]:
             spoken.append(compare(current, previous).stated)
             spoken.append(standing(current, [previous]).stated)
 
-        spoken.append(compare(current, _record(committee=V2)).stated)
+        spoken.append(compare(current, _record(contract=CONTRACT_V2)).stated)
 
-    spoken.append(coverage("HYPE", Remit.VALUE_CAPTURE, []).stated)
-    spoken.append(coverage("HYPE", Remit.VALUE_CAPTURE, [postures[0]]).stated)
-    spoken.append(coverage("HYPE", Remit.VALUE_CAPTURE, postures[:5]).stated)
+    spoken.append(coverage("HYPE", CONTRACT.key, []).stated)
+    spoken.append(coverage("HYPE", CONTRACT.key, [postures[0]]).stated)
+    spoken.append(coverage("HYPE", CONTRACT.key, postures[:5]).stated)
 
     return spoken
 
@@ -826,7 +838,7 @@ def test_the_transition_schema_has_no_room_for_a_recommendation() -> None:
 
     assert fields == {
         "asset",
-        "remit",
+        "committee",
         "comparability",
         "change",
         "support",
@@ -876,7 +888,7 @@ def test_the_live_committee_states_applicability_on_every_outcome() -> None:
 
     assert bitcoin.applicability is Applicability.NOT_ECONOMICALLY_APPLICABLE
     assert bitcoin.economic_role
-    assert record_from(bitcoin, VERSION, (), NOW).posture is (
+    assert record_from(bitcoin, (), NOW).posture is (
         JudgmentPosture.KNOWN_NOT_APPLICABLE
     )
 
@@ -884,7 +896,7 @@ def test_the_live_committee_states_applicability_on_every_outcome() -> None:
 
     assert bittensor.applicability is Applicability.UNESTABLISHED
     assert bittensor.economic_role is None
-    assert record_from(bittensor, VERSION, (), NOW).posture is (
+    assert record_from(bittensor, (), NOW).posture is (
         JudgmentPosture.APPLICABILITY_UNKNOWN
     )
 
@@ -900,18 +912,18 @@ def test_the_committee_version_is_recorded_and_survives_the_round_trip(  # type:
 
     judgment = asyncio.run(committee.judge("BTC"))
 
-    written = service.record(judgment, VERSION, (), now=NOW)
+    written = service.record(judgment, (), now=NOW)
 
     assert written is not None
 
-    held = service.latest("BTC")
+    held = service.latest("BTC", CONTRACT.key)
 
     assert held is not None
     assert held.committee == VERSION
     assert held.applicability is Applicability.NOT_ECONOMICALLY_APPLICABLE
 
     # Recording the identical judgment again appends nothing.
-    assert service.record(judgment, VERSION, (), now=NOW) is None
+    assert service.record(judgment, (), now=NOW) is None
 
 
 # ── coverage never becomes a duration ───────────────────────────────
@@ -926,7 +938,7 @@ def test_a_count_of_judgments_is_never_a_duration_of_review() -> None:
         _record(at=NOW + timedelta(days=21)),
     ]
 
-    stated = coverage("HYPE", Remit.VALUE_CAPTURE, sparse).stated
+    stated = coverage("HYPE", CONTRACT.key, sparse).stated
 
     assert "3 recorded judgments" in stated
     assert "spanning 21 day(s)" in stated
@@ -934,7 +946,7 @@ def test_a_count_of_judgments_is_never_a_duration_of_review() -> None:
     assert "not a duration of continuous review" in stated
 
     # One judgment describes a moment, and says so.
-    assert "not a history" in coverage("HYPE", Remit.VALUE_CAPTURE, sparse[:1]).stated
+    assert "not a history" in coverage("HYPE", CONTRACT.key, sparse[:1]).stated
 
 
 def test_transitions_are_ordered_and_every_one_is_checkable() -> None:

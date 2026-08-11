@@ -35,35 +35,31 @@ import json
 import os
 import re
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
 from app.config import get_settings
 from app.domain.asset_class import AssetClass
 from app.domain.committee_judgment import (
+    ELIGIBLE_CLAIM_TYPES,
     AbstentionReason,
     Applicability,
+    ApplicabilityBasis,
     CommitteeJudgment,
     EligibleFinding,
     JudgmentState,
-    Remit,
-    Verdict,
     abstain,
     confidence_from,
     is_eligible,
     unavailable,
 )
+from app.domain.committee_protocol import CommitteeContract
 from app.domain.crypto_archetype import (
     ArchetypeConfidence,
     TokenArchetype,
     archetype_for,
 )
 from app.domain.crypto_intelligence import ClaimType, CryptoIntelligenceSnapshot
-from app.domain.judgment_history import (
-    CommitteeVersion,
-    eligible_contract,
-    fingerprint_of,
-    verdict_vocabulary,
-)
 from app.domain.protocol_fundamentals import ProtocolMetric
 from app.providers.narrative_provider import (
     DraftRequest,
@@ -81,28 +77,98 @@ FLAG = "MOVRVEST_COMMITTEE_JUDGMENT"
 #: The applicability rule, named so a change to it is a change to the
 #: committee's identity rather than an edit nobody downstream notices.
 #:
-#: Bump the suffix when the rule changes and bump `VERSION` with it: a
-#: verdict produced under a different applicability rule was reached by a
-#: committee that asked a different set of assets the question.
+#: Bump the suffix when the rule changes and bump the contract's version
+#: with it: a verdict produced under a different applicability rule was
+#: reached by a committee that asked a different set of assets the
+#: question.
 APPLICABILITY_RULE = "monetary-role-is-the-wrong-instrument@1"
 
-#: This committee's identity, and what a historical verdict means.
+
+class Verdict(StrEnum):
+    """The only answers to this remit. Two, and neither grades the asset.
+
+    **This committee's vocabulary, owned here.** It sat in the shared
+    domain until the protocol was extracted, which meant the framework
+    knew what a fee-capture answer meant and a second committee would
+    have had to answer in these words. Now the framework carries a token
+    and a sentence and understands neither.
+
+    Scoped so tightly that the enumeration is the guard: no `BUY`, no
+    `HOLD`, no `POSITIVE`, no `FAVOURABLE`, and no way to express a view
+    about the asset as an investment.
+
+    **Neither verdict is favourable or adverse**, and the naming says
+    so. A mechanism being evidenced is a structural fact about the
+    token's economics; whether it is *good* depends on what an investor
+    is buying the asset for, and that judgment belongs to a layer that
+    does not exist.
+
+    **Magnitude is not judged.** 64%, 18% and 9% are excellent contrast
+    and six observations do not establish that 5% is a floor. S5.3 has
+    already parked magnitude outside quality for the issuance case, and
+    the same reasoning applies here: the committee reports the share as
+    evidence and refuses to band it.
+    """
+
+    #: Activity is measured, and a mechanism routing some of it to the
+    #: token or its holders is evidenced.
+    MECHANISM_EVIDENCED = "mechanism_evidenced"
+
+    #: Activity is measured, and the source establishes that no such
+    #: mechanism exists — it publishes the holder-revenue figure for
+    #: comparable entities and none here, which under S2's sibling rule
+    #: is evidence of absence rather than absent evidence.
+    NO_MECHANISM_EVIDENCED = "no_mechanism_evidenced"
+
+    @property
+    def stated(self) -> str:
+        return {
+            Verdict.MECHANISM_EVIDENCED: (
+                "measured network activity is captured for the token by an "
+                "evidenced mechanism"
+            ),
+            Verdict.NO_MECHANISM_EVIDENCED: (
+                "measured network activity is not captured for the token, and "
+                "the source establishes the absence rather than omitting it"
+            ),
+        }[self]
+
+
+#: The question, worded from what the evidence can actually settle.
 #:
-#: The fingerprint is **derived from the live contract**, not written
-#: down beside it: the remit's question, the applicability rule, the
-#: claim types admitted and the verdict vocabulary. So editing any of
-#: them changes what today's committee fingerprints to, and every record
-#: written under the old one becomes visibly incomparable rather than
-#: silently comparable. A forgotten version bump is caught the same way.
-VERSION = CommitteeVersion(
-    remit=Remit.VALUE_CAPTURE,
+#: Two clauses, both of which must be evidenced, and neither of which is
+#: a magnitude test. *Is there measured activity* is answered by the fee
+#: reading; *is there an evidenced mechanism returning some of it* is
+#: answered by the holder-revenue sibling and the provider's own
+#: methodology sentence. What the question deliberately does **not** ask
+#: is whether the amount is large enough to matter — six observations do
+#: not establish a floor, and S5.3 already parked magnitude outside
+#: quality for exactly this reason.
+QUESTION = (
+    "Does this network generate evidenced fee activity, and does an "
+    "evidenced mechanism capture some of it for the token or its holders?"
+)
+
+#: This committee's whole declaration of itself.
+#:
+#: The key is `value_capture` and is never renamed: records are filed
+#: under it, and a rename would be a new committee with the old one's
+#: history silently orphaned.
+#:
+#: The fingerprint is **derived** from the fields below rather than
+#: written down beside them, so editing the question, the rule, the
+#: admitted evidence or the verdict vocabulary changes what today's
+#: committee fingerprints to — and every record written under the old
+#: one becomes visibly incomparable rather than silently comparable. A
+#: forgotten version bump is caught the same way.
+CONTRACT = CommitteeContract(
+    key="value_capture",
+    name="Value Capture Committee",
+    question=QUESTION,
     version=1,
-    fingerprint=fingerprint_of(
-        question=Remit.VALUE_CAPTURE.question,
-        applicability_rule=APPLICABILITY_RULE,
-        eligible=eligible_contract(),
-        verdicts=verdict_vocabulary(),
-    ),
+    applicability_rule=APPLICABILITY_RULE,
+    verdicts=tuple(verdict.value for verdict in Verdict),
+    eligible_claim_types=frozenset(claim.value for claim in ELIGIBLE_CLAIM_TYPES),
 )
 
 PROVIDER_ENV = "MOVRVEST_WRITER_PROVIDER"
@@ -189,7 +255,13 @@ class JudgmentRejected(Exception):
 class ValueCaptureCommittee:
     """One question, one asset, one answer — or an honest absence."""
 
-    REMIT = Remit.VALUE_CAPTURE
+    CONTRACT = CONTRACT
+
+    @property
+    def contract(self) -> CommitteeContract:
+        """Who this committee is. The protocol's one required property."""
+
+        return CONTRACT
 
     def __init__(
         self,
@@ -344,22 +416,14 @@ class ValueCaptureCommittee:
 
     # ── the judgment ────────────────────────────────────────────────
 
-    def applicability(self, symbol: str) -> tuple[Applicability, str]:
-        """Whether this question is economically meaningful here, and why."""
+    def basis(self, symbol: str) -> ApplicabilityBasis:
+        """Whether this question is economically meaningful here, and why.
 
-        applies, because, _ = self.basis(symbol)
-
-        return applies, because
-
-    def basis(self, symbol: str) -> tuple[Applicability, str, str | None]:
-        """Applicability, its reasoning, and the role it was decided from.
-
-        The third element is why this method exists beside the one
-        above. Applicability is decided *from* the established economic
-        role, so a judgment that records only the conclusion can never
-        later say whether an applicability that moved did so because the
-        understanding moved — and *"we changed our mind"* and *"we
-        learned what this asset is"* are not the same finding.
+        Returns the state, the reasoning and the role it was decided
+        from as one object. The role is the part a judgment cannot
+        reconstruct later: *"we changed our mind"* and *"we learned what
+        this asset is"* are different findings, and only the recorded
+        role tells them apart.
 
         **The committee's own rule, in economic terms**, reading the
         archetype layer as evidence rather than delegating to it. The
@@ -395,33 +459,39 @@ class ValueCaptureCommittee:
             # day. Left absent rather than filled with the archetype's
             # name, which would say this platform knew something it did
             # not.
-            return (
-                Applicability.UNESTABLISHED,
-                "No economic role is established for this asset, so this "
-                "platform cannot say whether capturing network activity is "
-                "part of what the token is.",
-                None,
+            return ApplicabilityBasis(
+                applicability=Applicability.UNESTABLISHED,
+                because=(
+                    "No economic role is established for this asset, so this "
+                    "platform cannot say whether capturing network activity "
+                    "is part of what the token is."
+                ),
             )
 
         role = assignment.definition.name
 
         if assignment.archetype is TokenArchetype.MONETARY_NETWORK:
-            return (
-                Applicability.NOT_ECONOMICALLY_APPLICABLE,
-                "This asset's established economic role is monetary: the fees "
-                "its users pay are the budget that secures the network rather "
-                "than a flow the token is entitled to. Asking whether they are "
-                "captured for holders is the wrong instrument, so the question "
-                "is left unanswered rather than answered adversely.",
-                role,
+            return ApplicabilityBasis(
+                applicability=Applicability.NOT_ECONOMICALLY_APPLICABLE,
+                because=(
+                    "This asset's established economic role is monetary: the "
+                    "fees its users pay are the budget that secures the "
+                    "network rather than a flow the token is entitled to. "
+                    "Asking whether they are captured for holders is the "
+                    "wrong instrument, so the question is left unanswered "
+                    "rather than answered adversely."
+                ),
+                economic_role=role,
             )
 
-        return (
-            Applicability.APPLICABLE,
-            f"This asset's established economic role — {role} — is one where "
-            "activity accruing to the token is part of what the token is, so "
-            "whether it does is a meaningful question.",
-            role,
+        return ApplicabilityBasis(
+            applicability=Applicability.APPLICABLE,
+            because=(
+                f"This asset's established economic role — {role} — is one "
+                "where activity accruing to the token is part of what the "
+                "token is, so whether it does is a meaningful question."
+            ),
+            economic_role=role,
         )
 
     async def judge(self, symbol: str) -> CommitteeJudgment:
@@ -433,26 +503,22 @@ class ValueCaptureCommittee:
         # Bitcoin look adverse for lacking mechanics it was never meant
         # to have, and makes Bittensor — whose problem is entirely
         # different — look identical to it.
-        applies, because, role = self.basis(asset)
+        basis = self.basis(asset)
 
-        if applies is Applicability.UNESTABLISHED:
+        if basis.applicability is Applicability.UNESTABLISHED:
             return abstain(
                 asset,
-                self.REMIT,
+                CONTRACT,
                 AbstentionReason.APPLICABILITY_UNESTABLISHED,
-                because,
-                applicability=applies,
-                economic_role=role,
+                basis,
             )
 
-        if not applies.is_applicable:
+        if not basis.is_applicable:
             return abstain(
                 asset,
-                self.REMIT,
+                CONTRACT,
                 AbstentionReason.NOT_ECONOMICALLY_APPLICABLE,
-                because,
-                applicability=applies,
-                economic_role=role,
+                basis,
             )
 
         findings = self.evidence(asset)
@@ -463,22 +529,15 @@ class ValueCaptureCommittee:
         # judgment that forgot it would be recorded as an unknown
         # applicability — a different, and worse, fact.
         def no_judgment(reason: str) -> CommitteeJudgment:
-            return unavailable(
-                asset,
-                self.REMIT,
-                reason,
-                applicability=applies,
-                economic_role=role,
-            )
+            return unavailable(asset, CONTRACT, reason, basis)
 
         if not findings:
             return abstain(
                 asset,
-                self.REMIT,
+                CONTRACT,
                 AbstentionReason.INSUFFICIENT_EVIDENCE,
-                "No eligible fee or capture evidence is held for this asset.",
-                applicability=applies,
-                economic_role=role,
+                basis,
+                because="No eligible fee or capture evidence is held for this asset.",
             )
 
         if not self.enabled():
@@ -509,7 +568,7 @@ class ValueCaptureCommittee:
             )
 
         try:
-            return self._validated(asset, payload, findings, model, applies, role)
+            return self._validated(asset, payload, findings, model, basis)
         except JudgmentRejected as rejection:
             return no_judgment(f"A judgment was drafted and refused: {rejection}")
 
@@ -544,8 +603,7 @@ class ValueCaptureCommittee:
         payload: dict[str, Any],
         findings: tuple[EligibleFinding, ...],
         model: str,
-        applies: Applicability = Applicability.APPLICABLE,
-        role: str | None = None,
+        basis: ApplicabilityBasis,
     ) -> CommitteeJudgment:
         answer = str(payload.get("verdict") or "").strip().lower()
 
@@ -554,10 +612,9 @@ class ValueCaptureCommittee:
         if answer == "abstain":
             return abstain(
                 asset,
-                self.REMIT,
+                CONTRACT,
                 AbstentionReason.INSUFFICIENT_EVIDENCE,
-                applicability=applies,
-                economic_role=role,
+                basis,
             )
 
         try:
@@ -591,10 +648,9 @@ class ValueCaptureCommittee:
 
         return CommitteeJudgment(
             asset=asset,
-            remit=self.REMIT,
+            contract=CONTRACT,
             state=JudgmentState.JUDGED,
-            applicability=applies,
-            economic_role=role,
+            basis=basis,
             verdict=verdict,
             # Counted, not chosen. The judge never saw this and it never
             # saw the verdict.

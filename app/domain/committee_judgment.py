@@ -41,6 +41,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
+from app.domain.committee_protocol import CommitteeContract, StructuralVerdict
 from app.domain.crypto_intelligence import ClaimType
 
 #: The claim types a committee may reason over.
@@ -59,84 +60,31 @@ def is_eligible(claim_type: ClaimType) -> bool:
     return claim_type in ELIGIBLE_CLAIM_TYPES
 
 
-class Remit(StrEnum):
-    """The questions a committee may be assigned. One, for now.
-
-    Deliberately not a taxonomy. The ruling's instruction was to choose
-    the narrowest question the corpus already supports and build that
-    one, rather than build a framework and then look for something to
-    put in it — so this enumeration has a single member and will grow
-    only when a second question is measured and earned.
-    """
-
-    #: Chosen by measurement rather than by preference. Fees are the
-    #: widest non-price evidence in the corpus — 8 of 8 assets carry a
-    #: reading — the holder-revenue sibling carries a figure for four
-    #: and is established-and-empty for three, and the difference
-    #: between those two absences is itself evidence under S2's sibling
-    #: rule. Nothing else in the corpus separates six assets three ways
-    #: on a question an investor would actually ask.
-    VALUE_CAPTURE = "value_capture"
-
-    @property
-    def question(self) -> str:
-        return _QUESTIONS[self]
-
-    @property
-    def stated(self) -> str:
-        return _REMITS[self]
-
-
-_REMITS = {Remit.VALUE_CAPTURE: "Value Capture Committee"}
-
-#: The question, worded from what the evidence can actually settle.
-#:
-#: Two clauses, both of which must be evidenced, and neither of which is
-#: a magnitude test. *Is there measured activity* is answered by the fee
-#: reading; *is there an evidenced mechanism returning some of it* is
-#: answered by the holder-revenue sibling and the provider's own
-#: methodology sentence. What the question deliberately does **not**
-#: ask is whether the amount is large enough to matter — six
-#: observations do not establish a floor, and S5.3 already parked
-#: magnitude outside quality for exactly this reason.
-_QUESTIONS = {
-    Remit.VALUE_CAPTURE: (
-        "Does this network generate evidenced fee activity, and does an "
-        "evidenced mechanism capture some of it for the token or its "
-        "holders?"
-    )
-}
-
-
 class Applicability(StrEnum):
     """Whether this question is economically meaningful for this asset.
 
-    **The committee's own decision, in its own economic terms.** It
-    reads the archetype layer as *evidence* and does not delegate to
-    it — a distinction that matters because `TokenArchetype` was built
-    to decide which questions an Asset Quality layer asks, and routing
-    this committee's applicability through it would quietly make this
-    committee a generic crypto-quality judgment wearing a narrow remit.
+    **Three states, and the committee decides which** — in its own
+    economic terms, from its own rule. The framework owns the
+    vocabulary because every committee needs the same three
+    distinctions; it owns none of the reasoning, because the reasoning
+    is what a committee is for.
 
-    Three states, and the third is the one a delegated rule loses.
+    Routing applicability through a shared taxonomy was tried and
+    rejected in PR #112: `TokenArchetype` was built to decide which
+    questions an Asset Quality layer asks, and delegating to it made
+    BTC and TAO come out identical when their problems are opposite.
     """
 
-    #: The token's economic role includes capturing network activity, so
-    #: asking whether it does is meaningful.
+    #: The token's economic role makes this question meaningful.
     APPLICABLE = "applicable"
 
-    #: The token's economic role does not rest on capturing network
-    #: fees, so the question is the wrong instrument. Bitcoin's fees are
-    #: a security budget paid to miners — S5.3 established that the same
-    #: issuance figure is a security budget or a transfer depending on
-    #: where it goes, and the same is true of a fee. **An asset here is
-    #: not judged adversely; it is not judged.**
+    #: The question is the wrong instrument for this asset. **An asset
+    #: here is not judged adversely; it is not judged.**
     NOT_ECONOMICALLY_APPLICABLE = "not_economically_applicable"
 
-    #: This platform cannot establish which of the two above is true —
-    #: no archetype, or no mapped economic system. **Distinct from the
-    #: second on purpose**: not knowing whether a question applies is
-    #: not the same as knowing it does not.
+    #: This platform cannot establish which of the two above is true.
+    #: **Distinct from the second on purpose**: not knowing whether a
+    #: question applies is not the same as knowing it does not.
     UNESTABLISHED = "unestablished"
 
     @property
@@ -144,50 +92,30 @@ class Applicability(StrEnum):
         return self is Applicability.APPLICABLE
 
 
-class Verdict(StrEnum):
-    """The only answers to the remit. Two, and neither grades the asset.
+@dataclass(frozen=True, slots=True)
+class ApplicabilityBasis:
+    """Whether the question applies, why, and what that was read from.
 
-    Scoped so tightly that the enumeration is the guard: no `BUY`, no
-    `HOLD`, no `POSITIVE`, no `FAVOURABLE`, and no way to express a view
-    about the asset as an investment.
+    One object rather than the three-tuple PR #113 grew, because the
+    third element was added under pressure and a fourth would have gone
+    the same way. All three travel together because they are one answer:
+    the state a caller branches on, the committee's economic reasoning
+    for a reader, and the role that reasoning was drawn from.
 
-    **Neither verdict is favourable or adverse**, and the naming says
-    so. A mechanism being evidenced is a structural fact about the
-    token's economics; whether it is *good* depends on what an investor
-    is buying the asset for, and that judgment belongs to a layer that
-    does not exist. The temptation to read `MECHANISM_EVIDENCED` as
-    "good" is exactly the assumption this slice was told not to smuggle
-    in.
-
-    **Magnitude is not judged.** 64%, 18% and 9% are excellent contrast
-    and six observations do not establish that 5% is a floor. S5.3 has
-    already parked magnitude outside quality for the issuance case, and
-    the same reasoning applies here: the committee reports the share as
-    evidence and refuses to band it.
+    `economic_role` is absent exactly when no role is established —
+    filling it with a guess would say this platform knew something it
+    did not, and it is the field that later lets a *changed*
+    applicability be attributed to changed understanding rather than
+    reported as unexplained.
     """
 
-    #: Activity is measured, and a mechanism routing some of it to the
-    #: token or its holders is evidenced.
-    MECHANISM_EVIDENCED = "mechanism_evidenced"
-
-    #: Activity is measured, and the source establishes that no such
-    #: mechanism exists — it publishes the holder-revenue figure for
-    #: comparable entities and none here, which under S2's sibling rule
-    #: is evidence of absence rather than absent evidence.
-    NO_MECHANISM_EVIDENCED = "no_mechanism_evidenced"
+    applicability: Applicability
+    because: str
+    economic_role: str | None = None
 
     @property
-    def stated(self) -> str:
-        return {
-            Verdict.MECHANISM_EVIDENCED: (
-                "measured network activity is captured for the token by an "
-                "evidenced mechanism"
-            ),
-            Verdict.NO_MECHANISM_EVIDENCED: (
-                "measured network activity is not captured for the token, and "
-                "the source establishes the absence rather than omitting it"
-            ),
-        }[self]
+    def is_applicable(self) -> bool:
+        return self.applicability.is_applicable
 
 
 class JudgmentState(StrEnum):
@@ -352,13 +280,23 @@ class EligibleFinding:
 class CommitteeJudgment:
     """One committee's answer to one question, or the reason there is none.
 
-    The smallest contract that is useful: who asked, what was asked,
-    the answer within that question, how much stands behind it, what it
-    rests on, and — where there is no answer — which kind of no.
+    The smallest contract that is useful: who asked and under what
+    terms, whether the question applied, the answer within that
+    question, how much stands behind it, what it rests on, and — where
+    there is no answer — which kind of no.
+
+    **The contract travels with the judgment.** PR #113 passed it
+    alongside, which left a seam where a caller could file a judgment
+    under an identity it was not produced by; nothing checked, and a
+    mis-filed judgment would have been indistinguishable from a real
+    one. Carrying it here makes that unrepresentable.
     """
 
     asset: str
-    remit: Remit
+
+    #: Who judged, and under what terms. Persisted as an identity, so a
+    #: record stays readable when this contract no longer exists.
+    contract: CommitteeContract
 
     state: JudgmentState
 
@@ -372,16 +310,11 @@ class CommitteeJudgment:
     #: not apply* into *we do not know whether it applies* — the exact
     #: distinction that made BTC and TAO come out identical when their
     #: problems are opposite.
-    applicability: Applicability | None = None
+    basis: ApplicabilityBasis | None = None
 
-    #: The established economic role at the moment of judgment, where one
-    #: was established. Applicability is decided from it, so a later
-    #: comparison can only attribute a changed applicability to a changed
-    #: understanding if the understanding of the day was written down.
-    economic_role: str | None = None
-
-    #: The answer, present exactly when `state` is JUDGED.
-    verdict: Verdict | None = None
+    #: The answer, present exactly when `state` is JUDGED. **A token
+    #: with a sentence, never a grade** — see `StructuralVerdict`.
+    verdict: StructuralVerdict | None = None
 
     #: Established by code from the supporting evidence. Present with a
     #: verdict and meaningless without one.
@@ -404,6 +337,26 @@ class CommitteeJudgment:
 
     judged_at: datetime | None = None
     model: str | None = None
+
+    def __post_init__(self) -> None:
+        # An answer outside the contract's own vocabulary would make the
+        # fingerprint a description of something the record does not
+        # contain — and longitudinal comparability rests on that
+        # fingerprint meaning what it says.
+        if self.verdict is not None and not self.contract.admits(self.verdict):
+            raise ValueError(
+                f"{self.contract.name} cannot answer {self.verdict.value!r}: "
+                "it is not in the verdict vocabulary this committee's "
+                "contract was fingerprinted from."
+            )
+
+    @property
+    def applicability(self) -> Applicability | None:
+        return self.basis.applicability if self.basis else None
+
+    @property
+    def economic_role(self) -> str | None:
+        return self.basis.economic_role if self.basis else None
 
     @property
     def is_judged(self) -> bool:
@@ -438,45 +391,41 @@ class CommitteeJudgment:
 
 def abstain(
     asset: str,
-    remit: Remit,
+    contract: CommitteeContract,
     reason: AbstentionReason,
+    basis: ApplicabilityBasis | None = None,
     because: str | None = None,
-    applicability: Applicability | None = None,
-    economic_role: str | None = None,
 ) -> CommitteeJudgment:
     """A committee that knows it cannot answer. A successful outcome.
 
-    `because` carries the committee's own economic reasoning, so a
-    reader learns *why this question was the wrong instrument* rather
-    than only that it was not answered.
+    `because` defaults to the applicability reasoning, so a reader
+    learns *why this question was the wrong instrument* rather than only
+    that it was not answered.
     """
 
     return CommitteeJudgment(
         asset=asset,
-        remit=remit,
+        contract=contract,
         state=JudgmentState.ABSTAINED,
-        applicability=applicability,
-        economic_role=economic_role,
+        basis=basis,
         abstained_because=reason,
-        because=because,
+        because=because if because is not None else (basis.because if basis else None),
     )
 
 
 def unavailable(
     asset: str,
-    remit: Remit,
+    contract: CommitteeContract,
     because: str,
-    applicability: Applicability | None = None,
-    economic_role: str | None = None,
+    basis: ApplicabilityBasis | None = None,
 ) -> CommitteeJudgment:
     """No judgment, because the machinery failed. Not an abstention."""
 
     return CommitteeJudgment(
         asset=asset,
-        remit=remit,
+        contract=contract,
         state=JudgmentState.UNAVAILABLE,
-        applicability=applicability,
-        economic_role=economic_role,
+        basis=basis,
         unavailable_because=because,
     )
 

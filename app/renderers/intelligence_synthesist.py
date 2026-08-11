@@ -910,7 +910,7 @@ def build_findings(
             (
                 transition.stated,
                 (
-                    f"Committee judgment — {transition.remit.stated}, "
+                    f"Committee judgment — {transition.committee}, "
                     f"{transition.change.value}, from "
                     f"{len(transition.record_ids)} recorded judgment(s): "
                     + ", ".join(transition.record_ids)

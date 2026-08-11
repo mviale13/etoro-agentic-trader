@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from app.domain.judgment_history import JudgmentChange
 from app.services.judgment_history_service import JudgmentHistoryService
-from app.services.value_capture_committee import VERSION, ValueCaptureCommittee
+from app.services.value_capture_committee import ValueCaptureCommittee
 
 
 class JudgeCommand:
@@ -23,8 +23,10 @@ class JudgeCommand:
         committee = ValueCaptureCommittee()
         history = JudgmentHistoryService()
 
-        print(f"{VERSION.stated}")
-        print(_wrap(VERSION.remit.question, "  "))
+        contract = committee.contract
+
+        print(f"{contract.stated}")
+        print(_wrap(contract.question, "  "))
         print()
 
         assets = [symbol.upper().strip()] if symbol else _corpus()
@@ -59,7 +61,8 @@ class JudgeCommand:
         # judgment movement rests on knowing which produced which.
         evidence = committee.evidence(asset)
 
-        record = history.record(judgment, VERSION, evidence)
+        # No contract argument: the judgment carries its own.
+        record = history.record(judgment, evidence)
 
         print(f"  {asset}")
 

@@ -35,13 +35,20 @@ from app.domain.committee_judgment import (
     Applicability,
     Confidence,
     JudgmentState,
-    Remit,
-    Verdict,
 )
-from app.domain.judgment_history import CommitteeVersion, JudgmentRecord
+from app.domain.committee_protocol import CommitteeIdentity
+from app.domain.judgment_history import JudgmentRecord
 
 #: The line format's own version, written on every line.
-SCHEMA = 1
+#:
+#: 2 adds the committee's display name and the committee's own sentence
+#: for its verdict — both absent from schema 1, and both **read with a
+#: fallback rather than migrated**. A schema-1 line names its committee
+#: by key and its answer by token, which is less pleasant to read and
+#: exactly as true. The journal's rule holds: a file that is never
+#: rewritten cannot be migrated, so old lines are read as they were
+#: written, forever.
+SCHEMA = 2
 
 
 class JudgmentHistoryStore:
@@ -89,21 +96,24 @@ class JudgmentHistoryStore:
     def records(
         self,
         asset: str,
-        remit: Remit | None = None,
+        committee: str | None = None,
         limit: int | None = None,
     ) -> list[JudgmentRecord]:
         """Every judgment for this asset, oldest first.
 
-        Filtered by remit where one is given, because one file holds one
-        asset and an asset may one day be asked more than one question —
-        and two committees' verdicts pooled into one history would be
-        the same category error as pooling two evidence streams.
+        Filtered by committee key where one is given, because one file
+        holds one asset and an asset may be asked more than one
+        question — and two committees' verdicts pooled into one history
+        would be the same category error as pooling two evidence
+        streams. **The key is compared as a string**, so a record
+        written by a committee whose code is gone is still readable and
+        still filterable.
         """
 
         found = [
             record
             for record in self._records(asset)
-            if remit is None or record.committee.remit is remit
+            if committee is None or record.committee.key == committee
         ]
 
         found.sort(key=lambda record: record.judged_at)
@@ -143,14 +153,16 @@ def _encode(record: JudgmentRecord) -> dict[str, Any]:
         "schema": SCHEMA,
         "record_id": record.record_id,
         "asset": record.asset,
-        "remit": record.committee.remit.value,
+        "remit": record.committee.key,
+        "committee_name": record.committee.name,
         "committee_version": record.committee.version,
         "committee_fingerprint": record.committee.fingerprint,
         "judged_at": record.judged_at.isoformat(),
         "recorded_at": record.recorded_at.isoformat(),
         "applicability": record.applicability.value,
         "state": record.state.value,
-        "verdict": record.verdict.value if record.verdict else None,
+        "verdict": record.verdict,
+        "verdict_stated": record.verdict_stated,
         "confidence": record.confidence.value if record.confidence else None,
         "refs": list(record.refs),
         "evidence_digest": record.evidence_digest,
@@ -171,8 +183,11 @@ def _decode(row: Any) -> JudgmentRecord | None:
     try:
         return JudgmentRecord(
             asset=str(row["asset"]),
-            committee=CommitteeVersion(
-                remit=Remit(row["remit"]),
+            committee=CommitteeIdentity(
+                key=str(row["remit"]),
+                # Schema 1 carried no name. The key is what it was filed
+                # under and is never wrong, only terser.
+                name=str(row.get("committee_name") or row["remit"]),
                 version=int(row["committee_version"]),
                 fingerprint=str(row["committee_fingerprint"]),
             ),
@@ -180,7 +195,10 @@ def _decode(row: Any) -> JudgmentRecord | None:
             recorded_at=_time(row.get("recorded_at")) or datetime.now(UTC),
             applicability=Applicability(row["applicability"]),
             state=JudgmentState(row["state"]),
-            verdict=Verdict(row["verdict"]) if row.get("verdict") else None,
+            verdict=str(row["verdict"]) if row.get("verdict") else None,
+            verdict_stated=(
+                str(row["verdict_stated"]) if row.get("verdict_stated") else None
+            ),
             confidence=(
                 Confidence(row["confidence"]) if row.get("confidence") else None
             ),

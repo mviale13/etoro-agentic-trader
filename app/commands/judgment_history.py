@@ -20,15 +20,15 @@ from app.domain.judgment_history import (
     StandingKind,
 )
 from app.services.judgment_history_service import JudgmentHistoryService
-from app.services.value_capture_committee import VERSION
+from app.services.value_capture_committee import CONTRACT
 
 
 class JudgmentHistoryCommand:
     async def run(self, symbol: str | None = None, evidence: bool = False) -> int:
         service = JudgmentHistoryService()
 
-        print(f"{VERSION.stated}")
-        print(_wrap(VERSION.remit.question, "  "))
+        print(f"{CONTRACT.stated}")
+        print(_wrap(CONTRACT.question, "  "))
         print()
 
         assets = [symbol.upper().strip()] if symbol else _corpus()
@@ -59,11 +59,11 @@ class JudgmentHistoryCommand:
     ) -> None:
         print(f"  {asset}")
 
-        coverage = service.coverage(asset)
+        coverage = service.coverage(asset, CONTRACT.key)
 
         print(_wrap(f"coverage: {coverage.stated}", "    "))
 
-        records = service.history(asset)
+        records = service.history(asset, CONTRACT.key)
 
         if not records:
             print()
@@ -83,7 +83,7 @@ class JudgmentHistoryCommand:
                 )
             )
 
-        for transition in service.transitions(asset):
+        for transition in service.transitions(asset, CONTRACT.key):
             if transition.change is JudgmentChange.FIRST_JUDGMENT and len(records) > 1:
                 continue
 

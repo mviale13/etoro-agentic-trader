@@ -23,9 +23,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from app.domain.committee_judgment import CommitteeJudgment, EligibleFinding, Remit
+from app.domain.committee_judgment import CommitteeJudgment, EligibleFinding
 from app.domain.judgment_history import (
-    CommitteeVersion,
     JudgmentCoverage,
     JudgmentRecord,
     JudgmentStanding,
@@ -54,7 +53,6 @@ class JudgmentHistoryService:
     def record(
         self,
         judgment: CommitteeJudgment,
-        committee: CommitteeVersion,
         evidence: tuple[EligibleFinding, ...] = (),
         now: datetime | None = None,
     ) -> JudgmentRecord | None:
@@ -68,7 +66,11 @@ class JudgmentHistoryService:
 
         moment = now or datetime.now(UTC)
 
-        record = record_from(judgment, committee, evidence, recorded_at=moment)
+        # The identity comes from the judgment's own contract. PR #113
+        # took it as a second argument, which meant a caller could file a
+        # judgment under a committee that did not produce it and nothing
+        # would notice.
+        record = record_from(judgment, evidence, recorded_at=moment)
 
         return record if self._store.append(record) else None
 
@@ -77,70 +79,67 @@ class JudgmentHistoryService:
     def history(
         self,
         asset: str,
-        remit: Remit = Remit.VALUE_CAPTURE,
+        committee: str,
         limit: int = WINDOW,
     ) -> list[JudgmentRecord]:
-        return self._store.records(asset, remit=remit, limit=limit)
+        return self._store.records(asset, committee=committee, limit=limit)
 
     def latest(
         self,
         asset: str,
-        remit: Remit = Remit.VALUE_CAPTURE,
+        committee: str,
     ) -> JudgmentRecord | None:
-        held = self.history(asset, remit)
+        held = self.history(asset, committee)
 
         return held[-1] if held else None
 
     def transitions(
         self,
         asset: str,
-        remit: Remit = Remit.VALUE_CAPTURE,
+        committee: str,
         limit: int = WINDOW,
     ) -> tuple[JudgmentTransition, ...]:
         """Every consecutive pair in the record. Deterministic, no model."""
 
-        return transitions(self.history(asset, remit, limit))
+        return transitions(self.history(asset, committee, limit))
 
-    def against_history(
-        self,
-        current: JudgmentRecord,
-        remit: Remit = Remit.VALUE_CAPTURE,
-    ) -> JudgmentTransition:
+    def against_history(self, current: JudgmentRecord) -> JudgmentTransition:
         """What a judgment in hand changed, against the last one stored.
 
         The previous record is the most recent one that is not this
         judgment itself, so calling this before or after recording gives
         the same answer — a projection that changed depending on write
         order would not be a projection.
+
+        Which history to read comes from the record, not from the
+        caller: a judgment compared against another committee's past
+        would be a transition between two different questions.
         """
 
         earlier = [
             record
-            for record in self.history(current.asset, remit)
+            for record in self.history(current.asset, current.committee.key)
             if record.record_id != current.record_id
         ]
 
         return compare(current, earlier[-1] if earlier else None)
 
-    def standing(
-        self,
-        current: JudgmentRecord,
-        remit: Remit = Remit.VALUE_CAPTURE,
-    ) -> JudgmentStanding:
+    def standing(self, current: JudgmentRecord) -> JudgmentStanding:
         """What may be said today, given everything recorded before.
 
-        §5 lives here: where today's committee reached no verdict, this
-        returns the earlier one as history and never as a current
-        finding.
+        Where today's committee reached no verdict, this returns the
+        earlier one as history and never as a current finding.
         """
 
-        return standing(current, self.history(current.asset, remit))
+        return standing(current, self.history(current.asset, current.committee.key))
 
     def coverage(
         self,
         asset: str,
-        remit: Remit = Remit.VALUE_CAPTURE,
+        committee: str,
     ) -> JudgmentCoverage:
         """How often this committee has judged this asset, worded honestly."""
 
-        return coverage(asset.upper().strip(), remit, self.history(asset, remit))
+        return coverage(
+            asset.upper().strip(), committee, self.history(asset, committee)
+        )

@@ -8,7 +8,7 @@ looking like a finding.
 
 from __future__ import annotations
 
-from app.domain.committee_judgment import JudgmentState, Remit
+from app.domain.committee_judgment import JudgmentState
 from app.services.value_capture_committee import ValueCaptureCommittee
 
 
@@ -16,8 +16,10 @@ class CommitteeJudgmentCommand:
     async def run(self, symbol: str | None = None, evidence: bool = False) -> int:
         committee = ValueCaptureCommittee()
 
-        print(f"{Remit.VALUE_CAPTURE.stated}")
-        print(_wrap(Remit.VALUE_CAPTURE.question, "  "))
+        contract = committee.contract
+
+        print(f"{contract.stated}")
+        print(_wrap(contract.question, "  "))
         print()
 
         assets = [symbol.upper().strip()] if symbol else _corpus()
@@ -44,12 +46,17 @@ class CommitteeJudgmentCommand:
         asset: str,
         evidence: bool,
     ) -> None:
-        applies, because = committee.applicability(asset)
+        basis = committee.basis(asset)
 
         judgment = await committee.judge(asset)
 
         print(f"  {asset}")
-        print(_wrap(f"applicability: {applies.value} — {because}", "    "))
+        print(
+            _wrap(
+                f"applicability: {basis.applicability.value} — {basis.because}",
+                "    ",
+            )
+        )
 
         held = committee.evidence(asset)
 
