@@ -251,6 +251,17 @@ class JudgmentRecord:
 
     abstained_because: AbstentionReason | None = None
 
+    #: The committee's own account of this outcome, in its own words.
+    #:
+    #: **Not the synthesis prose #113 refused.** That ban is on a
+    #: *model's reading of a judgment* becoming the judgment's history;
+    #: this is the committee's own reasoning, produced with the answer
+    #: and part of it. Persisting it was forced by the matrix: two
+    #: assets abstaining under one committee for genuinely different
+    #: reasons were indistinguishable from the record, because the enum
+    #: is three members wide and the difference lives in the sentence.
+    because: str | None = None
+
     #: Worded, because the ways machinery fails are not enumerable. Never
     #: composed into a transition sentence — free text from elsewhere
     #: would put vocabulary this layer does not control into a statement
@@ -360,6 +371,7 @@ def record_from(
         evidence_digest=evidence_digest_of(evidence),
         evidence_count=len(evidence),
         abstained_because=judgment.abstained_because,
+        because=judgment.because,
         unavailable_because=judgment.unavailable_because,
         economic_role=judgment.economic_role,
         model=judgment.model,

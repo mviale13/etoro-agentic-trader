@@ -342,3 +342,49 @@ move.
 1738 tests, ruff, mypy green. The hermetic guard now blocks the wire on
 all four new surfaces — every one of them keyless, which is exactly why
 a credential guard would not have stopped a single call.
+
+---
+
+## The consequence for committees (added by PR #115, kept by #116)
+
+The closing sentence above — *every figure it produces is `CLAIMED`* —
+turned out to be load-bearing in a way this document did not anticipate.
+When the Supply Governance Committee was built, its first implementation
+gated eligible evidence on `EvidenceStanding.ESTABLISHED` and **refused
+every asset in the corpus**. BTC, ADA and SOL alike: all read from
+canonical surfaces, every parameter naming the endpoint it came from,
+every projection re-running — and all three standing at `CLAIMED`.
+
+The diagnosis is this document's own thesis, applied one layer up:
+
+> **`EvidenceStanding` is a corroboration axis, built for vendor claims
+> where a second independent source is real evidence. It is not a
+> quality axis and it is not a gate a committee may borrow.**
+
+A chain's own issuance parameters have no second source and cannot
+acquire one. The chain *is* the authority, and S1's two-claimant rule
+has nothing to say about it — which is precisely why authority was made
+a second axis rather than a second standing. Requiring `ESTABLISHED`
+does not raise a committee's standard; it makes the committee
+permanently silent about the strongest evidence the platform holds,
+while a vendor-sourced figure with two claimants would sail through.
+
+**So a committee's evidence gate is the committee's own, and it is built
+from Model C's questions rather than from corroboration**: is the
+authority primary, is the surface canonical for this asset, is every
+constant read rather than remembered, is the reading versioned, does the
+computation re-run, and is the specific thing being asked about
+established. A clause that cannot be evaluated fails.
+
+Two guards keep this from drifting back. A test asserts
+`EvidenceStanding` appears nowhere in the Supply Governance Committee,
+and the committee protocol gives the framework no way to impose an
+evidence gate on a committee at all — eligibility is committee
+semantics, and PR #114 put it there deliberately.
+
+**This does not weaken corroboration where corroboration applies.**
+A vendor claim still needs a second claimant, `PROVIDER_SCOPED_AGGREGATE`
+still cannot be corroborated at all, and `ESTABLISHED` still means what
+it meant. What changed is that a primary reading is no longer forced
+through a model built for somebody else's evidence in order to make the
+abstractions uniform.

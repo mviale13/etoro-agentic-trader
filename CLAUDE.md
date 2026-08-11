@@ -154,6 +154,13 @@ concluded, when, and what changed since — the answer, the observation
 beneath it and the evidence itself as three separate facts, with a
 previous verdict never restated as today's. Read-only, no model, and a
 count of judgments is never presented as a duration of review),
+`movrvest committees [SYMBOL] [--evidence]` (what every registered
+committee has concluded: per committee the question it owns, its
+conclusion in its own words, why, the confidence it expresses and the
+evidence beneath it — one block per committee with a symbol, the corpus
+as a grid without one. Read-only, no model, no fetch, and **nothing is
+combined**: no overall verdict, no agreement, no score, no ranking, and
+confidence is never compared across committees),
 `movrvest acquire [--candidates N]` (read the market for every holding,
 the research candidates and the market strip **in one batch**, and fill
 the store the surfaces serve from — the provider half of the same
@@ -630,6 +637,41 @@ per-committee and nothing says so; `execution_unavailable` and
 exists and we cannot read it* (ETH). The registry is a tuple and a
 lookup, earned by a concrete failure and given no ordering that means
 anything.
+
+**Everything beside, nothing combined** (the Committee Assessment
+Matrix,
+[`COMMITTEE_ASSESSMENT_MATRIX.md`](docs/architecture/COMMITTEE_ASSESSMENT_MATRIX.md),
+accepted and built). A projection of independent judgments and **not a
+new judge**: for each registered committee the question, the conclusion
+in its own words, the reason, the confidence and the evidence — with no
+score, vote, agreement, weight, rank or common verdict scale, because
+two committees answering different structural questions are not two
+votes on one proposition. **Committee N+1 appears without touching the
+layer**, proved with #114's three-verdict specimen; three guards search
+the *source* of every matrix module, since the next aggregate would
+arrive as a helper rather than a field.
+
+**The cell shape was measured, not designed.** `evidence_count` is
+syntactically shared and semantically incomparable (Fee Capture's 11 for
+HYPE counts fee readings; Supply Governance's 11 for ADA counts rule
+parameters), and `confidence` is **demonstrably** incomparable — so both
+are carried per committee and neither is ever combined.
+
+**Two defects the measurement found.** `judged_at` meant two different
+moments — Supply Governance stamped the *chain reading* time, so two
+convenings from one cached rule produced one record id and history said
+the committee met once when it met twice, breaking #113's count. And
+`because` was not persisted, leaving two genuinely different abstentions
+indistinguishable; store schema 3 carries it. **PR #113's prose ban is
+on a *model's reading of a judgment*, not on a committee's account of
+its own outcome.**
+
+**Recorded and deliberately unsolved**: there is no shared notion of
+*acquired for committee N*, and the matrix is not the place to fix it —
+it reads and must never acquire. `GET /committees/{symbol}` serves the
+projection; it is **not** a dossier section, because placing it there
+would decide where a collection of independent judgments belongs in the
+investor's narrative, which is the deferred layer.
 
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
