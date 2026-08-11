@@ -1,100 +1,165 @@
-# Handoff — 2026-08-10
+# Handoff — 2026-08-11
 
 Everything is committed and green. Nothing is open. Start a fresh window
 here.
 
 ## State
 
-`main` is at `7c066ca`. Gates: ruff, ruff format, mypy (548 files),
-**1984 tests**, verified with `git archive HEAD` in isolation.
+`main` is at `99fb1ec`. Gates: ruff, ruff format, mypy (565 files),
+**2087 tests**, verified with `git archive HEAD` in isolation.
 
-Merged today, in order: `#103`–`#107` (the S1–S5.3 crypto sequence),
-then five slices of the current direction:
+Merged since the last handoff, in order:
 
 | PR | What |
 |---|---|
-| `#108` | Crypto Intelligence slice 1 — what changed, what is driving it |
-| `#109` | Events and narratives — a hedge separates a fact from a reading |
-| `#110` | LLM synthesis — the validator, calibrated against live drafts |
-| `#111` | The intelligence journal — a memory that refuses to overclaim |
-| `#112` | The Value Capture Committee — the first bounded judgment |
+| `#113` | Judgment history — a number moving is not a conclusion moving |
+| `#114` | The committee protocol, discovered rather than designed |
+| `#115` | Committee #2, chosen by measurement, and the matrix it makes |
+| `#116` | The committee portfolio — everything beside, nothing combined |
+| `#117` | Investor Assessment — the strongest useful statement |
+| `#118` | Hermetic evidence execution |
 
 ## Where the work is
 
-**The owner pivoted off Asset Quality** and it is settled: crypto
-quality stays UNKNOWN for every asset, quorum 2, and three separate
-rulings decline to lower it. **Do not try to earn factor #2.**
-
-The arc that replaced it is complete for now:
+The judgment arc is now five layers deep and each one is
+decision-neutral:
 
 ```text
-Evidence → Finding → Temporal Finding → Synthesis      (knowledge)
-Eligible grounded findings → Committee → Judgment      (judgment)
+Evidence → Finding → Temporal Finding → Synthesis        (knowledge)
+Eligible findings → Committee → Judgment                 (judgment)
+Judgment → append-only history → transitions             (memory)
+Every registered committee's latest judgment, side by side (matrix)
+Evidence + judgments → what can usefully be said          (assessment)
 ```
 
-**Everything below the line is explicitly parked by the owner**:
-committee aggregation, recommendation coupling, Artificial CIO
-reasoning, portfolio context, historical committee evolution. The §J
-decision contract is a written specification and nothing more. Do not
-start any of it without a new ruling.
+**Everything above the assessment layer is explicitly parked**: the
+Artificial CIO recommendation layer, committee aggregation, weighting,
+agreement percentages, an overall crypto score, thesis, portfolio
+coupling and any favourable/adverse mapping. The owner's standing
+instruction is to observe good assessments across the corpus *first* and
+choose the next abstraction from evidence. Do not start any of it
+without a new ruling.
+
+**Asset Quality stays off.** Crypto quality is UNKNOWN for every asset,
+quorum 2, declined three times. Do not try to earn factor #2.
 
 ## What to read first
 
-1. `.claude/…/memory/MEMORY.md` — the first six lines are the crypto
-   arc in order.
-2. `docs/architecture/VALUE_CAPTURE_COMMITTEE.md` — the newest layer and
-   the one whose boundaries are easiest to breach by accident.
-3. `CLAUDE.md` — current through `#112`.
+1. `.claude/…/memory/MEMORY.md` — the first nine lines are the crypto
+   arc in order, newest first.
+2. `docs/architecture/INVESTOR_ASSESSMENT.md` — the newest layer.
+3. `docs/architecture/HERMETIC_EVIDENCE.md` — read before writing any
+   test that touches evidence.
+4. `CLAUDE.md` — current through `#118`.
 
-## Five rules this arc established, in the order they cost the most
+## Six rules this arc established, in the order they cost the most
 
-1. **A hedge separates a fact from a reading; a number makes a fact
-   *checkable*.** Two different properties. Conflating them filed
-   *"AUSTRAC suspended Cryptolink's VASP registration"* as an opinion.
-2. **An event's identity is its shared figure, not its words.** Eight
-   accounts of one MicroStrategy sale collapse on `1690`.
-3. **A validator over model output is wrong in both directions, and only
-   live drafts show which.** It refused *"funds hold 1,223,634 BTC"*
-   because `hold` is also a verdict, and separately let *"Coinbase led
-   the buying"* through.
-4. **A count of captures is never a duration of monitoring.** Three
-   weekly looks are not three weeks.
-5. **A committee owns its own applicability rule.** Routing it through
-   `TokenArchetype` made BTC and TAO come out identical when their
-   problems are opposite.
+1. **A number moving is not a conclusion moving.** Three axes on every
+   transition — the answer, the observation count, the evidence — and
+   evidence moving under a steady answer is the *ordinary* case. Proved
+   live: HYPE's evidence was byte-identical across three judgments while
+   the answer moved twice.
+2. **The framework may know Committee X answered Y with verdict Z; it may
+   never know what Z means.** One line broke it (`posture_of` read
+   `MECHANISM_EVIDENCED` and decided it meant presence). The extraction
+   was a *relocation* — the logic was already generic, only the
+   vocabulary was not.
+3. **An analytical call must declare an evidence set, not just a
+   subject.** `judge("ADA")` resolved its own evidence from a path
+   literal, and a poisoned cache flipped the verdict with the caller
+   declaring nothing. This was the root cause of five separate
+   clean-checkout failures.
+4. **`CONFLICTED` is a fact about two readings; "we cannot tell you
+   anything" is a fact about the investor's question.** Internal
+   epistemic vocabulary is not an investment conclusion, and a
+   difference between sources is only material when it changes what can
+   responsibly be said.
+5. **A prose failure is a presentation failure.** HYPE lost a complete
+   `mechanism_evidenced` because the drafted sentence used the word
+   *buy*. Structural checks now finish before prose is read; the
+   validator is untouched.
+6. **`EvidenceStanding` is a corroboration axis, not a gate a committee
+   may borrow.** Every issuance rule stands at `CLAIMED` because a
+   chain's own parameters have no second source — requiring
+   `ESTABLISHED` silenced all three answerable assets.
 
-## Three traps that will bite again
+## Traps
 
-- **`git archive HEAD` in isolation, every time.** Tests that read the
-  gitignored `data/cache` or `data/journal` pass locally and fail on a
-  clean checkout. This has now happened **three times** — S3, slice 1,
-  and `#112`, where it caught six tests before they shipped.
+- **`git archive HEAD` in isolation, every time.** The gitignored-cache
+  trap fired **five times**. `#118` fixed the *cause* — the evidence
+  root is now one owner and the suite redirects it — so a test can no
+  longer read your machine by accident. Keep running the isolation check
+  anyway; it is the only thing that caught occurrences 4 and 5.
 - **A module that explains what it refuses fails a text search for the
-  thing it refuses.** Use `reachable()` from `tests/reachability.py`,
-  and prefer a behavioural test where the guard word appears in the
-  prose. Six occurrences so far.
-- **`data/journal/` is gitignored**, like `data/decisions/`. A fresh
-  clone has no history and honestly says so; the committee and the
-  temporal projection will show `first observed` until
-  `movrvest acquire` has run more than once.
+  thing it refuses.** Use `reachable()` from `tests/reachability.py`, or
+  prefer a behavioural test. Seven occurrences so far.
+- **Resolve a path at construction, never in a signature.** Ruff's B008
+  caught three stores freezing the evidence root at import — the same
+  class of bug the slice was fixing.
+- **A `git commit --amend` after a hook-aborted commit silently amends
+  the previous merged commit.** Check `git log` after any amend. If the
+  hooks reformat, run `ruff format .` yourself first, then `git add -A`.
+- **`data/` is gitignored except `data/knowledge/`.** A fresh clone has
+  no evidence and honestly says so; every crypto surface is empty until
+  acquisition has run.
 
 ## What is live and what it costs
 
-`movrvest acquire` is the only explicit spend — it fills the provider
-stores, the event store and appends one journal capture per asset. A
-page view or CLI read never fetches.
+Two explicit spends, and nothing else fetches or asks a model:
+
+```bash
+movrvest acquire            # provider stores, events, one journal capture
+movrvest judge [SYMBOL]     # runs both committees, appends judgment events
+```
+
+Read-only surfaces:
+
+```bash
+movrvest assessment ETH               # what can usefully be said
+movrvest committees [SYMBOL]          # every committee's conclusion
+movrvest judgment-history BTC --evidence
+movrvest crypto-intelligence BTC --evidence
+```
 
 Two model seams are off by default and share the writer's provider
 config: `MOVRVEST_INTELLIGENCE_SYNTHESIS` and
-`MOVRVEST_COMMITTEE_JUDGMENT`. The Executive Writer's own flag is
-already `on` in `.env`.
+`MOVRVEST_COMMITTEE_JUDGMENT`. With the latter off, Fee Capture records
+`execution_unavailable` — which is a real judgment event, not a failure.
+Supply Governance has no model seam at all and always answers.
 
-```bash
-movrvest crypto-intelligence BTC --evidence
-movrvest crypto-events BTC --evidence
-movrvest intelligence-journal BTC --evidence
-movrvest committee-judgment ETH --evidence
+## The two-committee matrix, as last recorded
+
+```text
+asset   Supply Governance        Value Capture
+1INCH   known_not_applicable     no_mechanism_evidenced
+ADA     governance_set           (last run with the judge off)
+ARB     evidence_insufficient    no_mechanism_evidenced
+BTC     consensus_bound          known_not_applicable
+ETH     evidence_insufficient    mechanism_evidenced
+HYPE    evidence_insufficient    mechanism_evidenced
+SOL     governance_set           mechanism_evidenced
+TAO     applicability_unknown    applicability_unknown
 ```
+
+**BTC and 1INCH swap sides** — the clearest evidence the two committees
+are not one question asked twice.
+
+## Recorded debt, deliberately unsolved
+
+- **No shared notion of "acquired for committee N."** `movrvest acquire`
+  fills neither committee's evidence door. The acquisition orchestrator
+  is its own slice and nothing so far proved it inseparable.
+- **`Confidence` saturates** — 8, 9 and 11 findings all read
+  `MULTIPLE_OBSERVATIONS`. Two committees are not enough to design its
+  replacement.
+- **Historical judgments are auditable, not reproducible.** The digest
+  says the evidence moved; it cannot say what it said.
+- **`MATERIAL_SPREAD` (25%) is provisional** and is not a definition of
+  investor materiality.
+- **`max_supply: null` and "field absent" are indistinguishable** in the
+  provider, so *"ETH has no cap"* is not currently supportable.
+- **Asset Quality's absolute bands** still force a value across a
+  threshold this platform would now express as a range.
 
 ## Open, unchanged, not mine to take
 
