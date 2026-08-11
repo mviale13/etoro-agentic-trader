@@ -6,7 +6,7 @@ here.
 ## State
 
 `main` is at `99fb1ec`. Gates: ruff, ruff format, mypy (565 files),
-**2094 tests**, verified with `git archive HEAD` in isolation.
+**2104 tests**, verified with `git archive HEAD` in isolation.
 
 Merged since the last handoff, in order:
 
@@ -19,6 +19,7 @@ Merged since the last handoff, in order:
 | `#117` | Investor Assessment — the strongest useful statement |
 | `#118` | Hermetic evidence execution |
 | `#119` | Zero Fake Meaning — economic role-awareness in Investor Assessment |
+| `#120` | The Crypto Dossier — the first investor-usable crypto surface |
 
 ## Where the work is
 
@@ -132,6 +133,7 @@ Read-only surfaces:
 
 ```bash
 movrvest assessment ETH               # what can usefully be said
+movrvest committees BTC               # every committee, side by side
 movrvest committees [SYMBOL]          # every committee's conclusion
 movrvest judgment-history BTC --evidence
 movrvest crypto-intelligence BTC --evidence

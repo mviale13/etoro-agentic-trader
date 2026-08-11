@@ -223,8 +223,8 @@ function TokenRating({ rating }: { rating: DossierTokenRating }) {
       </dl>
 
       <p className="mt-5 text-xs leading-5 text-slate-500">
-        Published by {rating.source} and shown as read. It is not evidence
-        this platform gathered and reaches none of its scores or decisions.
+        Published by {rating.source} and shown as read. It is not evidence this
+        platform gathered and reaches none of its scores or decisions.
         {rating.read ? ` Read ${rating.read.age}.` : ""}
       </p>
 
@@ -423,10 +423,10 @@ function AssetProfile({
       </SectionHeading>
 
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-        Provider observations are dated and attributed, and served only as
-        far as they survived validation. Rows marked MOVRvest-calculated are
-        this platform&rsquo;s arithmetic over established figures — nothing
-        here turns a one-day movement into a conclusion about {symbol}.
+        Provider observations are dated and attributed, and served only as far
+        as they survived validation. Rows marked MOVRvest-calculated are this
+        platform&rsquo;s arithmetic over established figures — nothing here
+        turns a one-day movement into a conclusion about {symbol}.
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -464,7 +464,9 @@ function AssetProfile({
                       names its source — or, where no value is served, the
                       backend's account of why. */}
                   <p className="mt-0.5 text-xs leading-5 text-slate-400">
-                    {row.stated === null ? row.because : (row.age ?? row.source)}
+                    {row.stated === null
+                      ? row.because
+                      : (row.age ?? row.source)}
                   </p>
                 </div>
               ))}
@@ -533,11 +535,11 @@ function ProtocolFundamentals({
       </SectionHeading>
 
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-        What the systems behind {symbol} earn, and who receives it — read
-        from a source that publishes its own definitions, and shown beside
-        the case rather than inside it. None of this reached the
-        recommendation above, and nothing here is called strong or weak:
-        the evidence comes before any reading of it.
+        What the systems behind {symbol} earn, and who receives it — read from a
+        source that publishes its own definitions, and shown beside the case
+        rather than inside it. None of this reached the recommendation above,
+        and nothing here is called strong or weak: the evidence comes before any
+        reading of it.
       </p>
 
       <div className="mt-4 space-y-4">
@@ -712,14 +714,16 @@ function CryptoPlaybook({
         What kind of economic object {symbol} is decides which investment
         questions are legitimate for it, and which would be the wrong
         instrument. That is settled before any figure is read, so a question
-        this platform cannot answer never quietly becomes one it does not
-        ask. Nothing here is an answer, and none of it reached the
-        recommendation above.
+        this platform cannot answer never quietly becomes one it does not ask.
+        Nothing here is an answer, and none of it reached the recommendation
+        above.
       </p>
 
       <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <p className="text-sm font-semibold text-slate-800">{playbook.name}</p>
+          <p className="text-sm font-semibold text-slate-800">
+            {playbook.name}
+          </p>
 
           <span className="text-xs uppercase tracking-[0.15em] text-slate-400">
             {playbook.confidenceStated}
@@ -812,7 +816,10 @@ function CryptoPlaybook({
 
           <ul className="mt-1.5 space-y-1">
             {playbook.capabilities.map((capability) => (
-              <li key={capability.key} className="text-xs leading-5 text-slate-500">
+              <li
+                key={capability.key}
+                className="text-xs leading-5 text-slate-500"
+              >
                 <span className="font-medium text-slate-600">
                   {capability.label}
                 </span>{" "}
@@ -899,9 +906,9 @@ function CryptoPlaybook({
               and a figure from either substituted for the other would
               misstate the business by that factor. */}
           <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-500">
-            One chain per economic system, never summed. The same word —
-            fees — means a different thing at each ending, and only the
-            source&apos;s own definition separates them.
+            One chain per economic system, never summed. The same word — fees —
+            means a different thing at each ending, and only the source&apos;s
+            own definition separates them.
           </p>
 
           <div className="mt-3 space-y-4">
@@ -948,9 +955,7 @@ function CryptoQuestion({ question }: { question: CryptoQuestionView }) {
         {question.evidence.map((item, index) => (
           <div key={`${question.key}-${index}`}>
             <div className="flex items-baseline justify-between gap-3 text-sm">
-              <dt
-                className={item.met ? "text-slate-700" : "text-slate-400"}
-              >
+              <dt className={item.met ? "text-slate-700" : "text-slate-400"}>
                 {item.met ? item.demand : `Needs: ${item.demand}`}
               </dt>
 
@@ -1113,8 +1118,8 @@ function CryptoMarketContext({
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
         The environment {symbol} trades inside, and its place in it. This is
         context and not quality: none of it reached the recommendation above,
-        and a token that fell less than its peers is not thereby a better
-        asset. Every figure is one provider&apos;s claim — a total market
+        and a token that fell less than its peers is not thereby a better asset.
+        Every figure is one provider&apos;s claim — a total market
         capitalisation is not independently reproducible, because the universe
         is the vendor&apos;s own.
       </p>
@@ -1122,7 +1127,9 @@ function CryptoMarketContext({
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="text-sm font-semibold text-slate-800">Crypto market</p>
+            <p className="text-sm font-semibold text-slate-800">
+              Crypto market
+            </p>
 
             <span className="text-xs text-slate-400">
               {context.marketAge ?? context.marketSource}
@@ -1151,11 +1158,10 @@ function CryptoMarketContext({
               comparator, not an asset that did not move. */}
           {context.uncompared.length > 0 ? (
             <p className="mt-3 text-xs leading-5 text-slate-400">
-              No comparator was published at{" "}
-              {context.uncompared.join(", ")}: the provider reports asset
-              returns at four intervals and market and category figures at
-              one, so 24 hours is the only window where a difference means
-              anything.
+              No comparator was published at {context.uncompared.join(", ")}:
+              the provider reports asset returns at four intervals and market
+              and category figures at one, so 24 hours is the only window where
+              a difference means anything.
             </p>
           ) : null}
         </div>
@@ -1220,8 +1226,13 @@ function CryptoMarketContext({
 
             <ul className="mt-1.5 space-y-1">
               {context.considered.map((item) => (
-                <li key={item.name} className="text-xs leading-5 text-slate-500">
-                  <span className="font-medium text-slate-600">{item.name}</span>{" "}
+                <li
+                  key={item.name}
+                  className="text-xs leading-5 text-slate-500"
+                >
+                  <span className="font-medium text-slate-600">
+                    {item.name}
+                  </span>{" "}
                   — {item.rejectedBecause}
                 </li>
               ))}
@@ -1355,13 +1366,7 @@ function MarketRow({ item }: { item: MarketObservationView }) {
  * attractive or a risk is a reading this platform has not earned, and
  * no word on this card implies one.
  */
-function Supply({
-  supply,
-  symbol,
-}: {
-  supply: DossierSupply;
-  symbol: string;
-}) {
+function Supply({ supply, symbol }: { supply: DossierSupply; symbol: string }) {
   if (supply.unavailableBecause) {
     return (
       <section aria-labelledby="supply-heading">
@@ -1399,10 +1404,10 @@ function Supply({
       <SectionHeading id="supply-heading">Supply</SectionHeading>
 
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-        Crypto supply is an accounting vocabulary rather than one number.
-        Below is what each figure for {symbol} actually counts and whose
-        definition decided it — because two numbers only disagree if they
-        claim to represent the same thing.
+        Crypto supply is an accounting vocabulary rather than one number. Below
+        is what each figure for {symbol} actually counts and whose definition
+        decided it — because two numbers only disagree if they claim to
+        represent the same thing.
       </p>
 
       {/* The headline an investor can act on: whether the estimates
@@ -1549,6 +1554,29 @@ function Supply({
 function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
+      {/* A token's analysis lives on its own surface, because a token is
+          not a company with different labels: the conviction, the score
+          and the committee agreement below are the equity case, and none
+          of the crypto evidence reaches them. Linked rather than
+          redirected while both exist. */}
+      {dossier.definition.kind === "crypto" ? (
+        <Link
+          href={`/crypto/${dossier.symbol}`}
+          className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white px-5 py-4 hover:border-slate-400"
+        >
+          <span className="text-sm text-slate-700">
+            <span className="font-semibold text-slate-900">
+              Open the digital-asset dossier
+            </span>{" "}
+            — the archetype, what can usefully be said, both committees, supply
+            semantics and what is happening.
+          </span>
+          <span aria-hidden="true" className="text-slate-400">
+            &rarr;
+          </span>
+        </Link>
+      ) : null}
+
       <DecisionHeader dossier={dossier} />
 
       {dossier.securityEvidenced ? null : <UnevidencedNotice />}
@@ -1913,11 +1941,12 @@ function FinancialUnderstandingCard({
         ))}
       </dl>
 
-      <p className="mt-4 text-xs leading-5 text-slate-400">{financial.source}</p>
+      <p className="mt-4 text-xs leading-5 text-slate-400">
+        {financial.source}
+      </p>
     </div>
   );
 }
-
 
 /**
  * The case in words — communication, never judgment.
@@ -1927,7 +1956,6 @@ function FinancialUnderstandingCard({
  * in this prose is a backend-validated echo of the decision above it;
  * a draft that tried to change it never reached this page.
  */
-
 
 /** Level 1: the decision itself, before any data. */
 function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
@@ -2046,9 +2074,9 @@ function UnevidencedNotice() {
           </h2>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-900">
-            The platform gathered nothing about this security itself, which is
-            a different situation from a security that was analysed and had
-            gaps. Nothing below describes the security until evidence exists.
+            The platform gathered nothing about this security itself, which is a
+            different situation from a security that was analysed and had gaps.
+            Nothing below describes the security until evidence exists.
           </p>
         </div>
       </div>
@@ -2283,8 +2311,8 @@ function Synthesis({
           </summary>
 
           <p className="mt-2 text-xs leading-5 text-slate-500">
-            Read from the company&rsquo;s published accounts. None of it
-            reached the decision above.
+            Read from the company&rsquo;s published accounts. None of it reached
+            the decision above.
           </p>
 
           <ul className="mt-3 space-y-2">
@@ -2365,9 +2393,7 @@ function OriginMark({ origin }: { origin: string }) {
   return (
     <span
       className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-        established
-          ? "bg-slate-800 text-white"
-          : "bg-slate-100 text-slate-500"
+        established ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-500"
       }`}
       title={
         established
@@ -2503,11 +2529,13 @@ function InvestorContext({ dossier }: { dossier: DossierViewModel }) {
 function WhyTrustThis({ dossier }: { dossier: DossierViewModel }) {
   return (
     <section aria-labelledby="trust-heading">
-      <SectionHeading id="trust-heading">Why you can examine this</SectionHeading>
+      <SectionHeading id="trust-heading">
+        Why you can examine this
+      </SectionHeading>
 
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-        Every layer of the reasoning is retained and shown below, deepest
-        last. An absent measurement is reported as absent.
+        Every layer of the reasoning is retained and shown below, deepest last.
+        An absent measurement is reported as absent.
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -2620,7 +2648,9 @@ function VerdictStrip({ derivation }: { derivation: DossierDerivation }) {
                 : ""
             }`}
             title={
-              derivation.cappedByUnreadableFactors ? derivation.stated : undefined
+              derivation.cappedByUnreadableFactors
+                ? derivation.stated
+                : undefined
             }
           >
             {derivation.coverage}
@@ -2657,9 +2687,7 @@ function ScoreBreakdown({ derivation }: { derivation: DossierDerivation }) {
             className="flex items-baseline justify-between gap-4 border-b border-slate-200/70 py-1.5 last:border-0"
           >
             <span
-              className={
-                item.points > 0 ? "text-slate-700" : "text-slate-500"
-              }
+              className={item.points > 0 ? "text-slate-700" : "text-slate-500"}
             >
               {item.statement}
 
@@ -2705,15 +2733,15 @@ function ScoreBreakdown({ derivation }: { derivation: DossierDerivation }) {
           read a middling band as a verdict on the business. */}
       {derivation.cappedByUnreadableFactors ? (
         <p className="mt-1.5 text-xs leading-5 text-amber-700">
-          This is a limit of what the platform could read, not a finding
-          about the company.
+          This is a limit of what the platform could read, not a finding about
+          the company.
         </p>
       ) : null}
 
       {hasZero ? (
         <p className="mt-1.5 text-xs leading-5 text-slate-500">
-          Nothing subtracts: a factor the company does not meet earns no
-          point rather than losing one.
+          Nothing subtracts: a factor the company does not meet earns no point
+          rather than losing one.
         </p>
       ) : null}
 

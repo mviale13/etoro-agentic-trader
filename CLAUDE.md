@@ -716,6 +716,41 @@ currently supportable and is reported as unknown rather than asserted;
 Asset Quality's absolute bands still force a value across a threshold
 this layer would express as a range.
 
+**A token is not a company with different labels** (the Crypto Dossier,
+[`CRYPTO_DOSSIER_UI.md`](docs/architecture/CRYPTO_DOSSIER_UI.md), built).
+The first investor-usable crypto surface, and the audit that earned it:
+`/executive/BTC/dossier` led with **conviction 46, agreement 0.5, safety
+35 and the Investment and Risk Committees** — none of it from crypto
+evidence — while Fee Capture, Supply Governance, the investor
+assessment, Asset Quality, the intelligence layer and the journal
+appeared nowhere. Six layers had reached the CLI and stopped.
+
+**Its own endpoint, because the measurement said so**: the equity
+dossier runs the brain pipeline and takes ~12s; the whole crypto
+composition is **~19ms** of stored doors. One composes a *decision*, the
+other composes what is *known*. `GET /crypto/{symbol}/dossier` reuses
+the five existing adapters plus the two domain objects that already
+serialise themselves, and adds four small ones.
+
+**The frontend calculates nothing analytical** — no value, score,
+applicability, interpretation, classification or verdict is recreated in
+TypeScript, and **no fallback prose turns a measurement into economic
+meaning**. Enforced three times: adapters carry the domain's sentence
+beside every state, the parser *requires* it, and the page renders the
+refusal where the backend declines to interpret. A test walks every key
+at every depth for an aggregate.
+
+**And it does change with the asset** — 9/12/15/9/4 questions asked, HYPE
+alone with two entities, TAO with 15 undetermined and nothing refused,
+and the two committees swapping sides between BTC and 1INCH. **The
+finding the test produced: BTC and 1INCH have identical counts (9 asked,
+10 refused) and are not remotely the same asset**, so a count is never
+the differentiator — questions are named, grouped by applicability, and
+the three groups are separated rather than sorted. `UNKNOWN` is never a
+zero, `NOT_APPLICABLE` is never adverse, and no state is colour-coded.
+Five deficiencies recorded and not solved, including that asset class
+still cannot be resolved without the brain pipeline.
+
 **A grounded fact may travel upward without its economic interpretation
 travelling with it** (Zero Fake Meaning, `INVESTOR_ASSESSMENT.md` §6,
 accepted and built). Invariant 10, and the semantic form of Invariant 1.
