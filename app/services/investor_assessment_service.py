@@ -54,6 +54,17 @@ from app.services.supply_semantics_service import SupplySemanticsService
 #: simply be wrong. Set from the corpus — Bittensor's estimates span
 #: 9.9% and bound a real answer; Hyperliquid's span 78% and one of them
 #: exceeds the protocol maximum.
+#: **Provisional, and explicitly not a definition of investor
+#: materiality.** One constant currently decides this for every quantity,
+#: and the corpus has already shown that what a spread *means* depends on
+#: context: Bittensor's two circulating readings 9.9% apart form a useful
+#: bound, while Hyperliquid's much larger span matters partly because one
+#: reading exceeds the protocol maximum — a fact about the *kind* of
+#: disagreement rather than its size.
+#:
+#: Future materiality may belong to the quantity or the question rather
+#: than to one global evidence threshold. No decision is taken here, and
+#: nothing downstream should treat this number as a general answer.
 MATERIAL_SPREAD = 0.25
 
 #: The investor's words for the quantities this layer reports. Internal

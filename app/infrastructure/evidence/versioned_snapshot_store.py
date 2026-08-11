@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from app.infrastructure.evidence_root import evidence_path
+
 JsonObject = dict[str, Any]
 
 
@@ -48,8 +50,12 @@ class VersionedSnapshotStore:
     archive being invented to hold the same evidence twice.
     """
 
-    def __init__(self, root: Path | str = "data/evidence") -> None:
-        self._root = Path(root)
+    def __init__(self, root: Path | str | None = None) -> None:
+        # Resolved here rather than in the signature: a default
+        # evaluated at import would freeze the root and ignore
+        # every later redirection, which is the same class of
+        # undeclared input this indirection exists to remove.
+        self._root = Path(root) if root is not None else evidence_path("evidence")
 
     def save(
         self,

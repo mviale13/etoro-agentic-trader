@@ -31,6 +31,7 @@ from app.domain.intelligence_journal import (
     JournalEntry,
     ObservationStatus,
 )
+from app.infrastructure.evidence_root import evidence_path
 
 #: The line format's own version, written on every line.
 SCHEMA = 1
@@ -39,8 +40,12 @@ SCHEMA = 1
 class IntelligenceJournalStore:
     """The record. Appends, reads, and cannot do anything else."""
 
-    def __init__(self, root: Path | str = "data/journal") -> None:
-        self._root = Path(root)
+    def __init__(self, root: Path | str | None = None) -> None:
+        # Resolved here rather than in the signature: a default
+        # evaluated at import would freeze the root and ignore
+        # every later redirection, which is the same class of
+        # undeclared input this indirection exists to remove.
+        self._root = Path(root) if root is not None else evidence_path("journal")
 
     def path_for(self, asset: str) -> Path:
         return self._root / f"{asset.upper().strip()}.jsonl"

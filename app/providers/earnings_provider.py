@@ -9,6 +9,7 @@ import yfinance as yf
 from app.domain.earnings_schedule import EarningsWindow
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 
 
 class EarningsNotRead(LookupError):
@@ -86,7 +87,7 @@ class CachedEarningsProvider:
     ) -> None:
         self._provider = provider or EarningsDatesProvider()
         self._cache = cache or JsonCache(
-            "data/cache/earnings",
+            evidence_path("cache", "earnings"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

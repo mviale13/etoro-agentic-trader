@@ -11,6 +11,7 @@ from app.domain.asset_class import AssetClass
 from app.domain.provenance import Provenance
 from app.domain.sentiment_snapshot import SentimentSnapshot
 from app.infrastructure.cache.json_cache import JsonCache
+from app.infrastructure.evidence_root import evidence_path
 
 
 class CryptoFearGreedProvider:
@@ -42,7 +43,7 @@ class CryptoFearGreedProvider:
         timeout: float = 10.0,
     ) -> None:
         self._cache = cache or JsonCache(
-            "data/cache/sentiment",
+            evidence_path("cache", "sentiment"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

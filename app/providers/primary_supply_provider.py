@@ -41,6 +41,7 @@ from app.domain.supply_semantics import (
     UnitConstant,
 )
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.primary_sources import (
     ArbitrumRpc,
     CardanoLedger,
@@ -596,7 +597,7 @@ class CachedPrimarySupplyProvider:
         # there is nothing to bring forward. It re-acquires instead —
         # which is a keyless chain read, and cheap.
         self._cache = cache or JsonCache(
-            "data/cache/primary_supply",
+            evidence_path("cache", "primary_supply"),
             schema=SCHEMA,
         )
         self._acquires = acquires

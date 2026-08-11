@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.value_provider import ValueProvider
 
 #: A company this platform has never read the fundamentals of.
@@ -48,7 +49,7 @@ class CachedValueProvider:
     ) -> None:
         self._provider = provider or ValueProvider()
         self._cache = cache or JsonCache(
-            "data/cache/fundamentals",
+            evidence_path("cache", "fundamentals"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

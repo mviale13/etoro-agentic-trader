@@ -22,7 +22,7 @@ MALFORMED     unreadable, or version metadata is junk → cache miss
 
 A miss is a *cache* miss. It re-acquires under the store's existing
 spend rules and destroys nothing: this class writes only under
-`data/cache/`, and the authoritative evidence stores — knowledge,
+the cache root, and the authoritative evidence stores — knowledge,
 statements, decisions, events, evidence snapshots — are different
 classes with different contracts. Losing a cached materialisation of a
 provider response is not losing provenance.
@@ -39,6 +39,8 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
+
+from app.infrastructure.evidence_root import evidence_path
 
 UNSAFE = re.compile(r"[^A-Za-z0-9._-]")
 
@@ -128,12 +130,18 @@ class JsonCache:
 
     def __init__(
         self,
-        directory: Path | str = "data/cache",
+        directory: Path | str | None = None,
         schema: int | None = None,
         migrations: Mapping[int, Migration] | None = None,
         accepts_unversioned: bool = False,
     ) -> None:
         """
+        `directory` defaults to the cache root beneath the declared
+        evidence root, resolved **here** rather than in the signature: a
+        default evaluated at import would freeze the location and ignore
+        every later redirection, which is the undeclared-input problem
+        this indirection exists to remove.
+
         `schema` is the shape this reader understands. Omitted, the cache
         behaves exactly as it did before schemas existed — every readable
         record is `CURRENT` — which is what keeps a store that has never
@@ -150,7 +158,9 @@ class JsonCache:
         will re-acquire them.
         """
 
-        self.directory = Path(directory)
+        self.directory = Path(
+            directory if directory is not None else evidence_path("cache")
+        )
         self.schema = schema
         self.migrations: Mapping[int, Migration] = migrations or {}
         self.accepts_unversioned = accepts_unversioned

@@ -10,6 +10,7 @@ import yfinance as yf
 from app.domain.exchange_rate import ExchangeRate
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 
 
 class ExchangeRateProvider:
@@ -95,7 +96,7 @@ class CachedExchangeRateProvider:
     ) -> None:
         self._provider = provider or ExchangeRateProvider()
         self._cache = cache or JsonCache(
-            "data/cache/fx",
+            evidence_path("cache", "fx"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

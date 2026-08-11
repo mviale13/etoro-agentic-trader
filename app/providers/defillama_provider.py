@@ -36,6 +36,7 @@ import requests
 from app.domain.protocol_fundamentals import ProtocolMetric
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 
 
 class ProtocolFactsUnavailable(LookupError):
@@ -492,7 +493,7 @@ class CachedDefiLlamaProvider:
     ) -> None:
         self._provider = provider or DefiLlamaProvider()
         self._cache = cache or JsonCache(
-            "data/cache/protocol_facts",
+            evidence_path("cache", "protocol_facts"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump
