@@ -564,6 +564,36 @@ layer's own enumerations the producible vocabulary is finite and a test
 enumerates all of it. The synthesist may explain a transition code
 established and cannot discover one.
 
+**The framework may know that Committee X answered question Y with
+verdict Z; it may never know what Z means** (the Crypto Committee
+Protocol,
+[`CRYPTO_COMMITTEE_PROTOCOL.md`](docs/architecture/CRYPTO_COMMITTEE_PROTOCOL.md),
+accepted and built). Extracted from #112 and #113 rather than designed
+ahead of them, and the extraction was a **relocation, not an
+invention**: every decision Judgment History makes runs on *did it
+speak*, *is this the same answer*, *does the question still apply* and
+*one contract or two* — so the framework's logic was already generic and
+only its vocabulary was not. **One line proved it**: `posture_of` read
+`Verdict.MECHANISM_EVIDENCED` and decided it meant presence. That split
+was used for wording only, so `JudgmentPosture` lost a member and lost
+no information — a record carries the verdict token and the committee's
+own sentence, and quoting is not interpreting.
+
+A committee now owns its **verdict vocabulary, question, applicability
+rule and economic semantics**; the framework owns identity/versioning,
+the three applicability *states*, the answered/abstained/unavailable
+trichotomy, evidence eligibility, support counting and the lifecycle.
+`CommitteeJudgment` carries its own `CommitteeContract` — #113 passed
+identity alongside, which let a caller file a judgment under a committee
+that did not produce it. **`abstained_because` was measured redundant**
+(a total bijection with applicability) and **kept anyway**: those are
+Fee Capture's three reasons, and a second committee's fourth would not
+be derivable. Proven by a test-only committee with **three verdicts**,
+which is what catches a framework that quietly assumed a binary. Live
+outcomes unchanged (HYPE/ETH/SOL evidenced, ARB/ADA/1INCH not, BTC wrong
+instrument, TAO unestablished); store schema 2 reads schema 1 by
+fallback, never migration.
+
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
 attributes rather than layout, and reports `EventFeedHealth` when it

@@ -30,11 +30,10 @@ from app.domain.committee_judgment import (
     ELIGIBLE_CLAIM_TYPES,
     AbstentionReason,
     Applicability,
+    ApplicabilityBasis,
     Confidence,
     EligibleFinding,
     JudgmentState,
-    Remit,
-    Verdict,
     confidence_from,
     is_eligible,
 )
@@ -45,12 +44,23 @@ from app.providers.defillama_provider import ProtocolClaimSet, ProtocolMetricCla
 from app.providers.narrative_provider import Draft, DraftRequest, NarrativeDeclined
 from app.services.protocol_fundamentals_service import ProtocolFundamentalsService
 from app.services.value_capture_committee import (
+    CONTRACT,
     OUT_OF_REMIT,
     JudgmentRejected,
     ValueCaptureCommittee,
+    Verdict,
     judgment_schema,
 )
 from tests.reachability import reachable
+
+#: The applicability every `_validated` call below was reached under.
+#: The method no longer assumes one — an `UNAVAILABLE` judgment that
+#: forgot its applicability would be recorded as an unknown one.
+_APPLICABLE = ApplicabilityBasis(
+    applicability=Applicability.APPLICABLE,
+    because="test fixture",
+    economic_role="Exchange venue",
+)
 
 # ── recorded evidence ───────────────────────────────────────────────
 #
@@ -332,7 +342,9 @@ def test_an_asset_the_question_does_not_suit_is_not_judged_adversely() -> None:
 
     committee = _committee()
 
-    applies, because = committee.applicability("BTC")
+    basis = committee.basis("BTC")
+
+    applies, because = basis.applicability, basis.because
 
     assert applies is Applicability.NOT_ECONOMICALLY_APPLICABLE
     assert "security" in because or "secures" in because
@@ -382,7 +394,7 @@ def test_applicability_evidence_and_judgment_are_three_separate_steps() -> None:
     # Bitcoin has eligible evidence and is still not asked.
     assert committee.evidence("BTC")
 
-    assert not committee.applicability("BTC")[0].is_applicable
+    assert not committee.basis("BTC").is_applicable
 
 
 def test_the_committee_owns_its_applicability_rule() -> None:
@@ -400,7 +412,7 @@ def test_the_committee_owns_its_applicability_rule() -> None:
     assert "crypto_questions" not in code
 
     # It states its own reason, in economic terms.
-    _, because = _committee().applicability("BTC")
+    because = _committee().basis("BTC").because
 
     assert len(because.split()) > 15
 
@@ -444,6 +456,7 @@ def test_removing_the_decisive_finding_cannot_be_recovered_by_the_model() -> Non
             },
             starved,
             "test-model",
+            _APPLICABLE,
         )
 
 
@@ -548,6 +561,7 @@ def test_more_evidence_raises_confidence_without_moving_the_verdict() -> None:
             },
             committee.evidence("ETH"),
             "test-model",
+            _APPLICABLE,
         )
 
     thin = verdict_with(refs[:1])
@@ -612,6 +626,7 @@ def test_an_out_of_remit_verdict_is_refused() -> None:
             {"verdict": "buy", "refs": ["F.ethereum-chain"], "because": "x"},
             committee.evidence("ETH"),
             "test-model",
+            _APPLICABLE,
         )
 
 
@@ -635,6 +650,7 @@ def test_reasoning_that_leaves_the_remit_is_refused() -> None:
                 },
                 evidence,
                 "test-model",
+                _APPLICABLE,
             )
 
 
@@ -659,6 +675,7 @@ def test_an_invented_figure_is_refused() -> None:
             },
             committee.evidence("ETH"),
             "test-model",
+            _APPLICABLE,
         )
 
 
@@ -671,6 +688,7 @@ def test_a_verdict_citing_nothing_is_refused() -> None:
             {"verdict": "mechanism_evidenced", "refs": [], "because": "Because."},
             committee.evidence("ETH"),
             "test-model",
+            _APPLICABLE,
         )
 
 
@@ -774,7 +792,13 @@ def test_the_committee_cannot_reach_asset_quality() -> None:
 
 
 def test_there_is_exactly_one_committee() -> None:
-    """§2: not a taxonomy. One remit, earned by measurement."""
+    """Not a taxonomy. One remit, earned by measurement.
 
-    assert len(list(Remit)) == 1
-    assert Remit.VALUE_CAPTURE.question
+    The committee now declares itself rather than taking a slot in a
+    framework enumeration, so "how many committees exist" is a question
+    about how many contracts exist — and there is one.
+    """
+
+    assert CONTRACT.key == "value_capture"
+    assert CONTRACT.question
+    assert CONTRACT.verdicts == tuple(verdict.value for verdict in Verdict)
