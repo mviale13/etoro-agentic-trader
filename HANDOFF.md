@@ -6,7 +6,7 @@ here.
 ## State
 
 `main` is at `99fb1ec`. Gates: ruff, ruff format, mypy (565 files),
-**2087 tests**, verified with `git archive HEAD` in isolation.
+**2094 tests**, verified with `git archive HEAD` in isolation.
 
 Merged since the last handoff, in order:
 
@@ -18,6 +18,7 @@ Merged since the last handoff, in order:
 | `#116` | The committee portfolio — everything beside, nothing combined |
 | `#117` | Investor Assessment — the strongest useful statement |
 | `#118` | Hermetic evidence execution |
+| `#119` | Zero Fake Meaning — economic role-awareness in Investor Assessment |
 
 ## Where the work is
 
@@ -82,6 +83,21 @@ quorum 2, declined three times. Do not try to earn factor #2.
    may borrow.** Every issuance rule stands at `CLAIMED` because a
    chain's own parameters have no second source — requiring
    `ESTABLISHED` silenced all three answerable assets.
+7. **A grounded fact may travel upward without its economic
+   interpretation travelling with it** — Invariant 10, Zero Fake
+   Meaning. One sentence keyed by *quantity* rather than by asset
+   (*"it bounds how far the holder's share can be diluted"*) is true of
+   a network asset and inverted for a claim on a reserve. The executive
+   layer must not invent the missing half; it quotes the contract that
+   owns the question, or states that the interpretation is not
+   established.
+8. **A declaration that no code path can reach is not a rule.**
+   `DECLINED` documented itself as the place an archetype refuses a
+   question *no lens can refuse*, and `applicability_for` returned
+   `ASK` before reaching it — so **13 of 13 entries were unreachable**
+   and could only re-word refusals that would have happened anyway.
+   Dormant since S3, found only by asking the table to do the one thing
+   it claimed.
 
 ## Traps
 

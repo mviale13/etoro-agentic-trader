@@ -714,6 +714,14 @@ class QuestionDecline:
     evidence family over. Written by hand only where the archetype has
     something specific to say; otherwise the refusal is worded from the
     lens that would have asked it, which is already an accurate account.
+
+    **A decline outranks the lens union**, and until it did this whole
+    table was unreachable. Every one of its thirteen entries named a
+    question no composed lens asked anyway, so a decline could only
+    re-word a refusal that would have happened without it — and the one
+    thing the docstring below claims for it, a refusal *no lens can
+    make*, was the one thing it could not do. Measured, then fixed: see
+    `applicability_for`.
     """
 
     question: CryptoQuestionKey
@@ -848,6 +856,22 @@ DECLINED: dict[TokenArchetype, tuple[QuestionDecline, ...]] = {
     ),
     TokenArchetype.STABLECOIN: (
         QuestionDecline(
+            question=CryptoQuestionKey.SUPPLY_AND_DILUTION,
+            reason=(
+                "The market lens asks this of every token that trades, "
+                "and the composition refuses it. A stablecoin is a "
+                "claim on a reserve rather than a share of a network: "
+                "it is minted and redeemed against what it tracks, so "
+                "there is no eventual supply a holder's share is "
+                "measured against and no schedule that dilutes them. "
+                "Supply expanding is the instrument working. What the "
+                "supply figure would have to be read against — the "
+                "reserve behind it, and who may redeem at par — is "
+                "named in this archetype's unmodelled questions and is "
+                "not held here."
+            ),
+        ),
+        QuestionDecline(
             question=CryptoQuestionKey.MONETARY_SCARCITY,
             reason=(
                 "A stablecoin is supposed to be issued and redeemed "
@@ -940,6 +964,8 @@ def questions_for(archetype: TokenArchetype) -> tuple[CryptoQuestionKey, ...]:
         key for capability in definition.capabilities for key in ASKED_BY[capability]
     }
 
+    asked -= {decline.question for decline in DECLINED.get(archetype, ())}
+
     return tuple(key for key in CryptoQuestionKey if key in asked)
 
 
@@ -978,7 +1004,27 @@ def applicability_for(
     turn a legitimate question into an inapplicable one, and the
     difference between "we do not ask this of Bitcoin" and "nobody
     publishes this for Bitcoin" would quietly disappear.
+
+    **The archetype's own refusals are consulted first**, because a
+    lens cannot see the composition it was composed into. A stablecoin
+    trades, so it composes the market lens, and the market lens asks
+    supply-and-dilution of everything that trades — but a claim on a
+    reserve has no eventual supply to be diluted against, and only the
+    composition knows that. Reading `DECLINED` after the union made
+    every entry in it unreachable: all thirteen named questions no
+    composed lens asked anyway, so the table could only re-word
+    refusals that would have happened without it. Reordering changes
+    no answer for any archetype declared today — asserted by test —
+    and is what lets a composition refuse a lens.
     """
+
+    for decline in DECLINED.get(archetype, ()):
+        if decline.question is question:
+            return Applicability(
+                question=question,
+                state=QuestionApplicability.NOT_APPLICABLE_FOR_ARCHETYPE,
+                because=decline.reason,
+            )
 
     capability = _asks(archetype, question)
 
@@ -1005,14 +1051,6 @@ def applicability_for(
                 "about the asset."
             ),
         )
-
-    for decline in DECLINED.get(archetype, ()):
-        if decline.question is question:
-            return Applicability(
-                question=question,
-                state=QuestionApplicability.NOT_APPLICABLE_FOR_ARCHETYPE,
-                because=decline.reason,
-            )
 
     lenses = ", ".join(capability.label.lower() for capability in _would_ask(question))
 

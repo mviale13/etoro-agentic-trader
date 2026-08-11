@@ -36,7 +36,10 @@ class AssessmentCommand:
                 "no stronger. A bound is reported as a bound rather than "
                 "averaged into a figure nobody published, and a difference "
                 "between sources is only called uncertain where the "
-                "difference changes what can responsibly be said. Nothing "
+                "difference changes what can responsibly be said. Every "
+                "reason a figure matters is quoted from the contract that "
+                "established the question applies to this asset, and where "
+                "none has, the measurement is shown without one. Nothing "
                 "here is a recommendation, a score or a ranking.",
                 "  ",
             )
@@ -60,8 +63,18 @@ class AssessmentCommand:
             if statement.uncertainty:
                 print(_wrap(f"still open: {statement.uncertainty}", "    "))
 
-            if statement.why_it_matters:
-                print(_wrap(f"why it matters: {statement.why_it_matters}", "    "))
+            for meaning in statement.why_it_matters:
+                print(_wrap(f"why it matters: {meaning.stated}", "    "))
+                print(_wrap(f"({meaning.question} — {meaning.licensed_by})", "      "))
+
+            if statement.interpretation_withheld:
+                print(
+                    _wrap(
+                        "what it means for this asset is not established here: "
+                        + statement.interpretation_withheld,
+                        "    ",
+                    )
+                )
 
             for value in statement.observed:
                 print(f"      {value.source}: {value.value:,.4f} {value.unit}")
