@@ -41,6 +41,10 @@ from app.domain.judgment_history import JudgmentRecord
 
 #: The line format's own version, written on every line.
 #:
+#: 4 adds the refused-wording note: a judgment whose drafted sentence
+#: was rejected is still a judgment, and the rejection is recorded rather
+#: than erasing it.
+#:
 #: 3 adds the committee's own stated reason, which the assessment matrix
 #: needs to tell two identical-looking abstentions apart.
 #:
@@ -51,7 +55,7 @@ from app.domain.judgment_history import JudgmentRecord
 #: exactly as true. The journal's rule holds: a file that is never
 #: rewritten cannot be migrated, so old lines are read as they were
 #: written, forever.
-SCHEMA = 3
+SCHEMA = 4
 
 
 class JudgmentHistoryStore:
@@ -174,6 +178,7 @@ def _encode(record: JudgmentRecord) -> dict[str, Any]:
             record.abstained_because.value if record.abstained_because else None
         ),
         "because": record.because,
+        "wording_refused": record.wording_refused,
         "unavailable_because": record.unavailable_because,
         "economic_role": record.economic_role,
         "model": record.model,
@@ -215,6 +220,7 @@ def _decode(row: Any) -> JudgmentRecord | None:
                 else None
             ),
             because=row.get("because"),
+            wording_refused=row.get("wording_refused"),
             unavailable_because=row.get("unavailable_because"),
             economic_role=row.get("economic_role"),
             model=row.get("model"),

@@ -640,11 +640,31 @@ class ValueCaptureCommittee:
                 f"({', '.join(unknown)})"
             )
 
-        because = (payload.get("because") or "").strip()
-
-        _check_sentence(because, findings)
-
         supporting = [finding for finding in findings if finding.ref in refs]
+
+        # ── the boundary between analysis and presentation ──────────
+        #
+        # Everything above is structural: the answer is in this
+        # committee's vocabulary and every ref it cites was supplied.
+        # That is a complete judgment, and it is complete *before* a
+        # single word of prose is inspected.
+        #
+        # The sentence is checked next and its failure is soft. HYPE
+        # lost a valid `mechanism_evidenced` because the drafted
+        # sentence used the word "buy" — the validator was right to
+        # refuse the wording and wrong to take the answer with it. The
+        # draft is still refused; what changes is that the refusal is
+        # recorded and the committee falls back to its own account.
+        drafted = (payload.get("because") or "").strip()
+
+        because = drafted
+        wording_refused: str | None = None
+
+        try:
+            _check_sentence(drafted, findings)
+        except JudgmentRejected as rejection:
+            wording_refused = str(rejection)
+            because = _own_account(verdict, supporting)
 
         return CommitteeJudgment(
             asset=asset,
@@ -662,6 +682,7 @@ class ValueCaptureCommittee:
             ),
             refs=refs,
             because=because,
+            wording_refused=wording_refused,
             judged_at=datetime.now(UTC),
             model=model,
         )
@@ -712,6 +733,24 @@ def user_prompt(asset: str, findings: tuple[EligibleFinding, ...]) -> str:
     ]
 
     return "\n".join(lines)
+
+
+def _own_account(
+    verdict: Verdict,
+    supporting: list[EligibleFinding],
+) -> str:
+    """The committee's own sentence, written in code rather than drafted.
+
+    Used when a drafted sentence is refused. It quotes this committee's
+    verdict wording and counts what the answer rests on, and it invents
+    nothing — which is why it cannot itself fail the validator.
+    """
+
+    return (
+        f"The committee found that {verdict.stated}, resting on "
+        f"{len(supporting)} eligible finding(s). Its drafted wording was "
+        "refused, so this account is the committee's own."
+    )
 
 
 def _check_sentence(

@@ -6,6 +6,7 @@ from typing import Any, NoReturn
 from app.commands import (
     acquire,
     archetype,
+    assessment,
     brain,
     committee,
     committee_judgment,
@@ -431,6 +432,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show every eligible finding the committee was given",
     )
 
+    assessment_parser = subparsers.add_parser(
+        "assessment",
+        help="What can usefully be said to an investor about this asset",
+        description=(
+            "The strongest statement the evidence supports, per subject: a "
+            "figure the evidence settles, a bound across estimates, a "
+            "structural fact, something true within a stated limit, or an "
+            "honest uncertainty. A difference between sources becomes an "
+            "uncertainty only where the difference changes what can "
+            "responsibly be said, and no figure is ever averaged into one "
+            "nobody published. Read-only, no model — and no recommendation, "
+            "score or ranking"
+        ),
+    )
+    assessment_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example TAO. Omit for the corpus",
+    )
+
     committees_parser = subparsers.add_parser(
         "committees",
         help="Show what every registered committee has concluded about an asset",
@@ -836,6 +857,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "committee-judgment":
         return await committee_judgment.run(args.symbol, args.evidence)
+
+    if args.command == "assessment":
+        return await assessment.run(args.symbol)
 
     if args.command == "committees":
         return await committees.run(args.symbol, args.evidence)

@@ -631,6 +631,16 @@ def test_an_out_of_remit_verdict_is_refused() -> None:
 
 
 def test_reasoning_that_leaves_the_remit_is_refused() -> None:
+    """The wording is refused and the answer survives.
+
+    Both halves matter. The validator is untouched — every sentence
+    below is still rejected — but a verdict that has already cleared its
+    vocabulary and its grounding is a complete structural judgment, and
+    discarding it because the sentence beside it said "attractive" threw
+    away an answer the evidence supported. HYPE lost a
+    `mechanism_evidenced` exactly that way.
+    """
+
     committee = _committee()
 
     evidence = committee.evidence("ETH")
@@ -640,18 +650,30 @@ def test_reasoning_that_leaves_the_remit_is_refused() -> None:
         "The portfolio should hold this.",
         "Fundamentals look bullish.",
     ):
-        with pytest.raises(JudgmentRejected, match="outside this committee"):
-            committee._validated(  # noqa: SLF001
-                "ETH",
-                {
-                    "verdict": "mechanism_evidenced",
-                    "refs": ["F.ethereum-chain"],
-                    "because": sentence,
-                },
-                evidence,
-                "test-model",
-                _APPLICABLE,
-            )
+        judgment = committee._validated(  # noqa: SLF001
+            "ETH",
+            {
+                "verdict": "mechanism_evidenced",
+                "refs": ["F.ethereum-chain"],
+                "because": sentence,
+            },
+            evidence,
+            "test-model",
+            _APPLICABLE,
+        )
+
+        # The draft was refused, and the refusal is recorded.
+        assert judgment.wording_refused
+        assert "outside this committee" in judgment.wording_refused
+
+        # The rejected sentence reaches nothing.
+        assert judgment.because is not None
+        assert sentence not in judgment.because
+
+        # And the analysis stands.
+        assert judgment.state is JudgmentState.JUDGED
+        assert judgment.verdict is Verdict.MECHANISM_EVIDENCED
+        assert judgment.refs == ("F.ethereum-chain",)
 
 
 def test_the_out_of_remit_list_names_the_actual_risk() -> None:
@@ -665,18 +687,25 @@ def test_an_invented_figure_is_refused() -> None:
 
     committee = _committee()
 
-    with pytest.raises(JudgmentRejected, match="appears in no supplied fact"):
-        committee._validated(  # noqa: SLF001
-            "ETH",
-            {
-                "verdict": "mechanism_evidenced",
-                "refs": ["F.ethereum-chain"],
-                "because": "Holders received $999k over the day.",
-            },
-            committee.evidence("ETH"),
-            "test-model",
-            _APPLICABLE,
-        )
+    judgment = committee._validated(  # noqa: SLF001
+        "ETH",
+        {
+            "verdict": "mechanism_evidenced",
+            "refs": ["F.ethereum-chain"],
+            "because": "Holders received $999k over the day.",
+        },
+        committee.evidence("ETH"),
+        "test-model",
+        _APPLICABLE,
+    )
+
+    # Refused, and the invented figure reaches no reader.
+    assert judgment.wording_refused
+    assert "appears in no supplied fact" in judgment.wording_refused
+    assert "999" not in (judgment.because or "")
+
+    # The structural answer is unaffected: the model did not compute it.
+    assert judgment.verdict is Verdict.MECHANISM_EVIDENCED
 
 
 def test_a_verdict_citing_nothing_is_refused() -> None:

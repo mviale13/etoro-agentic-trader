@@ -154,6 +154,13 @@ concluded, when, and what changed since — the answer, the observation
 beneath it and the evidence itself as three separate facts, with a
 previous verdict never restated as today's. Read-only, no model, and a
 count of judgments is never presented as a duration of review),
+`movrvest assessment [SYMBOL]` (the strongest statement the evidence
+supports, per subject: a figure it settles, a bound across estimates, a
+structural fact, something true within a stated limit, or an honest
+uncertainty. A difference between sources becomes an uncertainty only
+where the difference changes what can responsibly be said, and no figure
+is ever averaged into one nobody published. Read-only, no model, and no
+recommendation, score or ranking),
 `movrvest committees [SYMBOL] [--evidence]` (what every registered
 committee has concluded: per committee the question it owns, its
 conclusion in its own words, why, the confidence it expresses and the
@@ -672,6 +679,42 @@ it reads and must never acquire. `GET /committees/{symbol}` serves the
 projection; it is **not** a dossier section, because placing it there
 would decide where a collection of independent judgments belongs in the
 investor's narrative, which is the deferred layer.
+
+**The strongest useful statement, and never stronger** (Investor
+Assessment,
+[`INVESTOR_ASSESSMENT.md`](docs/architecture/INVESTOR_ASSESSMENT.md),
+accepted and built). The layer between committee judgment and eventual
+recommendation, earned because #116 showed internal vocabulary leaking
+to the surface as though it were a conclusion: **`CONFLICTED` is a fact
+about two readings; *we cannot tell you anything* is a fact about the
+investor's question.** Six shapes, each observed in the corpus before it
+was declared — precise / range / structural / qualified / uncertain /
+insufficient — and **not ordered**, because a precise answer to a
+question nobody asked is worth less than an honest bound on one they
+did. `DIRECTIONAL` was specified and **not built**: nothing produces one
+yet.
+
+**A difference is not a failure.** TAO's two circulating estimates are
+9.9% apart and bound a real answer — *"approximately 8.64 to 9.60
+million across 2 available estimates"* — while HYPE's span 78% and one
+exceeds the maximum, so the spread is the story. **No midpoint is ever
+computed**, and a test asserts it appears nowhere.
+
+**Two boundary fixes.** A prose failure is a **presentation** failure:
+the validator is untouched and the refused sentence still reaches no
+reader, but the refusal is recorded in `wording_refused` and the
+structural answer survives — HYPE's Fee Capture answers
+`mechanism_evidenced` where the word *buy* previously erased it. And a
+vendor total exactly equal to the maximum is **qualified rather than
+stated**, because S5 measured that substitution across 83 of 145 capped
+assets.
+
+**Recorded, unsolved**: `max_supply: null` and *field absent* are
+indistinguishable in the provider, so *ETH has no cap* is **not**
+currently supportable and is reported as unknown rather than asserted;
+`MATERIAL_SPREAD` is one constant doing work across every quantity; and
+Asset Quality's absolute bands still force a value across a threshold
+this layer would express as a range.
 
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
