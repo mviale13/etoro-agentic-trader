@@ -1256,3 +1256,46 @@ def test_the_precedence_fix_changed_no_other_answer() -> None:
     assert overridden == {
         (TokenArchetype.STABLECOIN, CryptoQuestionKey.SUPPLY_AND_DILUTION)
     }
+
+
+def test_every_declared_decline_actually_decides() -> None:
+    """A declaration that no code path can reach is not a rule.
+
+    The generic form of the defect this slice found, and the guard that
+    stops it recurring. `DECLINED` sat unreachable from S3 until #119 —
+    thirteen refusals, none of which could decide anything — and the
+    reason nobody noticed is that every entry named a question the lens
+    union had already dropped, so the *answers* looked right while the
+    *table* was inert.
+
+    So reachability is asserted on the sentence rather than on the
+    state. A shadowed decline returns `ASK` with the lens's own
+    wording, and an unshadowed-but-unconsulted one returns the generic
+    "this question belongs to the … lens" refusal: both are
+    `because != decline.reason`. Only a decline that actually decided
+    can produce its own words.
+
+    Every future entry is covered without anyone remembering to add a
+    test, which is the point — the specific stablecoin case would not
+    have caught a shadowed decline on any other archetype.
+    """
+
+    declared = [
+        (archetype, decline)
+        for archetype, declines in DECLINED.items()
+        for decline in declines
+    ]
+
+    assert declared
+
+    for archetype, decline in declared:
+        applicability = applicability_for(archetype, decline.question)
+
+        assert applicability.state is QuestionApplicability.NOT_APPLICABLE_FOR_ARCHETYPE
+        assert applicability.because == decline.reason, (archetype, decline.question)
+        assert applicability.asked_by is None
+
+        # And the other door agrees. A question `questions_for` still
+        # listed while `applicability_for` refused it would be the same
+        # inertness with the halves swapped.
+        assert decline.question not in questions_for(archetype)
