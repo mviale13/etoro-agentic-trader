@@ -594,6 +594,43 @@ outcomes unchanged (HYPE/ETH/SOL evidenced, ARB/ADA/1INCH not, BTC wrong
 instrument, TAO unestablished); store schema 2 reads schema 1 by
 fallback, never migration.
 
+**Two committees now coexist, and the matrix is the deliverable**
+(Committee #2,
+[`SUPPLY_GOVERNANCE_COMMITTEE.md`](docs/architecture/SUPPLY_GOVERNANCE_COMMITTEE.md),
+accepted and built). Selected by measuring nineteen discovered questions
+against the corpus, not chosen: `capital_committed` had the evidence but
+failed on **independence** (same provider and path as fees) and on
+**magnitude** ($70m against $42bn needs a threshold); `liquidity` and
+`market_robustness` were already refused by S5. Supply governance won —
+applicable to all eight, primary chain evidence, unrelated to fees, and
+a structural answer S5.3 had already proved cannot be read as a grade.
+
+**Both its verdicts are positive findings** (`CONSENSUS_BOUND` /
+`GOVERNANCE_SET` — who can change the issuance rule), which is what
+makes it unlike Fee Capture rather than a second view of it; Fee
+Capture's pair is a presence and its negation. **BTC and 1INCH swap
+sides**: Fee Capture declines BTC and asks 1INCH, this committee asks
+BTC and declines 1INCH — the clearest evidence the two are not one
+question twice. And **no model is asked anything**: the protocol
+accommodates a committee with no model seam.
+
+**The measurement that changed the design: every issuance rule stands at
+`CLAIMED`**, so requiring `EvidenceStanding.ESTABLISHED` made the
+committee silent about all three answerable assets. S1's corroboration
+vocabulary was built for vendor claims and a chain's own parameters have
+no second source — *where a fact came from is a second axis, never a
+second standing* (S4.5). The gate is S5.1's Model C asked of a rule, and
+a test asserts `EvidenceStanding` appears nowhere in the committee.
+
+**Findings recorded, not solved**: `Confidence` saturates (8, 9 and 11
+findings all read `MULTIPLE_OBSERVATIONS`); the model seam is
+per-committee and nothing says so; `execution_unavailable` and
+`evidence_insufficient` are not comparable across committees; and
+`INSUFFICIENT_EVIDENCE` covers both *no such rule* (ARB) and *the rule
+exists and we cannot read it* (ETH). The registry is a tuple and a
+lookup, earned by a concrete failure and given no ordering that means
+anything.
+
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
 attributes rather than layout, and reports `EventFeedHealth` when it

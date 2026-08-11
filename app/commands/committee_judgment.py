@@ -9,23 +9,23 @@ looking like a finding.
 from __future__ import annotations
 
 from app.domain.committee_judgment import JudgmentState
-from app.services.value_capture_committee import ValueCaptureCommittee
+from app.domain.committee_protocol import Committee
+from app.services.crypto_committees import committees
 
 
 class CommitteeJudgmentCommand:
     async def run(self, symbol: str | None = None, evidence: bool = False) -> int:
-        committee = ValueCaptureCommittee()
-
-        contract = committee.contract
-
-        print(f"{contract.stated}")
-        print(_wrap(contract.question, "  "))
-        print()
-
         assets = [symbol.upper().strip()] if symbol else _corpus()
 
-        for asset in assets:
-            await self._render(committee, asset, evidence and bool(symbol))
+        for committee in committees():
+            contract = committee.contract
+
+            print(f"{contract.stated}")
+            print(_wrap(contract.question, "  "))
+            print()
+
+            for asset in assets:
+                await self._render(committee, asset, evidence and bool(symbol))
 
         print(
             _wrap(
@@ -42,7 +42,7 @@ class CommitteeJudgmentCommand:
 
     async def _render(
         self,
-        committee: ValueCaptureCommittee,
+        committee: Committee,
         asset: str,
         evidence: bool,
     ) -> None:
