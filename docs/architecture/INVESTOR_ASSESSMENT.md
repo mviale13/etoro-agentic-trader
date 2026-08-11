@@ -166,9 +166,15 @@ vouching for it.
 
 ## 6. Zero Fake Meaning (PR #119)
 
-> Evidence establishes facts. Committees and domain contracts establish
-> meaning. The executive layer communicates that meaning — and never
-> silently promotes a fact into an interpretation on its own authority.
+> **An established number is authority to report the number, not
+> authority to invent what the number means.**
+
+The contract, as the owner set it on accepting this slice:
+
+> Evidence establishes facts. Question contracts establish what those
+> facts mean for an applicable analytical question. Committees establish
+> their own economic judgments. Investor Assessment communicates
+> licensed meaning; it does not author it.
 
 The owner's principle, and the same philosophy as Zero Fake Numbers
 applied to semantics rather than arithmetic. **A grounded fact may
@@ -260,6 +266,20 @@ abstraction was created. A test asserts the reorder changes exactly one
 answer across every declared archetype × question — the entry added with
 this slice — and a failure demonstration confirms both new guards fail
 when it is reverted.
+
+**And the class of defect is now guarded generically.** No existing test
+established reachability: the specific stablecoin case would not have
+caught a shadowed decline on any other archetype, and the
+precedence-neutrality test is computed from the data tables and is
+therefore precedence-blind. `test_every_declared_decline_actually_
+decides` asserts, for every declaration, that `applicability_for`
+returns the decline's **own sentence** — because a shadowed decline
+returns `ASK` with the lens's wording and an unconsulted one returns the
+generic "this question belongs to the … lens" refusal, so only a decline
+that actually decided can produce its own words. Demonstrated against
+both regressions: reverting precedence, and adding a future-style
+decline on a different archetype that a composed lens would shadow.
+Every future entry is covered without anyone remembering to add a test.
 
 ### 6.5 The forcing case, and the positive cases
 

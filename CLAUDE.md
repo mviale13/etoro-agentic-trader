@@ -895,10 +895,12 @@ These are not style preferences. Breaking them damages the product.
 8. **The dashboard presents; it never calculates.**
 9. **One business concept, one implementation.**
 10. **Zero Fake Meaning — Invariant 1's sibling, for semantics rather
-    than arithmetic.** Evidence establishes facts; committees and domain
-    contracts establish what a fact *means*; the executive layer
-    communicates that meaning and never silently promotes fact →
-    interpretation on its own authority. A grounded fact may travel
+    than arithmetic.** *An established number is authority to report the
+    number, not authority to invent what the number means.* Evidence
+    establishes facts; question contracts establish what a fact means
+    for an applicable analytical question; committees establish their
+    own economic judgments; the executive layer communicates licensed
+    meaning and never authors it. A grounded fact may travel
     upward without its economic interpretation travelling with it, and
     the layer receiving it must not invent the missing half. An
     established supply number is not authority to say *dilution*;
