@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.brain import router as brain_router
 from app.api.routes.committee import router as committee_router
+from app.api.routes.committee_matrix import router as committee_matrix_router
 from app.api.routes.committee_weights import (
     router as committee_weights_router,
 )
@@ -62,6 +63,7 @@ app.include_router(investor_dna_router)
 app.include_router(portfolio_router)
 app.include_router(observation_router)
 app.include_router(committee_router)
+app.include_router(committee_matrix_router)
 app.include_router(dashboard_router)
 app.include_router(executive_dashboard_router)
 app.include_router(executive_router)

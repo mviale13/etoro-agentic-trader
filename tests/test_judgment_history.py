@@ -864,11 +864,20 @@ def test_the_transition_schema_has_no_room_for_a_recommendation() -> None:
     assert not fields & forbidden
     assert not set(JudgmentRecord.__dataclass_fields__) & forbidden
 
-    # And no field carries the synthesis prose. §1: a model's reading of
-    # a judgment is communication, and persisting it would make last
-    # week's wording into this week's history.
-    assert "because" not in JudgmentRecord.__dataclass_fields__
+    # And no field carries the *synthesist's* prose. §1: a model's
+    # reading of a judgment is communication, and persisting it would
+    # make last week's wording into this week's history.
     assert "synthesis" not in JudgmentRecord.__dataclass_fields__
+    assert "narrative" not in JudgmentRecord.__dataclass_fields__
+
+    # `because` is a different thing and is deliberately kept: it is the
+    # committee's own account of its own outcome, produced with the
+    # answer and part of it. The assessment matrix forced it — two
+    # assets abstaining under one committee for genuinely different
+    # reasons were indistinguishable from the record, because the
+    # abstention enum is three members wide and the difference lives in
+    # the sentence.
+    assert "because" in JudgmentRecord.__dataclass_fields__
 
 
 # ── the committee actually carries what history needs ───────────────

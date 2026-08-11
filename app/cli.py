@@ -9,6 +9,7 @@ from app.commands import (
     brain,
     committee,
     committee_judgment,
+    committees,
     company,
     credentials,
     crypto_events,
@@ -430,6 +431,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show every eligible finding the committee was given",
     )
 
+    committees_parser = subparsers.add_parser(
+        "committees",
+        help="Show what every registered committee has concluded about an asset",
+        description=(
+            "The independent committee portfolio: for each registered "
+            "committee, the question it owns, what it concluded, why, the "
+            "confidence it expresses and the evidence beneath it. With a "
+            "symbol, one block per committee; without one, the corpus as a "
+            "grid. Read-only, no model, no fetch — and nothing is combined: "
+            "no overall verdict, no agreement, no score, no ranking, and "
+            "confidence is never compared across committees"
+        ),
+    )
+    committees_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example ADA. Omit for the corpus grid",
+    )
+    committees_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show each committee's own reasoning and the refs it rests on",
+    )
+
     judge_parser = subparsers.add_parser(
         "judge",
         help="Convene the committee and record what it concluded",
@@ -811,6 +836,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "committee-judgment":
         return await committee_judgment.run(args.symbol, args.evidence)
+
+    if args.command == "committees":
+        return await committees.run(args.symbol, args.evidence)
 
     if args.command == "judge":
         return await judge.run(args.symbol)

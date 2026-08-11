@@ -50,6 +50,7 @@ a finding, not a shortcut.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from app.domain.committee_judgment import (
@@ -388,7 +389,13 @@ class SupplyGovernanceCommittee:
                 f"The rule is {rule.formula}, every parameter names the "
                 f"surface it was read from, and {rule.mutability.because}."
             ),
-            judged_at=rule.state.observed_at,
+            # When the committee concluded, never when the evidence was
+            # observed. Taking the rule's reading time made two
+            # convenings from one cached rule produce one record id, so
+            # the record said the committee met once when it met twice —
+            # and a count of judgments is the one thing #113 requires to
+            # be honest.
+            judged_at=datetime.now(UTC),
         )
 
 

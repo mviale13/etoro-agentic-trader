@@ -41,6 +41,9 @@ from app.domain.judgment_history import JudgmentRecord
 
 #: The line format's own version, written on every line.
 #:
+#: 3 adds the committee's own stated reason, which the assessment matrix
+#: needs to tell two identical-looking abstentions apart.
+#:
 #: 2 adds the committee's display name and the committee's own sentence
 #: for its verdict — both absent from schema 1, and both **read with a
 #: fallback rather than migrated**. A schema-1 line names its committee
@@ -48,7 +51,7 @@ from app.domain.judgment_history import JudgmentRecord
 #: exactly as true. The journal's rule holds: a file that is never
 #: rewritten cannot be migrated, so old lines are read as they were
 #: written, forever.
-SCHEMA = 2
+SCHEMA = 3
 
 
 class JudgmentHistoryStore:
@@ -170,6 +173,7 @@ def _encode(record: JudgmentRecord) -> dict[str, Any]:
         "abstained_because": (
             record.abstained_because.value if record.abstained_because else None
         ),
+        "because": record.because,
         "unavailable_because": record.unavailable_because,
         "economic_role": record.economic_role,
         "model": record.model,
@@ -210,6 +214,7 @@ def _decode(row: Any) -> JudgmentRecord | None:
                 if row.get("abstained_because")
                 else None
             ),
+            because=row.get("because"),
             unavailable_because=row.get("unavailable_because"),
             economic_role=row.get("economic_role"),
             model=row.get("model"),
