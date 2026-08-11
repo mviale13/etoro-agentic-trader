@@ -13,26 +13,31 @@ judgment — which is already decided by code before it is printed.
 
 from __future__ import annotations
 
+from app.domain.committee_protocol import Committee
 from app.domain.judgment_history import JudgmentChange
+from app.services.crypto_committees import committees
 from app.services.judgment_history_service import JudgmentHistoryService
-from app.services.value_capture_committee import ValueCaptureCommittee
 
 
 class JudgeCommand:
     async def run(self, symbol: str | None = None) -> int:
-        committee = ValueCaptureCommittee()
         history = JudgmentHistoryService()
-
-        contract = committee.contract
-
-        print(f"{contract.stated}")
-        print(_wrap(contract.question, "  "))
-        print()
 
         assets = [symbol.upper().strip()] if symbol else _corpus()
 
-        for asset in assets:
-            await self._judge(committee, history, asset)
+        # Every committee, every asset. Each judgment is filed under its
+        # own contract and compared only against its own past — two
+        # committees' verdicts pooled into one history would be the same
+        # category error as pooling two evidence streams.
+        for committee in committees():
+            contract = committee.contract
+
+            print(f"{contract.stated}")
+            print(_wrap(contract.question, "  "))
+            print()
+
+            for asset in assets:
+                await self._judge(committee, history, asset)
 
         print(
             _wrap(
@@ -49,7 +54,7 @@ class JudgeCommand:
 
     async def _judge(
         self,
-        committee: ValueCaptureCommittee,
+        committee: Committee,
         history: JudgmentHistoryService,
         asset: str,
     ) -> None:

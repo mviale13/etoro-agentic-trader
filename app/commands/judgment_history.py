@@ -15,26 +15,32 @@ printed as such.
 
 from __future__ import annotations
 
+from app.domain.committee_protocol import CommitteeContract
 from app.domain.judgment_history import (
     JudgmentChange,
     StandingKind,
 )
+from app.services.crypto_committees import CONTRACTS
 from app.services.judgment_history_service import JudgmentHistoryService
-from app.services.value_capture_committee import CONTRACT
 
 
 class JudgmentHistoryCommand:
     async def run(self, symbol: str | None = None, evidence: bool = False) -> int:
         service = JudgmentHistoryService()
 
-        print(f"{CONTRACT.stated}")
-        print(_wrap(CONTRACT.question, "  "))
-        print()
-
         assets = [symbol.upper().strip()] if symbol else _corpus()
 
-        for asset in assets:
-            self._render(service, asset, evidence and bool(symbol))
+        # Each committee's history is read and printed on its own. The
+        # surface names which committee it is showing before every
+        # record, because two histories under one heading would let a
+        # reader carry one committee's answer onto the other's question.
+        for contract in CONTRACTS:
+            print(f"{contract.stated}")
+            print(_wrap(contract.question, "  "))
+            print()
+
+            for asset in assets:
+                self._render(service, contract, asset, evidence and bool(symbol))
 
         print(
             _wrap(
@@ -54,16 +60,17 @@ class JudgmentHistoryCommand:
     def _render(
         self,
         service: JudgmentHistoryService,
+        contract: CommitteeContract,
         asset: str,
         evidence: bool,
     ) -> None:
         print(f"  {asset}")
 
-        coverage = service.coverage(asset, CONTRACT.key)
+        coverage = service.coverage(asset, contract.key)
 
         print(_wrap(f"coverage: {coverage.stated}", "    "))
 
-        records = service.history(asset, CONTRACT.key)
+        records = service.history(asset, contract.key)
 
         if not records:
             print()
@@ -83,7 +90,7 @@ class JudgmentHistoryCommand:
                 )
             )
 
-        for transition in service.transitions(asset, CONTRACT.key):
+        for transition in service.transitions(asset, contract.key):
             if transition.change is JudgmentChange.FIRST_JUDGMENT and len(records) > 1:
                 continue
 

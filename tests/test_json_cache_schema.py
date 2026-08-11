@@ -379,15 +379,19 @@ def test_every_store_declares_what_it_does_with_pre_version_records() -> None:
 
             declared[store] = "accepts_unversioned" in keywords
 
-    assert len(declared) == 12, sorted(declared)
+    assert len(declared) == 13, sorted(declared)
 
-    # Two stores refuse pre-version records, each for its own reason.
+    # Three stores refuse pre-version records, each for its own reason.
     # `primary_supply` had version-1 records carrying no provenance, and
-    # the establishment gate reads provenance. `etf_flows` was created
-    # after the contract existed, so it has no pre-version records at
-    # all — accepting some would be a policy about a thing that cannot
-    # happen.
-    refusing = {"data/cache/primary_supply", "data/cache/etf_flows"}
+    # the establishment gate reads provenance. `etf_flows` and
+    # `issuance_rules` were created after the contract existed, so they
+    # have no pre-version records at all — accepting some would be a
+    # policy about a thing that cannot happen.
+    refusing = {
+        "data/cache/primary_supply",
+        "data/cache/etf_flows",
+        "data/cache/issuance_rules",
+    }
 
     for store, accepts in declared.items():
         assert accepts is (store not in refusing), store
