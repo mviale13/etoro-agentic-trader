@@ -716,6 +716,40 @@ currently supportable and is reported as unknown rather than asserted;
 Asset Quality's absolute bands still force a value across a threshold
 this layer would express as a range.
 
+**A grounded fact may travel upward without its economic interpretation
+travelling with it** (Zero Fake Meaning, `INVESTOR_ASSESSMENT.md` §6,
+accepted and built). Invariant 10, and the semantic form of Invariant 1.
+The defect was one sentence keyed by *quantity* rather than by asset —
+*"it bounds how far the holder's share can be diluted"*, attached to
+every maximum supply held — which is true of a network asset and
+**inverted for a claim on a reserve**. Classified across all eight
+assets first: the figures, the spreads, the S5 substitution guard and
+the four judgment postures are economically invariant; a committee's
+answer was **already licensed**, because a committee decides
+applicability in its own economic terms and records the role it read it
+from; and `_WHY` was the entire defect surface, licensed by nobody.
+
+**The licensor was derivable, not invented.** `EvidenceDemand.token_fact`
+already names which questions read which quantity, so a meaning is now
+the question's own `matters_because` quoted verbatim, carried with the
+applicability sentence for *this* asset. **BTC gained a reading it should
+always have had** — two questions demand `max_supply`, and monetary
+scarcity's own sentence warns that a stated cap is not the claim.
+
+**And the pressure it found: `DECLINED` had never worked.** Consuming
+`applicability_for` did not block the stablecoin, because
+`applicability_for` returned `ASK` as soon as a composed lens asked —
+so the refusal table was reached only for questions the lens union had
+already dropped, and **13 of 13 entries were unreachable**. A stablecoin
+trades, so it composes the market lens, and only the *composition* knows
+that a claim on a reserve has no eventual supply to be diluted against.
+A precedence reorder plus one decline; `capabilities`, the archetype set
+and entity identity untouched, and no `EconomicRole` invented. A test
+asserts the reorder changes exactly one answer corpus-wide. **Nothing
+was solved by deletion**: every live asset keeps every reading, and only
+a synthetic stablecoin — never added to the corpus — abstains. Its
+reserve, redemption and peg questions stay named as `unmodelled`.
+
 **Caches may accelerate acquisition; they may never become undeclared
 analytical inputs** (Hermetic Evidence,
 [`HERMETIC_EVIDENCE.md`](docs/architecture/HERMETIC_EVIDENCE.md),
@@ -860,6 +894,20 @@ These are not style preferences. Breaking them damages the product.
 7. **Communication explains decisions; it never makes them.**
 8. **The dashboard presents; it never calculates.**
 9. **One business concept, one implementation.**
+10. **Zero Fake Meaning — Invariant 1's sibling, for semantics rather
+    than arithmetic.** Evidence establishes facts; committees and domain
+    contracts establish what a fact *means*; the executive layer
+    communicates that meaning and never silently promotes fact →
+    interpretation on its own authority. A grounded fact may travel
+    upward without its economic interpretation travelling with it, and
+    the layer receiving it must not invent the missing half. An
+    established supply number is not authority to say *dilution*;
+    established fees are not authority to say *holder economics*; a
+    market capitalisation is not authority to claim robustness where the
+    question does not apply. Where the measurement is established and its
+    investor meaning is not, show the measurement and **say that the
+    interpretation is not established** — abstention is a sentence, not
+    silence.
 
 The UI labels its own honesty: every page declares its data provenance via
 `<PageIntegrity>`, and cards carry a live / partial / placeholder pill. If

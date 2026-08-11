@@ -23,6 +23,12 @@ from app.domain.committee_judgment import (
     EligibleFinding,
     JudgmentState,
 )
+from app.domain.crypto_archetype import (
+    ArchetypeAssignment,
+    ArchetypeConfidence,
+    TokenArchetype,
+)
+from app.domain.crypto_questions import QUESTIONS
 from app.domain.evidence_authority import EvidenceAuthority
 from app.domain.evidence_standing import EvidenceStanding
 from app.domain.investor_assessment import (
@@ -615,3 +621,187 @@ def test_reading_an_assessment_convenes_nothing() -> None:
 
     for forbidden in ("judge(", "provider", "acquire", "draft", "await"):
         assert forbidden not in code, forbidden
+
+
+# ── Zero Fake Meaning (PR #119) ─────────────────────────────────────
+
+
+def _assignment(archetype: TokenArchetype) -> ArchetypeAssignment:
+    """A synthetic assignment against a declared archetype.
+
+    Deliberately *not* a corpus entry. The forcing case for this layer
+    is a stablecoin, and proving that a supply figure cannot become
+    dilution framing must not require putting a stablecoin in front of
+    an investor — the reserve, redemption and peg questions its
+    archetype names as unmodelled are unbuilt on purpose.
+    """
+
+    return ArchetypeAssignment(
+        symbol="XYZ",
+        archetype=archetype,
+        confidence=ArchetypeConfidence.STRUCTURAL,
+        because="a synthetic assignment, for the boundary rather than a corpus case",
+        rests_on=("declared in ARCHETYPES",),
+    )
+
+
+_SUPPLY = (
+    _fact(SupplyConcept.MAX_SUPPLY, 100_000_000_000.0, "TokenInsight"),
+    _fact(SupplyConcept.EMITTED_SUPPLY, 64_000_000_000.0, "CoinGecko"),
+    _fact(SupplyConcept.CIRCULATING_ESTIMATE, 64_000_000_000.0, "CoinGecko"),
+)
+
+
+def _as(tmp_path, archetype: TokenArchetype):  # type: ignore[no-untyped-def]
+    return InvestorAssessmentService(
+        supply=_Supply(_SUPPLY),  # type: ignore[arg-type]
+        matrix=CommitteeMatrixService(
+            history=JudgmentHistoryService(store=JudgmentHistoryStore(root=tmp_path)),
+        ),
+        archetype=lambda symbol: _assignment(archetype),
+    ).for_asset("XYZ")
+
+
+def test_a_supply_figure_is_not_authority_to_say_dilution(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    """The forcing case, and the acceptance criterion of the slice.
+
+    A stablecoin with a maximum supply, an emitted total and a
+    circulating estimate — every number this platform holds about any
+    other token. Under the old rule that was sufficient to print *"it
+    bounds how far the holder's share can be diluted"*, because the
+    sentence was keyed by quantity and no asset could reach it.
+
+    It is false here, and not merely unsupported: a stablecoin holder's
+    position is a claim on a reserve at par, so supply expanding is the
+    instrument working rather than the holder being diluted. The
+    measurements survive; the interpretation does not travel with them.
+    """
+
+    assessment = _as(tmp_path, TokenArchetype.STABLECOIN)
+
+    said = " ".join(
+        " ".join([item.stated] + [why.stated for why in item.why_it_matters])
+        for item in assessment.statements
+    ).lower()
+
+    assert "dilut" not in said
+    assert "scarcit" not in said
+
+    # The abstention is stated, not silent — and the figures stand.
+    for subject in ("Maximum supply", "Tokens in existence", "Circulating supply"):
+        statement = assessment.about(subject)
+
+        assert statement is not None
+        assert statement.why_it_matters == ()
+        assert "claim on a reserve" in (statement.interpretation_withheld or "")
+        assert statement.observed
+
+
+def test_the_same_figures_keep_their_meaning_where_a_contract_licenses_it(  # type: ignore[no-untyped-def]
+    tmp_path,
+) -> None:
+    """The positive half, and the one this slice must not solve by deleting.
+
+    Byte-identical evidence, read as a monetary network: now the
+    maximum supply carries *two* licensed readings, because two
+    questions demand `max_supply` by name and the archetype asks both.
+    The second — monetary scarcity — was invisible before, and its own
+    sentence is stronger than the one it replaces: it warns that a
+    stated cap is not the claim.
+    """
+
+    monetary = _as(tmp_path, TokenArchetype.MONETARY_NETWORK).about("Maximum supply")
+    stable = _as(tmp_path, TokenArchetype.STABLECOIN).about("Maximum supply")
+
+    assert monetary is not None and stable is not None
+    assert monetary.stated == stable.stated
+    assert monetary.observed == stable.observed
+
+    questions = [meaning.question for meaning in monetary.why_it_matters]
+
+    assert questions == ["Supply and dilution", "Monetary scarcity"]
+    assert monetary.interpretation_withheld is None
+
+    # An application protocol asks one of the two and not the other, so
+    # the answer is neither the monetary network's nor the stablecoin's.
+    application = _as(tmp_path, TokenArchetype.APPLICATION_PROTOCOL).about(
+        "Maximum supply"
+    )
+
+    assert application is not None
+    assert [meaning.question for meaning in application.why_it_matters] == [
+        "Supply and dilution"
+    ]
+
+
+def test_no_meaning_is_authored_by_this_layer(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    """Every reader-facing interpretation is a quotation, checked as one.
+
+    The guard that survives a refactor. A future contributor who adds a
+    fourth quantity and writes it a nice sentence fails here, because
+    the sentence will not be found in any contract that owns a
+    question — which is the whole of this layer's economic authority.
+    """
+
+    licensed = {question.matters_because for question in QUESTIONS.values()}
+
+    for archetype in TokenArchetype:
+        for statement in _as(tmp_path, archetype).statements:
+            for meaning in statement.why_it_matters:
+                assert meaning.stated in licensed, meaning.stated
+                assert meaning.licensed_by
+
+
+def test_a_committee_licenses_its_own_question(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    """The half that needed no repair, and why saying so matters.
+
+    A committee owns its question, decides in its own economic terms
+    whether that question applies, and records the role it read that
+    from. The licence was always there and was printed as an
+    unattributed sentence; now it names itself. PR #114's ruling is
+    untouched — the committee's words are quoted, never interpreted.
+    """
+
+    statement = (
+        _service(
+            tmp_path,
+            judgments=(
+                _judgment(
+                    verdict=FeeVerdict.MECHANISM_EVIDENCED,
+                    because="a mechanism names the token",
+                ),
+            ),
+        )
+        .for_asset("XYZ")
+        .about("Value Capture")
+    )
+
+    assert statement is not None
+
+    meaning = statement.why_it_matters[0]
+
+    assert meaning.stated == FEE_CAPTURE.question
+    assert "Value Capture Committee owns this question" in meaning.licensed_by
+    assert "applicable" in meaning.licensed_by
+
+
+def test_an_unclassified_asset_is_read_as_the_traded_asset_it_is(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    """The residual, asserted rather than hidden.
+
+    `UNKNOWN` composes the market lens alone *by declaration* — an
+    unclassified security "is read only as a traded asset" — so supply
+    and dilution genuinely applies to it and TAO keeps its reading.
+
+    The limit that follows is real and stated here so nobody discovers
+    it later: **a stablecoin this platform failed to classify would
+    receive dilution framing.** The gate is the archetype, so an asset
+    with no archetype has no gate. Closing it means classifying the
+    asset, not weakening the rule.
+    """
+
+    statement = _as(tmp_path, TokenArchetype.UNKNOWN).about("Maximum supply")
+
+    assert statement is not None
+    assert [meaning.question for meaning in statement.why_it_matters] == [
+        "Supply and dilution"
+    ]

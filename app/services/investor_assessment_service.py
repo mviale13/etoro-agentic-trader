@@ -25,11 +25,24 @@ exists to prevent.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from app.domain.asset_class import AssetClass
 from app.domain.committee_matrix import CommitteeAssessment
+from app.domain.crypto_archetype import (
+    ArchetypeAssignment,
+    TokenArchetype,
+    archetype_for,
+)
+from app.domain.crypto_questions import (
+    QUESTIONS,
+    CryptoQuestion,
+    applicability_for,
+)
 from app.domain.investor_assessment import (
     InvestorAssessment,
     InvestorStatement,
+    LicensedMeaning,
     ObservedValue,
     StatementShape,
 )
@@ -75,15 +88,19 @@ _SUBJECTS = {
     SupplyConcept.CIRCULATING_ESTIMATE: "Circulating supply",
 }
 
-_WHY = {
-    SupplyConcept.MAX_SUPPLY: ("It bounds how far the holder's share can be diluted."),
-    SupplyConcept.EMITTED_SUPPLY: (
-        "It is how many tokens exist today, whoever holds them."
-    ),
-    SupplyConcept.CIRCULATING_ESTIMATE: (
-        "It is what the market can currently trade, and it is an "
-        "estimate under somebody's definition rather than a protocol fact."
-    ),
+#: What the question layer calls each of these quantities.
+#:
+#: The **only** mapping this module declares, and it exists because two
+#: vocabularies name one number differently — the evidence layer's
+#: `EMITTED_SUPPLY` is the question layer's `total_supply`. Which
+#: questions then read a quantity is *read off their own
+#: `EvidenceDemand`s* rather than decided here, so adding a question
+#: that demands `max_supply` gives every maximum a new licensed reading
+#: without this file changing.
+_DEMANDED_AS = {
+    SupplyConcept.MAX_SUPPLY: "max_supply",
+    SupplyConcept.EMITTED_SUPPLY: "total_supply",
+    SupplyConcept.CIRCULATING_ESTIMATE: "circulating_supply",
 }
 
 
@@ -94,9 +111,16 @@ class InvestorAssessmentService:
         self,
         supply: SupplySemanticsService | None = None,
         matrix: CommitteeMatrixService | None = None,
+        archetype: Callable[[str], ArchetypeAssignment] | None = None,
     ) -> None:
         self._supply = supply or SupplySemanticsService()
         self._matrix = matrix or CommitteeMatrixService()
+
+        # A seam and not a convenience: the forcing case for this layer
+        # is an archetype with no corpus member — a stablecoin — and
+        # proving that a supply figure cannot become dilution framing
+        # must not require putting one in front of an investor.
+        self._archetype = archetype or archetype_for
 
     def for_asset(self, symbol: str) -> InvestorAssessment:
         asset = symbol.upper().strip()
@@ -107,7 +131,7 @@ class InvestorAssessmentService:
         reading = self._supply.established(asset, AssetClass.CRYPTO)
 
         if reading is not None:
-            statements.extend(_quantities(reading))
+            statements.extend(_quantities(reading, self._archetype(asset).archetype))
 
         for subject in _SUBJECTS.values():
             if not any(item.subject == subject for item in statements):
@@ -130,10 +154,75 @@ class InvestorAssessmentService:
         )
 
 
+# ── what a quantity means, and who established that ─────────────────
+
+
+def _demanding(concept: SupplyConcept) -> tuple[CryptoQuestion, ...]:
+    """Every investment question that demands this quantity by name.
+
+    Read off `EvidenceDemand.token_fact`, which is the question layer's
+    own statement of what would answer it. Nothing is matched by
+    resemblance and nothing is listed here by hand.
+    """
+
+    wanted = _DEMANDED_AS[concept]
+
+    return tuple(
+        question
+        for question in QUESTIONS.values()
+        if any(demand.token_fact == wanted for demand in question.demands)
+    )
+
+
+def _meaning(
+    concept: SupplyConcept,
+    archetype: TokenArchetype,
+) -> tuple[tuple[LicensedMeaning, ...], str | None]:
+    """What this quantity means for this asset, or why nothing does.
+
+    The whole of this layer's economic authority, and it is borrowed.
+    A reading is emitted only where `applicability_for` says the
+    question that owns it applies to this archetype — and the sentence
+    is the question's own `matters_because`, copied.
+
+    **The two answers are not symmetrical.** Where something licenses a
+    reading the refusals are dropped, because printing *"and here is a
+    question that does not apply"* beside a live answer is noise. Where
+    nothing does, every refusal is quoted: that is the whole account of
+    why a figure this platform holds is being shown without a reason to
+    care about it.
+    """
+
+    licensed: list[LicensedMeaning] = []
+    refused: list[str] = []
+
+    for question in _demanding(concept):
+        applicability = applicability_for(archetype, question.key)
+
+        if applicability.is_asked:
+            licensed.append(
+                LicensedMeaning(
+                    question=question.label,
+                    stated=question.matters_because,
+                    licensed_by=applicability.because,
+                )
+            )
+        else:
+            refused.append(f"{question.label} — {applicability.because}")
+
+    if licensed:
+        return tuple(licensed), None
+
+    return (), " ".join(refused) or None
+
+
 # ── quantities: precise, bounded, or materially uncertain ───────────
 
 
-def _quantities(reading: SupplyPicture) -> list[InvestorStatement]:
+def _quantities(
+    reading: SupplyPicture,
+    archetype: TokenArchetype,
+) -> list[InvestorStatement]:
     """One statement per quantity, as strong as its readings allow."""
 
     statements: list[InvestorStatement] = []
@@ -148,7 +237,7 @@ def _quantities(reading: SupplyPicture) -> list[InvestorStatement]:
         if not facts:
             continue
 
-        statements.append(_about(concept, subject, facts, reading))
+        statements.append(_about(concept, subject, facts, reading, archetype))
 
     return [_guarded(item, reading) for item in statements]
 
@@ -202,6 +291,7 @@ def _guarded(
             "the two apart."
         ),
         why_it_matters=statement.why_it_matters,
+        interpretation_withheld=statement.interpretation_withheld,
         observed=statement.observed,
         refs=statement.refs,
     )
@@ -212,7 +302,10 @@ def _about(
     subject: str,
     facts: list[SupplyFact],
     reading: SupplyPicture,
+    archetype: TokenArchetype,
 ) -> InvestorStatement:
+    means, withheld = _meaning(concept, archetype)
+
     values = [fact.value for fact in facts if fact.value is not None]
 
     low, high = min(values), max(values)
@@ -246,7 +339,8 @@ def _about(
                     else f", from {observed[0].source}."
                 )
             ),
-            why_it_matters=_WHY[concept],
+            why_it_matters=means,
+            interpretation_withheld=withheld,
             observed=observed,
             refs=refs,
         )
@@ -268,7 +362,8 @@ def _about(
                 f"{spread:.1%}; no single figure is published by all of "
                 "them and none is computed here."
             ),
-            why_it_matters=_WHY[concept],
+            why_it_matters=means,
+            interpretation_withheld=withheld,
             observed=observed,
             refs=refs,
         )
@@ -290,7 +385,8 @@ def _about(
             "would imply the answer lies inside it, and this platform "
             "cannot establish that it does."
         ),
-        why_it_matters=_WHY[concept],
+        why_it_matters=means,
+        interpretation_withheld=withheld,
         observed=observed,
         refs=refs,
     )
@@ -314,6 +410,39 @@ def _why_they_differ(concept: SupplyConcept, reading: SupplyPicture) -> str | No
 
 def _committee_subject(cell: CommitteeAssessment) -> str:
     return cell.committee.name.replace(" Committee", "")
+
+
+def _committee_meaning(cell: CommitteeAssessment) -> tuple[LicensedMeaning, ...]:
+    """The committee's own question, licensed by its own applicability rule.
+
+    The committee half needed no repair, and saying why is the point:
+    a committee owns its question, decides in its own economic terms
+    whether that question applies, and records the role it read that
+    from. The licence was already there and was being printed as an
+    unattributed sentence. Naming it costs nothing here and makes the
+    two halves of this layer answer the same demand.
+
+    Absent where the committee that wrote the record is no longer
+    registered — a record outlives its code, and inventing a question
+    for it would be worse than saying nothing.
+    """
+
+    if cell.question is None:
+        return ()
+
+    role = cell.economic_role or "no established economic role"
+
+    return (
+        LicensedMeaning(
+            question=cell.committee.stated,
+            stated=cell.question,
+            licensed_by=(
+                f"{cell.committee.name} owns this question and judged it "
+                f"{cell.applicability.value.replace('_', ' ')} for this "
+                f"asset, from {role}."
+            ),
+        ),
+    )
 
 
 def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
@@ -364,7 +493,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
                 if cell.wording_refused
                 else cell.because
             ),
-            why_it_matters=cell.question,
+            why_it_matters=_committee_meaning(cell),
             refs=refs,
         )
 
@@ -377,7 +506,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
                 "it is left unanswered rather than answered."
             ),
             qualification=cell.because,
-            why_it_matters=cell.question,
+            why_it_matters=_committee_meaning(cell),
             refs=refs,
         )
 
@@ -387,7 +516,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
             shape=StatementShape.INSUFFICIENT,
             stated="This platform holds too little to answer this question.",
             uncertainty=cell.because,
-            why_it_matters=cell.question,
+            why_it_matters=_committee_meaning(cell),
             refs=refs,
         )
 
@@ -400,7 +529,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
                 "way — a fact about this platform rather than the asset."
             ),
             uncertainty=cell.unavailable_because,
-            why_it_matters=cell.question,
+            why_it_matters=_committee_meaning(cell),
             refs=refs,
         )
 

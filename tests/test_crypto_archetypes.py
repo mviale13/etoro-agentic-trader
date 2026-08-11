@@ -1183,3 +1183,76 @@ def test_a_sibling_absence_reads_as_no_mechanism_not_as_a_gap() -> None:
 
     assert _chain_for(MetricAvailability.NOT_APPLICABLE) is ValueFlowKind.NOT_PRESENT
     assert _chain_for(MetricAvailability.UNAVAILABLE_FREE) is ValueFlowKind.UNREAD
+
+
+# ── a composition may refuse a lens (PR #119) ───────────────────────
+
+
+def test_a_decline_outranks_the_lens_that_would_ask() -> None:
+    """The precedence defect, and the property that fixes it.
+
+    `DECLINED` documents itself as the place an archetype refuses a
+    question *no lens can refuse* — "a refusal is a claim about a kind
+    of asset ... only the composition can [make it]". It could not do
+    that. `applicability_for` returned `ASK` as soon as any composed
+    lens asked the question, so the table was only ever reached for
+    questions the lens union had already dropped, and every one of its
+    entries could do nothing but re-word a refusal that would have
+    happened anyway.
+
+    A stablecoin is the case that proves it matters: it trades, so it
+    composes the market lens, and the market lens asks supply and
+    dilution of everything that trades. Only the composition knows that
+    a claim on a reserve has no eventual supply to be diluted against.
+    """
+
+    asked_by_a_lens = any(
+        CryptoQuestionKey.SUPPLY_AND_DILUTION in ASKED_BY[capability]
+        for capability in ARCHETYPES[TokenArchetype.STABLECOIN].capabilities
+    )
+
+    assert asked_by_a_lens
+
+    applicability = applicability_for(
+        TokenArchetype.STABLECOIN,
+        CryptoQuestionKey.SUPPLY_AND_DILUTION,
+    )
+
+    assert applicability.state is QuestionApplicability.NOT_APPLICABLE_FOR_ARCHETYPE
+    assert applicability.asked_by is None
+
+    # And the two doors agree. A question `questions_for` still listed
+    # while `applicability_for` refused it would be the same defect
+    # with the halves swapped.
+    assert CryptoQuestionKey.SUPPLY_AND_DILUTION not in questions_for(
+        TokenArchetype.STABLECOIN
+    )
+
+
+def test_the_precedence_fix_changed_no_other_answer() -> None:
+    """Reordering is a repair, not a reclassification.
+
+    Consulting `DECLINED` before the lens union can only change an
+    answer where a declined question is also asked by a composed lens.
+    Across every archetype declared today that is true exactly once —
+    the entry added with this slice — so the whole rest of the corpus
+    answers precisely what it answered before.
+
+    Asserted as a property rather than as a golden file: a future
+    decline that silently removed a live question would fail here and
+    have to say so.
+    """
+
+    overridden = {
+        (archetype, decline.question)
+        for archetype, declines in DECLINED.items()
+        for decline in declines
+        if any(
+            decline.question in ASKED_BY[capability]
+            for capability in ARCHETYPES[archetype].capabilities
+        )
+    }
+
+    assert overridden == {
+        (TokenArchetype.STABLECOIN, CryptoQuestionKey.SUPPLY_AND_DILUTION)
+    }
