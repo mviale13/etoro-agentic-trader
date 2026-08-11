@@ -335,6 +335,21 @@ class CommitteeJudgment:
     #: when UNAVAILABLE.
     unavailable_because: str | None = None
 
+    #: Why a drafted sentence was refused, where one was.
+    #:
+    #: **A prose failure is a presentation failure, not an analytical
+    #: one.** A verdict that has already cleared its vocabulary and its
+    #: grounding is a complete structural judgment; discarding it
+    #: because the sentence beside it used a forbidden word threw away
+    #: an answer the evidence supported. HYPE lost a judgment that way,
+    #: and the loss was invisible until two committees sat side by side.
+    #:
+    #: The draft is still refused — the validator is untouched. What
+    #: changes is that the refusal is recorded here instead of erasing
+    #: the answer, and `because` falls back to the committee's own
+    #: deterministic account.
+    wording_refused: str | None = None
+
     judged_at: datetime | None = None
     model: str | None = None
 

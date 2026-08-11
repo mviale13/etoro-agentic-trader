@@ -262,6 +262,11 @@ class JudgmentRecord:
     #: is three members wide and the difference lives in the sentence.
     because: str | None = None
 
+    #: Why a drafted sentence was refused, where one was. A judgment
+    #: whose wording failed is still a judgment — the refusal is a fact
+    #: about this platform's checking, not about the asset.
+    wording_refused: str | None = None
+
     #: Worded, because the ways machinery fails are not enumerable. Never
     #: composed into a transition sentence — free text from elsewhere
     #: would put vocabulary this layer does not control into a statement
@@ -372,6 +377,7 @@ def record_from(
         evidence_count=len(evidence),
         abstained_because=judgment.abstained_because,
         because=judgment.because,
+        wording_refused=judgment.wording_refused,
         unavailable_because=judgment.unavailable_because,
         economic_role=judgment.economic_role,
         model=judgment.model,

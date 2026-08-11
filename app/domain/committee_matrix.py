@@ -101,6 +101,11 @@ class CommitteeAssessment:
     because: str | None = None
     unavailable_because: str | None = None
 
+    #: Where a drafted sentence was refused. Carried because it changes
+    #: what can be said *about the explanation* while leaving the answer
+    #: exactly as it was — a prose failure is a presentation failure.
+    wording_refused: str | None = None
+
     #: As this committee currently expresses it. **Carried, never
     #: compared** — see the module docstring.
     confidence: Confidence | None = None
@@ -192,6 +197,7 @@ class CommitteeAssessment:
             ),
             "because": self.because,
             "unavailable_because": self.unavailable_because,
+            "wording_refused": self.wording_refused,
             "confidence": self.confidence.value if self.confidence else None,
             "confidence_stated": (self.confidence.stated if self.confidence else None),
             "refs": list(self.refs),
@@ -234,6 +240,7 @@ def assessment_from(
         abstained_because=record.abstained_because,
         because=record.because,
         unavailable_because=record.unavailable_because,
+        wording_refused=record.wording_refused,
         confidence=record.confidence,
         refs=record.refs,
         evidence_count=record.evidence_count,
