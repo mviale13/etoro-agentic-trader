@@ -46,6 +46,7 @@ from app.domain.crypto_event import (
 )
 from app.domain.crypto_intelligence import Relevance, relevance_of
 from app.infrastructure.cache.json_cache import JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.coin_insight_provider import CoinInsightProvider
 from app.providers.press_corroboration_provider import (
     PressCorroborationProvider,
@@ -81,7 +82,9 @@ class CryptoEventService:
         self._insights = insights or CoinInsightProvider()
         self._primary = primary or PrimaryEventProvider()
         self._press = press or PressCorroborationProvider()
-        self._cache = cache or JsonCache("data/cache/crypto_events", schema=self.SCHEMA)
+        self._cache = cache or JsonCache(
+            evidence_path("cache", "crypto_events"), schema=self.SCHEMA
+        )
         self._acquires = acquires
 
     @classmethod

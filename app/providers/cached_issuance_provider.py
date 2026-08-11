@@ -32,6 +32,7 @@ from app.domain.mechanical_issuance import (
     RuleParameter,
 )
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.issuance_rule_provider import IssuanceRuleProvider
 from app.providers.primary_supply_provider import (
     _decode_provenance,
@@ -55,7 +56,9 @@ class CachedIssuanceRuleProvider:
         acquires: bool = True,
     ) -> None:
         self._provider = provider or IssuanceRuleProvider()
-        self._cache = cache or JsonCache("data/cache/issuance_rules", schema=SCHEMA)
+        self._cache = cache or JsonCache(
+            evidence_path("cache", "issuance_rules"), schema=SCHEMA
+        )
         self._acquires = acquires
 
     @classmethod

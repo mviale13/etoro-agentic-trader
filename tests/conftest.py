@@ -98,6 +98,40 @@ SEAM_METHODS = {
 
 
 @pytest.fixture(autouse=True)
+def hermetic_evidence_root(monkeypatch, tmp_path_factory):
+    """No test may read — or write — the developer's own evidence.
+
+    The third dimension of the same guarantee, and the one this file was
+    missing. Credentials were silenced and the wire was blocked, and a
+    test could still open `data/cache/protocol_facts` and answer from
+    whatever the developer happened to have acquired.
+
+    **That is not hypothetical and it is not rare: it happened five
+    separate times across the crypto work.** Each occurrence looked like
+    a test-writing mistake and was the same architectural one — an
+    analytical service defaulting its evidence door to a path literal,
+    so the call declared a *subject* and never an *evidence set*. The
+    suite went green, `git archive HEAD` went red, and in one measured
+    case a hand-edited cache flipped a committee verdict while the
+    caller passed no evidence at all.
+
+    Pointing the root at a fresh temporary directory makes the whole
+    class impossible: a test that forgets to supply fixtures reads an
+    empty store and says so, rather than reading a machine. A test that
+    genuinely wants the acquired evidence sets the variable back
+    itself — deliberately, and visibly in the test.
+
+    The writing half matters too. Running the suite was observed
+    creating `data/cache/fx` in the developer's own tree, so tests were
+    mutating the state they were accidentally reading.
+    """
+
+    from app.infrastructure.evidence_root import ROOT_ENV
+
+    monkeypatch.setenv(ROOT_ENV, str(tmp_path_factory.mktemp("evidence")))
+
+
+@pytest.fixture(autouse=True)
 def hermetic_model_configuration(monkeypatch):
     from app.config import Settings
 

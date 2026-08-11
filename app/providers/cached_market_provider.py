@@ -8,6 +8,7 @@ from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.yahoo_market_provider import (
     YahooInstrument,
     YahooMarketProvider,
@@ -47,7 +48,7 @@ class CachedMarketProvider:
     ) -> None:
         self._provider = provider or YahooMarketProvider()
         self._cache = cache or JsonCache(
-            "data/cache/quotes",
+            evidence_path("cache", "quotes"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

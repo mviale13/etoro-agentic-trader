@@ -25,6 +25,7 @@ from app.config import get_settings
 from app.domain.provenance import Provenance
 from app.domain.token_fact_validation import TokenClaimSet
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.token_insight_provider import API_KEY_ENV, TOKEN_IDS
 
 
@@ -227,7 +228,7 @@ class CachedTokenFactsProvider:
     ) -> None:
         self._provider = provider or TokenFactsProvider()
         self._cache = cache or JsonCache(
-            "data/cache/token_facts",
+            evidence_path("cache", "token_facts"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

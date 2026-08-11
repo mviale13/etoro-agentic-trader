@@ -365,13 +365,30 @@ def test_every_store_declares_what_it_does_with_pre_version_records() -> None:
             if not (isinstance(node.func, ast.Name) and node.func.id == "JsonCache"):
                 continue
 
-            if not node.args or not isinstance(node.args[0], ast.Constant):
+            # The first argument used to be a path literal and is now an
+            # `evidence_path("cache", "<store>")` call, because a store
+            # naming its own root was an undeclared input. The guard
+            # follows the shape rather than being deleted with it.
+            if not node.args:
                 continue
 
-            store = str(node.args[0].value)
+            location = node.args[0]
 
-            if not store.startswith("data/cache/"):
+            if not (
+                isinstance(location, ast.Call)
+                and isinstance(location.func, ast.Name)
+                and location.func.id == "evidence_path"
+            ):
                 continue
+
+            segments = [
+                arg.value for arg in location.args if isinstance(arg, ast.Constant)
+            ]
+
+            if len(segments) != len(location.args) or segments[:1] != ["cache"]:
+                continue
+
+            store = "/".join(str(segment) for segment in segments)
 
             keywords = {kw.arg for kw in node.keywords}
 
@@ -388,9 +405,9 @@ def test_every_store_declares_what_it_does_with_pre_version_records() -> None:
     # have no pre-version records at all — accepting some would be a
     # policy about a thing that cannot happen.
     refusing = {
-        "data/cache/primary_supply",
-        "data/cache/etf_flows",
-        "data/cache/issuance_rules",
+        "cache/primary_supply",
+        "cache/etf_flows",
+        "cache/issuance_rules",
     }
 
     for store, accepts in declared.items():

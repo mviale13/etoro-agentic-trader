@@ -32,6 +32,7 @@ from typing import Any
 import requests
 
 from app.infrastructure.cache.json_cache import JsonCache
+from app.infrastructure.evidence_root import evidence_path
 
 TIMEOUT = 25
 
@@ -349,7 +350,7 @@ class CachedEtfFlowProvider:
     ) -> None:
         self._provider = provider or EtfFlowProvider()
         self._cache = cache or JsonCache(
-            "data/cache/etf_flows",
+            evidence_path("cache", "etf_flows"),
             schema=self.SCHEMA,
             migrations={1: _to_schema_2},
         )

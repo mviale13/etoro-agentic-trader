@@ -12,6 +12,7 @@ from app.config import get_settings
 from app.domain.provenance import Provenance
 from app.domain.token_rating import RatingDimension, TokenRating
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 
 #: The rater's own identifier for each token this platform watches.
 #:
@@ -224,7 +225,7 @@ class CachedTokenInsightProvider:
     ) -> None:
         self._provider = provider or TokenInsightProvider()
         self._cache = cache or JsonCache(
-            "data/cache/ratings",
+            evidence_path("cache", "ratings"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump

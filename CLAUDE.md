@@ -716,6 +716,36 @@ currently supportable and is reported as unknown rather than asserted;
 Asset Quality's absolute bands still force a value across a threshold
 this layer would express as a range.
 
+**Caches may accelerate acquisition; they may never become undeclared
+analytical inputs** (Hermetic Evidence,
+[`HERMETIC_EVIDENCE.md`](docs/architecture/HERMETIC_EVIDENCE.md),
+accepted and built). The gitignored-cache trap fired **five times**, and
+the common shape was never caching: **an analytical call declared a
+*subject* and never an *evidence set*** — `judge("ADA")` — so the
+service resolved its own evidence from one of **seventeen path
+literals** relative to the process CWD. Measured: editing one field of
+`data/cache/issuance_rules` flips ADA from `governance_set` to
+`consensus_bound` with the caller declaring nothing. And the suite was
+*writing* too — it created `data/cache/fx` in the developer's tree.
+
+`app/infrastructure/evidence_root.py` owns the root
+(`MOVRVEST_EVIDENCE_ROOT`, default `data`); every store builds its
+default from `evidence_path(...)`, **resolved at construction and never
+in a signature** — ruff caught three stores freezing it at import, which
+is the same bug again. `tests/conftest.py` gained the third dimension it
+was missing beside credentials and the wire: the root points at a temp
+directory, so a test that forgets fixtures reads an **empty** store
+rather than a machine. Four behavioural tests poison a *genuinely
+readable* cache and prove the declared input wins — plus the inverse,
+because the guarantee is *declared wins*, not *nothing works*.
+
+**Historical judgments are auditable, not reproducible.** A record
+carries the evidence digest, count and refs — enough to say *the
+evidence changed* (#113's `EvidenceMovement`, cache-independent) and not
+enough to reconstruct what the committee saw. Recorded, not fixed;
+history stays append-only. **`MATERIAL_SPREAD` stays provisional** and is
+not a definition of investor materiality.
+
 **The CoinGecko narrative surface is web-only** — `/api/v3/news` is 401
 PRO-only and `status_updates` is 404 — so the parse reads `data-`
 attributes rather than layout, and reports `EventFeedHealth` when it

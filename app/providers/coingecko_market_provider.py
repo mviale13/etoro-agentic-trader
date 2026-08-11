@@ -47,6 +47,7 @@ import requests
 
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence_root import evidence_path
 from app.providers.coingecko_facts_provider import CoinGeckoFactsProvider
 
 #: The stablecoins the provider names in its dominance table. Their
@@ -542,7 +543,7 @@ class CachedCoinGeckoMarketProvider:
     ) -> None:
         self._provider = provider or CoinGeckoMarketProvider()
         self._cache = cache or JsonCache(
-            "data/cache/crypto_market",
+            evidence_path("cache", "crypto_market"),
             # Schema 1, and records written before this store
             # declared one are accepted as schema 1 deliberately —
             # their shape is what schema 1 describes. The next bump
