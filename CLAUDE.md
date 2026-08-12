@@ -17,7 +17,7 @@ short, and keep it true — everything here is checkable.
 | Which package owns what? | [`docs/architecture/REPOSITORY_INVENTORY.md`](docs/architecture/REPOSITORY_INVENTORY.md) |
 | What is built, what is missing? | [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) |
 | What is next, and what is open? | [`docs/architecture/MIGRATION_PLAN.md`](docs/architecture/MIGRATION_PLAN.md) |
-| How does the pipeline work? | [`docs/architecture.md`](docs/architecture.md) — **v5.0 section only** |
+| How does the pipeline work? | [`docs/architecture.md`](docs/architecture.md) — **v5.0 section onward** (everything before it is v4.0 history) |
 | What state is the frontend in? | [`docs/frontend/UX_UI_INVENTORY.md`](docs/frontend/UX_UI_INVENTORY.md) — audit + slice-by-slice execution log |
 
 [`docs/README.md`](docs/README.md) indexes the above and names the one
@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1500 tests, fast
+python -m pytest -q            # ~2100 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 
@@ -716,6 +716,98 @@ currently supportable and is reported as unknown rather than asserted;
 Asset Quality's absolute bands still force a value across a threshold
 this layer would express as a range.
 
+**A token is not a company with different labels** (the Crypto Dossier,
+[`CRYPTO_DOSSIER_UI.md`](docs/architecture/CRYPTO_DOSSIER_UI.md), built).
+The first investor-usable crypto surface, and the audit that earned it:
+`/executive/BTC/dossier` led with **conviction 46, agreement 0.5, safety
+35 and the Investment and Risk Committees** — none of it from crypto
+evidence — while Fee Capture, Supply Governance, the investor
+assessment, Asset Quality, the intelligence layer and the journal
+appeared nowhere. Six layers had reached the CLI and stopped.
+
+**Its own endpoint, because the measurement said so**: the equity
+dossier runs the brain pipeline and takes ~12s; the whole crypto
+composition is **~19ms** of stored doors. One composes a *decision*, the
+other composes what is *known*. `GET /crypto/{symbol}/dossier` reuses
+the five existing adapters plus the two domain objects that already
+serialise themselves, and adds four small ones.
+
+**The frontend calculates nothing analytical** — no value, score,
+applicability, interpretation, classification or verdict is recreated in
+TypeScript, and **no fallback prose turns a measurement into economic
+meaning**. Enforced three times: adapters carry the domain's sentence
+beside every state, the parser *requires* it, and the page renders the
+refusal where the backend declines to interpret. A test walks every key
+at every depth for an aggregate.
+
+**And it does change with the asset** — 9/12/15/9/4 questions asked, HYPE
+alone with two entities, TAO with 15 undetermined and nothing refused,
+and the two committees swapping sides between BTC and 1INCH. **The
+finding the test produced: BTC and 1INCH have identical counts (9 asked,
+10 refused) and are not remotely the same asset**, so a count is never
+the differentiator — questions are named, grouped by applicability, and
+the three groups are separated rather than sorted. `UNKNOWN` is never a
+zero, `NOT_APPLICABLE` is never adverse, and no state is colour-coded.
+Five deficiencies recorded and not solved, including that asset class
+still cannot be resolved without the brain pipeline.
+
+**A fund cannot receive evaluative meaning from a company question its
+playbook does not ask** (the Fund Analytical Boundary, F1,
+[`FUND_EVIDENCE_RESEARCH.md`](docs/architecture/FUND_EVIDENCE_RESEARCH.md) §9,
+built). The measured defect: IB01.L — an accumulating US Treasury ETF —
+rendered *"Business quality LOW (40)"* from Yahoo's `dividend_yield:
+0.0`, the only readable company field, on a share class that cannot
+distribute by design. The structural fix was **membership, not
+machinery**: six consumers already keyed the boundary on
+`AssetClass.has_no_company`, and ETF simply predated the property.
+Around that one change: `CompanyFactsService` split the conflated
+`is_token` flag (company fields key on the capability boundary,
+token-shaped fields keep their exact membership — a fund is not a token
+either); the quality signal refuses the whole company factor set for a
+no-company asset, so no future provider field can score a fund; every
+absence is worded as this platform's limit (*"company filing knowledge
+is not part of the fund playbook"*) and never as a claim about what
+funds publish; and the fund's expense ratio — already in the `.info`
+response and previously discarded — is retained as a dated fact
+(`fund_cost` on the dossier, composed at the route like the token
+rating, reaching no score). The fund dossier remains a named future
+specialization; F2 (*"what am I actually buying when I own this
+fund?"*) is not started.
+
+**A grounded fact may travel upward without its economic interpretation
+travelling with it** (Zero Fake Meaning, `INVESTOR_ASSESSMENT.md` §6,
+accepted and built). Invariant 10, and the semantic form of Invariant 1.
+The defect was one sentence keyed by *quantity* rather than by asset —
+*"it bounds how far the holder's share can be diluted"*, attached to
+every maximum supply held — which is true of a network asset and
+**inverted for a claim on a reserve**. Classified across all eight
+assets first: the figures, the spreads, the S5 substitution guard and
+the four judgment postures are economically invariant; a committee's
+answer was **already licensed**, because a committee decides
+applicability in its own economic terms and records the role it read it
+from; and `_WHY` was the entire defect surface, licensed by nobody.
+
+**The licensor was derivable, not invented.** `EvidenceDemand.token_fact`
+already names which questions read which quantity, so a meaning is now
+the question's own `matters_because` quoted verbatim, carried with the
+applicability sentence for *this* asset. **BTC gained a reading it should
+always have had** — two questions demand `max_supply`, and monetary
+scarcity's own sentence warns that a stated cap is not the claim.
+
+**And the pressure it found: `DECLINED` had never worked.** Consuming
+`applicability_for` did not block the stablecoin, because
+`applicability_for` returned `ASK` as soon as a composed lens asked —
+so the refusal table was reached only for questions the lens union had
+already dropped, and **13 of 13 entries were unreachable**. A stablecoin
+trades, so it composes the market lens, and only the *composition* knows
+that a claim on a reserve has no eventual supply to be diluted against.
+A precedence reorder plus one decline; `capabilities`, the archetype set
+and entity identity untouched, and no `EconomicRole` invented. A test
+asserts the reorder changes exactly one answer corpus-wide. **Nothing
+was solved by deletion**: every live asset keeps every reading, and only
+a synthetic stablecoin — never added to the corpus — abstains. Its
+reserve, redemption and peg questions stay named as `unmodelled`.
+
 **Caches may accelerate acquisition; they may never become undeclared
 analytical inputs** (Hermetic Evidence,
 [`HERMETIC_EVIDENCE.md`](docs/architecture/HERMETIC_EVIDENCE.md),
@@ -860,6 +952,22 @@ These are not style preferences. Breaking them damages the product.
 7. **Communication explains decisions; it never makes them.**
 8. **The dashboard presents; it never calculates.**
 9. **One business concept, one implementation.**
+10. **Zero Fake Meaning — Invariant 1's sibling, for semantics rather
+    than arithmetic.** *An established number is authority to report the
+    number, not authority to invent what the number means.* Evidence
+    establishes facts; question contracts establish what a fact means
+    for an applicable analytical question; committees establish their
+    own economic judgments; the executive layer communicates licensed
+    meaning and never authors it. A grounded fact may travel
+    upward without its economic interpretation travelling with it, and
+    the layer receiving it must not invent the missing half. An
+    established supply number is not authority to say *dilution*;
+    established fees are not authority to say *holder economics*; a
+    market capitalisation is not authority to claim robustness where the
+    question does not apply. Where the measurement is established and its
+    investor meaning is not, show the measurement and **say that the
+    interpretation is not established** — abstention is a sentence, not
+    silence.
 
 The UI labels its own honesty: every page declares its data provenance via
 `<PageIntegrity>`, and cards carry a live / partial / placeholder pill. If

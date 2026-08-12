@@ -283,7 +283,12 @@ async def test_an_unread_equity_and_a_token_carry_different_blockers() -> None:
 
     assert by_symbol["MSFT"].blocker is Blocker.NOT_READ
     assert by_symbol["BTC"].blocker is Blocker.NO_PRIMARY_SOURCE
-    assert "publishes no annual report" in (by_symbol["BTC"].blocking_claim or "")
+    # Worded as this platform's boundary, never as a claim about what
+    # the asset publishes (F1): "publishes no annual report" asserted a
+    # world fact that is false of the one fund the investor watches.
+    assert "not part of the cryptocurrency playbook" in (
+        by_symbol["BTC"].blocking_claim or ""
+    )
 
 
 # ── identity resolution ─────────────────────────────────────────────

@@ -4,6 +4,7 @@ import asyncio
 import pathlib
 from datetime import UTC, date, datetime, timedelta
 
+from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.finding import statements
 from app.domain.market_snapshot import MarketQuote
@@ -435,22 +436,31 @@ def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:
 
     facts, _, _ = build_crypto_facts()
 
-    # The hazard, demonstrated: asked the company question, a token
-    # answers as a company.
+    # The hazard, demonstrated: asked the company question without its
+    # asset class, a token answers as a company. The signal's own
+    # boundary (F1) closes this when the class travels with the call,
+    # which is why the class is now a parameter rather than a caller's
+    # courtesy.
     mistaken = QualitySignalService().build(facts)
 
     assert "Large-cap company." in statements(mistaken.evidence)
 
+    guarded = QualitySignalService().build(facts, AssetClass.CRYPTO)
+
+    assert guarded.quality == "UNKNOWN"
+    assert guarded.contributions == ()
+
     # The path a token actually takes never reaches this signal at all.
     # `CompanySignalService` routes a cryptocurrency to the asset-quality
     # model, which reads the crypto evidence families directly and is
-    # not handed `CompanyFacts`.
+    # not handed `CompanyFacts` — and where it does fall through, the
+    # asset class travels with the question.
     signal_service = pathlib.Path("app/services/company_signal_service.py").read_text(
         encoding="utf-8"
     )
 
     assert "CryptoAssetQualityService" in signal_service
-    assert "QualitySignalService().build(facts)" in signal_service
+    assert "QualitySignalService().build(facts, asset_class)" in signal_service
 
 
 def test_a_token_carries_what_the_gate_established() -> None:

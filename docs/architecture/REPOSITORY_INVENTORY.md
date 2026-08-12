@@ -108,6 +108,42 @@ Orchestration lives in `app/application/workspace`:
 | `app/infrastructure/evidence` | `VersionedSnapshotStore` — every capture kept, and readable back |
 | `app/services/*_signal_service.py` | Value, quality, momentum and risk signals per security |
 
+## The crypto evidence and judgment stack
+
+A second composition beside the equity decision path, reachable from
+`app/cli.py` (the `movrvest crypto-*`, `supply`, `issuance`, `judge`,
+`committees`, `assessment`, `judgment-history` and journal commands) and
+from `app/api/main.py` (`GET /crypto/{symbol}/dossier`,
+`GET /committees/{symbol}`). Every surface below is read-only; the two
+explicit spends are `movrvest acquire` and `movrvest judge`. Each layer
+carries its own accepted document under `docs/architecture/` (S1–S5.3,
+#108–#120).
+
+| Package | Owns |
+|---|---|
+| `app/services/token_facts_service.py` | S1 — the claims pool and the claimant registry: every source is an adapter producing a `TokenClaimSet`, standings judged on read, rejections retained and rendered |
+| `app/services/protocol_fundamentals_service.py` | S2 — the second evidence family, same pooling architecture; entity identity established before figures are read |
+| `app/domain/crypto_archetype.py`, `app/domain/crypto_questions.py` | S3 — an archetype is a name for a set of capability lenses; applicability is decided from the archetype alone, before any figure |
+| `app/domain/crypto_market_context.py`, `app/services/crypto_market_service.py` | S4 — the market-context family: an interval is part of a figure, and the comparator is a cap-weighted return over a named universe |
+| `app/domain/supply_semantics.py`, `app/services/supply_semantics_service.py` | S4.6 — five supply concepts, each with its methodology; two numbers only conflict if they claim the same thing |
+| `app/domain/supply_establishment.py` | S5.1 — the Model C gate: six requirements, and a gate that cannot be evaluated fails |
+| `app/domain/mechanical_issuance.py`, `app/providers/issuance_rule_provider.py`, `app/providers/cached_issuance_provider.py` | S5.2 — issuance rules read from chain state; allocation-release assets get no entry rather than an empty one |
+| `app/services/crypto_asset_quality_service.py` | S5 — readiness as a property of the question; one scorable question of nineteen, every asset UNKNOWN |
+| `app/services/crypto_intelligence_service.py`, `app/services/crypto_event_service.py` | The intelligence layer: four epistemic types per claim; events identified by shared figure, the press corroborates and never introduces |
+| `app/services/intelligence_synthesis_service.py` | The model seam over held findings (off by default); the validator refuses unsupported figures, names, causes and verdicts |
+| `app/services/intelligence_journal_service.py`, `app/infrastructure/evidence/intelligence_journal_store.py` | The platform's first memory: append-only observations, temporal sentences worded from `ObservationSpan`, never durations |
+| `app/services/value_capture_committee.py`, `app/services/supply_governance_committee.py` | The two committees — the only layers permitted to interpret; each owns its verdict vocabulary, question and applicability rule |
+| `app/domain/committee_protocol.py` | The framework: identity/versioning, applicability states, the answered/abstained/unavailable trichotomy, eligibility, counting, lifecycle — and never a verdict's meaning |
+| `app/services/crypto_committees.py` | The committee registry — a tuple and a lookup, earned by a concrete failure |
+| `app/services/judgment_history_service.py`, `app/infrastructure/evidence/judgment_history_store.py` | The second memory: judgment transitions on three axes; a historical verdict is structurally never today's |
+| `app/services/committee_matrix_service.py`, `app/api/routes/committee_matrix.py` | The matrix: every committee's latest judgment beside the others, nothing combined |
+| `app/domain/investor_assessment.py`, `app/services/investor_assessment_service.py` | The strongest supportable statement per subject: six unordered shapes, no midpoint, meanings licensed by the question contract (Invariant 10) |
+| `app/api/routes/crypto_dossier.py`, `app/api/models/crypto_dossier_adapter.py` | `GET /crypto/{symbol}/dossier` — ~19ms of stored doors; the frontend calculates nothing analytical |
+| `app/infrastructure/evidence_root.py` | The one owner of every store's root (`MOVRVEST_EVIDENCE_ROOT`); resolved at construction, never in a signature |
+| `app/providers/coingecko_facts_provider.py`, `token_insight_provider.py`, `coin_insight_provider.py`, `defillama_provider.py`, `coingecko_market_provider.py` | Vendor claims — adapters into the pools, no provider name in any establishment rule |
+| `app/providers/primary_supply_provider.py`, `primary_event_provider.py` | Canonical chain state, read directly — primary is an authority axis, not a standing |
+| `app/providers/etf_flow_provider.py`, `press_corroboration_provider.py` | ETF flows (SoSoValue, keyless) and press corroboration — the press may never introduce an event |
+
 ## Perception components
 
 | Component | Produces |

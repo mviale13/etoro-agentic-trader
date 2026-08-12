@@ -28,6 +28,13 @@ class ValuationSnapshot:
     volume_24h: float | None = None
     inception: datetime | None = None
 
+    #: What a fund has where a company has margins: what owning it costs,
+    #: as a decimal ratio of assets per year (0.0007 is 0.07%). Read from
+    #: the same provider call as everything above — it was already in the
+    #: response and being discarded while the fund playbook named cost of
+    #: ownership a priority. A fact, never a score.
+    expense_ratio: float | None = None
+
     #: Company fundamentals, all as decimal ratios (0.12 is 12%) and all read
     #: from the same provider call as the valuation above. A company has these
     #: where a token has the supply fields. `debt_to_equity` and

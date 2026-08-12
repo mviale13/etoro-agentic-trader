@@ -14,6 +14,7 @@ from app.api.models.dossier import (
     DossierDefinitionResponse,
     DossierResponse,
     EvidenceScoresResponse,
+    FundCostResponse,
     NarrativeFindingResponse,
     NarrativeOutcomeResponse,
     NarrativeResponse,
@@ -58,6 +59,7 @@ from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
 from app.brain import Brain
+from app.domain.asset_class import AssetClass
 from app.domain.committee.panel import Panel
 from app.domain.decision_history import ConvictionChange, DecisionTrend
 from app.domain.dossier_definition import DossierDefinition, definition_for
@@ -68,6 +70,7 @@ from app.domain.provenance import Provenance
 from app.domain.research_plan import AnalystKey
 from app.domain.score_basis import ScoreBases, ScoreBasis
 from app.domain.token_rating import TokenRating
+from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
@@ -405,6 +408,42 @@ def _provenance(
         observed_at=provenance.observed_at,
         age=provenance.stated(),
         last_known=provenance.last_known,
+    )
+
+
+def _fund_cost(
+    symbol: str,
+    asset_class: AssetClass | None,
+) -> FundCostResponse | None:
+    """What owning the fund costs, read from the store and judged by nobody.
+
+    Composed here at the surface, the token-rating pattern: not on
+    `CompanyFacts`' signals path, not near a selector, so "it reaches no
+    score" is a fact about the code. Read-only — the stored door serves
+    what the last acquisition read, and a fund never acquired has no
+    cost figure rather than a fetched one.
+    """
+
+    if asset_class is not AssetClass.ETF:
+        return None
+
+    snapshot = CachedValueProvider.stored().snapshot(symbol)
+
+    if snapshot.expense_ratio is None or snapshot.reading is None:
+        return None
+
+    return FundCostResponse(
+        stated=(
+            f"Owning this fund costs {snapshot.expense_ratio:.2%} of assets "
+            "per year — the total expense ratio, as the provider reports it."
+        ),
+        expense_ratio=snapshot.expense_ratio,
+        read=ProvenanceResponse(
+            source=snapshot.reading.source,
+            observed_at=snapshot.reading.observed_at,
+            age=snapshot.reading.stated(),
+            last_known=snapshot.reading.last_known,
+        ),
     )
 
 
@@ -783,6 +822,7 @@ async def dossier(
         ],
         evidence_as_of=_provenance(decision.evidence_as_of),
         token_rating=token_rating,
+        fund_cost=_fund_cost(normalized_symbol, asset_class),
         asset_profile=asset_profile_response(token_facts),
         protocol_fundamentals=protocol_fundamentals_response(protocol_facts),
         crypto_playbook=crypto_playbook_response(crypto_playbook),

@@ -164,7 +164,160 @@ vouching for it.
 
 ---
 
-## 6. Recorded, unsolved
+## 6. Zero Fake Meaning (PR #119)
+
+> **An established number is authority to report the number, not
+> authority to invent what the number means.**
+
+The contract, as the owner set it on accepting this slice:
+
+> Evidence establishes facts. Question contracts establish what those
+> facts mean for an applicable analytical question. Committees establish
+> their own economic judgments. Investor Assessment communicates
+> licensed meaning; it does not author it.
+
+The owner's principle, and the same philosophy as Zero Fake Numbers
+applied to semantics rather than arithmetic. **A grounded fact may
+travel into this layer without its economic interpretation travelling
+with it, and this layer must not supply the missing half.**
+
+### 6.1 The demonstrated defect
+
+One sentence, attached to every maximum supply this platform holds:
+
+```text
+_WHY[MAX_SUPPLY] = "It bounds how far the holder's share can be diluted."
+```
+
+Keyed by *quantity*. No asset could reach it, so no asset could be the
+one it was false about. It is true of a network asset and **inverted for
+a claim on a reserve**: a stablecoin holder's position is redeemable at
+par, so supply expanding is the instrument working rather than the
+holder being diluted.
+
+### 6.2 The classification, measured across all eight assets
+
+Every investor-facing conclusion this layer produces, sorted into the
+three categories:
+
+| conclusion | class | owner |
+|---|---|---|
+| the figures themselves (`stated`) | invariant | evidence |
+| spread qualifications and uncertainties | invariant | `Comparison` |
+| the max/emitted substitution guard | invariant | S5 |
+| the four judgment-posture sentences | invariant | `JudgmentPosture` |
+| a committee's answer, reason and question | **role-dependent, already licensed** | the committee |
+| **`_WHY[…]` — all three** | **role-dependent, licensed by nothing** | *nobody* |
+
+So the whole defect surface was one dictionary, and the committee half —
+which decides applicability in its own economic terms and records the
+role it read that from — needed no repair at all. **Saying why it was
+already right is the point**: it is the shape the quantity half now
+copies.
+
+### 6.3 The licensor was derivable, not invented
+
+`EvidenceDemand.token_fact` already names which questions read which
+quantity. Reading it off:
+
+```text
+max_supply          <- supply_and_dilution, monetary_scarcity
+total_supply        <- supply_and_dilution
+circulating_supply  <- supply_and_dilution, monetary_scarcity
+```
+
+A meaning is now a `LicensedMeaning` — the question's own
+`matters_because`, quoted verbatim, carried with the applicability
+sentence that says why that question applies to *this* asset. This
+module declares exactly one mapping (`_DEMANDED_AS`, because
+`EMITTED_SUPPLY` and `total_supply` are two names for one number) and
+authors no sentence at all. A test asserts every emitted meaning appears
+verbatim in some contract.
+
+**BTC gained a reading it should always have had.** Two questions demand
+`max_supply` and a monetary network asks both, so its cap now also
+carries monetary scarcity's own sentence — which *warns*: "A stated cap
+is not that claim: the claim is about the rule and about who could
+rewrite it." Strictly better than the sentence it replaced.
+
+### 6.4 The archetype pressure this produced — reported, and fixed
+
+Consuming `applicability_for` did **not** block the stablecoin, and
+measuring why found a defect that had been dormant since S3.
+
+`DECLINED` documents itself as the place an archetype refuses a question
+*no lens can refuse* — "a refusal is a claim about a kind of asset …
+only the composition can [make it]". **It could never do that.**
+`applicability_for` returned `ASK` as soon as any composed lens asked
+the question, so the table was reached only for questions the lens union
+had already dropped. Measured: **13 of 13 entries unreachable**. Every
+declared refusal could do nothing but re-word a refusal that would have
+happened without it.
+
+A stablecoin trades, so it composes the market lens, and the market lens
+asks supply-and-dilution of everything that trades. Only the composition
+knows that a claim on a reserve has no eventual supply to be diluted
+against.
+
+The repair is a precedence reorder plus one `QuestionDecline`. **It is
+not a taxonomy change**: `capabilities`, the archetype set, confidence,
+alternatives and entity identity are untouched, and no `EconomicRole`
+abstraction was created. A test asserts the reorder changes exactly one
+answer across every declared archetype × question — the entry added with
+this slice — and a failure demonstration confirms both new guards fail
+when it is reverted.
+
+**And the class of defect is now guarded generically.** No existing test
+established reachability: the specific stablecoin case would not have
+caught a shadowed decline on any other archetype, and the
+precedence-neutrality test is computed from the data tables and is
+therefore precedence-blind. `test_every_declared_decline_actually_
+decides` asserts, for every declaration, that `applicability_for`
+returns the decline's **own sentence** — because a shadowed decline
+returns `ASK` with the lens's wording and an unconsulted one returns the
+generic "this question belongs to the … lens" refusal, so only a decline
+that actually decided can produce its own words. Demonstrated against
+both regressions: reverting precedence, and adding a future-style
+decline on a different archetype that a composed lens would shadow.
+Every future entry is covered without anyone remembering to add a test.
+
+### 6.5 The forcing case, and the positive cases
+
+A synthetic `STABLECOIN` assignment — **not added to the production
+corpus** — carrying a maximum supply, an emitted total and a circulating
+estimate: every number this platform holds about any other token.
+
+```text
+Maximum supply  [precise]
+  Maximum supply is 100.00 billion, from TokenInsight.
+  what it means for this asset is not established here: Supply and
+  dilution — … A stablecoin is a claim on a reserve rather than a share
+  of a network … Supply expanding is the instrument working. …
+  Monetary scarcity — … Scarcity is not a virtue here and a fixed cap
+  would be a defect, so the monetary question is not merely
+  unanswerable — it is inverted.
+```
+
+Three measurements survive; zero interpretations are emitted; the
+refusal is quoted in the refusing contract's own words. **Abstention is
+a stated sentence, not silence.**
+
+And nothing was solved by deleting interpretation globally: across the
+live corpus **every asset keeps every reading it had**, and BTC gains
+one. Only the synthetic case abstains.
+
+### 6.6 What was deliberately not built
+
+**No stablecoin analysis.** Reserve quality, redemption, peg stability
+and issuer risk stay in `ArchetypeDefinition.unmodelled`, named as
+unbuilt. Building them now would turn a boundary into speculative
+taxonomy work, and they earn their own evidence slice when stablecoins
+enter the investable corpus. The decline *references* those unmodelled
+questions rather than answering any of them.
+
+---
+
+## 7. Recorded, unsolved
 
 - **`max_supply: null` and "field absent" are indistinguishable.** A
   positively stated absence of a cap is real evidence and is not
@@ -180,10 +333,22 @@ vouching for it.
   range or a rank; the mismatch is recorded and not resolved, and
   whether market significance belongs in relative share, percentile or
   descriptive evidence is deliberately not decided here.
+- **An unclassified asset has no gate.** `UNKNOWN` composes the market
+  lens *by declaration* — an unclassified security "is read only as a
+  traded asset" — so supply-and-dilution genuinely applies to it and TAO
+  keeps its reading. The limit that follows is real: **a stablecoin this
+  platform failed to classify would receive dilution framing.** The gate
+  is the archetype, so an asset with no archetype has no gate. Closing it
+  means classifying the asset, not weakening the rule. Asserted by test
+  rather than left to be discovered.
+- **Only supply quantities are gated, because only they are produced.**
+  Market capitalisation does not reach this layer yet. When it does, the
+  same rule applies through the same door — `market_cap` is demanded by
+  `market_robustness` — and no separate mechanism is needed.
 
 ---
 
-## 7. Surfaces
+## 8. Surfaces
 
 `movrvest assessment [SYMBOL]` — one block per subject with the shape
 printed beside it, or the corpus as a shape distribution. No headline,

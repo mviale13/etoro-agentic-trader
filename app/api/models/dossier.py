@@ -63,6 +63,24 @@ class ProvenanceResponse(BaseModel):
     last_known: bool
 
 
+class FundCostResponse(BaseModel):
+    """What owning a fund costs, as the provider reports it.
+
+    An evidenced fact about the wrapper, and only that: it reaches no
+    score, no band and no verdict, and it is served with the moment it
+    was read. `stated` is the backend's own sentence — the frontend
+    renders it and never rewords a ratio into a judgement.
+    """
+
+    stated: str
+
+    #: Decimal ratio of assets per year: 0.0007 is 0.07%.
+    expense_ratio: float
+
+    #: When this platform read it, and from where.
+    read: ProvenanceResponse
+
+
 class RatingDimensionResponse(BaseModel):
     label: str
     score: float
@@ -933,6 +951,11 @@ class DossierResponse(BaseModel):
     #: A third party's published rating of this token, where one has
     #: been read. Shown, attributed, and consumed by nothing.
     token_rating: TokenRatingResponse | None = None
+
+    #: What owning the fund costs, where the provider reported it. A
+    #: fact with a date, consumed by nothing. Null for anything that is
+    #: not a fund.
+    fund_cost: FundCostResponse | None = None
 
     #: The token's market facts, judged through the validation gate —
     #: standings, dates, sources and the rejection ledger. Null for

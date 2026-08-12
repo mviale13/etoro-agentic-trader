@@ -1,12 +1,23 @@
-# Handoff — 2026-08-11
+# Handoff — 2026-08-12
 
 Everything is committed and green. Nothing is open. Start a fresh window
 here.
 
 ## State
 
-`main` is at `99fb1ec`. Gates: ruff, ruff format, mypy (565 files),
-**2087 tests**, verified with `git archive HEAD` in isolation.
+`main` carries the Fund Analytical Boundary (F1) on top of `2375f34`
+(merge of #120). Gates at F1: ruff clean, mypy clean (567 files),
+**2121 tests passing**, frontend builds, HEAD verified in isolation.
+
+**F1, briefly**: a fund cannot receive evaluative meaning from a
+company question its playbook does not ask — IB01.L no longer scores
+"Business quality LOW (40)" from a structural dividend zero. The fix
+was membership (`has_no_company` gains ETF; the boundary's six
+consumers already existed) plus one conflated flag split. The TER the
+provider already returned is retained as `fund_cost` (a dated fact, no
+score). **F2 is not started**; its question is *"what am I actually
+buying when I own this fund?"* and its ground is
+`docs/architecture/FUND_EVIDENCE_RESEARCH.md`.
 
 Merged since the last handoff, in order:
 
@@ -18,6 +29,8 @@ Merged since the last handoff, in order:
 | `#116` | The committee portfolio — everything beside, nothing combined |
 | `#117` | Investor Assessment — the strongest useful statement |
 | `#118` | Hermetic evidence execution |
+| `#119` | Zero Fake Meaning — economic role-awareness in Investor Assessment |
+| `#120` | The Crypto Dossier — the first investor-usable crypto surface |
 
 ## Where the work is
 
@@ -47,10 +60,12 @@ quorum 2, declined three times. Do not try to earn factor #2.
 
 1. `.claude/…/memory/MEMORY.md` — the first nine lines are the crypto
    arc in order, newest first.
-2. `docs/architecture/INVESTOR_ASSESSMENT.md` — the newest layer.
+2. `docs/architecture/CRYPTO_DOSSIER_UI.md` — the newest surface, and
+   `docs/architecture/INVESTOR_ASSESSMENT.md` — the layer beneath it
+   (its §6, Zero Fake Meaning, is Invariant 10).
 3. `docs/architecture/HERMETIC_EVIDENCE.md` — read before writing any
    test that touches evidence.
-4. `CLAUDE.md` — current through `#118`.
+4. `CLAUDE.md` — current through `#120`.
 
 ## Six rules this arc established, in the order they cost the most
 
@@ -82,6 +97,21 @@ quorum 2, declined three times. Do not try to earn factor #2.
    may borrow.** Every issuance rule stands at `CLAIMED` because a
    chain's own parameters have no second source — requiring
    `ESTABLISHED` silenced all three answerable assets.
+7. **A grounded fact may travel upward without its economic
+   interpretation travelling with it** — Invariant 10, Zero Fake
+   Meaning. One sentence keyed by *quantity* rather than by asset
+   (*"it bounds how far the holder's share can be diluted"*) is true of
+   a network asset and inverted for a claim on a reserve. The executive
+   layer must not invent the missing half; it quotes the contract that
+   owns the question, or states that the interpretation is not
+   established.
+8. **A declaration that no code path can reach is not a rule.**
+   `DECLINED` documented itself as the place an archetype refuses a
+   question *no lens can refuse*, and `applicability_for` returned
+   `ASK` before reaching it — so **13 of 13 entries were unreachable**
+   and could only re-word refusals that would have happened anyway.
+   Dormant since S3, found only by asking the table to do the one thing
+   it claimed.
 
 ## Traps
 
@@ -116,10 +146,17 @@ Read-only surfaces:
 
 ```bash
 movrvest assessment ETH               # what can usefully be said
+movrvest committees BTC               # every committee, side by side
 movrvest committees [SYMBOL]          # every committee's conclusion
 movrvest judgment-history BTC --evidence
 movrvest crypto-intelligence BTC --evidence
 ```
+
+The investor-facing surface is `GET /crypto/{symbol}/dossier` (#120),
+rendered by the web app — ~19ms of stored doors, no model, no fetch. The
+equity dossier at `/executive/{symbol}/dossier` is a different
+composition (a *decision*, ~12s of brain pipeline) and the two do not
+share an endpoint.
 
 Two model seams are off by default and share the writer's provider
 config: `MOVRVEST_INTELLIGENCE_SYNTHESIS` and

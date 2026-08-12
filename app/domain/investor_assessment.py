@@ -43,6 +43,16 @@ commit — see `Invariant 1`: absent evidence is reported as absent,
 never estimated. A midpoint is a plausible number on an investment
 dashboard, which is to say a measurement that was never taken.
 
+**And no meaning is invented either.** A grounded fact may travel here
+without its economic interpretation travelling with it, and this layer
+must not supply the missing half. An established supply number is not
+authority to say *dilution*; established fees are not authority to say
+*holder economics*; a market capitalisation is not authority to claim
+robustness where the question does not apply. So every reason-it-matters
+is a `LicensedMeaning` — quoted from the contract that owns the
+question, carrying why that question applies to *this* asset — or it is
+absent with the refusal stated. Zero Fake Numbers, applied to semantics.
+
 **What is deliberately absent**: no score, no rank, no recommendation,
 no aggregate, no agreement between committees, and no favourable,
 adverse, positive, negative, good or bad. The shapes below are not
@@ -137,6 +147,49 @@ class ObservedValue:
 
 
 @dataclass(frozen=True, slots=True)
+class LicensedMeaning:
+    """Why a measurement matters, and the contract that established it.
+
+    **Never authored here.** Zero Fake Numbers applied to semantics:
+    evidence establishes facts, a domain contract establishes what a
+    fact means, and this layer communicates that meaning. Promoting a
+    fact into an interpretation on its own authority is the semantic
+    form of printing a plausible figure.
+
+    The defect that earned it was one sentence attached to every
+    maximum supply this platform holds — *"it bounds how far the
+    holder's share can be diluted"* — which is true of a network asset
+    and inverted for a claim on a reserve. Nothing had established it
+    for the asset in front of the reader; a dictionary keyed by
+    quantity had asserted it for all of them.
+
+    So a meaning now travels with the two things that make it
+    checkable: whose question it answers, and why that question applies
+    to *this* asset.
+    """
+
+    #: The question this reading answers, named by the contract that
+    #: owns it — "Supply and dilution", "Fee Capture Committee".
+    question: str
+
+    #: The meaning, quoted verbatim from that contract. This layer
+    #: copies the sentence and never writes one.
+    stated: str
+
+    #: Why that question applies here — the applicability sentence, in
+    #: the words of whatever established it. Without this the reading
+    #: would be a generic gloss again, merely with a citation.
+    licensed_by: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "question": self.question,
+            "stated": self.stated,
+            "licensed_by": self.licensed_by,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class InvestorStatement:
     """One useful thing, said as strongly as the evidence allows.
 
@@ -163,9 +216,20 @@ class InvestorStatement:
     #: skip them all.
     uncertainty: str | None = None
 
-    #: Why an investor should care. Absent rather than padded: not every
-    #: true statement has a reason worth a sentence.
-    why_it_matters: str | None = None
+    #: Why an investor should care — one entry per question a domain
+    #: contract has established applies to this asset, each quoted with
+    #: its licensor. **Several is the ordinary case and none is a real
+    #: state**: a maximum supply speaks to dilution and to monetary
+    #: scarcity, and which of those matters more is the ranking this
+    #: layer does not do.
+    why_it_matters: tuple[LicensedMeaning, ...] = ()
+
+    #: Where nothing licensed a meaning: the reason, in the refusing
+    #: contract's own words. **The measurement still stands** — this
+    #: says the figure is held and its investor interpretation is not
+    #: established for this asset, which is a different and more honest
+    #: sentence than silence.
+    interpretation_withheld: str | None = None
 
     #: The readings beneath it, in full.
     observed: tuple[ObservedValue, ...] = ()
@@ -189,7 +253,8 @@ class InvestorStatement:
             "stated": self.stated,
             "qualification": self.qualification,
             "uncertainty": self.uncertainty,
-            "why_it_matters": self.why_it_matters,
+            "why_it_matters": [item.as_dict() for item in self.why_it_matters],
+            "interpretation_withheld": self.interpretation_withheld,
             "observed": [value.as_dict() for value in self.observed],
             "refs": list(self.refs),
         }

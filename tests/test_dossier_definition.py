@@ -69,20 +69,35 @@ def test_a_commodity_shares_the_no_filings_fact_and_nothing_else() -> None:
 
 
 def test_an_unclassified_security_gets_the_general_case() -> None:
-    """A kind nobody established is not promoted to a company or a token.
+    """A kind nobody established is not promoted to a company or a token."""
 
-    An ETF stays here too, deliberately: the fund dossier is a named
-    future specialization, and until it is built the general case makes
-    no claim a fund cannot carry.
-    """
-
-    for asset_class in (AssetClass.ETF, AssetClass.UNKNOWN, None):
+    for asset_class in (AssetClass.UNKNOWN, None):
         definition = definition_for(asset_class)
 
         assert definition.kind is DossierKind.GENERAL, asset_class
         assert definition.title == "Investment dossier", asset_class
         assert definition.classification_heading == "Investment type", asset_class
         assert definition.filings_apply, asset_class
+
+
+def test_a_fund_gets_the_general_case_with_its_own_filings_boundary() -> None:
+    """A fund dossier is still a named future specialization (F1 built
+    none), but its filings absence is its own: company filing knowledge
+    is not part of the fund playbook, worded as this platform's limit —
+    never as a claim about what funds publish, in either direction."""
+
+    definition = definition_for(AssetClass.ETF)
+
+    assert definition.kind is DossierKind.GENERAL
+    assert definition.title == "Investment dossier"
+    assert definition.classification_heading == "Investment type"
+    assert not definition.filings_apply
+
+    reason = definition.filings_inapplicable_because or ""
+
+    assert "not part of the fund playbook" in reason
+    assert "limit of this platform" in reason
+    assert "publishes no" not in reason
 
 
 def test_every_definition_names_all_five_scores() -> None:
@@ -105,8 +120,11 @@ def test_score_labels_follow_the_one_positive_kind_fact() -> None:
     assert score_labels_for(AssetClass.CRYPTO)["quality"] == "Asset quality"
     assert score_labels_for(AssetClass.COMMODITY)["quality"] == "Asset quality"
 
+    # A fund joined the boundary in F1: no fund surface may be labelled
+    # "Business quality" while no business-quality assessment runs for it.
+    assert score_labels_for(AssetClass.ETF)["quality"] == "Asset quality"
+
     assert score_labels_for(AssetClass.STOCK) == SCORE_LABELS
-    assert score_labels_for(AssetClass.ETF) == SCORE_LABELS
     assert score_labels_for(AssetClass.UNKNOWN) == SCORE_LABELS
     assert score_labels_for(None) == SCORE_LABELS
 

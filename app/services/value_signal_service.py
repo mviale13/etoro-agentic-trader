@@ -25,6 +25,19 @@ class ValueSignalService:
                         else "Forward P/E unavailable."
                     ),
                 ),
+                # Carried out with the signal so the score's basis cannot
+                # re-promise what this sentence just declined to: without
+                # it, the builder explained the fund's UNKNOWN as figures
+                # that "could not be read", which will never read.
+                basis=(
+                    (
+                        f"Valuation is not scored: a {asset_class.noun} has "
+                        "no earnings to be priced against, so there is no "
+                        "figure a price could be judged by."
+                    )
+                    if no_earnings and asset_class is not None
+                    else None
+                ),
             )
 
         pe = company.forward_pe
