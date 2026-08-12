@@ -17,7 +17,7 @@ short, and keep it true — everything here is checkable.
 | Which package owns what? | [`docs/architecture/REPOSITORY_INVENTORY.md`](docs/architecture/REPOSITORY_INVENTORY.md) |
 | What is built, what is missing? | [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) |
 | What is next, and what is open? | [`docs/architecture/MIGRATION_PLAN.md`](docs/architecture/MIGRATION_PLAN.md) |
-| How does the pipeline work? | [`docs/architecture.md`](docs/architecture.md) — **v5.0 section only** |
+| How does the pipeline work? | [`docs/architecture.md`](docs/architecture.md) — **v5.0 section onward** (everything before it is v4.0 history) |
 | What state is the frontend in? | [`docs/frontend/UX_UI_INVENTORY.md`](docs/frontend/UX_UI_INVENTORY.md) — audit + slice-by-slice execution log |
 
 [`docs/README.md`](docs/README.md) indexes the above and names the one
@@ -33,7 +33,7 @@ anything not listed above as historical unless you verify it against the code.
 ```bash
 source .venv/bin/activate      # required; the tooling is not on the system PATH
 
-python -m pytest -q            # ~1500 tests, fast
+python -m pytest -q            # ~2100 tests, fast
 python -m ruff check .
 python -m mypy app             # must be clean
 

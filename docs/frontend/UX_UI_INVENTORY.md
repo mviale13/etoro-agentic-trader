@@ -304,3 +304,33 @@ isolation via `git archive HEAD`:
 
 The mission's screens are all shipped. Still open: a future Decisions
 inbox surface once the contract earns it.
+
+---
+
+# After the mission: the crypto dossier (PR #120, 2026-08-11)
+
+One surface added since closeout, outside the mission's scope and under
+its rules
+([`../architecture/CRYPTO_DOSSIER_UI.md`](../architecture/CRYPTO_DOSSIER_UI.md)):
+
+- **`/crypto/[symbol]`** (`app/crypto/[symbol]/page.tsx`) — the
+  digital-asset dossier, served by `GET /crypto/{symbol}/dossier`. A
+  token is not a company with different labels: the audit that earned
+  the page found `/executive/BTC/dossier` leading with conviction,
+  agreement and safety — none of it from crypto evidence — while six
+  crypto layers had reached the CLI and stopped.
+- **The frontend calculates nothing analytical**, enforced three times:
+  adapters carry the domain's sentence beside every state, the parser
+  *requires* it, and the page renders the refusal where the backend
+  declines to interpret. No fallback prose turns a measurement into
+  economic meaning.
+- **The page changes with the asset** — 9/12/15/9/4 questions asked
+  across the corpus — but a count is never the differentiator (BTC and
+  1INCH have identical counts and are not remotely the same asset):
+  questions are named, grouped by applicability, and the groups are
+  separated rather than sorted. `UNKNOWN` is never a zero,
+  `NOT_APPLICABLE` is never adverse, and no state is colour-coded.
+- The equity dossier at `/dossiers/[symbol]` banners a link to the
+  digital-asset dossier for crypto symbols; the two compositions do not
+  share an endpoint (~19ms of stored doors against ~12s of brain
+  pipeline).

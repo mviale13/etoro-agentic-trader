@@ -225,6 +225,28 @@ yf.download(period="1y")  →  MarketQuote.realized_volatility, .max_drawdown
 - A security whose history is too short reports UNKNOWN, and the case cannot
   reach RECOMMEND on it
 
+## The crypto evidence arc is complete through its first surface
+
+August 2026, PRs #99–#120. Each slice carries its own accepted document
+under [`docs/architecture/`](.) — `CRYPTO_*.md`, `INTELLIGENCE_*.md`,
+`JUDGMENT_HISTORY.md`, `SUPPLY_GOVERNANCE_COMMITTEE.md`,
+`COMMITTEE_ASSESSMENT_MATRIX.md`, `INVESTOR_ASSESSMENT.md`,
+`HERMETIC_EVIDENCE.md`, `CRYPTO_DOSSIER_UI.md` — and
+[`PROJECT_STATE.md`](../PROJECT_STATE.md) holds the condensed narrative.
+The shape: claims pool and are corroborated or exposed (never averaged);
+the four-factor crypto score was deleted rather than repaired, so Asset
+Quality reads UNKNOWN for every asset; two committees judge structural
+questions under a protocol that never learns what a verdict means; the
+investor assessment states the strongest supportable statement; and
+`GET /crypto/{symbol}/dossier` presents all of it from stored doors in
+~19ms.
+
+**Explicitly parked by the owner** (not open work — a new ruling is the
+gate): the CIO recommendation layer over crypto, committee aggregation,
+weighting, agreement percentages, an overall score, thesis and portfolio
+coupling. Observe assessments across the corpus first; choose the next
+abstraction from evidence.
+
 ## Deleted
 
 See the Removed table in `REPOSITORY_INVENTORY.md`.
@@ -1394,12 +1416,21 @@ change feed. It does not gate.
       as this platform's limit, with the gates unchanged
 - [x] `CryptoFearGreedProvider` reads Alternative.me rather than returning
       a hardcoded 72 under that service's name
-- [x] Crypto is assessed on token fundamentals — network value, turnover,
-      issuance and age — read from the provider call already being made
-- [ ] Crypto valuation stays absent. There are no earnings to price
+- [x] ~~Crypto is assessed on token fundamentals — network value, turnover,
+      issuance and age — read from the provider call already being made~~
+      Superseded: S5 measured all four factors and **deleted the signal
+      rather than repairing it** — volume over market cap is not liquidity,
+      a vendor's `total_supply` is the protocol maximum for 83 of 145
+      capped assets, and age never discriminated. Asset Quality now reads
+      UNKNOWN for every crypto asset, honestly
+      ([`CRYPTO_ASSET_QUALITY.md`](CRYPTO_ASSET_QUALITY.md))
+- [x] Crypto valuation stays absent. There are no earnings to price
       against, and exchange volume is not on-chain volume, so an NVT-style
       ratio would be a metric invented rather than measured. A crypto case
-      therefore stops at PREPARE
+      stops at INVESTIGATE, stated as this platform's limit — and what *is*
+      known is presented on the digital-asset dossier
+      ([`CRYPTO_DOSSIER_UI.md`](CRYPTO_DOSSIER_UI.md)) rather than forced
+      through the equity gates
 - [x] Holdings absent from every watchlist are described by the broker's
       own catalog. `/api/v1/market-data/instruments?instrumentIds=…` is
       the same source the position comes from, so asking it for the

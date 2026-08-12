@@ -47,16 +47,17 @@ for the package-by-package mapping, verified against the import graph.
 
 # Repository Health
 
-Green baseline, measured 2026-08-08. A figure here is an observation with a
-date, not a standing claim — refresh it at slice boundaries, and keep the
-test count in [`CLAUDE.md`](../CLAUDE.md) in step, so a later session does
-not inherit a quality state that has silently drifted.
+Green baseline, measured 2026-08-12 at `2375f34` (merge of #120). A figure
+here is an observation with a date, not a standing claim — refresh it at
+slice boundaries, and keep the test count in [`CLAUDE.md`](../CLAUDE.md) in
+step, so a later session does not inherit a quality state that has silently
+drifted.
 
 | Area | Status |
 |------|--------|
 | Ruff | 🟢 Clean |
-| Mypy | 🟢 Clean |
-| Pytest | 🟢 1277 passing (2026-08-08) |
+| Mypy | 🟢 Clean (567 files) |
+| Pytest | 🟢 2104 passing in ~30s (2026-08-12) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -103,6 +104,19 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   apart, and a window the provider still publishes after the report ran
   filed as "recently reported" rather than sorted ahead of what is
   actually coming
+- A digital asset has its own investor surface: `GET /crypto/{symbol}/dossier`
+  composes the archetype and its questions, both committees, the investor
+  assessment, supply semantics and current developments from stored doors
+  only (~19ms, no model, no fetch), rendered by the web app. The equity
+  dossier is a different composition — a decision — and the two do not
+  share an endpoint
+- The crypto evidence stack is readable end to end on the CLI —
+  `supply`, `primary`, `crypto-market`, `crypto-playbook`, `issuance`,
+  `crypto-quality`, `crypto-events`, `crypto-intelligence`,
+  `intelligence-journal`, `judgment-history`, `committees`, `assessment` —
+  every one read-only; the explicit spends are `movrvest acquire` and
+  `movrvest judge`. [`CLAUDE.md`](../CLAUDE.md) carries the full command
+  reference
 - Every decision is recorded, and the next cycle says what changed
 - Every market observation is recorded, and the next cycle says what the
   market did — the mood, the volatility band and the sentiment reading,
@@ -112,6 +126,50 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A digital asset becomes knowable, judged, and visible** (August 2026,
+  PRs #99–#120 — the crypto arc, each slice with its own accepted
+  architecture document under
+  [`architecture/`](architecture/)). Twenty-two slices took a token from
+  "a provider claim rendered as a fact" to the first investor-usable
+  crypto surface, without ever inventing a score:
+
+  **Evidence** (S1–S4.6): a provider claim is not a fact — claims pool
+  across sources, agreement inside one provider is not corroboration, and
+  material disagreement is exposed rather than averaged. Where a fact
+  came from is a second axis (`EvidenceAuthority`), never a second
+  standing — primary is not a synonym for true, demonstrated by a
+  canonical blob-fee computation wrong by ~850 million ×. Two supply
+  numbers only conflict if they claim to count the same thing, which
+  dissolved ADA's three-way conflict and upheld HYPE's. Market context is
+  its own family: an interval is part of a figure, and a capitalisation
+  change is not a return.
+
+  **Judgment** (S5–#116): the four-factor crypto signal was **deleted,
+  not repaired** — volume over market cap is not liquidity, and every
+  crypto asset now honestly reads UNKNOWN on Asset Quality (quorum 2,
+  accepted three times). Above the evidence sit two committees — Fee
+  Capture and Supply Governance, which **swap sides between BTC and
+  1INCH** — under a protocol where the framework may know a committee's
+  verdict but never what it means. Judgment history records transitions
+  on three axes (answer, observation count, evidence), and a historical
+  verdict is structurally never today's. The matrix presents every
+  committee beside the others and combines nothing.
+
+  **Assessment and surface** (#117–#120): Investor Assessment states the
+  strongest supportable statement per subject — six unordered shapes, no
+  midpoint ever computed — and Zero Fake Meaning (Invariant 10) forbids a
+  layer from inventing what an established number means. Hermetic
+  evidence (#118) closed the five-strike gitignored-cache trap: an
+  analytical call now declares an evidence set, not just a subject. The
+  Crypto Dossier (#120) is the surface: `GET /crypto/{symbol}/dossier`,
+  ~19ms of stored doors, a frontend that calculates nothing analytical,
+  and questions named and grouped rather than counted.
+
+  **Parked by the owner**: the CIO recommendation layer, aggregation,
+  weighting, an overall crypto score, thesis and portfolio coupling —
+  observe assessments across the corpus first, then choose the next
+  abstraction from evidence.
 
 - **Financial statements become a knowledge domain, and playbooks stop
   being the only classification** (August 2026, branch
@@ -1459,7 +1517,12 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   traded; ADA scores 62 on $7bn and is rejected on its own 64.9%
   volatility. Crypto moved from a permanent INVESTIGATE to real, differing
   cases. None reached RECOMMEND: valuation stays absent, because there are
-  no earnings to price against and inventing a metric was the alternative
+  no earnings to price against and inventing a metric was the alternative.
+  *(Superseded: S5 —
+  [`architecture/CRYPTO_ASSET_QUALITY.md`](architecture/CRYPTO_ASSET_QUALITY.md)
+  — measured all four factors and deleted the signal rather than repairing
+  it; volume over market cap is not liquidity, and every crypto asset now
+  reads UNKNOWN honestly. Kept here as history.)*
 
 - The crypto sentiment index is read from the service it cites.
   `CryptoFearGreedProvider` returned a hardcoded 72, labelled "Greed", and
@@ -1632,14 +1695,21 @@ Named rather than hidden. None of these are estimated away in the product.
 - eToro identity carries no reading. The watchlist fetch records no time,
   and inventing one would be the fabrication this model exists to prevent
 - `TAO` and `HYPE` have no plain `-USD` listing on Yahoo. Both are reported
-  unpriceable rather than guessed at under a disambiguated ticker
+  unpriceable rather than guessed at under a disambiguated ticker — the
+  store holds their quote slots as `unavailable`. Their evidence above a
+  price now arrives through the crypto providers and their own chains
+  (CoinGecko, TokenInsight, Bittensor's RPC, Hyperliquid's API)
 - A holding absent from every watchlist cannot be named or analysed
 - Research covers a capped number of candidates per cycle, because
   fundamentals are uncached and the provider rate-limits. The page reports
   how many it could not reach
-- A crypto case stops at PREPARE. Its quality is now measured, and its
-  worth cannot be: a token has no earnings to be priced against, which the
-  CIO states as this platform's limit rather than as a pending measurement
+- A crypto case stops at INVESTIGATE, and Asset Quality reads UNKNOWN for
+  every asset — which is the finding, not a defect (S5, accepted three
+  times; the four-factor signal was deleted rather than repaired). A token
+  has no earnings to be priced against, which the CIO states as this
+  platform's limit rather than as a pending measurement. What *is* known
+  about a digital asset is presented on its own dossier instead of forced
+  through the equity gates
 
 ## Reasoning
 

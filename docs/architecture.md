@@ -1846,3 +1846,41 @@ from a dashboard to a cell in a filing a reader can open, which is what
 the platform sells: not an answer that sounds well-sourced, but one
 whose sources can be checked.
 
+
+---
+
+# The second composition: the crypto evidence and judgment stack
+
+v5.0's pipeline above composes a *decision* about an equity. A digital
+asset gets a different composition — of what is *known* — because a
+token is not a company with different labels, and forcing one through
+the equity gates produced conviction scores built from no crypto
+evidence at all.
+
+The stack is documented slice by slice under
+[`architecture/`](architecture/) (S1–S5.3 and #108–#120, each accepted
+before it was built), inventoried in
+[`architecture/REPOSITORY_INVENTORY.md`](architecture/REPOSITORY_INVENTORY.md),
+and summarised in [`CLAUDE.md`](../CLAUDE.md). Its shape, briefly:
+
+```
+Vendor claims + chain state       (pooled; corroborated or exposed, never averaged)
+    ↓
+Evidence families                 (token facts · protocol fundamentals · market context)
+    ↓
+Archetype → applicable questions  (decided before any figure is read)
+    ↓
+Committees                        (the only layers permitted to interpret)
+    ↓
+Judgment history + matrix         (remembered on three axes; presented beside, never combined)
+    ↓
+Investor assessment               (the strongest supportable statement, never stronger)
+    ↓
+GET /crypto/{symbol}/dossier      (stored doors only, ~19ms; the frontend calculates nothing)
+```
+
+Asset Quality reads UNKNOWN for every crypto asset — deliberately: the
+four-factor score was measured and deleted, not repaired. Everything
+above the assessment layer (recommendation, aggregation, weighting, an
+overall score) is parked by the owner until assessments have been
+observed across the corpus.

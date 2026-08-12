@@ -1,12 +1,12 @@
-# Handoff — 2026-08-11
+# Handoff — 2026-08-12
 
 Everything is committed and green. Nothing is open. Start a fresh window
 here.
 
 ## State
 
-`main` is at `99fb1ec`. Gates: ruff, ruff format, mypy (565 files),
-**2104 tests**, verified with `git archive HEAD` in isolation.
+`main` is at `2375f34` (merge of #120). Gates re-measured 2026-08-12:
+ruff clean, mypy clean (567 files), **2104 tests passing** in ~30s.
 
 Merged since the last handoff, in order:
 
@@ -49,10 +49,12 @@ quorum 2, declined three times. Do not try to earn factor #2.
 
 1. `.claude/…/memory/MEMORY.md` — the first nine lines are the crypto
    arc in order, newest first.
-2. `docs/architecture/INVESTOR_ASSESSMENT.md` — the newest layer.
+2. `docs/architecture/CRYPTO_DOSSIER_UI.md` — the newest surface, and
+   `docs/architecture/INVESTOR_ASSESSMENT.md` — the layer beneath it
+   (its §6, Zero Fake Meaning, is Invariant 10).
 3. `docs/architecture/HERMETIC_EVIDENCE.md` — read before writing any
    test that touches evidence.
-4. `CLAUDE.md` — current through `#118`.
+4. `CLAUDE.md` — current through `#120`.
 
 ## Six rules this arc established, in the order they cost the most
 
@@ -138,6 +140,12 @@ movrvest committees [SYMBOL]          # every committee's conclusion
 movrvest judgment-history BTC --evidence
 movrvest crypto-intelligence BTC --evidence
 ```
+
+The investor-facing surface is `GET /crypto/{symbol}/dossier` (#120),
+rendered by the web app — ~19ms of stored doors, no model, no fetch. The
+equity dossier at `/executive/{symbol}/dossier` is a different
+composition (a *decision*, ~12s of brain pipeline) and the two do not
+share an endpoint.
 
 Two model seams are off by default and share the writer's provider
 config: `MOVRVEST_INTELLIGENCE_SYNTHESIS` and
