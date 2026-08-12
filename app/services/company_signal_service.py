@@ -111,4 +111,9 @@ class CompanySignalService:
             if quality is not None:
                 return signal_of(quality)
 
-        return QualitySignalService().build(facts)
+        # The asset class travels with the question, so an asset with no
+        # company behind it — a fund included — is told apart from a
+        # company whose figures did not come back. Without it, whichever
+        # single field the provider happened to answer became the whole
+        # quality story.
+        return QualitySignalService().build(facts, asset_class)

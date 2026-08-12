@@ -78,6 +78,12 @@ class CompanyFacts:
     volume_24h: float | None = None
     inception: datetime | None = None
 
+    #: What a fund has in place of company fundamentals: what owning it
+    #: costs, as a decimal ratio of assets per year (0.0007 is 0.07%).
+    #: None for anything that is not a fund. An evidenced fact about the
+    #: wrapper — no score, band or verdict is ever derived from it.
+    expense_ratio: float | None = None
+
     # Valuation
     forward_pe: float | None = None
 

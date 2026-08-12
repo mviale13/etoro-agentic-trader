@@ -5,8 +5,19 @@ here.
 
 ## State
 
-`main` is at `2375f34` (merge of #120). Gates re-measured 2026-08-12:
-ruff clean, mypy clean (567 files), **2104 tests passing** in ~30s.
+`main` carries the Fund Analytical Boundary (F1) on top of `2375f34`
+(merge of #120). Gates at F1: ruff clean, mypy clean (567 files),
+**2121 tests passing**, frontend builds, HEAD verified in isolation.
+
+**F1, briefly**: a fund cannot receive evaluative meaning from a
+company question its playbook does not ask — IB01.L no longer scores
+"Business quality LOW (40)" from a structural dividend zero. The fix
+was membership (`has_no_company` gains ETF; the boundary's six
+consumers already existed) plus one conflated flag split. The TER the
+provider already returned is retained as `fund_cost` (a dated fact, no
+score). **F2 is not started**; its question is *"what am I actually
+buying when I own this fund?"* and its ground is
+`docs/architecture/FUND_EVIDENCE_RESEARCH.md`.
 
 Merged since the last handoff, in order:
 

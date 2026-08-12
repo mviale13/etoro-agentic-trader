@@ -141,10 +141,15 @@ class ExecutiveWriterService:
         if asset_class is not None and asset_class.has_no_company:
             return NarrativeOutcome(
                 narrative=None,
+                # Worded by the asset's own noun: this branch now covers
+                # a fund as well as a token, and "a digital asset's case"
+                # about a Treasury fund would be the platform misnaming
+                # what it is refusing to word.
                 absent_reason=(
-                    "A digital asset's case is a short list of measurements "
-                    "and absences, and wording it added nothing the case "
-                    "below does not already say. It is left as measured."
+                    f"A {asset_class.noun}'s case is a short list of "
+                    "measurements and absences, and wording it added "
+                    "nothing the case below does not already say. It is "
+                    "left as measured."
                 ),
             )
 

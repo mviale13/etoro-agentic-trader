@@ -1,7 +1,9 @@
-# Can fund evidence be acquired? — research, nothing built
+# Can fund evidence be acquired? — research, and the F1 slice it earned
 
-**Status: research only. Measured 2026-08-12 at `f3ea1e7`. Nothing in
-this document is a mandate to build** (Constitution §23–24). It records
+**Status: measured 2026-08-12 at `f3ea1e7`; §3's defects F1–F8 were
+then ruled on and built as the Fund Analytical Boundary (F1, same
+day — see §9). Everything else remains research, not a mandate**
+(Constitution §23–24). It records
 what the platform currently knows about the funds it can see, every
 place `AssetClass.ETF` falls through generic equity logic, and which
 trustworthy free sources were *measured* to answer the investor-relevant
@@ -343,3 +345,72 @@ story and a corpus larger than one watched fund.
 - eToro's type 6 is the only fund classifier the platform has, and it
   marks 1 instrument in 98. Yahoo's `quoteType: "ETF"` — already in the
   response — is the free second witness if identity ever needs one.
+
+---
+
+## 9. The F1 slice: the Fund Analytical Boundary (built 2026-08-12)
+
+The CTO's ruling on §3, built the same day the matrix was accepted. The
+invariant: **a Fund cannot receive evaluative meaning from a
+company-specific question its playbook does not ask.** Acceptance case
+IB01.L, verified on the live dossier JSON and the rendered page.
+
+**The structural change that was actually necessary — and it is
+smaller than §3 suggested.** The capability boundary already existed:
+six consumers — score labels, the value signal, missing-evidence
+suppression, the committee's outside-knowledge uncertainty, the CIO's
+honest wording, the writer's skip — were all keyed on
+`AssetClass.has_no_company`, whose own docstring ("no business behind
+it") already described a fund. The defect was **membership**: the
+property predates the fund playbook and listed only crypto and
+commodity. Adding `ETF` repaired F2, F4 and most of F1 through seams
+that already existed. Around that one change:
+
+- `CompanyFactsService` had conflated two decisions in one flag
+  (`is_token = has_no_company`). Split: company fields key on the
+  capability boundary, token-shaped fields keep their original
+  membership exactly — a fund reads neither a dividend nor a
+  `circulating_supply` (F1, F8, and the not-a-token half of F7).
+- `QualitySignalService` gained the same optional `asset_class` the
+  value signal already had, and refuses the whole factor set for a
+  no-company asset — so no field the provider might someday answer
+  (a fund's `marketCap` is AUM-shaped) can score it. `ValueSignal`
+  gained the `basis` field `QualitySignal` already had, for the same
+  failure: the builder explained a fund's UNKNOWN as figures that
+  "could not be read", which will never read.
+- The fund's dossier definition carries its own filings absence —
+  *"Company filing knowledge is not part of the fund playbook … a
+  limit of this platform's coverage of funds, not missing evidence
+  about the fund"* — and the coverage blocker was reworded to the same
+  boundary for every no-company noun, retiring the world-claim
+  *"publishes no annual report"* (F3, F5, F6). Per the #98 precedent
+  the dossier's filings sections are **absent, not sent**, and the
+  reason travels on the definition.
+- `expense_ratio` is retained from the `.info` call already being made
+  (Yahoo reports percent; stored as a decimal ratio), reaches
+  `CompanyFacts` for ETF only, and surfaces as `fund_cost` on the
+  dossier — composed at the route like the token rating, so "it
+  reaches no score" is a fact about the code. Store schema 2 with an
+  identity migration. Live: *"Owning this fund costs 0.07% of assets
+  per year"*, corroborated by the issuer to the basis point (§5).
+- One contradiction found during verification and fixed at the same
+  boundary: the Investment Committee declared a fund's business
+  quality both *outside its knowledge* ("can ever answer") and an
+  *absent measurement* ("could not be read"). The unanswerable
+  questions are no longer inputs at all — for any no-company asset.
+
+**Deliberately not done** (outcome 8): no Fund Quality, no holdings
+ingestion, no N-PORT support, no benchmark/tracking/AUM scoring, no
+wrapper taxonomy, no fund dossier kind — `DossierKind.GENERAL` still
+serves the fund, and the fund dossier remains a named future
+specialization. §5's matrix is the ground F2 would stand on; the next
+research question is *"what am I actually buying when I own this
+fund?"*
+
+Regression suite: `tests/test_fund_analytical_boundary.py` (16 tests,
+including: a zero dividend cannot recreate LOW for a fund even with
+every company field populated; an unavailable company valuation cannot
+become the fund's next thing needed; the boundary membership is
+exactly three classes and UNKNOWN stays out; the honest behaviours —
+identity-selected playbook, exclusions, earnings-calendar silence —
+are pinned).

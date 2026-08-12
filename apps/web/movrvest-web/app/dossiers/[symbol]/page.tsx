@@ -15,6 +15,7 @@ import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierAgreement,
   DossierAssetProfile,
+  DossierFundCost,
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
   DossierCryptoMarket,
@@ -1593,6 +1594,8 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
         />
       ) : null}
 
+      {dossier.fundCost ? <FundCost cost={dossier.fundCost} /> : null}
+
       {dossier.assetProfile ? (
         <AssetProfile profile={dossier.assetProfile} symbol={dossier.symbol} />
       ) : null}
@@ -2055,6 +2058,25 @@ function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
           </p>
         </div>
       </dl>
+    </section>
+  );
+}
+
+function FundCost({ cost }: { cost: DossierFundCost }) {
+  /* An evidenced fact about the wrapper, rendered in the backend's own
+     words. Deliberately plain: no band, no colour, no verdict — a cost
+     is a figure with a date, and judging it is not this card's job. */
+  return (
+    <section className="rounded-[24px] border border-slate-200 bg-white p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        Cost of ownership
+      </p>
+
+      <p className="mt-2 text-sm leading-6 text-slate-700">{cost.stated}</p>
+
+      {cost.read ? (
+        <p className="mt-2 text-xs text-slate-400">{cost.read.age}</p>
+      ) : null}
     </section>
   );
 }

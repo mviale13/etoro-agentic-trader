@@ -50,12 +50,16 @@ class CachedValueProvider:
         self._provider = provider or ValueProvider()
         self._cache = cache or JsonCache(
             evidence_path("cache", "fundamentals"),
-            # Schema 1, and records written before this store
-            # declared one are accepted as schema 1 deliberately —
-            # their shape is what schema 1 describes. The next bump
-            # needs a migration or they re-acquire, which is the
-            # protection: the store cannot change shape by accident.
-            schema=1,
+            # Schema 2 added `expense_ratio` — a fund's cost of
+            # ownership, absent from every record written before the
+            # field was read. Schema-1 records come forward unchanged:
+            # every figure they carry keeps its meaning, and the new
+            # field restores as absent, which is what it was. Records
+            # written before this store declared a schema are accepted
+            # as schema 1 deliberately — their shape is what schema 1
+            # describes.
+            schema=2,
+            migrations={1: lambda value: value},
             accepts_unversioned=True,
         )
         self._acquires = acquires
@@ -144,6 +148,7 @@ class CachedValueProvider:
             "circulating_supply": snapshot.circulating_supply,
             "max_supply": snapshot.max_supply,
             "volume_24h": snapshot.volume_24h,
+            "expense_ratio": snapshot.expense_ratio,
             "inception": (
                 snapshot.inception.isoformat()
                 if snapshot.inception is not None
@@ -211,6 +216,7 @@ class CachedValueProvider:
             circulating_supply=number("circulating_supply"),
             max_supply=number("max_supply"),
             volume_24h=number("volume_24h"),
+            expense_ratio=number("expense_ratio"),
             inception=cls._timestamp(value.get("inception")),
             revenue_growth=number("revenue_growth"),
             earnings_growth=number("earnings_growth"),

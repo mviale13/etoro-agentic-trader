@@ -34,7 +34,14 @@ class AssetClass(StrEnum):
 
     @property
     def has_company_fundamentals(self) -> bool:
-        """Whether asking a company data provider about this is meaningful."""
+        """Whether asking a company data provider about this is meaningful.
+
+        True for an ETF as well as a stock: the provider prices a fund,
+        measures its history and reports fund-shaped facts about it. This
+        is a claim about the *provider call*, never about the questions —
+        which company questions apply is `has_no_company`'s claim, and a
+        fund is deliberately in both sets.
+        """
 
         return self in (AssetClass.STOCK, AssetClass.ETF)
 
@@ -43,13 +50,25 @@ class AssetClass(StrEnum):
         """
         Positively known to have no business behind it.
 
+        This is the capability boundary for company questions: business
+        quality, earnings-based valuation and company filings are not
+        asked of a member, and their absence is stated as this platform's
+        limit rather than as data that has not arrived. A fund belongs
+        here — it holds other securities rather than running a business
+        of its own, which is its playbook's own sentence — and it stayed
+        outside only because this property predates the fund playbook.
+        The cost of that: a US Treasury fund scored LOW business quality
+        from a structural dividend of zero.
+
         Deliberately not `not has_company_fundamentals`. An instrument this
         platform could not classify is UNKNOWN, and saying an unknown thing
         has no business would be asserting something nobody established —
         the same substitution the rest of the decision path stopped making.
+        An ETF is in both sets: asking the provider is meaningful, and no
+        business stands behind the instrument.
         """
 
-        return self in (AssetClass.CRYPTO, AssetClass.COMMODITY)
+        return self in (AssetClass.CRYPTO, AssetClass.COMMODITY, AssetClass.ETF)
 
     @property
     def noun(self) -> str:

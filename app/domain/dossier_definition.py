@@ -129,6 +129,29 @@ _COMMODITY = DossierDefinition(
     filings_inapplicable_because=_no_filings_because(AssetClass.COMMODITY),
 )
 
+#: A fund is not a company case either, and its filings absence is a
+#: different fact from a token's: this platform does not claim a fund
+#: publishes nothing — its readers ask company questions of company
+#: filings, and the fund playbook does not ask those questions. The
+#: limit is this platform's, and it is worded as this platform's.
+#: Still `GENERAL`: a fund dossier is a named future specialization,
+#: and until one is earned an ETF is served the general case rather
+#: than a company case wearing its name.
+_FUND = DossierDefinition(
+    kind=DossierKind.GENERAL,
+    title="Investment dossier",
+    classification_heading="Investment type",
+    score_labels=MappingProxyType(score_labels_for(AssetClass.ETF)),
+    filings_apply=False,
+    filings_inapplicable_because=(
+        "Company filing knowledge is not part of the fund playbook: a "
+        "fund holds other securities rather than running a business of "
+        "its own, and this platform's filing readers ask company "
+        "questions. This is a limit of this platform's coverage of "
+        "funds, not missing evidence about the fund."
+    ),
+)
+
 _GENERAL = DossierDefinition(
     kind=DossierKind.GENERAL,
     title="Investment dossier",
@@ -151,6 +174,9 @@ def definition_for(asset_class: AssetClass | None) -> DossierDefinition:
 
     if asset_class is AssetClass.COMMODITY:
         return _COMMODITY
+
+    if asset_class is AssetClass.ETF:
+        return _FUND
 
     if asset_class is AssetClass.STOCK:
         return _EQUITY

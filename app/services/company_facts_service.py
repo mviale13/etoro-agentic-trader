@@ -93,7 +93,17 @@ class CompanyFactsService:
         # company's equity value for a business. The same field, two
         # different claims, so which fields are read is decided by which
         # kind of thing this is.
-        is_token = asset_class.has_no_company
+        #
+        # Two different decisions, split after they were found conflated:
+        # whether the *company* fields are read is the capability boundary
+        # (`has_no_company` — a fund is not asked company questions, so
+        # its structural dividend of zero can never reach a quality
+        # factor), while whether the *token-shaped* fields are read kept
+        # its original membership exactly — a fund is not a token, and
+        # must not read a `circulating_supply` out of a payload merely
+        # because it is not a company either.
+        has_company = not asset_class.has_no_company
+        is_token = asset_class in (AssetClass.CRYPTO, AssetClass.COMMODITY)
 
         # A cryptocurrency's market facts come through the validation
         # gate, never straight off a provider response: Yahoo priced an
@@ -181,35 +191,43 @@ class CompanyFactsService:
                 if asset_class is AssetClass.CRYPTO
                 else (valuation.inception if is_token else None)
             ),
+            # What a fund has: the cost of owning the wrapper, read from
+            # the same response whose company fields stay absent for it.
+            # ETF-only rather than has-no-company: a token or a commodity
+            # has no expense ratio, and a provider field under that name
+            # would be a claim about something else.
+            expense_ratio=(
+                valuation.expense_ratio if asset_class is AssetClass.ETF else None
+            ),
             # Valuation. A token has no earnings to be priced against, so
             # these stay absent however populated the response was.
-            forward_pe=valuation.forward_pe if not is_token else None,
+            forward_pe=valuation.forward_pe if has_company else None,
             # Growth, profitability, balance sheet and cash generation, read
             # from the same call as the valuation above. A token has none of
             # these — it has the supply fields instead — so they are populated
             # for a company only, and stay absent rather than zero elsewhere.
-            revenue_growth=valuation.revenue_growth if not is_token else None,
-            earnings_growth=valuation.earnings_growth if not is_token else None,
-            gross_margin=valuation.gross_margin if not is_token else None,
-            operating_margin=valuation.operating_margin if not is_token else None,
-            net_margin=valuation.net_margin if not is_token else None,
+            revenue_growth=valuation.revenue_growth if has_company else None,
+            earnings_growth=valuation.earnings_growth if has_company else None,
+            gross_margin=valuation.gross_margin if has_company else None,
+            operating_margin=valuation.operating_margin if has_company else None,
+            net_margin=valuation.net_margin if has_company else None,
             # Return on equity is reported; return on invested capital is not,
             # so it stays absent rather than being derived from figures the
             # provider did not give.
-            roe=valuation.return_on_equity if not is_token else None,
+            roe=valuation.return_on_equity if has_company else None,
             roic=None,
-            debt_to_equity=valuation.debt_to_equity if not is_token else None,
-            current_ratio=valuation.current_ratio if not is_token else None,
+            debt_to_equity=valuation.debt_to_equity if has_company else None,
+            current_ratio=valuation.current_ratio if has_company else None,
             operating_cash_flow=(
-                valuation.operating_cash_flow if not is_token else None
+                valuation.operating_cash_flow if has_company else None
             ),
-            free_cash_flow=valuation.free_cash_flow if not is_token else None,
+            free_cash_flow=valuation.free_cash_flow if has_company else None,
             # Shareholder returns
-            eps=valuation.eps if not is_token else None,
-            dividend_yield=valuation.dividend_yield if not is_token else None,
+            eps=valuation.eps if has_company else None,
+            dividend_yield=valuation.dividend_yield if has_company else None,
             # Classification
-            sector=valuation.sector if not is_token else None,
-            industry=valuation.industry if not is_token else None,
+            sector=valuation.sector if has_company else None,
+            industry=valuation.industry if has_company else None,
         )
 
     async def _valuation(

@@ -589,7 +589,13 @@ class DecisionEvidenceBuilder:
 
         if cls._valuation_score(company) is None:
             return ScoreBasis(
-                basis=(
+                # The signal's own account where it has one, for the same
+                # reason the quality basis defers: only the signal knows
+                # whether the figures could not be read or are not a
+                # question about this asset at all, and the two must not
+                # share a sentence.
+                basis=signal.basis
+                or (
                     f"Valuation reads {signal.valuation} — the figures a price "
                     "is judged against could not be read — so no score was "
                     "given."

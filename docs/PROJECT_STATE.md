@@ -57,7 +57,7 @@ drifted.
 |------|--------|
 | Ruff | 🟢 Clean |
 | Mypy | 🟢 Clean (567 files) |
-| Pytest | 🟢 2104 passing in ~30s (2026-08-12) |
+| Pytest | 🟢 2121 passing in ~12s (2026-08-12, post-F1) |
 | Backend | 🟢 Stable |
 | Frontend | 🟢 Builds clean |
 | Duplicate implementations | 🟢 Removed |
@@ -126,6 +126,23 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **A fund stops being scored as a business** (2026-08-12, the Fund
+  Analytical Boundary — F1,
+  [`architecture/FUND_EVIDENCE_RESEARCH.md`](architecture/FUND_EVIDENCE_RESEARCH.md)
+  §9). The measured defect: IB01.L, the one fund the investor watches,
+  rendered *"Business quality LOW (40)"* from a structural dividend of
+  zero — the only company field Yahoo answered, on an accumulating
+  share class that cannot distribute by design. The fix was membership
+  in an existing boundary (`AssetClass.has_no_company` gains ETF; six
+  consumers already keyed on it) plus the split of a conflated flag in
+  `CompanyFactsService`. A fund's scores now read "Asset quality" and
+  refuse honestly; absences state this platform's limit rather than a
+  world claim; the Investment Committee no longer says "can never
+  answer" and "could not be read" about one question; and the expense
+  ratio already in the provider response is retained as a dated fact
+  (0.07% for IB01.L, corroborated by the issuer). No fund dossier, no
+  holdings, no scoring — deliberately.
 
 - **A digital asset becomes knowable, judged, and visible** (August 2026,
   PRs #99–#120 — the crypto arc, each slice with its own accepted

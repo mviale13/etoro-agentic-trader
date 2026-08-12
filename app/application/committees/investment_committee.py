@@ -66,15 +66,22 @@ class InvestmentCommittee:
 
         signals = company.signals
 
-        return build(
-            committee="Investment Committee",
-            remit=REMIT,
-            ledger=findings,
-            # What this committee asks to have measured before it is
-            # fully evidenced. Named individually so an unmeasured one
-            # says which, rather than lowering a number nobody can
-            # decompose.
-            inputs=(
+        asset_class = brain.asset_class_for(symbol)
+
+        # What this committee asks to have measured before it is fully
+        # evidenced. Named individually so an unmeasured one says which,
+        # rather than lowering a number nobody can decompose.
+        #
+        # Not asked at all of an asset with no company behind it: for a
+        # fund or a token these are not measurements that have not
+        # arrived — they are questions `_outside_knowledge` already
+        # declares this committee can never answer, and stating both
+        # "can never be answered" and "could not be read" about one
+        # question is a contradiction the surface faithfully rendered.
+        inputs: tuple[Input, ...] = ()
+
+        if asset_class is None or not asset_class.has_no_company:
+            inputs = (
                 Input(
                     name="business quality",
                     value=None if signals.quality.quality == "UNKNOWN" else 1,
@@ -87,7 +94,13 @@ class InvestmentCommittee:
                     value=None if signals.value.valuation == "UNKNOWN" else 1,
                     absent_because=(f"Valuation could not be read for {symbol}."),
                 ),
-            ),
+            )
+
+        return build(
+            committee="Investment Committee",
+            remit=REMIT,
+            ledger=findings,
+            inputs=inputs,
             uncertainty=self._outside_knowledge(brain, symbol),
         )
 

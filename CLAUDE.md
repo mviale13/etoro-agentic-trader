@@ -751,6 +751,29 @@ zero, `NOT_APPLICABLE` is never adverse, and no state is colour-coded.
 Five deficiencies recorded and not solved, including that asset class
 still cannot be resolved without the brain pipeline.
 
+**A fund cannot receive evaluative meaning from a company question its
+playbook does not ask** (the Fund Analytical Boundary, F1,
+[`FUND_EVIDENCE_RESEARCH.md`](docs/architecture/FUND_EVIDENCE_RESEARCH.md) §9,
+built). The measured defect: IB01.L — an accumulating US Treasury ETF —
+rendered *"Business quality LOW (40)"* from Yahoo's `dividend_yield:
+0.0`, the only readable company field, on a share class that cannot
+distribute by design. The structural fix was **membership, not
+machinery**: six consumers already keyed the boundary on
+`AssetClass.has_no_company`, and ETF simply predated the property.
+Around that one change: `CompanyFactsService` split the conflated
+`is_token` flag (company fields key on the capability boundary,
+token-shaped fields keep their exact membership — a fund is not a token
+either); the quality signal refuses the whole company factor set for a
+no-company asset, so no future provider field can score a fund; every
+absence is worded as this platform's limit (*"company filing knowledge
+is not part of the fund playbook"*) and never as a claim about what
+funds publish; and the fund's expense ratio — already in the `.info`
+response and previously discarded — is retained as a dated fact
+(`fund_cost` on the dossier, composed at the route like the token
+rating, reaching no score). The fund dossier remains a named future
+specialization; F2 (*"what am I actually buying when I own this
+fund?"*) is not started.
+
 **A grounded fact may travel upward without its economic interpretation
 travelling with it** (Zero Fake Meaning, `INVESTOR_ASSESSMENT.md` §6,
 accepted and built). Invariant 10, and the semantic form of Invariant 1.

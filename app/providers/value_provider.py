@@ -75,6 +75,12 @@ class ValueProvider:
             max_supply=info.get("maxSupply"),
             volume_24h=info.get("volume24Hr", info.get("regularMarketVolume")),
             inception=cls._inception(info.get("startDate")),
+            # The provider reports a fund's expense ratio in percent
+            # (0.07 for 0.07%), unlike its margins, which arrive as
+            # decimal ratios. Converted here so the snapshot holds one
+            # convention — measured against IB01.L, whose issuer states
+            # the TER as 0.07% and whose payload carried 0.07.
+            expense_ratio=cls._percentage_as_ratio(info.get("netExpenseRatio")),
             # Growth and margins arrive as decimal ratios already.
             revenue_growth=cls._ratio(info.get("revenueGrowth")),
             earnings_growth=cls._ratio(info.get("earningsGrowth")),

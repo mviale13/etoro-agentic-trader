@@ -43,12 +43,6 @@ from app.services.playbook_mapping import GROUNDED, select_grounded
 from app.services.playbook_selector import PlaybookSelector
 from app.services.understanding_engine import understand
 
-#: Asset classes that publish no annual report a segment could be read
-#: from — a token, a commodity, and a fund whose accounts describe the
-#: wrapper. For these the grounded route does not apply, which is a
-#: different fact from a company whose filing has not been read.
-_FILES_NOTHING = (AssetClass.CRYPTO, AssetClass.COMMODITY, AssetClass.ETF)
-
 
 class PlaybookCoverageService:
     def __init__(
@@ -254,10 +248,14 @@ class PlaybookCoverageService:
     ) -> tuple[Blocker, str]:
         """Why a store-empty security has no grounded route.
 
-        A digital asset or a fund files nothing, so nothing could ever
-        be read for it — a different fact from an equity whose filing
-        simply has not been read yet, and the two must not share a
-        blocker.
+        The grounded route asks company questions of company filings,
+        and an asset with no company behind it is not asked them — a
+        different fact from an equity whose filing simply has not been
+        read yet, and the two must not share a blocker. Worded as this
+        platform's boundary, never as a claim about what the asset
+        publishes: "a fund publishes no annual report" asserted a fact
+        about the world that is not this platform's to assert, and is
+        false of the one fund the investor watches.
         """
 
         asset_class: AssetClass | None = None
@@ -270,10 +268,11 @@ class PlaybookCoverageService:
             except ValueError:
                 asset_class = None
 
-        if asset_class in _FILES_NOTHING:
+        if asset_class is not None and asset_class.has_no_company:
             return (
                 Blocker.NO_PRIMARY_SOURCE,
-                f"a {asset_class.noun} publishes no annual report to read",
+                f"company filing knowledge is not part of the "
+                f"{asset_class.noun} playbook",
             )
 
         return (

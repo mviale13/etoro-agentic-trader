@@ -1,3 +1,4 @@
+from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.finding import Finding
 from app.domain.quality_signal import QualitySignal
@@ -46,7 +47,33 @@ class QualitySignalService:
     def build(
         self,
         company: CompanyFacts,
+        asset_class: AssetClass | None = None,
     ) -> QualitySignal:
+        # The factors below are company questions — size, earnings,
+        # dividend — and an asset positively known to have no business
+        # behind it is not asked them at all. Asked anyway, a fund whose
+        # only readable field was a structural dividend of zero scored
+        # LOW: an accumulating share class cannot distribute by design,
+        # and the zero was read as a payout fact. The same boundary the
+        # value signal already holds, applied to the question set rather
+        # than to a sentence.
+        if asset_class is not None and asset_class.has_no_company:
+            return QualitySignal(
+                quality="UNKNOWN",
+                confidence=20,
+                evidence=(
+                    Finding.neutral(
+                        f"A {asset_class.noun} has no business quality to assess."
+                    ),
+                ),
+                basis=(
+                    f"Quality is not scored: a {asset_class.noun} is not a "
+                    "business, and the company-quality factors — size, "
+                    "earnings, dividend — are questions this platform does "
+                    "not ask about it."
+                ),
+            )
+
         # Each finding carries the sense this service scored it with, so
         # nothing downstream has to guess. Size and dividend are scored as
         # a point or no point, never as a penalty — a small company is not

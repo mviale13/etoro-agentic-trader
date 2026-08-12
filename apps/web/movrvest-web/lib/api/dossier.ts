@@ -200,6 +200,21 @@ export interface DossierTokenRating {
   read: DossierProvenance | null;
 }
 
+/**
+ * What owning the fund costs, as the provider reports it.
+ *
+ * An evidenced fact about the wrapper, never a judgement: the backend
+ * words the sentence and this surface renders it. It reaches no score
+ * and no decision.
+ */
+export interface DossierFundCost {
+  /** The backend's own sentence. Rendered verbatim, never reworded. */
+  stated: string;
+  /** Decimal ratio of assets per year: 0.0007 is 0.07%. */
+  expenseRatio: number;
+  read: DossierProvenance | null;
+}
+
 export interface DossierPlaybook {
   kind: string;
   name: string;
@@ -276,6 +291,9 @@ export interface DossierViewModel {
 
   /** Somebody else's rating of this token. Beside the case, never in it. */
   tokenRating: DossierTokenRating | null;
+
+  /** What owning the fund costs, dated. Null for anything not a fund. */
+  fundCost: DossierFundCost | null;
 
   /** The token's judged market facts. Null for anything not a crypto asset. */
   assetProfile: DossierAssetProfile | null;
@@ -981,6 +999,29 @@ function parseTokenRating(value: unknown): DossierTokenRating | null {
     pageUrl: optionalString(value.page_url, "token_rating.page_url"),
     reportUrl: optionalString(value.report_url, "token_rating.report_url"),
     read: parseProvenance(value.read, "token_rating.read"),
+  };
+}
+
+function parseFundCost(value: unknown): DossierFundCost | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "fund_cost".');
+  }
+
+  if (typeof value.expense_ratio !== "number") {
+    throw new Error('Expected a number at "fund_cost.expense_ratio".');
+  }
+
+  return {
+    // The backend's sentence is required, not defaulted: a figure
+    // without its worded meaning is exactly what this surface must
+    // never invent.
+    stated: requireString(value.stated, "fund_cost.stated"),
+    expenseRatio: value.expense_ratio,
+    read: parseProvenance(value.read, "fund_cost.read"),
   };
 }
 
@@ -2021,6 +2062,7 @@ function parseDossier(payload: unknown): DossierViewModel {
     committees: parseCommittees(payload.committees),
     evidenceAsOf: parseProvenance(payload.evidence_as_of, "evidence_as_of"),
     tokenRating: parseTokenRating(payload.token_rating),
+    fundCost: parseFundCost(payload.fund_cost),
     assetProfile: parseAssetProfile(payload.asset_profile),
     protocolFundamentals: parseProtocolFundamentals(
       payload.protocol_fundamentals,
