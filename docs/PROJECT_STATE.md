@@ -127,6 +127,27 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A named segment is asked against the prose its filer actually
+  printed** (2026-08-13, E1 — Non-US Business Description Acquisition,
+  [`architecture/EVIDENCE_PROPORTIONALITY.md`](architecture/EVIDENCE_PROPORTIONALITY.md)
+  §7). The measured defect: Volkswagen's package ships its division
+  descriptions in a 13.4MB management report with no XBRL tag, so five
+  readings honestly reported that nothing describes the segments. A
+  package member with no tagged business text now contributes its prose
+  as `unstructured_text`, and a segment still wordless after the tagged
+  text is asked twice is asked once more against the neighbourhoods of
+  the filer's own uses of its name — digit-dense regions dropped, cap
+  stated when it truncates, spans held to the same existence and
+  positional-ownership contract, provenance naming the untagged text.
+  A first reading of first-seen text, never a repair. Knowledge schema
+  12 (schema 10's precedent); EDGAR unchanged (JPM re-observed
+  identically as the control). The slice also fixed a years-old latent
+  defect: `normalised` stripped accented letters the index kept, so
+  German and French quoted spans were refused as unprinted. The
+  remaining schema-11 corpus re-reads on the owner's next observe
+  cycle; until then those companies' understanding sections read as
+  unread rather than as their old readings.
+
 - **A fund stops being scored as a business** (2026-08-12, the Fund
   Analytical Boundary — F1,
   [`architecture/FUND_EVIDENCE_RESEARCH.md`](architecture/FUND_EVIDENCE_RESEARCH.md)

@@ -1,9 +1,9 @@
 {
   "observations": [
     {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm and a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
+      "description": "JPMorgan Chase & Co. is a leading financial services firm based in the United States, with operations worldwide.",
       "reading": {
-        "observed_at": "2026-08-07T17:00:31.019517+00:00",
+        "observed_at": "2026-08-12T22:19:29.206326+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -13,9 +13,9 @@
             "ownership": "proximity",
             "quoted": "offers products and services to consumers and small businesses",
             "revenue_models": [
-              "financial_spread",
               "services",
               "transaction",
+              "financial_spread",
               "asset_management_fees"
             ],
             "under": "Consumer & Community Banking (CCB)"
@@ -93,22 +93,7 @@
           "unmeasured_because": null
         },
         {
-          "description": {
-            "distance": 49,
-            "ownership": "structure",
-            "quoted": "is a global leader in investment and wealth management.",
-            "repair": {
-              "first_refused_because": "The description of 'Asset & Wealth Management (AWM)' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management (AWM)'.",
-              "reader": "gpt-5"
-            },
-            "revenue_models": [
-              "asset_management_fees",
-              "financial_spread",
-              "services",
-              "transaction"
-            ],
-            "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
-          },
+          "description": null,
           "name": "Asset & Wealth Management (AWM)",
           "revenue": {
             "denominator": {
@@ -136,15 +121,15 @@
               "value": 24073.0
             }
           },
-          "undescribed_because": null,
+          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management (AWM)'. A repair was attempted and was refused too: The description of 'Asset & Wealth Management (AWM)' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management (AWM)'.",
           "unmeasured_because": null
         }
       ]
     },
     {
-      "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
+      "description": "JPMorgan Chase & Co. is a leading financial services firm that is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
       "reading": {
-        "observed_at": "2026-08-07T17:01:38.513926+00:00",
+        "observed_at": "2026-08-12T22:20:11.552576+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -155,8 +140,8 @@
             "quoted": "offers products and services to consumers and small businesses",
             "revenue_models": [
               "financial_spread",
-              "services",
               "transaction",
+              "services",
               "asset_management_fees"
             ],
             "under": "Consumer & Community Banking (CCB)"
@@ -195,11 +180,11 @@
           "description": {
             "distance": 108,
             "ownership": "proximity",
-            "quoted": "offer investment banking, lending, payments, market-making, financing, custody",
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
             "revenue_models": [
-              "services",
               "financial_spread",
-              "transaction"
+              "transaction",
+              "services"
             ],
             "under": "Commercial & Investment Bank (CIB)"
           },
@@ -241,7 +226,8 @@
             "revenue_models": [
               "asset_management_fees",
               "financial_spread",
-              "services"
+              "services",
+              "transaction"
             ],
             "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
           },
@@ -280,7 +266,7 @@
     {
       "description": "The Firm is a leader in investment banking, financial services for consumers and small businesses, commercial banking, financial transaction processing and asset management.",
       "reading": {
-        "observed_at": "2026-08-07T17:02:13.777196+00:00",
+        "observed_at": "2026-08-12T22:20:49.001590+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -331,11 +317,11 @@
           "description": {
             "distance": 108,
             "ownership": "proximity",
-            "quoted": "offer investment banking, lending, payments, market-making, financing, custody",
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
             "revenue_models": [
+              "financial_spread",
               "services",
-              "transaction",
-              "financial_spread"
+              "transaction"
             ],
             "under": "Commercial & Investment Bank"
           },
@@ -376,9 +362,8 @@
             "quoted": "is a global leader in investment and wealth management",
             "revenue_models": [
               "asset_management_fees",
-              "services",
               "financial_spread",
-              "transaction"
+              "services"
             ],
             "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
           },
@@ -411,72 +396,16 @@
           },
           "undescribed_because": null,
           "unmeasured_because": null
-        }
-      ]
-    },
-    {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm based in the U.S., with operations worldwide, serving consumers, small businesses, and prominent corporate, institutional and government clients under the J.P. Morgan and Chase brands.",
-      "reading": {
-        "observed_at": "2026-08-07T17:02:43.558243+00:00",
-        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
-      },
-      "segments": [
-        {
-          "description": {
-            "distance": 24,
-            "ownership": "proximity",
-            "quoted": "offers products and services to consumers and small businesses",
-            "revenue_models": [
-              "financial_spread",
-              "services",
-              "transaction",
-              "asset_management_fees"
-            ],
-            "under": "Consumer & Community Banking (CCB)"
-          },
-          "name": "Consumer & Community Banking (CCB)",
-          "revenue": {
-            "denominator": {
-              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
-              "cell": {
-                "column": 68,
-                "row": 2,
-                "table": 0
-              },
-              "column_header": "Total",
-              "label": "Total net revenue",
-              "printed": "$ 185,581",
-              "value": 185581.0
-            },
-            "numerator": {
-              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
-              "cell": {
-                "column": 3,
-                "row": 2,
-                "table": 0
-              },
-              "column_header": "Consumer & Community Banking",
-              "label": "Total net revenue",
-              "printed": "$ 76,029",
-              "value": 76029.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
         },
         {
           "description": {
-            "distance": 108,
+            "distance": 0,
             "ownership": "proximity",
-            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities products and services",
-            "revenue_models": [
-              "financial_spread",
-              "services",
-              "transaction"
-            ],
-            "under": "Commercial & Investment Bank (CIB)"
+            "quoted": "Corporate consists of Treasury and Chief Investment Office (\u201cCIO\u201d) and Other Corporate.",
+            "revenue_models": [],
+            "under": "Corporate"
           },
-          "name": "Commercial & Investment Bank (CIB)",
+          "name": "Corporate",
           "revenue": {
             "denominator": {
               "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
@@ -493,57 +422,14 @@
             "numerator": {
               "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
               "cell": {
-                "column": 23,
+                "column": 47,
                 "row": 2,
                 "table": 0
               },
-              "column_header": "Commercial & Investment Bank",
+              "column_header": "Corporate",
               "label": "Total net revenue",
-              "printed": "$ 78,454",
-              "value": 78454.0
-            }
-          },
-          "undescribed_because": null,
-          "unmeasured_because": null
-        },
-        {
-          "description": {
-            "distance": 49,
-            "ownership": "structure",
-            "quoted": "is a global leader in investment and wealth management",
-            "revenue_models": [
-              "asset_management_fees",
-              "services",
-              "financial_spread",
-              "transaction"
-            ],
-            "under": "Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management."
-          },
-          "name": "Asset & Wealth Management (AWM)",
-          "revenue": {
-            "denominator": {
-              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
-              "cell": {
-                "column": 68,
-                "row": 2,
-                "table": 0
-              },
-              "column_header": "Total",
-              "label": "Total net revenue",
-              "printed": "$ 185,581",
-              "value": 185581.0
-            },
-            "numerator": {
-              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
-              "cell": {
-                "column": 38,
-                "row": 2,
-                "table": 0
-              },
-              "column_header": "Asset & Wealth Management",
-              "label": "Total net revenue",
-              "printed": "$ 24,073",
-              "value": 24073.0
+              "printed": "$ 7,025",
+              "value": 7025.0
             }
           },
           "undescribed_because": null,
@@ -552,9 +438,9 @@
       ]
     },
     {
-      "description": "JPMorgan Chase & Co. is a leading financial services firm serving consumers, small businesses and institutional clients with investment banking, commercial banking, payments, asset management and wealth management offerings globally.",
+      "description": "A leading financial services firm offering investment banking, consumer and small business financial services, commercial banking, financial transaction processing and asset management.",
       "reading": {
-        "observed_at": "2026-08-07T17:03:11.579435+00:00",
+        "observed_at": "2026-08-12T22:21:14.633918+00:00",
         "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
       },
       "segments": [
@@ -608,8 +494,8 @@
             "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
             "revenue_models": [
               "services",
-              "transaction",
-              "financial_spread"
+              "financial_spread",
+              "transaction"
             ],
             "under": "Commercial & Investment Bank (CIB)"
           },
@@ -684,18 +570,30 @@
           },
           "undescribed_because": null,
           "unmeasured_because": null
-        },
+        }
+      ]
+    },
+    {
+      "description": "JPMorganChase is a leading financial services firm based in the U.S. with operations worldwide, providing investment banking, consumer and small business financial services, commercial banking, financial transaction processing and asset management.",
+      "reading": {
+        "observed_at": "2026-08-12T22:21:35.890400+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "segments": [
         {
           "description": {
-            "distance": 0,
+            "distance": 24,
             "ownership": "proximity",
-            "quoted": "consists of Treasury and Chief Investment Office (\u201cCIO\u201d) and Other Corporate",
+            "quoted": "offers products and services to consumers and small businesses",
             "revenue_models": [
-              "financial_spread"
+              "financial_spread",
+              "services",
+              "transaction",
+              "asset_management_fees"
             ],
-            "under": "Corporate"
+            "under": "Consumer & Community Banking (CCB)"
           },
-          "name": "Corporate",
+          "name": "Consumer & Community Banking (CCB)",
           "revenue": {
             "denominator": {
               "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
@@ -712,23 +610,97 @@
             "numerator": {
               "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
               "cell": {
-                "column": 47,
+                "column": 3,
                 "row": 2,
                 "table": 0
               },
-              "column_header": "Corporate",
+              "column_header": "Consumer & Community Banking",
               "label": "Total net revenue",
-              "printed": "$ 7,025",
-              "value": 7025.0
+              "printed": "$ 76,029",
+              "value": 76029.0
             }
           },
           "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": {
+            "distance": 108,
+            "ownership": "proximity",
+            "quoted": "offer investment banking, lending, payments, market-making, financing, custody and securities",
+            "revenue_models": [
+              "financial_spread",
+              "services",
+              "transaction"
+            ],
+            "under": "Commercial & Investment Bank (CIB)"
+          },
+          "name": "Commercial & Investment Bank (CIB)",
+          "revenue": {
+            "denominator": {
+              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
+              "cell": {
+                "column": 68,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Total",
+              "label": "Total net revenue",
+              "printed": "$ 185,581",
+              "value": 185581.0
+            },
+            "numerator": {
+              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
+              "cell": {
+                "column": 23,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Commercial & Investment Bank",
+              "label": "Total net revenue",
+              "printed": "$ 78,454",
+              "value": 78454.0
+            }
+          },
+          "undescribed_because": null,
+          "unmeasured_because": null
+        },
+        {
+          "description": null,
+          "name": "Asset & Wealth Management (AWM)",
+          "revenue": {
+            "denominator": {
+              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
+              "cell": {
+                "column": 68,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Total",
+              "label": "Total net revenue",
+              "printed": "$ 185,581",
+              "value": 185581.0
+            },
+            "numerator": {
+              "caption": "JPMorgan Chase & Co./2025 Form 10-K 63 Segment & Corporate Results \u2013 Managed Basis The following tables summarize the Firm\u2019s results by business segments and Corporate for the periods indicated.",
+              "cell": {
+                "column": 38,
+                "row": 2,
+                "table": 0
+              },
+              "column_header": "Asset & Wealth Management",
+              "label": "Total net revenue",
+              "printed": "$ 24,073",
+              "value": 24073.0
+            }
+          },
+          "undescribed_because": "The description of 'Asset & Wealth Management (AWM)' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management (AWM)'. A repair was attempted and was refused too: The description of 'Asset & Wealth Management (AWM)' quotes words the document prints outside the section it heads 'Asset & Wealth Management, with client assets of $7.1 trillion, is a global leader in investment and wealth management.', so they are not what it says there about 'Asset & Wealth Management (AWM)'.",
           "unmeasured_because": null
         }
       ]
     }
   ],
-  "schema_version": 11,
+  "schema_version": 12,
   "source": {
     "authority": "regulator_filed",
     "company": "JPMORGAN CHASE & CO",

@@ -19,6 +19,18 @@ score). **F2 is not started**; its question is *"what am I actually
 buying when I own this fund?"* and its ground is
 `docs/architecture/FUND_EVIDENCE_RESEARCH.md`.
 
+**E1, briefly** (2026-08-13): a wordless named segment is now asked
+against the untagged prose of its own package — the shape Volkswagen's
+management report ships in — under the same span and ownership
+contracts, recorded with provenance naming the untagged text.
+Knowledge **schema 12**: the schema-11 corpus reads as absent until
+re-observed (`movrvest observe`, per symbol; JPM and VOW3.DE are
+already re-read). The `normalised`/`_indexed` accent mismatch is
+fixed — German and French quoted spans ground now. **E2 (attributed
+category corroboration) and the dossier-fidelity slices are NOT
+started**; their grounds are `EVIDENCE_PROPORTIONALITY.md` and
+`EQUITY_DOSSIER_FIDELITY.md`.
+
 Merged since the last handoff, in order:
 
 | PR | What |

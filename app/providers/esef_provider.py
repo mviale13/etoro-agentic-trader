@@ -147,6 +147,7 @@ class EsefProvider:
             # is the weaker mechanism and the honest one: the alternative
             # is inventing structure the document did not supply.
             business_description=report.business_text,
+            unstructured_text=report.unstructured_text,
             performance_discussion=report.discussion_text,
             performance_tables=report.discussion_tables,
         )

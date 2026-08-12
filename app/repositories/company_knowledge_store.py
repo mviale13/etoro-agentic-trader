@@ -83,7 +83,23 @@ from app.repositories.source_codec import (
 #: sizes were absent for exactly that reason — and its mix reading was
 #: shown different table text besides, so the readings are not poolable
 #: and the documents are read again.
-KNOWLEDGE_SCHEMA_VERSION = 11
+#: 12 — a segment the tagged text names and does not describe is now
+#: asked about against the package's *untagged* documents: prose from
+#: around the filer's own uses of the segment's name, in the management
+#: report a multi-document package ships without a single XBRL tag.
+#: Volkswagen's five readings under 11 each reported, honestly, that
+#: nothing describes its segments — about tagged text that genuinely
+#: describes nothing — while the division descriptions sat in a
+#: thirteen-megabyte report the reading was never shown. This is schema
+#: 10's case again in a second wardrobe: the reader is shown a part of
+#: the filing that earlier entries were never given, so the readings
+#: are not poolable and the documents, immutable and still there, are
+#: read again. An EDGAR filing and a single-document ESEF package are
+#: shown exactly the text 11 showed them, and their entries are read
+#: again for the same reason 10 and 11 re-read everything: the version
+#: stamps the protocol, and a protocol is one thing, not a per-document
+#: negotiation.
+KNOWLEDGE_SCHEMA_VERSION = 12
 
 #: No older schema is restored. 8 was relabeled into 9 because nothing
 #: about the reading had changed; every version since changed what the

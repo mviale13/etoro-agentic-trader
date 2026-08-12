@@ -31,7 +31,7 @@ from datetime import date
 import httpx
 
 from app.domain.tabular_evidence import SourceTable
-from app.providers.document_text import read_tables
+from app.providers.document_text import flatten, read_tables
 
 INDEX = "https://filings.xbrl.org"
 ENTITY_FILINGS_URL = INDEX + "/api/entities/{lei}/filings"
@@ -166,6 +166,19 @@ class EsefReport:
     #: Read from the document rather than from a filename or an index —
     #: which matters where there is no index to read it from.
     period_ends_on: date | None = None
+
+    #: The flattened prose of a document that carries no tagged business
+    #: text at all — the shape a management report ships in when the
+    #: package splits it from the statements. Volkswagen's package holds
+    #: three documents and every division description lives in the one
+    #: with no XBRL tag on it, so a reading scoped to tagged blocks
+    #: reported, five times out of five, that nothing describes the
+    #: segments. This is that text, carried so a *named* segment can be
+    #: asked about against the filer's own prose. Nothing here selects
+    #: what is relevant: selection happens per segment name, at reading
+    #: time, and the empty string is every document whose tagged blocks
+    #: already speak.
+    unstructured_text: str = ""
 
 
 class EsefFilings:
@@ -391,6 +404,9 @@ def read_report(document: str) -> EsefReport:
 
     continuations = _continuations(body)
 
+    business_text = _passage(body, BUSINESS_ELEMENTS, continuations)
+    discussion_text = _passage(body, DISCUSSION_ELEMENTS, continuations)
+
     return EsefReport(
         company=_plain(
             _fact(
@@ -402,10 +418,17 @@ def read_report(document: str) -> EsefReport:
         ),
         lei=lei,
         language=language,
-        business_text=_passage(body, BUSINESS_ELEMENTS, continuations),
-        discussion_text=_passage(body, DISCUSSION_ELEMENTS, continuations),
+        business_text=business_text,
+        discussion_text=discussion_text,
         discussion_tables=_tables(body, DISCUSSION_ELEMENTS, continuations),
         period_ends_on=period_ends_on,
+        # A document with no tagged business text is a package member the
+        # taxonomy says nothing about — a management report, typically.
+        # Its prose is kept whole; which parts of it matter is a question
+        # only a *named* segment can ask, and it is asked there.
+        unstructured_text=(
+            "" if business_text or discussion_text else flatten(body).text
+        ),
     )
 
 
@@ -465,6 +488,7 @@ def read_package(archive: bytes) -> EsefReport:
         business_text=_joined(report.business_text for report in reports),
         discussion_text=_joined(report.discussion_text for report in reports),
         discussion_tables=_gathered(report.discussion_tables for report in reports),
+        unstructured_text=_joined(report.unstructured_text for report in reports),
         period_ends_on=max(
             (
                 report.period_ends_on

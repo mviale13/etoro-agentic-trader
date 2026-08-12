@@ -1,8 +1,10 @@
-# Is evidence strength proportional to the claim? — measured, nothing built
+# Is evidence strength proportional to the claim? — measured, and the E1 slice it earned
 
-**Status: research only, measured 2026-08-12 at `40eacde`. Nothing in
-this document is a mandate to build** (Constitution §23–24). Ruled on
-after the Equity Dossier Fidelity measurement, before any E1 slice.
+**Status: measured 2026-08-12 at `40eacde`; §4's repair 1 was then
+ruled on and built as E1 — Non-US Business Description Acquisition
+(see §7). Repair 2 (attributed category corroboration) is NOT
+started.** (Constitution §23–24.) Ruled on after the Equity Dossier
+Fidelity measurement.
 
 The research question:
 
@@ -238,3 +240,57 @@ Nothing here proposes what to build. The CTO holds the ruling across
 §4's directions; repair 1 (extraction scope) and repair 2 (attributed
 category corroboration, selector-fenced) are the two the measurement
 supports, and they are independent.
+
+---
+
+## 7. The E1 slice: Non-US Business Description Acquisition (built 2026-08-13)
+
+The CTO's ruling on §4's repair 1: an acquisition repair, never an
+archetype repair. The measured structural pattern, and what was built
+on it:
+
+**The pattern** (measured across four fetched packages, not assumed):
+an annual-report package that ships its management report as a separate
+document carrying no XBRL tag. VW's package holds three documents; the
+tagged blocks all come from the statements file (6,121 chars of
+registration boilerplate plus the segment listing), while the division
+descriptions live in the 13.4MB Lagebericht the tag-scoped reading
+never surfaced. Single-document filers — NOVO, AIR, UMI, BNP — escape
+because their tagged nature-of-operations block happens to carry
+descriptive prose, which is why they grounded and VW did not.
+
+**The capture**: a package member with no tagged business text at all
+contributes its flattened prose as `unstructured_text` — a structural
+test, no filename vocabulary, no language table, no company name. A
+single-document package captures nothing extra, and every EDGAR filing
+is untouched.
+
+**The reading**: a segment still wordless after the tagged text has
+been asked twice is asked once more against `named_passage` — the
+prose around the filer's own uses of that segment's name, digit-dense
+regions dropped (a delivery table headed by a name is not prose about
+it), under a stated cap that is reported in the absence wording when
+it truncates. **This is a first reading, not a repair**: the repair
+doctrine (the claim cannot move) governs re-asking text a reading has
+seen; this text was never shown to any reading, so a way of earning
+read out of it is a first claim, held to the same span-existence and
+positional-ownership contract as the primary pass, and recorded with
+repair provenance naming the untagged text so it is never presented
+as a first-pass finding.
+
+**The defect the slice tripped over**: `normalised` (the needle) and
+`_indexed` (the haystack) had disagreed about letters for years —
+`[a-z0-9]` deleted every accented character while the index kept them,
+so a span quoted from German or French prose was refused as words the
+document does not print. English filings never carry the letters that
+trigger it. The two halves of the one comparison rule now fold
+identically.
+
+**Requirement 9**: knowledge schema 12, on schema 10's own precedent
+in a second wardrobe — the reader is shown a part of the filing that
+earlier entries were never given, so the readings are not poolable and
+the documents are read again.
+
+**The verdict on VOW3.DE is reported in the E1 shipping report, from
+the unchanged consensus and archetype engines** — whatever they
+conclude from the evidence is what is reported.
