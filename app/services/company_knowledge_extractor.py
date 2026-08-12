@@ -157,6 +157,34 @@ Rules:
 - You are asked once. There is no further attempt.
 """
 
+SUPPLEMENTAL_SYSTEM_PROMPT = """\
+A reading of this company's tagged filing text reported a segment by
+name and found no words describing it there. The text below is
+different text: prose from the same filer's report, taken from around
+the filer's own uses of that segment's name. Your only job is to
+answer, for THAT ONE segment: does this prose say what it does, and
+which ways of earning does it describe for it?
+
+Rules:
+- Return one SHORT verbatim span — between five and fifteen words —
+  copied exactly from the text below, character for character, from a
+  single run of prose. Do not join text across a table cell, a bullet
+  or a line break, and do not tidy the wording.
+- The span must sit where the text names THIS segment, and must be what
+  the document says about it — what it makes, sells, operates or
+  provides. Not a sentence about the company as a whole, not market
+  commentary, not a note about emissions, accounting or legal form.
+- Report the revenue models ONLY where this text describes that way of
+  earning for THIS segment. A revenue model you cannot point at words
+  for does not belong in the answer.
+- If this text prints no such words, return an empty `quoted` and no
+  revenue models. That is a complete and correct answer. An honest
+  empty answer is worth more than a reached-for one, because a span
+  that does not describe this segment will be refused and the claim
+  recorded as unevidenced either way.
+- You are asked once. There is no further attempt.
+"""
+
 SYSTEM_PROMPT = """\
 You extract structural facts from a company's annual report. You do not
 analyse the company, rate it, or classify it.
@@ -405,6 +433,141 @@ def asked_by_name_prompt(document: SourceDocument, segment: str) -> str:
     )
 
 
+#: How far either side of a name's occurrence the filer's prose is
+#: taken, and how much of it one ask may carry. Measured on the one
+#: multi-document package in the corpus: Volkswagen's division
+#: descriptions sit within a few hundred characters of the division's
+#: own name, and the digit-dense regions the same names head — delivery
+#: tables, emission inventories — are what the prose filter exists to
+#: drop.
+_NEIGHBOURHOOD_RADIUS = 1_500
+_NEIGHBOURHOOD_DIGIT_CEILING = 0.04
+_NEIGHBOURHOOD_CAP = 24_000
+
+
+def named_passage(
+    text: str,
+    name: str,
+    *,
+    radius: int = _NEIGHBOURHOOD_RADIUS,
+    digit_ceiling: float = _NEIGHBOURHOOD_DIGIT_CEILING,
+    cap: int = _NEIGHBOURHOOD_CAP,
+) -> tuple[str, bool]:
+    """The filer's prose around its own uses of one segment's name.
+
+    No headings are hunted and no language is assumed: the anchor is the
+    name the filer's tagged text already established, exactly as
+    printed. Occurrences are merged into regions, regions that are
+    mostly figures are dropped — a delivery table headed by a segment's
+    name is not prose about it — and what remains is returned in
+    document order under a stated cap. The second value says whether the
+    cap dropped anything, because a truncation a reader cannot see would
+    make "the text prints none" claim more than was checked.
+    """
+
+    if not name.strip():
+        return "", False
+
+    positions = []
+    start = 0
+
+    while True:
+        found = text.find(name, start)
+
+        if found < 0:
+            break
+
+        positions.append(found)
+        start = found + 1
+
+    if not positions:
+        return "", False
+
+    regions: list[tuple[int, int]] = []
+
+    for hit in positions:
+        low, high = max(0, hit - radius), min(len(text), hit + radius)
+
+        if regions and low <= regions[-1][1]:
+            regions[-1] = (regions[-1][0], high)
+        else:
+            regions.append((low, high))
+
+    prose = []
+    total = 0
+    truncated = False
+
+    for low, high in regions:
+        passage = text[low:high]
+
+        digits = sum(character.isdigit() for character in passage)
+
+        if digits / max(1, len(passage)) >= digit_ceiling:
+            continue
+
+        if total + len(passage) > cap:
+            truncated = True
+            break
+
+        prose.append(passage)
+        total += len(passage)
+
+    return "\n\n".join(prose), truncated
+
+
+def supplemental_schema() -> dict[str, Any]:
+    """The one-segment contract a supplemental reading must fill."""
+
+    return {
+        "type": "object",
+        "properties": {
+            "revenue_models": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [model.value for model in RevenueModel],
+                },
+            },
+            "quoted": {
+                "type": "string",
+                "description": (
+                    "A verbatim span from the text describing this "
+                    "segment. Copied exactly, or empty."
+                ),
+            },
+        },
+        "required": ["revenue_models", "quoted"],
+        "additionalProperties": False,
+    }
+
+
+def supplemental_prompt(
+    document: SourceDocument,
+    segment: str,
+    passage: str,
+) -> str:
+    """One named segment, asked against the filer's untagged prose."""
+
+    return "\n".join(
+        (
+            f"Company: {document.source.company}",
+            f"Segment: {segment}",
+            "",
+            f"The tagged filing text named the segment {segment!r} and "
+            "printed no words describing it. The prose below is from the "
+            "same filer's report, around its own uses of that name.",
+            "",
+            f"Find the words this prose prints about {segment!r} that say "
+            "what it does and how it earns, or return an empty span if it "
+            "prints none.",
+            "",
+            "--- REPORT PROSE BEGINS ---",
+            passage,
+            "--- REPORT PROSE ENDS ---",
+        )
+    )
+
+
 def mix_prompt(document: SourceDocument, segments: tuple[str, ...]) -> str:
     return "\n".join(
         (
@@ -568,29 +731,38 @@ class CompanyKnowledgeExtractor:
 
             if segment.description is not None:
                 segments.append(segment)
-            elif refused:
-                segments.append(
-                    await self._repaired(
-                        segment,
-                        document,
-                        prose,
-                        partition,
-                        owners.get(segment.name),
-                        raw,
-                        refused,
-                    )
+                continue
+
+            if refused:
+                outcome = await self._repaired(
+                    segment,
+                    document,
+                    prose,
+                    partition,
+                    owners.get(segment.name),
+                    raw,
+                    refused,
                 )
             else:
-                segments.append(
-                    await self._asked_by_name(
-                        segment,
-                        document,
-                        prose,
-                        partition,
-                        owners.get(segment.name),
-                        raw,
-                    )
+                outcome = await self._asked_by_name(
+                    segment,
+                    document,
+                    prose,
+                    partition,
+                    owners.get(segment.name),
+                    raw,
                 )
+
+            # A segment still wordless after the tagged text has been
+            # asked twice, where the package carries untagged prose the
+            # first reading was never shown. Volkswagen's five readings
+            # each ended here — honestly, about text that genuinely
+            # printed nothing — while the division descriptions sat in a
+            # management report no tag reaches.
+            if outcome.description is None and document.unstructured_text:
+                outcome = await self._supplemental(outcome, document, named)
+
+            segments.append(outcome)
 
         return replace(knowledge, segments=tuple(segments))
 
@@ -738,6 +910,123 @@ class CompanyKnowledgeExtractor:
                 revenue_models=_models(raw),
                 repair=DescriptionRepair(
                     first_refused_because=first,
+                    reader=draft.model,
+                ),
+            ),
+            undescribed_because=None,
+        )
+
+    async def _supplemental(
+        self,
+        segment: BusinessSegment,
+        document: SourceDocument,
+        named: tuple[str, ...],
+    ) -> BusinessSegment:
+        """One wordless segment, asked against the filer's untagged prose.
+
+        **This is a first reading, not a repair.** The repair doctrine —
+        the claim cannot move, a span and nothing else — governs asking
+        again about text a reading has already seen, where a new claim
+        appearing on the second ask is suspicious by construction. The
+        text supplied here is text no reading has seen: prose from the
+        package's untagged documents, taken from around the filer's own
+        uses of this segment's name. A way of earning read out of it for
+        the first time is a first claim, held to the same evidence
+        contract as the primary pass — the span must exist in the prose
+        supplied, and it must sit under this segment's own naming, which
+        is the positional ownership mechanism the partition provides.
+
+        Bounded like everything else here: one segment, one ask, one
+        attempt, and an honest empty answer recorded with both reasons.
+        The passage builder's cap is stated in the absence wording when
+        it dropped anything, because "the text prints none" must never
+        claim more than was checked.
+        """
+
+        first = segment.undescribed_because or (
+            f"The description of {segment.name!r} arrived with no words at all."
+        )
+
+        passage, truncated = named_passage(
+            document.unstructured_text,
+            segment.name,
+        )
+
+        if not passage:
+            return replace(
+                segment,
+                undescribed_because=(
+                    f"{first} The package's untagged report text prints no "
+                    "prose around the filer's own uses of the name either."
+                ),
+            )
+
+        checked = (
+            f"the first {_NEIGHBOURHOOD_CAP:,} characters of it".replace(",", " ")
+            if truncated
+            else "all of it"
+        )
+
+        request = DraftRequest(
+            system_prompt=SUPPLEMENTAL_SYSTEM_PROMPT,
+            user_prompt=supplemental_prompt(document, segment.name, passage),
+            schema=supplemental_schema(),
+            max_tokens=MAX_TOKENS,
+        )
+
+        try:
+            draft = await self._provider.draft(request)
+            payload = json.loads(draft.text)
+            quoted = str(payload.get("quoted") or "").strip()
+        except (NarrativeDeclined, json.JSONDecodeError, ValueError) as failed:
+            return _unrepaired(
+                segment,
+                first,
+                "A reading of the package's untagged report text was "
+                f"attempted and could not be read: {failed}",
+            )
+
+        if not quoted:
+            return _unrepaired(
+                segment,
+                first,
+                "Asked against the package's untagged report text "
+                f"({checked}), the reader found no words describing it "
+                "there either.",
+            )
+
+        try:
+            described = describes(
+                passage,
+                namings(passage, named),
+                segment.name,
+                quoted,
+                None,
+            )
+        except EvidenceNotApplicable as inapplicable:
+            return _unrepaired(
+                segment,
+                first,
+                "A span offered from the package's untagged report text "
+                f"was refused: {inapplicable}",
+            )
+
+        return replace(
+            segment,
+            description=SegmentDescription(
+                evidence=described,
+                # A first reading of first-seen text may claim ways of
+                # earning — that is what a first reading is. The models
+                # are validated against the same vocabulary as the
+                # primary pass and travel with the description they were
+                # read beside, or not at all.
+                revenue_models=_models(payload),
+                repair=DescriptionRepair(
+                    first_refused_because=(
+                        f"{first} The words were found in the package's "
+                        "untagged report text, which the tagged reading "
+                        "is never shown."
+                    ),
                     reader=draft.model,
                 ),
             ),

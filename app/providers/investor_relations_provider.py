@@ -190,6 +190,7 @@ class InvestorRelationsProvider:
             # assembled from tagged blocks has no section for headings to
             # divide. Ownership stays positional.
             business_description=document.business_text,
+            unstructured_text=document.unstructured_text,
             performance_discussion=document.discussion_text,
             performance_tables=document.discussion_tables,
         )

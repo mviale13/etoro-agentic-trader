@@ -235,7 +235,13 @@ class TestJpmReferenceCase:
     def test_it_rests_on_the_narrowest_consumed_agreement(self):
         decision = decide(_quorate_case())
         assert decision.rests_on is not None
-        assert decision.rests_on.stated_majority() == "a narrow majority (3/5)"
+        # Pinned to the committed JPM reference entry's own narrowest
+        # agreement, so this moves when the corpus is legitimately
+        # re-observed under a new reading protocol (schema 12 read the
+        # document again and its five readings agree 4/5 on the
+        # naming). The invariant is the sentence's shape and that the
+        # narrowest *consumed* agreement is the one named.
+        assert decision.rests_on.stated_majority() == "a majority (4/5)"
         assert decision.rests_on.question == "which segments the document names"
 
     def test_the_absences_are_carried_verbatim(self):

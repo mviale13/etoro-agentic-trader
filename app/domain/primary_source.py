@@ -249,6 +249,20 @@ class SourceDocument:
     #: honest.
     business_regions: tuple[Region, ...] = ()
 
+    #: The prose of package documents that carry no tagged business text
+    #: at all — the shape a management report ships in when a filer
+    #: splits it from the statements. Volkswagen's division descriptions
+    #: live in a thirteen-megabyte report with no XBRL tag on it, so a
+    #: reading scoped to `business_description` reported five times out
+    #: of five that nothing describes the segments. Nothing in this
+    #: field is pre-selected as relevant: a *named* segment is asked
+    #: about against the neighbourhoods of the filer's own uses of that
+    #: name, at reading time, and a quoted answer is still held to the
+    #: same existence and applicability contract as any other span.
+    #: Empty for every document whose tagged or sectioned text already
+    #: speaks — including every EDGAR filing, whose reading is unchanged.
+    unstructured_text: str = ""
+
     #: How each part of it performed, which is where a publisher states
     #: what each segment earned. Empty where the document has no such
     #: section, which leaves the segments described and their sizes
