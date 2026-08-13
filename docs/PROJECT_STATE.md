@@ -137,9 +137,10 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   cross-schema read keeps the schema-12 corpus valid), decision-neutral
   by construction and by test, and rendered on the dossier's segment
   list with the verbatim span. **Live acceptance awaits funded
-  re-observation** — the OpenAI account ran out of credits on all four
-  attempts; `movrvest observe VOW3.DE|CAT|DIS` completes it with no
-  code change.
+  re-observation** — re-confirmed blocked 2026-08-13 (fresh 429s);
+  `movrvest observe VOW3.DE|CAT|DIS --to 10` completes it with no code
+  change (`--to` required: the schema-12 corpus fills the quorum, so a
+  plain observe count-stops without taking asked readings).
 
 - **A named segment is asked against the prose its filer actually
   printed** (2026-08-13, E1 — Non-US Business Description Acquisition,

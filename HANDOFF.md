@@ -36,12 +36,18 @@ Understanding — the filer's own stated dependence of one business on
 another, quantifiers intact, consensus over asked readings, schema 13
 with a cross-schema read that keeps the 12-corpus valid,
 decision-neutral by test, rendered on the equity dossier's segments.
-⛔ **BLOCKED on OpenAI credits for live acceptance**: once Marcos
-funds the account, run `movrvest observe VOW3.DE`, `movrvest observe
-CAT`, `movrvest observe DIS` — five readings each; the consensus and
-dossier then render whatever the readings establish, with no further
-code change. CAT's verdict is genuinely open. DIS must stay empty
-(the control).
+⛔ **BLOCKED on OpenAI credits for live acceptance** (re-confirmed
+2026-08-13: three fresh 429 `credit_balance_exhausted`). Once Marcos
+funds the account, run **`movrvest observe VOW3.DE --to 10`**,
+**`movrvest observe CAT --to 10`**, **`movrvest observe DIS --to 10`**
+— `--to` is required: the schema-12 corpus counts toward the quorum
+under ED1's cross-schema read, so a plain `observe` stops on the count
+and takes no asked readings. Five asked readings each; the consensus
+and dossier then render whatever the readings establish, with no
+further code change. CAT's verdict is genuinely open. DIS must stay
+empty (the control). **Trap: `observe` exits 0 and prints the stored
+consensus even when every reading attempt 429'd — read the log, not
+the exit code.**
 
 Merged since the last handoff, in order:
 

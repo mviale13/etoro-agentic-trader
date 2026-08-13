@@ -338,10 +338,15 @@ the new fields as null and decides identically). The acceptance
 re-observations — VOW3.DE, CAT, DIS under schema 13 — could not run:
 **the OpenAI account has no credits remaining** (the reader's provider;
 error 429 `credit_balance_exhausted`, hit on all four attempts). Once
-funded, `movrvest observe VOW3.DE`, `movrvest observe CAT` and
-`movrvest observe DIS` complete the acceptance with no further code
-change: five asked readings each, the consensus settles or honestly
-does not, and the dossier renders whatever was established. CAT's
+funded, `movrvest observe VOW3.DE --to 10`, `movrvest observe CAT
+--to 10` and `movrvest observe DIS --to 10` complete the acceptance
+with no further code change — `--to` is required because the
+schema-12 corpus counts toward the quorum under the cross-schema
+read, so a plain `observe` stops on the count and takes no asked
+readings (measured 2026-08-13: it exits 0 and prints the stored
+consensus even when every reading attempt fails on credits). Five
+asked readings each; the consensus settles or honestly does not, and
+the dossier renders whatever was established. CAT's
 verdict is genuinely open — its role sentence sits in Item 1 text the
 reading is already shown, and whether five readings report it survives
 measurement, not force.
