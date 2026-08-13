@@ -123,6 +123,53 @@ class SegmentDescription:
 
 
 @dataclass(frozen=True, slots=True)
+class EconomicRelationship:
+    """A filer-stated economic dependence of one business on another.
+
+    Revenue diversity is not driver diversity: Volkswagen's Financial
+    Services is 18% of measured revenue and its filer states, in a
+    dedicated business-model sentence, that the division exists
+    essentially to support Automotive sales — while Disney's businesses
+    carry no such statement because none is true. This object holds the
+    first case without ever inferring it: a relationship exists here
+    only where the filing *says* one does, in causal or business-model
+    words, quoted. Never from a segment's name, never from intersegment
+    revenue, never from two businesses merely transacting.
+
+    The filer's degree of claim travels intact. "Predominantly" must
+    reach the investor as predominantly — a statement that hardened
+    "im Wesentlichen" into total dependence would be a claim nobody
+    made, and the verbatim span rides beside the statement so a reader
+    can check the platform against the filer.
+
+    Deliberately not a taxonomy: one relationship shape, in substance
+    *this business's economics are materially driven by that business
+    or its underlying demand*. Whether the corpus ever earns a richer
+    vocabulary is a future ruling's question.
+    """
+
+    #: The established business whose economics are stated to be driven.
+    #: Always one of the observation's own segment names.
+    dependent: str
+
+    #: What drives it, in the filer's own terms — another of the
+    #: company's businesses or the demand engine beneath it ("vehicle
+    #: deliveries of the Group"). Deliberately free text: filers name
+    #: the driver at their own altitude, which for Volkswagen is the
+    #: Automotive division rather than a reportable segment.
+    driver: str
+
+    #: The claim in investor-readable words, faithful to the filer's
+    #: own degree — it continues the frame "«company» states that this
+    #: business …". Validated against the quote for hardened
+    #: quantifiers, never trusted alone.
+    statement: str
+
+    #: The verbatim span the claim rests on, copied from the filing.
+    quoted: str
+
+
+@dataclass(frozen=True, slots=True)
 class BusinessSegment:
     """One part of the business, as the company itself reports it.
 
@@ -237,6 +284,22 @@ class CompanyKnowledgeObservation:
     source: PrimarySource
 
     reading: Provenance
+
+    #: Filer-stated economic dependences between the businesses above —
+    #: only where the filing states one explicitly, in causal or
+    #: business-model words. Empty is the ordinary state and an evidence
+    #: state, never a finding of independence.
+    relationships: tuple[EconomicRelationship, ...] = ()
+
+    #: Whether this reading was asked the relationship question at all.
+    #: A reading taken before the question existed holds an empty tuple
+    #: above for a different reason than a reading that was asked and
+    #: found nothing, and the consensus must not count the first as a
+    #: "no" vote — that would let five old readings outvote the filer's
+    #: own stated dependence. Persisted with the observation, because an
+    #: append rewrites the whole entry under the current schema and
+    #: would otherwise re-stamp an unasked reading as an asked one.
+    relationships_asked: bool = True
 
     @property
     def has_segments(self) -> bool:

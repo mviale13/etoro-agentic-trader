@@ -61,6 +61,30 @@ def understand(consensus: CompanyKnowledgeConsensus) -> BusinessUnderstanding:
                 mechanisms_because=(
                     segment.undescribed_because if not segment.revenue_models else None
                 ),
+                # The filer's stated dependence, worded here — the one
+                # layer that knows both the company's name and the
+                # settled claim — and carried with its span and width.
+                # Decision-neutral by construction: no rule, analyst or
+                # selector reads these three fields, and the regression
+                # suite holds that door shut.
+                depends_stated=(
+                    f"{consensus.source.company} states that this business "
+                    f"{segment.dependency.statement}"
+                    if segment.dependency is not None
+                    else None
+                ),
+                depends_quoted=(
+                    segment.dependency.quoted
+                    if segment.dependency is not None
+                    else None
+                ),
+                depends_support=(
+                    f"stated by the filer; {segment.dependency_agreement.counted()} "
+                    "readings agree"
+                    if segment.dependency is not None
+                    and segment.dependency_agreement is not None
+                    else None
+                ),
             )
             for segment in consensus.segments
         ),

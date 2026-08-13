@@ -11,6 +11,7 @@ from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledgeObservation,
     DescriptionRepair,
+    EconomicRelationship,
     RevenueModel,
     SegmentDescription,
 )
@@ -182,6 +183,40 @@ Rules:
   empty answer is worth more than a reached-for one, because a span
   that does not describe this segment will be refused and the claim
   recorded as unevidenced either way.
+- You are asked once. There is no further attempt.
+"""
+
+RELATIONSHIP_SYSTEM_PROMPT = """\
+You are asked one narrow question about a company's annual report: does
+the filing EXPLICITLY STATE that one of its named businesses is
+economically driven by another of the company's businesses, or by a
+stated underlying demand engine?
+
+You are looking for the filer's own causal or business-model sentences —
+"the business model of X consists essentially in supporting sales of Y",
+"deliveries of Y are decisive for new X contracts". Nothing else counts.
+
+Rules:
+- Report a relationship ONLY where the filing states it in so many
+  words. NEVER infer one from a segment's name ("Financial Services",
+  "Services", "Leasing" imply nothing). NEVER infer one from segments
+  transacting with each other or from intersegment revenue. NEVER infer
+  one from business logic you know from outside this text.
+- `dependent` must be one of the segment names you are given, exactly
+  as given.
+- `driver` is what the filing says drives that business, in the
+  filing's own terms — another business of the company, or the demand
+  beneath it ("vehicle deliveries of the Group").
+- `quoted` is one verbatim span copied from the text, character for
+  character, containing the filer's causal or business-model claim.
+- `statement` is the claim in plain English, continuing the frame
+  "<company> states that this business …" (begin lowercase). PRESERVE
+  the filer's own degree exactly: if the filing says "essentially" or
+  "predominantly", your statement says so; never harden a qualified
+  claim into total dependence, and never soften a stated one.
+- Most filings state no such relationship. An empty list is the
+  ordinary, correct answer, and it is worth more than a reached-for
+  one: a relationship that is not stated in the text will be refused.
 - You are asked once. There is no further attempt.
 """
 
@@ -568,6 +603,120 @@ def supplemental_prompt(
     )
 
 
+#: The relationship ask reads a tighter neighbourhood than the
+#: description ask, on a measured property of its evidence: a causal
+#: sentence *names the business it is about*, so the span sits within a
+#: few hundred characters of the name — Volkswagen's business-model
+#: sentence and its titled dependence disclosure both land inside a 21k
+#: passage at radius 300, where the description path's wider radius
+#: pushed them past its budget. E1's description constants are
+#: untouched; these are this question's own.
+_RELATIONSHIP_RADIUS = 300
+_RELATIONSHIP_SEGMENT_CAP = 40_000
+
+
+def relationship_schema() -> dict[str, Any]:
+    """The structured contract a relationship reading must fill."""
+
+    return {
+        "type": "object",
+        "properties": {
+            "relationships": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "dependent": {"type": "string"},
+                        "driver": {"type": "string"},
+                        "statement": {"type": "string"},
+                        "quoted": {"type": "string"},
+                    },
+                    "required": ["dependent", "driver", "statement", "quoted"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["relationships"],
+        "additionalProperties": False,
+    }
+
+
+def relationship_prompt(
+    document: SourceDocument,
+    segments: tuple[str, ...],
+    passage: str,
+) -> str:
+    """The one relationship question, over the assembled passage."""
+
+    return "\n".join(
+        (
+            f"Company: {document.source.company}",
+            "",
+            "Named businesses, exactly as reported. `dependent` must be "
+            "one of these and no other:",
+            *(f"- {name}" for name in segments),
+            "",
+            "Does this text explicitly state that one of those businesses "
+            "is economically driven by another of the company's businesses "
+            "or by a stated demand engine? Report only what is stated, or "
+            "an empty list.",
+            "",
+            "--- REPORT TEXT BEGINS ---",
+            passage,
+            "--- REPORT TEXT ENDS ---",
+        )
+    )
+
+
+#: English absolutes that may not appear in a relationship statement
+#: unless the quoted span itself carries one — in any of the corpus's
+#: filing languages. The guard for the rule that a filer's
+#: "predominantly" must never harden into total dependence: refused by
+#: a validator rather than merely asked for in a prompt, which is the
+#: writer-contract lesson applied here.
+_ABSOLUTE_STATED = (
+    "entirely",
+    "wholly",
+    "exclusively",
+    "solely",
+    "100%",
+    "completely",
+    "only source",
+)
+_ABSOLUTE_QUOTED = (
+    "entirely",
+    "wholly",
+    "exclusively",
+    "solely",
+    "100",
+    "ausschließlich",
+    "vollständig",
+    "gänzlich",
+    "uniquement",
+    "exclusivement",
+)
+
+
+def faithful_quantifier(statement: str, quoted: str) -> bool:
+    """Whether the statement's degree could have come from the quote.
+
+    A heuristic with a stated limit: it catches the hardening this
+    slice's ruling names — a qualified claim becoming an absolute one —
+    and does not attempt the reverse direction or non-listed wording.
+    """
+
+    lowered = statement.casefold()
+
+    if not any(term in lowered for term in _ABSOLUTE_STATED):
+        return True
+
+    span = quoted.casefold()
+
+    # Casefolded on both sides: German "ß" folds to "ss", so a listed
+    # "ausschließlich" would otherwise never match the folded span.
+    return any(term.casefold() in span for term in _ABSOLUTE_QUOTED)
+
+
 def mix_prompt(document: SourceDocument, segments: tuple[str, ...]) -> str:
     return "\n".join(
         (
@@ -663,7 +812,9 @@ class CompanyKnowledgeExtractor:
 
         repaired = await self._with_repaired_descriptions(knowledge, document, payload)
 
-        return await self._with_revenue_mix(repaired, document)
+        measured = await self._with_revenue_mix(repaired, document)
+
+        return await self._with_relationships(measured, document)
 
     async def _with_repaired_descriptions(
         self,
@@ -1031,6 +1182,116 @@ class CompanyKnowledgeExtractor:
                 ),
             ),
             undescribed_because=None,
+        )
+
+    async def _with_relationships(
+        self,
+        knowledge: CompanyKnowledgeObservation,
+        document: SourceDocument,
+    ) -> CompanyKnowledgeObservation:
+        """One bounded ask: does the filing state an economic dependence?
+
+        Asked over the tagged business text plus each segment's tighter
+        relationship neighbourhood of the untagged prose, because the
+        two acceptance filers keep this evidence in different places —
+        Caterpillar's role sentence sits in its Item 1, Volkswagen's in
+        the untagged management report. Every claim that comes back is
+        held to the full contract: the dependent must be a named
+        segment, the span must exist in the supplied text under that
+        segment's own naming, and a statement that hardens the filer's
+        qualifier into an absolute is refused. A claim that fails any
+        of it is dropped — an unproven relationship is an absence, not
+        a hedge. Empty is the ordinary answer and an evidence state.
+        """
+
+        named = tuple(segment.name for segment in knowledge.segments)
+
+        if not named:
+            return knowledge
+
+        sections = [document.business_description]
+
+        for name in named:
+            neighbourhood, _ = named_passage(
+                document.unstructured_text,
+                name,
+                radius=_RELATIONSHIP_RADIUS,
+                cap=_RELATIONSHIP_SEGMENT_CAP,
+            )
+
+            if neighbourhood:
+                sections.append(neighbourhood)
+
+        passage = "\n\n".join(sections)
+
+        request = DraftRequest(
+            system_prompt=RELATIONSHIP_SYSTEM_PROMPT,
+            user_prompt=relationship_prompt(document, named, passage),
+            schema=relationship_schema(),
+            max_tokens=MAX_TOKENS,
+        )
+
+        try:
+            draft = await self._provider.draft(request)
+            payload = json.loads(draft.text)
+        except (NarrativeDeclined, json.JSONDecodeError, ValueError):
+            # The question could not be asked; the observation stands
+            # without it, which reads exactly as a filing that states
+            # nothing — the conservative direction for this claim.
+            return knowledge
+
+        partition = namings(passage, named)
+
+        accepted: list[EconomicRelationship] = []
+
+        for raw in payload.get("relationships") or ():
+            dependent = str(raw.get("dependent") or "").strip()
+            driver = str(raw.get("driver") or "").strip()
+            statement = str(raw.get("statement") or "").strip()
+            quoted = str(raw.get("quoted") or "").strip()
+
+            if dependent not in named or not driver or not statement or not quoted:
+                continue
+
+            if not faithful_quantifier(statement, quoted):
+                continue
+
+            try:
+                describes(passage, partition, dependent, quoted, None)
+            except EvidenceNotApplicable:
+                continue
+
+            accepted.append(
+                EconomicRelationship(
+                    dependent=dependent,
+                    driver=driver,
+                    statement=statement,
+                    quoted=quoted,
+                )
+            )
+
+        if not accepted:
+            return knowledge
+
+        # One claim per dependent: a reading that offered two answers
+        # for one business did not settle which it meant, and picking
+        # would be this platform choosing the claim it prefers.
+        by_dependent: dict[str, EconomicRelationship] = {}
+        duplicated: set[str] = set()
+
+        for relationship in accepted:
+            if relationship.dependent in by_dependent:
+                duplicated.add(relationship.dependent)
+            else:
+                by_dependent[relationship.dependent] = relationship
+
+        return replace(
+            knowledge,
+            relationships=tuple(
+                relationship
+                for dependent, relationship in by_dependent.items()
+                if dependent not in duplicated
+            ),
         )
 
     async def _with_revenue_mix(

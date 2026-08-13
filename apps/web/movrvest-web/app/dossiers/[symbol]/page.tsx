@@ -1788,16 +1788,34 @@ function BusinessUnderstandingCard({
       {business.segments.length > 0 ? (
         <ul className="mt-4 space-y-1.5">
           {business.segments.map((segment) => (
-            <li
-              key={segment.name}
-              className="flex items-baseline justify-between gap-3 text-sm"
-            >
-              <span className="text-slate-700">{segment.name}</span>
-              <span className="shrink-0 tabular-nums text-slate-500">
-                {segment.share === null
-                  ? "unmeasured"
-                  : `${(segment.share * 100).toFixed(1)}%`}
-              </span>
+            <li key={segment.name} className="text-sm">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-slate-700">{segment.name}</span>
+                <span className="shrink-0 tabular-nums text-slate-500">
+                  {segment.share === null
+                    ? "unmeasured"
+                    : `${(segment.share * 100).toFixed(1)}%`}
+                </span>
+              </div>
+              {segment.depends ? (
+                /* The filer's own claim, worded by the backend with its
+                   degree intact; the verbatim span rides in the tooltip
+                   so a reader can check the platform against the filer.
+                   Rendered only where stated — a segment without one
+                   shows nothing, never "independent". */
+                <p
+                  className="mt-0.5 text-xs leading-5 text-slate-500"
+                  title={segment.dependsQuoted ?? undefined}
+                >
+                  {segment.depends}
+                  {segment.dependsSupport ? (
+                    <span className="text-slate-400">
+                      {" "}
+                      ({segment.dependsSupport})
+                    </span>
+                  ) : null}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>

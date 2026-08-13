@@ -31,6 +31,18 @@ category corroboration) and the dossier-fidelity slices are NOT
 started**; their grounds are `EVIDENCE_PROPORTIONALITY.md` and
 `EQUITY_DOSSIER_FIDELITY.md`.
 
+**ED1, briefly** (2026-08-13): `EconomicRelationship` inside Business
+Understanding — the filer's own stated dependence of one business on
+another, quantifiers intact, consensus over asked readings, schema 13
+with a cross-schema read that keeps the 12-corpus valid,
+decision-neutral by test, rendered on the equity dossier's segments.
+⛔ **BLOCKED on OpenAI credits for live acceptance**: once Marcos
+funds the account, run `movrvest observe VOW3.DE`, `movrvest observe
+CAT`, `movrvest observe DIS` — five readings each; the consensus and
+dossier then render whatever the readings establish, with no further
+code change. CAT's verdict is genuinely open. DIS must stay empty
+(the control).
+
 Merged since the last handoff, in order:
 
 | PR | What |

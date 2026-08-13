@@ -222,6 +222,7 @@ def test_a_wordless_segment_is_asked_against_the_untagged_prose() -> None:
                 "quoted": "conçoit et vend des turbines industrielles",
                 "revenue_models": ["manufacturing"],
             },
+            {"relationships": []},  # the relationship ask: none stated
         ]
     )
 
@@ -243,7 +244,8 @@ def test_a_wordless_segment_is_asked_against_the_untagged_prose() -> None:
     assert "untagged report text" in segment.description.repair.first_refused_because
 
     # The supplemental ask carried its own contract, not the repair's.
-    assert provider.requests[-1].system_prompt == SUPPLEMENTAL_SYSTEM_PROMPT
+    # It is the second-to-last request: the relationship ask follows it.
+    assert provider.requests[-2].system_prompt == SUPPLEMENTAL_SYSTEM_PROMPT
 
 
 def test_a_span_the_prose_does_not_print_is_refused() -> None:
@@ -256,6 +258,7 @@ def test_a_span_the_prose_does_not_print_is_refused() -> None:
                 "quoted": "designs and sells industrial turbines",
                 "revenue_models": ["manufacturing"],
             },
+            {"relationships": []},
         ]
     )
 
@@ -279,6 +282,7 @@ def test_an_honest_empty_supplemental_answer_is_recorded_with_both_reasons() -> 
             PRIMARY_PAYLOAD,
             EMPTY_FOLLOW_UP,
             {"quoted": "", "revenue_models": []},
+            {"relationships": []},
         ]
     )
 
@@ -299,7 +303,9 @@ def test_a_document_without_untagged_prose_is_never_asked_the_question() -> None
     """The EDGAR shape: no unstructured text, no supplemental request.
     Two asks — the primary and the by-name follow-up — and no third."""
 
-    provider = ScriptedProvider([PRIMARY_PAYLOAD, EMPTY_FOLLOW_UP])
+    provider = ScriptedProvider(
+        [PRIMARY_PAYLOAD, EMPTY_FOLLOW_UP, {"relationships": []}]
+    )
 
     knowledge = asyncio.run(
         CompanyKnowledgeExtractor(provider).extract(
@@ -308,12 +314,16 @@ def test_a_document_without_untagged_prose_is_never_asked_the_question() -> None
         )
     )
 
-    assert len(provider.requests) == 2
+    # The primary pass, the by-name follow-up, and the relationship ask
+    # — no supplemental description request without untagged prose.
+    assert len(provider.requests) == 3
     assert knowledge.segments[0].description is None
 
 
 def test_a_name_the_untagged_prose_never_uses_is_answered_without_a_model() -> None:
-    provider = ScriptedProvider([PRIMARY_PAYLOAD, EMPTY_FOLLOW_UP])
+    provider = ScriptedProvider(
+        [PRIMARY_PAYLOAD, EMPTY_FOLLOW_UP, {"relationships": []}]
+    )
 
     knowledge = asyncio.run(
         CompanyKnowledgeExtractor(provider).extract(
@@ -322,8 +332,9 @@ def test_a_name_the_untagged_prose_never_uses_is_answered_without_a_model() -> N
         )
     )
 
-    # No third request was spent on a passage that does not exist.
-    assert len(provider.requests) == 2
+    # No supplemental request was spent on a passage that does not
+    # exist; the one extra ask is the relationship question.
+    assert len(provider.requests) == 3
     assert "prints no prose around the filer's own uses" in (
         knowledge.segments[0].undescribed_because or ""
     )

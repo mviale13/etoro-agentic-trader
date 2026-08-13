@@ -407,6 +407,12 @@ export interface DossierSegment {
   unmeasuredBecause: string | null;
   earns: readonly string[];
   earnsBecause: string | null;
+  /** The filer's stated economic dependence of this business on
+      another, worded by the backend with the filer's own degree
+      intact. Null is an evidence state, never independence. */
+  depends: string | null;
+  dependsQuoted: string | null;
+  dependsSupport: string | null;
 }
 
 /** One way the business earns, and how much of it earns that way. */
@@ -1623,6 +1629,18 @@ function parseBusinessUnderstanding(
         earnsBecause: optionalString(
           segment.earns_because,
           `understanding.business.segments[${index}].earns_because`,
+        ),
+        depends: optionalString(
+          segment.depends,
+          `understanding.business.segments[${index}].depends`,
+        ),
+        dependsQuoted: optionalString(
+          segment.depends_quoted,
+          `understanding.business.segments[${index}].depends_quoted`,
+        ),
+        dependsSupport: optionalString(
+          segment.depends_support,
+          `understanding.business.segments[${index}].depends_support`,
         ),
       };
     }),

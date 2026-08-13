@@ -91,6 +91,9 @@ def _business(understanding: BusinessUnderstanding) -> BusinessUnderstandingResp
                 unmeasured_because=segment.unmeasured_because,
                 earns=[model.value for model in segment.mechanisms],
                 earns_because=segment.mechanisms_because,
+                depends=segment.depends_stated,
+                depends_quoted=segment.depends_quoted,
+                depends_support=segment.depends_support,
             )
             for segment in understanding.sells
         ],

@@ -127,6 +127,20 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A business can state what drives another business** (2026-08-13,
+  ED1 — Business Economic Relationships,
+  [`architecture/ECONOMIC_DRIVER_DEPENDENCY.md`](architecture/ECONOMIC_DRIVER_DEPENDENCY.md)
+  §8). Revenue diversity is not driver diversity: `EconomicRelationship`
+  now lives on the observation — filer-stated only, never inferred from
+  names or intersegment revenue, quantifiers guarded by a validator,
+  settled by consensus over the readings that were *asked* (schema 13's
+  cross-schema read keeps the schema-12 corpus valid), decision-neutral
+  by construction and by test, and rendered on the dossier's segment
+  list with the verbatim span. **Live acceptance awaits funded
+  re-observation** — the OpenAI account ran out of credits on all four
+  attempts; `movrvest observe VOW3.DE|CAT|DIS` completes it with no
+  code change.
+
 - **A named segment is asked against the prose its filer actually
   printed** (2026-08-13, E1 — Non-US Business Description Acquisition,
   [`architecture/EVIDENCE_PROPORTIONALITY.md`](architecture/EVIDENCE_PROPORTIONALITY.md)

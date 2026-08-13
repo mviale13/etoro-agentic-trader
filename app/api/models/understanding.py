@@ -38,6 +38,15 @@ class SegmentResponse(BaseModel):
     earns: list[str]
     earns_because: str | None
 
+    #: The filer's stated economic dependence of this business on
+    #: another, already worded for the investor with the filer's own
+    #: degree intact — plus the verbatim span and the agreement width.
+    #: All three null in the ordinary case, which is an evidence state
+    #: and never a finding of independence.
+    depends: str | None = None
+    depends_quoted: str | None = None
+    depends_support: str | None = None
+
 
 class MechanismResponse(BaseModel):
     """One way the business earns, and how much of it earns that way."""

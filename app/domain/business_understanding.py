@@ -70,6 +70,17 @@ class SellsThrough:
     mechanisms: tuple[RevenueModel, ...]
     mechanisms_because: str | None
 
+    #: The filer's stated economic dependence of this business on
+    #: another, worded for the investor with the filer's own degree
+    #: intact, with the verbatim span and the agreement width beside
+    #: it. None is the ordinary state and an evidence state — Disney's
+    #: independent businesses and a filing that states nothing read
+    #: identically, deliberately: absence of a stated dependence is
+    #: never rendered as a finding of independence.
+    depends_stated: str | None = None
+    depends_quoted: str | None = None
+    depends_support: str | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class RevenueMechanism:
