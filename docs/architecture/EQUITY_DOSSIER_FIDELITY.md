@@ -258,6 +258,13 @@ Only where the sentence completes. Ranked to match §3; none started.
 F2 (decision on the un-earned playbook) is deliberately **not** a slice
 candidate here: rerouting the decision's analyst selection changes live
 decisions and is a ruling of its own, on top of F1's visibility slice.
+**Measured 2026-08-13**
+([`DECISION_CONVERGENCE_MEASUREMENT.md`](DECISION_CONVERGENCE_MEASUREMENT.md)):
+the side-by-side counterfactual moved no score, committee, conviction
+or decision anywhere in the corpus — the convergence gap is labels and
+applicability, not decisions — so F2's rerouting half is *not*
+justified today, and this document's slice 1 remains the whole of the
+investor-facing value.
 F7–F10 are wording/consistency defects a slice above would either
 absorb or expose for individual repair.
 
