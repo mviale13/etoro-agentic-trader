@@ -127,6 +127,28 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **DA1's research step: Volkswagen describes itself at its own
+  altitude, and a brand name blocks it** (2026-08-13, research only —
+  [`architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md`](architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md),
+  harness `tools/description_ownership.py`). DA1 (hierarchical
+  description ownership) was scoped on the premise that VW describes its
+  passenger-car business only at a parent altitude. **The document
+  refutes it**: the filer writes *"Im Segment Pkw und leichte
+  Nutzfahrzeuge … Schwerpunkte der Geschäftstätigkeit sind die
+  Entwicklung von Fahrzeugen … die Produktion und der Vertrieb"* — a
+  description of the business under the reportable segment's own name.
+  It is refused because **"die Marke Volkswagen Nutzfahrzeuge" — a
+  *brand* — is read as a naming of the sibling *segment***, re-partitioning
+  the passage mid-description. Removing that one naming and nothing else
+  flips the sentence to ACCEPTED at 127 characters. The filer's
+  hierarchy *is* explicit and quotable (*umfasst* / *entspricht*), and
+  it is **not needed**; carrying the parent's mechanism set would attach
+  the sibling's `services` to 75.9% of revenue, the exact hazard the
+  ruling named. **DA1 was not built.** The smallest supported change is a
+  sharpening of the existing partition — a segment name inside a longer
+  proper name is not a naming — which strengthens ownership rather than
+  weakening it, and needs its own ruling.
+
 - **Role-aware archetype selection: measured, and refuted**
   (2026-08-13, research only —
   [`architecture/ROLE_AWARE_ARCHETYPE_MEASUREMENT.md`](architecture/ROLE_AWARE_ARCHETYPE_MEASUREMENT.md),

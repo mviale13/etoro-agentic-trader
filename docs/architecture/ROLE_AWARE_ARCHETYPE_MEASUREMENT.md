@@ -376,7 +376,13 @@ segment**. A verdict that can be produced by one segment wearing two
 tags is not a statement about a company having several businesses.
 
 **8. What is the smallest production rule change supported by the
-evidence?** **None is supported today.** The relationship-aware change
+evidence?** *(Refined 2026-08-13 by DA1's research step —
+[`DESCRIPTION_OWNERSHIP_ALTITUDE.md`](DESCRIPTION_OWNERSHIP_ALTITUDE.md):
+the description-altitude repair named below turned out **not** to be an
+altitude repair at all. Volkswagen describes the segment under its own
+name, and the sentence is refused because a **brand** — "die Marke
+Volkswagen Nutzfahrzeuge" — is read as a naming of the sibling segment.)*
+**None is supported today.** The relationship-aware change
 this experiment was convened to evaluate moves nothing and is not worth
 shipping on this corpus. The co-riding defect is real, but no candidate
 rule tested improves the corpus without losing a correct answer: a rule
