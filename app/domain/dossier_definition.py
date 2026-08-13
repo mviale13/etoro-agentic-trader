@@ -66,10 +66,20 @@ class DossierDefinition:
     #: What the case is called at the top of the page.
     title: str
 
-    #: The heading over the classification card: a company has a company
-    #: type, a token has an asset type, and an unclassified security is
-    #: not silently promoted to either.
+    #: The heading over the classification section — the two concepts an
+    #: investor needs held apart: where the provider files the security
+    #: (industry, context) and what kind of business this platform
+    #: established it to be (the earned playbook). A token has an asset
+    #: type instead, and an unclassified security is not silently
+    #: promoted to either.
     classification_heading: str
+
+    #: The heading over the analysis-framework card: which analysts are
+    #: asked and what the case is read for. Named as what it is — how
+    #: the security is analysed — because the frame the industry route
+    #: chose is not a classification this platform earned, and headings
+    #: that said "Company type" over it presented it as one.
+    analysis_heading: str
 
     #: What each of the five scores is called on this dossier. The names
     #: come from `score_basis`, which is the one place scores are named.
@@ -102,7 +112,8 @@ def _no_filings_because(asset_class: AssetClass) -> str:
 _EQUITY = DossierDefinition(
     kind=DossierKind.EQUITY,
     title="Equity dossier",
-    classification_heading="Company type",
+    classification_heading="Classification",
+    analysis_heading="How this security is analysed",
     score_labels=MappingProxyType(score_labels_for(AssetClass.STOCK)),
     filings_apply=True,
 )
@@ -111,6 +122,7 @@ _CRYPTO = DossierDefinition(
     kind=DossierKind.CRYPTO,
     title="Crypto dossier",
     classification_heading="Asset type",
+    analysis_heading="Asset type",
     score_labels=MappingProxyType(score_labels_for(AssetClass.CRYPTO)),
     filings_apply=False,
     filings_inapplicable_because=_no_filings_because(AssetClass.CRYPTO),
@@ -124,6 +136,7 @@ _COMMODITY = DossierDefinition(
     kind=DossierKind.GENERAL,
     title="Investment dossier",
     classification_heading="Asset type",
+    analysis_heading="Asset type",
     score_labels=MappingProxyType(score_labels_for(AssetClass.COMMODITY)),
     filings_apply=False,
     filings_inapplicable_because=_no_filings_because(AssetClass.COMMODITY),
@@ -141,6 +154,7 @@ _FUND = DossierDefinition(
     kind=DossierKind.GENERAL,
     title="Investment dossier",
     classification_heading="Investment type",
+    analysis_heading="Investment type",
     score_labels=MappingProxyType(score_labels_for(AssetClass.ETF)),
     filings_apply=False,
     filings_inapplicable_because=(
@@ -155,7 +169,8 @@ _FUND = DossierDefinition(
 _GENERAL = DossierDefinition(
     kind=DossierKind.GENERAL,
     title="Investment dossier",
-    classification_heading="Investment type",
+    classification_heading="Classification",
+    analysis_heading="How this security is analysed",
     score_labels=MappingProxyType(score_labels_for(None)),
     filings_apply=True,
 )

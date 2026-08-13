@@ -16,7 +16,11 @@ def test_a_stock_is_an_equity_dossier() -> None:
 
     assert definition.kind is DossierKind.EQUITY
     assert definition.title == "Equity dossier"
-    assert definition.classification_heading == "Company type"
+    # Two headings for two different cards. "Company type" used to sit
+    # over the industry-route playbook, presenting an analysis frame as
+    # a classification this platform never earned (EF1).
+    assert definition.classification_heading == "Classification"
+    assert definition.analysis_heading == "How this security is analysed"
     assert definition.score_labels["quality"] == "Business quality"
     assert definition.filings_apply
     assert definition.filings_inapplicable_because is None
@@ -30,6 +34,7 @@ def test_a_cryptocurrency_is_a_crypto_dossier() -> None:
     assert definition.kind is DossierKind.CRYPTO
     assert definition.title == "Crypto dossier"
     assert definition.classification_heading == "Asset type"
+    assert definition.analysis_heading == "Asset type"
 
     # A token's quality score counts network scale, liquidity, issuance
     # and age. Real measurements, none of them about a business.
@@ -76,7 +81,12 @@ def test_an_unclassified_security_gets_the_general_case() -> None:
 
         assert definition.kind is DossierKind.GENERAL, asset_class
         assert definition.title == "Investment dossier", asset_class
-        assert definition.classification_heading == "Investment type", asset_class
+        # Filings apply here, so the classification section renders for
+        # these securities too — same heading pair as an equity.
+        assert definition.classification_heading == "Classification", asset_class
+        assert definition.analysis_heading == ("How this security is analysed"), (
+            asset_class
+        )
         assert definition.filings_apply, asset_class
 
 
@@ -91,6 +101,7 @@ def test_a_fund_gets_the_general_case_with_its_own_filings_boundary() -> None:
     assert definition.kind is DossierKind.GENERAL
     assert definition.title == "Investment dossier"
     assert definition.classification_heading == "Investment type"
+    assert definition.analysis_heading == "Investment type"
     assert not definition.filings_apply
 
     reason = definition.filings_inapplicable_because or ""

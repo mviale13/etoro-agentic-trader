@@ -127,6 +127,31 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The investor sees where a company operates and what MOVRvest
+  established it to be — apart, and honestly** (2026-08-13, EF1 —
+  Industry + Earned Archetype Visibility,
+  [`architecture/EQUITY_DOSSIER_FIDELITY.md`](architecture/EQUITY_DOSSIER_FIDELITY.md)
+  §7). The equity dossier gains a Classification section carrying two
+  concepts that were previously conflated: **Industry** — the provider's
+  own category, dated, preserved as context ("Semiconductors" is never
+  promoted to filing-grounded) — and the **Investment playbook** — the
+  grounded selection over Business Understanding, in exactly one of
+  three states: established (JPM reads *Diversified Business* live,
+  with what the conclusion rests on), refused (VOW3.DE renders the
+  engine's own 33%-coverage sentence verbatim), or unavailable (the
+  store door's absence, worded — BNP.PA/DIS/NVDA/CAT until funded
+  re-observation restores current-schema knowledge). **"General
+  Corporate" is no longer presented as an earned classification** — it
+  heads only the analysis-framework card, now honestly titled "How this
+  security is analysed" — and the UNCLASSIFIED playbook's static
+  explanation no longer asserts the grounded route failed (it was false
+  for any security whose filing had earned an archetype). Composed at
+  the route from stored doors only (the fund-cost pattern); **visibility,
+  not routing** — a wire-level test flips the grounded conclusion from
+  absent to authoritative Bank and proves every decision field
+  byte-identical. Decision convergence remains deliberately unbuilt:
+  re-measure when a grounded bank reaches statement quorum.
+
 - **A business can state what drives another business** (2026-08-13,
   ED1 — Business Economic Relationships,
   [`architecture/ECONOMIC_DRIVER_DEPENDENCY.md`](architecture/ECONOMIC_DRIVER_DEPENDENCY.md)

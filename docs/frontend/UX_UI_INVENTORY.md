@@ -334,3 +334,34 @@ its rules
   digital-asset dossier for crypto symbols; the two compositions do not
   share an endpoint (~19ms of stored doors against ~12s of brain
   pipeline).
+
+---
+
+# EF1: the classification an investor can trust (2026-08-13)
+
+The equity dossier's playbook card was the industry route wearing a
+classification heading — a held bank read *"Not classified"* under a
+static sentence asserting the platform knew nothing, while the grounded
+route had concluded Bank
+([`../architecture/EQUITY_DOSSIER_FIDELITY.md`](../architecture/EQUITY_DOSSIER_FIDELITY.md)
+§7). What changed on the surface:
+
+- **`/dossiers/[symbol]` gains a Classification section** rendering the
+  backend's `classification` object: Industry (the provider's category,
+  dated, or its worded absence — two absences, two sentences) beside
+  Investment playbook (established / refused / unavailable, each
+  carrying the owning layer's sentence verbatim). The section closes
+  with the backend's one-sentence distinction between the concepts.
+- **The analyst-coverage card is re-headed** by the definition's new
+  `analysis_heading` ("How this security is analysed"), so "General
+  Corporate" reads as the analysis frame it is, never as an earned
+  classification.
+- **The parser refuses what it does not know**: every `stated` sentence
+  is required, and an earned-playbook state outside
+  established/refused/unavailable throws rather than defaulting — the
+  fallback-prose door stays shut. No pill and no colour grades the
+  states; an honest absence is not ranked below a conclusion.
+- Rendered-page verification (not status codes): VOW3.DE shows Auto
+  Manufacturers beside the engine's verbatim 33%-coverage refusal; JPM
+  shows "Not acquired" beside an established Diversified Business — the
+  two concepts demonstrably independent on one card.

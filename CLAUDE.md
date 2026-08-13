@@ -856,6 +856,15 @@ consumes it:
   composes `BusinessUnderstanding` and `FinancialUnderstanding` beside
   the case. No analyst consumes them and the recommendation is identical
   without them.
+- **Industry and the earned playbook are two classifications, shown
+  apart** (EF1, `EQUITY_DOSSIER_FIDELITY.md` §7) — `classification`
+  composes the provider's industry (stored door, dated, absences worded)
+  beside `select_grounded` over that read-only understanding:
+  established / refused / unavailable, never a default, and never
+  "General Corporate" — that is the analysis card's frame name, not an
+  earned classification. Decision-neutral by a wire-level test that
+  flips the grounded conclusion and asserts every decision field
+  unchanged.
 - **The conclusion is `DecisionSynthesis`** — *because / despite /
   review if / uncertainty / decision*, deterministic, from canonical
   objects only, complete with the Executive Writer disabled.

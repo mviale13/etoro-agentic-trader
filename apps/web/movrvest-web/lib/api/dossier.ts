@@ -226,6 +226,57 @@ export interface DossierPlaybook {
 }
 
 /**
+ * Where the market files this company — context, never a conclusion.
+ *
+ * The provider's own category strings, dated. Both absences arrive
+ * worded by the backend: a profile that names no industry and a profile
+ * never acquired are different facts, and this side renders whichever
+ * sentence it was sent.
+ */
+export interface DossierIndustryContext {
+  /** The one line printed large: the industry, or the backend's absence word. */
+  label: string;
+  industry: string | null;
+  sector: string | null;
+  /** The backend's own sentence for this state. Rendered verbatim. */
+  stated: string;
+  /** When this platform read it. Null where no profile was ever acquired. */
+  read: DossierProvenance | null;
+}
+
+/**
+ * The investment playbook MOVRvest established, or the honest state.
+ *
+ * Exactly one of three backend-declared states — established, refused,
+ * unavailable — each carrying the owning layer's sentence. This side
+ * renders the state it was given and classifies nothing: no industry
+ * string, default or fallback prose can turn an absence into a playbook.
+ */
+export interface DossierEarnedPlaybook {
+  /** "established" | "refused" | "unavailable" — the backend's word. */
+  state: string;
+  /** The playbook's name, only where established. Never a default. */
+  playbook: string | null;
+  /** The one line printed large: the playbook name, or the state word. */
+  label: string;
+  /** The owning layer's sentence, verbatim. */
+  stated: string;
+  /** What the conclusion rests on, worded with its count. */
+  narrowestAgreement: string | null;
+}
+
+/**
+ * Industry beside the earned playbook — two classifications, two
+ * questions, never blended and never substituted for each other.
+ */
+export interface DossierClassification {
+  industry: DossierIndustryContext;
+  playbook: DossierEarnedPlaybook;
+  /** The backend's sentence separating the two concepts. */
+  distinction: string;
+}
+
+/**
  * What kind of investment case this dossier is, declared by the backend.
  *
  * The asset-specific definition beneath the shared shell: an equity and a
@@ -238,9 +289,12 @@ export interface DossierDefinition {
   kind: string;
   /** What the case is called at the top of the page. */
   title: string;
-  /** The heading over the classification card: a company has a company
-      type, a token has an asset type. */
+  /** The heading over the classification section — industry beside the
+      earned playbook. A token has an asset type instead. */
   classificationHeading: string;
+  /** The heading over the analysis-framework card, worded as what it
+      is, so an industry-chosen frame never reads as a classification. */
+  analysisHeading: string;
   /** False where the subject publishes no filings — a property of the
       asset class, never unread work. The understanding sections are then
       not sent at all, and the reason is here. */
@@ -265,6 +319,10 @@ export interface DossierViewModel {
   action: ExecutiveActionViewModel | null;
   convictionChange: ConvictionChangeViewModel | null;
   playbook: DossierPlaybook | null;
+
+  /** Industry beside the earned playbook, each in its honest state.
+      Null where the subject is not a company. */
+  classification: DossierClassification | null;
 
   summary: string;
   expectedHoldingPeriod: string;
@@ -895,6 +953,10 @@ function parseDefinition(value: unknown): DossierDefinition {
       value.classification_heading,
       "definition.classification_heading",
     ),
+    analysisHeading: requireString(
+      value.analysis_heading,
+      "definition.analysis_heading",
+    ),
     filingsApply: requireBoolean(
       value.filings_apply,
       "definition.filings_apply",
@@ -1005,6 +1067,71 @@ function parseTokenRating(value: unknown): DossierTokenRating | null {
     pageUrl: optionalString(value.page_url, "token_rating.page_url"),
     reportUrl: optionalString(value.report_url, "token_rating.report_url"),
     read: parseProvenance(value.read, "token_rating.read"),
+  };
+}
+
+const EARNED_PLAYBOOK_STATES = new Set(["established", "refused", "unavailable"]);
+
+function parseClassification(value: unknown): DossierClassification | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "classification".');
+  }
+
+  const industry = value.industry;
+
+  if (!isRecord(industry)) {
+    throw new Error('Expected an object at "classification.industry".');
+  }
+
+  const playbook = value.playbook;
+
+  if (!isRecord(playbook)) {
+    throw new Error('Expected an object at "classification.playbook".');
+  }
+
+  const state = requireString(playbook.state, "classification.playbook.state");
+
+  // A state this side does not know is refused, not defaulted: rendering
+  // an unknown state with borrowed wording is how a fallback playbook
+  // would sneak back in.
+  if (!EARNED_PLAYBOOK_STATES.has(state)) {
+    throw new Error(
+      `Unknown earned-playbook state "${state}" at "classification.playbook.state".`,
+    );
+  }
+
+  return {
+    industry: {
+      label: requireString(industry.label, "classification.industry.label"),
+      industry: optionalString(
+        industry.industry,
+        "classification.industry.industry",
+      ),
+      sector: optionalString(industry.sector, "classification.industry.sector"),
+      // The backend's sentence is required, not defaulted: an industry
+      // string without its worded standing is exactly what this section
+      // exists to end.
+      stated: requireString(industry.stated, "classification.industry.stated"),
+      read: parseProvenance(industry.read, "classification.industry.read"),
+    },
+    playbook: {
+      state,
+      playbook: optionalString(
+        playbook.playbook,
+        "classification.playbook.playbook",
+      ),
+      label: requireString(playbook.label, "classification.playbook.label"),
+      stated: requireString(playbook.stated, "classification.playbook.stated"),
+      narrowestAgreement: optionalString(
+        playbook.narrowest_agreement,
+        "classification.playbook.narrowest_agreement",
+      ),
+    },
+    distinction: requireString(value.distinction, "classification.distinction"),
   };
 }
 
@@ -2026,6 +2153,7 @@ function parseDossier(payload: unknown): DossierViewModel {
           classified: payload.playbook.classified === true,
         }
       : null,
+    classification: parseClassification(payload.classification),
     convictionChange: isRecord(payload.conviction_change)
       ? {
           previous: requireNumber(

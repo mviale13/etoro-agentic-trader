@@ -449,20 +449,16 @@ PLAYBOOKS: dict[PlaybookKind, InvestmentPlaybook] = {
         kind=PlaybookKind.UNCLASSIFIED,
         name="Not classified",
         explanation=(
-            # Two routes reach a playbook, and this said only why the
-            # second failed — so a company whose segments and sizes were
-            # established from its own filing, and whose descriptions
-            # were not, read as one nothing had been learned about. The
-            # provider was blamed for a gap the reader had left.
-            "No playbook was chosen for this security on evidence, and "
-            "neither route reached one. The grounded route needs an "
-            "archetype established from the company's own filing, and "
-            "none was; the fallback needs an industry from this "
-            "platform's data provider, and it reports none. It is read "
-            "on the ordinary accounts, and this says so rather than "
-            "presenting the default as a decision. Whatever the filing "
-            "did establish is shown beside the case, with the reason "
-            "for anything it did not."
+            # This is the industry route's own absence and it speaks only
+            # for that route. It used to assert the grounded route had
+            # also established nothing — a static sentence, false for any
+            # security whose filing had earned an archetype (BNP.PA read
+            # it while grounded Bank). What the grounded route concluded
+            # travels per security, beside the case, never from here.
+            "No analysis lens was chosen for this security from its "
+            "reported industry: this platform's data provider reports "
+            "none for it. It is read on the ordinary accounts, and this "
+            "says so rather than presenting the default as a decision."
         ),
         priorities=(
             "Earnings growth",

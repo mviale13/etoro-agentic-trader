@@ -403,7 +403,8 @@ def test_a_dossier_declares_what_kind_of_case_it_is(
 
     assert definition["kind"] == "general"
     assert definition["title"] == "Investment dossier"
-    assert definition["classification_heading"] == "Investment type"
+    assert definition["classification_heading"] == "Classification"
+    assert definition["analysis_heading"] == "How this security is analysed"
     assert definition["filings_apply"] is True
     assert definition["filings_inapplicable_because"] is None
 
@@ -458,6 +459,11 @@ def test_a_crypto_dossier_is_a_crypto_dossier(
     assert definition["kind"] == "crypto"
     assert definition["title"] == "Crypto dossier"
     assert definition["classification_heading"] == "Asset type"
+    assert definition["analysis_heading"] == "Asset type"
+
+    # A company classification never renders over a token: the section
+    # is not sent at all rather than sent empty.
+    assert body["classification"] is None
 
     # Not applicable is not missing: the sections are absent, and the
     # reason is a property of the asset class rather than unread work.

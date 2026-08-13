@@ -15,6 +15,7 @@ import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierAgreement,
   DossierAssetProfile,
+  DossierClassification,
   DossierFundCost,
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
@@ -258,6 +259,101 @@ function TokenRating({ rating }: { rating: DossierTokenRating }) {
   );
 }
 
+/**
+ * Industry beside the earned investment playbook — two classifications,
+ * two questions, rendered apart so neither substitutes for the other.
+ *
+ * Every visible sentence arrives from the backend: the industry's
+ * standing (reported, none reported, never acquired), the playbook's
+ * state (established, refused, unavailable) and the distinction between
+ * the concepts. This side lays them out and classifies nothing — an
+ * absence renders the backend's own words, never a default.
+ */
+function Classification({
+  classification,
+  heading,
+}: {
+  classification: DossierClassification;
+  /** "Classification" on a company dossier — the backend's definition
+      words it, this side only places it. */
+  heading: string;
+}) {
+  const { industry, playbook } = classification;
+
+  return (
+    <section
+      aria-labelledby="classification-heading"
+      className="rounded-[28px] border border-slate-200 bg-white p-8"
+    >
+      <p
+        id="classification-heading"
+        className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
+      >
+        {heading}
+      </p>
+
+      <div className="mt-4 grid gap-8 sm:grid-cols-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Industry
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-slate-950">
+            {industry.label}
+          </p>
+
+          {industry.sector ? (
+            <p className="mt-1 text-sm text-slate-600">
+              Sector: {industry.sector}
+            </p>
+          ) : null}
+
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            {industry.stated}
+          </p>
+
+          {/* `age` arrives already worded with its source ("Yahoo
+              Finance, 3 days ago") — the backend's sentence, not
+              recomposed here. */}
+          {industry.read ? (
+            <p className="mt-2 text-xs text-slate-500">
+              {industry.read.age}
+              {industry.read.lastKnown ? " — the most recent reading held" : ""}
+            </p>
+          ) : null}
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Investment playbook
+          </p>
+
+          {/* No pill and no colour on any state: the backend's label and
+              sentence carry the whole claim, and a badge grading the
+              states would rank an honest absence below a conclusion. */}
+          <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-slate-950">
+            {playbook.label}
+          </p>
+
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            {playbook.stated}
+          </p>
+
+          {playbook.narrowestAgreement ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Rests on: {playbook.narrowestAgreement}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <p className="mt-6 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500">
+        {classification.distinction}
+      </p>
+    </section>
+  );
+}
+
 function Playbook({
   playbook,
   rating,
@@ -265,8 +361,10 @@ function Playbook({
 }: {
   playbook: DossierPlaybook;
   rating: DossierTokenRating | null;
-  /** "Company type" on an equity, "Asset type" on a token — the backend's
-      dossier definition words it, this side only places it. */
+  /** "How this security is analysed" on an equity, "Asset type" on a
+      token — the backend's dossier definition words it, this side only
+      places it. The analysis frame is not the earned classification;
+      that renders in its own section above. */
   heading: string;
 }) {
   return (
@@ -1586,11 +1684,18 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
           case above does not wait on it and does not depend on it. */}
       <ExecutiveNarrative symbol={dossier.symbol} />
 
+      {dossier.classification ? (
+        <Classification
+          classification={dossier.classification}
+          heading={dossier.definition.classificationHeading}
+        />
+      ) : null}
+
       {dossier.playbook ? (
         <Playbook
           playbook={dossier.playbook}
           rating={dossier.tokenRating}
-          heading={dossier.definition.classificationHeading}
+          heading={dossier.definition.analysisHeading}
         />
       ) : null}
 

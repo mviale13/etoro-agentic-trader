@@ -35,9 +35,16 @@ class DossierDefinitionResponse(BaseModel):
     #: What the case is called at the top of the page.
     title: str
 
-    #: The heading over the playbook card. A company has a company type;
-    #: a token has an asset type.
+    #: The heading over the classification section — industry beside the
+    #: earned playbook, two concepts held apart. A token has an asset
+    #: type instead.
     classification_heading: str
+
+    #: The heading over the analysis-framework card: which analysts are
+    #: asked and what the case is read for. Worded as what it is, so the
+    #: frame the industry route chose is never presented as a
+    #: classification this platform earned.
+    analysis_heading: str
 
     #: Whether filing-grade understanding belongs on this dossier. False
     #: where the subject publishes no filings — then the reason says so
@@ -710,6 +717,88 @@ class PlaybookResponse(BaseModel):
     classified: bool
 
 
+class IndustryContextResponse(BaseModel):
+    """Where the market files this company — context, never a conclusion.
+
+    The provider's own industry and sector strings, served with the
+    moment they were read. Contextual knowledge about where the company
+    operates: it does not become filing-grounded by appearing beside
+    grounded understanding, and it never substitutes for the earned
+    playbook beside it.
+    """
+
+    #: The one line a surface prints large. The industry string where the
+    #: provider reports one; the backend's own absence wording otherwise.
+    label: str
+
+    industry: str | None
+    sector: str | None
+
+    #: The backend's sentence for this state — presence or either kind of
+    #: absence (the provider reports none, or no profile was ever
+    #: acquired). Rendered verbatim.
+    stated: str
+
+    #: When this platform read it, and from where. Null where no provider
+    #: profile has been acquired at all.
+    read: ProvenanceResponse | None
+
+
+class EarnedPlaybookResponse(BaseModel):
+    """The investment playbook this platform established, or the honest state.
+
+    The grounded selection over Business Understanding — the canonical
+    two-route selector's authoritative half, read from stored knowledge
+    only. Exactly one of three states, never collapsed:
+
+    - ``established`` — a quorate understanding fired an earned rule.
+    - ``refused`` — the grounded route itself declined, with its reason.
+    - ``unavailable`` — no current reading of the company's filing is
+      held, so there is nothing to select from.
+
+    A refusal and an absence are different facts about the platform's
+    knowledge, and neither is ever dressed as a classification.
+    """
+
+    state: str
+
+    #: The playbook's investor-facing name — "Bank", "Industrial" — only
+    #: where the state is ``established``. Never a default.
+    playbook: str | None
+
+    #: The one line a surface prints large: the playbook name where
+    #: established, the backend's own state wording otherwise.
+    label: str
+
+    #: The owning layer's sentence, verbatim: the rule's reasoning where
+    #: established, the grounded route's refusal where refused, the
+    #: store's absence where unavailable.
+    stated: str
+
+    #: What the conclusion rests on, worded with its count — e.g. a claim
+    #: settled at 3 of 5. Present only where established, and only where
+    #: the understanding named one.
+    narrowest_agreement: str | None
+
+
+class ClassificationResponse(BaseModel):
+    """Industry and the earned playbook, beside each other and never blended.
+
+    Two classifications answering two questions: where the company
+    operates (the provider's category — context) and what kind of
+    economic business this platform established it to be (the earned
+    playbook — analysis). An apparent mismatch between them is
+    information, not a defect, and the section says so once.
+    """
+
+    industry: IndustryContextResponse
+    playbook: EarnedPlaybookResponse
+
+    #: The backend's own sentence separating the two concepts, rendered
+    #: once for the section.
+    distinction: str
+
+
 class ContributionResponse(BaseModel):
     """One factor a score counted, and what it was worth."""
 
@@ -902,6 +991,12 @@ class DossierResponse(BaseModel):
     #: How this security is read, and what that framework covers. Null
     #: where nothing about the security itself could be gathered.
     playbook: PlaybookResponse | None
+
+    #: Industry beside the earned playbook — the two classifications an
+    #: investor needs held apart, each in its honest state. Null where
+    #: the subject is not a company (its own sections carry its
+    #: semantics), and composed from stored evidence only.
+    classification: ClassificationResponse | None
 
     #: How far conviction moved since the last decision, and why.
     conviction_change: ConvictionChangeResponse | None

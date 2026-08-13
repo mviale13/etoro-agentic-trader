@@ -7,14 +7,17 @@ from app.api.models.asset_profile_adapter import asset_profile_response
 from app.api.models.crypto_market_adapter import crypto_market_response
 from app.api.models.crypto_playbook_adapter import crypto_playbook_response
 from app.api.models.dossier import (
+    ClassificationResponse,
     CommitteeOpinionResponse,
     CommitteeUncertaintyResponse,
     ContributionResponse,
     DerivationResponse,
     DossierDefinitionResponse,
     DossierResponse,
+    EarnedPlaybookResponse,
     EvidenceScoresResponse,
     FundCostResponse,
+    IndustryContextResponse,
     NarrativeFindingResponse,
     NarrativeOutcomeResponse,
     NarrativeResponse,
@@ -66,10 +69,12 @@ from app.domain.dossier_definition import DossierDefinition, definition_for
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
 from app.domain.playbook import InvestmentPlaybook
+from app.domain.playbook_selection import PlaybookSelection
 from app.domain.provenance import Provenance
 from app.domain.research_plan import AnalystKey
 from app.domain.score_basis import ScoreBases, ScoreBasis
 from app.domain.token_rating import TokenRating
+from app.domain.valuation_snapshot import ValuationSnapshot
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.renderers import ExecutiveBriefRenderer
@@ -79,10 +84,14 @@ from app.renderers.brief_language import (
     urgency_band,
 )
 from app.repositories.json_event_repository import JsonEventRepository
-from app.services.company_understanding_service import CompanyUnderstandingService
+from app.services.company_understanding_service import (
+    CompanyUnderstanding,
+    CompanyUnderstandingService,
+)
 from app.services.crypto_market_service import CryptoMarketService
 from app.services.crypto_playbook_service import CryptoPlaybookService
 from app.services.executive_writer_service import ExecutiveWriterService
+from app.services.playbook_mapping import select_grounded
 from app.services.protocol_fundamentals_service import (
     ProtocolFundamentalsService,
 )
@@ -481,8 +490,144 @@ def _definition(definition: DossierDefinition) -> DossierDefinitionResponse:
         kind=definition.kind.value,
         title=definition.title,
         classification_heading=definition.classification_heading,
+        analysis_heading=definition.analysis_heading,
         filings_apply=definition.filings_apply,
         filings_inapplicable_because=definition.filings_inapplicable_because,
+    )
+
+
+def _classification(
+    symbol: str,
+    definition: DossierDefinition,
+    understanding: CompanyUnderstanding | None,
+) -> ClassificationResponse | None:
+    """Industry and the earned playbook, side by side and never blended.
+
+    Composed here at the surface, the fund-cost pattern: the stored
+    fundamentals door and the understanding the route already composed,
+    consumed by no analyst, no score and no decision — the decision
+    fields in the response are computed before this exists. Null where
+    the subject is not a company: a token's and a fund's sections
+    declare their own semantics, and a company classification printed
+    over them would be a claim about a business they do not run.
+    """
+
+    if not definition.filings_apply:
+        return None
+
+    return ClassificationResponse(
+        industry=_industry_context(CachedValueProvider.stored().snapshot(symbol)),
+        playbook=_earned_playbook(understanding),
+        distinction=(
+            "Industry is where the market files this company, as the "
+            "data provider reports it. The investment playbook is what "
+            "kind of economic business this platform established from "
+            "the company's own filing. They answer different questions, "
+            "and neither substitutes for the other."
+        ),
+    )
+
+
+def _industry_context(snapshot: ValuationSnapshot) -> IndustryContextResponse:
+    """The provider's category strings, dated — or their honest absence.
+
+    Two absences, kept apart: a profile that was read and names no
+    industry (the provider's own answer) and a profile never acquired
+    (this platform's, because acquisition is explicit and no page view
+    performs it).
+    """
+
+    if snapshot.reading is None:
+        return IndustryContextResponse(
+            label="Not acquired",
+            industry=None,
+            sector=None,
+            stated=(
+                "No provider profile has been acquired for this "
+                "security, so no industry is held. Acquisition is "
+                "explicit — a page view performs none."
+            ),
+            read=None,
+        )
+
+    read = ProvenanceResponse(
+        source=snapshot.reading.source,
+        observed_at=snapshot.reading.observed_at,
+        age=snapshot.reading.stated(),
+        last_known=snapshot.reading.last_known,
+    )
+
+    if snapshot.industry is None:
+        return IndustryContextResponse(
+            label="None reported",
+            industry=None,
+            sector=snapshot.sector,
+            stated="The data provider reports no industry for this security.",
+            read=read,
+        )
+
+    return IndustryContextResponse(
+        label=snapshot.industry,
+        industry=snapshot.industry,
+        sector=snapshot.sector,
+        stated=(
+            f"The data provider files this company under "
+            f"{snapshot.industry!r} — context about where it operates, "
+            "not a conclusion from its filing."
+        ),
+        read=read,
+    )
+
+
+def _earned_playbook(
+    understanding: CompanyUnderstanding | None,
+) -> EarnedPlaybookResponse:
+    """The grounded route's answer for this company, in its honest state.
+
+    The same canonical mapping the CLI's two-route selector runs —
+    `select_grounded` over Business Understanding — applied to the
+    understanding this page already composed from the store's read-only
+    door. Three states, never collapsed and never defaulted: what was
+    established, what the route itself refused with its reason, and what
+    is not held under the current reading contract. No industry string
+    can reach this: a fallback here would recreate the substitution this
+    section exists to end.
+    """
+
+    if understanding is None or understanding.business is None:
+        absent = (
+            understanding.business_absent_because if understanding is not None else None
+        )
+
+        return EarnedPlaybookResponse(
+            state="unavailable",
+            playbook=None,
+            label="Not established",
+            stated=absent
+            or (
+                "No current reading of this company's filing is held, "
+                "so no playbook could be established from one."
+            ),
+            narrowest_agreement=None,
+        )
+
+    selection = select_grounded(understanding.business)
+
+    if not isinstance(selection, PlaybookSelection):
+        return EarnedPlaybookResponse(
+            state="refused",
+            playbook=None,
+            label="Not established",
+            stated=selection.because,
+            narrowest_agreement=None,
+        )
+
+    return EarnedPlaybookResponse(
+        state="established",
+        playbook=selection.playbook.name,
+        label=selection.playbook.name,
+        stated=selection.selected_because,
+        narrowest_agreement=selection.narrowest_agreement,
     )
 
 
@@ -748,6 +893,15 @@ async def dossier(
             if (company := brain.security_evidence(normalized_symbol)) is not None
             and company.signals.research is not None
             else None
+        ),
+        # Industry beside the earned playbook, each in its honest state.
+        # Read from the stored doors only, and consumed by nothing: the
+        # decision fields in this response are computed before this
+        # exists.
+        classification=_classification(
+            normalized_symbol,
+            definition,
+            understanding,
         ),
         decided_at=decision.decided_at,
         summary=thesis.summary,

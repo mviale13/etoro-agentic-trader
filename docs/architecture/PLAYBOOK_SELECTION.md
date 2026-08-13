@@ -196,6 +196,23 @@ keeps consuming the industry selector unchanged. The flip is a later
 slice, gated as [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md) records: a
 thicker quorate population, and this mapping proven on it first.
 
+**Visibility shipped before the flip (EF1, 2026-08-13).** The equity
+dossier now exposes this selector's grounded half — `select_grounded`
+over the understanding the page already composes read-only — beside the
+provider's industry, each in its honest state and neither substituting
+for the other
+([`EQUITY_DOSSIER_FIDELITY.md`](EQUITY_DOSSIER_FIDELITY.md) §7). The
+displayed selection reroutes nothing, by test. The decision flip stays
+gated on evidence, not architecture
+([`DECISION_CONVERGENCE_MEASUREMENT.md`](DECISION_CONVERGENCE_MEASUREMENT.md)):
+the measured counterfactual moved zero decisions, so **the convergence
+experiment is repeated when a company with an established specialised
+archetype — BANK first, BNP.PA the priority — reaches
+financial-statement quorum for the specialised question set**, comparing
+questions, applicability, evidence consumed, assessments, committees,
+conviction and decision. The two routes coexisting today is a deferred
+evidence gate, not an endorsement of two permanent analytical routes.
+
 ---
 
 ## What this selector does *not* decide (2026-08-08)

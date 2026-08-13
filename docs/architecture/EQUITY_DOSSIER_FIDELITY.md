@@ -1,10 +1,11 @@
-# Does the equity dossier tell the investor what MOVRvest knows? — measured, nothing built
+# Does the equity dossier tell the investor what MOVRvest knows? — measured, and slice 1 built
 
-**Status: research only, measured 2026-08-12 on the live API and the
-rendered pages at F1 (`59a58c2`). Nothing in this document is a mandate
-to build** (Constitution §23–24). Every claim below was read from a live
-response, a rendered page, a store, or the journal — never inferred from
-a class name.
+**Status: research measured 2026-08-12 on the live API and the rendered
+pages at F1 (`59a58c2`); slice 1 (§5.1) built 2026-08-13 as EF1 — see
+§7. The remaining findings stay measurements, not mandates**
+(Constitution §23–24). Every claim below was read from a live response,
+a rendered page, a store, or the journal — never inferred from a class
+name.
 
 The question ruled on:
 
@@ -272,7 +273,8 @@ absorb or expose for individual repair.
 
 - The UNCLASSIFIED playbook's `explanation` is a static string that
   asserts *both* routes failed; any surface that renders it inherits
-  the claim regardless of what the grounded route knows.
+  the claim regardless of what the grounded route knows. *(Repaired in
+  EF1: the sentence now speaks only for the industry route.)*
 - `trend.stated` counts consecutive same-state reviews and words it
   "Stable"; a day containing three states reads as day one of
   stability by the evening.
@@ -284,3 +286,95 @@ absorb or expose for individual repair.
   that any playbook slice must handle.
 - Dossier latency measured 6–12s per symbol on this machine (brain
   pipeline); an audit that hits five dossiers should expect a minute.
+
+---
+
+## 7. EF1 — Industry + Earned Archetype Visibility (built 2026-08-13)
+
+Slice 1 above, accepted and built. The product model it implements is a
+correction to F1's framing: **industry and business archetype are not
+competing classifications.** Industry answers *where does this company
+operate, as the market files it*; the earned playbook answers *what kind
+of economic business has this platform established, and therefore which
+analysis applies*. Both are useful; the defect was substitution, not
+coexistence.
+
+### What the dossier now carries
+
+`GET /executive/{symbol}/dossier` gains `classification` — null where
+the subject is not a company — with three parts, every visible sentence
+backend-authored:
+
+- **`industry`** — the provider's own `industry`/`sector` strings from
+  the stored fundamentals door (`CachedValueProvider.stored()`), dated
+  with the moment they were read. Two absences kept apart: *"None
+  reported"* (the profile was read and names no industry — BNP.PA) and
+  *"Not acquired"* (no profile held; acquisition is explicit and a page
+  view performs none — JPM).
+- **`playbook`** — the grounded route's answer, from `select_grounded`
+  over the `BusinessUnderstanding` the route already composes through
+  the read-only door. Exactly one of three states: **established**
+  (name, the rule's own reasoning, and what the conclusion rests on),
+  **refused** (the route's refusal verbatim — sub-quorum states the
+  count, an undecided archetype carries `undecided_because`), or
+  **unavailable** (the store door's absence sentence). No industry
+  string can reach this half, and no state serves a default.
+- **`distinction`** — one sentence separating the two concepts, worded
+  once by the backend.
+
+The definition split its heading: `classification_heading`
+("Classification") now heads this section, and the analyst-coverage card
+is headed by the new `analysis_heading` ("How this security is
+analysed") — so "General Corporate" and "Semiconductor" read as what
+they are, the analysis frame the industry route chose, never as a
+classification this platform earned. The UNCLASSIFIED playbook's static
+explanation was rewritten to speak only for the industry route (the
+false half of the old sentence was this document's first trap).
+
+### The live corpus at build time
+
+| | Industry | Investment playbook |
+|---|---|---|
+| VOW3.DE | Auto Manufacturers (Yahoo, dated) | **refused** — the engine's 33%-coverage sentence, verbatim |
+| JPM | Not acquired (reference symbol) | **established — Diversified Business**, resting on 4/5 |
+| BNP.PA | None reported (read, provider names none) | unavailable — schema-11 observations restore as absent |
+| DIS | Entertainment | unavailable — same |
+| NVDA | Semiconductors | unavailable — same |
+| CAT | Not acquired | unavailable — same |
+
+BNP.PA/DIS/NVDA/CAT are unavailable **solely because funded
+current-schema re-observation has not happened** (`movrvest observe
+SYMBOL --to 10` once credits exist); the same production path exposes
+them with no code change — proven by canonical fixtures
+(`tests/test_dossier_classification.py`): the manufacturer shape reads
+*Industrial*, the diversified shape *Diversified Business*, the bank
+shape *Bank*. Archived schema-11 knowledge is not resurrected through
+any side door.
+
+### Visibility, not routing
+
+The displayed classification reroutes nothing — no `ResearchPlan`,
+analyst, `FinancialModel`, score, committee, conviction or CIO
+recommendation. Proven behaviourally at the wire: one test serves two
+dossiers over an identical brain, flips the grounded conclusion from
+absent to authoritative Bank, and asserts every decision field
+byte-identical. The decision-convergence measurement
+([`DECISION_CONVERGENCE_MEASUREMENT.md`](DECISION_CONVERGENCE_MEASUREMENT.md))
+stands: **re-run the convergence comparison when a company with an
+established specialised archetype — BANK first, BNP.PA the priority —
+reaches financial-statement quorum for the specialised question set.**
+Until that evidence gate passes, the two analytical routes coexist by
+ruling, not by endorsement; the intended destination remains evidence →
+knowledge → understanding → earned archetype → playbook → questions →
+assessments → committees → CIO.
+
+### Recorded, not solved
+
+- The store door's absence sentence ("No filing has been read for
+  BNP.PA") does not distinguish *never read* from *read under an older
+  contract and deliberately restored as absent*. The state is honest;
+  the vocabulary is the knowledge layer's to sharpen, not this
+  surface's.
+- The narrative slot renders a provider's raw 429 as its absence text
+  (pre-existing, writer seam, flagged separately).
+- F2–F10 remain measured and unbuilt.
