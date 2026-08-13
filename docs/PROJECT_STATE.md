@@ -127,6 +127,29 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **Role-aware archetype selection: measured, and refuted**
+  (2026-08-13, research only —
+  [`architecture/ROLE_AWARE_ARCHETYPE_MEASUREMENT.md`](architecture/ROLE_AWARE_ARCHETYPE_MEASUREMENT.md),
+  harness `tools/archetype_relationship.py`, delete when ruled).
+  Asked whether ED1's economic relationships would let Volkswagen earn
+  the Industrial archetype. **They would not, and cannot**: VW refuses
+  at a *description-coverage floor* (32.5% < 50%) that sits upstream of
+  every diversity rule, because its dominant segment — 75.9% of
+  measured revenue, size unanimous 5/5 — has no established mechanism.
+  A relationship-aware counterfactual moves **zero verdicts across nine
+  companies**; it changes a verdict only where a captive covers ≥50% of
+  revenue, which no corpus company approaches. **The confusion the
+  ruling named is real and lives elsewhere**: four of four `DIVERSIFIED`
+  verdicts are ties among mechanism tags riding an *identical* segment
+  set, and Umicore is declared diversified on a tie carried by a
+  **single segment** — so `DIVERSIFIED` measures tag co-occurrence, not
+  driver diversity. Also measured: ED1's `driver` is free text at the
+  filer's own altitude and resolves to no segment, so attribution-style
+  rules are unbuildable; and a mechanical engine-count reads VW as
+  *two* independent engines. **No production rule change is supported
+  today**; VW is unblocked by description-altitude reconciliation
+  alone, which is a separate ruling.
+
 - **The investor sees where a company operates and what MOVRvest
   established it to be — apart, and honestly** (2026-08-13, EF1 —
   Industry + Earned Archetype Visibility,

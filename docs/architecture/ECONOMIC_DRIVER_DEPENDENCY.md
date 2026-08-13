@@ -182,7 +182,14 @@ latent.**
   but on weaker grounds than the filer offers: 89% dominance happens
   to outweigh an 19% segment that the filer says is not a second
   engine at all. The two justifications agree here by arithmetic
-  accident.
+  accident. **Re-measured 2026-08-13 and narrowed**: that holds only
+  where Pkw grounds `manufacturing` *alone*. Granted its own sibling
+  segment's established shape (manufacturing + retail + services), VW
+  reads **Service business** — the `services` co-tag rides all three
+  segments — and role-aware exclusion turns that into **Diversified**,
+  not Industrial
+  ([`ROLE_AWARE_ARCHETYPE_MEASUREMENT.md`](ROLE_AWARE_ARCHETYPE_MEASUREMENT.md)
+  §3).
 - **CAT** (specimen, schema-11 archive): Financial Products —
   `financial_spread, premiums`, the canonical captive ("The various
   financing plans offered by Cat Financial are designed **to support
@@ -195,7 +202,12 @@ latent.**
   on revenue diversity alone — precisely the confusion this ruling
   names. No current corpus company sits there (VW's captive is 19%
   under an 89% engine; CAT's is 6%), so the distortion is a boundary
-  waiting for a company, not a shipped wrong answer.
+  waiting for a company, not a shipped wrong answer. **The threshold is
+  now measured** — a role-aware rule changes a verdict only where the
+  captive's mechanism covers ≥50% of measured revenue
+  ([`ROLE_AWARE_ARCHETYPE_MEASUREMENT.md`](ROLE_AWARE_ARCHETYPE_MEASUREMENT.md)
+  §2), and the counterfactual over the whole corpus moves **zero**
+  verdicts.
 - **Where the confusion already shows**, two places: (1) the rendered
   meaning — VW's FS as "financial_spread, 18–19%" is indistinguishable
   in vocabulary from a bank's lending, the Zero Fake Meaning shape
