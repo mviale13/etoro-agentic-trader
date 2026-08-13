@@ -1,0 +1,322 @@
+[
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "BTC",
+  "timestamp": "2026-08-02T19:11:23.377186+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 63,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "#1238",
+  "timestamp": "2026-08-02T19:11:23.380120+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "UMI.BR",
+  "timestamp": "2026-08-02T19:11:23.382775+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "ETH",
+  "timestamp": "2026-08-02T19:11:23.385734+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "state": "PREPARE"
+  },
+  "symbol": "ETOR",
+  "timestamp": "2026-08-02T19:11:23.388520+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "SPCX",
+  "timestamp": "2026-08-02T19:11:23.391316+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 63,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "SOL",
+  "timestamp": "2026-08-02T19:11:23.394034+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "META",
+  "timestamp": "2026-08-02T19:11:23.396983+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 64,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-02T19:11:23.399605+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 60,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MSFT",
+  "timestamp": "2026-08-02T19:29:19.596376+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-02T19:29:19.602422+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 73,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "MBGL",
+  "timestamp": "2026-08-02T19:29:19.607860+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 75,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "GRE.MC",
+  "timestamp": "2026-08-02T19:29:19.612724+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 60,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MCD",
+  "timestamp": "2026-08-02T19:29:19.617870+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 61,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "state": "PREPARE"
+  },
+  "symbol": "CPNG",
+  "timestamp": "2026-08-02T19:29:19.622524+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "UUUU",
+  "timestamp": "2026-08-02T19:30:26.294371+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 65,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "NOVO-B.CO",
+  "timestamp": "2026-08-02T19:30:26.321665+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 68,
+   "rationale": "The company is attractive, but valuation does not currently support action.",
+   "state": "PREPARE"
+  },
+  "symbol": "MSTR",
+  "timestamp": "2026-08-02T19:30:26.326129+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "SOLB.BR",
+  "timestamp": "2026-08-02T19:30:26.329842+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "The company is attractive, but valuation does not currently support action.",
+   "state": "PREPARE"
+  },
+  "symbol": "MSFT",
+  "timestamp": "2026-08-02T19:49:13.081256+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 77,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-02T19:49:13.087233+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 64,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MBGL",
+  "timestamp": "2026-08-02T19:49:13.092813+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "GRE.MC",
+  "timestamp": "2026-08-02T19:49:13.097368+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "The company is attractive, but valuation does not currently support action.",
+   "state": "PREPARE"
+  },
+  "symbol": "MCD",
+  "timestamp": "2026-08-02T19:49:13.103286+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "CPNG",
+  "timestamp": "2026-08-02T19:49:13.107946+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 75,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "NOVO-B.CO",
+  "timestamp": "2026-08-02T19:49:13.112153+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "MSTR",
+  "timestamp": "2026-08-02T19:49:13.115893+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "SOLB.BR",
+  "timestamp": "2026-08-02T19:49:13.119815+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "UMI.BR",
+  "timestamp": "2026-08-02T19:52:07.407608+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 65,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "ETOR",
+  "timestamp": "2026-08-02T19:52:07.417353+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 77,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "META",
+  "timestamp": "2026-08-02T19:52:07.428457+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 76,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-02T19:52:07.432264+00:00"
+ }
+]

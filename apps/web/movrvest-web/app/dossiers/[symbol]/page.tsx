@@ -20,6 +20,7 @@ import type {
   DossierBusinessUnderstanding,
   DossierCommitteeOpinion,
   DossierCryptoMarket,
+  DossierDecisionCourse,
   DossierSupply,
   DossierCryptoPlaybook,
   DossierFinancialUnderstanding,
@@ -2230,6 +2231,103 @@ function UnevidencedNotice() {
 }
 
 /** Question 1 — what changed: the recorded history, never an invented one. */
+/**
+ * Every time the Artificial CIO changed its mind about this security.
+ *
+ * The journal has held this all along and the dossier said only
+ * "Stable": Volkswagen moved PREPARE → INVESTIGATE → RECOMMEND in five
+ * hours on 9 August, and the recorded scores say why — business quality
+ * and valuation could not be measured at the middle reading.
+ *
+ * Every sentence arrives from the backend, including the rationale the
+ * CIO recorded at the time. This component orders and labels; it
+ * computes no delta and writes no explanation. A score that stopped
+ * being measurable is not shown as a fall, because the domain does not
+ * say it was one.
+ */
+function DecisionCourse({ course }: { course: DossierDecisionCourse }) {
+  if (course.absentBecause) {
+    return (
+      <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-500">
+        {course.absentBecause}
+      </p>
+    );
+  }
+
+  if (course.transitions.length === 0) {
+    return (
+      <p className="mt-5 max-w-3xl text-sm leading-7 text-slate-500">
+        {course.stated}
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-6 max-w-3xl">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        Every recorded change
+      </p>
+
+      <p className="mt-2 text-sm leading-6 text-slate-700">{course.stated}</p>
+
+      <ol className="mt-4 space-y-4 border-l border-slate-200 pl-5">
+        {course.transitions.map((change) => (
+          <li key={`${change.at}-${change.fromState}-${change.toState}`}>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-sm font-semibold text-slate-950">
+                {change.stated}
+              </span>
+
+              <span className="text-xs text-slate-500">
+                {new Date(change.at).toLocaleString("en-GB", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+
+            {/* The sentence the CIO recorded when it took the decision,
+                never one written now about a decision taken then. */}
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {change.rationale}
+            </p>
+
+            {change.unexplained ? (
+              <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                One of these two decisions was recorded before this platform
+                kept its scores, so what moved underneath cannot be said.
+              </p>
+            ) : change.moved.length > 0 ? (
+              <ul className="mt-1.5 space-y-1">
+                {change.moved.map((line) => (
+                  <li
+                    key={line}
+                    className="flex gap-2.5 text-sm leading-6 text-slate-700"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-2.5 size-1 shrink-0 rounded-full bg-slate-400"
+                    />
+
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                No individual score differed between the two decisions.
+              </p>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function WhatChanged({ dossier }: { dossier: DossierViewModel }) {
   return (
     <section aria-labelledby="changed-heading">
@@ -2292,6 +2390,10 @@ function WhatChanged({ dossier }: { dossier: DossierViewModel }) {
             </p>
           )}
         </div>
+      ) : null}
+
+      {dossier.decisionCourse ? (
+        <DecisionCourse course={dossier.decisionCourse} />
       ) : null}
 
       {/* What to consider doing about it — a consideration, never an

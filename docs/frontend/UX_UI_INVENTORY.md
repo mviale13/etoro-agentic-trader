@@ -365,3 +365,31 @@ route had concluded Bank
   Manufacturers beside the engine's verbatim 33%-coverage refusal; JPM
   shows "Not acquired" beside an established Diversified Business — the
   two concepts demonstrably independent on one card.
+
+---
+
+# F3: why the recommendation changed (2026-08-13)
+
+The dossier's *What changed* section stated a run length and called it
+stability. VOW3.DE read "Stable — 6 consecutive reviews since
+2026-08-09" over a record holding eight state changes, three of them on
+that very date
+([`../architecture/EQUITY_DOSSIER_FIDELITY.md`](../architecture/EQUITY_DOSSIER_FIDELITY.md)
+§9). What changed on the surface:
+
+- **`/dossiers/[symbol]` gains "Every recorded change"** under *What
+  changed*: each transition with its states and convictions either side,
+  the rationale the CIO recorded **at the time**, and the scores that
+  differed — most recent first.
+- **The trend sentence no longer dates a calm that did not hold.** Where
+  the record contains changes it counts them; where the run is the whole
+  record, "Stable — N consecutive reviews since DATE" is kept.
+- **The parser requires every backend sentence** (`stated`, `rationale`)
+  and computes no delta. A score that stopped being measurable renders
+  the domain's own words — never a fall, never a zero.
+- **Absences render as absences**: a first review says it has nothing to
+  have changed from; an unchanged case says so; a transition whose
+  scores predate the journal says what cannot be said.
+- Rendered-page verification: VOW3.DE shows the three 9 August moves
+  with *"Business quality could no longer be measured (it was 62)"*, and
+  JPM — which never changed — keeps its honest "Stable".

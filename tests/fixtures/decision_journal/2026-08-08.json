@@ -1,0 +1,70 @@
+[
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 48,
+   "rationale": "No security-level analysis is available for MSFT, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 43,
+    "portfolio_fit": 53,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MSFT",
+  "timestamp": "2026-08-08T02:38:52.890954+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 48,
+   "rationale": "No security-level analysis is available for WHATEVER, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 43,
+    "portfolio_fit": 53,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "WHATEVER",
+  "timestamp": "2026-08-08T02:38:52.893207+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 66,
+    "portfolio_fit": 53,
+    "quality": 80,
+    "safety": 80,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "CALM",
+  "timestamp": "2026-08-08T02:38:52.915097+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 63,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 66,
+    "portfolio_fit": 53,
+    "quality": 80,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "WILD",
+  "timestamp": "2026-08-08T02:38:52.915536+00:00"
+ }
+]

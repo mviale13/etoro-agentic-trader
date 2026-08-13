@@ -108,6 +108,77 @@ class ConvictionChange:
 
 
 @dataclass(frozen=True, slots=True)
+class RecordedTransition:
+    """One time the Artificial CIO's decision changed, and what moved under it.
+
+    Composed from two adjacent records and from nothing else. The
+    rationale is the one the CIO recorded *at the time* — never a fresh
+    sentence written now about a decision taken then — and what moved is
+    arithmetic over the scores both records carry.
+    """
+
+    at: datetime
+
+    from_state: str
+    to_state: str
+    from_conviction: int
+    to_conviction: int
+
+    #: The rationale recorded with the later decision, verbatim.
+    rationale: str
+
+    #: Each score that measurably differed, worded — including a score
+    #: that stopped being measurable, which is not the same as one that
+    #: fell.
+    moved: tuple[str, ...] = ()
+
+    #: True where the earlier record predates the journal keeping scores,
+    #: so what moved underneath cannot be said at all.
+    unexplained: bool = False
+
+    @property
+    def stated(self) -> str:
+        """The change as the investor reads it."""
+
+        return (
+            f"{self.from_state} → {self.to_state}, "
+            f"conviction {self.from_conviction} → {self.to_conviction}"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionCourse:
+    """Every recorded change of mind about one security, and what moved.
+
+    The journal has held this the whole time — it is what the home
+    page's change feed is built from — and the dossier said only
+    "Stable". This is that record composed for the case it belongs to.
+
+    It judges nothing. Whether those decisions were *right* is the track
+    record's question, and nothing here estimates it.
+    """
+
+    symbol: str
+
+    #: How many decisions are recorded, and how many of them changed the
+    #: state. Counted, never estimated.
+    reviews: int
+    changes: int
+
+    first_recorded_at: datetime | None
+    last_recorded_at: datetime | None
+
+    #: Most recent first, so the investor reads the latest change first.
+    transitions: tuple[RecordedTransition, ...] = ()
+
+    #: The course in one sentence, worded here so no surface composes it.
+    stated: str = ""
+
+    #: Why there is no course to show. Set only where there is none.
+    absent_because: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class DecisionRecord:
     """One decision the Artificial CIO made, as it was recorded."""
 
@@ -200,6 +271,16 @@ class DecisionHistory:
         The decision passed in is today's, which is not yet in the record —
         the Brain perceived this history before the cycle began — so a run
         it continues is counted including it.
+
+        **A run is not a period.** Volkswagen's run of six reviews began
+        at 20:45 on 9 August, and earlier that same day the case had been
+        PREPARE at 15:32 and INVESTIGATE at 17:36 — three states in five
+        hours. "Stable — 6 consecutive reviews since 2026-08-09" was
+        arithmetically right about the run and told the investor the case
+        had been steady since a date on which it moved twice. So the
+        "since" claim is made only where the run *is* the whole record;
+        where the case changed before it, the run is stated as a run and
+        the changes are counted rather than hidden behind a date.
         """
 
         recorded = self.current_state
@@ -209,6 +290,18 @@ class DecisionHistory:
 
         if state is recorded:
             reviews = len(self.current_run) + 1
+            changes = self.state_changes
+
+            if changes:
+                return DecisionTrend(
+                    direction=TrendDirection.STABLE,
+                    stated=(
+                        f"{recorded.value} across the last {reviews} reviews — "
+                        f"the case changed {changes} time{'s' if changes > 1 else ''} "
+                        "before that"
+                    ),
+                )
+
             since = self.current_state_since
 
             when = f" since {since.date().isoformat()}" if since is not None else ""
@@ -306,3 +399,170 @@ class DecisionHistory:
             )
             if previous.state is not current.state
         )
+
+    def course(
+        self,
+        labels: Mapping[str, str] = SCORE_LABELS,
+    ) -> DecisionCourse:
+        """Every recorded change of mind, worded, most recent first.
+
+        `labels` names the scores the way the caller's dossier kind does,
+        exactly as `conviction_change_against` takes them: a token's
+        quality moving is an asset-quality move.
+
+        A first review has no course. It is reported as an absence with
+        the reason, because "Stable" over a run of one states a settled
+        view the record does not hold.
+        """
+
+        if not self.records:
+            return DecisionCourse(
+                symbol=self.symbol,
+                reviews=0,
+                changes=0,
+                first_recorded_at=None,
+                last_recorded_at=None,
+                absent_because=(
+                    "The Artificial CIO has recorded no decision about this "
+                    "security yet, so there is no history to compare against."
+                ),
+            )
+
+        first, last = self.records[0], self.records[-1]
+
+        if len(self.records) == 1:
+            return DecisionCourse(
+                symbol=self.symbol,
+                reviews=1,
+                changes=0,
+                first_recorded_at=first.decided_at,
+                last_recorded_at=last.decided_at,
+                absent_because=(
+                    "One review is recorded for this security, on "
+                    f"{first.decided_at.date().isoformat()}. A first review "
+                    "has nothing before it to have changed from."
+                ),
+            )
+
+        transitions = tuple(
+            reversed(
+                [
+                    self._transition(previous, current, labels)
+                    for previous, current in zip(
+                        self.records,
+                        self.records[1:],
+                        strict=False,
+                    )
+                    if previous.state is not current.state
+                ]
+            )
+        )
+
+        return DecisionCourse(
+            symbol=self.symbol,
+            reviews=len(self.records),
+            changes=len(transitions),
+            first_recorded_at=first.decided_at,
+            last_recorded_at=last.decided_at,
+            transitions=transitions,
+            stated=self._course_stated(len(transitions), first, last),
+        )
+
+    @staticmethod
+    def _course_stated(
+        changes: int,
+        first: DecisionRecord,
+        last: DecisionRecord,
+    ) -> str:
+        """The course in one sentence, counting rather than characterising."""
+
+        span = (
+            f"between {first.decided_at.date().isoformat()} and "
+            f"{last.decided_at.date().isoformat()}"
+        )
+
+        if not changes:
+            return f"The decision has not changed across the reviews recorded {span}."
+
+        return (
+            f"The decision changed {changes} time{'s' if changes > 1 else ''} {span}."
+        )
+
+    @classmethod
+    def _transition(
+        cls,
+        previous: DecisionRecord,
+        current: DecisionRecord,
+        labels: Mapping[str, str],
+    ) -> RecordedTransition:
+        """One change, with the rationale recorded at the time.
+
+        Where either record carries no scores at all, nothing is said
+        about what moved. A whole missing score set is one fact — this
+        decision predates the journal keeping them — and enumerating it
+        as five separate scores "measured again" would turn one silence
+        into five findings.
+        """
+
+        unexplained = previous.scores.is_empty or current.scores.is_empty
+
+        return RecordedTransition(
+            at=current.decided_at,
+            from_state=previous.state.value,
+            to_state=current.state.value,
+            from_conviction=previous.conviction,
+            to_conviction=current.conviction,
+            # Never reworded, and never written now: this is the sentence
+            # the CIO recorded when it took the decision.
+            rationale=current.rationale,
+            moved=(
+                ()
+                if unexplained
+                else cls._moved(previous.scores, current.scores, labels)
+            ),
+            unexplained=unexplained,
+        )
+
+    @staticmethod
+    def _moved(
+        before: RecordedScores,
+        after: RecordedScores,
+        labels: Mapping[str, str],
+    ) -> tuple[str, ...]:
+        """Which scores differed between two decisions, worded.
+
+        Four outcomes per score, and the two involving an absence are the
+        ones this exists for. A score that stopped being measurable is
+        **not** a score that fell: Volkswagen went to INVESTIGATE on 9
+        August with business quality and valuation both unmeasured, and
+        reading those absences as deterioration would report a provider
+        outage as a worse business.
+        """
+
+        moved: list[str] = []
+
+        for name, label in labels.items():
+            was = getattr(before, name)
+            now = getattr(after, name)
+
+            if was is None and now is None:
+                continue
+
+            if was is not None and now is None:
+                moved.append(f"{label} could no longer be measured (it was {was})")
+                continue
+
+            if was is None and now is not None:
+                moved.append(f"{label} could be measured again ({now})")
+                continue
+
+            if was == now:
+                continue
+
+            # Every score runs the same way, so up is better whichever
+            # one it is — the property the whole set was aligned for.
+            direction = "improved" if now > was else "fell"
+
+            moved.append(f"{label} {direction}, {was} → {now}")
+
+        return tuple(moved)

@@ -1,0 +1,716 @@
+[
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 48,
+   "rationale": "No security-level analysis is available for MSFT, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 43,
+    "portfolio_fit": 53,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MSFT",
+  "timestamp": "2026-08-09T06:04:08.862392+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 48,
+   "rationale": "No security-level analysis is available for WHATEVER, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 43,
+    "portfolio_fit": 53,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "WHATEVER",
+  "timestamp": "2026-08-09T06:04:08.864641+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 66,
+    "portfolio_fit": 53,
+    "quality": 80,
+    "safety": 80,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "CALM",
+  "timestamp": "2026-08-09T06:04:08.886824+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 63,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 66,
+    "portfolio_fit": 53,
+    "quality": 80,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "WILD",
+  "timestamp": "2026-08-09T06:04:08.887333+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "No security-level analysis is available for JPM, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 55,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "JPM",
+  "timestamp": "2026-08-09T08:22:48.797884+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 72,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 55,
+    "valuation": 25
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "AAPL",
+  "timestamp": "2026-08-09T08:23:03.684297+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "No security-level analysis is available for TRV, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 55,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "TRV",
+  "timestamp": "2026-08-09T08:23:19.964510+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 71,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 55,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-09T08:24:19.504178+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 78,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "scores": {
+    "evidence": 96,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "RECOMMEND"
+  },
+  "symbol": "NVDA",
+  "timestamp": "2026-08-09T08:24:27.559722+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "No security-level analysis is available for KO, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 55,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "KO",
+  "timestamp": "2026-08-09T08:24:35.211087+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 68,
+   "rationale": "A cryptocurrency has no business quality or valuation to assess, and this platform judges an investment case on both. Its measured risk and portfolio fit are reported, but no recommendation rests on them alone.",
+   "scores": {
+    "evidence": 71,
+    "portfolio_fit": 97,
+    "quality": null,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "BTC",
+  "timestamp": "2026-08-09T15:32:39.768730+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 71,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 55,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "BNP.PA",
+  "timestamp": "2026-08-09T15:32:39.779160+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 76,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "scores": {
+    "evidence": 87,
+    "portfolio_fit": 97,
+    "quality": 62,
+    "safety": 55,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-09T15:32:39.787339+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "UMI.BR",
+  "timestamp": "2026-08-09T15:32:39.835647+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "scores": {
+    "evidence": 71,
+    "portfolio_fit": 98,
+    "quality": 62,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "ETH",
+  "timestamp": "2026-08-09T15:32:39.842127+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "ETOR",
+  "timestamp": "2026-08-09T15:32:39.848855+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "scores": {
+    "evidence": 84,
+    "portfolio_fit": 97,
+    "quality": 40,
+    "safety": 15,
+    "valuation": 25
+   },
+   "state": "REJECT"
+  },
+  "symbol": "SPCX",
+  "timestamp": "2026-08-09T15:32:39.854741+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "A cryptocurrency has no business quality or valuation to assess, and this platform judges an investment case on both. Its measured risk and portfolio fit are reported, but no recommendation rests on them alone.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "SOL",
+  "timestamp": "2026-08-09T15:32:39.860430+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 71,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "scores": {
+    "evidence": 81,
+    "portfolio_fit": 97,
+    "quality": 62,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "META",
+  "timestamp": "2026-08-09T15:32:39.865990+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 76,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 71,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 55,
+    "valuation": null
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-09T15:32:39.874646+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "Risk exceeds the maximum permitted by policy.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 15,
+    "valuation": null
+   },
+   "state": "REJECT"
+  },
+  "symbol": "AMD",
+  "timestamp": "2026-08-09T16:14:57.494255+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "Risk exceeds the maximum permitted by policy.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 15,
+    "valuation": null
+   },
+   "state": "REJECT"
+  },
+  "symbol": "UUUU",
+  "timestamp": "2026-08-09T16:14:57.500798+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "Risk exceeds the maximum permitted by policy.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 15,
+    "valuation": null
+   },
+   "state": "REJECT"
+  },
+  "symbol": "MBGL",
+  "timestamp": "2026-08-09T16:14:57.514233+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "scores": {
+    "evidence": 76,
+    "portfolio_fit": 98,
+    "quality": 40,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "GRE.MC",
+  "timestamp": "2026-08-09T16:14:57.519285+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 55,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MCD",
+  "timestamp": "2026-08-09T16:14:57.525942+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 98,
+    "quality": null,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "CPNG",
+  "timestamp": "2026-08-09T16:14:57.533299+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 78,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "scores": {
+    "evidence": 96,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "RECOMMEND"
+  },
+  "symbol": "NOVO-B.CO",
+  "timestamp": "2026-08-09T16:14:57.540792+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "Risk exceeds the maximum permitted by policy.",
+   "scores": {
+    "evidence": 79,
+    "portfolio_fit": 98,
+    "quality": 40,
+    "safety": 15,
+    "valuation": 80
+   },
+   "state": "REJECT"
+  },
+  "symbol": "MSTR",
+  "timestamp": "2026-08-09T16:14:57.548033+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 69,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "scores": {
+    "evidence": 72,
+    "portfolio_fit": 98,
+    "quality": 40,
+    "safety": 55,
+    "valuation": 80
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "SOLB.BR",
+  "timestamp": "2026-08-09T16:14:57.554801+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 77,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "scores": {
+    "evidence": 71,
+    "portfolio_fit": 98,
+    "quality": 62,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "HYPE",
+  "timestamp": "2026-08-09T17:20:24.566550+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "scores": {
+    "evidence": 80,
+    "portfolio_fit": 98,
+    "quality": 40,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "TAO",
+  "timestamp": "2026-08-09T17:20:24.659326+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 80,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "scores": {
+    "evidence": 90,
+    "portfolio_fit": 97,
+    "quality": 80,
+    "safety": 55,
+    "valuation": 80
+   },
+   "state": "RECOMMEND"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-09T17:20:46.622631+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 73,
+   "rationale": "A cryptocurrency has no earnings to be valued against, so this platform cannot judge what it is worth. No recommendation is made without that.",
+   "scores": {
+    "evidence": 80,
+    "portfolio_fit": 97,
+    "quality": 80,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "BTC",
+  "timestamp": "2026-08-09T17:36:18.845460+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 75,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "scores": {
+    "evidence": 81,
+    "portfolio_fit": 98,
+    "quality": 62,
+    "safety": 55,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "BNP.PA",
+  "timestamp": "2026-08-09T17:36:18.853122+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "scores": {
+    "evidence": 77,
+    "portfolio_fit": 97,
+    "quality": null,
+    "safety": 55,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-09T17:36:18.861097+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 75,
+   "rationale": "A cryptocurrency has no earnings to be valued against, so this platform cannot judge what it is worth. No recommendation is made without that.",
+   "scores": {
+    "evidence": 86,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 35,
+    "valuation": null
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "SOL",
+  "timestamp": "2026-08-09T17:36:18.917456+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 74,
+   "rationale": "The company is attractive, but valuation does not currently support action.",
+   "scores": {
+    "evidence": 80,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 55,
+    "valuation": 55
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "MSFT",
+  "timestamp": "2026-08-09T18:42:10.525488+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The thesis is promising, but recommendation-level evidence is incomplete.",
+   "scores": {
+    "evidence": 74,
+    "portfolio_fit": 98,
+    "quality": 80,
+    "safety": 55,
+    "valuation": 55
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "MCD",
+  "timestamp": "2026-08-09T18:42:10.549088+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "scores": {
+    "evidence": 96,
+    "portfolio_fit": 98,
+    "quality": 40,
+    "safety": 35,
+    "valuation": 25
+   },
+   "state": "REJECT"
+  },
+  "symbol": "CPNG",
+  "timestamp": "2026-08-09T18:42:10.555607+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 78,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "scores": {
+    "evidence": 93,
+    "portfolio_fit": 82,
+    "quality": 80,
+    "safety": 55,
+    "valuation": 80
+   },
+   "state": "RECOMMEND"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-09T20:45:16.919549+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 66,
+   "rationale": "No security-level analysis is available for GLD, so there is nothing to base a decision on.",
+   "scores": {
+    "evidence": 51,
+    "portfolio_fit": 82,
+    "quality": null,
+    "safety": null,
+    "valuation": null
+   },
+   "state": "INVESTIGATE"
+  },
+  "symbol": "GLD",
+  "timestamp": "2026-08-09T21:27:53.065821+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 69,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "scores": {
+    "evidence": 84,
+    "portfolio_fit": 82,
+    "quality": 62,
+    "safety": 35,
+    "valuation": 80
+   },
+   "state": "PREPARE"
+  },
+  "symbol": "UMI.BR",
+  "timestamp": "2026-08-09T21:28:28.821293+00:00"
+ }
+]

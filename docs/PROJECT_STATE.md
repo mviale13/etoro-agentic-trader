@@ -127,6 +127,28 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **The investor can see why a recommendation changed** (2026-08-13,
+  F3 — Recorded Decision Course,
+  [`architecture/EQUITY_DOSSIER_FIDELITY.md`](architecture/EQUITY_DOSSIER_FIDELITY.md)
+  §9). The dossier told the investor VOW3.DE was *"Stable — 6
+  consecutive reviews since 2026-08-09"*; its own journal holds
+  **fourteen reviews and eight state changes**, three of them on
+  2026-08-09 — PREPARE(76) → INVESTIGATE(70) → RECOMMEND(78) in five
+  hours — and the recorded scores say why: business quality and
+  valuation **stopped being measurable** at the middle reading and were
+  measured again three hours later. `decision_course` now carries every
+  transition with the rationale the CIO recorded **at the time**,
+  verbatim, and the scores that differed; `trend_against` counts the
+  changes instead of dating a calm that did not hold, while a case that
+  genuinely never moved keeps its honest "Stable" (JPM). **A score that
+  stopped being measurable is never worded as a fall**, and a whole
+  missing score set is one silence rather than five findings. Composed
+  from the history the Brain already perceived — no store opened, no
+  fetch, no model, **zero paid calls** — and decision-neutral: 0
+  differences across every decision field on VOW3.DE, DIS and JPM, held
+  by a wire-level test that swaps the journal beneath an identical
+  brain.
+
 - **A brand named after the company no longer steals a segment's
   description** (2026-08-13, DP1 — Segment Naming Disambiguation,
   [`architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md`](architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md)
