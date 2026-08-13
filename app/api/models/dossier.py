@@ -717,6 +717,63 @@ class PlaybookResponse(BaseModel):
     classified: bool
 
 
+class RecordedTransitionResponse(BaseModel):
+    """One time the Artificial CIO changed its mind, and what moved under it.
+
+    Composed from two adjacent journal records. The rationale is the one
+    recorded *at the time*, never a sentence written now about a decision
+    taken then.
+    """
+
+    at: datetime
+
+    from_state: str
+    to_state: str
+    from_conviction: int
+    to_conviction: int
+
+    #: The change in one line, worded by the domain.
+    stated: str
+
+    #: The rationale the CIO recorded with the later decision, verbatim.
+    rationale: str
+
+    #: Each score that measurably differed, worded. A score that stopped
+    #: being measurable says so — it is not a score that fell.
+    moved: list[str]
+
+    #: True where a record predates the journal keeping scores, so what
+    #: moved underneath cannot be said. Then `moved` is empty, and that
+    #: emptiness means "cannot be said" rather than "nothing moved".
+    unexplained: bool
+
+
+class DecisionCourseResponse(BaseModel):
+    """Every recorded change of mind about this security.
+
+    The journal has held this all along — it is what the home page's
+    change feed is built from — while the dossier said only "Stable".
+    It reports what was recorded and judges none of it: whether those
+    decisions were right is the track record's question.
+    """
+
+    reviews: int
+    changes: int
+
+    first_recorded_at: datetime | None
+    last_recorded_at: datetime | None
+
+    #: Most recent first.
+    transitions: list[RecordedTransitionResponse]
+
+    #: The course in one sentence, worded by the domain.
+    stated: str
+
+    #: Why there is no course to show — a first review has nothing before
+    #: it to have changed from. Null where there is one.
+    absent_because: str | None
+
+
 class IndustryContextResponse(BaseModel):
     """Where the market files this company — context, never a conclusion.
 
@@ -1000,6 +1057,12 @@ class DossierResponse(BaseModel):
 
     #: How far conviction moved since the last decision, and why.
     conviction_change: ConvictionChangeResponse | None
+
+    #: Every recorded change of mind about this security, with the
+    #: rationale recorded at the time and what moved beneath it. Read
+    #: from the decision journal only; it reaches no score and no
+    #: decision.
+    decision_course: DecisionCourseResponse | None
 
     decided_at: datetime
 

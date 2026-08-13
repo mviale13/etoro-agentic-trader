@@ -1,0 +1,292 @@
+[
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "UUUU",
+  "timestamp": "2026-08-03T06:16:34.651521+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "The company is attractive, but valuation does not currently support action.",
+   "state": "PREPARE"
+  },
+  "symbol": "MSFT",
+  "timestamp": "2026-08-03T06:16:34.656886+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 77,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-03T06:16:34.661581+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 64,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "MBGL",
+  "timestamp": "2026-08-03T06:16:34.665629+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 65,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "GRE.MC",
+  "timestamp": "2026-08-03T06:16:34.669393+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "The company is attractive, but valuation does not currently support action.",
+   "state": "PREPARE"
+  },
+  "symbol": "MCD",
+  "timestamp": "2026-08-03T06:16:34.672939+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "CPNG",
+  "timestamp": "2026-08-03T06:16:34.676674+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 74,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "NOVO-B.CO",
+  "timestamp": "2026-08-03T06:16:34.680199+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "MSTR",
+  "timestamp": "2026-08-03T06:16:34.683389+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "SOLB.BR",
+  "timestamp": "2026-08-03T06:16:34.686454+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "BTC",
+  "timestamp": "2026-08-03T06:39:27.679268+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 50,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "#1238",
+  "timestamp": "2026-08-03T06:39:27.682334+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 56,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "UMI.BR",
+  "timestamp": "2026-08-03T06:39:27.685903+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "ETH",
+  "timestamp": "2026-08-03T06:39:27.688439+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 55,
+   "rationale": "The opportunity merits deeper research before a thesis can be prepared.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "ETOR",
+  "timestamp": "2026-08-03T06:39:27.690810+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 40,
+   "rationale": "A specialist analyst identified a veto-level risk.",
+   "state": "REJECT"
+  },
+  "symbol": "SPCX",
+  "timestamp": "2026-08-03T06:39:27.693804+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 50,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "SOL",
+  "timestamp": "2026-08-03T06:39:27.696483+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 62,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "META",
+  "timestamp": "2026-08-03T06:39:27.698987+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "The thesis is actionable in isolation, but portfolio fit is insufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-03T06:39:27.701638+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 62,
+   "rationale": "The investment case is credible, but quality conviction is not yet sufficient.",
+   "state": "PREPARE"
+  },
+  "symbol": "UMI.BR",
+  "timestamp": "2026-08-03T06:51:09.450351+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 50,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "BTC",
+  "timestamp": "2026-08-03T07:02:40.520337+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 50,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "UUUU",
+  "timestamp": "2026-08-03T07:05:59.922955+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 80,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "state": "RECOMMEND"
+  },
+  "symbol": "VOW3.DE",
+  "timestamp": "2026-08-03T07:43:25.618148+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 70,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "ZZZZ",
+  "timestamp": "2026-08-03T07:43:27.418707+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 67,
+   "rationale": "Business quality has not been measured, so the case cannot progress beyond research.",
+   "state": "INVESTIGATE"
+  },
+  "symbol": "ETH",
+  "timestamp": "2026-08-03T08:45:46.232312+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 77,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "state": "RECOMMEND"
+  },
+  "symbol": "META",
+  "timestamp": "2026-08-03T08:45:46.241672+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 80,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "state": "RECOMMEND"
+  },
+  "symbol": "DIS",
+  "timestamp": "2026-08-03T08:45:46.244432+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 75,
+   "rationale": "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+   "state": "RECOMMEND"
+  },
+  "symbol": "NOVO-B.CO",
+  "timestamp": "2026-08-03T08:46:16.548480+00:00"
+ },
+ {
+  "event_type": "executive_decision_recorded",
+  "payload": {
+   "conviction": 72,
+   "rationale": "A cryptocurrency has no earnings to be valued against, so this platform cannot judge what it is worth. No recommendation is made without that.",
+   "state": "PREPARE"
+  },
+  "symbol": "BTC",
+  "timestamp": "2026-08-03T14:19:46.936243+00:00"
+ }
+]

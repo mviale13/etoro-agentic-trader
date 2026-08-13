@@ -266,6 +266,51 @@ export interface DossierEarnedPlaybook {
 }
 
 /**
+ * One time the Artificial CIO changed its mind, and what moved under it.
+ *
+ * Every sentence arrives from the backend: the change itself, the
+ * rationale it recorded at the time, and each score that differed. This
+ * side computes no delta — a score that stopped being measurable is a
+ * different fact from one that fell, and only the domain may say which.
+ */
+export interface DossierTransition {
+  at: string;
+  fromState: string;
+  toState: string;
+  fromConviction: number;
+  toConviction: number;
+  /** The change in one line, worded by the backend. */
+  stated: string;
+  /** The rationale the CIO recorded at the time, verbatim. */
+  rationale: string;
+  /** Each score that differed, worded. Empty where `unexplained`. */
+  moved: readonly string[];
+  /** True where a record predates the journal keeping scores, so an
+      empty `moved` means "cannot be said" rather than "nothing moved". */
+  unexplained: boolean;
+}
+
+/**
+ * Every recorded change of mind about this security.
+ *
+ * It reports what was recorded and judges none of it — whether those
+ * decisions were right is the track record's question.
+ */
+export interface DossierDecisionCourse {
+  reviews: number;
+  changes: number;
+  firstRecordedAt: string | null;
+  lastRecordedAt: string | null;
+  /** Most recent first. */
+  transitions: readonly DossierTransition[];
+  /** The course in one sentence, worded by the backend. */
+  stated: string;
+  /** Why there is no course — a first review has nothing to have
+      changed from. Null where there is one. */
+  absentBecause: string | null;
+}
+
+/**
  * Industry beside the earned playbook — two classifications, two
  * questions, never blended and never substituted for each other.
  */
@@ -318,6 +363,11 @@ export interface DossierViewModel {
   trend: DecisionTrendViewModel | null;
   action: ExecutiveActionViewModel | null;
   convictionChange: ConvictionChangeViewModel | null;
+
+  /** Every recorded change of mind about this security, with the
+      rationale recorded at the time. Null only where the backend
+      predates the field. */
+  decisionCourse: DossierDecisionCourse | null;
   playbook: DossierPlaybook | null;
 
   /** Industry beside the earned playbook, each in its honest state.
@@ -1067,6 +1117,68 @@ function parseTokenRating(value: unknown): DossierTokenRating | null {
     pageUrl: optionalString(value.page_url, "token_rating.page_url"),
     reportUrl: optionalString(value.report_url, "token_rating.report_url"),
     read: parseProvenance(value.read, "token_rating.read"),
+  };
+}
+
+function parseDecisionCourse(value: unknown): DossierDecisionCourse | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "decision_course".');
+  }
+
+  const transitions = Array.isArray(value.transitions) ? value.transitions : [];
+
+  return {
+    reviews: requireNumber(value.reviews, "decision_course.reviews"),
+    changes: requireNumber(value.changes, "decision_course.changes"),
+    firstRecordedAt: optionalString(
+      value.first_recorded_at,
+      "decision_course.first_recorded_at",
+    ),
+    lastRecordedAt: optionalString(
+      value.last_recorded_at,
+      "decision_course.last_recorded_at",
+    ),
+    transitions: transitions.filter(isRecord).map((item, index) => ({
+      at: requireString(item.at, `decision_course.transitions[${index}].at`),
+      fromState: requireString(
+        item.from_state,
+        `decision_course.transitions[${index}].from_state`,
+      ),
+      toState: requireString(
+        item.to_state,
+        `decision_course.transitions[${index}].to_state`,
+      ),
+      fromConviction: requireNumber(
+        item.from_conviction,
+        `decision_course.transitions[${index}].from_conviction`,
+      ),
+      toConviction: requireNumber(
+        item.to_conviction,
+        `decision_course.transitions[${index}].to_conviction`,
+      ),
+      // The backend's own sentences are required, never defaulted: a
+      // transition without them is exactly what this section must not
+      // invent.
+      stated: requireString(
+        item.stated,
+        `decision_course.transitions[${index}].stated`,
+      ),
+      rationale: requireString(
+        item.rationale,
+        `decision_course.transitions[${index}].rationale`,
+      ),
+      moved: stringList(item.moved),
+      unexplained: item.unexplained === true,
+    })),
+    stated: requireString(value.stated, "decision_course.stated"),
+    absentBecause: optionalString(
+      value.absent_because,
+      "decision_course.absent_because",
+    ),
   };
 }
 
@@ -2154,6 +2266,7 @@ function parseDossier(payload: unknown): DossierViewModel {
         }
       : null,
     classification: parseClassification(payload.classification),
+    decisionCourse: parseDecisionCourse(payload.decision_course),
     convictionChange: isRecord(payload.conviction_change)
       ? {
           previous: requireNumber(

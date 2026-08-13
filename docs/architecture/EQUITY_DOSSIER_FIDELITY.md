@@ -112,7 +112,7 @@ decision consumes an industry classification the grounded layer has
 superseded (#1). Two generations of the product are live inside one
 decision.
 
-### F3 — "Stable" over a three-state flap, and no *why* anywhere. **[misleading, severity 3]**
+### F3 — "Stable" over a three-state flap, and no *why* anywhere. **[misleading, severity 3 — BUILT 2026-08-13, see §9]**
 
 The journal for VOW3.DE on **2026-08-09 alone** records
 PREPARE (76) → INVESTIGATE (70, *"Business quality has not been
@@ -378,3 +378,81 @@ assessments → committees → CIO.
 - The narrative slot renders a provider's raw 429 as its absence text
   (pre-existing, writer seam, flagged separately).
 - F2–F10 remain measured and unbuilt.
+
+---
+
+## 9. F3 — Why the recommendation changed (built 2026-08-13)
+
+Slice 2 of §5, built under a zero-credit constraint: every input is a
+record the platform already wrote, so nothing here needs model access.
+
+### The defect, live
+
+VOW3.DE rendered **"Stable — 6 consecutive reviews since 2026-08-09"**
+with `conviction_change: null`. Its own journal holds fourteen reviews
+and **eight state changes**, three of them on 2026-08-09 itself:
+
+| recorded | state | conviction | quality | valuation |
+|---|---|---|---|---|
+| 15:32 | PREPARE | 76 | 62 | 80 |
+| 17:36 | **INVESTIGATE** | 70 | **—** | **—** |
+| 20:45 | RECOMMEND | 78 | 80 | 80 |
+
+The stability claim was dated to the day the case moved twice, and the
+cause of the middle move — two scores that stopped being measurable —
+was recorded and never shown.
+
+### What was built
+
+- **`DecisionCourse` / `RecordedTransition`** (`app/domain/decision_history.py`):
+  every state change composed from two adjacent journal records, most
+  recent first, each carrying the rationale the CIO **recorded at the
+  time**, verbatim, and the scores that differed.
+- **`trend_against` no longer dates a calm that did not hold.** Where
+  the record contains changes, the sentence counts them —
+  *"RECOMMEND across the last 6 reviews — the case changed 8 times
+  before that"*. Where the run **is** the whole record, "Stable — N
+  consecutive reviews since DATE" is honest and is kept (JPM).
+- **`decision_course` on `GET /executive/{symbol}/dossier`**, composed
+  from the history the Brain already perceived for the cycle — no store
+  opened, no fetch, no model.
+- **A page section** under *What changed*, rendering the backend's
+  sentences and computing no delta.
+
+### The rules the wording keeps
+
+- **A score that stopped being measurable is not a score that fell.**
+  *"Business quality could no longer be measured (it was 62)"* — never a
+  zero, never a deterioration. A provider outage is not a worse
+  business, and a test asserts no such line anywhere in the journal ever
+  contains "fell" or an arrow.
+- **A whole missing score set is one silence, not five findings.** Where
+  either record predates the journal keeping scores the transition is
+  `unexplained` and `moved` is empty — the first draft enumerated five
+  scores "measured again", which turned one absence into a list.
+- **A first review is an absence, not a trend.** It renders the reason,
+  never "Stable".
+- **The rationale is quoted, never re-authored.** Nothing here writes a
+  sentence now about a decision taken then.
+
+### Measured, before → after
+
+| | before | after |
+|---|---|---|
+| VOW3.DE trend | "Stable — 6 consecutive reviews since 2026-08-09" | "RECOMMEND across the last 6 reviews — the case changed 8 times before that" |
+| DIS trend | "Stable — 6 consecutive reviews since 2026-08-09" | "…the case changed 7 times before that" |
+| JPM trend (never changed) | "Stable — 4 consecutive reviews since 2026-08-09" | **unchanged** |
+| course | absent | VOW3.DE 14 reviews / 8 changes; DIS 13/7; JPM 3/0 |
+| **decision fields** | | **0 differences** across VOW3.DE, DIS, JPM |
+
+Decision-neutrality is also held by a wire-level test that swaps the
+journal beneath an identical brain and asserts every decision field
+byte-identical.
+
+### Recorded, not fixed
+
+`JsonEventRepository` defaults to the path literal `data/events`, which
+`conftest.py`'s hermetic root cannot redirect — the
+[`HERMETIC_EVIDENCE.md`](HERMETIC_EVIDENCE.md) shape. This slice
+declared the path in its own tests rather than changing the production
+default, which is a separate ruling.

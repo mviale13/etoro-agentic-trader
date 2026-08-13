@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,7 @@ from app.api.models.dossier import (
     CommitteeOpinionResponse,
     CommitteeUncertaintyResponse,
     ContributionResponse,
+    DecisionCourseResponse,
     DerivationResponse,
     DossierDefinitionResponse,
     DossierResponse,
@@ -26,6 +28,7 @@ from app.api.models.dossier import (
     PlaybookResponse,
     ProvenanceResponse,
     RatingDimensionResponse,
+    RecordedTransitionResponse,
     ScoreResponse,
     TokenRatingResponse,
 )
@@ -64,7 +67,11 @@ from app.application.workspace.portfolio_briefing_service import (
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
 from app.domain.committee.panel import Panel
-from app.domain.decision_history import ConvictionChange, DecisionTrend
+from app.domain.decision_history import (
+    ConvictionChange,
+    DecisionHistory,
+    DecisionTrend,
+)
 from app.domain.dossier_definition import DossierDefinition, definition_for
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
@@ -370,6 +377,49 @@ def _playbook(playbook: InvestmentPlaybook | None) -> PlaybookResponse | None:
             if analyst in playbook.analysts or analyst in declined
         ],
         classified=playbook.is_classified,
+    )
+
+
+def _decision_course(
+    history: DecisionHistory,
+    labels: Mapping[str, str],
+) -> DecisionCourseResponse:
+    """Every recorded change of mind about this security, worded by the domain.
+
+    Composed from the history the Brain already perceived for this cycle
+    — the same records the pipeline decided against — so this adds no
+    store read, no fetch and no model call to a page view. It reaches no
+    score and no decision: the case above was decided before this
+    exists.
+
+    `labels` are the dossier definition's own score names, so a token's
+    quality moving reads as an asset-quality move rather than a
+    business-quality one.
+    """
+
+    course = history.course(labels)
+
+    return DecisionCourseResponse(
+        reviews=course.reviews,
+        changes=course.changes,
+        first_recorded_at=course.first_recorded_at,
+        last_recorded_at=course.last_recorded_at,
+        transitions=[
+            RecordedTransitionResponse(
+                at=transition.at,
+                from_state=transition.from_state,
+                to_state=transition.to_state,
+                from_conviction=transition.from_conviction,
+                to_conviction=transition.to_conviction,
+                stated=transition.stated,
+                rationale=transition.rationale,
+                moved=list(transition.moved),
+                unexplained=transition.unexplained,
+            )
+            for transition in course.transitions
+        ],
+        stated=course.stated,
+        absent_because=course.absent_because,
     )
 
 
@@ -888,6 +938,15 @@ async def dossier(
         trend=_trend(thesis.trend),
         action=_action(workspace.action),
         conviction_change=_conviction_change(thesis.conviction_change),
+        # What the CIO decided before, and what moved each time it
+        # changed its mind. Read from the history the Brain already
+        # perceived for this cycle, so this opens no store and adds no
+        # fetch to a page view; composed after the decision it describes
+        # and consumed by none of it.
+        decision_course=_decision_course(
+            brain.decision_history_for(normalized_symbol),
+            definition.score_labels,
+        ),
         playbook=_playbook(
             company.signals.research.playbook
             if (company := brain.security_evidence(normalized_symbol)) is not None
