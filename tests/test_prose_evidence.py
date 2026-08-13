@@ -569,3 +569,132 @@ def test_an_empty_span_is_refused_before_structure_is_consulted() -> None:
         )
 
     assert "no words at all" in str(refused.value)
+
+
+# ── DP1: the filer's own name inside a segment's name ───────────────
+#
+# Measured on Volkswagen. Its report writes the brand "Volkswagen
+# Nutzfahrzeuge" fourteen times, and the partition read every one as the
+# document turning to speak about the reportable segment
+# `Nutzfahrzeuge` — including one inside the sentence describing `Pkw
+# und leichte Nutzfahrzeuge`, three-quarters of the company. The prose
+# below is that shape, not that document.
+
+BRANDED = (
+    "Im Segment Pkw und leichte Nutzfahrzeuge werden im Wesentlichen die "
+    "Pkw-Marken sowie die Marke Volkswagen Nutzfahrzeuge des Konzerns "
+    "konsolidiert. Schwerpunkte der Geschaeftstaetigkeit sind die "
+    "Entwicklung und die Produktion von Fahrzeugen. "
+    "Das Segment Nutzfahrzeuge umfasst die Produktion von Lkw und Bussen. "
+    "Die Marke Volkswagen Nutzfahrzeuge liefert ausserdem Transporter."
+)
+
+BRANDED_SEGMENTS = ("Pkw und leichte Nutzfahrzeuge", "Nutzfahrzeuge")
+
+WHAT_THE_BUSINESS_DOES = (
+    "Schwerpunkte der Geschaeftstaetigkeit sind die Entwicklung und die "
+    "Produktion von Fahrzeugen"
+)
+
+
+def test_the_filers_own_name_run_into_a_segments_name_is_one_name() -> None:
+    """The defect, and the repair, in one comparison.
+
+    Without the filer's name the partition sees the brand as the sibling
+    segment and the description is refused; with it, the sentence is
+    owned by the segment the filer printed it under.
+    """
+
+    unaware = namings(BRANDED, BRANDED_SEGMENTS)
+    aware = namings(BRANDED, BRANDED_SEGMENTS, "Volkswagen AG")
+
+    with pytest.raises(EvidenceNotApplicable, match="prints under"):
+        describes(
+            BRANDED, unaware, "Pkw und leichte Nutzfahrzeuge", WHAT_THE_BUSINESS_DOES
+        )
+
+    described = describes(
+        BRANDED, aware, "Pkw und leichte Nutzfahrzeuge", WHAT_THE_BUSINESS_DOES
+    )
+
+    assert described.under == "Pkw und leichte Nutzfahrzeuge"
+
+
+def test_the_sibling_keeps_every_naming_the_filer_actually_made() -> None:
+    """The rule withdraws the brand's namings and nothing else: the
+    segment's own sentence still belongs to it."""
+
+    aware = namings(BRANDED, BRANDED_SEGMENTS, "Volkswagen AG")
+
+    described = describes(
+        BRANDED,
+        aware,
+        "Nutzfahrzeuge",
+        "Das Segment Nutzfahrzeuge umfasst die Produktion von Lkw und Bussen",
+    )
+
+    assert described.under == "Nutzfahrzeuge"
+    assert described.distance == 0
+
+
+def test_a_pairing_the_filer_wrote_once_is_not_a_name() -> None:
+    """Recurrence is the evidence. A company name that happens to precede
+    a segment's name once is a sentence, not a brand — and the partition
+    is left alone."""
+
+    once = (
+        "The Company operates two segments. "
+        "Revenue at Volkswagen Nutzfahrzeuge rose. "
+        "Das Segment Nutzfahrzeuge umfasst die Produktion von Lkw."
+    )
+
+    assert namings(once, BRANDED_SEGMENTS) == namings(
+        once, BRANDED_SEGMENTS, "Volkswagen AG"
+    )
+
+
+def test_a_segment_named_only_inside_the_filers_name_keeps_its_namings() -> None:
+    """The safety condition, and the case it protects.
+
+    A filer that brands its divisions after itself — "Disney
+    Entertainment" — is describing the segment, not something else. The
+    rule may only ever withdraw namings, so it declines to withdraw them
+    all: a segment the document never names bare survives whole.
+    """
+
+    branded_only = (
+        "The Company operates two segments. "
+        "Disney Entertainment produces and distributes film content. "
+        "Disney Entertainment also operates streaming services. "
+        "The Sports segment operates ESPN."
+    )
+
+    segments = ("Entertainment", "Sports")
+
+    assert namings(branded_only, segments) == namings(
+        branded_only, segments, "The Walt Disney Company"
+    )
+
+
+def test_casing_establishes_nothing_here() -> None:
+    """German capitalises every noun, so a genuine naming under a common
+    noun is typographically identical to a brand. Only the filer's own
+    declared name may withdraw a naming — never the shape of the word
+    before it."""
+
+    common = (
+        "Der Konzernbereich Finanzdienstleistungen umfasst die "
+        "Kundenfinanzierung. "
+        "Der Konzernbereich Finanzdienstleistungen entspricht dem Segment. "
+        "Das Segment Nutzfahrzeuge umfasst die Produktion von Lkw."
+    )
+
+    segments = ("Finanzdienstleistungen", "Nutzfahrzeuge")
+
+    assert namings(common, segments) == namings(common, segments, "Volkswagen AG")
+
+
+def test_a_document_that_declares_no_filer_is_partitioned_exactly_as_before() -> None:
+    """The parameter is evidence, and its absence changes nothing."""
+
+    assert namings(FILING, SEGMENTS) == namings(FILING, SEGMENTS, "")

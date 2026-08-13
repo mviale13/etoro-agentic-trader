@@ -2,7 +2,9 @@
 
 The quorate cases run against the committed JPM observations in
 `data/knowledge/`, the same immutable fixture the CLI serves — no
-model, no network, fully deterministic.
+model, no network, fully deterministic. They are reached through
+`tests.reference_knowledge`, which declares that evidence explicitly
+rather than letting a store default to a path literal.
 """
 
 from __future__ import annotations
@@ -18,7 +20,6 @@ from app.domain.investment_policy import (
 from app.domain.knowledge_consensus import consensus_of
 from app.domain.portfolio_position import PortfolioPosition
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
-from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
 from app.services.entry_question import (
     MARKET_NOT_CONSUMED,
     RULE_BELOW_QUORUM,
@@ -34,6 +35,7 @@ from app.services.entry_question import (
 )
 from app.services.playbook_mapping import select_grounded
 from app.services.understanding_engine import understand
+from tests.reference_knowledge import reference_observations
 
 DECIDED_AT = datetime(2026, 8, 8, 12, 0, tzinfo=UTC)
 
@@ -77,9 +79,7 @@ def _held_jpm():
 
 
 def _jpm_observations():
-    observations = JsonCompanyKnowledgeStore().latest("JPM")
-    assert observations, "the committed JPM knowledge is the reference fixture"
-    return observations
+    return reference_observations()
 
 
 def _case(**overrides):

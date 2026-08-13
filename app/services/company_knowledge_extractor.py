@@ -871,7 +871,7 @@ class CompanyKnowledgeExtractor:
         prose = document.business_description
         named = tuple(seg.name for seg in knowledge.segments)
 
-        partition = namings(prose, named)
+        partition = namings(prose, named, document.source.company)
         owners = owning(document.business_regions, named)
 
         segments = []
@@ -1149,7 +1149,7 @@ class CompanyKnowledgeExtractor:
         try:
             described = describes(
                 passage,
-                namings(passage, named),
+                namings(passage, named, document.source.company),
                 segment.name,
                 quoted,
                 None,
@@ -1240,7 +1240,7 @@ class CompanyKnowledgeExtractor:
             # nothing — the conservative direction for this claim.
             return knowledge
 
-        partition = namings(passage, named)
+        partition = namings(passage, named, document.source.company)
 
         accepted: list[EconomicRelationship] = []
 
@@ -1511,7 +1511,11 @@ class CompanyKnowledgeExtractor:
         # The document's own naming of its segments, which partitions the
         # prose the way row labels partition a table. Computed here, once,
         # from the document — never taken from the reading.
-        partition = namings(prose, tuple(name for name in named if name))
+        partition = namings(
+            prose,
+            tuple(name for name in named if name),
+            document.source.company,
+        )
 
         # And its own structure, where it has any: the section each
         # segment is described in, which owns a description more directly

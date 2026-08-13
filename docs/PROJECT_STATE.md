@@ -127,6 +127,34 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 
 ## Recently completed
 
+- **A brand named after the company no longer steals a segment's
+  description** (2026-08-13, DP1 — Segment Naming Disambiguation,
+  [`architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md`](architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md)
+  §8). The repair DA1's research earned. `namings()` now withdraws a
+  naming when the word immediately before it is a word of the **filer's
+  own declared name**, the pairing **recurs**, and the segment is still
+  named somewhere without it — extending the principle `Naming.covers()`
+  already states, with the only other longer name a document can
+  establish. **Casing was measured and rejected**: a
+  never-lowercased-word rule suppresses 32 genuine `Konzernbereich
+  Finanzdienstleistungen` namings, because German capitalises every
+  noun. Measured across five real filings — VOW3.DE 229 → 215 namings
+  (all 14 the brand), **DIS/CAT/JPM/NVDA unchanged at 0**, and Disney's
+  Item 1 never writes "Disney Entertainment" so the case that could
+  regress does not arise (the safety condition covers it if it ever
+  does). Volkswagen's business-description sentence is now **ACCEPTED at
+  127 characters** under its own segment, while the 321- and
+  354-character spans stay refused on the untouched `NEARBY = 300`
+  bound. **Schema 14, no cross-schema read** — this changes how an
+  answer is *interpreted*, and pooling stale refusals would let the old
+  partition outvote the repair; the corpus re-reads on the next funded
+  observe. The bump also exposed and closed a real hermeticity hole: 24
+  decision tests reached JPM's committed entry through a store defaulting
+  to a path literal, and now declare it via `tests/reference_knowledge.py`
+  with the restamp **licensed by an asserted partition-stability test**.
+  Decision-neutral, proven byte-identical across three symbols.
+  ⛔ RevenueModel/archetype acceptance stays **pending on model credits**.
+
 - **DA1's research step: Volkswagen describes itself at its own
   altitude, and a brand name blocks it** (2026-08-13, research only —
   [`architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md`](architecture/DESCRIPTION_OWNERSHIP_ALTITUDE.md),

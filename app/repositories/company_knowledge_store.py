@@ -114,8 +114,34 @@ from app.repositories.source_codec import (
 #: dependence. So the question's having-been-asked is persisted per
 #: observation, a 12-entry restores with it False, and the dependence
 #: agreement is counted over asked readings only.
-KNOWLEDGE_SCHEMA_VERSION = 13
-PREVIOUS_SCHEMA_VERSION = 12
+#: 14 — the partition that decides which segment a description belongs
+#: to no longer counts the filer's own name run into a segment's name as
+#: a naming of that segment. Volkswagen writes "Volkswagen
+#: Nutzfahrzeuge" — a brand — fourteen times, and one of them sits
+#: inside the sentence describing `Pkw und leichte Nutzfahrzeuge`, so
+#: three-quarters of the company was measured at 5/5 and explained by
+#: nothing.
+#:
+#: This is the third kind of change, and the one that cannot pool.
+#: 10, 11 and 12 changed what a reading was *shown*; 13 changed what it
+#: was *asked*; 14 changes how an answer is *interpreted*. A description
+#: is accepted or refused by where the partition says it sits, so the
+#: same reading of the same text can come out the other way — and it
+#: can go either direction: withdrawing a false naming of one segment
+#: can move a span to a sibling, so a stored *acceptance* is as
+#: reinterpretable as a stored refusal.
+#:
+#: Measured before it was decided: no acceptance stored under 13
+#: actually rests on a naming this change withdraws — Volkswagen's all
+#: anchor at genuine namings, and the rule never fires on an
+#: English-language filing in the corpus. So a cross-schema read would
+#: have been *safe* here, and it is still refused: what the change
+#: mostly flips is **refusals**, and pooling five stale refusals with
+#: fresh readings would let the old partition outvote the new one on
+#: exactly the claim it was repaired for. Same reasoning as 13's asked
+#: flag, one layer up, and the conservative direction is a re-read.
+KNOWLEDGE_SCHEMA_VERSION = 14
+PREVIOUS_SCHEMA_VERSION: int | None = None
 
 #: No older schema is restored. 8 was relabeled into 9 because nothing
 #: about the reading had changed; every version since changed what the

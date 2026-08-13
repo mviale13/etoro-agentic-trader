@@ -15,7 +15,6 @@ from app.domain.investment_policy import (
 )
 from app.domain.knowledge_consensus import consensus_of
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
-from app.repositories.company_knowledge_store import JsonCompanyKnowledgeStore
 from app.repositories.investment_decision_store import (
     DECISION_SCHEMA_VERSION,
     JsonInvestmentDecisionStore,
@@ -23,6 +22,7 @@ from app.repositories.investment_decision_store import (
 from app.services.entry_question import EntryCase, decide
 from app.services.playbook_mapping import select_grounded
 from app.services.understanding_engine import understand
+from tests.reference_knowledge import reference_observations
 
 DECIDED_AT = datetime(2026, 8, 8, 12, 0, tzinfo=UTC)
 
@@ -52,7 +52,7 @@ def _portfolio(stocks=40.0):
 
 
 def _jpm_decision(decision_id="JPM.entry.0001", predecessor=None, stocks=40.0):
-    consensus = consensus_of(JsonCompanyKnowledgeStore().latest("JPM"))
+    consensus = consensus_of(reference_observations())
     understanding = understand(consensus)
     case = EntryCase(
         subject="JPM",

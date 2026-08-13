@@ -343,12 +343,25 @@ def test_relationships_round_trip_through_the_store(tmp_path) -> None:
     assert restored[0].relationships == (RELATIONSHIP,)
 
 
-def test_a_schema_12_entry_restores_with_the_question_never_asked(
+def test_an_entry_from_a_superseded_ownership_contract_does_not_restore(
     tmp_path,
 ) -> None:
-    """The cross-schema read: schema 13 changed what a reading is asked,
-    not what it is shown, so a 12-entry's claims stay valid — and its
-    empty relationships are marked never-asked, not "none found"."""
+    """DP1 ended the 12 → 13 cross-schema read, and the reason is the
+    direction of the change.
+
+    13 changed what a reading was *asked* and showed it identical text,
+    so a 12-entry's own claims stayed valid and only the new claim was
+    marked never-asked. 14 changes how an answer is *interpreted*: the
+    partition that decides which segment owns a description no longer
+    counts the filer's own name run into a segment's name. A reading
+    made under the old partition can come out the other way — and
+    mostly it comes out as an *acceptance where there was a refusal*,
+    so pooling the old refusals would let the partition this repaired
+    outvote the one that repaired it.
+
+    So an entry beneath the current version is absent, and the document
+    — immutable and still there — is read again.
+    """
 
     store = JsonCompanyKnowledgeStore(directory=tmp_path)
 
@@ -362,11 +375,25 @@ def test_a_schema_12_entry_restores_with_the_question_never_asked(
         del observed["relationships_asked"]
     entry.write_text(json.dumps(stored), encoding="utf-8")
 
+    assert store.latest("EXAM.PA") == ()
+
+
+def test_a_current_reading_carries_whether_the_question_was_asked(
+    tmp_path,
+) -> None:
+    """ED1's flag is untouched by DP1: the distinction between "asked and
+    found nothing" and "never asked" still rides on the observation, and
+    still round-trips."""
+
+    store = JsonCompanyKnowledgeStore(directory=tmp_path)
+
+    store.append(_observation(0, []))
+
     restored = store.latest("EXAM.PA")
 
     assert len(restored) == 1
     assert restored[0].relationships == ()
-    assert restored[0].relationships_asked is False
+    assert restored[0].relationships_asked is True
 
 
 def test_unasked_readings_cannot_outvote_the_filers_stated_dependence() -> None:

@@ -1,11 +1,13 @@
-# DA1 — Hierarchical Business Description Ownership: the research step, and why the slice stopped there
+# Description ownership across reporting altitude — DA1 refuted, DP1 built
 
-**Status: research only, measured 2026-08-13 at `3c57413`. DA1 was not
-built, and this document is the reason** (requirement 11 of the ruling,
-and Constitution §23–24). Harness: `tools/description_ownership.py`
-(read-only, one network fetch, no model call — delete when the ruling
-lands). Every quote below was located by search over the platform's own
-flattened reduction of the issuer's own package; none is recalled.
+**Status: DA1 measured 2026-08-13 at `3c57413` and **not** built — its
+premise is refuted by the document (§1–§5). The defect it found was
+repaired the same day as **DP1 — Segment Naming Disambiguation** (§8),
+which is built and accepted.** Harness:
+`tools/description_ownership.py` (read-only, one network fetch, no
+model call). Every quote below was located by search over the
+platform's own flattened reduction of the issuer's own package; none is
+recalled.
 
 The ruling scoped DA1 on a premise:
 
@@ -319,3 +321,151 @@ The §23 sentence this would complete:
 > Volkswagen is — today the platform holds a unanimous size for 76% of
 > its revenue, holds the filer's own sentence describing that business,
 > and reports that it understands 33% of the company.*
+
+---
+
+## 8. DP1 — Segment Naming Disambiguation (built 2026-08-13)
+
+§7's candidate, ruled on and built. One rule, in the module that already
+holds the nesting guard, extending the principle `Naming.covers()`
+already states: *a segment's words inside a longer name are that longer
+name, said once.* `covers()` knows one kind of longer name — another
+segment's. DP1 adds the only other kind the document can establish.
+
+### The discriminator, and why it is not a Volkswagen rule
+
+**A naming is withdrawn when the word immediately before it — separated
+by nothing but space — is a word of the filer's own declared name, that
+pairing recurs, and the segment is still named somewhere without it.**
+
+Three conditions, each carrying its own evidence:
+
+- **The filer's own declared name.** The one proper name a filing states
+  about itself, already carried on `PrimarySource.company` and already
+  threaded to the reader. No vocabulary, no ticker, no industry terms,
+  no company literal — the rule is *"the filer's name"* and every filing
+  has one.
+- **Recurrence** (`_A_FIXED_PAIRING = 2`). A filer that has named a
+  thing names it again. This is what separates a name from a sentence
+  that merely ran the two words together once.
+- **The segment must survive.** The rule may only withdraw namings, so
+  it may not withdraw them all: a segment the document names *only*
+  inside the filer's own longer name keeps every one, because there the
+  longer name is plainly how this filer refers to that segment. This is
+  what makes the rule safe for an issuer that brands its divisions after
+  itself — Disney's case, tested.
+
+**Casing was measured and rejected**, exactly as the ruling anticipated.
+A document-internal "the preceding word is a proper name because it is
+never lowercased" rule suppresses **32 genuine `Konzernbereich
+Finanzdienstleistungen` namings** in this filing, because German
+capitalises every noun. Only the declared name may withdraw a naming;
+the shape of a word never does.
+
+### The measurement
+
+| | Filer declares | Namings before | after | withdrawn |
+|---|---|---|---|---|
+| **VOW3.DE** | Volkswagen AG | 229 | 215 | **14** — all `Nutzfahrzeuge` |
+| DIS | Walt Disney Co | 134 | 134 | 0 |
+| CAT | CATERPILLAR INC | 19 | 19 | 0 |
+| JPM | JPMORGAN CHASE & CO | 3 | 3 | 0 |
+| NVDA | NVIDIA CORP | 12 | 12 | 0 |
+
+All 14 withdrawn namings are the brand, and every one reads as a brand
+in context — co-listed with Škoda, SEAT/CUPRA, Audi, Bentley and
+Porsche, heading delivery tables, naming plants ("Werk Hannover").
+**Disney's Item 1 never writes "Disney Entertainment"** (0 occurrences),
+so the case that could have regressed does not arise in this corpus —
+and the safety condition covers it if it ever does.
+
+### Volkswagen, before and after, on the real captured document
+
+| Span, under the segment's own name | Before | After |
+|---|---|---|
+| what the segment consolidates | ACCEPTED at 0 | ACCEPTED at 0 |
+| **what the business does** (`Schwerpunkte der Geschäftstätigkeit …`) | **REFUSED** | **ACCEPTED at 127** |
+| the parts business | REFUSED (ownership) | REFUSED — **321 chars** |
+| the product portfolio | REFUSED (ownership) | REFUSED — **354 chars** |
+| the sibling's own description | ACCEPTED at 0 | ACCEPTED at 0 |
+| financial services' own description | ACCEPTED at 22 | ACCEPTED at 22 |
+
+The two refusals that remain are the *proximity* contract, unchanged at
+`NEARBY = 300`, and they are the right answer: those sentences are
+further from the naming than a description may sit. Nothing about span
+existence, structural ownership, consensus or quorum moved.
+
+### Schema 14, and why nothing pools
+
+The versioning question, answered explicitly. This changes neither what
+a reading is *shown* (10, 11, 12) nor what it is *asked* (13): it
+changes **how an answer is interpreted**. A description is accepted or
+refused by where the partition says it sits, so the same reading of the
+same text can come out the other way — and in both directions, since
+withdrawing a false naming of one segment can move a span to a sibling.
+
+**Measured before it was decided**: no acceptance stored under 13 rests
+on a naming this change withdraws — Volkswagen's all anchor at genuine
+namings, and the rule never fires on an English-language filing in the
+corpus. So a cross-schema read would have been *safe*, and it is still
+refused: what the change mostly flips is **refusals**, and pooling five
+stale refusals with fresh readings would let the partition this repaired
+outvote the one that repaired it. Same reasoning as 13's asked-flag, one
+layer up, and the conservative direction is a re-read.
+
+`KNOWLEDGE_SCHEMA_VERSION = 14`, `PREVIOUS_SCHEMA_VERSION = None`. The
+corpus reads as unread until the next funded observe cycle — the state
+31 of 33 entries were already in.
+
+### The hermeticity hole the bump exposed
+
+Twenty-four tests in `test_entry_question.py` and
+`test_investment_decision_store.py` failed on the bump, and the reason
+was not the bump: they reached JPM's committed observations through
+`JsonCompanyKnowledgeStore()`, whose directory defaults to the path
+literal `data/knowledge`. That is the shape
+[`HERMETIC_EVIDENCE.md`](HERMETIC_EVIDENCE.md) exists to end — the call
+declared a *subject* and never an *evidence set*, so `conftest.py`'s
+hermetic root could not see it to redirect it and the suite was
+answering from whichever readings the developer's tree happened to hold.
+
+`tests/reference_knowledge.py` now declares that evidence: the committed
+entry is read by path, restamped to the current protocol inside a
+temporary directory, and served from there. **The restamp is licensed by
+a measurement, and the measurement is asserted rather than trusted** —
+`test_the_reference_entry_is_partition_stable` proves DP1 moves no
+naming in JPMorgan's document, over the observations' own text and the
+filer's own declared name. A company whose readings the partition *would*
+move must be read again, never restamped.
+
+### Decision neutrality, proven
+
+Every decision field on `/executive/{symbol}/dossier` — state,
+conviction, agreement, rationale, summary, catalysts, invalidation,
+evidence weighed, strengths, risks, missing evidence, all five scores,
+context, committees, playbook, action — is **byte-identical before and
+after DP1** across VOW3.DE, NVDA and DIS. No `ResearchPlan`, analyst,
+`FinancialModel`, score, committee, conviction or recommendation was
+touched, and ED1's `EconomicRelationship` reaches no classification.
+
+### Acceptance still pending, and what it needs
+
+The deterministic half is done and proven on the real captured document:
+the span is now legitimately available to the reader for `Pkw und
+leichte Nutzfahrzeuge`. The rest is **credit-blocked**. Which
+`RevenueModel`s that sentence yields is for an asked reading to say —
+this document does not name them, because reading *"Entwicklung …
+Produktion … Vertrieb"* into mechanisms is the `segment name →
+RevenueModel` inference the ruling forbids one level down. When funded:
+
+```bash
+movrvest observe VOW3.DE --to 10
+```
+
+and read the log for actual new asked readings — exit code 0 is not
+proof. Then let consensus settle what establishes, and let the unchanged
+archetype engine say whatever it says. **The verdict is evidence for the
+next ruling, not a target**: `ROLE_AWARE_ARCHETYPE_MEASUREMENT.md` §3
+measured that it swings between Industrial, Service business and
+Diversified depending on whether `services` arrives with it, and the
+`services` co-tag question is separately recorded and unrepaired.

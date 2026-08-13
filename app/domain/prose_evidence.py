@@ -70,6 +70,7 @@ from __future__ import annotations
 
 import re
 from bisect import bisect_left
+from collections import Counter
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -96,6 +97,21 @@ NEARBY = 300
 #: the section `Family of Apps Products`; neither string contains the
 #: other, and the parenthetical is the whole of the difference.
 _DEFINED_ABBREVIATION = re.compile(r"\s*\([^()]*\)\s*$")
+
+#: How often a filer must write `<its own name> <segment name>` before
+#: the pairing counts as one named thing rather than two words that
+#: happened to meet.
+#:
+#: Two, because the evidence being asked for is *recurrence* — a filer
+#: naming a brand uses it again, and a sentence that merely runs the
+#: company's name into a segment's does not. Volkswagen's pairing occurs
+#: fourteen times; no other pairing in the measured corpus occurs twice.
+_A_FIXED_PAIRING = 2
+
+#: Word characters in any of the corpus's languages. Deliberately not
+#: `\w`: digits and underscores are not parts of a name, and a filer's
+#: name is matched against words rather than against a substring.
+_WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
 
 
 class Ownership(StrEnum):
@@ -219,7 +235,11 @@ class DescribedSegment:
         return f'"{self.quoted}" — {where} the document\'s own "{self.under}"'
 
 
-def namings(text: str, segments: tuple[str, ...]) -> tuple[Naming, ...]:
+def namings(
+    text: str,
+    segments: tuple[str, ...],
+    entity: str = "",
+) -> tuple[Naming, ...]:
     """
     Every place this document names one of these segments, in order.
 
@@ -243,6 +263,11 @@ def namings(text: str, segments: tuple[str, ...]) -> tuple[Naming, ...]:
     defines the abbreviations — so the last of them opened a region
     that ran to the end of the document, and every description in the
     chapter was read as belonging to Asset & Wealth Management.
+
+    `entity` is the filer's own name as the document declares it, and it
+    is what lets a segment's words be recognised inside a longer name the
+    filer built out of them — see `_a_longer_name`. Absent, the partition
+    is exactly what it was.
     """
 
     flat, origins = _indexed(text)
@@ -268,7 +293,118 @@ def namings(text: str, segments: tuple[str, ...]) -> tuple[Naming, ...]:
         naming for naming in found if not any(other.covers(naming) for other in found)
     ]
 
-    return tuple(sorted(standing, key=lambda naming: naming.at))
+    borrowed = _a_longer_name(text, origins, standing, entity)
+
+    return tuple(
+        sorted(
+            (naming for naming in standing if naming not in borrowed),
+            key=lambda naming: naming.at,
+        )
+    )
+
+
+def _a_longer_name(
+    text: str,
+    origins: tuple[int, ...],
+    standing: list[Naming],
+    entity: str,
+) -> set[Naming]:
+    """The namings that are part of the filer's own longer name, not namings.
+
+    `Naming.covers` says that a segment's words inside a *longer segment
+    name* are that longer segment, said once. The same is true of a
+    longer name the filer built for something else — and Volkswagen is
+    where it was measured. Its report calls a brand "Volkswagen
+    Nutzfahrzeuge" fourteen times, and the partition read every one of
+    them as the document turning to speak about the reportable segment
+    `Nutzfahrzeuge`. One of those fourteen sits inside the sentence that
+    describes `Pkw und leichte Nutzfahrzeuge` — three-quarters of the
+    company — so the only sentence saying how that business earns was
+    attributed to its sibling and refused. The segment was measured at
+    5/5 and explained by nothing.
+
+    What may establish the longer name is deliberately narrow, because
+    the evidence has to come from the document rather than from a
+    vocabulary:
+
+    - **The filer's own declared name.** The one proper name a filing
+      states about itself, already carried on the source this reading
+      came from. A word of it, immediately before a segment's name and
+      separated only by space, is the filer writing one name.
+    - **Recurrence.** A filer that has named a thing names it again, so
+      the pairing must occur at least `_A_FIXED_PAIRING` times. This is
+      what separates a name from a sentence that merely ran the two
+      words together once.
+    - **The segment must survive.** The rule only ever withdraws
+      namings, so it may not withdraw them all: a segment the document
+      names *only* inside the filer's own longer name keeps every one,
+      because there the longer name is plainly how this filer refers to
+      that segment. This is what makes the rule safe for a filer who
+      brands its divisions after itself.
+
+    Casing establishes nothing here and is never consulted. It cannot:
+    German capitalises every noun, so "Konzernbereich
+    Finanzdienstleistungen" — a genuine naming, thirty-two times over —
+    is typographically identical to a brand. Measured before it was
+    ruled out.
+    """
+
+    if not entity.strip():
+        return set()
+
+    identity = {word.casefold() for word in _WORD.findall(entity)}
+
+    if not identity:
+        return set()
+
+    pairings: dict[tuple[str, str], list[Naming]] = {}
+    bare: Counter[str] = Counter()
+
+    for naming in standing:
+        preceding = _preceding_word(text, origins, naming)
+
+        if preceding is not None and preceding.casefold() in identity:
+            pairings.setdefault((naming.segment, preceding.casefold()), []).append(
+                naming
+            )
+        else:
+            bare[naming.segment] += 1
+
+    return {
+        naming
+        for (segment, _), paired in pairings.items()
+        if len(paired) >= _A_FIXED_PAIRING and bare[segment]
+        for naming in paired
+    }
+
+
+def _preceding_word(
+    text: str,
+    origins: tuple[int, ...],
+    naming: Naming,
+) -> str | None:
+    """The word immediately before this naming, or nothing between them.
+
+    Read from the original text rather than the normalised form, because
+    the whole question is what the filer printed *between* the two words:
+    one space makes a name, and a full stop makes two sentences.
+    """
+
+    if naming.at >= len(origins):
+        return None
+
+    before = text[: origins[naming.at]]
+    gap = before[len(before.rstrip()) :]
+
+    if before.rstrip() == before or gap.strip():
+        return None
+
+    words: list[str] = _WORD.findall(before)
+
+    if not words or not before.rstrip().endswith(words[-1]):
+        return None
+
+    return words[-1]
 
 
 def _named(segment: str) -> tuple[str, ...]:

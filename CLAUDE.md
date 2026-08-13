@@ -184,15 +184,25 @@ a security never acquired has no price rather than a stale-looking one.
 Acquisition is `movrvest acquire` and `movrvest observe`; a fresh clone
 shows absences until one of them is run, which is what it is.
 
+A description is owned by the segment the filer printed it under, and
+**a longer name built out of a segment's words is that longer name,
+said once** — `Naming.covers()` for another segment's name, and DP1 for
+the filer's own (Volkswagen writes the brand *"Volkswagen
+Nutzfahrzeuge"* 14 times, and one of them sat inside the sentence
+describing a segment worth 75.9% of revenue). A naming is withdrawn only
+where the preceding word belongs to the **filer's declared name**, the
+pairing **recurs**, and the segment survives named elsewhere; casing
+establishes nothing, because German capitalises every noun.
+
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see
 [`docs/architecture/KNOWLEDGE_CONSENSUS.md`](docs/architecture/KNOWLEDGE_CONSENSUS.md)
-(accepted). The store holds `CompanyKnowledgeObservation`s (schema 13
-since ED1: E1 widened what a reading is *shown* — untagged report
-prose for wordless named segments — and ED1 widened what it is
-*asked* — a filer-stated economic dependence between businesses, with
-schema-12 entries restoring as never-asked rather than re-read;
-append-only); `consensus_of` derives on read; the decision path consumes
+(accepted). The store holds `CompanyKnowledgeObservation`s (**schema 14
+since DP1**: E1 widened what a reading is *shown*, ED1 widened what it
+is *asked*, and DP1 changed how an answer is *interpreted* — the
+ownership partition — which is the kind that **cannot** pool, so there
+is no cross-schema read and the corpus re-reads on the next funded
+observe; append-only); `consensus_of` derives on read; the decision path consumes
 `CompanyKnowledgeConsensus` only. Financial statement facts are their
 own observation stream (schema 3, `data/statements`, never pooled with
 segment readings), one quorum per statement, with

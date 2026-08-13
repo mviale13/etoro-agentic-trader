@@ -2,6 +2,11 @@
 
 **Research harness. Read-only. Delete when the ruling lands.**
 
+*(DP1 has since repaired what this found. The harness still runs both
+ways — pass the filer's declared name to see the partition after the
+repair, omit it to see the defect — which is what keeps the measurement
+checkable rather than historical.)*
+
 DA1 was scoped on the premise that Volkswagen describes its passenger-car
 business *only* at a parent altitude (`Konzernbereich Automobile`) and
 never under the reportable segment's own label — so a hierarchical
@@ -45,6 +50,11 @@ PACKAGE = (
     "https://uploads.vw-mms.de/system/production/files/cws/041/941/file/"
     "00d8d2096bb900de99e1115b0bb6a000f60579c0/VWAG_JFB_Konzern-2025-12-31-DE.zip"
 )
+
+#: The filer's own name, as its knowledge entry's source declares it —
+#: the evidence DP1's partition consults, and the only thing that may
+#: withdraw a naming.
+FILER = "Volkswagen AG"
 
 #: The segments exactly as the consensus holds them.
 SEGMENTS = (
@@ -133,13 +143,15 @@ def main() -> None:
         print(f"  at {naming.at}: read as a naming of {naming.segment!r}")
         print(f"     …{flat[naming.at - 60 : naming.ends + 30]}…")
 
-    print("\n── the counterfactual: that naming removed, nothing else ──\n")
-    without = tuple(naming for naming in partition if naming not in set(interrupting))
+    print("\n── after DP1: the partition told who the filer is ──\n")
+    repaired = namings(document, SEGMENTS, FILER)
+
+    print(f"  namings: {len(partition)} -> {len(repaired)}\n")
 
     for label, quoted in CANDIDATES.items():
         try:
             found = describes(
-                document, without, "Pkw und leichte Nutzfahrzeuge", quoted
+                document, repaired, "Pkw und leichte Nutzfahrzeuge", quoted
             )
             print(f"  {label:<32} ACCEPTED at {found.distance} chars")
         except EvidenceNotApplicable as refused:
