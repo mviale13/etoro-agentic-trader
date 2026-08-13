@@ -1,10 +1,10 @@
-# Does revenue diversity mean driver diversity? — measured, nothing built
+# Does revenue diversity mean driver diversity? — measured, and the ED1 slice it earned
 
-**Status: research only, measured 2026-08-13 at `7528079` (post-E1).
-Nothing in this document is a mandate to build, and no dependency
-taxonomy, enum or score is created here** (Constitution §23–24, and the
-ruling's own instruction: let recurring evidence shapes earn
-vocabulary). E2 remains held.
+**Status: measured 2026-08-13 at `7528079`; the capability was then
+ruled on and built as ED1 — Business Economic Relationships (§8), with
+no dependency taxonomy, enum or score** (Constitution §23–24). E2
+remains held. ED1's live acceptance awaits funded re-observation —
+see §8.
 
 The research question:
 
@@ -284,3 +284,64 @@ engines) shows the shapes vary too much to name from one example.**
   (its sentence is as quotable as any description), and DIS shows the
   *absence* of a relation must remain the representable default, never
   an inferred "independent" label.
+
+---
+
+## 8. The ED1 slice: Business Economic Relationships (built 2026-08-13)
+
+The CTO's ruling on §6, built the same day. The capability, inside
+existing Business Understanding — no new layer, no taxonomy, no score:
+
+- **`EconomicRelationship` on the observation**: dependent (an
+  established segment), driver (the filer's own words — a business or
+  its underlying demand), statement (investor English, the filer's
+  degree intact), quoted (the verbatim span). Read by one bounded ask
+  per observation over the tagged text plus each segment's
+  tighter-radius neighbourhood of the untagged prose (radius 300 — a
+  causal sentence *contains* the name it is about, so Volkswagen's
+  business-model sentence and titled dependence disclosure land inside
+  21k where E1's wider description radius pushed them past its budget;
+  E1's constants untouched, per requirement 15).
+- **Explicit evidence only**, enforced by validator not prompt alone:
+  the dependent must be an established segment, the span must exist in
+  the supplied text under that segment's own naming, and a statement
+  that hardens the filer's qualifier into an absolute ("entirely",
+  "solely", "100%") is refused unless the quote itself carries one —
+  in any corpus language, casefolded both sides because "ß" folds to
+  "ss". Names, intersegment revenue and business logic can establish
+  nothing.
+- **Consensus**: settles per dependent by majority, atomically one
+  observation's answer, over the readings that were *asked*.
+- **Schema 13, and the second cross-schema read**: 13 changed what a
+  reading is asked, not what it is shown — the text is bit-identical —
+  so a 12-entry's segment, size and description claims pool exactly as
+  before (the 8→9 logic), while its empty relationships restore marked
+  *never-asked* and are counted out of the dependence agreement:
+  an unasked reading must not outvote the filer's stated dependence,
+  and an append must not re-stamp it as asked. The corpus survives
+  intact.
+- **Decision-neutral by construction and by test**: the three
+  `depends_*` fields on `SellsThrough` are presentation the domain
+  owns; a source guard holds that no archetype rule, playbook mapping
+  or financial-question module mentions them, and a behavioural test
+  holds engine, archetype and contingencies identical with and without
+  the relationship.
+- **Rendering**: the equity dossier's segment list carries the worded
+  sentence — *"«company» states that this business predominantly …"* —
+  with the verbatim span as the hover title and the agreement width
+  beside it. No internal vocabulary reaches the page. Absence renders
+  as nothing at all: the DIS control is structural, not stylistic.
+
+**Live status at shipping**: the capability is complete, gates green,
+and every live surface unchanged (verified: VOW3.DE's dossier serves
+the new fields as null and decides identically). The acceptance
+re-observations — VOW3.DE, CAT, DIS under schema 13 — could not run:
+**the OpenAI account has no credits remaining** (the reader's provider;
+error 429 `credit_balance_exhausted`, hit on all four attempts). Once
+funded, `movrvest observe VOW3.DE`, `movrvest observe CAT` and
+`movrvest observe DIS` complete the acceptance with no further code
+change: five asked readings each, the consensus settles or honestly
+does not, and the dossier renders whatever was established. CAT's
+verdict is genuinely open — its role sentence sits in Item 1 text the
+reading is already shown, and whether five readings report it survives
+measurement, not force.

@@ -12,6 +12,7 @@ from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledgeObservation,
     DescriptionRepair,
+    EconomicRelationship,
     RevenueModel,
     SegmentDescription,
 )
@@ -99,7 +100,22 @@ from app.repositories.source_codec import (
 #: again for the same reason 10 and 11 re-read everything: the version
 #: stamps the protocol, and a protocol is one thing, not a per-document
 #: negotiation.
-KNOWLEDGE_SCHEMA_VERSION = 12
+#: 13 — a reading is now asked one further bounded question: does the
+#: filing *explicitly state* that one named business's economics are
+#: driven by another of the company's businesses or its underlying
+#: demand? Unlike 10, 11 and 12 this changes what a reading is *asked*,
+#: not what it is *shown* — the text is bit-identical — so a schema-12
+#: entry's segment, size and description claims pool exactly as they
+#: did, and 12 is the second cross-schema read this store performs
+#: (8 → 9 was the first). What must not pool is the new claim: an
+#: empty relationship tuple on an unasked reading is a different fact
+#: from an asked reading that found nothing, and counting the first as
+#: a "no" would let five old readings outvote the filer's own stated
+#: dependence. So the question's having-been-asked is persisted per
+#: observation, a 12-entry restores with it False, and the dependence
+#: agreement is counted over asked readings only.
+KNOWLEDGE_SCHEMA_VERSION = 13
+PREVIOUS_SCHEMA_VERSION = 12
 
 #: No older schema is restored. 8 was relabeled into 9 because nothing
 #: about the reading had changed; every version since changed what the
@@ -287,6 +303,16 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
                         }
                         for segment in observation.segments
                     ],
+                    "relationships": [
+                        {
+                            "dependent": relationship.dependent,
+                            "driver": relationship.driver,
+                            "statement": relationship.statement,
+                            "quoted": relationship.quoted,
+                        }
+                        for relationship in observation.relationships
+                    ],
+                    "relationships_asked": observation.relationships_asked,
                     "reading": {
                         "source": observation.reading.source,
                         "observed_at": observation.reading.observed_at.isoformat(),
@@ -327,6 +353,15 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
             if version == RELABELED_SCHEMA_VERSION:
                 return (_observation(symbol, source, stored),)
 
+            if version == PREVIOUS_SCHEMA_VERSION:
+                # The cross-schema read: shown the same text, never
+                # asked the relationship question. Everything restores;
+                # the flag records what was never asked.
+                return tuple(
+                    _observation(symbol, source, observed, asked=False)
+                    for observed in stored.get("observations", ())
+                )
+
             if version != KNOWLEDGE_SCHEMA_VERSION:
                 return ()
 
@@ -345,6 +380,7 @@ def _observation(
     symbol: str,
     source: PrimarySource,
     stored: dict[str, Any],
+    asked: bool | None = None,
 ) -> CompanyKnowledgeObservation:
     """One reading's body — identical in shape under schema 8 and 9."""
 
@@ -368,6 +404,23 @@ def _observation(
                 ),
             )
             for segment in stored.get("segments", ())
+        ),
+        relationships_asked=(
+            asked
+            if asked is not None
+            else bool(stored.get("relationships_asked", True))
+        ),
+        relationships=tuple(
+            EconomicRelationship(
+                dependent=str(relationship["dependent"]),
+                driver=str(relationship["driver"]),
+                statement=str(relationship["statement"]),
+                quoted=str(relationship["quoted"]),
+            )
+            for relationship in stored.get("relationships", ())
+            if relationship.get("dependent")
+            and relationship.get("statement")
+            and relationship.get("quoted")
         ),
         source=source,
         reading=Provenance(

@@ -63,9 +63,11 @@ class StubProvider:
         self._payload = payload
         self._declined = declined
         self.request: DraftRequest | None = None
+        self.requests: list[DraftRequest] = []
 
     async def draft(self, request: DraftRequest) -> Draft:
         self.request = request
+        self.requests.append(request)
 
         if self._declined is not None:
             raise NarrativeDeclined(self._declined)
@@ -363,8 +365,10 @@ def test_the_extractor_is_told_not_to_judge_the_company() -> None:
 
     asyncio.run(CompanyKnowledgeExtractor(provider).extract("DIS", filing()))
 
-    assert provider.request is not None
-    assert "You are reading, not deciding." in provider.request.system_prompt
+    # The first request is the extraction; later bounded asks (the
+    # relationship question among them) carry their own contracts.
+    assert provider.requests
+    assert "You are reading, not deciding." in provider.requests[0].system_prompt
 
 
 # ── how large each segment is ───────────────────────────────────────

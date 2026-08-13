@@ -68,6 +68,7 @@ from app.domain.agreement import Agreement, agreement
 from app.domain.company_knowledge import (
     BusinessSegment,
     CompanyKnowledgeObservation,
+    EconomicRelationship,
     RevenueModel,
 )
 from app.domain.primary_source import PrimarySource
@@ -143,6 +144,14 @@ class ConsensusSegment:
     #: attached to the observations that produced them, and this is
     #: their distribution.
     span_agreement: Agreement
+
+    #: The settled filer-stated economic dependence of this business on
+    #: another, atomically one observation's answer — or None, which is
+    #: the ordinary state and an evidence state, never a finding of
+    #: independence. Settles exactly as every claim here does: by
+    #: majority over the observations that named the segment.
+    dependency: EconomicRelationship | None = None
+    dependency_agreement: Agreement | None = None
 
     @property
     def revenue_share(self) -> float | None:
@@ -323,6 +332,23 @@ def _segment_consensus(
         earning, described, named
     )
 
+    # Counted over the readings that were *asked* the question: an
+    # observation taken before the relationship question existed holds
+    # an empty tuple for a different reason than one that was asked and
+    # found nothing, and counting it as a "no" would let old readings
+    # outvote the filer's own stated dependence.
+    dependency_claims = tuple(
+        _dependency(observation, name)
+        for observation in observations
+        if observation.relationships_asked
+        and any(segment.name == name for segment in observation.segments)
+    )
+    dependence = agreement(
+        "whether the filing states its economics are driven by another business",
+        (_dependency_answer(claim) for claim in dependency_claims),
+    )
+    dependency = _settled_dependency(dependence, dependency_claims)
+
     return ConsensusSegment(
         name=name,
         named_in=len(named),
@@ -336,6 +362,8 @@ def _segment_consensus(
         undescribed_because=undescribed_because,
         described_agreement=described,
         span_agreement=spans,
+        dependency=dependency,
+        dependency_agreement=dependence,
     )
 
 
@@ -446,6 +474,57 @@ def _settled_earning(
 NO_SIZE = "no size measured"
 NOT_DESCRIBED = "not described"
 NO_EARNING = "no way of earning established"
+NO_DEPENDENCY = "no dependence stated"
+
+
+def _dependency(
+    observation: CompanyKnowledgeObservation,
+    name: str,
+) -> EconomicRelationship | None:
+    """This observation's dependence claim for this segment, if any."""
+
+    for relationship in observation.relationships:
+        if relationship.dependent == name:
+            return relationship
+
+    return None
+
+
+def _dependency_answer(claim: EconomicRelationship | None) -> str:
+    """The comparable form of a dependence claim.
+
+    Compared on the statement rather than the span, for the same reason
+    descriptions settle on the claim while spans stay a distribution:
+    five readings of one sentence word its meaning nearly alike and
+    quote it many ways.
+    """
+
+    return claim.statement if claim is not None else NO_DEPENDENCY
+
+
+def _settled_dependency(
+    dependence: Agreement,
+    claims: tuple[EconomicRelationship | None, ...],
+) -> EconomicRelationship | None:
+    """The settled dependence, atomically one observation's answer.
+
+    None wherever the majority did not state one — including where the
+    readings could not agree, which renders as nothing rather than as a
+    hedge, because an unsettled relationship claim must not reach a
+    surface half-said.
+    """
+
+    if not dependence.by_majority or dependence.modal is None:
+        return None
+
+    if dependence.modal.stated == NO_DEPENDENCY:
+        return None
+
+    for claim in claims:
+        if claim is not None and claim.statement == dependence.modal.stated:
+            return claim
+
+    raise AssertionError("The modal dependence answer matches no observation.")
 
 
 def _identity(observation: CompanyKnowledgeObservation) -> str:

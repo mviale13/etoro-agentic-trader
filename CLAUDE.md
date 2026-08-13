@@ -187,10 +187,11 @@ shows absences until one of them is run, which is what it is.
 Knowledge is observations plus a derived consensus, never a single
 reading presented as the account: see
 [`docs/architecture/KNOWLEDGE_CONSENSUS.md`](docs/architecture/KNOWLEDGE_CONSENSUS.md)
-(accepted). The store holds `CompanyKnowledgeObservation`s (schema 12
-since E1 — a wordless named segment is asked against the package's
-untagged report prose, so readings shown different text never pool;
-the corpus re-reads on the owner's next observe cycle —
+(accepted). The store holds `CompanyKnowledgeObservation`s (schema 13
+since ED1: E1 widened what a reading is *shown* — untagged report
+prose for wordless named segments — and ED1 widened what it is
+*asked* — a filer-stated economic dependence between businesses, with
+schema-12 entries restoring as never-asked rather than re-read;
 append-only); `consensus_of` derives on read; the decision path consumes
 `CompanyKnowledgeConsensus` only. Financial statement facts are their
 own observation stream (schema 3, `data/statements`, never pooled with
