@@ -293,3 +293,101 @@ one (asset, committee) whose answer ever moved. Surfacing it today would
 report when the committee was switched off, which is a fact about this
 platform's configuration rather than about the asset. #113's
 architecture is preserved; the presentation waits for a real change.
+
+---
+
+## Protocol economics reach the crypto dossier (2026-08-13)
+
+The same boundary defect as the judged market facts, one layer over,
+found by auditing the rendered page rather than the payload.
+
+### What was dropping them
+
+`protocol` is served on `/crypto/{symbol}/dossier` for all eight corpus
+assets. The parser consumed it — entities arrived named, with `measures`
+and `mapping_basis` — and `ProtocolEntityView` **had no `facts` field**,
+so every figure those entities hold was discarded on the way. Then
+`Sections` referenced `dossier.protocol` nowhere at all, so even the
+names never rendered. The general dossier rendered all of it.
+
+Held and invisible: **6 facts per asset, 12 for HYPE** — capital,
+activity, value generation, holder accrual — each with source, age,
+standing, availability and the provider's own methodology.
+
+### The argument, not a table
+
+The section orders the four families the way the argument runs — *what
+the system earns* → *what reaches the token* → *how much flows through
+it* → *what is committed to it*. On HYPE that reads:
+
+> **Fees paid by users over 24 hours — $842.7k** *(Hyperliquid Perps:
+> …excluding all spot fees…)*
+> **Protocol revenue over 24 hours — $534.9k** *(99% of fees go to
+> Assistance Fund for buying HYPE tokens…)*
+> **Holder revenue over 24 hours — $534.9k**
+
+**Entities are never collapsed.** HYPE carries two — the venue and the
+layer-1 it settles on — because two DefiLlama entities once shared that
+name 224× apart. Each states its own `mapping_basis`, which is the
+provider's or filer's reason the economics belong to *this* token: the
+venue's *"the provider records 99% of perp and spot fees going to an
+Assistance Fund that buys the token… not inferred from the shared
+name."*
+
+### Magnitude beside the judgment, not a second record
+
+The Value Capture cell gains **the two quantities its own question
+names** — what users pay, and what reaches holders — per entity, tagged
+with their standing and pointing back at the section that owns the full
+record. Protocol revenue, the third quantity in the family, is left to
+the section rather than repeated.
+
+**It fires only where the committee answered.** Bitcoin's fee figure is
+real — $139.0k over the observed day — and its Value Capture Committee
+declines the question as the wrong instrument for a monetary asset, so
+no magnitude appears beside that non-verdict. Measured across the
+corpus: shown for ETH, SOL, HYPE, ARB and 1INCH; suppressed for BTC
+(*known_not_applicable*), ADA (*execution_unavailable*) and TAO
+(*applicability_unknown*).
+
+### The three silences, rendered apart
+
+Bitcoin shows all three in one card, which is why it is the control:
+
+- **available** — fees $139.0k, with methodology and age;
+- **unavailable_free** — protocol revenue: *"The source defines this for
+  Bitcoin and reported no figure for the window. Whether that is a
+  mechanism producing nothing or a reading that did not arrive, the
+  source does not say."*
+- **not_applicable** — holder revenue: *"it is not a mechanism this
+  entity has, rather than a figure missing."*
+
+TAO, the weakest asset, shows a third shape: `mapping unsettled` beside
+the entity, and every value-generation figure *"Not available free"*.
+
+### No multiple, and it is structural
+
+No ratio, annualisation or per-market-cap figure appears in the adapter,
+the composition or the page. That is not a promise about restraint: a
+protocol figure crosses the wire as the backend's **worded** value, so
+there is no number on this side to divide. HYPE is the case that makes
+it matter — its market value is reported 50% apart by two credible
+sources, so a fee yield would invent a denominator as well as a
+conclusion.
+
+### The regression is architectural
+
+This class of defect has now been found twice in the same file, so the
+guard is about the class rather than either section
+(`tests/test_crypto_dossier_reaches_the_page.py`):
+
+1. **every top-level key the route serves is read by `parseDossier`** —
+   scoped to that function deliberately, because `record.facts` also
+   appears in the journal parser and a file-wide search reported the
+   dropped section as read;
+2. **every field `CryptoDossier` parses is referenced by the page.**
+
+Both halves were verified by re-creating the two historical defects and
+watching the suite fail, then restoring.
+
+No backend or domain change was required.

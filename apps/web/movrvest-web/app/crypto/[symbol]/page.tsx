@@ -13,6 +13,8 @@ import {
   type CryptoQuestionView,
   type FactsView,
   type IntelligenceView,
+  type ProtocolFactView,
+  type ProtocolView,
   type InvestorStatementView,
   type IssuanceView,
   type JournalView,
@@ -146,8 +148,14 @@ function Sections({ dossier }: { dossier: CryptoDossier }) {
     <div className="mt-8 space-y-10">
       <Identity symbol={dossier.symbol} identity={dossier.identity} />
       <Assessment assessment={dossier.assessment} />
-      <Committees committees={dossier.committees.committees} />
+      <Committees
+        committees={dossier.committees.committees}
+        protocol={dossier.protocol}
+      />
       <Questions identity={dossier.identity} quality={dossier.quality} />
+      {dossier.protocol ? (
+        <ProtocolEconomics protocol={dossier.protocol} symbol={dossier.symbol} />
+      ) : null}
       <Supply supply={dossier.supply} issuance={dossier.issuance} />
       <Market market={dossier.market} />
       {dossier.facts ? (
@@ -442,10 +450,96 @@ function Statement({ statement }: { statement: InvestorStatementView }) {
  * "Supply Governance" alone tells a reader nothing about what the answer
  * beneath it means.
  */
+/**
+ * The magnitudes behind an answered value-capture judgment.
+ *
+ * The committee's own question is *"does this network generate
+ * evidenced fee activity, and does an evidenced mechanism capture some
+ * of it for the token or its holders?"* — two quantities, named in the
+ * question itself: what users pay, and what reaches holders. So this
+ * shows those two metrics and no others. No ranking, no threshold, no
+ * arithmetic, and no view about which figure matters most — the third
+ * quantity in the family, protocol revenue, is left to the economics
+ * section rather than repeated here.
+ *
+ * **Every mapped entity is shown**, so a venue and the chain it runs on
+ * stay two systems: Hyperliquid's exchange earns three orders of
+ * magnitude more than its L1, and collapsing them to a single pair of
+ * figures would hide exactly the distinction the archetype was built to
+ * keep.
+ *
+ * Two rules it exists to keep. It fires **only where the committee
+ * answered** — an abstention dressed in figures would read as evidence
+ * for a verdict nobody reached. And it is a *reference*, not a second
+ * record: the full economics, every family and every absence, live in
+ * their own section, and these two or three lines point at it.
+ */
+function JudgmentMagnitude({
+  cell,
+  protocol,
+}: {
+  cell: CommitteeCellView;
+  protocol: ProtocolView | null;
+}) {
+  if (cell.key !== "value_capture" || cell.posture !== "answered" || !protocol) {
+    return null;
+  }
+
+  const supporting = protocol.entities.flatMap((entity) =>
+    entity.facts
+      .filter(
+        (fact) =>
+          (fact.metric === "fees" || fact.metric === "holder_revenue") &&
+          fact.stated !== null,
+      )
+      .map((fact) => ({ entity: entity.name, fact })),
+  );
+
+  if (supporting.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 border-t border-slate-100 pt-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        The magnitudes it read
+      </p>
+
+      <ul className="mt-2 space-y-1">
+        {supporting.map(({ entity, fact }) => (
+          <li
+            key={`${entity}-${fact.metric}`}
+            className="flex flex-wrap items-baseline gap-x-2 text-sm leading-6 text-slate-700"
+          >
+            <span className="font-semibold tabular-nums text-slate-900">
+              {fact.stated}
+            </span>
+
+            <span>
+              {fact.label.toLowerCase()}
+              {fact.window ? ` over ${fact.window}` : ""} — {entity}
+            </span>
+
+            <Tag>{fact.standingStated}</Tag>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-2 text-xs leading-5 text-slate-400">
+        Shown here because the judgment rests on them. Every figure the
+        systems behind this token publish, including the ones that are
+        absent, is in the economics section above.
+      </p>
+    </div>
+  );
+}
+
 function Committees({
   committees,
+  protocol,
 }: {
   committees: readonly CommitteeCellView[];
+  protocol: ProtocolView | null;
 }) {
   return (
     <section aria-labelledby="committees-heading">
@@ -535,6 +629,8 @@ function Committees({
               )}
               <Detail label="Times convened">{cell.judgmentsRecorded}</Detail>
             </dl>
+
+            <JudgmentMagnitude cell={cell} protocol={protocol} />
           </Card>
         ))}
       </div>
@@ -711,6 +807,212 @@ function QuestionGroup({
         })}
       </ul>
     </div>
+  );
+}
+
+// ── 4b. the economics of the system behind the token ────────────────
+
+/** The four economic families, in the order the argument runs. */
+const FAMILIES: readonly { key: string; title: string; blurb: string }[] = [
+  {
+    key: "value_generation",
+    title: "What the system earns",
+    blurb: "What users pay to use it, and what the system keeps of that.",
+  },
+  {
+    key: "holder_accrual",
+    title: "What reaches the token",
+    blurb:
+      "The share of the above an evidenced mechanism directs to the token or its holders.",
+  },
+  {
+    key: "activity",
+    title: "How much is flowing through it",
+    blurb: "Volume and open positions, as the provider measures them.",
+  },
+  {
+    key: "capital",
+    title: "What is committed to it",
+    blurb: "Assets held in the system's own contracts.",
+  },
+];
+
+/** One measured figure, with everything needed to check it. */
+function ProtocolFact({ fact }: { fact: ProtocolFactView }) {
+  return (
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <span className="text-sm text-slate-700">
+          {fact.label}
+          {fact.window ? (
+            <span className="text-slate-500"> over {fact.window}</span>
+          ) : null}
+        </span>
+
+        <span className="flex shrink-0 items-baseline gap-2">
+          {fact.stated ? (
+            <span className="text-sm font-semibold tabular-nums text-slate-900">
+              {fact.stated}
+            </span>
+          ) : null}
+
+          {/* Availability and standing answer different questions, so
+              both words are shown. "Not applicable" is not a gap, and
+              "unavailable on a free source" is not "absent". */}
+          <Tag>{fact.stated ? fact.standingStated : fact.availabilityStated}</Tag>
+        </span>
+      </div>
+
+      {fact.providerMethodology ? (
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          {fact.providerMethodology}
+        </p>
+      ) : null}
+
+      {fact.stated === null && fact.because ? (
+        <p className="mt-1 text-xs leading-5 text-slate-500">{fact.because}</p>
+      ) : null}
+
+      {fact.age ? (
+        <p className="mt-0.5 text-xs text-slate-400">{fact.age}</p>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * What the systems behind the token actually earn, and what reaches it.
+ *
+ * Served on this endpoint from the day it existed, parsed into a view
+ * model with no `facts` field, and rendered by nothing — the second
+ * half of the same boundary defect that hid the judged market facts.
+ * The general dossier showed all of it.
+ *
+ * The order is the argument, not a table: what the system earns, then
+ * what reaches the token, then how much flows through it and what is
+ * committed to it. Hyperliquid earns $842.7k of fees over the observed
+ * day and $534.9k is reported as reaching holders — two figures that
+ * only mean something next to each other.
+ *
+ * **Entities are never collapsed.** A venue and the chain it runs on
+ * are two economic systems; reading them as one put two Hyperliquid
+ * entities 224× apart under a single name. Each carries its own
+ * `mappingBasis` — the filer's or provider's own reason the entity's
+ * economics belong to this token — because a shared name is not a
+ * reason.
+ *
+ * No ratio is formed here, and none is formed anywhere: fees over
+ * market value would be a valuation multiple, and this platform holds a
+ * market value for HYPE that two sources put 50% apart.
+ */
+function ProtocolEconomics({
+  protocol,
+  symbol,
+}: {
+  protocol: ProtocolView;
+  symbol: string;
+}) {
+  if (protocol.entities.length === 0) {
+    return (
+      <section aria-labelledby="protocol-heading">
+        <Heading id="protocol-heading">The economics behind it</Heading>
+
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
+          {protocol.unmappedBecause ??
+            `No system behind ${symbol} is mapped to it on evidence this platform holds.`}
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-labelledby="protocol-heading">
+      <Heading id="protocol-heading">The economics behind it</Heading>
+
+      <p className="mt-2 max-w-3xl text-sm text-slate-500">
+        What the systems behind {symbol} earn, and what reaches the token —
+        evidence, not verdicts. Nothing here is called strong, healthy or
+        expensive, and no figure is divided by another: a fee measured over a
+        day against a market value is a valuation multiple, and that is a claim
+        this platform does not make.
+      </p>
+
+      <div className="mt-3 space-y-3">
+        {protocol.entities.map((entity) => (
+          <Card key={entity.key}>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-semibold text-slate-900">{entity.name}</h3>
+              <Tag>{entity.kind}</Tag>
+              {entity.mappingSettled ? null : <Tag>mapping unsettled</Tag>}
+            </div>
+
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+              {entity.measures}
+            </p>
+
+            {/* Why this entity's economics are this token's at all. A
+                shared name establishes nothing, so the reason is given
+                the same weight as the figures it justifies. */}
+            <p className="mt-2 border-l-2 border-slate-200 pl-3 text-sm leading-relaxed text-slate-600">
+              {entity.mappingBasis}
+            </p>
+
+            <div className="mt-4 space-y-4">
+              {FAMILIES.map((family) => {
+                const facts = entity.facts.filter(
+                  (fact) => fact.family === family.key,
+                );
+
+                if (facts.length === 0) {
+                  return null;
+                }
+
+                return (
+                  <div key={family.key}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      {family.title}
+                    </p>
+
+                    <p className="mt-0.5 text-xs leading-5 text-slate-400">
+                      {family.blurb}
+                    </p>
+
+                    <div className="mt-2 space-y-2.5">
+                      {facts.map((fact) => (
+                        <ProtocolFact key={fact.metric} fact={fact} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {protocol.derived.length > 0 ? (
+        <div className="mt-3 space-y-2">
+          {protocol.derived.map((figure) => (
+            <Card key={figure.label}>
+              <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <span className="text-sm text-slate-700">{figure.label}</span>
+                <span className="text-sm font-semibold tabular-nums text-slate-900">
+                  {figure.statedValue}
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                {figure.stated}
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                {figure.caveat}
+              </p>
+            </Card>
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

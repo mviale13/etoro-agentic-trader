@@ -284,17 +284,61 @@ function parseIdentity(record: UnknownRecord): CryptoIdentity {
 }
 
 /** One economic entity mapped to this security, and what it measures. */
+/**
+ * One measured figure about the system behind the token.
+ *
+ * `family` is the domain's own economic grouping — capital, activity,
+ * value_generation, holder_accrual — and it is what lets the value a
+ * system generates be read next to the share of it that reaches
+ * holders. This side groups by that field and computes nothing from it.
+ *
+ * `availability` and `standing` answer different questions and are kept
+ * apart: *not applicable* is not a gap, *unavailable on a free source*
+ * is not *absent*, and a provider claim is not an established fact.
+ */
+export interface ProtocolFactView {
+  metric: string;
+  label: string;
+  /** capital | activity | value_generation | holder_accrual */
+  family: string;
+  stated: string | null;
+  /** The window the figure covers, or null for a level. */
+  window: string | null;
+  standing: string;
+  standingStated: string;
+  availability: string;
+  availabilityStated: string;
+  source: string | null;
+  age: string | null;
+  /** The provider's own definition, verbatim — the mechanism itself. */
+  providerMethodology: string | null;
+  because: string | null;
+}
+
 export interface ProtocolEntityView {
   key: string;
   name: string;
+  /** "chain" or "protocol" — a venue and the chain it runs on are two
+      economic entities, and collapsing them once put two systems 224×
+      apart under one name. */
   kind: string;
   measures: string;
   mappingBasis: string;
   mappingSettled: boolean;
+  facts: readonly ProtocolFactView[];
+}
+
+/** A figure the domain computed, with the domain's own caveat. */
+export interface ProtocolDerivedView {
+  label: string;
+  statedValue: string;
+  stated: string;
+  caveat: string;
 }
 
 export interface ProtocolView {
   entities: readonly ProtocolEntityView[];
+  derived: readonly ProtocolDerivedView[];
   unmappedBecause: string | null;
 }
 
@@ -1294,6 +1338,54 @@ function parseDossier(payload: unknown): CryptoDossier {
               item.mapping_settled,
               `${field}.mapping_settled`,
             ),
+            // The economics themselves. They were served from the day
+            // this endpoint existed and parsed by nothing, so an entity
+            // arrived named and silent.
+            facts: recordList(item.facts, `${field}.facts`).map(
+              (fact, position) => {
+                const at = `${field}.facts[${position}]`;
+
+                return {
+                  metric: requireString(fact.metric, `${at}.metric`),
+                  label: requireString(fact.label, `${at}.label`),
+                  family: requireString(fact.family, `${at}.family`),
+                  stated: optionalString(fact.stated, `${at}.stated`),
+                  window: optionalString(fact.window, `${at}.window`),
+                  standing: requireString(fact.standing, `${at}.standing`),
+                  standingStated: requireString(
+                    fact.standing_stated,
+                    `${at}.standing_stated`,
+                  ),
+                  availability: requireString(
+                    fact.availability,
+                    `${at}.availability`,
+                  ),
+                  availabilityStated: requireString(
+                    fact.availability_stated,
+                    `${at}.availability_stated`,
+                  ),
+                  source: optionalString(fact.source, `${at}.source`),
+                  age: optionalString(fact.age, `${at}.age`),
+                  providerMethodology: optionalString(
+                    fact.provider_methodology,
+                    `${at}.provider_methodology`,
+                  ),
+                  because: optionalString(fact.because, `${at}.because`),
+                };
+              },
+            ),
+          };
+        },
+      ),
+      derived: recordList(value.derived, "protocol.derived").map(
+        (figure, index) => {
+          const at = `protocol.derived[${index}]`;
+
+          return {
+            label: requireString(figure.label, `${at}.label`),
+            statedValue: requireString(figure.stated_value, `${at}.stated_value`),
+            stated: requireString(figure.stated, `${at}.stated`),
+            caveat: requireString(figure.caveat, `${at}.caveat`),
           };
         },
       ),
