@@ -335,6 +335,32 @@ class TemporalFact:
     #: that cannot be checked against the record is not one.
     entry_ids: tuple[str, ...]
 
+    #: The latest observation's own sentence, before any temporal clause
+    #: is appended to it. **A component of `stated`, never a substitute
+    #: for it**: `stated` is what the synthesis cites and it is unchanged.
+    #:
+    #: Carried because per-fact maturity is only worth printing where it
+    #: differs from its neighbours'. With one capture held, thirteen rows
+    #: each ended *"First observed on one capture."* beneath a heading
+    #: that had already said one capture exists — and the only other way
+    #: to render the reading without that clause would be a surface
+    #: cutting a sentence the domain composed, which is worse. See
+    #: `shared_maturity`.
+    observed_stated: str = ""
+
+    @property
+    def carries_span(self) -> bool:
+        """Whether `stated` ends in a clause about how often we looked.
+
+        Every projected sentence does except an unavailable one, which
+        says what could not be read and stops. That is §6 holding: an
+        unavailable reading is never compared with anything, so there is
+        no coverage claim to qualify — and it is why such a fact neither
+        repeats a shared maturity nor needs one hoisted off it.
+        """
+
+        return self.status is not TemporalStatus.UNAVAILABLE
+
     #: For a measured change, the two figures. Absent otherwise.
     previous_value: float | None = None
     current_value: float | None = None
@@ -437,6 +463,86 @@ def project(
     return tuple(facts)
 
 
+@dataclass(frozen=True, slots=True)
+class SharedMaturity:
+    """The one maturity every fact carrying a coverage clause shares.
+
+    A fact about the *reading*, at the altitude the reading happened.
+    """
+
+    status: TemporalStatus
+    status_stated: str
+    span_stated: str
+    count: int
+
+    @property
+    def stated(self) -> str:
+        """The coverage, said once.
+
+        Hedged rather than universal, because it is: a projection may
+        carry an unavailable fact that this line does not speak for, and
+        *"every finding below"* would then be false about the one finding
+        that matters most.
+        """
+
+        return (
+            f"Except where a finding says otherwise below, each is "
+            f"{self.status_stated}, {self.span_stated}."
+        )
+
+
+def shared_maturity(facts: tuple[TemporalFact, ...]) -> SharedMaturity | None:
+    """The maturity those facts share, or `None` where they do not.
+
+    **The honest half of §5, and the reason it is here rather than on a
+    surface.** With one capture held, every fact is *first observed on
+    one capture* — so thirteen rows each carried that clause beneath a
+    heading that had already said one capture exists. Thirteen sentences
+    saying what one sentence says do not describe deeper history; they
+    describe the same shallow history thirteen times, which is the exact
+    impression §5 forbids.
+
+    So where they share one maturity it is stated once, and where a
+    fact's maturity differs it stays on that fact — because *there* it is
+    the finding. Two facts share a maturity only when their status and
+    their span sentence are equal; nothing is inferred and nothing is
+    reworded.
+
+    **Unavailable facts are not consulted, and that is a fact about them
+    rather than an exemption.** Their sentence carries no coverage clause
+    at all — §6, an unavailable reading is compared with nothing, so
+    there is no coverage claim on it to qualify — meaning they neither
+    repeat a shared maturity nor have one to hoist. Consulting them would
+    have suppressed the line for five of the eight assets held on the
+    strength of one unreadable surface, leaving the other findings
+    repeating themselves. `None` for an empty projection and for one with
+    nothing but unavailable facts: a vacuous claim of shared coverage is
+    worse than no claim.
+    """
+
+    carrying = [fact for fact in facts if fact.carries_span]
+
+    if not carrying:
+        return None
+
+    first = carrying[0]
+
+    shared = all(
+        fact.status is first.status and fact.span.stated == first.span.stated
+        for fact in carrying
+    )
+
+    if not shared:
+        return None
+
+    return SharedMaturity(
+        status=first.status,
+        status_stated=first.status.stated,
+        span_stated=first.span.stated,
+        count=first.span.count,
+    )
+
+
 def _span(entries: list[JournalEntry]) -> ObservationSpan:
     times = [entry.captured_at for entry in entries]
 
@@ -476,6 +582,7 @@ def _fact_for(
                 f"{span.stated}."
             ),
             span=span,
+            observed_stated=current.stated,
             entry_ids=ids,
         )
 
@@ -493,6 +600,7 @@ def _fact_for(
                 "about the asset."
             ),
             span=span,
+            observed_stated=current.stated,
             entry_ids=ids,
             nature=ChangeNature.READING_CHANGED,
         )
@@ -509,6 +617,7 @@ def _fact_for(
             status=TemporalStatus.FIRST_OBSERVED,
             stated=f"{current.stated} First observed {span.stated}.",
             span=span,
+            observed_stated=current.stated,
             entry_ids=ids,
             current_value=current.value,
             unit=current.unit,
@@ -526,6 +635,7 @@ def _fact_for(
                 f"capture(s); observed {span.stated}."
             ),
             span=span,
+            observed_stated=current.stated,
             entry_ids=ids,
             current_value=current.value,
             unit=current.unit,
@@ -558,6 +668,7 @@ def _fact_for(
             f"it, {nature.stated}. Observed {span.stated}."
         ),
         span=span,
+        observed_stated=current.stated,
         entry_ids=ids,
         previous_value=previous.value,
         current_value=current.value,

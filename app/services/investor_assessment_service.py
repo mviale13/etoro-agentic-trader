@@ -127,6 +127,7 @@ class InvestorAssessmentService:
 
         statements: list[InvestorStatement] = []
         silent: list[str] = []
+        silent_committees: list[str] = []
 
         reading = self._supply.established(asset, AssetClass.CRYPTO)
 
@@ -141,7 +142,10 @@ class InvestorAssessmentService:
             statement = _from_committee(cell)
 
             if statement is None:
-                silent.append(_committee_subject(cell))
+                subject = _committee_subject(cell)
+
+                silent.append(subject)
+                silent_committees.append(subject)
 
                 continue
 
@@ -151,6 +155,7 @@ class InvestorAssessmentService:
             asset=asset,
             statements=tuple(statements),
             silent_about=tuple(silent),
+            silent_committees=tuple(silent_committees),
         )
 
 
@@ -495,6 +500,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
             ),
             why_it_matters=_committee_meaning(cell),
             refs=refs,
+            from_committee=cell.committee.key,
         )
 
     if cell.posture is JudgmentPosture.KNOWN_NOT_APPLICABLE:
@@ -508,6 +514,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
             qualification=cell.because,
             why_it_matters=_committee_meaning(cell),
             refs=refs,
+            from_committee=cell.committee.key,
         )
 
     if cell.posture is JudgmentPosture.EVIDENCE_INSUFFICIENT:
@@ -518,6 +525,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
             uncertainty=cell.because,
             why_it_matters=_committee_meaning(cell),
             refs=refs,
+            from_committee=cell.committee.key,
         )
 
     if cell.posture is JudgmentPosture.EXECUTION_UNAVAILABLE:
@@ -531,6 +539,7 @@ def _from_committee(cell: CommitteeAssessment) -> InvestorStatement | None:
             uncertainty=cell.unavailable_because,
             why_it_matters=_committee_meaning(cell),
             refs=refs,
+            from_committee=cell.committee.key,
         )
 
     return None

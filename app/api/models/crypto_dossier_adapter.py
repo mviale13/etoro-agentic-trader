@@ -34,7 +34,11 @@ from app.domain.crypto_event import CryptoEvent
 from app.domain.crypto_intelligence import CryptoIntelligenceSnapshot
 from app.domain.crypto_quality import CryptoAssetQuality, QualityAnswer
 from app.domain.crypto_questions import QUESTIONS
-from app.domain.intelligence_journal import ObservationSpan, TemporalFact
+from app.domain.intelligence_journal import (
+    ObservationSpan,
+    TemporalFact,
+    shared_maturity,
+)
 from app.domain.mechanical_issuance import MechanicalIssuance
 from app.domain.provenance import Provenance
 
@@ -292,6 +296,12 @@ def _temporal(fact: TemporalFact) -> dict[str, Any]:
         "status": fact.status.value,
         "status_stated": fact.status.stated,
         "stated": fact.stated,
+        # The reading without its temporal clause. Sent beside `stated`
+        # and never instead of it: a client renders this one only where
+        # the projection's `shared_maturity` already carries the clause,
+        # which is exactly where `carries_span` is true.
+        "observed_stated": fact.observed_stated,
+        "carries_span": fact.carries_span,
         "nature": fact.nature.value if fact.nature is not None else None,
         "nature_stated": fact.nature.stated if fact.nature is not None else None,
         "previous_value": fact.previous_value,
@@ -313,13 +323,30 @@ def journal_response(
     this platform looked decides what any of the findings beneath it can
     responsibly claim. Null where nothing was ever captured — an empty
     journal rendered as a table of zero rows reads as stability.
+
+    `shared_maturity` is that lead sentence where every finding shares
+    one: the domain decides whether they do, and null means they do not
+    and each finding carries its own.
     """
 
     if not captures:
         return None
 
+    shared = shared_maturity(facts)
+
     return {
         "captures": captures,
+        "shared_maturity": (
+            None
+            if shared is None
+            else {
+                "status": shared.status.value,
+                "status_stated": shared.status_stated,
+                "span_stated": shared.span_stated,
+                "count": shared.count,
+                "stated": shared.stated,
+            }
+        ),
         "facts": [_temporal(fact) for fact in facts],
     }
 

@@ -453,3 +453,144 @@ Every reason stays in the page whether or not its group starts open,
 which is what keeps the taxonomy inspectable.
 
 No backend or domain change was required.
+
+---
+
+## One kind of information, one owner (2026-08-14)
+
+**Status: accepted and built.**
+
+A presentation-ownership audit of all eight `/crypto/{symbol}` dossiers,
+implementation second. The question asked of every repeated item was not
+*can this be deleted* but *which layer owns it* — because five of the six
+findings turned out to be two correct layers each doing its job, composed
+onto one page that had no way to tell their outputs apart.
+
+### What was measured
+
+Every asset's rendered page text, extracted from the SSR HTML with the
+shell stripped, plus the payload behind it.
+
+| finding | corpus before | class |
+|---|---|---|
+| committee conclusion rendered twice | 16/16 reasons byte-identical; 7/14 answers byte-identical | duplicate rendering of one semantic fact |
+| lens explanation repeated | 111 renderings of ≤5 distinct sentences per asset | shared context at the wrong altitude |
+| per-fact evidence maturity | 80 rows ending *"First observed on one capture."* | information the section already carried whole |
+| `Times convened` | 16 counters; **0 verdict changes corpus-wide** | implementation execution history |
+| `Evidence it weighed` | 16 counters; label untrue on every declined posture | implementation history mislabelled as evidence |
+
+### Committee conclusion: the matrix owns it
+
+`InvestorAssessment` is *supposed* to quote a committee — §14 of its own
+module, *quoted, not translated* — and the Committee Assessment Matrix is
+*supposed* to carry the same conclusion in the committee's own words with
+its question, applicability, confidence and magnitudes. Neither is wrong.
+The page rendered both at full length.
+
+The matrix owns it, because it is the only one of the two that renders a
+conclusion *with the question it answers*. So the repair is provenance
+rather than deletion: `InvestorStatement.from_committee` carries the
+committee key the statement quotes — a value the layer already held at
+construction and discarded — and the page routes each statement to
+exactly one section. `silent_committees` does the same for a silence a
+committee owns, carried **beside** `silent_about` and never subtracted
+from it, so `movrvest assessment` still sees every silence.
+
+**Nothing was removed from any payload.** `GET /crypto/{symbol}/dossier`
+serves the same assessment it always did.
+
+### Evidence maturity: `shared_maturity`, and the unavailable case
+
+`TemporalFact.stated` is unchanged — the synthesis cites it, and #111's
+contract holds. What is new is `observed_stated`, the same reading
+*without* the temporal clause, and `shared_maturity(facts)`, which
+returns the maturity every fact shares or `None` where they differ.
+
+The measurement that changed the design: a strict rule over *all* facts
+fired for only three of eight assets, because five carry one or two
+`UNAVAILABLE` readings. An unavailable fact's sentence **carries no
+coverage clause at all** — §6, an unavailable reading is compared with
+nothing, so there is no coverage claim on it to qualify — so it is not
+consulted and not spoken for. It keeps its own status, its own span and
+its own sentence, and the other thirteen stop repeating themselves.
+
+The shared line is hedged rather than universal (*"Except where a finding
+says otherwise below…"*) for exactly that reason: *"every finding below"*
+would be false about the one finding a reader most needs to notice.
+
+### The two counters, and why they are different removals
+
+**`Times convened`** counts runs of `movrvest judge`. Across all sixteen
+recorded series **no verdict has ever changed**; every variation is this
+platform's own judging flag being toggled, plus one draft the prose
+validator refused. It is execution history.
+
+**`Evidence it weighed` did not measure what its label said.** The count
+is captured beside the judgment by `app/commands/judge.py`, which calls
+`committee.evidence(asset)` unconditionally — while `judge()` returns
+*before* reading any evidence when the question does not apply. So
+Bitcoin's Value Capture declined the question as the wrong instrument,
+cited no refs, and reported weighing **3 findings**. Where a committee
+did answer, the findings it cited are already rendered beneath it as *the
+magnitudes it read*.
+
+Both remain in the domain, in the store, in `CommitteeAssessment` and on
+`movrvest committees`. **No domain history was deleted.** A test asserts
+both fields still exist.
+
+### Recorded and deliberately not fixed
+
+**The recorded `evidence_count` is wrong for a declined judgment**, and
+correcting it is a change to what future records *mean*: a count moving
+3 → 0 is #113's `EvidenceMovement.EVIDENCE_LOST`, and a repair would make
+every asset's history show a movement that never happened. It needs its
+own slice with a migration story, not a presentation fix.
+
+`Confidence` still saturates, and the Gaps section still restates
+committee postures — by its own declared purpose, so that *unfavourable*
+and *absent* can be told apart.
+
+### Measured, before → after
+
+Visible page characters, over `<main>` only.
+
+| | BTC | HYPE | corpus (8) |
+|---|---|---|---|
+| visible characters | 37,781 → **34,732** | 38,699 → **35,999** | 267,974 → **245,302** (−8.5%) |
+| committee conclusion renderings | 9 → **5** | 7 → **4** | 37 → **21** |
+| lens-explanation renderings | 14 → **6** | 18 → **12** | 111 → **55** |
+| repeated prose lines | 29 → **24** | 33 → **24** | 247 → **171** |
+| evidence-maturity rows | 13 → **0** | 13 → **0** | 80 → **0** |
+| `Times convened` | 2 → **0** | 2 → **0** | 16 → **0** |
+| `Evidence it weighed` | 2 → **0** | 2 → **0** | 16 → **0** |
+
+The residual lens renderings are the group headers themselves — one per
+lens per question group — and the first explanation of each lens in the
+assessment. The residual committee renderings are one card each plus the
+Gaps collection and, on BTC, the issuance formula, which is the rule
+rather than the conclusion.
+
+### The regression is architectural
+
+`tests/test_crypto_dossier_presentation_ownership.py`, built from domain
+builders in a temporary store — nothing reads acquired evidence. It
+asserts that every committee statement names the committee it quotes
+across **all five postures**, that a statement the assessment section
+owns can never repeat a committee's reason, that the page routes on the
+backend's mark rather than on a subject name, that neither execution
+counter reaches the surface while both stay in the domain, that an asked
+question always names its lens and a lens has exactly one applicability
+sentence **corpus-wide**, and the four maturity cases including the
+all-unavailable one.
+
+Each guard was mutation-checked: reverting any one of the five repairs
+fails between two and five of them.
+
+### Boundaries kept
+
+No new analytical logic, no new metric, no acquisition, no network call.
+No committee judgment, applicability, participation, evidence,
+confidence or domain meaning changed — `movrvest committees`,
+`movrvest assessment` and `movrvest judgment-history` render exactly what
+they rendered before. The equity dossier consumes neither
+`InvestorAssessment` nor the committee matrix and is untouched.

@@ -378,12 +378,20 @@ export interface InvestorStatementView {
   interpretationWithheld: string | null;
   observed: readonly ObservedValueView[];
   refs: readonly string[];
+  /** The committee whose conclusion this statement quotes, or null for
+      this layer's own reading of evidence. **Provenance, and the only
+      thing this side may do with it is decide which section renders the
+      statement** — a verdict is never read out of a key. */
+  fromCommittee: string | null;
 }
 
 export interface AssessmentView {
   statements: readonly InvestorStatementView[];
   /** Subjects nothing useful is held about, named rather than omitted. */
   silentAbout: readonly string[];
+  /** Which of `silentAbout` a committee owns. A subset the backend
+      marks, never one this side derives from a name. */
+  silentCommittees: readonly string[];
 }
 
 function parseAssessment(record: UnknownRecord): AssessmentView {
@@ -443,10 +451,15 @@ function parseAssessment(record: UnknownRecord): AssessmentView {
             }),
           ),
           refs: stringList(item.refs),
+          fromCommittee: optionalString(
+            item.from_committee,
+            `${field}.from_committee`,
+          ),
         };
       },
     ),
     silentAbout: stringList(record.silent_about),
+    silentCommittees: stringList(record.silent_committees),
   };
 }
 
@@ -1252,17 +1265,57 @@ export interface TemporalFactView {
   status: string;
   statusStated: string;
   stated: string;
+  /** The reading without its temporal clause. Renderable **only** where
+      `sharedMaturity` carries that clause and `carriesSpan` says this
+      fact is one of the facts it speaks for. */
+  observedStated: string;
+  /** Whether this fact's sentence ends in a coverage clause at all. An
+      unavailable reading's does not, so it keeps its own sentence even
+      where the rest of the section shares one. */
+  carriesSpan: boolean;
   span: ObservationSpanView;
+}
+
+/**
+ * The one maturity every finding shares, where they share one.
+ *
+ * Null means they differ and each finding carries its own. The backend
+ * decides which — this side never compares two spans.
+ */
+export interface SharedMaturityView {
+  status: string;
+  statusStated: string;
+  spanStated: string;
+  count: number;
+  stated: string;
 }
 
 export interface JournalView {
   captures: number;
+  sharedMaturity: SharedMaturityView | null;
   facts: readonly TemporalFactView[];
 }
 
 function parseJournal(record: UnknownRecord): JournalView {
   return {
     captures: requireNumber(record.captures, "journal.captures"),
+    sharedMaturity: optionalSection(
+      record.shared_maturity,
+      "journal.shared_maturity",
+      (shared) => ({
+        status: requireString(shared.status, "journal.shared_maturity.status"),
+        statusStated: requireString(
+          shared.status_stated,
+          "journal.shared_maturity.status_stated",
+        ),
+        spanStated: requireString(
+          shared.span_stated,
+          "journal.shared_maturity.span_stated",
+        ),
+        count: requireNumber(shared.count, "journal.shared_maturity.count"),
+        stated: requireString(shared.stated, "journal.shared_maturity.stated"),
+      }),
+    ),
     facts: recordList(record.facts, "journal.facts").map((item, index) => {
       const field = `journal.facts[${index}]`;
       const span = requireRecord(item.span, `${field}.span`);
@@ -1275,6 +1328,11 @@ function parseJournal(record: UnknownRecord): JournalView {
           `${field}.status_stated`,
         ),
         stated: requireString(item.stated, `${field}.stated`),
+        observedStated: requireString(
+          item.observed_stated,
+          `${field}.observed_stated`,
+        ),
+        carriesSpan: requireBoolean(item.carries_span, `${field}.carries_span`),
         span: {
           count: requireNumber(span.count, `${field}.span.count`),
           stated: requireString(span.stated, `${field}.span.stated`),
