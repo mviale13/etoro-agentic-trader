@@ -199,3 +199,97 @@ opposite claims about the same blank page.
 
 Opening the page fetches nothing, asks no model and records no judgment.
 `movrvest acquire` and `movrvest judge` remain the only two spends.
+
+---
+
+## Judged market facts reach the crypto dossier (2026-08-13)
+
+The audit that earned this page found six crypto layers stopping at the
+CLI. One layer was stopping *later than that* — served on this very
+endpoint and dropped one line before the screen.
+
+### The boundary that was dropping them
+
+`GET /crypto/{symbol}/dossier` composes `"facts"` from
+`asset_profile_response(TokenFactsService().established(...))` — the
+same adapter, over the same stores, that the general dossier serves as
+`asset_profile`. Thirteen judged rows in five groups, plus the rejection
+ledger, for every asset in the corpus.
+
+`parseDossier` in `lib/api/crypto-dossier.ts` had **no `facts` key**. Its
+only occurrences of the word were nested inside events and journal. So
+the payload arrived, was parsed into a view model with no place for it,
+and vanished — while `/dossiers/HYPE`, the *general* case, rendered the
+identical evidence. The surface built for tokens was the one hiding it.
+
+Corpus-wide, what was invisible: **22 established, 50 claimed, 6
+calculated, 6 conflicted, 20 absent** rows and 9 refused claims.
+
+### HYPE, before and after
+
+Before: nothing. After, on the token's own page:
+
+- **Market value — Sources conflict.** No figure at all: *"credible
+  sources disagree beyond observation-timing tolerance (10%):
+  TokenInsight reports $18.3bn; CoinGecko reports $12.2bn. The sources
+  appear to count the concept differently, and no methodology rule
+  chooses between them."*
+- **Circulating supply — Sources conflict**, three vendors 4.5× apart.
+- **Claims this platform refused (2)** — *"Yahoo Finance's market value
+  of $8,105 was not accepted: it disagrees with every arithmetically
+  coherent claim by a factor of at least 1,504,321"*, and its project
+  age claiming six years of history for a token that began trading in
+  2024.
+
+### Two rules the section keeps
+
+**A conflict is never hidden behind a value.** Where sources disagree
+the gate serves no figure, and the sentence explaining why is printed at
+full size. The general dossier puts that sentence in a hover `title`;
+a reader who never hovers never learns two sources disagree, so this
+adaptation renders it always, for every row and every state.
+
+**A refused claim is never a candidate value.** The ledger sits in its
+own block, outside the groups, and says what it is: evidence about the
+source that made it. Nothing in its shape — a bare `statement`, no
+label, no standing, no source, no age — invites a surface to render it
+as a row.
+
+The presentation is adapted rather than imported: the crypto page's own
+`Heading`, `Card` and deliberately-monochrome `Tag` are reused, so no
+state is colour-ranked, and the equity `StandingMark` palette is not
+carried across. The two dossiers share the backend adapter and share no
+component.
+
+### The unjudged-committee crash, and how reachable it was
+
+`UnjudgedCommittee.as_dict()` emits `posture: None` and omits
+`posture_stated`, `applicability` and `evidence_count` — correctly, since
+*this committee has never run here* and *this committee ran and could
+not answer* are different facts the domain keeps as separate types. The
+parser required all four via `requireString`/`requireNumber`, threw on
+the first, and `parseDossier`'s catch returned `dossier: null` — so one
+unjudged committee blanked the entire page to "Nothing is held for this
+asset".
+
+**Not a ninth-asset hypothetical: the default state of a new checkout.**
+`data/judgments/` is gitignored, so on a fresh clone every registered
+committee is unjudged for every asset and every crypto dossier rendered
+empty.
+
+The guard is on the parser, which now reads those fields as absent and
+renders the matrix's own sentence — *"this committee has recorded no
+judgment for this asset, so nothing is known about what it would
+conclude"*. `evidenceCount` becomes `null` rather than `0`, because a
+committee that never ran did not weigh nothing. **No backend or domain
+change was required**: what the domain says was already right.
+
+### Deliberately not done
+
+Judgment History stays off this page. The investigation that chose this
+slice measured the store and found **zero verdict transitions across the
+corpus** — 67 records, 26 judged, 26 abstained, 15 unavailable, and not
+one (asset, committee) whose answer ever moved. Surfacing it today would
+report when the committee was switched off, which is a fact about this
+platform's configuration rather than about the asset. #113's
+architecture is preserved; the presentation waits for a real change.

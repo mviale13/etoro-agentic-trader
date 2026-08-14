@@ -514,25 +514,78 @@ function parseQuality(record: UnknownRecord): QualityView {
 export interface CommitteeCellView {
   key: string;
   name: string;
+  /** What the committee itself is, in its own words. */
   stated: string;
   question: string | null;
-  posture: string;
-  postureStated: string;
-  applicability: string;
+  /** Null for a committee that has recorded no judgment at all. It has
+      never run here, so it holds no posture — which is a different fact
+      from having run and reached nothing, and the domain keeps the two
+      apart as separate types. */
+  posture: string | null;
+  postureStated: string | null;
+  applicability: string | null;
   verdict: string | null;
   verdictStated: string | null;
   because: string | null;
   unavailableBecause: string | null;
   confidenceStated: string | null;
   economicRole: string | null;
-  evidenceCount: number;
+  /** Null where no judgment was recorded — never a zero, which would
+      say the committee looked and weighed nothing. */
+  evidenceCount: number | null;
   refs: readonly string[];
   judgmentsRecorded: number;
   wordingRefused: string | null;
+  /** The matrix's own sentence for this cell, whatever its state. It is
+      what an unjudged committee has instead of a verdict. */
+  cellStated: string;
 }
 
 export interface CommitteesView {
   committees: readonly CommitteeCellView[];
+}
+
+// ── judged market facts ─────────────────────────────────────────────
+
+/**
+ * One figure the validation gate judged, exactly as the backend judged it.
+ *
+ * Every field is authored server-side: the value's wording, how far it
+ * can be trusted, that standing in words, the source, the age, and the
+ * sentence explaining the judgment. Nothing here is recomputed,
+ * re-ranked or re-worded on this side — a figure whose sources conflict
+ * carries no value at all, and the reason it carries none *is* the
+ * finding.
+ */
+export interface FactRowView {
+  label: string;
+  /** Null where the gate served no value — including every conflict. */
+  stated: string | null;
+  /** "established" | "claimed" | "calculated" | "conflicted" | "absent". */
+  standing: string;
+  standingStated: string;
+  source: string | null;
+  age: string | null;
+  /** Why it stands as it does. Always present, and always shown. */
+  because: string;
+}
+
+export interface FactGroupView {
+  title: string;
+  rows: readonly FactRowView[];
+}
+
+/**
+ * What is measured about this asset, and what was refused.
+ *
+ * `rejected` is the ledger of provider claims the gate would not accept.
+ * They are evidence about a source, never candidate values, and this
+ * side keeps them structurally apart from the rows above for exactly
+ * that reason.
+ */
+export interface FactsView {
+  groups: readonly FactGroupView[];
+  rejected: readonly string[];
 }
 
 function parseCommittees(record: UnknownRecord): CommitteesView {
@@ -547,12 +600,16 @@ function parseCommittees(record: UnknownRecord): CommitteesView {
           name: requireString(identity.name, `${field}.committee.name`),
           stated: requireString(identity.stated, `${field}.committee.stated`),
           question: optionalString(item.question, `${field}.question`),
-          posture: requireString(item.posture, `${field}.posture`),
-          postureStated: requireString(
+          // An unjudged committee sends none of these. It has recorded
+          // no judgment, so it has no posture, no applicability reading
+          // and no evidence count — and requiring them threw, which
+          // took the whole page down with it.
+          posture: optionalString(item.posture, `${field}.posture`),
+          postureStated: optionalString(
             item.posture_stated,
             `${field}.posture_stated`,
           ),
-          applicability: requireString(
+          applicability: optionalString(
             item.applicability,
             `${field}.applicability`,
           ),
@@ -574,10 +631,12 @@ function parseCommittees(record: UnknownRecord): CommitteesView {
             item.economic_role,
             `${field}.economic_role`,
           ),
-          evidenceCount: requireNumber(
-            item.evidence_count,
-            `${field}.evidence_count`,
-          ),
+          // Null, never zero: a committee that never ran did not weigh
+          // nothing, it weighed nothing *yet*.
+          evidenceCount:
+            item.evidence_count === null || item.evidence_count === undefined
+              ? null
+              : requireNumber(item.evidence_count, `${field}.evidence_count`),
           refs: stringList(item.refs),
           judgmentsRecorded: requireNumber(
             item.judgments_recorded,
@@ -587,8 +646,58 @@ function parseCommittees(record: UnknownRecord): CommitteesView {
             item.wording_refused,
             `${field}.wording_refused`,
           ),
+          cellStated: requireString(item.stated, `${field}.stated`),
         };
       },
+    ),
+  };
+}
+
+function parseFacts(value: unknown): FactsView | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const record = requireRecord(value, "facts");
+
+  return {
+    groups: recordList(record.groups, "facts.groups").map((group, index) => {
+      const field = `facts.groups[${index}]`;
+
+      return {
+        title: requireString(group.title, `${field}.title`),
+        rows: recordList(group.rows, `${field}.rows`).map((row, position) => ({
+          label: requireString(row.label, `${field}.rows[${position}].label`),
+          // Null on purpose wherever the gate served no value — a
+          // conflicted figure has none, and inventing one here would be
+          // the whole defect this section exists to end.
+          stated: optionalString(
+            row.stated,
+            `${field}.rows[${position}].stated`,
+          ),
+          standing: requireString(
+            row.standing,
+            `${field}.rows[${position}].standing`,
+          ),
+          standingStated: requireString(
+            row.standing_stated,
+            `${field}.rows[${position}].standing_stated`,
+          ),
+          source: optionalString(
+            row.source,
+            `${field}.rows[${position}].source`,
+          ),
+          age: optionalString(row.age, `${field}.rows[${position}].age`),
+          because: requireString(
+            row.because,
+            `${field}.rows[${position}].because`,
+          ),
+        })),
+      };
+    }),
+    rejected: recordList(record.rejected, "facts.rejected").map(
+      (item, index) =>
+        requireString(item.statement, `facts.rejected[${index}].statement`),
     ),
   };
 }
@@ -1145,6 +1254,10 @@ export interface CryptoDossier {
   supply: SupplyView | null;
   issuance: IssuanceView | null;
   market: MarketView | null;
+  /** What the validation gate judged about this token's market figures,
+      and the provider claims it refused. Served all along, and dropped
+      here until this parser learned the key. */
+  facts: FactsView | null;
   intelligence: IntelligenceView | null;
   journal: JournalView | null;
 }
@@ -1195,6 +1308,7 @@ function parseDossier(payload: unknown): CryptoDossier {
     supply: optionalSection(record.supply, "supply", parseSupply),
     issuance: optionalSection(record.issuance, "issuance", parseIssuance),
     market: optionalSection(record.market, "market", parseMarket),
+    facts: parseFacts(record.facts),
     intelligence: optionalSection(
       record.intelligence,
       "intelligence",
