@@ -391,3 +391,65 @@ Both halves were verified by re-creating the two historical defects and
 watching the suite fail, then restoring.
 
 No backend or domain change was required.
+
+---
+
+## The question taxonomy, grouped by what is held (2026-08-13)
+
+The audit measured the question block at **32–35% of every crypto
+dossier** — the largest thing on the page, and overwhelmingly the sound
+of what the platform cannot say. Bitcoin asks nineteen questions: one is
+scored, five are not yet answerable, ten are refused as the wrong
+instrument. The single answered question sat among eight unanswered
+ones, at identical visual weight.
+
+### The duplication defect underneath it
+
+For a question refused as the wrong instrument, `applicability_because`
+and the quality answer's `because` are **byte-identical** — measured at
+10 of 10 on Bitcoin — and the page rendered both. Ten doubled paragraphs
+on BTC and 1INCH, seven on ETH, SOL and ADA. The answer's reason now
+renders only where it differs from the applicability's.
+
+### The regrouping
+
+By the domain's own `participation`, never by a rule this side invents.
+*Whether* a question is asked is applicability; *whether anything is
+held to answer it* is participation, and those are the two questions an
+investor is actually asking.
+
+| group | rule | disclosure |
+|---|---|---|
+| **Asked, and something is held** | `scored`, `shown`, `outside` | open, full detail |
+| **Asked, and not yet answerable** | asked and not held | **open**, one line each |
+| **Not the right question for this kind of asset** | `not_applicable_for_archetype` | collapsed |
+| **Undetermined** | `undetermined` | collapsed |
+
+**The unanswered group is never folded away.** Collapsing it would let a
+page with nothing held read exactly like a page with nothing missing.
+Only the two groups that say *this question does not apply here* are
+demoted, and every count stays in its heading so a collapsed group can
+never be mistaken for an empty one.
+
+### Measured, before → after
+
+| | before | after |
+|---|---|---|
+| question block, BTC | 12,754 chars (31.8%) | **9,219 (24.1%)** |
+| question block, HYPE | 13,081 (34.5%) | **10,097** |
+| doubled reason, BTC | 2× per refused question | **1×** |
+| BTC groups | Asked 9 · Not-right 10 | Held 4 · Unresolved 5 · Not-right 10 |
+| HYPE groups | Asked 14 · Not-right 4 | Held 7 · Unresolved 8 · Not-right 4 |
+| questions, every asset | 19 | **19** |
+
+### Zero analytical semantics changed
+
+Same question set, same applicability decisions, same participation
+states, same backend-authored sentences. `held` and `unresolved`
+*partition* the asked questions — `unresolved` is defined as
+asked-and-not-held rather than filtered independently — so a question
+cannot fall out of both, which is how a regrouping silently loses one.
+Every reason stays in the page whether or not its group starts open,
+which is what keeps the taxonomy inspectable.
+
+No backend or domain change was required.
