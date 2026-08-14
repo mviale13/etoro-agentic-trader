@@ -674,16 +674,38 @@ function Questions({
   identity: CryptoIdentity;
   quality: QualityView | null;
 }) {
-  const asked = identity.questions.filter((q) => q.applicability === "ask");
+  const participation = new Map(
+    (quality?.answers ?? []).map((answer) => [answer.key, answer]),
+  );
+
+  // Grouped by the domain's own `participation`, never by a rule this
+  // side invents. Applicability decides *whether* a question is asked;
+  // participation decides whether anything is yet held to answer it —
+  // and those are the two questions an investor is actually asking.
+  //
+  // Where no quality reading exists the map is empty, and every asked
+  // question falls to `unresolved`, which is what it is.
+  const held = identity.questions.filter((question) => {
+    const answer = participation.get(question.key);
+
+    return (
+      question.applicability === "ask" &&
+      (answer?.participation === "scored" ||
+        answer?.participation === "shown" ||
+        answer?.participation === "outside")
+    );
+  });
+
+  const unresolved = identity.questions.filter(
+    (question) =>
+      question.applicability === "ask" && !held.includes(question),
+  );
+
   const refused = identity.questions.filter(
     (q) => q.applicability === "not_applicable_for_archetype",
   );
   const undetermined = identity.questions.filter(
     (q) => q.applicability === "undetermined",
-  );
-
-  const participation = new Map(
-    (quality?.answers ?? []).map((answer) => [answer.key, answer]),
   );
 
   return (
@@ -712,31 +734,136 @@ function Questions({
 
       <div className="mt-4 space-y-6">
         <QuestionGroup
-          title={`Asked — ${asked.length}`}
-          blurb="The archetype makes these meaningful for this asset."
-          questions={asked}
+          title={`Asked, and something is held — ${held.length}`}
+          blurb="The archetype makes these meaningful for this asset, and evidence has been read for them."
+          questions={held}
           participation={participation}
         />
 
+        {/* Asked and unanswered is a fact about this platform's
+            evidence. It stays open and stays counted — folding it away
+            would let a gap read as an absence of gaps — but it is one
+            line each, because there is nothing yet to read. */}
+        {unresolved.length > 0 ? (
+          <QuestionSummaryGroup
+            title={`Asked, and not yet answerable — ${unresolved.length}`}
+            blurb="The archetype makes these meaningful and nothing is held to answer them yet. A statement about this platform's evidence, never about the asset."
+            questions={unresolved}
+            participation={participation}
+          />
+        ) : null}
+
+        {/* Refused questions are the largest group on most assets — ten
+            of nineteen on Bitcoin — and each one says the same kind of
+            thing: this is the wrong instrument. Collapsed rather than
+            dropped: every reason is one click away, and the count is
+            visible without opening anything. */}
         {refused.length > 0 ? (
-          <QuestionGroup
-            title={`Not the right question — ${refused.length}`}
-            blurb="Refused because they are the wrong instrument for this kind of asset. This is a claim about the question, not a mark against the asset."
+          <QuestionSummaryGroup
+            title={`Not the right question for this kind of asset — ${refused.length}`}
+            blurb="Refused because they are the wrong instrument here. This is a claim about the question, not a mark against the asset."
             questions={refused}
             participation={participation}
+            collapsed
           />
         ) : null}
 
         {undetermined.length > 0 ? (
-          <QuestionGroup
+          <QuestionSummaryGroup
             title={`Undetermined — ${undetermined.length}`}
             blurb="No archetype was established, so this platform cannot say whether these apply. A statement about what has been read here, never about the asset."
             questions={undetermined}
             participation={participation}
+            collapsed
           />
         ) : null}
       </div>
     </section>
+  );
+}
+
+/**
+ * A group of questions there is nothing yet to read, listed rather than
+ * expounded.
+ *
+ * Both kinds it serves say one thing each: *nothing is held for this
+ * yet*, or *this is the wrong instrument*. Printed at full length they
+ * were a third of the page — nineteen questions on Bitcoin, of which
+ * one is scored — so the platform's largest voice was the sound of what
+ * it cannot say.
+ *
+ * **Nothing is removed and no wording is changed.** Every question
+ * keeps its name, its own question text, its state tag and its
+ * backend-authored reason; `collapsed` decides only whether the reason
+ * starts open. Counts stay in the heading, so a group cannot be
+ * mistaken for an empty one.
+ */
+function QuestionSummaryGroup({
+  title,
+  blurb,
+  questions,
+  participation,
+  collapsed = false,
+}: {
+  title: string;
+  blurb: string;
+  questions: readonly CryptoQuestionView[];
+  participation: Map<string, QualityView["answers"][number]>;
+  collapsed?: boolean;
+}) {
+  if (questions.length === 0) {
+    return null;
+  }
+
+  const rows = (
+    <ul className="mt-3 space-y-2">
+      {questions.map((question) => {
+        const answer = participation.get(question.key);
+
+        return (
+          <li
+            key={question.key}
+            className="rounded-[16px] border border-slate-200 bg-white px-4 py-3"
+          >
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-sm font-semibold text-slate-900">
+                {question.label}
+              </span>
+
+              <span className="text-sm text-slate-500">{question.asks}</span>
+
+              {answer ? <Tag>{answer.participationStated}</Tag> : null}
+            </div>
+
+            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              {question.applicabilityBecause}
+            </p>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
+  if (!collapsed) {
+    return (
+      <div>
+        <p className="text-sm font-semibold text-slate-800">{title}</p>
+        <p className="mt-1 max-w-3xl text-sm text-slate-500">{blurb}</p>
+        {rows}
+      </div>
+    );
+  }
+
+  return (
+    <details>
+      <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+        {title}
+      </summary>
+
+      <p className="mt-1 max-w-3xl text-sm text-slate-500">{blurb}</p>
+
+      {rows}
+    </details>
   );
 }
 
@@ -797,7 +924,12 @@ function QuestionGroup({
                 {question.applicabilityBecause}
               </p>
 
-              {answer?.because ? (
+              {/* For a question refused as the wrong instrument the two
+                  sentences are byte-identical — ten of them on Bitcoin
+                  — so the reason was printed twice. Shown only where
+                  the answer adds something the applicability did not. */}
+              {answer?.because &&
+              answer.because !== question.applicabilityBecause ? (
                 <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
                   {answer.because}
                 </p>
