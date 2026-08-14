@@ -11,6 +11,7 @@ import {
   type CryptoDossier,
   type CryptoIdentity,
   type CryptoQuestionView,
+  type FactsView,
   type IntelligenceView,
   type InvestorStatementView,
   type IssuanceView,
@@ -149,6 +150,9 @@ function Sections({ dossier }: { dossier: CryptoDossier }) {
       <Questions identity={dossier.identity} quality={dossier.quality} />
       <Supply supply={dossier.supply} issuance={dossier.issuance} />
       <Market market={dossier.market} />
+      {dossier.facts ? (
+        <JudgedFacts facts={dossier.facts} symbol={dossier.symbol} />
+      ) : null}
       <Happening intelligence={dossier.intelligence} />
       <Maturity journal={dossier.journal} />
       <Gaps dossier={dossier} />
@@ -469,7 +473,13 @@ function Committees({
           <Card key={cell.key}>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-semibold text-slate-900">{cell.name}</h3>
-              <Tag>{cell.applicability.replace(/_/g, " ")}</Tag>
+
+              {/* A committee that has never run here holds no
+                  applicability reading either — it did not decline the
+                  question, it never reached it. */}
+              {cell.applicability ? (
+                <Tag>{cell.applicability.replace(/_/g, " ")}</Tag>
+              ) : null}
             </div>
 
             {cell.question ? (
@@ -478,8 +488,11 @@ function Committees({
               </p>
             ) : null}
 
+            {/* Verdict where it answered, posture where it ran and did
+                not, and the matrix's own sentence where it has recorded
+                nothing at all. Never a fabricated verdict. */}
             <p className="mt-3 text-[15px] leading-relaxed text-slate-800">
-              {cell.verdictStated ?? cell.postureStated}
+              {cell.verdictStated ?? cell.postureStated ?? cell.cellStated}
             </p>
 
             {cell.because ? (
@@ -512,10 +525,14 @@ function Committees({
                   {cell.confidenceStated}
                 </Detail>
               ) : null}
-              <Detail label="Evidence it weighed">
-                {cell.evidenceCount} finding
-                {cell.evidenceCount === 1 ? "" : "s"}
-              </Detail>
+              {/* Absent, not zero: a committee that never ran did not
+                  weigh nothing — it has yet to weigh anything. */}
+              {cell.evidenceCount === null ? null : (
+                <Detail label="Evidence it weighed">
+                  {cell.evidenceCount} finding
+                  {cell.evidenceCount === 1 ? "" : "s"}
+                </Detail>
+              )}
               <Detail label="Times convened">{cell.judgmentsRecorded}</Detail>
             </dl>
           </Card>
@@ -946,6 +963,123 @@ function Market({ market }: { market: MarketView | null }) {
             {market.peerUnavailableBecause}
           </p>
         </Card>
+      ) : null}
+    </section>
+  );
+}
+
+// ── 6b. what is measured, and how far it is trusted ─────────────────
+
+/**
+ * The figures the validation gate judged, with its judgment attached.
+ *
+ * These were served on this endpoint from the day it existed and
+ * dropped at the parser, so the asset-class dossier — the surface built
+ * for tokens — was the one hiding them. On HYPE that meant a market
+ * value two sources put 50% apart, a circulating supply three sources
+ * put 4.5× apart, and a provider claim wrong by a factor of 1.5 million,
+ * none of it visible on the token's own page.
+ *
+ * Two rules this section keeps. **A conflict is not hidden behind a
+ * value**: where sources disagree the gate serves no figure at all, and
+ * the reason it serves none is the finding, printed at full size rather
+ * than as a tooltip. And **a rejected claim is never a candidate
+ * value**: the ledger sits apart from the rows, because those numbers
+ * are evidence about a source, not readings of the asset.
+ *
+ * Everything is worded by the backend — value, standing, standing
+ * sentence, source, age, reason. This groups and places.
+ */
+function JudgedFacts({
+  facts,
+  symbol,
+}: {
+  facts: FactsView;
+  symbol: string;
+}) {
+  return (
+    <section aria-labelledby="facts-heading">
+      <Heading id="facts-heading">
+        What is measured about it, and how far it is trusted
+      </Heading>
+
+      <p className="mt-2 max-w-3xl text-sm text-slate-500">
+        Every figure is a provider observation that was judged before it
+        was served: checked for identity, for its own arithmetic, and
+        against the other sources. Where they disagree, no value is shown
+        for {symbol} — the disagreement is the finding, and averaging it
+        away would invent a number nobody published.
+      </p>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {facts.groups.map((group) => (
+          <Card key={group.title}>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              {group.title}
+            </p>
+
+            <dl className="mt-3 space-y-3">
+              {group.rows.map((row) => (
+                <div key={row.label}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <dt className="text-sm text-slate-700">{row.label}</dt>
+
+                    <dd className="flex shrink-0 items-baseline gap-2">
+                      {row.stated ? (
+                        <span className="text-sm font-semibold tabular-nums text-slate-900">
+                          {row.stated}
+                        </span>
+                      ) : null}
+
+                      <Tag>{row.standingStated}</Tag>
+                    </dd>
+                  </div>
+
+                  {/* Always shown, for every state. The equity dossier
+                      puts this in a hover title; a reader who never
+                      hovers never learns that two sources disagree. */}
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    {row.because}
+                  </p>
+
+                  {row.age ? (
+                    <p className="mt-0.5 text-xs text-slate-400">{row.age}</p>
+                  ) : null}
+                </div>
+              ))}
+            </dl>
+          </Card>
+        ))}
+      </div>
+
+      {facts.rejected.length > 0 ? (
+        <div className="mt-3 rounded-[20px] border border-slate-300 bg-slate-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Claims this platform refused ({facts.rejected.length})
+          </p>
+
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            Kept rather than discarded, and kept out of the figures above:
+            a claim that failed validation is evidence about the source
+            that made it, never a reading of {symbol}.
+          </p>
+
+          <ul className="mt-3 space-y-2">
+            {facts.rejected.map((statement) => (
+              <li
+                key={statement}
+                className="flex gap-2.5 text-sm leading-relaxed text-slate-700"
+              >
+                <span
+                  aria-hidden="true"
+                  className="mt-2 size-1 shrink-0 rounded-full bg-slate-400"
+                />
+
+                <span>{statement}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </section>
   );
