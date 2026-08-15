@@ -101,6 +101,12 @@ GOVERNED: dict[str, object] = {
         MomentumSignalService.NEGATIVE_THRESHOLD,
         MomentumSignalService.STRONG_NEGATIVE_THRESHOLD,
     ),
+    # The eligibility rule's constant is a *membership*, not a
+    # threshold — sorted so the fingerprint is stable across the set's
+    # iteration order, which is not guaranteed between runs.
+    "momentum-input-eligibility": tuple(
+        sorted(warrant.value for warrant in MomentumSignalService.ELIGIBLE_WARRANTS)
+    ),
     "signal-vote": (
         CompanyCommitteeService.VALUE_WEIGHT,
         CompanyCommitteeService.QUALITY_WEIGHT,
@@ -149,6 +155,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "provider-quality": (1, RuleStatus.UNSOURCED, "3adc0fd3fd9f"),
     "quality-grounded": (1, RuleStatus.LICENSED, "02dffb0feb63"),
     "momentum-bands": (1, RuleStatus.UNSOURCED, "2ef4de85d277"),
+    "momentum-input-eligibility": (1, RuleStatus.ARGUED, "03e3e0ae4ccf"),
     "signal-vote": (1, RuleStatus.UNSOURCED, "f2fdf881fe4f"),
     "vote-confidence": (1, RuleStatus.UNSOURCED, "16d0753d000f"),
     "cognitive-confidence": (1, RuleStatus.UNSOURCED, "d9b82416ea5b"),
@@ -208,10 +215,23 @@ def test_exactly_one_rule_is_licensed() -> None:
     assert [r.key for r in licensed] == ["quality-grounded"]
 
 
-def test_exactly_one_rule_is_argued() -> None:
+def test_exactly_two_rules_are_argued() -> None:
+    """Naming a rule still validates nothing; arguing one says where.
+
+    The count moved from one to two when the first warrant consumer
+    landed, and the second entry earns the status the same way the
+    first does: `momentum-input-eligibility` is argued in
+    `momentum_signal_service.py`, from the scale-invariance of a ratio
+    over two closes of one series. A future rule cannot join this list
+    without this line changing beside it.
+    """
+
     argued = [r for r in DECISION_RULES.values() if r.status is RuleStatus.ARGUED]
 
-    assert [r.key for r in argued] == ["risk-severity"]
+    assert [r.key for r in argued] == [
+        "risk-severity",
+        "momentum-input-eligibility",
+    ]
 
 
 def test_every_rule_says_why_its_status_is_what_it_is() -> None:
@@ -340,7 +360,17 @@ def test_the_signals_carry_their_band_rules() -> None:
 
     assert ValueSignalService().build(unknowable).rule is None
     assert QualitySignalService().build(unknowable).rule is None
-    assert MomentumSignalService().build(unknowable).rule is None
+
+    # Momentum's abstention is itself rule-governed since the first
+    # warrant consumer: it names `momentum-input-eligibility`, the rule
+    # that decided the input could not be read as a price move. The
+    # other two still carry nothing, because nothing decided their
+    # silence — the evidence simply was not there.
+    silent = MomentumSignalService().build(unknowable)
+
+    assert silent.trend == "UNKNOWN"
+    assert silent.rule is not None
+    assert silent.rule.key == "momentum-input-eligibility"
 
 
 def test_the_vote_carries_its_rules() -> None:

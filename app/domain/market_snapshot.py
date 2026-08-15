@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance
@@ -41,6 +41,17 @@ class MarketQuote:
     #: asked whether its zero was observed, and the answer is no
     #: longer indistinguishable from a real flat day.
     change_absence: "ClaimAbsence | None" = None
+
+    #: The date of the last close this quote was read from, where the
+    #: provider's series carried one.
+    #:
+    #: #133 measured that this was available and discarded: the adapter
+    #: read the closing series for alignment and stamped the quote with
+    #: the moment MOVRvest asked. A Friday close served on a Sunday was
+    #: then described as today's move. Kept for the momentum path,
+    #: which is the one place a sentence names a period; nothing else
+    #: reads it, and no trading calendar is consulted anywhere.
+    session_date: "date | None" = None
 
     #: Whether `currency` is the provider's own word or this platform's
     #: assumption. Every Yahoo quote is the latter: the adapter writes
