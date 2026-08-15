@@ -342,28 +342,66 @@ function List({ title, items }: { title: string; items: readonly string[] }) {
  * the section**: this platform can hold a number and not have
  * established what it means for this asset, and the two are different
  * claims.
+ *
+ * **One semantic conclusion, one owner.** A statement quoting a
+ * committee belongs to the committees section below, which renders the
+ * same conclusion with the question it answers, its applicability, its
+ * confidence and the magnitudes beneath it. Rendered here as well it was
+ * a verbatim second copy — across all eight assets every committee
+ * reason was byte-identical between the two, and seven of fourteen
+ * answers were too. So this section owns what the evidence layer
+ * establishes, and `fromCommittee` is the backend's own mark of which
+ * is which. **Nothing is dropped**: every committee statement, and every
+ * silence a committee owns, still renders — one section further down.
  */
 function Assessment({
   assessment,
 }: {
   assessment: CryptoDossier["assessment"];
 }) {
+  const owned = assessment.statements.filter(
+    (statement) => statement.fromCommittee === null,
+  );
+
+  const silent = assessment.silentAbout.filter(
+    (subject) => !assessment.silentCommittees.includes(subject),
+  );
+
   return (
     <section aria-labelledby="assessment-heading">
       <Heading id="assessment-heading">What can usefully be said</Heading>
 
+      {/* A licensed meaning names the question that licensed it and the
+          lens that question is asked through, and the second half is the
+          same sentence every time that lens appears — five renderings of
+          two sentences on Bitcoin, across three supply figures. The
+          meaning and its licensing question stay on every figure, which
+          is what Invariant 10 asks for; the lens explanation is stated
+          on its first appearance and referred to thereafter. */}
       <div className="mt-3 space-y-3">
-        {assessment.statements.map((statement) => (
-          <Statement key={statement.subject} statement={statement} />
+        {owned.map((statement, index) => (
+          <Statement
+            key={statement.subject}
+            statement={statement}
+            lensesAlreadyExplained={
+              new Set(
+                owned
+                  .slice(0, index)
+                  .flatMap((earlier) =>
+                    earlier.whyItMatters.map((meaning) => meaning.licensedBy),
+                  ),
+              )
+            }
+          />
         ))}
 
-        {assessment.silentAbout.length > 0 ? (
+        {silent.length > 0 ? (
           <Card>
             <p className="text-sm text-slate-600">
               <span className="font-semibold text-slate-800">
                 Nothing useful is held about:{" "}
               </span>
-              {assessment.silentAbout.join(", ")}.
+              {silent.join(", ")}.
             </p>
           </Card>
         ) : null}
@@ -372,7 +410,18 @@ function Assessment({
   );
 }
 
-function Statement({ statement }: { statement: InvestorStatementView }) {
+function Statement({
+  statement,
+  lensesAlreadyExplained,
+}: {
+  statement: InvestorStatementView;
+  lensesAlreadyExplained: ReadonlySet<string>;
+}) {
+  // Extended as this statement's own meanings are laid out, because two
+  // questions on one figure may be asked through one lens just as two
+  // figures may be.
+  const explained = new Set(lensesAlreadyExplained);
+
   return (
     <Card>
       <div className="flex flex-wrap items-center gap-2">
@@ -397,19 +446,26 @@ function Statement({ statement }: { statement: InvestorStatementView }) {
         </p>
       ) : null}
 
-      {statement.whyItMatters.map((meaning, index) => (
-        <div
-          key={`${meaning.question}-${index}`}
-          className="mt-3 border-l-2 border-slate-200 pl-3"
-        >
-          <p className="text-sm leading-relaxed text-slate-700">
-            {meaning.stated}
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            {meaning.question} — {meaning.licensedBy}
-          </p>
-        </div>
-      ))}
+      {statement.whyItMatters.map((meaning, index) => {
+        const first = !explained.has(meaning.licensedBy);
+
+        explained.add(meaning.licensedBy);
+
+        return (
+          <div
+            key={`${meaning.question}-${index}`}
+            className="mt-3 border-l-2 border-slate-200 pl-3"
+          >
+            <p className="text-sm leading-relaxed text-slate-700">
+              {meaning.stated}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              {meaning.question}
+              {first ? ` — ${meaning.licensedBy}` : null}
+            </p>
+          </div>
+        );
+      })}
 
       {statement.interpretationWithheld ? (
         <div className="mt-3 rounded-[14px] bg-slate-50 p-3">
@@ -608,27 +664,40 @@ function Committees({
               </p>
             ) : null}
 
-            <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
-              {cell.economicRole ? (
-                <Detail label="Economic role read from">
-                  {cell.economicRole}
-                </Detail>
-              ) : null}
-              {cell.confidenceStated ? (
-                <Detail label="Confidence, in its own terms">
-                  {cell.confidenceStated}
-                </Detail>
-              ) : null}
-              {/* Absent, not zero: a committee that never ran did not
-                  weigh nothing — it has yet to weigh anything. */}
-              {cell.evidenceCount === null ? null : (
-                <Detail label="Evidence it weighed">
-                  {cell.evidenceCount} finding
-                  {cell.evidenceCount === 1 ? "" : "s"}
-                </Detail>
-              )}
-              <Detail label="Times convened">{cell.judgmentsRecorded}</Detail>
-            </dl>
+            {/* Two counters used to sit here and neither was investment
+                evidence.
+
+                *Evidence it weighed* was not what its label said. The
+                count is captured beside the judgment by the recording
+                command, whether or not the committee ever received it —
+                and a committee that declines a question returns before
+                reading any evidence at all. Bitcoin's Value Capture
+                declined the question as the wrong instrument and the
+                counter read "3 findings", citing none of them. Where the
+                committee did answer, the findings it cited are already
+                below, in the magnitudes it read.
+
+                *Times convened* counted runs of `movrvest judge`. Across
+                all sixteen recorded series no verdict has ever changed;
+                every variation is this platform's own judging flag being
+                turned off and on, plus one refused draft. That is
+                execution history, and it stays in the record and on
+                `movrvest committees` — it was never a finding about the
+                asset. */}
+            {cell.economicRole || cell.confidenceStated ? (
+              <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                {cell.economicRole ? (
+                  <Detail label="Economic role read from">
+                    {cell.economicRole}
+                  </Detail>
+                ) : null}
+                {cell.confidenceStated ? (
+                  <Detail label="Confidence, in its own terms">
+                    {cell.confidenceStated}
+                  </Detail>
+                ) : null}
+              </dl>
+            ) : null}
 
             <JudgmentMagnitude cell={cell} protocol={protocol} />
           </Card>
@@ -815,33 +884,53 @@ function QuestionSummaryGroup({
     return null;
   }
 
-  const rows = (
-    <ul className="mt-3 space-y-2">
-      {questions.map((question) => {
-        const answer = participation.get(question.key);
+  // An asked question's reason is its lens's, shared with every other
+  // question that lens asks; a refused or undetermined one's is its
+  // own — eight distinct reasons across Bitcoin's ten refusals. The
+  // backend already tells the two apart: `askedBy` names the lens on an
+  // asked question and is null on every other, corpus-wide. So the
+  // shared reason rises to the group and the distinct ones stay on
+  // their rows, and neither case is decided here by reading a sentence.
+  const shared = questions.every((question) => question.askedBy !== null);
 
-        return (
-          <li
-            key={question.key}
-            className="rounded-[16px] border border-slate-200 bg-white px-4 py-3"
-          >
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <span className="text-sm font-semibold text-slate-900">
-                {question.label}
-              </span>
+  const row = (question: CryptoQuestionView) => {
+    const answer = participation.get(question.key);
 
-              <span className="text-sm text-slate-500">{question.asks}</span>
+    return (
+      <li
+        key={question.key}
+        className="rounded-[16px] border border-slate-200 bg-white px-4 py-3"
+      >
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-sm font-semibold text-slate-900">
+            {question.label}
+          </span>
 
-              {answer ? <Tag>{answer.participationStated}</Tag> : null}
-            </div>
+          <span className="text-sm text-slate-500">{question.asks}</span>
 
-            <p className="mt-1 text-xs leading-relaxed text-slate-500">
-              {question.applicabilityBecause}
-            </p>
-          </li>
-        );
-      })}
-    </ul>
+          {answer ? <Tag>{answer.participationStated}</Tag> : null}
+        </div>
+
+        {shared ? null : (
+          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+            {question.applicabilityBecause}
+          </p>
+        )}
+      </li>
+    );
+  };
+
+  const rows = shared ? (
+    <div className="mt-3 space-y-5">
+      {byLens(questions).map((group) => (
+        <div key={group.lens || group.rows[0].key}>
+          <LensNote lens={group.lens} because={group.because} />
+          <ul className="mt-2 space-y-2">{group.rows.map(row)}</ul>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <ul className="mt-3 space-y-2">{questions.map(row)}</ul>
   );
 
   if (!collapsed) {
@@ -867,6 +956,55 @@ function QuestionSummaryGroup({
   );
 }
 
+/**
+ * Asked questions, gathered under the lens that asks them.
+ *
+ * **A lens explanation belongs where the lens applies, and that is the
+ * lens — not every row that inherits it.** An asked question's
+ * `applicabilityBecause` *is* its lens sentence, corpus-wide and without
+ * exception, and there are at most five distinct ones per asset against
+ * fifteen questions: Bitcoin printed two sentences nine times between
+ * them, Hyperliquid five sentences fifteen times.
+ *
+ * The grouping is the backend's own. `askedBy` names the lens on every
+ * asked question, and it maps one-to-one onto `applicabilityBecause`
+ * across all eight assets — so this side groups by a field it was given
+ * and never by comparing two sentences. Refused and undetermined
+ * questions do not come through here: their reasons are genuinely
+ * different from one another — eight distinct ones on Bitcoin — and
+ * `QuestionSummaryGroup` keeps them per row.
+ */
+function byLens(
+  questions: readonly CryptoQuestionView[],
+): readonly { lens: string; because: string; rows: CryptoQuestionView[] }[] {
+  const groups = new Map<
+    string,
+    { lens: string; because: string; rows: CryptoQuestionView[] }
+  >();
+
+  for (const question of questions) {
+    // Null only ever accompanies a question that is not asked, and one
+    // cannot reach here. Keyed on the question itself if it ever does,
+    // so an ungrouped row renders alone rather than silently joining a
+    // lens that does not ask it.
+    const key = question.askedBy ?? `:${question.key}`;
+
+    const group = groups.get(key);
+
+    if (group) {
+      group.rows.push(question);
+    } else {
+      groups.set(key, {
+        lens: question.askedBy ?? "",
+        because: question.applicabilityBecause,
+        rows: [question],
+      });
+    }
+  }
+
+  return [...groups.values()];
+}
+
 function QuestionGroup({
   title,
   blurb,
@@ -887,57 +1025,78 @@ function QuestionGroup({
       <p className="text-sm font-semibold text-slate-800">{title}</p>
       <p className="mt-1 max-w-3xl text-sm text-slate-500">{blurb}</p>
 
-      <ul className="mt-3 space-y-2">
-        {questions.map((question) => {
-          const answer = participation.get(question.key);
+      <div className="mt-3 space-y-5">
+        {byLens(questions).map((group) => (
+          <div key={group.lens || group.rows[0].key}>
+            <LensNote lens={group.lens} because={group.because} />
 
-          return (
-            <li
-              key={question.key}
-              className="rounded-[16px] border border-slate-200 bg-white p-4"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold text-slate-900">
-                  {question.label}
-                </span>
-                {answer ? <Tag>{answer.participationStated}</Tag> : null}
-              </div>
+            <ul className="mt-2 space-y-2">
+              {group.rows.map((question) => {
+                const answer = participation.get(question.key);
 
-              <p className="mt-1 text-sm text-slate-600">{question.asks}</p>
+                return (
+                  <li
+                    key={question.key}
+                    className="rounded-[16px] border border-slate-200 bg-white p-4"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-slate-900">
+                        {question.label}
+                      </span>
+                      {answer ? <Tag>{answer.participationStated}</Tag> : null}
+                    </div>
 
-              {answer?.stated ? (
-                <p className="mt-2 text-sm leading-relaxed text-slate-800">
-                  {answer.stated}
-                </p>
-              ) : null}
+                    <p className="mt-1 text-sm text-slate-600">
+                      {question.asks}
+                    </p>
 
-              {answer?.shown.map((line, position) => (
-                <p
-                  key={`shown-${position}`}
-                  className="mt-1.5 text-sm text-slate-600"
-                >
-                  {line}
-                </p>
-              ))}
+                    {answer?.stated ? (
+                      <p className="mt-2 text-sm leading-relaxed text-slate-800">
+                        {answer.stated}
+                      </p>
+                    ) : null}
 
-              <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                {question.applicabilityBecause}
-              </p>
+                    {answer?.shown.map((line, position) => (
+                      <p
+                        key={`shown-${position}`}
+                        className="mt-1.5 text-sm text-slate-600"
+                      >
+                        {line}
+                      </p>
+                    ))}
 
-              {/* For a question refused as the wrong instrument the two
-                  sentences are byte-identical — ten of them on Bitcoin
-                  — so the reason was printed twice. Shown only where
-                  the answer adds something the applicability did not. */}
-              {answer?.because &&
-              answer.because !== question.applicabilityBecause ? (
-                <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
-                  {answer.because}
-                </p>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
+                    {/* The applicability sentence is the lens's, and it
+                        is stated once above. What stays here is whatever
+                        the answer adds beyond it. */}
+                    {answer?.because &&
+                    answer.because !== question.applicabilityBecause ? (
+                      <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                        {answer.because}
+                      </p>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** The lens a group of questions is asked through, said once. */
+function LensNote({ lens, because }: { lens: string; because: string }) {
+  return (
+    <div className="border-l-2 border-slate-200 pl-3">
+      {lens ? (
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Asked through the {lens.toLowerCase()} lens
+        </p>
+      ) : null}
+      <p className="mt-0.5 max-w-3xl text-xs leading-relaxed text-slate-500">
+        {because}
+      </p>
     </div>
   );
 }
@@ -1709,6 +1868,8 @@ function Maturity({ journal }: { journal: JournalView | null }) {
     );
   }
 
+  const shared = journal.sharedMaturity;
+
   return (
     <section aria-labelledby="maturity-heading">
       <Heading id="maturity-heading">How long this has been watched</Heading>
@@ -1722,21 +1883,50 @@ function Maturity({ journal }: { journal: JournalView | null }) {
           looked. A count of captures is not a duration of monitoring, and
           nothing here presents it as one.
         </p>
+
+        {/* The maturity every finding shares, where the backend says
+            they share one. Thirteen findings each ending "First observed
+            on one capture." did not describe deeper history than this
+            single line does — they described the same shallow history
+            thirteen times, directly under a heading that had already
+            said one capture exists. Where the findings differ, this is
+            null and each keeps its own below. */}
+        {shared ? (
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
+            {shared.stated}
+          </p>
+        ) : null}
       </div>
 
       <ul className="mt-3 space-y-2">
-        {journal.facts.map((fact) => (
-          <li
-            key={fact.key}
-            className="rounded-[16px] border border-slate-200 bg-white px-4 py-3"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <Tag>{fact.statusStated}</Tag>
-              <span className="text-xs text-slate-400">{fact.span.stated}</span>
-            </div>
-            <p className="mt-1.5 text-sm text-slate-700">{fact.stated}</p>
-          </li>
-        ))}
+        {journal.facts.map((fact) => {
+          // Spoken for by the line above only if the section has one and
+          // this finding is among the findings it speaks for. An
+          // unavailable reading never is: it carries no coverage clause,
+          // and its own sentence says the failure was this platform's
+          // rather than the asset's.
+          const covered = shared !== null && fact.carriesSpan;
+
+          return (
+            <li
+              key={fact.key}
+              className="rounded-[16px] border border-slate-200 bg-white px-4 py-3"
+            >
+              {covered ? null : (
+                <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                  <Tag>{fact.statusStated}</Tag>
+                  <span className="text-xs text-slate-400">
+                    {fact.span.stated}
+                  </span>
+                </div>
+              )}
+
+              <p className="text-sm text-slate-700">
+                {covered ? fact.observedStated : fact.stated}
+              </p>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

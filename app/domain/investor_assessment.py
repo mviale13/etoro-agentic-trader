@@ -239,6 +239,22 @@ class InvestorStatement:
     #: something checkable.
     refs: tuple[str, ...] = ()
 
+    #: The committee whose conclusion this statement quotes, where it
+    #: quotes one. `None` for this layer's own reading of evidence.
+    #:
+    #: **Provenance, not a second copy of the answer** — the sentence is
+    #: still this layer's, and nothing downstream may read a verdict out
+    #: of a key. It exists because *quoting* a committee is exactly what
+    #: this layer does for a committee subject, so a surface rendering
+    #: the committees beside this one printed every conclusion twice and
+    #: had no honest way to know which statements to route where. It is
+    #: the first field this layer holds that is *about where a statement
+    #: came from* rather than about what it says, and it is deliberately
+    #: not `refs` — `refs` already carries the key among the evidence
+    #: handles, and a surface picking provenance out of a mixed list
+    #: would be guessing.
+    from_committee: str | None = None
+
     @property
     def is_useful(self) -> bool:
         """Whether this says anything at all beyond *we do not know*."""
@@ -257,6 +273,7 @@ class InvestorStatement:
             "interpretation_withheld": self.interpretation_withheld,
             "observed": [value.as_dict() for value in self.observed],
             "refs": list(self.refs),
+            "from_committee": self.from_committee,
         }
 
 
@@ -279,6 +296,13 @@ class InvestorAssessment:
     #: tell a thin dossier from a complete one.
     silent_about: tuple[str, ...] = ()
 
+    #: Which of `silent_about` name a committee. **A subset, carried
+    #: beside the list and never subtracted from it** — a caller
+    #: rendering this layer alone (`movrvest assessment`) must still see
+    #: every silence, and only a caller that already renders the
+    #: committees needs to know which silences they own.
+    silent_committees: tuple[str, ...] = ()
+
     @property
     def useful(self) -> tuple[InvestorStatement, ...]:
         return tuple(item for item in self.statements if item.is_useful)
@@ -295,4 +319,5 @@ class InvestorAssessment:
             "asset": self.asset,
             "statements": [item.as_dict() for item in self.statements],
             "silent_about": list(self.silent_about),
+            "silent_committees": list(self.silent_committees),
         }

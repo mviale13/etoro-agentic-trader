@@ -765,6 +765,47 @@ zero, `NOT_APPLICABLE` is never adverse, and no state is colour-coded.
 Five deficiencies recorded and not solved, including that asset class
 still cannot be resolved without the brain pipeline.
 
+**One kind of information, one owner** (the presentation-ownership
+audit, [`CRYPTO_DOSSIER_UI.md`](docs/architecture/CRYPTO_DOSSIER_UI.md),
+built). Six repetitions measured across all eight dossiers, and five of
+them were **two correct layers composed onto one page that could not
+tell their outputs apart**: every committee reason was byte-identical
+between *What can usefully be said* and *What each committee concluded*
+(16/16), and the lens sentence rendered 111 times for at most five
+distinct sentences per asset. So the repair is provenance rather than
+deletion — `InvestorStatement.from_committee` carries the committee key
+the statement quotes, a value the layer already held at construction and
+threw away, and the matrix owns the conclusion because it is the only
+one of the two that renders it *with the question it answers*. **No
+payload lost a field**; `movrvest assessment` still sees every silence,
+which is why `silent_committees` sits beside `silent_about` and is never
+subtracted from it.
+
+**Two counters left, and the removals are not the same removal.**
+*Times convened* counts runs of `movrvest judge`, and across all sixteen
+recorded series **no verdict has ever changed** — every variation is
+this platform's judging flag being toggled. *Evidence it weighed* did
+not measure what its label said: `app/commands/judge.py` calls
+`committee.evidence(asset)` unconditionally while `judge()` returns
+*before* reading any evidence when the question does not apply, so BTC's
+Value Capture declined the question, cited nothing, and reported
+weighing **3 findings**. Both stay in the domain, the store and
+`movrvest committees`; the wrong recorded count is **reported and not
+fixed**, because correcting it makes every asset's history show a
+`EvidenceMovement` that never happened.
+
+**And an unavailable reading carries no coverage clause, which is why it
+is not consulted.** `shared_maturity` states the maturity 13 findings
+share instead of each of them ending *"First observed on one capture."*
+under a heading already reading *"1 capture recorded"* — and a strict
+rule over *all* facts fired for only three of eight assets, because five
+carry an unreadable surface. `TemporalFact.stated` is untouched (the
+synthesis cites it); `observed_stated` is the same reading without the
+clause. The shared line is hedged, because *"every finding below"* would
+be false about the one finding a reader most needs to notice. Corpus:
+−8.5% visible characters, lens renderings 111 → 55, maturity rows
+80 → 0, both counters 16 → 0.
+
 **A fund cannot receive evaluative meaning from a company question its
 playbook does not ask** (the Fund Analytical Boundary, F1,
 [`FUND_EVIDENCE_RESEARCH.md`](docs/architecture/FUND_EVIDENCE_RESEARCH.md) §9,
