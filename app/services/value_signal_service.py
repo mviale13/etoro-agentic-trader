@@ -2,6 +2,10 @@ from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.decision_rules import PE_BANDS
 from app.domain.finding import Finding
+from app.domain.valuation_comparison import (
+    AbsentComparison,
+    ValuationObservation,
+)
 from app.domain.value_signal import ValueSignal
 
 
@@ -49,14 +53,42 @@ class ValueSignalService:
 
         pe = company.forward_pe
 
+        # The measured fact, and the honest state of comparison: a
+        # multiple is held and no benchmark is. The finding each exit
+        # below carries is the observation alone, with a neutral sense —
+        # the sentences these replaced claimed a "historical market
+        # average" this platform has never held, and read favourable or
+        # adverse on the strength of that claim (VALUATION_AUTHORITY.md).
+        # The band itself survives unchanged underneath, as what it
+        # always was: pe-bands@1, a house policy the decision machine
+        # still runs on, no longer dressed as an evidenced comparison.
+        observation = ValuationObservation(
+            metric="forward_pe",
+            label="Forward P/E",
+            value=pe,
+            reading=company.fundamentals_reading,
+        )
+
+        comparison = AbsentComparison(
+            observation=observation,
+            because=(
+                "No valuation benchmark is held for this security. The "
+                "bands in pe-bands@1 are this platform's own policy "
+                "constants, and a constant in code is not a benchmark "
+                "in evidence."
+            ),
+        )
+
+        finding = (Finding.neutral(comparison.stated),)
+
         if pe < self.PE_CHEAP_BELOW:
             return ValueSignal(
                 valuation="CHEAP",
                 confidence=90,
                 rule=PE_BANDS,
-                evidence=(
-                    Finding.favourable("Forward P/E below historical market average."),
-                ),
+                evidence=finding,
+                observation=observation,
+                comparison=comparison,
             )
 
         if pe < self.PE_FAIR_BELOW:
@@ -64,12 +96,16 @@ class ValueSignalService:
                 valuation="FAIR",
                 confidence=80,
                 rule=PE_BANDS,
-                evidence=(Finding.neutral("Forward P/E within a reasonable range."),),
+                evidence=finding,
+                observation=observation,
+                comparison=comparison,
             )
 
         return ValueSignal(
             valuation="EXPENSIVE",
             confidence=85,
             rule=PE_BANDS,
-            evidence=(Finding.adverse("Forward P/E above historical market average."),),
+            evidence=finding,
+            observation=observation,
+            comparison=comparison,
         )

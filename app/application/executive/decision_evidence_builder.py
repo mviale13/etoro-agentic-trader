@@ -636,8 +636,17 @@ class DecisionEvidenceBuilder:
 
         return ScoreBasis(
             basis=(
-                f"Valuation reads {signal.valuation}, from the findings below. "
-                f"This platform scores {cls._banded(cls.VALUATION_SCORES)}."
+                # The band is named as what it is. The sentence this
+                # replaced said "Valuation reads CHEAP, from the findings
+                # below" — presenting a house classification as a reading
+                # of evidence, above a finding that claimed a benchmark
+                # nobody holds.
+                f"No valuation benchmark is held, so the forward P/E "
+                f"stands alone as an observation. The platform's legacy "
+                f"valuation policy (pe-bands@1, unsourced) classes it "
+                f"{signal.valuation} against its own fixed bands — a house "
+                f"rule, not an evidenced comparison. This platform scores "
+                f"{cls._banded(cls.VALUATION_SCORES)}."
             ),
             evidence=evidence,
             rules=(PE_BANDS, VALUATION_SCORES_RULE),
