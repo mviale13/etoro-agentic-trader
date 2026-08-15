@@ -13,6 +13,7 @@ from app.domain.drawdown import deepest_drawdown
 from app.domain.market_sensitivity import MarketSensitivity, measure_sensitivity
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
+from app.domain.provider_claim import ClaimAbsence
 
 #: Venues the broker and Yahoo name differently.
 #:
@@ -238,14 +239,25 @@ class YahooMarketProvider:
 
         latest = float(closes.iloc[-1])
 
+        # The zero and its reason are decided together. Both branches
+        # below produce 0.0 exactly as they always have — the value is
+        # untouched — but a zero that stands in for a measurement now
+        # says so, because downstream the momentum signal reads it as
+        # "did not move today" at confidence 60 and cannot currently
+        # tell that nothing was measured at all.
+        change_absence: ClaimAbsence | None = None
+
         if len(closes) >= 2:
             previous = float(closes.iloc[-2])
 
-            change_percent = (
-                ((latest - previous) / previous) * 100 if previous != 0 else 0.0
-            )
+            if previous != 0:
+                change_percent = ((latest - previous) / previous) * 100
+            else:
+                change_percent = 0.0
+                change_absence = ClaimAbsence.MALFORMED_STORED_VALUE
         else:
             change_percent = 0.0
+            change_absence = ClaimAbsence.INSUFFICIENT_HISTORY
 
         return MarketQuote(
             symbol=(instrument.movrvest_symbol),
@@ -255,7 +267,14 @@ class YahooMarketProvider:
                 change_percent,
                 2,
             ),
+            change_absence=change_absence,
+            # The provider does report a currency for the listing; this
+            # adapter does not read it, and writes the same word for
+            # every instrument. Left exactly as it was — repairing it
+            # would move prices — and now labelled as the assumption it
+            # is, so nothing converts by it believing it was measured.
             currency="USD",
+            currency_is_assumed=True,
             realized_volatility=YahooMarketProvider._realized_volatility(closes),
             max_drawdown=YahooMarketProvider._max_drawdown(closes),
             market_sensitivity=YahooMarketProvider._market_sensitivity(

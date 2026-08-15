@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.market_snapshot import MarketData, MarketQuote
 from app.domain.provenance import Provenance
+from app.domain.provider_claim import ClaimAbsence
 from app.infrastructure.cache.json_cache import JsonCache
 from app.infrastructure.evidence_root import evidence_path
 from app.providers.yahoo_market_provider import (
@@ -224,7 +225,24 @@ class CachedMarketProvider:
             name=str(value.get("name", symbol)),
             price=float(price),
             change_percent=float(change) if isinstance(change, (int, float)) else 0.0,
+            # Same compatibility zero as before, no longer silent about
+            # itself: a stored reading that could not be read back is a
+            # fact about this platform's store, and it used to arrive
+            # downstream as a flat trading day.
+            change_absence=(
+                None
+                if isinstance(change, (int, float))
+                else (
+                    ClaimAbsence.FIELD_ABSENT
+                    if change is None
+                    else ClaimAbsence.MALFORMED_STORED_VALUE
+                )
+            ),
             currency=str(value.get("currency", "USD")),
+            # Restored quotes inherit the acquisition's assumption. The
+            # stored word is whatever the adapter wrote, and the adapter
+            # writes one word for every listing.
+            currency_is_assumed=True,
             realized_volatility=ratio("realized_volatility"),
             max_drawdown=ratio("max_drawdown"),
             market_sensitivity=CachedMarketProvider._restore_sensitivity(

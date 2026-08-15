@@ -49,6 +49,7 @@ from app.commands import (
     status,
     supply,
     today,
+    translations,
     understanding,
     watchlist,
     writer_compare,
@@ -496,6 +497,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example HYPE. Omit for the whole corpus",
     )
 
+    translations_parser = subparsers.add_parser(
+        "translations",
+        help="Show every governed provider translation and its warrant",
+        description=(
+            "The boundary between what a provider reported and what this "
+            "platform has established: every crossing from an external "
+            "field to a domain concept, which of the four questions it "
+            "answers (identity, vocabulary, unit, semantic), and the "
+            "authority it is performed under. A warrant is authority for "
+            "a translation, never confidence in a value. Read-only, no "
+            "model, no fetch, and nothing is scored or ranked by trust"
+        ),
+    )
+    translations_parser.add_argument(
+        "--markdown",
+        action="store_true",
+        help="Render the inventory document this registry generates",
+    )
+
     judge_parser = subparsers.add_parser(
         "judge",
         help="Convene the committee and record what it concluded",
@@ -886,6 +906,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "considerations":
         return await considerations.run(args.symbol)
+
+    if args.command == "translations":
+        return await translations.run(args.markdown)
 
     if args.command == "judge":
         return await judge.run(args.symbol)
