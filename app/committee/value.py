@@ -59,12 +59,22 @@ class ValueCommittee(CommitteeMember):
                 rationale="Forward P/E unavailable.",
             )
 
+        # The votes and thresholds are untouched legacy policy. What
+        # changed is the account of them: "attractive", "elevated" and
+        # "reasonable" were interpretations resting on no benchmark —
+        # the same false-comparison shape VALUATION_AUTHORITY.md found
+        # at the security level, in this package's own copy of the
+        # P/E band (18/30 here, against pe-bands@1's 18/28).
         if pe < 18:
             return CommitteeOpinion(
                 member="Value",
                 vote="BUY",
                 confidence=85,
-                rationale="Forward P/E is attractive.",
+                rationale=(
+                    f"Forward P/E {pe:.1f} is below this committee's own "
+                    "fixed band at 18 — legacy policy, not an evidenced "
+                    "comparison."
+                ),
             )
 
         if pe > 30:
@@ -72,12 +82,20 @@ class ValueCommittee(CommitteeMember):
                 member="Value",
                 vote="HOLD",
                 confidence=80,
-                rationale="Forward P/E is elevated.",
+                rationale=(
+                    f"Forward P/E {pe:.1f} is above this committee's own "
+                    "fixed band at 30 — legacy policy, not an evidenced "
+                    "comparison."
+                ),
             )
 
         return CommitteeOpinion(
             member="Value",
             vote="HOLD",
             confidence=70,
-            rationale="Forward P/E is reasonable.",
+            rationale=(
+                f"Forward P/E {pe:.1f} sits within this committee's own "
+                "fixed bands (18-30) — legacy policy, not an evidenced "
+                "comparison."
+            ),
         )
