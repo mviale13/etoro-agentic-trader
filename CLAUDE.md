@@ -863,6 +863,77 @@ along instead. `movrvest considerations [SYMBOL]`; **no dossier section
 was added**, because one would reprint what the matrix already renders —
 #126's defect one slice later under a new name.
 
+**The equity decision philosophy is implicit, and every rule of it is
+now named** (the audit and the provenance regime,
+[`DECISION_PHILOSOPHY_AUDIT.md`](docs/architecture/DECISION_PHILOSOPHY_AUDIT.md)
+and
+[`DECISION_RULE_PROVENANCE.md`](docs/architecture/DECISION_RULE_PROVENANCE.md),
+both accepted). The audit traced all eighteen decision-bearing
+transformations behind `ArtificialCIO.decide()`: **one is licensed**
+(grounded quality, #81), one argued (the risk-severity placement), and
+sixteen are unsourced constants jointly encoding large-cap
+dividend-paying value investing with a one-day timing trigger — the
+FAIR wall (only P/E < 18 can ever be RECOMMENDed), the dividend wall
+(provider HIGH needs a payout), momentum from `daily_change_pct`, and
+`analyst_veto` as the most powerful bit (13/14). MONITOR is unreachable
+live; `hard_reject` is constructed False at its only call site.
+`DecisionEvidence.opinions` is intentionally informational (#77), its
+one decision-shaped fallback unreachable. Two committee packages are
+**intentional layering by subject** — `app/committee/` judges the
+market/account and never reaches `decide()`; `app/application/committees/`
+reviews one security — with the naming debt written down.
+
+**Every decision-bearing constant is a rule with a pinned fingerprint.**
+Sixteen `DecisionRule`s (`app/domain/decision_rules.py`) cover the
+eighteen transformations; statuses are structural (tests assert exactly
+1 LICENSED, 1 ARGUED) so naming upgraded nothing. **A threshold cannot
+be edited alone**: `tests/test_decision_rule_provenance.py` pins
+(key, version, status, fingerprint-over-live-constants) per rule, and
+an AST guard rejects bare numeric comparisons in the six governed
+modules. Changing a rule = move the constant AND re-pin with the new
+version. Provenance rides on the values: `ScoreBasis.rules` (the owner
+lifted the frozen shape for this one field), `rule` on the four
+signals, `rules` on `CompanyRecommendation` and `DecisionEvidence`,
+`decided_under` on `ExecutiveDecision`.
+
+**A multiple is an observation; "cheap" is a conclusion — and the
+platform can no longer say the second** (the valuation arc,
+[`VALUATION_AUTHORITY.md`](docs/architecture/VALUATION_AUTHORITY.md)
+and
+[`VALUATION_COMPARISON.md`](docs/architecture/VALUATION_COMPARISON.md),
+both accepted). The investigation's verdict: **MOVRvest cannot
+establish that a security is cheap or expensive** — it holds one
+unaudited Yahoo `forwardPE` at a date, 8 of 9 live P/Es read CHEAP
+across eps growth −48%→+74% including a bank, and the dormant-
+capability sweep found no valuation model anywhere. The comparison
+boundary then made the false claim unproducible: the nine live
+*"below/above historical market average"* sentences (no such
+observation exists; the comparand was the constant 18) are withdrawn —
+every valuation finding is now the neutral observation alone, by
+**equality** with `ValuationObservation.stated`, not a word blacklist.
+`ValuationBenchmark` refuses construction without provenance and
+evidence (the 18 was not grandfathered); `AbsentComparison` — the live
+state of every security — is **not neutral and not FAIR**. The bands
+still band, score and gate untouched (decision corpus byte-identical,
+476-trial grid included); the old market Value committee keeps its own
+18/30 copy of the band, now named as legacy policy. The first
+benchmark candidate, not built: market-implied expectations under a
+named versioned model, with the investment effect reserved for a
+future investor required-return policy clause.
+
+**Three provider trust failures are on the table for the next slice**
+(the Provider Semantics Audit, briefed and not started): Yahoo
+`forwardPE` accepted with an undisclosed definition; Yahoo
+`dividendYield` entering with a ×100 scale mismatch (BNP.PA renders
+885% — `value_provider.from_info` converts `debtToEquity` and
+`netExpenseRatio` but not `dividendYield`); and **SPCX, an ETF, classed
+`stock` because eToro's own metadata says `asset_type_id` 5** — so a
+fund receives a P/E judgment, LOW quality and a SELL veto. The same
+mapper silently conflates `trailingEps`/`forwardEps` and
+`volume24Hr`/`regularMarketVolume`. The crypto side already owns the
+needed architecture (the #99 claim→validation gate); the equity/broker
+path predates it.
+
 **A fund cannot receive evaluative meaning from a company question its
 playbook does not ask** (the Fund Analytical Boundary, F1,
 [`FUND_EVIDENCE_RESEARCH.md`](docs/architecture/FUND_EVIDENCE_RESEARCH.md) §9,
