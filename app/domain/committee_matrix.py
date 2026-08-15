@@ -145,6 +145,11 @@ class CommitteeAssessment:
     #: count, and — the journal's rule, inherited — never a duration.
     judgments_recorded: int = 0
 
+    #: The record this cell projects. Carried so a layer further from the
+    #: judgment than this one can still name the exact event it rests on,
+    #: rather than a committee and a date that may match several.
+    record_id: str = ""
+
     @property
     def is_answered(self) -> bool:
         return self.posture.is_answered
@@ -266,6 +271,7 @@ def assessment_from(
         judged_at=record.judged_at,
         comparability=comparability,
         judgments_recorded=judgments_recorded,
+        record_id=record.record_id,
     )
 
 

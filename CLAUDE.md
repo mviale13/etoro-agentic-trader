@@ -827,6 +827,42 @@ be false about the one finding a reader most needs to notice. Corpus:
 −8.5% visible characters, lens renderings 111 → 55, maturity rows
 80 → 0, both counters 16 → 0.
 
+**The committees' conclusions may travel; what they are worth may not**
+(the Decision Bridge,
+[`DECISION_BRIDGE.md`](docs/architecture/DECISION_BRIDGE.md), accepted
+and built). The investigation decided the design: **all nine named
+decision modules reach the crypto committee layer in no number of hops**
+— the only non-display consumers are the two synthesis modules, which
+communicate — and `ArtificialCIO`'s sole input is `DecisionEvidence`,
+every branch of which tests a 0–100 score or a boolean flag. The crypto
+dossier carries **0 decision-shaped keys across all eight assets**.
+
+**And a numeric bridge was impossible rather than merely unwise.** An
+`EligibleFinding` carries no `Sense` — the equity `Finding` does, and
+that is exactly what `Stance` counts; Supply Governance's vocabulary
+says *"deliberately not ordered … this platform has established no view
+on which an investor should prefer"*; Fee Capture's
+`MECHANISM_EVIDENCED` is documented as a structural fact and explicitly
+not a favourable one. **The strongest finding is on the equity side**:
+`DecisionEvidence.opinions` already carries `CommitteeOpinion` to the
+CIO, and the CIO's own comment says it *"gates on scores; it neither
+reads a committee's position nor edits one"* — the wire this slice was
+asked to string is already strung there, and already inert.
+
+So `InvestmentConsideration` carries the conclusion, its posture, its
+applicability, its confidence and the exact judgment id, and states per
+conclusion that its investment meaning is **not established**.
+`InvestmentEffect` has **one member** and `LICENSED_EFFECTS` is
+**empty** — a lookup on `(committee key, verdict)` rather than a branch,
+so a third committee resolves through the same line. **16 judgments
+consumed, 16 considerations produced, 0 with an established effect**,
+five postures intact. It is a **projection, not a record** — a
+deterministic function of an immutable versioned judgment and a
+versioned policy, so nothing is stored and `BRIDGE_POLICY_VERSION` rides
+along instead. `movrvest considerations [SYMBOL]`; **no dossier section
+was added**, because one would reprint what the matrix already renders —
+#126's defect one slice later under a new name.
+
 **A fund cannot receive evaluative meaning from a company question its
 playbook does not ask** (the Fund Analytical Boundary, F1,
 [`FUND_EVIDENCE_RESEARCH.md`](docs/architecture/FUND_EVIDENCE_RESEARCH.md) §9,
