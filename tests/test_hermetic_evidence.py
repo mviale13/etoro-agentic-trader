@@ -255,7 +255,6 @@ def test_a_poisoned_cache_cannot_alter_a_fixture_backed_assessment(  # type: ign
             refs=("F.1",),
             judged_at=NOW,
         ),
-        (),
         now=NOW,
     )
 
@@ -306,7 +305,6 @@ def test_eth_reproduces_from_committed_fixtures(tmp_path) -> None:  # type: igno
             ),
             judged_at=NOW,
         ),
-        (),
         now=NOW,
     )
 
@@ -320,7 +318,6 @@ def test_eth_reproduces_from_committed_fixtures(tmp_path) -> None:  # type: igno
             because="No mechanical issuance rule is held for this asset.",
             judged_at=NOW,
         ),
-        (),
         now=NOW,
     )
 

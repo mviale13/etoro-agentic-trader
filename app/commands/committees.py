@@ -73,9 +73,18 @@ class CommitteesCommand:
                 f"    confidence: {cell.confidence.stated if cell.confidence else '—'}"
             )
 
+            # The count says what it counted. A record written before
+            # this platform separated *given to the committee* from *held
+            # in the store* meant the second, and restating it in today's
+            # terms would be the mislabelling all over again — one layer
+            # further down.
             print(
-                f"    evidence: {cell.evidence_count} eligible finding(s)"
-                + (f", cited {len(cell.refs)}" if cell.refs else "")
+                _wrap(
+                    f"evidence: {cell.evidence_count} finding(s) — "
+                    f"{cell.evidence_semantics.stated}"
+                    + (f", cited {len(cell.refs)}" if cell.refs else ""),
+                    "    ",
+                )
             )
 
             if not cell.is_current_contract and cell.comparability:

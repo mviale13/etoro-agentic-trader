@@ -199,6 +199,51 @@ def evidence_digest_of(findings: tuple[EligibleFinding, ...]) -> str:
     return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
+class EvidenceSemantics(StrEnum):
+    """What a record's evidence fields were counting when it was written.
+
+    **A meaning, versioned, because the meaning changed and the records
+    cannot.** This store is append-only by design — *"a store that could
+    rewrite would eventually be asked to"* — so a semantic correction
+    cannot be applied backwards. What it can do is say which meaning each
+    line was written under, and refuse to compare two lines that disagree.
+
+    Without this, correcting the producer alone made the *next* judgment
+    of an unchanged asset report a movement: measured over the live
+    corpus, four series would have announced evidence appearing or
+    vanishing when nothing about the asset had moved at all.
+    """
+
+    #: Every eligible finding held for the asset when the record was
+    #: written, whether or not the committee ever asked for it. The
+    #: recording command resolved it independently of the judgment, so on
+    #: an applicability abstention — which returns before consulting
+    #: anything — it describes this platform's evidence store rather than
+    #: the judgment.
+    HELD_AT_RECORDING = "held_at_recording"
+
+    #: The eligible evidence the committee was actually given, taken from
+    #: the judgment itself. Empty wherever it reached an outcome without
+    #: asking for any.
+    SUPPLIED_TO_COMMITTEE = "supplied_to_committee"
+
+    @property
+    def stated(self) -> str:
+        return {
+            EvidenceSemantics.HELD_AT_RECORDING: (
+                "the eligible evidence held for this asset when the judgment "
+                "was recorded"
+            ),
+            EvidenceSemantics.SUPPLIED_TO_COMMITTEE: (
+                "the eligible evidence this committee was given"
+            ),
+        }[self]
+
+
+#: What a record written today means by its evidence fields.
+CURRENT_EVIDENCE_SEMANTICS = EvidenceSemantics.SUPPLIED_TO_COMMITTEE
+
+
 @dataclass(frozen=True, slots=True)
 class JudgmentRecord:
     """One committee judgment, as it stood. Immutable, forever.
@@ -244,10 +289,21 @@ class JudgmentRecord:
     #: The refs the verdict cited.
     refs: tuple[str, ...] = ()
 
-    #: A digest over every eligible finding supplied, and how many there
-    #: were. The evidence axis rests on these.
+    #: A digest over the eligible evidence, and how many findings it
+    #: covered. The evidence axis rests on these — and on the third field
+    #: below, which says what they were counting.
+    #:
+    #: **Not the same as `refs`, and the corpus settles it**: eleven of
+    #: twenty-six answered judgments cite fewer findings than they were
+    #: given. `refs` is what the verdict used; this is what it had.
     evidence_digest: str = ""
     evidence_count: int = 0
+
+    #: Which meaning the two fields above were written under. Defaulted
+    #: to the historical one so a line that predates the distinction
+    #: decodes as what it actually was, rather than silently claiming
+    #: today's meaning.
+    evidence_semantics: EvidenceSemantics = EvidenceSemantics.HELD_AT_RECORDING
 
     abstained_because: AbstentionReason | None = None
 
@@ -341,7 +397,6 @@ class JudgmentRecord:
 
 def record_from(
     judgment: CommitteeJudgment,
-    evidence: tuple[EligibleFinding, ...],
     recorded_at: datetime,
 ) -> JudgmentRecord:
     """Turn one committee output into the event that is kept.
@@ -351,6 +406,17 @@ def record_from(
     established that it cannot tell — and a judgment that never said
     would be recorded as that known state and become a lie about what
     was checked. So it raises instead.
+
+    **The evidence is no longer a second argument.** PR #113 removed the
+    committee identity from this signature because a value supplied
+    alongside a judgment is a value that can disagree with it; the
+    evidence was the same shape and it did disagree. `movrvest judge`
+    called `committee.evidence(asset)` unconditionally, while `judge()`
+    returns before consulting anything when the question does not apply —
+    so Bitcoin's Value Capture declined the question as the wrong
+    instrument, cited nothing, and was recorded as having weighed three
+    findings. A caller can no longer say what a judgment was given,
+    because the judgment says.
     """
 
     if judgment.applicability is None:
@@ -373,8 +439,9 @@ def record_from(
         verdict_stated=judgment.verdict.stated if judgment.verdict else None,
         confidence=judgment.confidence,
         refs=judgment.refs,
-        evidence_digest=evidence_digest_of(evidence),
-        evidence_count=len(evidence),
+        evidence_digest=evidence_digest_of(judgment.considered),
+        evidence_count=len(judgment.considered),
+        evidence_semantics=CURRENT_EVIDENCE_SEMANTICS,
         abstained_because=judgment.abstained_because,
         because=judgment.because,
         wording_refused=judgment.wording_refused,
@@ -548,6 +615,14 @@ class EvidenceMovement(StrEnum):
     #: Not compared, because the contracts differ.
     NOT_COMPARABLE = "not_comparable"
 
+    #: Not compared, because the two records mean different things by
+    #: their evidence fields. **A distinct member rather than a reuse of
+    #: `NOT_COMPARABLE`**: that one says the *question* differed, and
+    #: saying so here would be false — the committee, the contract and
+    #: the question are identical, and only this platform's account of
+    #: what it counted has changed.
+    SEMANTICS_CHANGED = "semantics_changed"
+
     @property
     def stated(self) -> str:
         return {
@@ -566,6 +641,11 @@ class EvidenceMovement(StrEnum):
             EvidenceMovement.NOT_COMPARABLE: (
                 "the two judgments were produced under different committee "
                 "contracts, so their evidence is not compared"
+            ),
+            EvidenceMovement.SEMANTICS_CHANGED: (
+                "this platform changed what it records as a judgment's "
+                "evidence, so the two are not compared — a correction to "
+                "the account, not a change in the evidence"
             ),
         }[self]
 
@@ -713,6 +793,19 @@ def _evidence_movement(
     previous: JudgmentRecord,
     current: JudgmentRecord,
 ) -> EvidenceMovement:
+    """What happened to the evidence, compared like for like or not at all.
+
+    The semantics gate is first and it is not a hedge. Two records
+    written under different meanings hold two different measurements, and
+    subtracting one from the other produces a movement out of a
+    correction — measured over the live corpus, four series would have
+    announced evidence arriving or vanishing on the first run after the
+    producer was fixed, with nothing about any asset having moved.
+    """
+
+    if previous.evidence_semantics is not current.evidence_semantics:
+        return EvidenceMovement.SEMANTICS_CHANGED
+
     if not previous.evidence_count and current.evidence_count:
         return EvidenceMovement.ARRIVED
 

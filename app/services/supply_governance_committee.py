@@ -341,6 +341,9 @@ class SupplyGovernanceCommittee:
 
         findings = self.evidence(asset)
 
+        # Every exit from here down has asked for its evidence, so every
+        # one carries what it was given. The two above have not, and
+        # carry nothing — which is the whole distinction.
         if rule is None or not findings:
             return abstain(
                 asset,
@@ -352,6 +355,7 @@ class SupplyGovernanceCommittee:
                     "is a statement about what this platform has read, not "
                     "about what the protocol does."
                 ),
+                considered=findings,
             )
 
         refusal = _cannot_answer(rule)
@@ -363,6 +367,7 @@ class SupplyGovernanceCommittee:
                 AbstentionReason.INSUFFICIENT_EVIDENCE,
                 basis,
                 because=refusal,
+                considered=findings,
             )
 
         verdict = (
@@ -385,6 +390,7 @@ class SupplyGovernanceCommittee:
                 across_captures=False,
             ),
             refs=tuple(finding.ref for finding in findings),
+            considered=findings,
             because=(
                 f"The rule is {rule.formula}, every parameter names the "
                 f"surface it was read from, and {rule.mutability.because}."

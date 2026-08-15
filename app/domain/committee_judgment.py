@@ -324,6 +324,25 @@ class CommitteeJudgment:
     #: a verdict that cites nothing is an opinion.
     refs: tuple[str, ...] = ()
 
+    #: The eligible evidence this committee was actually given, and
+    #: **empty wherever it reached an outcome without asking for any**.
+    #:
+    #: Carried on the judgment rather than fetched beside it, for the
+    #: reason PR #113 removed the committee identity from `record_from`'s
+    #: signature: *a value supplied alongside is a value that can
+    #: disagree*. It did. The recording command read
+    #: `committee.evidence(asset)` unconditionally while `judge()`
+    #: returns before consulting anything when the question does not
+    #: apply — so Bitcoin's Value Capture declined the question as the
+    #: wrong instrument, cited nothing, and was recorded as having been
+    #: given three findings it never saw.
+    #:
+    #: This is **not** `refs`. `refs` is what the verdict cited, and the
+    #: corpus shows the two genuinely differ: eleven of twenty-six
+    #: answered judgments cite fewer findings than they were given.
+    #: Supplied and cited are two facts and this platform keeps both.
+    considered: tuple[EligibleFinding, ...] = ()
+
     #: One sentence, grounded in those refs and validated like any other
     #: model output.
     because: str | None = None
@@ -410,12 +429,19 @@ def abstain(
     reason: AbstentionReason,
     basis: ApplicabilityBasis | None = None,
     because: str | None = None,
+    considered: tuple[EligibleFinding, ...] = (),
 ) -> CommitteeJudgment:
     """A committee that knows it cannot answer. A successful outcome.
 
     `because` defaults to the applicability reasoning, so a reader
     learns *why this question was the wrong instrument* rather than only
     that it was not answered.
+
+    `considered` **defaults to nothing on purpose**. An applicability
+    abstention is reached before any evidence is asked for, and it is the
+    most common way to reach this function — so the default is the
+    truthful value, and a caller that did consult evidence has to say so.
+    The opposite default would restore the defect by omission.
     """
 
     return CommitteeJudgment(
@@ -425,6 +451,7 @@ def abstain(
         basis=basis,
         abstained_because=reason,
         because=because if because is not None else (basis.because if basis else None),
+        considered=considered,
     )
 
 
@@ -433,8 +460,15 @@ def unavailable(
     contract: CommitteeContract,
     because: str,
     basis: ApplicabilityBasis | None = None,
+    considered: tuple[EligibleFinding, ...] = (),
 ) -> CommitteeJudgment:
-    """No judgment, because the machinery failed. Not an abstention."""
+    """No judgment, because the machinery failed. Not an abstention.
+
+    The machinery can fail on either side of consulting the evidence, so
+    `considered` is passed rather than assumed: a committee whose model
+    was unreachable had already been given its findings, and one that
+    never got that far had not.
+    """
 
     return CommitteeJudgment(
         asset=asset,
@@ -442,6 +476,7 @@ def unavailable(
         state=JudgmentState.UNAVAILABLE,
         basis=basis,
         unavailable_because=because,
+        considered=considered,
     )
 
 

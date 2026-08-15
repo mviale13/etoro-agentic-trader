@@ -37,10 +37,18 @@ from app.domain.committee_judgment import (
     JudgmentState,
 )
 from app.domain.committee_protocol import CommitteeIdentity
-from app.domain.judgment_history import JudgmentRecord
+from app.domain.judgment_history import EvidenceSemantics, JudgmentRecord
 from app.infrastructure.evidence_root import evidence_path
 
 #: The line format's own version, written on every line.
+#:
+#: 5 adds `evidence_semantics` — what the line's evidence fields were
+#: counting. It is the one change here that could not have been a
+#: fallback: a schema-4 line is not missing a value, it is carrying a
+#: *different* measurement, and reading it as today's would make a
+#: correction to this platform's bookkeeping look like evidence
+#: appearing and vanishing under four assets. A line with no such field
+#: decodes as `HELD_AT_RECORDING`, which is exactly what it was.
 #:
 #: 4 adds the refused-wording note: a judgment whose drafted sentence
 #: was rejected is still a judgment, and the rejection is recorded rather
@@ -56,7 +64,7 @@ from app.infrastructure.evidence_root import evidence_path
 #: exactly as true. The journal's rule holds: a file that is never
 #: rewritten cannot be migrated, so old lines are read as they were
 #: written, forever.
-SCHEMA = 4
+SCHEMA = 5
 
 
 class JudgmentHistoryStore:
@@ -179,6 +187,7 @@ def _encode(record: JudgmentRecord) -> dict[str, Any]:
         "refs": list(record.refs),
         "evidence_digest": record.evidence_digest,
         "evidence_count": record.evidence_count,
+        "evidence_semantics": record.evidence_semantics.value,
         "abstained_because": (
             record.abstained_because.value if record.abstained_because else None
         ),
@@ -219,6 +228,13 @@ def _decode(row: Any) -> JudgmentRecord | None:
             refs=tuple(row.get("refs") or ()),
             evidence_digest=str(row.get("evidence_digest") or ""),
             evidence_count=int(row.get("evidence_count") or 0),
+            # Absent on schema 1-4, and absent means the old meaning
+            # rather than an unknown one — those lines were written by
+            # a recorder that resolved the evidence itself.
+            evidence_semantics=EvidenceSemantics(
+                row.get("evidence_semantics")
+                or EvidenceSemantics.HELD_AT_RECORDING.value
+            ),
             abstained_because=(
                 AbstentionReason(row["abstained_because"])
                 if row.get("abstained_because")

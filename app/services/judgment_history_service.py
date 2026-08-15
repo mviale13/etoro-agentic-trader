@@ -13,17 +13,21 @@ say the committee convened whenever somebody looked, and
 lives here and is called by `movrvest judge`, which is the same
 separation `observe` has from `knowledge`.
 
-**A judgment is recorded with the evidence it was actually given.**
-Both are captured in the same breath, because a digest computed later
-would be a digest of different evidence — and the whole of §4 rests on
-knowing which evidence produced which answer.
+**A judgment is recorded with the evidence it was actually given, and
+the judgment is the only thing that knows what that was.** It used to be
+a second argument here, resolved by the caller — and a caller that
+resolves its own evidence is a caller that can disagree with the
+committee. It did: `judge()` returns before consulting anything when the
+question does not apply, so a declined judgment was filed with findings
+it had never seen. The parameter is gone for the same reason PR #113
+removed the committee identity.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from app.domain.committee_judgment import CommitteeJudgment, EligibleFinding
+from app.domain.committee_judgment import CommitteeJudgment
 from app.domain.judgment_history import (
     JudgmentCoverage,
     JudgmentRecord,
@@ -53,7 +57,6 @@ class JudgmentHistoryService:
     def record(
         self,
         judgment: CommitteeJudgment,
-        evidence: tuple[EligibleFinding, ...] = (),
         now: datetime | None = None,
     ) -> JudgmentRecord | None:
         """Write one judgment event, or None if it was already held.
@@ -66,11 +69,12 @@ class JudgmentHistoryService:
 
         moment = now or datetime.now(UTC)
 
-        # The identity comes from the judgment's own contract. PR #113
-        # took it as a second argument, which meant a caller could file a
-        # judgment under a committee that did not produce it and nothing
-        # would notice.
-        record = record_from(judgment, evidence, recorded_at=moment)
+        # Both the identity and the evidence come from the judgment's own
+        # contract. PR #113 took the identity as a second argument, which
+        # meant a caller could file a judgment under a committee that did
+        # not produce it; the evidence was the same shape and it went
+        # wrong in the same way, so it left the signature too.
+        record = record_from(judgment, recorded_at=moment)
 
         return record if self._store.append(record) else None
 

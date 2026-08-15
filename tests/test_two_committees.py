@@ -41,7 +41,7 @@ def _record_both(service: JudgmentHistoryService, asset: str, at: datetime = NOW
     for committee in (SupplyGovernanceCommittee(), ValueCaptureCommittee()):
         judgment = asyncio.run(committee.judge(asset))
 
-        service.record(judgment, committee.evidence(asset), now=at)
+        service.record(judgment, now=at)
 
 
 # ── the registry, and the failure that earned it ────────────────────
@@ -149,8 +149,8 @@ def test_two_committees_records_are_structurally_incomparable() -> None:
     supply = asyncio.run(SupplyGovernanceCommittee().judge("ADA"))
 
     transition = compare(
-        record_from(supply, (), NOW),
-        record_from(fees, (), NOW - timedelta(days=1)),
+        record_from(supply, NOW),
+        record_from(fees, NOW - timedelta(days=1)),
     )
 
     assert transition.comparability is Comparability.DIFFERENT_COMMITTEE
@@ -217,7 +217,6 @@ def test_an_applicability_change_moves_one_history_and_not_the_other(  # type: i
     # for a re-classification.
     reclassified = record_from(
         judgment,
-        (),
         recorded_at=NOW + timedelta(days=1),
     )
 
@@ -245,8 +244,8 @@ def test_agreement_between_committees_is_not_representable() -> None:
     in this slice may quietly pre-decide it.
     """
 
-    fees = record_from(asyncio.run(ValueCaptureCommittee().judge("SOL")), (), NOW)
-    supply = record_from(asyncio.run(SupplyGovernanceCommittee().judge("SOL")), (), NOW)
+    fees = record_from(asyncio.run(ValueCaptureCommittee().judge("SOL")), NOW)
+    supply = record_from(asyncio.run(SupplyGovernanceCommittee().judge("SOL")), NOW)
 
     # Both answered. There is no field, property or helper anywhere that
     # combines them.

@@ -163,7 +163,7 @@ def _service(tmp_path) -> CommitteeMatrixService:  # type: ignore[no-untyped-def
 
     for asset, per_committee in CORPUS.items():
         for key, spec in per_committee.items():
-            history.record(_judgment(asset, _CONTRACTS[key], spec), (), now=NOW)
+            history.record(_judgment(asset, _CONTRACTS[key], spec), now=NOW)
 
     return CommitteeMatrixService(history=history)
 
@@ -214,9 +214,7 @@ def test_a_third_committee_appears_without_touching_the_matrix(tmp_path) -> None
 
     committee = CustodyCommittee(CustodyVerdict.MIXED)
 
-    history.record(
-        asyncio.run(committee.judge("XYZ")), committee.evidence("XYZ"), now=NOW
-    )
+    history.record(asyncio.run(committee.judge("XYZ")), now=NOW)
 
     matrix = CommitteeMatrixService(history=history).for_asset(
         "XYZ", contracts=(*CONTRACTS, CUSTODY)
@@ -527,7 +525,6 @@ def test_a_conclusion_under_an_earlier_contract_is_visibly_historical(  # type: 
 
     history.record(
         _judgment("ADA", SUPPLY_GOVERNANCE, {"verdict": SupplyVerdict.GOVERNANCE_SET}),
-        (),
         now=NOW - timedelta(days=1),
     )
 
