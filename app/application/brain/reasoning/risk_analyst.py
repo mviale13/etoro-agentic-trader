@@ -17,6 +17,11 @@ from app.services.portfolio_drawdown_service import PortfolioDrawdownService
 class RiskAnalyst:
     """Evaluate overall portfolio risk."""
 
+    #: One term of `cognitive-confidence@1`: this analyst's confidence
+    #: is a constant. Named so the provenance guard can fingerprint it —
+    #: the audit found it, and naming it endorses nothing.
+    CONFIDENCE = 0.80
+
     def __init__(
         self,
         market_risk_service: MarketRiskService | None = None,
@@ -118,7 +123,7 @@ class RiskAnalyst:
             concentration_risk_score=concentration,
             liquidity_risk_score=liquidity,
             drawdown_risk_score=drawdown,
-            confidence=0.80,
+            confidence=self.CONFIDENCE,
             risk_factors=tuple(risk_factors),
             mitigants=tuple(mitigants),
             evidence=tuple(evidence),

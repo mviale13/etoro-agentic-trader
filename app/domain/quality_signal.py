@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from app.domain.decision_rules import DecisionRule
 from app.domain.finding import Finding
 from app.domain.score_basis import Contribution
 
@@ -34,3 +35,7 @@ class QualitySignal:
     #: top band. Absent here, that wording still stands for the company
     #: path, where it is true.
     basis: str | None = None
+    #: The named, versioned rule that assigned this reading its meaning
+    #: — identity, never endorsement. None where nothing was banded: an
+    #: UNKNOWN produced by absence had no meaning assigned at all.
+    rule: DecisionRule | None = None

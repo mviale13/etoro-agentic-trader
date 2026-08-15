@@ -9,10 +9,22 @@ from app.cio.timeline import (
     InvestmentCaseEvent,
     InvestmentCaseEventType,
 )
+from app.domain.decision_rules import CONVICTION_MEAN, DECISION_GATES
 
 
 class ArtificialCIO:
     """Executive brain responsible for investment-case decisions."""
+
+    #: The state caps of `conviction-mean@1`. Named so the provenance
+    #: guard can fingerprint them: a cap cannot move under an unchanged
+    #: rule version without a test failing.
+    CONVICTION_LIMITS = {
+        DecisionState.REJECT: 40,
+        DecisionState.MONITOR: 55,
+        DecisionState.INVESTIGATE: 70,
+        DecisionState.PREPARE: 85,
+        DecisionState.RECOMMEND: 100,
+    }
 
     def __init__(
         self,
@@ -80,6 +92,10 @@ class ArtificialCIO:
             missing_evidence=evidence.missing_evidence,
             catalysts=evidence.catalysts,
             next_trigger=evidence.next_trigger,
+            # The rules this decision was reached under. Stamped where
+            # the deciding happens; the score rules already ride on the
+            # evidence's own bases.
+            decided_under=(DECISION_GATES, CONVICTION_MEAN),
         )
 
     def _determine_state(
@@ -330,15 +346,7 @@ class ArtificialCIO:
 
         conviction = round(sum(measured) / len(measured)) if measured else 0
 
-        limits = {
-            DecisionState.REJECT: 40,
-            DecisionState.MONITOR: 55,
-            DecisionState.INVESTIGATE: 70,
-            DecisionState.PREPARE: 85,
-            DecisionState.RECOMMEND: 100,
-        }
-
-        return min(conviction, limits[state])
+        return min(conviction, ArtificialCIO.CONVICTION_LIMITS[state])
 
 
 ExecutiveDecisionEngine = ArtificialCIO

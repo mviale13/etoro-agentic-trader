@@ -1,4 +1,5 @@
 from app.domain.company_facts import CompanyFacts
+from app.domain.decision_rules import RISK_BANDS
 from app.domain.finding import Finding
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.risk_signal import RiskSignal
@@ -80,6 +81,7 @@ class RiskSignalService:
             volatility=volatility,
             max_drawdown=drawdown,
             confidence=90 if volatility is not None and drawdown is not None else 60,
+            rule=RISK_BANDS,
             evidence=tuple(evidence),
             market_sensitivity=sensitivity,
         )

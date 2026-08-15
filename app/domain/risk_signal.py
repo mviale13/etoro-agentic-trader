@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from app.domain.decision_rules import DecisionRule
 from app.domain.finding import Finding
 from app.domain.market_sensitivity import MarketSensitivity
 
@@ -36,6 +37,11 @@ class RiskSignal:
     #: How much this security moves with its benchmark. None where it was
     #: not measured. Reported, never folded into `level`.
     market_sensitivity: MarketSensitivity | None = None
+
+    #: The named, versioned rule that assigned this reading its meaning
+    #: — identity, never endorsement. None where nothing was banded: an
+    #: UNKNOWN produced by absence had no meaning assigned at all.
+    rule: DecisionRule | None = None
 
     #: How violent each band is, as a ratio. Stated once, here, because two
     #: layers were about to hold their own copy of the same judgement.

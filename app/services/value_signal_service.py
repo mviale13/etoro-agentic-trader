@@ -1,10 +1,17 @@
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
+from app.domain.decision_rules import PE_BANDS
 from app.domain.finding import Finding
 from app.domain.value_signal import ValueSignal
 
 
 class ValueSignalService:
+    #: The bands of `pe-bands@1`. Named so the provenance guard can
+    #: fingerprint them: moving one under an unchanged rule version is a
+    #: test failure, not a quiet edit.
+    PE_CHEAP_BELOW = 18
+    PE_FAIR_BELOW = 28
+
     def build(
         self,
         company: CompanyFacts,
@@ -42,24 +49,27 @@ class ValueSignalService:
 
         pe = company.forward_pe
 
-        if pe < 18:
+        if pe < self.PE_CHEAP_BELOW:
             return ValueSignal(
                 valuation="CHEAP",
                 confidence=90,
+                rule=PE_BANDS,
                 evidence=(
                     Finding.favourable("Forward P/E below historical market average."),
                 ),
             )
 
-        if pe < 28:
+        if pe < self.PE_FAIR_BELOW:
             return ValueSignal(
                 valuation="FAIR",
                 confidence=80,
+                rule=PE_BANDS,
                 evidence=(Finding.neutral("Forward P/E within a reasonable range."),),
             )
 
         return ValueSignal(
             valuation="EXPENSIVE",
             confidence=85,
+            rule=PE_BANDS,
             evidence=(Finding.adverse("Forward P/E above historical market average."),),
         )

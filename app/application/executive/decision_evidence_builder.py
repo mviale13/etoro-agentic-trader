@@ -19,6 +19,21 @@ from app.domain.business_quality import BAND_SCORES, BusinessQuality
 from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_research import CompanyResearch
+from app.domain.decision_rules import (
+    ACTIONABLE_BUY,
+    COGNITIVE_CONFIDENCE,
+    EVIDENCE_SCORE,
+    PE_BANDS,
+    PORTFOLIO_FIT,
+    PROVIDER_QUALITY,
+    QUALITY_GROUNDED,
+    RISK_BANDS,
+    RISK_SEVERITY,
+    VETO_SELL,
+)
+from app.domain.decision_rules import (
+    VALUATION_SCORES as VALUATION_SCORES_RULE,
+)
 from app.domain.executive_decision import DecisionEvidence
 from app.domain.finding import (
     Dimension,
@@ -72,6 +87,11 @@ class DecisionEvidenceBuilder:
         "MEDIUM": 62,
         "LOW": 40,
     }
+
+    #: The `evidence-score@1` discount for a case standing on the
+    #: account rather than on the security. Named so the provenance
+    #: guard can fingerprint it.
+    UNEVIDENCED_DISCOUNT = 0.6
 
     #: Attractiveness of the price paid, by signal.
     VALUATION_SCORES = {
@@ -239,6 +259,10 @@ class DecisionEvidenceBuilder:
             context_risks=context_risks,
             missing_evidence=self._missing_evidence(company, symbol, asset_class),
             catalysts=catalysts,
+            # The two mappings this builder applies to the vote: a BUY
+            # is the execution trigger, a SELL is a veto. Stamped where
+            # they are applied — identity, never endorsement.
+            rules=(ACTIONABLE_BUY, VETO_SELL),
         )
 
     @classmethod
@@ -319,8 +343,9 @@ class DecisionEvidenceBuilder:
 
         return cls.VALUATION_SCORES.get(company.signals.value.valuation)
 
-    @staticmethod
+    @classmethod
     def _evidence_score(
+        cls,
         company: CompanyRecommendation | None,
         cognitive_confidence: float,
     ) -> int:
@@ -334,7 +359,7 @@ class DecisionEvidenceBuilder:
         cognitive = int(cognitive_confidence * 100)
 
         if company is None:
-            return int(cognitive * 0.6)
+            return int(cognitive * cls.UNEVIDENCED_DISCOUNT)
 
         return int((cognitive + company.confidence) / 2)
 
@@ -424,6 +449,7 @@ class DecisionEvidenceBuilder:
                     f"below. This platform scores {scale}."
                 ),
                 evidence=evidence,
+                rules=(PROVIDER_QUALITY,),
             )
 
         # The arithmetic leads, because "3 of 3 points earned → HIGH → 80"
@@ -436,6 +462,7 @@ class DecisionEvidenceBuilder:
             ),
             evidence=evidence,
             derivation=derivation,
+            rules=(PROVIDER_QUALITY,),
         )
 
     @classmethod
@@ -522,6 +549,10 @@ class DecisionEvidenceBuilder:
             ),
             evidence=tuple(evidence),
             derivation=cls._grounded_derivation(grounded),
+            # Stamped only where the rule assigned a band. An UNKNOWN
+            # from too few answered factors is an explained absence, and
+            # a rule stamp there would claim a meaning was assigned.
+            rules=(QUALITY_GROUNDED,) if grounded.score is not None else (),
         )
 
     @staticmethod
@@ -609,6 +640,7 @@ class DecisionEvidenceBuilder:
                 f"This platform scores {cls._banded(cls.VALUATION_SCORES)}."
             ),
             evidence=evidence,
+            rules=(PE_BANDS, VALUATION_SCORES_RULE),
         )
 
     @classmethod
@@ -656,6 +688,7 @@ class DecisionEvidenceBuilder:
                 f"bands, as safety: {cls._banded(cls._safety_bands())}."
             ),
             evidence=evidence,
+            rules=(RISK_BANDS, RISK_SEVERITY),
         )
 
     @classmethod
@@ -693,6 +726,7 @@ class DecisionEvidenceBuilder:
                     "the account rather than on the security."
                 ),
                 evidence=tuple(evidence),
+                rules=(COGNITIVE_CONFIDENCE, EVIDENCE_SCORE),
             )
 
         evidence.append(
@@ -707,6 +741,7 @@ class DecisionEvidenceBuilder:
                 f"of its own read ({company.confidence} of 100)."
             ),
             evidence=tuple(evidence),
+            rules=(COGNITIVE_CONFIDENCE, EVIDENCE_SCORE),
         )
 
     @staticmethod
@@ -744,6 +779,7 @@ class DecisionEvidenceBuilder:
             # Not an assessment of anything: it moves when the policy
             # changes, not when the market does.
             kind=ScoreKind.POLICY,
+            rules=(PORTFOLIO_FIT,),
         )
 
     @staticmethod

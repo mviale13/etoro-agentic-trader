@@ -1,5 +1,6 @@
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
+from app.domain.decision_rules import PROVIDER_QUALITY
 from app.domain.finding import Finding
 from app.domain.quality_signal import QualitySignal
 from app.domain.score_basis import Contribution
@@ -112,6 +113,7 @@ class QualitySignalService:
         return QualitySignal(
             quality=quality,
             confidence=self.CONFIDENCE[quality],
+            rule=PROVIDER_QUALITY,
             evidence=tuple(finding for finding, _ in counted),
             contributions=tuple(
                 Contribution(
