@@ -4,6 +4,7 @@ from datetime import datetime
 
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance
+from app.domain.provider_claim import ClaimAbsence
 from app.domain.sentiment_snapshot import SentimentSnapshot
 
 #: A day at least this many times the instrument's own typical day is
@@ -23,6 +24,31 @@ class MarketQuote:
     price: float
     change_percent: float
     currency: str = "USD"
+
+    #: Why `change_percent` carries no measurement, where it does not.
+    #:
+    #: The legacy type is the defect and this field is its disclosure.
+    #: `change_percent` is a bare `float`, so it has no way to say
+    #: *unmeasured* — and the adapter, needing a number, writes 0.0
+    #: when a history is too short to compare or a stored reading
+    #: cannot be read back. Downstream that zero reads as "the
+    #: security did not move today" at confidence 60, where an honest
+    #: absence would read UNKNOWN at 20.
+    #:
+    #: Nothing consumes this yet, deliberately: widening the type is a
+    #: consumer-facing change and this slice moves no decision. What it
+    #: does is make the substitution *visible* — a quote can now be
+    #: asked whether its zero was observed, and the answer is no
+    #: longer indistinguishable from a real flat day.
+    change_absence: "ClaimAbsence | None" = None
+
+    #: Whether `currency` is the provider's own word or this platform's
+    #: assumption. Every Yahoo quote is the latter: the adapter writes
+    #: "USD" for every instrument, so BP.L's price in pence and a New
+    #: York close wear the same label. Recorded rather than repaired —
+    #: converting by an assumed currency is the 100× error this flag
+    #: exists to stop somebody making.
+    currency_is_assumed: bool = False
 
     #: Annualised standard deviation of daily returns, as a ratio (0.28 is
     #: 28%). None when the series was too short to measure it.
@@ -44,6 +70,18 @@ class MarketQuote:
     #: price is a claim about now, and without this a fifteen-minute-old
     #: one was indistinguishable from a live one to everything downstream.
     reading: Provenance | None = None
+
+    @property
+    def change_is_measured(self) -> bool:
+        """Whether `change_percent` is an observation at all.
+
+        The question no consumer could ask before: a zero written
+        because the security did not move and a zero written because
+        nothing could be computed are the same float, and only this
+        answers which one is in hand.
+        """
+
+        return self.change_absence is None
 
     @property
     def typical_daily_move_pct(self) -> float | None:
