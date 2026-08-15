@@ -29,6 +29,15 @@ What stability forecloses:
 
 Changing any of it is an owner's decision, recorded here — never a
 side effect of adding a score.
+
+**One such decision has been made (the owner, 2026-08-16, the Decision
+Rule Provenance slice): `ScoreBasis` gains `rules`** — the named,
+versioned identities of the decision-bearing rules that produced the
+score, so a number can answer *which exact rule gave this input its
+investment meaning* without anyone reading source code. It is the one
+field the original shape was missing to carry provenance rather than
+only prose, it is additive and defaulted, and it changes no score, no
+band, no sentence and no payload. Everything else above stands.
 """
 
 from __future__ import annotations
@@ -37,6 +46,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from app.domain.asset_class import AssetClass
+from app.domain.decision_rules import DecisionRule
 from app.domain.finding import Sense
 
 
@@ -292,6 +302,17 @@ class ScoreBasis:
     #: scores — those have no decomposition, and inventing one would be
     #: the figure this whole object exists to prevent.
     derivation: ScoreDerivation | None = None
+
+    #: The named, versioned rules that gave this score its investment
+    #: meaning — the interpretation chain, in the order it ran. **A
+    #: basis explaining an absence carries none**: a score nobody
+    #: computed had no meaning assigned, and stamping a rule on the
+    #: explanation would claim one was.
+    #:
+    #: Identity, never endorsement: most of these rules are `UNSOURCED`
+    #: and carrying them here upgrades nothing — it makes the constant
+    #: addressable, which is the whole slice.
+    rules: tuple[DecisionRule, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

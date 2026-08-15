@@ -1,4 +1,5 @@
 from app.domain.company_facts import CompanyFacts
+from app.domain.decision_rules import MOMENTUM_BANDS
 from app.domain.finding import Finding
 from app.domain.momentum_signal import MomentumSignal
 
@@ -29,6 +30,7 @@ class MomentumSignalService:
         if change >= self.STRONG_POSITIVE_THRESHOLD:
             return MomentumSignal(
                 trend="BULLISH",
+                rule=MOMENTUM_BANDS,
                 strength="STRONG",
                 confidence=85,
                 evidence=(
@@ -44,6 +46,7 @@ class MomentumSignalService:
         if change >= self.POSITIVE_THRESHOLD:
             return MomentumSignal(
                 trend="BULLISH",
+                rule=MOMENTUM_BANDS,
                 strength="MODERATE",
                 confidence=70,
                 evidence=(
@@ -57,6 +60,7 @@ class MomentumSignalService:
         if change <= self.STRONG_NEGATIVE_THRESHOLD:
             return MomentumSignal(
                 trend="BEARISH",
+                rule=MOMENTUM_BANDS,
                 strength="STRONG",
                 confidence=85,
                 evidence=(
@@ -68,6 +72,7 @@ class MomentumSignalService:
         if change <= self.NEGATIVE_THRESHOLD:
             return MomentumSignal(
                 trend="BEARISH",
+                rule=MOMENTUM_BANDS,
                 strength="MODERATE",
                 confidence=70,
                 evidence=(
@@ -78,6 +83,7 @@ class MomentumSignalService:
 
         return MomentumSignal(
             trend="NEUTRAL",
+            rule=MOMENTUM_BANDS,
             strength="WEAK",
             confidence=60,
             evidence=(

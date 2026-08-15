@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.cio.decision_state import DecisionState
 from app.domain.asset_class import AssetClass
 from app.domain.committee.opinion import CommitteeOpinion
+from app.domain.decision_rules import DecisionRule
 from app.domain.finding import FindingLedger
 from app.domain.provenance import Provenance
 from app.domain.score_basis import ScoreBases
@@ -145,6 +146,12 @@ class DecisionEvidence(BaseModel):
 
     next_trigger: str | None = None
 
+    #: The named, versioned rules the builder applied in producing this
+    #: evidence's action flags — today, the BUY-is-actionable and
+    #: SELL-is-veto mappings. Identity, never endorsement: the score
+    #: rules ride on `score_bases`, each beside the number it produced.
+    rules: tuple[DecisionRule, ...] = ()
+
 
 class ExecutiveDecision(BaseModel):
     """Final explainable decision produced by the Artificial CIO."""
@@ -172,6 +179,11 @@ class ExecutiveDecision(BaseModel):
     catalysts: tuple[str, ...] = ()
 
     next_trigger: str | None = None
+
+    #: The named, versioned rules this decision was reached under — the
+    #: gate procedure and the conviction arithmetic. *Produced under
+    #: this exact rule*, never *this is the correct way to invest*.
+    decided_under: tuple[DecisionRule, ...] = ()
 
     decided_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),

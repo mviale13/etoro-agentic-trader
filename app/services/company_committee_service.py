@@ -1,5 +1,6 @@
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_signals import CompanySignals
+from app.domain.decision_rules import SIGNAL_VOTE, VOTE_CONFIDENCE
 from app.domain.finding import Dimension
 
 
@@ -10,6 +11,12 @@ class CompanyCommitteeService:
 
     BUY_THRESHOLD = 0.50
     SELL_THRESHOLD = -0.50
+
+    #: The constants of `vote-confidence@1`, named so the provenance
+    #: guard can fingerprint them. The formula reads the verdict's own
+    #: strength as its confidence — recorded, not endorsed.
+    CONFIDENCE_BASE = 50
+    CONFIDENCE_SPAN = 50
 
     def evaluate(
         self,
@@ -23,7 +30,7 @@ class CompanyCommitteeService:
         )
 
         recommendation = self._recommendation(score)
-        confidence = round(50 + abs(score) * 50)
+        confidence = round(self.CONFIDENCE_BASE + abs(score) * self.CONFIDENCE_SPAN)
 
         # Attributed here because here is where the producing signal is
         # known by name. A later layer reading this flat list cannot tell
@@ -47,6 +54,7 @@ class CompanyCommitteeService:
             signals=signals,
             evidence=evidence,
             reading=signals.reading,
+            rules=(SIGNAL_VOTE, VOTE_CONFIDENCE),
         )
 
     @staticmethod

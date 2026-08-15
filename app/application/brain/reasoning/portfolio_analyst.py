@@ -14,6 +14,11 @@ from app.domain.portfolio_snapshot import PortfolioSnapshot
 class PortfolioAnalyst(Analyst[PortfolioAssessment]):
     """Transform the Brain's portfolio knowledge into a structured assessment."""
 
+    #: One term of `cognitive-confidence@1`: the floor under this
+    #: analyst's concentration-derived confidence. Named for the
+    #: provenance fingerprint.
+    CONFIDENCE_FLOOR = 0.50
+
     def assess(
         self,
         source: Brain,
@@ -28,7 +33,7 @@ class PortfolioAnalyst(Analyst[PortfolioAssessment]):
             diversification * 0.40 + (1.0 - concentration) * 0.35 + liquidity * 0.25
         )
 
-        confidence = max(0.50, 1.0 - concentration)
+        confidence = max(self.CONFIDENCE_FLOOR, 1.0 - concentration)
 
         strengths: list[str] = []
         weaknesses: list[str] = []
