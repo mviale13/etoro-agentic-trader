@@ -12,6 +12,7 @@ from app.commands import (
     committee_judgment,
     committees,
     company,
+    considerations,
     credentials,
     crypto_events,
     crypto_market,
@@ -476,6 +477,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show each committee's own reasoning and the refs it rests on",
     )
 
+    considerations_parser = subparsers.add_parser(
+        "considerations",
+        help="Show what the committees establish, addressed to an investment layer",
+        description=(
+            "The decision bridge: each committee's own conclusion carried "
+            "forward with its applicability, confidence and the exact "
+            "judgment it rests on — and, beside each one, whether this "
+            "platform has established what that conclusion means for an "
+            "investment case. Today it has not, for any of them, because no "
+            "layer has written such a rule. Read-only, no model, no fetch, "
+            "and nothing is scored, weighted, ranked or combined"
+        ),
+    )
+    considerations_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example HYPE. Omit for the whole corpus",
+    )
+
     judge_parser = subparsers.add_parser(
         "judge",
         help="Convene the committee and record what it concluded",
@@ -863,6 +883,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "committees":
         return await committees.run(args.symbol, args.evidence)
+
+    if args.command == "considerations":
+        return await considerations.run(args.symbol)
 
     if args.command == "judge":
         return await judge.run(args.symbol)
