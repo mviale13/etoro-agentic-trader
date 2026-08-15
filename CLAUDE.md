@@ -785,14 +785,35 @@ subtracted from it.
 *Times convened* counts runs of `movrvest judge`, and across all sixteen
 recorded series **no verdict has ever changed** — every variation is
 this platform's judging flag being toggled. *Evidence it weighed* did
-not measure what its label said: `app/commands/judge.py` calls
-`committee.evidence(asset)` unconditionally while `judge()` returns
-*before* reading any evidence when the question does not apply, so BTC's
-Value Capture declined the question, cited nothing, and reported
-weighing **3 findings**. Both stay in the domain, the store and
-`movrvest committees`; the wrong recorded count is **reported and not
-fixed**, because correcting it makes every asset's history show a
-`EvidenceMovement` that never happened.
+not measure what its label said. Both stay in the domain, the store and
+`movrvest committees`.
+
+**And the count itself is now truthful, without a single stored line
+being rewritten** (`JUDGMENT_HISTORY.md`, *What `evidence_count`
+counts*). The field was an **accidental mixture**: `judge.py` resolved
+`committee.evidence(asset)` beside the judgment, so on every path that
+consults evidence it meant *supplied to the committee* and on the two
+applicability paths — which return before consulting — it meant *held in
+the store*. Ten of sixteen non-consulting records carried a non-zero
+count; the other six read 0 by **coincidence**, which is why one
+committee never showed the defect. It is also not `refs`: **11 of 26
+answered judgments cite fewer findings than they were given**, so
+supplied and cited are two facts and one counter could never carry both.
+
+Two halves, and it needs both. `CommitteeJudgment.considered` carries
+the evidence the committee was given and `record_from`'s `evidence`
+parameter is gone — **PR #113's identity fix applied to evidence**,
+because a value supplied alongside a judgment is one that can disagree
+with it. And `EvidenceSemantics` rides on the record (store schema 5, a
+field-less line decoding as the old meaning), with `_evidence_movement`
+returning `SEMANTICS_CHANGED` rather than subtracting two meanings.
+**Measured: a forward-only fix would have invented 4 movements** — and
+two of those came from the *digest*, because `evidence_digest_of(())` is
+`e3b0c44298fc1c14` and not the empty string, so zeroing it turns two
+spellings of the same absence into a change. With the gate, re-judging
+every asset gives 16 of 16 `semantics_changed` and **0 movements**. The
+guard is structural: `committee.evidence` is monkeypatched to raise and
+both committees still reach every declining outcome.
 
 **And an unavailable reading carries no coverage clause, which is why it
 is not consulted.** `shared_maturity` states the maturity 13 findings

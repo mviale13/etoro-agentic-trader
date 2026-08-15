@@ -528,8 +528,13 @@ class ValueCaptureCommittee:
         # rather than filled in once at the end because an `UNAVAILABLE`
         # judgment that forgot it would be recorded as an unknown
         # applicability — a different, and worse, fact.
+        #
+        # It also fixes what this judgment was *given*. Every exit from
+        # here down has asked for its evidence, and the two applicability
+        # exits above have not — so the closure carries `findings` and
+        # they carry nothing, which is the distinction the record needs.
         def no_judgment(reason: str) -> CommitteeJudgment:
-            return unavailable(asset, CONTRACT, reason, basis)
+            return unavailable(asset, CONTRACT, reason, basis, considered=findings)
 
         if not findings:
             return abstain(
@@ -538,6 +543,9 @@ class ValueCaptureCommittee:
                 AbstentionReason.INSUFFICIENT_EVIDENCE,
                 basis,
                 because="No eligible fee or capture evidence is held for this asset.",
+                # Empty, and *asked for* — which is not the same absence
+                # as never having reached the question.
+                considered=findings,
             )
 
         if not self.enabled():
@@ -681,6 +689,10 @@ class ValueCaptureCommittee:
                 ),
             ),
             refs=refs,
+            # What it was given, beside what it cited. The two differ in
+            # eleven of the corpus's twenty-six answered judgments, which
+            # is why one counter could never have carried both.
+            considered=findings,
             because=because,
             wording_refused=wording_refused,
             judged_at=datetime.now(UTC),

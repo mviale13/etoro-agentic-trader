@@ -151,7 +151,7 @@ def matrix(tmp_path: Path) -> CommitteeMatrixService:
 
     for asset, spec in POSTURES.items():
         for contract in (FEE_CAPTURE, SUPPLY_GOVERNANCE):
-            history.record(_judgment(asset, contract, spec), (), now=NOW)
+            history.record(_judgment(asset, contract, spec), now=NOW)
 
     return CommitteeMatrixService(history=history)
 

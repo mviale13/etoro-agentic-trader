@@ -109,6 +109,7 @@ def _judgment(
     abstained: AbstentionReason | None = None,
     unavailable: str | None = None,
     role: str | None = "Exchange venue",
+    considered: tuple[EligibleFinding, ...] = (),
 ) -> CommitteeJudgment:
     return CommitteeJudgment(
         asset=asset,
@@ -122,6 +123,7 @@ def _judgment(
         verdict=verdict,
         confidence=confidence,
         refs=refs,
+        considered=considered,
         abstained_because=abstained,
         unavailable_because=unavailable,
         judged_at=at,
@@ -134,9 +136,11 @@ def _record(
     evidence: tuple[EligibleFinding, ...] = (),
     **kwargs: object,
 ) -> JudgmentRecord:
+    # The evidence rides on the judgment now, exactly as a live
+    # committee's does — a fixture that still handed it to the recorder
+    # would be testing a path the code no longer has.
     return record_from(
-        _judgment(at=at, **kwargs),  # type: ignore[arg-type]
-        evidence,
+        _judgment(at=at, considered=evidence, **kwargs),  # type: ignore[arg-type]
         recorded_at=at,
     )
 
@@ -293,7 +297,7 @@ def test_a_previous_verdict_is_history_and_never_todays_answer(tmp_path) -> None
         evidence=(_finding("H.venue", "$535k reached token holders."),),
     )
 
-    service.record(_judgment(), (), now=NOW)
+    service.record(_judgment(), now=NOW)
 
     today = _record(
         at=NOW + timedelta(days=5),
@@ -582,7 +586,7 @@ def test_deleting_the_record_removes_the_ability_to_claim_the_earlier_view(  # t
     service = _service(tmp_path)
 
     assert (
-        service.record(_judgment(verdict=Verdict.MECHANISM_EVIDENCED), (), now=NOW)
+        service.record(_judgment(verdict=Verdict.MECHANISM_EVIDENCED), now=NOW)
         is not None
     )
     assert service.history("HYPE", CONTRACT.key)
@@ -647,7 +651,6 @@ def test_a_judgment_with_no_stated_applicability_is_refused() -> None:
                 state=JudgmentState.UNAVAILABLE,
                 unavailable_because="off",
             ),
-            (),
             recorded_at=NOW,
         )
 
@@ -897,15 +900,13 @@ def test_the_live_committee_states_applicability_on_every_outcome() -> None:
 
     assert bitcoin.applicability is Applicability.NOT_ECONOMICALLY_APPLICABLE
     assert bitcoin.economic_role
-    assert record_from(bitcoin, (), NOW).posture is (
-        JudgmentPosture.KNOWN_NOT_APPLICABLE
-    )
+    assert record_from(bitcoin, NOW).posture is (JudgmentPosture.KNOWN_NOT_APPLICABLE)
 
     bittensor = asyncio.run(committee.judge("TAO"))
 
     assert bittensor.applicability is Applicability.UNESTABLISHED
     assert bittensor.economic_role is None
-    assert record_from(bittensor, (), NOW).posture is (
+    assert record_from(bittensor, NOW).posture is (
         JudgmentPosture.APPLICABILITY_UNKNOWN
     )
 
@@ -921,7 +922,7 @@ def test_the_committee_version_is_recorded_and_survives_the_round_trip(  # type:
 
     judgment = asyncio.run(committee.judge("BTC"))
 
-    written = service.record(judgment, (), now=NOW)
+    written = service.record(judgment, now=NOW)
 
     assert written is not None
 
@@ -932,7 +933,7 @@ def test_the_committee_version_is_recorded_and_survives_the_round_trip(  # type:
     assert held.applicability is Applicability.NOT_ECONOMICALLY_APPLICABLE
 
     # Recording the identical judgment again appends nothing.
-    assert service.record(judgment, (), now=NOW) is None
+    assert service.record(judgment, now=NOW) is None
 
 
 # ── coverage never becomes a duration ───────────────────────────────

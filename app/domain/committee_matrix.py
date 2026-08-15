@@ -56,7 +56,11 @@ from app.domain.committee_judgment import (
     JudgmentState,
 )
 from app.domain.committee_protocol import CommitteeIdentity, Comparability
-from app.domain.judgment_history import JudgmentPosture, JudgmentRecord
+from app.domain.judgment_history import (
+    EvidenceSemantics,
+    JudgmentPosture,
+    JudgmentRecord,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,8 +116,19 @@ class CommitteeAssessment:
 
     #: The refs the answer cited and how much eligible evidence stood
     #: behind it, in this committee's own units.
+    #:
+    #: **Two facts, not one rounded off.** The corpus settles that they
+    #: are distinct: eleven of twenty-six answered judgments cite fewer
+    #: findings than they were given. Neither is derivable from the
+    #: other and neither is comparable across committees.
     refs: tuple[str, ...] = ()
     evidence_count: int = 0
+
+    #: What `evidence_count` was counting when this record was written.
+    #: Carried so a surface can word the count truthfully for a record
+    #: that predates the correction, rather than restating an old
+    #: measurement in today's terms.
+    evidence_semantics: EvidenceSemantics = EvidenceSemantics.HELD_AT_RECORDING
 
     #: The established economic role at the time of judgment, where one
     #: was established.
@@ -202,6 +217,8 @@ class CommitteeAssessment:
             "confidence_stated": (self.confidence.stated if self.confidence else None),
             "refs": list(self.refs),
             "evidence_count": self.evidence_count,
+            "evidence_semantics": self.evidence_semantics.value,
+            "evidence_semantics_stated": self.evidence_semantics.stated,
             "economic_role": self.economic_role,
             "judged_at": self.judged_at.isoformat() if self.judged_at else None,
             "comparability": (self.comparability.value if self.comparability else None),
@@ -244,6 +261,7 @@ def assessment_from(
         confidence=record.confidence,
         refs=record.refs,
         evidence_count=record.evidence_count,
+        evidence_semantics=record.evidence_semantics,
         economic_role=record.economic_role,
         judged_at=record.judged_at,
         comparability=comparability,

@@ -189,13 +189,27 @@ class CustodyCommittee:
 
         findings = self.evidence(symbol)
 
+        # Every exit below has asked for its evidence and says so; the
+        # two applicability exits above have not. A specimen that got
+        # this wrong would prove the framework runs a committee, not
+        # that it records one honestly.
         if not findings:
             return abstain(
-                symbol, CUSTODY, AbstentionReason.INSUFFICIENT_EVIDENCE, basis
+                symbol,
+                CUSTODY,
+                AbstentionReason.INSUFFICIENT_EVIDENCE,
+                basis,
+                considered=findings,
             )
 
         if self._answer is None:
-            return unavailable(symbol, CUSTODY, "The fixture declined.", basis)
+            return unavailable(
+                symbol,
+                CUSTODY,
+                "The fixture declined.",
+                basis,
+                considered=findings,
+            )
 
         return CommitteeJudgment(
             asset=symbol,
@@ -205,6 +219,7 @@ class CustodyCommittee:
             verdict=self._answer,
             confidence=confidence_from(supporting=len(findings), across_captures=False),
             refs=tuple(finding.ref for finding in findings),
+            considered=findings,
             judged_at=NOW,
         )
 
@@ -216,7 +231,7 @@ def _service(tmp_path) -> JudgmentHistoryService:  # type: ignore[no-untyped-def
 def _record(committee: CustodyCommittee, asset: str = "XYZ", at: datetime = NOW):  # type: ignore[no-untyped-def]
     judgment = asyncio.run(committee.judge(asset))
 
-    return record_from(judgment, committee.evidence(asset), recorded_at=at)
+    return record_from(judgment, recorded_at=at)
 
 
 # ── the protocol is satisfied structurally ──────────────────────────
@@ -269,7 +284,7 @@ def test_the_whole_lifecycle_runs_for_a_committee_the_framework_never_saw(  # ty
 
     judgment = asyncio.run(CustodyCommittee().judge("XYZ"))
 
-    written = service.record(judgment, CustodyCommittee().evidence("XYZ"), now=NOW)
+    written = service.record(judgment, now=NOW)
 
     assert written is not None
     assert written.committee.key == "custody_concentration"
@@ -422,7 +437,6 @@ def test_an_incompatible_revision_of_an_unknown_committee_is_not_compared() -> N
             refs=("A1",),
             judged_at=NOW + timedelta(days=1),
         ),
-        (),
         recorded_at=NOW + timedelta(days=1),
     )
 
@@ -470,8 +484,8 @@ def test_two_committees_judging_one_asset_keep_separate_histories(tmp_path) -> N
     custody = asyncio.run(CustodyCommittee().judge("HYPE"))
     fees = asyncio.run(ValueCaptureCommittee().judge("HYPE"))
 
-    assert service.record(custody, (), now=NOW) is not None
-    assert service.record(fees, (), now=NOW) is not None
+    assert service.record(custody, now=NOW) is not None
+    assert service.record(fees, now=NOW) is not None
 
     mine = service.history("HYPE", CUSTODY.key)
     theirs = service.history("HYPE", FEE_CAPTURE.key)

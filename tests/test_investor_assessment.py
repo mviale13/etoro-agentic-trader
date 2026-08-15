@@ -98,7 +98,7 @@ def _service(  # type: ignore[no-untyped-def]
     history = JudgmentHistoryService(store=JudgmentHistoryStore(root=tmp_path))
 
     for judgment in judgments:
-        history.record(judgment, (), now=NOW)
+        history.record(judgment, now=NOW)
 
     return InvestorAssessmentService(
         supply=_Supply(facts),  # type: ignore[arg-type]

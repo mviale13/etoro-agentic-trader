@@ -60,14 +60,16 @@ class JudgeCommand:
     ) -> None:
         judgment = await committee.judge(asset)
 
-        # The evidence the committee was actually given, captured in the
-        # same breath as the answer. Read later it would be different
-        # evidence, and the whole separation of evidence movement from
-        # judgment movement rests on knowing which produced which.
-        evidence = committee.evidence(asset)
-
-        # No contract argument: the judgment carries its own.
-        record = history.record(judgment, evidence)
+        # No contract argument and no evidence argument: the judgment
+        # carries both.
+        #
+        # This line used to read `committee.evidence(asset)` and pass it
+        # along, described as "the evidence the committee was actually
+        # given". It was not. `judge()` returns before consulting
+        # anything when the question does not apply, so a declined
+        # judgment was filed with findings it had never seen — Bitcoin's
+        # Value Capture cited nothing and was recorded as weighing three.
+        record = history.record(judgment)
 
         print(f"  {asset}")
 
