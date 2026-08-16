@@ -3,6 +3,7 @@ from typing import Any
 
 import yfinance as yf
 
+from app.domain.monetary import corroborate_denomination
 from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 
@@ -70,6 +71,25 @@ class ValueProvider:
             peg_ratio=info.get("pegRatio"),
             dividend_yield=info.get("dividendYield"),
             market_cap=info.get("marketCap"),
+            # The cap's denomination, established from the payload's own
+            # arithmetic where it can be, and absent where it cannot.
+            # No field is inherited: the quote currency enters only as
+            # an input to the identity check, and a cap that does not
+            # reconcile establishes nothing (monetary-comparison@1,
+            # MARKET_CAP_DENOMINATION.md).
+            market_cap_denomination=corroborate_denomination(
+                cls._ratio(info.get("marketCap")),
+                cls._ratio(info.get("regularMarketPrice")),
+                tuple(
+                    count
+                    for count in (
+                        cls._ratio(info.get("sharesOutstanding")),
+                        cls._ratio(info.get("impliedSharesOutstanding")),
+                    )
+                    if count is not None
+                ),
+                cls._text(info.get("currency")),
+            ),
             eps=info.get("trailingEps", info.get("forwardEps")),
             circulating_supply=info.get("circulatingSupply"),
             max_supply=info.get("maxSupply"),

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from app.domain.monetary import DenominationBasis, MarketCapDenomination
 from app.domain.provenance import Provenance
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
@@ -50,16 +51,18 @@ class CachedValueProvider:
         self._provider = provider or ValueProvider()
         self._cache = cache or JsonCache(
             evidence_path("cache", "fundamentals"),
-            # Schema 2 added `expense_ratio` — a fund's cost of
-            # ownership, absent from every record written before the
-            # field was read. Schema-1 records come forward unchanged:
-            # every figure they carry keeps its meaning, and the new
-            # field restores as absent, which is what it was. Records
-            # written before this store declared a schema are accepted
-            # as schema 1 deliberately — their shape is what schema 1
+            # Schema 2 added `expense_ratio`; schema 3 adds the market
+            # cap's denomination, established at acquisition from the
+            # payload's own arithmetic. Both migrations are the
+            # identity: an old record's figures keep their meaning, and
+            # the new field restores as absent — a pre-boundary market
+            # cap has no established denomination, which is exactly
+            # what its silence downstream should say. Records written
+            # before this store declared a schema are accepted as
+            # schema 1 deliberately — their shape is what schema 1
             # describes.
-            schema=2,
-            migrations={1: lambda value: value},
+            schema=3,
+            migrations={1: lambda value: value, 2: lambda value: value},
             accepts_unversioned=True,
         )
         self._acquires = acquires
@@ -144,6 +147,15 @@ class CachedValueProvider:
             "peg_ratio": snapshot.peg_ratio,
             "dividend_yield": snapshot.dividend_yield,
             "market_cap": snapshot.market_cap,
+            "market_cap_denomination": (
+                {
+                    "currency": snapshot.market_cap_denomination.currency,
+                    "basis": snapshot.market_cap_denomination.basis.value,
+                    "because": snapshot.market_cap_denomination.because,
+                }
+                if snapshot.market_cap_denomination is not None
+                else None
+            ),
             "eps": snapshot.eps,
             "circulating_supply": snapshot.circulating_supply,
             "max_supply": snapshot.max_supply,
@@ -212,6 +224,9 @@ class CachedValueProvider:
             peg_ratio=number("peg_ratio"),
             dividend_yield=number("dividend_yield"),
             market_cap=number("market_cap"),
+            market_cap_denomination=cls._denomination(
+                value.get("market_cap_denomination")
+            ),
             eps=number("eps"),
             circulating_supply=number("circulating_supply"),
             max_supply=number("max_supply"),
@@ -236,6 +251,40 @@ class CachedValueProvider:
                 last_known=last_known,
             ),
         )
+
+    @staticmethod
+    def _denomination(raw: object) -> MarketCapDenomination | None:
+        """A stored denomination, or nothing — never a guessed one.
+
+        A record that predates the boundary, or whose stored shape
+        cannot be read back, restores as no denomination at all: the
+        magnitude then stays incomparable, which is the pre-boundary
+        truth rather than a new claim.
+        """
+
+        if not isinstance(raw, dict):
+            return None
+
+        basis = raw.get("basis")
+        currency = raw.get("currency")
+        because = raw.get("because")
+
+        try:
+            parsed = DenominationBasis(basis) if isinstance(basis, str) else None
+        except ValueError:
+            return None
+
+        if parsed is None or not isinstance(because, str):
+            return None
+
+        try:
+            return MarketCapDenomination(
+                currency=currency if isinstance(currency, str) else None,
+                basis=parsed,
+                because=because,
+            )
+        except ValueError:
+            return None
 
     @staticmethod
     def _timestamp(raw: object) -> datetime | None:

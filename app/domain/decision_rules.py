@@ -177,6 +177,21 @@ QUALITY_GROUNDED = _interprets(
     "measurement over 24 companies, absences refused rather than scored",
 )
 
+#: Monetary values compare only under identical explicit
+#: denominations. The size threshold is declared USD; a magnitude
+#: established in any other currency is refused pending a separately
+#: authorised conversion, and an undenominated magnitude is refused
+#: outright — absence of denomination is not permission to inherit one.
+MONETARY_COMPARISON = _interprets(
+    "monetary-comparison",
+    RuleStatus.ARGUED,
+    "argued in MARKET_CAP_DENOMINATION.md (#142): no provider field "
+    "states a market cap's denomination, and BP.L quotes in pence, "
+    "reports in dollars and carries a cap in pounds — so inheritance "
+    "from any neighbouring currency field picks a wrong answer for a "
+    "held security, and only identical explicit denominations compare",
+)
+
 #: Whether Quality may band a business at all: every applicable
 #: factor read, or no band.
 #:
@@ -299,6 +314,7 @@ DECISION_RULES: dict[str, DecisionRule] = {
         VALUATION_SCORES,
         PROVIDER_QUALITY,
         QUALITY_AUTHORITY,
+        MONETARY_COMPARISON,
         QUALITY_GROUNDED,
         MOMENTUM_BANDS,
         MOMENTUM_INPUT_ELIGIBILITY,

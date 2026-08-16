@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.domain.monetary import MonetaryAmount
 from app.domain.provider_claim import ClaimAbsence
 from app.domain.provider_translation import TranslationWarrant
 
@@ -113,9 +114,29 @@ class MarketCapMagnitude:
             and self.denomination_established
         )
 
+    def comparable_with(
+        self,
+        threshold: MonetaryAmount,
+        warrants: frozenset[TranslationWarrant],
+    ) -> bool:
+        """Whether this magnitude may be placed against that threshold.
+
+        `admissible_for_threshold` plus the rule #142 forced:
+        **identical explicit denominations, or no comparison**. A CHF
+        magnitude against a USD threshold is not wrong by a factor —
+        it is not yet a comparison at all, and stays refused until a
+        separately authorised conversion exists. `monetary-comparison@1`.
+        """
+
+        return (
+            self.admissible_for_threshold(warrants)
+            and self.currency == threshold.currency
+        )
+
     def refusal(
         self,
         warrants: frozenset[TranslationWarrant],
+        threshold: MonetaryAmount | None = None,
     ) -> str:
         """Why this magnitude cannot be compared, worded here once.
 
@@ -124,7 +145,10 @@ class MarketCapMagnitude:
         implies anything about the company's size.
         """
 
-        if self.admissible_for_threshold(warrants):
+        if threshold is None:
+            if self.admissible_for_threshold(warrants):
+                return ""
+        elif self.comparable_with(threshold, warrants):
             return ""
 
         if self.absence is not None:
@@ -137,11 +161,25 @@ class MarketCapMagnitude:
                 f"{self.warrant.stated.lower()} — {self.warrant.because}."
             )
 
+        if not self.denomination_established:
+            return (
+                "Company size cannot be compared with a size threshold: the "
+                "figure's currency is not established, and a magnitude whose "
+                "denomination is unknown cannot be placed above or below an "
+                "absolute amount."
+            )
+
+        # Established, and in a different currency from the threshold:
+        # honest, and waiting on a conversion this platform has not yet
+        # authorised. Deliberately not "unavailable" — the figure is
+        # known, and what is missing is a licensed transformation.
+        assert threshold is not None
+
         return (
-            "Company size cannot be compared with a size threshold: the "
-            "figure's currency is not established, and a magnitude whose "
-            "denomination is unknown cannot be placed above or below an "
-            "absolute amount."
+            f"Company size is established in {self.currency} and the size "
+            f"threshold is declared in {threshold.currency}; the comparison "
+            "is refused pending an authorised currency conversion, which "
+            "this platform does not yet hold."
         )
 
     @classmethod

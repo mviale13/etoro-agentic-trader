@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.monetary import MarketCapDenomination
 from app.domain.provenance import Provenance
 
 
@@ -19,6 +20,12 @@ class ValuationSnapshot:
     dividend_yield: float | None
 
     market_cap: float | None = None
+
+    #: What the market cap is denominated in, where the payload's own
+    #: arithmetic establishes it — and the honest classification where
+    #: it does not. None on records written before the boundary existed,
+    #: which restore as not established rather than as anything else.
+    market_cap_denomination: MarketCapDenomination | None = None
     eps: float | None = None
 
     #: What a token has instead of a balance sheet: how much of it exists,
