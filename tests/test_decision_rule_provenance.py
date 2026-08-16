@@ -107,6 +107,14 @@ GOVERNED: dict[str, object] = {
     "momentum-input-eligibility": tuple(
         sorted(warrant.value for warrant in MomentumSignalService.ELIGIBLE_WARRANTS)
     ),
+    # Canonicalised the same way and for the same reason: the membership
+    # is unordered, so it is sorted before hashing.
+    "market-cap-input-eligibility": tuple(
+        sorted(
+            warrant.value
+            for warrant in QualitySignalService.ELIGIBLE_MARKET_CAP_WARRANTS
+        )
+    ),
     "signal-vote": (
         CompanyCommitteeService.VALUE_WEIGHT,
         CompanyCommitteeService.QUALITY_WEIGHT,
@@ -156,6 +164,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "quality-grounded": (1, RuleStatus.LICENSED, "02dffb0feb63"),
     "momentum-bands": (1, RuleStatus.UNSOURCED, "2ef4de85d277"),
     "momentum-input-eligibility": (1, RuleStatus.ARGUED, "03e3e0ae4ccf"),
+    "market-cap-input-eligibility": (1, RuleStatus.ARGUED, "a3f6c145c2de"),
     "signal-vote": (1, RuleStatus.UNSOURCED, "f2fdf881fe4f"),
     "vote-confidence": (1, RuleStatus.UNSOURCED, "16d0753d000f"),
     "cognitive-confidence": (1, RuleStatus.UNSOURCED, "d9b82416ea5b"),
@@ -215,15 +224,17 @@ def test_exactly_one_rule_is_licensed() -> None:
     assert [r.key for r in licensed] == ["quality-grounded"]
 
 
-def test_exactly_two_rules_are_argued() -> None:
+def test_exactly_three_rules_are_argued() -> None:
     """Naming a rule still validates nothing; arguing one says where.
 
-    The count moved from one to two when the first warrant consumer
-    landed, and the second entry earns the status the same way the
-    first does: `momentum-input-eligibility` is argued in
-    `momentum_signal_service.py`, from the scale-invariance of a ratio
-    over two closes of one series. A future rule cannot join this list
-    without this line changing beside it.
+    The count moves once per warrant consumer, and each entry earns the
+    status the same way: an argument written at the implementation.
+    `momentum-input-eligibility` is argued from the scale-invariance of
+    a ratio over two closes of one series;
+    `market-cap-input-eligibility` is argued from the *absence* of any
+    such invariance for an absolute comparison, measured over the live
+    corpus. A future rule cannot join this list without this line
+    changing beside it.
     """
 
     argued = [r for r in DECISION_RULES.values() if r.status is RuleStatus.ARGUED]
@@ -231,6 +242,7 @@ def test_exactly_two_rules_are_argued() -> None:
     assert [r.key for r in argued] == [
         "risk-severity",
         "momentum-input-eligibility",
+        "market-cap-input-eligibility",
     ]
 
 

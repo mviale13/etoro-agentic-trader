@@ -5,6 +5,7 @@ from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.daily_change import ChangeBasis, DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
+from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
@@ -154,6 +155,16 @@ class CompanyFactsService:
                 if tokens is not None
                 else valuation.market_cap
             ),
+            # The same figure, carrying whether it may be placed against
+            # an absolute threshold. The currency is left absent
+            # deliberately: this platform reads none for a market
+            # capitalisation, and inventing one here would be the
+            # assumption the magnitude consumer exists to refuse.
+            market_cap_magnitude=self._market_cap_magnitude(
+                tokens.established_value("market_cap")
+                if tokens is not None
+                else valuation.market_cap
+            ),
             realized_volatility=(
                 quote.realized_volatility if quote is not None else None
             ),
@@ -237,6 +248,35 @@ class CompanyFactsService:
             # Classification
             sector=valuation.sector if has_company else None,
             industry=valuation.industry if has_company else None,
+        )
+
+    @staticmethod
+    def _market_cap_magnitude(amount: float | None) -> MarketCapMagnitude | None:
+        """The market capitalisation, with what is established about it.
+
+        Two crossings travel with the number and neither is currently
+        settled: the registry's warrant for reading `marketCap` as this
+        company's market capitalisation, and the denomination — which
+        this platform holds for no security, because it reads no
+        currency field for a fundamental. Recorded rather than
+        repaired: reading Yahoo's currency is a new translation and
+        would need its own warrant.
+        """
+
+        if amount is None:
+            return None
+
+        translation = governed("ValuationSnapshot.market_cap")
+
+        return MarketCapMagnitude.measured(
+            amount,
+            warrant=(
+                translation.warrant
+                if translation is not None
+                else TranslationWarrant.UNKNOWN
+            ),
+            currency=None,
+            currency_is_assumed=True,
         )
 
     @staticmethod
