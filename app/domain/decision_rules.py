@@ -189,6 +189,25 @@ MOMENTUM_BANDS = _interprets("momentum-bands", RuleStatus.UNSOURCED, _AUDIT)
 #: claim they had. Admitting a warrant and moving a threshold are
 #: different acts with different evidence, and each must be able to
 #: happen without implying the other.
+#: Which market-cap magnitudes may be compared with an absolute size
+#: threshold at all — eligibility, upstream of `provider-quality`'s
+#: bands and separately fingerprinted from them.
+#:
+#: A second rule for the same reason `momentum-input-eligibility` is
+#: one: the size threshold did not move, and re-versioning
+#: `provider-quality` would claim its ruler had changed when only the
+#: admissibility of its input did.
+MARKET_CAP_INPUT_ELIGIBILITY = _interprets(
+    "market-cap-input-eligibility",
+    RuleStatus.ARGUED,
+    "argued in quality_signal_service.py: an absolute threshold "
+    "comparison has no scale invariance to protect it, and measured "
+    "over the live corpus 57 of 72 magnitudes sit within a factor of "
+    "100 of the line while 17 are denominated in a currency this "
+    "platform never reads — so an assumed translation can change which "
+    "side of the threshold a company falls on",
+)
+
 MOMENTUM_INPUT_ELIGIBILITY = _interprets(
     "momentum-input-eligibility",
     RuleStatus.ARGUED,
@@ -247,6 +266,7 @@ DECISION_RULES: dict[str, DecisionRule] = {
         QUALITY_GROUNDED,
         MOMENTUM_BANDS,
         MOMENTUM_INPUT_ELIGIBILITY,
+        MARKET_CAP_INPUT_ELIGIBILITY,
         VOTE_CONFIDENCE,
         COGNITIVE_CONFIDENCE,
         EVIDENCE_SCORE,

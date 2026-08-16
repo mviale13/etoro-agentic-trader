@@ -1,5 +1,6 @@
 from app.domain.company_facts import CompanyFacts
 from app.services.quality_signal_service import QualitySignalService
+from tests.conftest import admissible_market_cap
 
 
 def company(
@@ -16,6 +17,9 @@ def company(
         current_price=500,
         daily_change_pct=1.2,
         market_cap=market_cap,
+        market_cap_magnitude=(
+            admissible_market_cap(market_cap) if market_cap is not None else None
+        ),
         forward_pe=30,
         eps=eps,
         dividend_yield=dividend,

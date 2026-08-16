@@ -158,12 +158,23 @@ def test_quality_can_be_assessed_from_those_facts() -> None:
     While company facts discarded market cap and earnings, the signal could
     never score above LOW whatever the provider returned, and the Artificial
     CIO scored those companies on portfolio health instead.
+
+    **Since `market-cap-input-eligibility@1` the ceiling is MEDIUM on
+    this path**, and the reason is the whole of that rule: the service
+    composes a magnitude whose denomination it cannot establish, so the
+    size factor is refused rather than scored. Earnings and dividends
+    still read, `available` falls to two, and the band says so. This is
+    the end-to-end evidence of the change — a real provider snapshot,
+    through the real service.
     """
 
     signal = QualitySignalService().build(make_facts(make_snapshot()))
 
-    assert signal.quality == "HIGH"
+    assert signal.quality == "MEDIUM"
+    assert signal.earned == 2
+    assert signal.available == 2
     assert "Insufficient quality data." not in statements(signal.evidence)
+    assert "Large-cap company." not in statements(signal.evidence)
 
 
 def test_facts_are_never_dated_fresher_than_the_evidence() -> None:
@@ -441,9 +452,16 @@ def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:
     # boundary (F1) closes this when the class travels with the call,
     # which is why the class is now a parameter rather than a caller's
     # courtesy.
+    #
+    # Since `market-cap-input-eligibility@1` the size claim no longer
+    # even forms: the magnitude's denomination is not established, so
+    # the factor is refused before the class boundary is reached. Two
+    # independent guards now stand between a token's network value and
+    # a company's large-cap point, and this asserts the *inner* one —
+    # the sentence is unproducible rather than merely unreached.
     mistaken = QualitySignalService().build(facts)
 
-    assert "Large-cap company." in statements(mistaken.evidence)
+    assert "Large-cap company." not in statements(mistaken.evidence)
 
     guarded = QualitySignalService().build(facts, AssetClass.CRYPTO)
 

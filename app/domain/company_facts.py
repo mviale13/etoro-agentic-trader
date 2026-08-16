@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app.domain.daily_change import DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
+from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance, oldest
 
@@ -63,6 +64,13 @@ class CompanyFacts:
     #: fills both from one quote — and a guard test asserts it.
     daily_change: "DailyChange | None" = None
     market_cap: float | None = None
+
+    #: The same figure, carrying whether it may be compared with an
+    #: absolute size threshold: the translation's warrant and whether
+    #: the magnitude's denomination is established. Authoritative where
+    #: the acquisition supplied one; `market_cap` above stays for every
+    #: other reader and is filled from the same source.
+    market_cap_magnitude: MarketCapMagnitude | None = None
 
     # Risk, measured from the observed price history rather than assumed.
     #: Annualised standard deviation of daily returns, as a ratio.

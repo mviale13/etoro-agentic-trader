@@ -10,6 +10,7 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.finding import Sense
 from app.domain.score_basis import Contribution, ScoreDerivation
 from app.services.quality_signal_service import QualitySignalService
+from tests.conftest import admissible_market_cap
 
 
 def facts(**overrides: object) -> CompanyFacts:
@@ -21,6 +22,15 @@ def facts(**overrides: object) -> CompanyFacts:
         "exchange": "NASDAQ",
     }
     base.update(overrides)
+
+    # These tests are about the band ruler, not about whether a
+    # magnitude may be compared with a threshold, so a market cap
+    # supplied here arrives admissible. The gate itself is exercised in
+    # tests/test_market_cap_eligibility.py.
+    if base.get("market_cap") is not None and "market_cap_magnitude" not in base:
+        base["market_cap_magnitude"] = admissible_market_cap(
+            float(base["market_cap"])  # type: ignore[arg-type]
+        )
 
     return CompanyFacts(**base)  # type: ignore[arg-type]
 

@@ -33,7 +33,12 @@ reaches for it goes red with the fix in the message.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+
+if TYPE_CHECKING:
+    from app.domain.market_magnitude import MarketCapMagnitude
 
 #: Every module that resolves configuration into a live client. Each is
 #: patched to a `Settings` that has never seen `.env`.
@@ -161,3 +166,30 @@ def hermetic_model_configuration(monkeypatch):
         # more than the calls it prevented.
         monkeypatch.setattr(f"{seam}.PACE", 0.0, raising=False)
         monkeypatch.setattr(f"{seam}.RATE_LIMIT_PAUSE", 0.0, raising=False)
+
+
+def admissible_market_cap(amount: float) -> MarketCapMagnitude:
+    """A market capitalisation the size factor is allowed to compare.
+
+    Most quality tests are about the band arithmetic — three factors
+    make HIGH, two make MEDIUM — and not about whether a magnitude may
+    be compared with a threshold at all. Since
+    `market-cap-input-eligibility@1` refuses every live magnitude
+    (nothing is VERIFIED and no denomination is established), those
+    tests supply one that clears the gate, so they keep testing the
+    ruler rather than the gate.
+
+    A test that means to exercise the *gate* passes a bare
+    `market_cap=` float instead, which is what every live security
+    carries.
+    """
+
+    from app.domain.market_magnitude import MarketCapMagnitude
+    from app.domain.provider_translation import TranslationWarrant
+
+    return MarketCapMagnitude.measured(
+        amount,
+        warrant=TranslationWarrant.VERIFIED,
+        currency="USD",
+        currency_is_assumed=False,
+    )

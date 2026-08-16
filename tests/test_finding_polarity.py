@@ -5,6 +5,7 @@ from app.domain.finding import Sense, statements, statements_where
 from app.services.quality_signal_service import QualitySignalService
 from app.services.risk_signal_service import RiskSignalService
 from app.services.value_signal_service import ValueSignalService
+from tests.conftest import admissible_market_cap
 
 
 def facts(**overrides: object) -> CompanyFacts:
@@ -16,7 +17,17 @@ def facts(**overrides: object) -> CompanyFacts:
         "exchange": "4",
     }
 
-    return CompanyFacts(**{**defaults, **overrides})  # type: ignore[arg-type]
+    merged: dict[str, object] = {**defaults, **overrides}
+
+    # About the findings' polarity, not about the size gate: a market
+    # cap supplied here arrives admissible.
+    if merged.get("market_cap") is not None:
+        merged.setdefault(
+            "market_cap_magnitude",
+            admissible_market_cap(float(merged["market_cap"])),  # type: ignore[arg-type]
+        )
+
+    return CompanyFacts(**merged)  # type: ignore[arg-type]
 
 
 def test_a_loss_making_company_does_not_report_a_strength() -> None:

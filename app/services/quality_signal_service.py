@@ -2,8 +2,56 @@ from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.decision_rules import PROVIDER_QUALITY
 from app.domain.finding import Finding
+from app.domain.market_magnitude import MarketCapMagnitude
+from app.domain.provider_translation import TranslationWarrant
+from app.domain.provider_translations import governed
 from app.domain.quality_signal import QualitySignal
 from app.domain.score_basis import Contribution
+
+#: The warrant the registry holds for the market-cap crossing, read
+#: rather than hardcoded so the day it is earned this consumer sees it.
+_MARKET_CAP_TRANSLATION = governed("ValuationSnapshot.market_cap")
+
+_MARKET_CAP_WARRANT = (
+    _MARKET_CAP_TRANSLATION.warrant
+    if _MARKET_CAP_TRANSLATION is not None
+    else TranslationWarrant.UNKNOWN
+)
+
+#: The warrants under which a market capitalisation may be compared
+#: with an absolute size threshold — `market-cap-input-eligibility@1`.
+#:
+#: **Explicit membership, and a different membership from Momentum's.**
+#: The contrast is the whole argument. Momentum admits ASSUMED because
+#: its output is a ratio over two closes of one series, invariant under
+#: any linear rescaling of that series. **That proof does not exist
+#: here and cannot be constructed**: this consumer compares the figure
+#: with an absolute amount, and rescaling is precisely what moves a
+#: value across an absolute line.
+#:
+#: Measured over the 72 live magnitudes rather than argued: **57 of
+#: them sit within a factor of 100 of the $10bn threshold**, so a
+#: hundredfold denomination error — the pence-versus-pounds error this
+#: platform already stores on BP.L — would change which side of the
+#: line they fall on. **17 are listings whose magnitude is in a
+#: currency this platform never reads at all.** The condition the brief
+#: sets — that the unresolved uncertainty cannot change the side of the
+#: threshold — is therefore *measured false* for ASSUMED, and ASSUMED
+#: is refused.
+#:
+#: Only VERIFIED and VALIDATED remain: the two warrants that carry a
+#: check on the value itself, which is what an absolute comparison
+#: needs and what `establishes_domain_fact` already means. DECLARED is
+#: refused deliberately — a provider's statement of what a field means
+#: establishes its *semantics*, and this consumer additionally needs
+#: the *denomination*, which no Yahoo declaration supplies and this
+#: platform does not read.
+ELIGIBLE_MARKET_CAP_WARRANTS: frozenset[TranslationWarrant] = frozenset(
+    {
+        TranslationWarrant.VERIFIED,
+        TranslationWarrant.VALIDATED,
+    }
+)
 
 
 class QualitySignalService:
@@ -27,6 +75,10 @@ class QualitySignalService:
     """
 
     LARGE_CAP_THRESHOLD = 10_000_000_000
+
+    #: Named on the class so the provenance guard can fingerprint the
+    #: eligibility rule apart from the bands it gates.
+    ELIGIBLE_MARKET_CAP_WARRANTS = ELIGIBLE_MARKET_CAP_WARRANTS
 
     #: How many factors this score consults given everything. Declared
     #: so a surface can say how much of the question set was readable —
@@ -81,11 +133,19 @@ class QualitySignalService:
         # thereby a bad one — so the absence of the point is neutral.
         counted: list[tuple[Finding, int]] = []
 
-        if company.market_cap is not None:
-            if company.market_cap >= self.LARGE_CAP_THRESHOLD:
-                counted.append((Finding.favourable("Large-cap company."), 1))
-            else:
-                counted.append((Finding.neutral("Small or mid-cap company."), 0))
+        # Size is scored only where the magnitude may honestly be placed
+        # against an absolute threshold. Where it may not, the factor is
+        # **not scored at all** rather than scored zero: a figure the
+        # platform cannot compare says nothing about whether the company
+        # is small, and "no point" is how this ruler spells "small".
+        # That is the same treatment an absent market cap has always
+        # received, which is why the third state needed no new
+        # vocabulary — `available` already records how much of the
+        # question set was readable.
+        size = self._size(company)
+
+        if size is not None:
+            counted.append(size)
 
         if company.eps is not None:
             if company.eps > 0:
@@ -131,6 +191,44 @@ class QualitySignalService:
             available=len(counted),
             next_band_needs=self._next_band_needs(quality),
         )
+
+    def _size(self, company: CompanyFacts) -> tuple[Finding, int] | None:
+        """The market-significance factor, or nothing where it cannot be asked.
+
+        `None` is the third state: not below the threshold, not above
+        it, and not a zero-point failure — the comparison was refused.
+        The caller drops the factor from the count exactly as it drops
+        an absent one, so `available` falls to two and the signal says
+        how much of the question set it could read.
+        """
+
+        magnitude = company.market_cap_magnitude
+
+        if magnitude is None:
+            # No standing supplied. The legacy float is read as a
+            # measurement under the registry's own warrant for the
+            # crossing — which is what a caller writing `market_cap=`
+            # directly is asserting — and is then held to the same
+            # eligibility as every other magnitude.
+            if company.market_cap is None:
+                return None
+
+            magnitude = MarketCapMagnitude.measured(
+                company.market_cap,
+                warrant=_MARKET_CAP_WARRANT,
+            )
+
+        if not magnitude.admissible_for_threshold(self.ELIGIBLE_MARKET_CAP_WARRANTS):
+            return None
+
+        amount = magnitude.amount
+
+        assert amount is not None  # guaranteed by `admissible_for_threshold`
+
+        if amount >= self.LARGE_CAP_THRESHOLD:
+            return (Finding.favourable("Large-cap company."), 1)
+
+        return (Finding.neutral("Small or mid-cap company."), 0)
 
     @classmethod
     def _band(cls, earned: int) -> str:

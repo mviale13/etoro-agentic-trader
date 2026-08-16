@@ -385,21 +385,39 @@ class TestTheLegacyFloatPath:
 class TestUnrelatedSignalsAreUntouched:
     """One vertical slice: no other consumer learned to read a warrant."""
 
-    def test_no_other_signal_service_consults_a_warrant(self) -> None:
+    def test_the_remaining_signal_services_consult_no_warrant(self) -> None:
+        """Warrant consumption spreads one sanctioned consumer at a time.
+
+        Quality left this list deliberately when
+        `market-cap-input-eligibility@1` landed — it is the second
+        consumer, argued and versioned on its own terms. Value and risk
+        are still untouched, and a third consumer appearing without its
+        own rule and its own slice turns this red.
+        """
+
         import inspect
 
-        from app.services import (
-            quality_signal_service,
-            risk_signal_service,
-            value_signal_service,
-        )
+        from app.services import risk_signal_service, value_signal_service
 
-        for module in (
-            value_signal_service,
-            quality_signal_service,
-            risk_signal_service,
-        ):
+        for module in (value_signal_service, risk_signal_service):
             source = inspect.getsource(module)
 
             assert "TranslationWarrant" not in source, module.__name__
             assert "ELIGIBLE_WARRANTS" not in source, module.__name__
+
+    def test_momentum_and_quality_require_different_memberships(self) -> None:
+        """Two consumers, two answers — the contrast is the architecture.
+
+        A single global "provider confidence" policy would have to give
+        these the same answer, and either would be wrong: refusing
+        ASSUMED everywhere silences Momentum for every security, and
+        admitting it everywhere lets an uncomparable magnitude award a
+        large-cap point.
+        """
+
+        from app.services.quality_signal_service import (
+            ELIGIBLE_MARKET_CAP_WARRANTS,
+        )
+
+        assert TranslationWarrant.ASSUMED in ELIGIBLE_WARRANTS
+        assert TranslationWarrant.ASSUMED not in ELIGIBLE_MARKET_CAP_WARRANTS

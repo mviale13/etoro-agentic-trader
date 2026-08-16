@@ -34,6 +34,7 @@ from app.services.company_facts_service import CompanyFactsService
 from app.services.playbook_selector import PlaybookSelector
 from app.services.quality_signal_service import QualitySignalService
 from app.services.value_signal_service import ValueSignalService
+from tests.conftest import admissible_market_cap
 
 
 def fund_item() -> WatchlistItem:
@@ -174,6 +175,7 @@ def test_the_company_path_is_untouched_by_the_boundary() -> None:
             asset_type="stock",
             exchange="4",
             market_cap=3_000_000_000_000.0,
+            market_cap_magnitude=admissible_market_cap(3_000_000_000_000.0),
             eps=12.5,
             dividend_yield=0.0,
         ),
