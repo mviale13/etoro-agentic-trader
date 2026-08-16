@@ -13,6 +13,7 @@ from app.domain.market_acquisition import (
     MarketAcquisition,
     MarketCycle,
 )
+from app.domain.monetary_translation import TRANSLATABLE_TO_USD
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.protocol_entities import entities_for
 from app.domain.research_candidate import ResearchCandidate
@@ -185,6 +186,7 @@ class MarketAcquisitionService:
             ),
             vix=await self._quotes.vix(),
             rate=await asyncio.to_thread(self._read_rate),
+            translation_rates=await asyncio.to_thread(self._read_translation_rates),
             crypto_market=await asyncio.to_thread(self._read_crypto_market),
         )
 
@@ -232,6 +234,30 @@ class MarketAcquisitionService:
             return self._rates.usd_to_eur()
         except Exception:
             return None
+
+    def _read_translation_rates(self) -> tuple[ExchangeRate, ...]:
+        """The foreign→USD rates for the measured denominations.
+
+        Read in the same cycle as the fundamentals, deliberately: the
+        translation boundary's temporal rule requires the rate and the
+        market cap to share an observation day, and one acquisition
+        reading both is what makes that day shared rather than
+        coincidental. A pair that could not be read is absent, and the
+        translations that depended on it are absent with it.
+        """
+
+        rates = []
+
+        for base in TRANSLATABLE_TO_USD:
+            try:
+                rate = self._rates.to_usd(base)
+            except Exception:
+                rate = None
+
+            if rate is not None:
+                rates.append(rate)
+
+        return tuple(rates)
 
     def _company(
         self,

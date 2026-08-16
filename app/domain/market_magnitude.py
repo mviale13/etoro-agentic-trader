@@ -33,6 +33,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.domain.monetary import MonetaryAmount
+from app.domain.monetary_translation import MonetaryTranslation
 from app.domain.provider_claim import ClaimAbsence
 from app.domain.provider_identity import CrossProviderIdentity, IdentityStanding
 from app.domain.provider_translation import TranslationWarrant
@@ -71,6 +72,15 @@ class MarketCapMagnitude:
     #: evaluated, which is not authority either.
     identity: CrossProviderIdentity | None = None
 
+    #: The authorised route from an established foreign denomination
+    #: to another currency's threshold — an explicit, evidenced FX
+    #: translation of exactly this amount (C6). None where no rate has
+    #: been read, where the denomination is not established, or where
+    #: the figure is USD and needs none. The original amount above is
+    #: never altered: the translation carries the derived claim beside
+    #: it, with its own evidence.
+    translation: MonetaryTranslation | None = None
+
     absence: ClaimAbsence | None = None
 
     def __post_init__(self) -> None:
@@ -85,6 +95,20 @@ class MarketCapMagnitude:
             raise ValueError(
                 "a market capitalisation carries a measurement or an "
                 "absence, never both"
+            )
+
+        if self.translation is not None and (
+            self.amount is None
+            or self.currency is None
+            or self.currency_is_assumed
+            or self.translation.original.amount != self.amount
+            or self.translation.original.currency != self.currency
+        ):
+            raise ValueError(
+                "a translation must be of exactly this magnitude — the "
+                "established amount in its established currency; anything "
+                "else is a derived claim about a different figure wearing "
+                "this one's evidence"
             )
 
     @property
@@ -168,17 +192,61 @@ class MarketCapMagnitude:
     ) -> bool:
         """Whether this magnitude may be placed against that threshold.
 
-        `admissible_for_threshold` plus the rule #142 forced:
-        **identical explicit denominations, or no comparison**. A CHF
-        magnitude against a USD threshold is not wrong by a factor —
-        it is not yet a comparison at all, and stays refused until a
-        separately authorised conversion exists. `monetary-comparison@1`.
+        `admissible_for_threshold` plus the rule #142 forced —
+        **identical explicit denominations, or no comparison** — now
+        with the one authorised exception C6 adds: an established
+        foreign magnitude carrying an **authorised** FX translation
+        into the threshold's currency compares through that
+        translation (`fx-translation@1`).
+
+        The order is load-bearing. Translation is consulted *last*,
+        only where identity, magnitude and denomination already hold:
+        an FX rate can never rescue an unresolved earlier crossing,
+        because the conjunction refuses before the translation is ever
+        looked at. And an unauthorised translation — a rate from
+        another day — is exactly no translation here.
         """
 
+        if not self.admissible_for_threshold(warrants):
+            return False
+
+        if self.currency == threshold.currency:
+            return True
+
         return (
-            self.admissible_for_threshold(warrants)
-            and self.currency == threshold.currency
+            self.translation is not None
+            and self.translation.authorised
+            and self.translation.target == threshold.currency
         )
+
+    def comparable_amount(
+        self,
+        threshold: MonetaryAmount,
+        warrants: frozenset[TranslationWarrant],
+    ) -> float | None:
+        """The amount in the threshold's own currency, or nothing.
+
+        The number a consumer may actually place against the
+        threshold: the amount itself where the currencies already
+        agree, the *translated* amount where an authorised translation
+        carries it across, and nothing everywhere else. A consumer
+        that read `amount` directly for a foreign magnitude would be
+        comparing Swiss francs against a dollar line — the exact
+        wrong-by-a-factor comparison this boundary exists to refuse —
+        so the translated route exists only through this door.
+        """
+
+        if not self.comparable_with(threshold, warrants):
+            return None
+
+        if self.currency == threshold.currency:
+            return self.amount
+
+        assert self.translation is not None  # guaranteed by comparable_with
+
+        derived = self.translation.translated
+
+        return derived.amount if derived is not None else None
 
     def refusal(
         self,
@@ -242,16 +310,27 @@ class MarketCapMagnitude:
             )
 
         # Established, and in a different currency from the threshold:
-        # honest, and waiting on a conversion this platform has not yet
-        # authorised. Deliberately not "unavailable" — the figure is
-        # known, and what is missing is a licensed transformation.
+        # honest, and waiting on an authorised translation. The two
+        # ways of lacking one are worded apart, because they call for
+        # different repairs: no rate was ever read, or a rate is held
+        # whose observation belongs to a different day than the
+        # figure's own.
         assert threshold is not None
+
+        if self.translation is not None and not self.translation.authorised:
+            return (
+                f"Company size is established in {self.currency} and the "
+                f"size threshold is declared in {threshold.currency}; "
+                f"{self.translation.stated}"
+            )
 
         return (
             f"Company size is established in {self.currency} and the size "
             f"threshold is declared in {threshold.currency}; the comparison "
-            "is refused pending an authorised currency conversion, which "
-            "this platform does not yet hold."
+            f"is refused pending an authorised currency translation — no "
+            f"{self.currency}→{threshold.currency} exchange-rate "
+            "observation is held for the day this figure was observed, and "
+            "a rate is never assumed."
         )
 
     @classmethod
@@ -263,6 +342,7 @@ class MarketCapMagnitude:
         currency: str | None = None,
         currency_is_assumed: bool = True,
         identity: CrossProviderIdentity | None = None,
+        translation: MonetaryTranslation | None = None,
     ) -> MarketCapMagnitude:
         return cls(
             amount=amount,
@@ -270,6 +350,7 @@ class MarketCapMagnitude:
             currency=currency,
             currency_is_assumed=currency_is_assumed,
             identity=identity,
+            translation=translation,
         )
 
     @classmethod

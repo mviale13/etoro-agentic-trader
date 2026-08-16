@@ -192,6 +192,26 @@ MONETARY_COMPARISON = _interprets(
     "held security, and only identical explicit denominations compare",
 )
 
+#: The one authorised exception to identical-denominations-only: an
+#: established foreign magnitude may compare through an explicit,
+#: evidenced FX translation into the threshold's currency. The rule
+#: owns the translatable set (the four measured foreign denominations
+#: against USD), the temporal requirement (rate and subject observed
+#: on one UTC day — the daily cadence both stores declare, and the
+#: finest rule the held evidence supports), and the two refusals that
+#: never soften: a missing rate is never 1:1, and a rate from another
+#: day is never "latest".
+FX_TRANSLATION = _interprets(
+    "fx-translation",
+    RuleStatus.ARGUED,
+    "argued in MONETARY_TRANSLATION.md (C6): a translated amount is a "
+    "derived claim that carries its own evidence — direction fixed at "
+    "construction, rate dated and sourced, same-UTC-day with the "
+    "figure it translates — and translation is a fourth crossing that "
+    "can never rescue identity, magnitude or denomination, because "
+    "the comparison consults it only after all three hold",
+)
+
 #: Whether Quality may band a business at all: every applicable
 #: factor read, or no band.
 #:
@@ -315,6 +335,7 @@ DECISION_RULES: dict[str, DecisionRule] = {
         PROVIDER_QUALITY,
         QUALITY_AUTHORITY,
         MONETARY_COMPARISON,
+        FX_TRANSLATION,
         QUALITY_GROUNDED,
         MOMENTUM_BANDS,
         MOMENTUM_INPUT_ELIGIBILITY,

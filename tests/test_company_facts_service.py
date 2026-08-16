@@ -317,6 +317,205 @@ def test_a_record_without_a_vendor_claim_joins_as_assumed() -> None:
     assert magnitude.identity_authorised
 
 
+class SpyRateProvider:
+    """A rate store that remembers whether FX was ever invoked."""
+
+    def __init__(self, rate=None) -> None:
+        self.asked: list[str] = []
+        self._rate = rate
+
+    def to_usd(self, base: str):
+        self.asked.append(base)
+
+        return self._rate
+
+
+def _foreign_snapshot(
+    currency: str,
+    amount: float,
+    observed_at: datetime,
+    denomination: object = "established",
+) -> ValuationSnapshot:
+    from app.domain.monetary import DenominationBasis, MarketCapDenomination
+
+    if denomination == "established":
+        held = MarketCapDenomination(
+            currency=currency,
+            basis=DenominationBasis.CORROBORATED,
+            because="corroborated in test",
+        )
+    elif denomination == "unreconciled":
+        held = MarketCapDenomination(
+            currency=None,
+            basis=DenominationBasis.UNRECONCILED,
+            because="unreconciled in test",
+        )
+    else:
+        held = None
+
+    return ValuationSnapshot(
+        forward_pe=None,
+        trailing_pe=None,
+        peg_ratio=None,
+        dividend_yield=None,
+        market_cap=amount,
+        market_cap_denomination=held,
+        reading=Provenance(source="Yahoo Finance", observed_at=observed_at),
+    )
+
+
+def _facts_with_rates(snapshot: ValuationSnapshot, rates: SpyRateProvider):
+    item = WatchlistItem(
+        instrument_id=1,
+        symbol="NESN.SW",
+        name="Nestle SA",
+        asset_type_id=5,
+        asset_type_subcategory_id=0,
+        exchange_id=4,
+        rank=1,
+        avatar_url=None,
+    )
+
+    service = CompanyFactsService(
+        market_provider=StubMarketProvider(),  # type: ignore[arg-type]
+        valuation_provider=StubValuationProvider(snapshot),  # type: ignore[arg-type]
+        earnings_provider=StubEarningsProvider(),  # type: ignore[arg-type]
+        rate_provider=rates,  # type: ignore[arg-type]
+    )
+
+    return asyncio.run(service.build(item))
+
+
+def test_a_same_day_rate_authorises_the_translation_end_to_end() -> None:
+    """Nestlé through the service: stored CHF fact, stored rate, one day.
+
+    The derivation reaches the magnitude with the original untouched
+    beside it, and the comparison finally opens.
+    """
+
+    from app.domain.exchange_rate import ExchangeRate
+    from app.services.quality_signal_service import (
+        ELIGIBLE_MARKET_CAP_WARRANTS,
+        QualitySignalService,
+    )
+
+    day = datetime(2026, 8, 16, 9, 30, tzinfo=UTC)
+
+    rates = SpyRateProvider(
+        ExchangeRate(
+            base="CHF",
+            quote="USD",
+            rate=1.2402,
+            reading=Provenance(
+                source="Yahoo Finance", observed_at=day.replace(hour=18)
+            ),
+        )
+    )
+
+    facts = _facts_with_rates(_foreign_snapshot("CHF", 208_375_545_856.0, day), rates)
+
+    magnitude = facts.market_cap_magnitude
+
+    assert rates.asked == ["CHF"]
+    assert magnitude is not None
+    assert magnitude.amount == 208_375_545_856.0
+    assert magnitude.currency == "CHF"
+    assert magnitude.translation is not None
+    assert magnitude.translation.authorised
+    assert magnitude.comparable_with(
+        QualitySignalService.LARGE_CAP, ELIGIBLE_MARKET_CAP_WARRANTS
+    )
+    assert "= USD" in magnitude.translation.stated
+
+
+def test_fx_is_never_invoked_without_an_established_denomination() -> None:
+    """Unreconciled and pre-boundary records never reach the rate store."""
+
+    day = datetime(2026, 8, 16, tzinfo=UTC)
+
+    for denomination in ("unreconciled", None):
+        rates = SpyRateProvider()
+
+        facts = _facts_with_rates(
+            _foreign_snapshot("CHF", 208_375_545_856.0, day, denomination), rates
+        )
+
+        assert rates.asked == []
+        assert facts.market_cap_magnitude is not None
+        assert facts.market_cap_magnitude.translation is None
+
+
+def test_fx_is_never_invoked_for_an_unresolved_identity() -> None:
+    """A disputed subject gets no derived claims — the spy stays silent."""
+
+    from app.domain.monetary import DenominationBasis, MarketCapDenomination
+    from app.domain.provider_identity import ProviderIdentityClaim
+
+    day = datetime(2026, 8, 16, tzinfo=UTC)
+
+    snapshot = ValuationSnapshot(
+        forward_pe=None,
+        trailing_pe=None,
+        peg_ratio=None,
+        dividend_yield=None,
+        market_cap=1_844_386_201_600.0,
+        # Established foreign — the 'even if' — so only the identity
+        # stands between this figure and the rate store.
+        market_cap_denomination=MarketCapDenomination(
+            currency="CHF",
+            basis=DenominationBasis.CORROBORATED,
+            because="corroborated in test",
+        ),
+        vendor_identity=ProviderIdentityClaim(
+            provider="Yahoo Finance",
+            symbol="SPCX",
+            name="SPAC and New Issue ETF",
+            taxonomy="ETF",
+        ),
+        reading=Provenance(source="Yahoo Finance", observed_at=day),
+    )
+
+    rates = SpyRateProvider()
+
+    item = WatchlistItem(
+        instrument_id=15618,
+        symbol="SPCX",
+        name="Space Exploration Technologies Corp",
+        asset_type_id=5,
+        asset_type_subcategory_id=0,
+        exchange_id=4,
+        rank=1,
+        avatar_url=None,
+    )
+
+    service = CompanyFactsService(
+        market_provider=StubMarketProvider(),  # type: ignore[arg-type]
+        valuation_provider=StubValuationProvider(snapshot),  # type: ignore[arg-type]
+        earnings_provider=StubEarningsProvider(),  # type: ignore[arg-type]
+        rate_provider=rates,  # type: ignore[arg-type]
+    )
+
+    facts = asyncio.run(service.build(item))
+
+    assert rates.asked == []
+    assert facts.market_cap_magnitude is not None
+    assert facts.market_cap_magnitude.translation is None
+
+
+def test_a_rate_never_read_leaves_the_translation_absent() -> None:
+    """The stored door answered nothing; nothing is assumed instead."""
+
+    day = datetime(2026, 8, 16, tzinfo=UTC)
+
+    rates = SpyRateProvider(rate=None)
+
+    facts = _facts_with_rates(_foreign_snapshot("CHF", 208_375_545_856.0, day), rates)
+
+    assert rates.asked == ["CHF"]
+    assert facts.market_cap_magnitude is not None
+    assert facts.market_cap_magnitude.translation is None
+
+
 def test_a_stale_identity_ages_the_whole_object() -> None:
     """
     A last-known identity is part of the evidence, and dates it.

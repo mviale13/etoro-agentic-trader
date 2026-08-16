@@ -5,10 +5,16 @@ from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
 from app.domain.daily_change import ChangeBasis, DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
+from app.domain.exchange_rate import ExchangeRate
 from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.market_snapshot import MarketQuote
-from app.domain.monetary import MarketCapDenomination
-from app.domain.provider_identity import CrossProviderIdentity, join_identity
+from app.domain.monetary import MarketCapDenomination, MonetaryAmount
+from app.domain.monetary_translation import MonetaryTranslation
+from app.domain.provider_identity import (
+    CrossProviderIdentity,
+    IdentityStanding,
+    join_identity,
+)
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
 from app.domain.valuation_snapshot import ValuationSnapshot
@@ -16,6 +22,7 @@ from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.earnings_provider import CachedEarningsProvider, ReadDates
+from app.providers.exchange_rate_provider import CachedExchangeRateProvider
 from app.providers.yahoo_market_provider import YahooInstrument
 from app.services.cross_provider_identity_service import (
     CrossProviderIdentityService,
@@ -28,6 +35,10 @@ class MarketQuoteProvider(Protocol):
         self,
         instruments: tuple[YahooInstrument, ...] | None = None,
     ) -> tuple[MarketQuote, ...]: ...
+
+
+class TranslationRateProvider(Protocol):
+    def to_usd(self, base: str) -> ExchangeRate | None: ...
 
 
 class ValuationProvider(Protocol):
@@ -51,6 +62,7 @@ class CompanyFactsService:
         valuation_provider: ValuationProvider | None = None,
         earnings_provider: EarningsProvider | None = None,
         token_facts: TokenFactsService | None = None,
+        rate_provider: TranslationRateProvider | None = None,
     ) -> None:
         # The read-only doors, because this runs once per security on
         # every page view. Acquiring here made opening a page the act
@@ -68,6 +80,12 @@ class CompanyFactsService:
         # A token's market facts, judged through the validation gate on
         # read. Stored doors throughout, so this adds no fetch.
         self._token_facts = token_facts or TokenFactsService()
+
+        # The foreign→USD rates the translation boundary reads —
+        # stored door, like everything else on a page view. A rate
+        # `movrvest acquire` has not read is absent, and the
+        # translation that needed it is absent with it.
+        self._rates = rate_provider or CachedExchangeRateProvider.stored()
 
     async def build(
         self,
@@ -126,6 +144,25 @@ class CompanyFactsService:
             else None
         )
 
+        market_cap = (
+            tokens.established_value("market_cap")
+            if tokens is not None
+            else valuation.market_cap
+        )
+
+        # The token path carries no denomination: quality never reads a
+        # token's magnitude (F1), and the crypto gate owns its own
+        # facts. The company path carries what acquisition established,
+        # which is None for every record written before the boundary.
+        denomination = valuation.market_cap_denomination if tokens is None else None
+
+        # Whose figure this is — the #134 join over the broker's claim
+        # and the vendor claim stored at acquisition, derived here on
+        # read so the join logic can evolve without re-acquiring. A
+        # record that predates the capture joins on the broker's claim
+        # alone and reads honestly assumed.
+        identity = self._identity(item, valuation)
+
         return CompanyFacts(
             instrument_id=item.instrument_id,
             symbol=item.symbol,
@@ -155,43 +192,16 @@ class CompanyFactsService:
             # caller and is filled from the same quote, so the two
             # cannot disagree.
             daily_change=self._daily_change(quote),
-            market_cap=(
-                tokens.established_value("market_cap")
-                if tokens is not None
-                else valuation.market_cap
-            ),
+            market_cap=market_cap,
             # The same figure, carrying whether it may be placed against
-            # an absolute threshold. The currency is left absent
-            # deliberately: this platform reads none for a market
-            # capitalisation, and inventing one here would be the
-            # assumption the magnitude consumer exists to refuse.
+            # an absolute threshold — its identity, its established
+            # denomination, and, for an established foreign
+            # denomination, the evidenced route into USD.
             market_cap_magnitude=self._market_cap_magnitude(
-                tokens.established_value("market_cap")
-                if tokens is not None
-                else valuation.market_cap,
-                # The token path carries no denomination here: quality
-                # never reads a token's magnitude (F1), and the crypto
-                # gate owns its own facts. The company path carries what
-                # acquisition established, which is None for every
-                # record written before the boundary.
-                valuation.market_cap_denomination if tokens is None else None,
-                # Whose figure this is — the #134 join over the broker's
-                # claim and the vendor claim stored at acquisition,
-                # derived here on read so the join logic can evolve
-                # without re-acquiring. A record that predates the
-                # capture joins on the broker's claim alone and reads
-                # honestly assumed.
-                join_identity(
-                    item.symbol,
-                    (
-                        CrossProviderIdentityService.from_broker(item),
-                        *(
-                            (valuation.vendor_identity,)
-                            if valuation.vendor_identity is not None
-                            else ()
-                        ),
-                    ),
-                ),
+                market_cap,
+                denomination,
+                identity,
+                self._translation(market_cap, denomination, identity, valuation),
             ),
             realized_volatility=(
                 quote.realized_volatility if quote is not None else None
@@ -279,10 +289,79 @@ class CompanyFactsService:
         )
 
     @staticmethod
+    def _identity(
+        item: WatchlistItem,
+        valuation: ValuationSnapshot,
+    ) -> CrossProviderIdentity:
+        """The #134 join over the claims this platform holds right now."""
+
+        return join_identity(
+            item.symbol,
+            (
+                CrossProviderIdentityService.from_broker(item),
+                *(
+                    (valuation.vendor_identity,)
+                    if valuation.vendor_identity is not None
+                    else ()
+                ),
+            ),
+        )
+
+    def _translation(
+        self,
+        amount: float | None,
+        denomination: MarketCapDenomination | None,
+        identity: CrossProviderIdentity | None,
+        valuation: ValuationSnapshot,
+    ) -> MonetaryTranslation | None:
+        """The evidenced route into USD, where every precondition holds.
+
+        FX is invoked **behind** the earlier crossings, never instead
+        of them: an unestablished or unreconciled denomination has no
+        currency to translate from, an unresolved identity is not a
+        settled subject to derive claims about, and an undated
+        observation cannot meet a temporal rule. In every one of those
+        states this method returns without consulting the rate store —
+        a translation cannot rescue a crossing it never sees.
+
+        A held rate from another day still constructs the translation:
+        the object carries the evidence and refuses the authorisation
+        itself, so the surface can say *what* was held and *why* it
+        was not enough, instead of a bare absence.
+        """
+
+        if (
+            amount is None
+            or denomination is None
+            or not denomination.established
+            or denomination.currency is None
+            or denomination.currency == "USD"
+            or identity is None
+            or identity.standing is IdentityStanding.UNRESOLVED
+            or valuation.reading is None
+        ):
+            return None
+
+        rate = self._rates.to_usd(denomination.currency)
+
+        if rate is None:
+            return None
+
+        return MonetaryTranslation(
+            original=MonetaryAmount(
+                amount=amount,
+                currency=denomination.currency,
+            ),
+            rate=rate,
+            subject_observed_at=valuation.reading.observed_at,
+        )
+
+    @staticmethod
     def _market_cap_magnitude(
         amount: float | None,
         denomination: MarketCapDenomination | None = None,
         identity: CrossProviderIdentity | None = None,
+        translation: MonetaryTranslation | None = None,
     ) -> MarketCapMagnitude | None:
         """The market capitalisation, with what is established about it.
 
@@ -303,11 +382,11 @@ class CompanyFactsService:
         if amount is None:
             return None
 
-        translation = governed("ValuationSnapshot.market_cap")
+        registry_entry = governed("ValuationSnapshot.market_cap")
 
         registry_warrant = (
-            translation.warrant
-            if translation is not None
+            registry_entry.warrant
+            if registry_entry is not None
             else TranslationWarrant.UNKNOWN
         )
 
@@ -318,8 +397,12 @@ class CompanyFactsService:
                 currency=denomination.currency,
                 currency_is_assumed=False,
                 identity=identity,
+                translation=translation,
             )
 
+        # An unestablished denomination can carry no translation — the
+        # service never built one — and the magnitude's own constructor
+        # would refuse it besides.
         return MarketCapMagnitude.measured(
             amount,
             warrant=registry_warrant,

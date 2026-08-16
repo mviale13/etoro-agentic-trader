@@ -116,6 +116,14 @@ class MarketAcquisition:
     #: Absent where none could be read, and the figures are absent with it.
     rate: ExchangeRate | None = None
 
+    #: The foreign→USD rates read for the monetary translation
+    #: boundary (fx-translation@1) — one per measured foreign
+    #: denomination, each absent where it could not be read. Read in
+    #: the same cycle as the fundamentals they translate, which is what
+    #: gives a (cap, rate) pair the shared observation day the temporal
+    #: rule requires.
+    translation_rates: tuple[ExchangeRate, ...] = ()
+
     #: How many provider calls the crypto market cycle made, and how
     #: many answered. A cycle-level reading rather than a per-security
     #: one: the environment is the same for every token, so it is read
