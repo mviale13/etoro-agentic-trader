@@ -1,0 +1,252 @@
+# Read-only is a property of the graph, and evidence moves whole or not at all
+
+**Status: built, BQ16. Two boundaries: read-only surfaces made
+structurally incapable of acquisition, and an append-only promotion
+operator for observations the pipeline already produced. No model call,
+no credit spent, nothing re-observed. Production `data/statements`
+untouched — promotion was proven against copies only.**
+
+---
+
+## Part A — read-only purity
+
+### 1. The accidental acquisition path, exactly
+
+`movrvest financials ALL`, 2026-08-16, one command documented *"Read-only
+and free … never observes"*:
+
+```text
+FinancialsCommand.run
+  └─ PlaybookSelectionService.select("ALL")
+       ├─ CompanyKnowledgeService.knowledge()          ← the ACQUIRING door
+       │    └─ resolve → EDGAR fetch → gpt-5 reading   → data/knowledge/ALL…json
+       │                                                 (22:10:38Z, one paid call)
+       └─ grounded refused (1 reading < quorum 5)
+            └─ _fallback → WatchlistService.find_symbol
+                 └─ EtoroClient.get("/api/v1/watchlists")   ← the BROKER door
+                      → data/evidence/etoro/…/watchlists/…  (22:10:49Z, 22:11:22Z)
+```
+
+Two doors, not one — and they fire differently. The model spend happened
+**once**, because `knowledge()` acquires only for a document with no
+stored reading. The watchlist fetch fired **on every invocation**: the
+grounded route stayed refused (one narrative reading is below quorum), so
+every render of `financials` fell back through the broker. Two archived
+watchlist payloads, thirty-three seconds apart, are the two runs.
+
+**Why a read surface wanted playbook selection at all**: only to derive
+the governing `FinancialModel` via `model_for(playbook)` — one enum and
+one sentence. It bought that enum with a filing read and a broker fetch.
+
+**A non-acquiring selection door already existed** — the dossier's
+earned-playbook section runs `select_grounded` over the established
+(store-only) understanding, with three honest states and no industry
+fallback. `financials` simply did not use it.
+
+### 2. The audit — every surface that claims to be read-only
+
+Every command and route describing itself as read-only / free / stored /
+"asks no model" / "stores nothing", classified by what its dependency
+graph can actually reach:
+
+| Surface | Claim | Class |
+|---|---|---|
+| `financials` (before this slice) | "Read-only and free … never observes" | **CAN ACQUIRE — CONTRACT DEFECT** (repaired here) |
+| `GET /crypto/{symbol}/dossier` | "**And it acquires nothing.** Every service is opened at its read-only…" | **CAN ACQUIRE — CONTRACT DEFECT** (recorded, not repaired) |
+| `assessment`, `committees`, `committee-judgment`, `considerations`, `judgment-history`, `intelligence-journal`, `supply`, `crypto-events`, `crypto-market`, `crypto-playbook`, `crypto-quality`, `translations` | read-only / stored | **PURE READ** — store doors only |
+| `statement-shape`, `statement-audit`, `primary` | "costs a fetch, asks no model, stores nothing" | **CAN ACQUIRE — INTENTIONAL** (the fetch is the declared function) |
+| `issuance` | "Read-only, scores nothing" | **CAN ACQUIRE — INTENTIONAL**, wording ambiguous: it fetches chain state, which "read-only" does not advertise the way `primary`'s "costs a fetch" does |
+| `knowledge`, `statements`, `understanding`, `archetype`, `playbook`, `observe`, `observe-statements`, `acquire` | none claimed | **CAN ACQUIRE — INTENTIONAL** (the platform's declared acquisition family) |
+| dossier / research pages (`CompanyUnderstandingService`, `CompanyFactsService`, `CompanyResearchService`) | a page view acquires nothing | **PURE READ** — `established()` and `stored()` doors, already guarded by raising stubs |
+
+**The crypto dossier finding is the root cause of main's red CI.** Line
+153 constructs the raw `IssuanceRuleProvider()` — fetch-on-call for
+BTC/ETH/ADA/SOL — where `CachedIssuanceProvider` exists and is used
+elsewhere. The seven pre-existing test failures are those fetches timing
+out against `api.blockchair.com`. Scope guard says crypto stays
+untouched, so this is **classified and recorded**: the same defect class
+as `financials`, one line, waiting for its own slice.
+
+### 3. The repair — dependency construction, not flags
+
+`app/services/stored_playbook_selection.py`: the grounded route over
+`CompanyKnowledgeService.established()` — the same canonical
+`select_grounded` rule, reached through the read-only door — and **no
+fallback route at all**, because the industry route's inputs (broker
+watchlist, provider profile) arrive by acquisition. Where nothing
+grounded is established, the generic model governs and the sentence says
+exactly why, and what the operator's alternatives are (`movrvest
+playbook` for the full selector, `--model` for explicit inspection).
+
+`FinancialsCommand` now constructs `StoredPlaybookSelection`. No flag
+anywhere; the acquiring selector is simply not in the graph.
+
+**One rendered difference, stated rather than hidden**: an on-book
+company with no grounded playbook whose Yahoo industry says "bank" was
+previously governed BANK via the acquired fallback; the read surface now
+governs GENERIC with the absence worded. BQ2 measured model selection
+inert for bands and scores; what changes is which questions the
+`financials` screen asks, and `--model bank` remains the explicit way to
+inspect the other language.
+
+### 4. The pin — `tests/test_read_only_purity.py`
+
+- **Structural**: the module ASTs of `stored_playbook_selection` and
+  `financials` are walked for **call-position** attribute names —
+  `knowledge`, `select`, `fetch`, `observe`, `statements`, `extract`,
+  `resolve`, `find_symbol` all forbidden (`established` asserted
+  present); acquiring modules forbidden from their import lists. A
+  future dependency that reintroduces an acquiring fallback fails here
+  before it runs.
+- **Behavioural**: every acquiring door monkeypatched to raise
+  (`knowledge`, `statements`, `observe`, watchlist `get`/`find_symbol`,
+  `EtoroClient.get`, `PrimarySourceResolver.resolve`), **credentials
+  deliberately present** — the boundary must hold because acquisition is
+  unreachable, never because a key was missing — and the command run
+  with evidence absent (renders the absence, exit 1) and present (full
+  render, exit 0). Both complete; no trap springs.
+
+## Part B — genuine observation promotion
+
+### 5. Inventory, and the durable copy
+
+**All 23 paid statement observations survive**, every one a genuine
+`FinancialStatementObservation` — schema 3, `read by gpt-5`, its own
+`PrimarySource` and dated `Provenance`, dated anchors with 3-cell rows.
+None reconstructed from prose; none fabricated.
+
+| Run | Company | Filing | Observations | Read at (UTC) |
+|---|---|---|---|---|
+| bq11 (BQ11+BQ12) | KO | `0001628280-26-010047` | **5** | 20:43–21:05 |
+| bq13 | ALL | `0000899051-26-000031` | **5** | 21:23–21:24 |
+| bq13 | TSLA | `0001628280-26-003952` | **5** | 21:23–21:24 |
+| bq13 | WMT | `0000104169-26-000055` | **5** | 21:23–21:25 |
+| bq8 (probes) | ALL, KO, TSLA | same filings | **1 each** | 20:04–20:05 |
+
+Copied byte-unchanged from `/tmp` to
+**`data/experiments/statement-observations/{bq8,bq11,bq13}/statements/`**
+— inside the repository, tracked by git, outside every store any service
+reads (`evidence_path("statements")` is `data/statements`). MD5 before
+and after, identical all seven:
+
+```text
+89c0527c6d0e08b4bc3821837915dc70  bq8/ALL     ed75bb47915cbc9a2f905b9de230238b  bq8/KO
+d5b3348ce04e14e32277d37b61c4655d  bq8/TSLA    9b0a6322e8efc945f12437a3401827ad  bq11/KO
+0aab292d178eef82aa3861c312e384fd  bq13/ALL    bf36e53e20ffda7268477167c3cea9e4  bq13/TSLA
+1fc1318fb6a78ef5e4ac40c6c6dd9920  bq13/WMT
+```
+
+Reproducible without a model call? **No** — an LLM reading cannot be
+regenerated offline, which is exactly why the artifacts are now durable.
+Enough provenance to append after supersession? **Yes** — measured in §8
+by appending them.
+
+**The accidental ALL narrative reading** (`data/knowledge/ALL.…json`,
+md5 `ae494c05f2261830f0879bf502a7cd11`, schema 14, 4 segments,
+relationships asked, 22:10:38Z): a **distinct, valid observation** in a
+different stream — not a duplicate of any statement observation and not
+comparable with one. Quorum-relevant: it is 1 of 5 toward ALL's
+narrative quorum, the corpus's first schema-14 reading. **Kept.** A valid
+observation does not become false evidence because the acquisition was
+accidental; the audit trail stands — it was acquired in violation of a
+read-only contract, BQ15 §10, and Part A is why it cannot recur.
+
+### 6. The operator — `movrvest statement-import`
+
+```bash
+movrvest statement-import SOURCE_DIR [--into TARGET_DIR] [--apply]
+```
+
+Dry-run by default, listing per artifact: symbol, filing, each new
+observation with its statement, read-timestamp and located figures, and
+the exact duplicate count. `--apply` appends — through
+`JsonFinancialStatementStore.append`, the ordinary door, so append-only
+semantics and encoding are the store's own. Ordinary reads never import.
+
+The promotion invariant, held structurally:
+
+| Requirement | How |
+|---|---|
+| already a valid observation from the normal pipeline | decoded by the store's own codec; anything else refuses whole |
+| provenance survives unchanged | the decoded dataclass is appended as decoded; round-trip **equality** is a test |
+| target accepts its schema | schema ≠ 3 → refused: *"a reading taken under another contract is re-observed, never imported"* |
+| source identity known | no symbol or no source key → refused |
+| nothing altered | source opened read-only, never rewritten (byte-compared in tests); existing target entries never rewritten |
+| duplicates deterministic | whole-dataclass equality — every fact, cell, timestamp, supersession state; skipped and reported; apply-twice appends zero |
+| never for the Quality result | the module's AST is pinned free of `band`, `score`, `quality_of`, `assess`, `statement_consensus_of`, … and of `observe`/`extract`/`fetch`/`resolve` calls |
+
+### 7–8. Validation on copies — supersession, then promotion, separately
+
+Production copied to an isolated target; BQ15's supersession already in
+it; then `statement-import --apply` for bq13 and bq11. **20 observations
+appended; re-applying appends 0.** Production `data/statements`:
+untouched, `git status` clean.
+
+| | active | superseded | answered | band |
+|---|---|---|---|---|
+| ALL | 5 → 10 | 5 | 0 → **3** | UNKNOWN → **HIGH 80** |
+| TSLA | 0 → 5 | 5 | 0 → **3** | UNKNOWN → **LOW 40** |
+| WMT | 5 → 10 | 5 | 0 → **2** | UNKNOWN → **LOW 40** |
+| KO | 5 → 10 | 0 | 0 → **0** | UNKNOWN → **UNKNOWN** |
+| the other 20 | unchanged | unchanged | unchanged | unchanged |
+
+**KO remains unsettled, and is reported rather than tuned.** Its five
+stale readings were deliberately not superseded (BQ15: absences are not
+audited), so `total_revenue` is a genuine 5-vs-5 dispute —
+`by_majority=False`, no anchor — while `gross_profit` and
+`operating_income` agree **10 of 10** across stale and fresh. Every
+margin needs the unsettled denominator, so KO answers 0 of 3.
+
+**And the bq8 probes must stay archived, measured**: importing bq8's KO
+reading — taken *before* BQ11's vocabulary — makes the absence a
+**6-of-11 majority**, converting an honest tie into a settled *no figure
+located*. A pre-vocabulary reading outvoting five post-vocabulary
+readings is the contract-stale-absence defect BQ14 named, arriving
+through the import door. The operator moves what it is pointed at; it is
+pointed at bq11 and bq13.
+
+Simulated production, if the ruling authorises the real write:
+**HIGH 4 · MEDIUM 4 · LOW 3 · UNKNOWN 13** (from 3 · 4 · 1 · 16).
+
+### 9. Model readings avoided
+
+**20.** Re-earning these four quorums through `observe-statements`
+against the production root would cost 5 readings × 4 companies. KO's
+five are avoided spend too: its readings are valid and its blocker is
+the tie, which more readings of the same filing would not break — only
+the vocabulary limb (deferred) or superseding the stale absences would.
+
+### 10. The exact production write recommended next
+
+One command, twice, after the CTO's ruling — **not executed in BQ16**:
+
+```bash
+movrvest statement-import data/experiments/statement-observations/bq13/statements --apply
+movrvest statement-import data/experiments/statement-observations/bq11/statements --apply
+```
+
+Expected, measured on the copy: 20 observations appended; ALL → HIGH 80,
+TSLA → LOW 40, WMT → LOW 40; KO → UNKNOWN with its tie on the record;
+bands HIGH 4 · MEDIUM 4 · LOW 3 · UNKNOWN 13; zero other companies
+moved. **bq8 is not imported.**
+
+## Recorded, not solved
+
+- **The crypto dossier's issuance fetch** (§2) — one line, the declared
+  contract's one violation, and the cause of main's red CI. Its own
+  slice.
+- **`issuance`'s "Read-only" wording** understates a chain fetch.
+- **KO's tie** waits on the vocabulary limb BQ14 deferred; promotion
+  cannot and does not touch it.
+- **The behavioural purity test covers `financials`**, the defective
+  surface; the pure-read commands in §2 were classified by graph
+  inspection, not each executed under traps.
+
+## Scope compliance
+
+No LLM call · no credit spent · nothing re-observed · statement facts,
+supersession semantics, quorum, agreement, Business Quality, vocabulary
+and schema all untouched · HON, Citigroup, financial-company question
+semantics untouched · no crypto analytical logic changed (one crypto
+defect *classified*) · no UI · PR #145 untouched · production
+`data/statements` byte-identical — promotion proven against copies only.

@@ -17,7 +17,6 @@ from app.analysts.filing_analysts import stated_value
 from app.domain.financial_question import (
     FinancialModel,
     FinancialModelSelection,
-    model_for,
 )
 from app.domain.financial_statement_consensus import (
     FinancialStatementConsensus,
@@ -37,17 +36,20 @@ from app.services.financial_questions import (
     inapplicable,
     unanswerable,
 )
-from app.services.playbook_selection_service import PlaybookSelectionService
+from app.services.stored_playbook_selection import StoredPlaybookSelection
 
 
 class FinancialsCommand:
     def __init__(
         self,
         store: FinancialStatementStore | None = None,
-        selection: PlaybookSelectionService | None = None,
+        selection: StoredPlaybookSelection | None = None,
     ) -> None:
         self._store = store or JsonFinancialStatementStore()
-        self._selection = selection or PlaybookSelectionService()
+
+        # The read-only selection, by construction rather than by
+        # promise: no acquiring door is reachable from this dependency.
+        self._selection = selection or StoredPlaybookSelection()
 
     async def run(self, symbol: str, model: FinancialModel | None = None) -> int:
         normalized = symbol.upper().strip()
@@ -96,9 +98,14 @@ class FinancialsCommand:
         if model is None:
             # The business playbook is asked what company this is; the
             # financial model follows from it until evidence earns a
-            # divergence. Two classifications, one route between them.
-            playbook = (await self._selection.select(normalized)).playbook.kind
-            governing = model_for(playbook)
+            # divergence. Two classifications, one route between them —
+            # and on this surface the route is the stored one only. The
+            # two-route selector's fallback fetches the watchlist and
+            # its grounded route opens the acquiring knowledge door,
+            # which is how a command documented "never observes" once
+            # read a filing with a paid model. `movrvest playbook` is
+            # the surface that runs the full selector.
+            governing = self._selection.governing(normalized)
         else:
             governing = FinancialModelSelection(
                 model=model,

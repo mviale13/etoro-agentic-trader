@@ -45,6 +45,7 @@ from app.commands import (
     reader_stability,
     record,
     statement_audit,
+    statement_import,
     statement_shape,
     statements,
     status,
@@ -819,6 +820,43 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    statement_import_parser = subparsers.add_parser(
+        "statement-import",
+        help="Carry statement observations from an isolated store into another",
+        description=(
+            "Move observations the ordinary acquisition pipeline already "
+            "produced — in an isolated evidence root, under this schema — "
+            "into another statement store, whole and unaltered, through "
+            "the store's ordinary append door. It never observes, never "
+            "asks a model, and never rewrites anything: exact duplicates "
+            "are skipped and reported, incompatible artifacts are refused "
+            "with the reason. Dry-run by default; --apply writes"
+        ),
+    )
+    statement_import_parser.add_argument(
+        "source",
+        help=(
+            "Directory holding statement-store artifacts to import, for "
+            "example data/experiments/statement-observations/bq13/statements"
+        ),
+    )
+    statement_import_parser.add_argument(
+        "--into",
+        help=(
+            "Target statements directory. Defaults to this evidence "
+            "root's own statement store"
+        ),
+    )
+    statement_import_parser.add_argument(
+        "--apply",
+        action="store_true",
+        help=(
+            "Append the new observations. Explicit because this is the "
+            "one action that adds evidence without an acquisition; "
+            "without it the import only reports"
+        ),
+    )
+
     reader_stability_parser = subparsers.add_parser(
         "reader-stability",
         help="Read one filing repeatedly and report how far the readings agree",
@@ -873,6 +911,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "statement-audit":
         return statement_audit.run(args.symbol, args.supersede)
+
+    if args.command == "statement-import":
+        return statement_import.run(args.source, args.into, args.apply)
 
     if args.command == "observe":
         return await observe.run(args.symbol, args.to)

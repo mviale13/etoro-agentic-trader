@@ -1,0 +1,264 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 9,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "94,827",
+            "value": 94827.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "94,827",
+              "value": 94827.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "97,690",
+              "value": 97690.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 9,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "96,773",
+              "value": 96773.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 17,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Gross profit",
+            "printed": "17,094",
+            "value": 17094.0
+          },
+          "concept": "gross_profit",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Gross profit",
+              "printed": "17,094",
+              "value": 17094.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Gross profit",
+              "printed": "17,450",
+              "value": 17450.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 17,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Gross profit",
+              "printed": "17,660",
+              "value": 17660.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 23,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Income from operations",
+            "printed": "4,355",
+            "value": 4355.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Income from operations",
+              "printed": "4,355",
+              "value": 4355.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Income from operations",
+              "printed": "7,076",
+              "value": 7076.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 23,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Income from operations",
+              "printed": "8,891",
+              "value": 8891.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+            "cell": {
+              "column": 3,
+              "row": 29,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "3,855",
+            "value": 3855.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 3,
+                "row": 29,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "3,855",
+              "value": 3855.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 4,
+                "row": 29,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "7,153",
+              "value": 7153.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations (in millions, except per share data)",
+              "cell": {
+                "column": 5,
+                "row": 29,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "14,974",
+              "value": 14974.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-16T20:04:11.199918+00:00",
+        "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 3,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "Tesla, Inc.",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-003952",
+    "key": "0001628280-26-003952",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/1318605/000162828026003952/tsla-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-01-29",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "TSLA",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "TSLA"
+}

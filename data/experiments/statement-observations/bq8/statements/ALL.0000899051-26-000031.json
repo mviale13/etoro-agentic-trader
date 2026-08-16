@@ -1,0 +1,168 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations",
+            "cell": {
+              "column": 3,
+              "row": 8,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total revenues",
+            "printed": "67,685",
+            "value": 67685.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations",
+              "cell": {
+                "column": 3,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total revenues",
+              "printed": "67,685",
+              "value": 67685.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations",
+              "cell": {
+                "column": 4,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total revenues",
+              "printed": "64,106",
+              "value": 64106.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations",
+              "cell": {
+                "column": 6,
+                "row": 8,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total revenues",
+              "printed": "57,094",
+              "value": 57094.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated Statements of Operations",
+            "cell": {
+              "column": 3,
+              "row": 22,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income (loss)",
+            "printed": "10,266",
+            "value": 10266.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated Statements of Operations",
+              "cell": {
+                "column": 3,
+                "row": 22,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income (loss)",
+              "printed": "10,266",
+              "value": 10266.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations",
+              "cell": {
+                "column": 4,
+                "row": 22,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income (loss)",
+              "printed": "4,599",
+              "value": 4599.0
+            },
+            {
+              "caption": "Consolidated Statements of Operations",
+              "cell": {
+                "column": 6,
+                "row": 22,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income (loss)",
+              "printed": "( 213 )",
+              "value": -213.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "reading": {
+        "observed_at": "2026-08-16T20:04:36.096870+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 3,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "ALLSTATE CORP",
+    "document_format": "html",
+    "identifier": "10-K 0000899051-26-000031",
+    "key": "0000899051-26-000031",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000031/all-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-20",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "ALL",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "ALL"
+}
