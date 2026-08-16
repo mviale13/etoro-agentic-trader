@@ -7,18 +7,33 @@ from pathlib import Path
 
 from app.domain.daily_snapshot import DailySnapshot
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
+from app.infrastructure.evidence_root import evidence_path
 from app.memory.snapshot_repository import SnapshotRepository
 
 
 class JsonSnapshotRepository(SnapshotRepository):
     def __init__(
         self,
-        directory: Path = Path("data/portfolio_snapshots"),
+        directory: Path | str | None = None,
     ) -> None:
-        self._directory = directory
-        self._directory.mkdir(parents=True, exist_ok=True)
+        # The evidence root, resolved at construction (#118, BQ10).
+        # This one also *creates* its directory below, so a frozen
+        # default made merely constructing it write into the
+        # developer's tree — the second half of #118's finding.
+        self._directory = (
+            Path(directory)
+            if directory is not None
+            else evidence_path("portfolio_snapshots")
+        )
 
     def save(self, snapshot: DailySnapshot) -> None:
+        # Created when something is written, never merely by being
+        # constructed: a repository that makes its directory in
+        # `__init__` writes into the developer's tree the moment a test
+        # instantiates it, which is the half of #118 that was about
+        # writing rather than reading.
+        self._directory.mkdir(parents=True, exist_ok=True)
+
         path = self._directory / f"{snapshot.date.isoformat()}.json"
 
         payload = asdict(snapshot)

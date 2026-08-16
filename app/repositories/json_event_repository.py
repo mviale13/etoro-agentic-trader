@@ -4,15 +4,19 @@ from pathlib import Path
 from typing import Any
 
 from app.domain.event import Event
+from app.infrastructure.evidence_root import evidence_path
 from app.repositories.event_repository import EventRepository
 
 
 class JsonEventRepository(EventRepository):
     def __init__(
         self,
-        directory: Path | str = "data/events",
+        directory: Path | str | None = None,
     ) -> None:
-        self.directory = Path(directory)
+        # The evidence root, resolved at construction (#118, BQ10).
+        self.directory = (
+            Path(directory) if directory is not None else evidence_path("events")
+        )
 
     def save(self, event: Event) -> None:
         self.directory.mkdir(
