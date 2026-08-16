@@ -285,6 +285,66 @@ TRANSLATIONS: tuple[ProviderTranslation, ...] = (
         decision_relevance=DecisionRelevance.GATES_A_DECISION,
         representation=DomainRepresentation.COUNT,
     ),
+    # ---- The FX translation rates (C6) -------------------------------
+    # Four pair closes read as "USD per one unit of the base currency"
+    # — the direct quote, inverted zero times on this path. Each is
+    # ASSUMED on its own (the pair symbol's meaning is a convention
+    # this platform has not verified against provider documentation);
+    # what the translation *derives* under fx-translation@1 is a dated,
+    # sourced, direction-fixed monetary claim that authorises a
+    # comparison only on the day it shares with the figure it
+    # translates.
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="Close (CHFUSD=X)",
+        endpoint=YF_DOWNLOAD,
+        domain_concept="ExchangeRate CHF→USD (translation input)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.CURRENCY_AMOUNT,
+    ),
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="Close (DKKUSD=X)",
+        endpoint=YF_DOWNLOAD,
+        domain_concept="ExchangeRate DKK→USD (translation input)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.CURRENCY_AMOUNT,
+    ),
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="Close (EURUSD=X)",
+        endpoint=YF_DOWNLOAD,
+        domain_concept="ExchangeRate EUR→USD (translation input)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.CURRENCY_AMOUNT,
+        because=(
+            "the same field the portfolio display reads inverted once "
+            "for its USD→EUR direction; this path reads it direct, and "
+            "each seam writes its own direction down exactly once"
+        ),
+    ),
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="Close (GBPUSD=X)",
+        endpoint=YF_DOWNLOAD,
+        domain_concept="ExchangeRate GBP→USD (translation input)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.CURRENCY_AMOUNT,
+        because=(
+            "the pound's rate, for a cap established GBP by the "
+            "minor-unit identity — the translation multiplies the "
+            "POUNDS figure, never the pence quote and never the "
+            "statement dollars"
+        ),
+    ),
     # ---- The two conversions that exist ------------------------------
     ProviderTranslation(
         provider=YAHOO,

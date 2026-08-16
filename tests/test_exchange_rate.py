@@ -184,3 +184,113 @@ def test_every_figure_on_one_page_uses_one_rate() -> None:
         service.usd_to_eur(amount, rate)
 
     assert provider.calls == 1
+
+
+class TestTheTranslationSeam:
+    """The foreign→USD pairs (fx-translation@1): direct quotes, four only."""
+
+    def test_to_usd_is_the_direct_quote_and_never_inverted(self, monkeypatch) -> None:
+        """`CHFUSD=X` is already dollars per franc.
+
+        The display pair inverts exactly once for its USD→EUR
+        direction; this seam inverts zero times. Both facts asserted
+        against one mocked close, so a future refactor that unified
+        them wrongly fails on the spot.
+        """
+
+        from app.providers.exchange_rate_provider import ExchangeRateProvider
+
+        monkeypatch.setattr(ExchangeRateProvider, "_close", lambda self, pair: 1.2402)
+
+        provider = ExchangeRateProvider()
+
+        direct = provider.to_usd("CHF")
+
+        assert direct.base == "CHF"
+        assert direct.quote == "USD"
+        assert direct.rate == 1.2402
+
+        inverted_for_display = provider.usd_to_eur()
+
+        assert inverted_for_display.rate == 1 / 1.2402
+
+    def test_the_seam_reads_only_the_measured_four(self, monkeypatch) -> None:
+        from app.providers.exchange_rate_provider import ExchangeRateProvider
+
+        monkeypatch.setattr(ExchangeRateProvider, "_close", lambda self, pair: 1.0)
+
+        provider = ExchangeRateProvider()
+
+        for base in ("CHF", "DKK", "EUR", "GBP"):
+            assert provider.to_usd(base).quote == "USD"
+
+        with pytest.raises(ValueError, match="not a translation"):
+            provider.to_usd("JPY")
+
+    def test_a_replayed_pair_keeps_its_direction_and_its_date(
+        self, tmp_path: Path
+    ) -> None:
+        class OnePairProvider:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def to_usd(self, base: str) -> ExchangeRate:
+                self.calls += 1
+
+                return ExchangeRate(
+                    base=base,
+                    quote="USD",
+                    rate=1.2716,
+                    reading=Provenance(
+                        source="Yahoo Finance",
+                        observed_at=datetime.now(UTC),
+                    ),
+                )
+
+        provider = OnePairProvider()
+
+        cached = CachedExchangeRateProvider(
+            provider=provider,  # type: ignore[arg-type]
+            cache=JsonCache(tmp_path),
+        )
+
+        first = cached.to_usd("GBP")
+        replayed = cached.to_usd("GBP")
+
+        assert provider.calls == 1
+        assert replayed is not None and first is not None
+        assert replayed.base == "GBP"
+        assert replayed.quote == "USD"
+        assert replayed.rate == 1.2716
+        assert replayed.reading.observed_at == first.reading.observed_at
+
+    def test_the_stored_door_never_acquires_a_pair(self, tmp_path: Path) -> None:
+        class CountingPairProvider:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def to_usd(self, base: str) -> ExchangeRate:
+                self.calls += 1
+
+                raise AssertionError("the stored door reached the market")
+
+        provider = CountingPairProvider()
+
+        stored = CachedExchangeRateProvider(
+            provider=provider,  # type: ignore[arg-type]
+            cache=JsonCache(tmp_path),
+            acquires=False,
+        )
+
+        assert stored.to_usd("CHF") is None
+        assert provider.calls == 0
+
+    def test_an_unmeasured_currency_is_absent_at_the_cached_door_too(
+        self, tmp_path: Path
+    ) -> None:
+        cached = CachedExchangeRateProvider(
+            provider=CountingRateProvider(),  # type: ignore[arg-type]
+            cache=JsonCache(tmp_path),
+        )
+
+        assert cached.to_usd("JPY") is None

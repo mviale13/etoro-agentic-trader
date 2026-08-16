@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
 import yfinance as yf
 
 from app.domain.exchange_rate import ExchangeRate
+from app.domain.monetary_translation import TRANSLATABLE_TO_USD
 from app.domain.provenance import Provenance
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 from app.infrastructure.evidence_root import evidence_path
@@ -34,8 +36,52 @@ class ExchangeRateProvider:
     def usd_to_eur(self) -> ExchangeRate:
         """Euros per dollar, or a raised failure."""
 
+        dollars_per_euro = self._close(self.PAIR)
+
+        return ExchangeRate(
+            base=self.BASE,
+            quote=self.QUOTE,
+            rate=1 / dollars_per_euro,
+            reading=Provenance(source=self.SOURCE, observed_at=datetime.now(UTC)),
+        )
+
+    def to_usd(self, base: str) -> ExchangeRate:
+        """Dollars per one unit of `base`, or a raised failure.
+
+        The C6 seam, and deliberately the *direct* quote: Yahoo's
+        `CHFUSD=X` is already dollars per franc, so no inversion
+        happens here — the display path above inverts exactly once for
+        its own direction, and this path never does. A rate that is
+        inverted zero times or once, each in the one place its
+        direction is written down, is the property that keeps
+        `CHF→USD` and `USD→CHF` from ever being two labels around one
+        float.
+
+        Only the four measured foreign denominations of the market-cap
+        corpus are readable (`TRANSLATABLE_TO_USD`); anything else is a
+        request this platform has no ruling for, and it raises rather
+        than quietly widening the seam.
+        """
+
+        if base not in TRANSLATABLE_TO_USD:
+            raise ValueError(
+                f"{base}→USD is not a translation this platform performs; "
+                f"the measured set is {', '.join(TRANSLATABLE_TO_USD)} "
+                "(fx-translation@1)"
+            )
+
+        return ExchangeRate(
+            base=base,
+            quote="USD",
+            rate=self._close(f"{base}USD=X"),
+            reading=Provenance(source=self.SOURCE, observed_at=datetime.now(UTC)),
+        )
+
+    def _close(self, pair: str) -> float:
+        """The pair's latest daily close, or a raised failure."""
+
         history: Any = yf.download(
-            self.PAIR,
+            pair,
             period="5d",
             interval="1d",
             auto_adjust=True,
@@ -46,26 +92,19 @@ class ExchangeRateProvider:
         )
 
         if history is None or history.empty or "Close" not in history:
-            raise RuntimeError(f"{self.SOURCE} returned no rate for {self.PAIR}")
+            raise RuntimeError(f"{self.SOURCE} returned no rate for {pair}")
 
         closes = history["Close"].dropna()
 
         if closes.empty:
-            raise RuntimeError(f"{self.SOURCE} returned no rate for {self.PAIR}")
+            raise RuntimeError(f"{self.SOURCE} returned no rate for {pair}")
 
-        dollars_per_euro = float(closes.iloc[-1])
+        close = float(closes.iloc[-1])
 
-        if dollars_per_euro <= 0:
-            raise RuntimeError(
-                f"{self.SOURCE} returned an unusable rate for {self.PAIR}"
-            )
+        if close <= 0:
+            raise RuntimeError(f"{self.SOURCE} returned an unusable rate for {pair}")
 
-        return ExchangeRate(
-            base=self.BASE,
-            quote=self.QUOTE,
-            rate=1 / dollars_per_euro,
-            reading=Provenance(source=self.SOURCE, observed_at=datetime.now(UTC)),
-        )
+        return close
 
 
 class CachedExchangeRateProvider:
@@ -117,7 +156,31 @@ class CachedExchangeRateProvider:
         return cls(cache=cache, acquires=False)
 
     def usd_to_eur(self) -> ExchangeRate | None:
-        entry = self._cache.read(self.KEY)
+        return self._read(self.KEY, lambda: self._provider.usd_to_eur())
+
+    def to_usd(self, base: str) -> ExchangeRate | None:
+        """Dollars per unit of `base` as read, or nothing where none was.
+
+        Same doors, same cadence, same honesty as the display pair: a
+        rate is read once a day and remembered with its date; a stored
+        door serves what was read and never reaches a provider; a rate
+        never read is absent rather than assumed. A last-known rate is
+        served *marked* and keeps its original observation date — which
+        is exactly what makes it fail the same-day temporal rule
+        downstream instead of quietly translating a fresher figure.
+        """
+
+        if base not in TRANSLATABLE_TO_USD:
+            return None
+
+        return self._read(f"{base}:USD", lambda: self._provider.to_usd(base))
+
+    def _read(
+        self,
+        key: str,
+        acquire: Callable[[], ExchangeRate],
+    ) -> ExchangeRate | None:
+        entry = self._cache.read(key)
 
         held = self._restore(entry) if entry is not None else None
 
@@ -129,7 +192,7 @@ class CachedExchangeRateProvider:
             return None
 
         try:
-            rate = self._provider.usd_to_eur()
+            rate = acquire()
         except Exception:
             # A rate that could not be read leaves the last real one
             # standing, marked — old evidence is still evidence when it
@@ -141,7 +204,7 @@ class CachedExchangeRateProvider:
             return None
 
         self._cache.write(
-            self.KEY,
+            key,
             {
                 "base": rate.base,
                 "quote": rate.quote,

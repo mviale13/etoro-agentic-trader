@@ -129,7 +129,8 @@ class TestComparison:
         refusal = magnitude.refusal(ELIGIBLE_MARKET_CAP_WARRANTS, USD_THRESHOLD)
 
         assert "established in CHF" in refusal
-        assert "pending an authorised currency conversion" in refusal
+        assert "pending an authorised currency translation" in refusal
+        assert "never assumed" in refusal
 
     def test_gbp_against_usd_is_refused_pending_conversion(self) -> None:
         """Test 4."""

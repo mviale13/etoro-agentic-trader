@@ -294,14 +294,19 @@ class QualitySignalService:
                 warrant=_MARKET_CAP_WARRANT,
             )
 
-        if not magnitude.comparable_with(
+        # The amount in the threshold's own currency — the magnitude
+        # itself where the denominations already agree, the authorised
+        # translated amount where an evidenced FX translation carries
+        # it across (fx-translation@1), and nothing everywhere else.
+        # Reading `magnitude.amount` here would compare Swiss francs
+        # against a dollar line, which is the exact comparison this
+        # boundary exists to refuse.
+        amount = magnitude.comparable_amount(
             self.LARGE_CAP, self.ELIGIBLE_MARKET_CAP_WARRANTS
-        ):
+        )
+
+        if amount is None:
             return None
-
-        amount = magnitude.amount
-
-        assert amount is not None  # guaranteed by `admissible_for_threshold`
 
         if amount >= self.LARGE_CAP_THRESHOLD:
             return (Finding.favourable("Large-cap company."), 1)

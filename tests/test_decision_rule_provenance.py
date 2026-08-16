@@ -56,6 +56,7 @@ from app.domain.decision_rules import (
     RuleStatus,
 )
 from app.domain.monetary import INDEPENDENT_SHARE_COUNT_FIELDS
+from app.domain.monetary_translation import TRANSLATABLE_TO_USD
 from app.domain.risk_signal import RiskSignal
 from app.services.company_committee_service import CompanyCommitteeService
 from app.services.momentum_signal_service import MomentumSignalService
@@ -116,6 +117,16 @@ GOVERNED: dict[str, object] = {
         QualitySignalService.LARGE_CAP.currency,
         "identical-currency-only",
         INDEPENDENT_SHARE_COUNT_FIELDS,
+    ),
+    # The translation rule's constants: which foreign denominations may
+    # cross into USD at all (the measured four, sorted — a membership,
+    # not a threshold), the temporal requirement, and the two refusals
+    # that define the boundary's honesty.
+    "fx-translation": (
+        tuple(sorted(TRANSLATABLE_TO_USD)),
+        "same-utc-day",
+        "missing-rate-is-never-one-to-one",
+        "another-days-rate-is-never-latest",
     ),
     "momentum-bands": (
         MomentumSignalService.STRONG_POSITIVE_THRESHOLD,
@@ -193,6 +204,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "momentum-bands": (1, RuleStatus.UNSOURCED, "2ef4de85d277"),
     "quality-authority": (1, RuleStatus.ARGUED, "4079e4af87d7"),
     "monetary-comparison": (1, RuleStatus.ARGUED, "92a418fb4a78"),
+    "fx-translation": (1, RuleStatus.ARGUED, "e3a548db860c"),
     "momentum-input-eligibility": (1, RuleStatus.ARGUED, "03e3e0ae4ccf"),
     "market-cap-input-eligibility": (1, RuleStatus.ARGUED, "a3f6c145c2de"),
     "signal-vote": (1, RuleStatus.UNSOURCED, "f2fdf881fe4f"),
@@ -274,6 +286,7 @@ def test_exactly_six_rules_are_argued() -> None:
         "risk-severity",
         "quality-authority",
         "monetary-comparison",
+        "fx-translation",
         "momentum-input-eligibility",
         "market-cap-input-eligibility",
         "decision-authority",

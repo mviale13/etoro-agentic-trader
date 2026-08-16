@@ -292,5 +292,8 @@ ADR/dual-class repair (UNRECONCILED routes them to their own
 boundary); no threshold, band or fingerprint-input change; no
 fallbacks; `CompanyFacts.currency` untouched.
 
-**Next slice, as ruled: the FX translation authority boundary** — the
-17 established-foreign securities are its measured, named work order.
+**The FX translation authority boundary is now built** — C6,
+[`MONETARY_TRANSLATION.md`](MONETARY_TRANSLATION.md), `fx-translation@1`:
+the established-foreign population crosses into USD only through an
+explicit, evidenced, same-day translation, and the refusals above are
+its exact seams.
