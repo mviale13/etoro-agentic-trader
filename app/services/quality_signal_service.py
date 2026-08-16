@@ -4,6 +4,7 @@ from app.domain.decision_participation import SignalParticipation
 from app.domain.decision_rules import PROVIDER_QUALITY, QUALITY_AUTHORITY
 from app.domain.finding import Finding
 from app.domain.market_magnitude import MarketCapMagnitude
+from app.domain.monetary import MonetaryAmount
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
 from app.domain.quality_coverage import (
@@ -81,6 +82,15 @@ class QualitySignalService:
     """
 
     LARGE_CAP_THRESHOLD = 10_000_000_000
+
+    #: The same amount, with the denomination the bare constant always
+    #: silently meant. `monetary-comparison@1`'s policy ruling: the
+    #: large-cap line is **ten billion US dollars**, and it says so in
+    #: a type that cannot be constructed without a currency. Built from
+    #: the constant above so the two amounts cannot drift, and the
+    #: constant itself stays exactly what `provider-quality@1`'s
+    #: fingerprint has always hashed.
+    LARGE_CAP = MonetaryAmount(amount=float(LARGE_CAP_THRESHOLD), currency="USD")
 
     #: Named on the class so the provenance guard can fingerprint the
     #: eligibility rule apart from the bands it gates.
@@ -284,7 +294,9 @@ class QualitySignalService:
                 warrant=_MARKET_CAP_WARRANT,
             )
 
-        if not magnitude.admissible_for_threshold(self.ELIGIBLE_MARKET_CAP_WARRANTS):
+        if not magnitude.comparable_with(
+            self.LARGE_CAP, self.ELIGIBLE_MARKET_CAP_WARRANTS
+        ):
             return None
 
         amount = magnitude.amount

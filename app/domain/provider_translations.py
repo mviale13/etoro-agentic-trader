@@ -243,6 +243,48 @@ TRANSLATIONS: tuple[ProviderTranslation, ...] = (
         decision_relevance=DecisionRelevance.UNCONSUMED,
         representation=DomainRepresentation.COUNT,
     ),
+    # ---- The denomination corroboration inputs (#142) ----------------
+    # Three fields read solely as inputs to the market-cap denomination
+    # identity check. Each is ASSUMED on its own; what the check
+    # *derives* from their agreement is a VALIDATED denomination on the
+    # magnitude, carried with its because — the inputs never reach a
+    # domain fact directly.
+    #
+    # `impliedSharesOutstanding` is deliberately not here and not read
+    # at all: nothing warrants it as a report independent of the
+    # market-cap claim, and it was measured reconstructing cap ÷ price
+    # for 64 of 64 live securities — a circular input would make the
+    # corroboration a tautology (PR #143 amendment).
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="currency",
+        endpoint=MERGED_INFO,
+        domain_concept="MarketCapDenomination (corroboration input)",
+        kinds=(TranslationKind.VOCABULARY,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.IDENTIFIER,
+    ),
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="regularMarketPrice",
+        endpoint=MERGED_INFO,
+        domain_concept="MarketCapDenomination (corroboration input)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.CURRENCY_AMOUNT,
+    ),
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="sharesOutstanding",
+        endpoint=MERGED_INFO,
+        domain_concept="MarketCapDenomination (corroboration input)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.COUNT,
+    ),
     # ---- The two conversions that exist ------------------------------
     ProviderTranslation(
         provider=YAHOO,

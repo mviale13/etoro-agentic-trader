@@ -55,6 +55,7 @@ from app.domain.decision_rules import (
     RuleKind,
     RuleStatus,
 )
+from app.domain.monetary import INDEPENDENT_SHARE_COUNT_FIELDS
 from app.domain.risk_signal import RiskSignal
 from app.services.company_committee_service import CompanyCommitteeService
 from app.services.momentum_signal_service import MomentumSignalService
@@ -104,6 +105,18 @@ GOVERNED: dict[str, object] = {
     # itself — the ruler it gates is fingerprinted separately as
     # `provider-quality`, and is untouched.
     "quality-authority": (QualitySignalService.FACTORS,),
+    # The comparison policy: the threshold's declared currency, the
+    # rule that only identical denominations compare, and the
+    # establishing set — which provider share counts may corroborate a
+    # denomination at all (the PR #143 amendment's independence rule:
+    # a count derived from cap ÷ price is circular and establishes
+    # nothing, so membership is a written-down act). The threshold's
+    # AMOUNT stays under provider-quality, exactly as it always was.
+    "monetary-comparison": (
+        QualitySignalService.LARGE_CAP.currency,
+        "identical-currency-only",
+        INDEPENDENT_SHARE_COUNT_FIELDS,
+    ),
     "momentum-bands": (
         MomentumSignalService.STRONG_POSITIVE_THRESHOLD,
         MomentumSignalService.POSITIVE_THRESHOLD,
@@ -179,6 +192,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "quality-grounded": (1, RuleStatus.LICENSED, "02dffb0feb63"),
     "momentum-bands": (1, RuleStatus.UNSOURCED, "2ef4de85d277"),
     "quality-authority": (1, RuleStatus.ARGUED, "4079e4af87d7"),
+    "monetary-comparison": (1, RuleStatus.ARGUED, "92a418fb4a78"),
     "momentum-input-eligibility": (1, RuleStatus.ARGUED, "03e3e0ae4ccf"),
     "market-cap-input-eligibility": (1, RuleStatus.ARGUED, "a3f6c145c2de"),
     "signal-vote": (1, RuleStatus.UNSOURCED, "f2fdf881fe4f"),
@@ -241,7 +255,7 @@ def test_exactly_one_rule_is_licensed() -> None:
     assert [r.key for r in licensed] == ["quality-grounded"]
 
 
-def test_exactly_five_rules_are_argued() -> None:
+def test_exactly_six_rules_are_argued() -> None:
     """Naming a rule still validates nothing; arguing one says where.
 
     The count moves once per warrant consumer, and each entry earns the
@@ -259,6 +273,7 @@ def test_exactly_five_rules_are_argued() -> None:
     assert [r.key for r in argued] == [
         "risk-severity",
         "quality-authority",
+        "monetary-comparison",
         "momentum-input-eligibility",
         "market-cap-input-eligibility",
         "decision-authority",

@@ -179,6 +179,13 @@ def admissible_market_cap(amount: float) -> MarketCapMagnitude:
     tests supply one that clears the gate, so they keep testing the
     ruler rather than the gate.
 
+    Clearing the gate means clearing every term of its conjunction,
+    identity included: this helper carries an undisputed (assumed)
+    cross-provider identity, because eligibility is
+    identity AND magnitude AND denomination AND comparison authority
+    and a helper that skipped one term would be testing a gate that
+    does not exist.
+
     A test that means to exercise the *gate* passes a bare
     `market_cap=` float instead, which is what every live security
     carries.
@@ -192,4 +199,28 @@ def admissible_market_cap(amount: float) -> MarketCapMagnitude:
         warrant=TranslationWarrant.VERIFIED,
         currency="USD",
         currency_is_assumed=False,
+        identity=assumed_identity(),
+    )
+
+
+def assumed_identity(symbol: str = "TEST"):
+    """An undisputed cross-provider join, for tests about other terms.
+
+    ASSUMED, not ESTABLISHED — the honest live state of every join on
+    this platform (#134) — which the identity term of the eligibility
+    conjunction passes. A test about the identity term itself builds
+    its own UNRESOLVED specimen instead.
+    """
+
+    from app.domain.provider_identity import (
+        CrossProviderIdentity,
+        IdentityStanding,
+        ProviderIdentityClaim,
+    )
+
+    return CrossProviderIdentity(
+        symbol=symbol,
+        claims=(ProviderIdentityClaim(provider="eToro", symbol=symbol),),
+        standing=IdentityStanding.ASSUMED,
+        because="test fixture: joined on symbol equality alone",
     )

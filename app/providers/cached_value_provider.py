@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from app.domain.monetary import DenominationBasis, MarketCapDenomination
 from app.domain.provenance import Provenance
+from app.domain.provider_identity import ProviderIdentityClaim
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 from app.infrastructure.evidence_root import evidence_path
@@ -50,16 +52,25 @@ class CachedValueProvider:
         self._provider = provider or ValueProvider()
         self._cache = cache or JsonCache(
             evidence_path("cache", "fundamentals"),
-            # Schema 2 added `expense_ratio` — a fund's cost of
-            # ownership, absent from every record written before the
-            # field was read. Schema-1 records come forward unchanged:
-            # every figure they carry keeps its meaning, and the new
-            # field restores as absent, which is what it was. Records
-            # written before this store declared a schema are accepted
-            # as schema 1 deliberately — their shape is what schema 1
-            # describes.
-            schema=2,
-            migrations={1: lambda value: value},
+            # Schema 2 added `expense_ratio`; schema 3 added the market
+            # cap's denomination, established at acquisition from the
+            # payload's own arithmetic; schema 4 adds the vendor's
+            # identity claim, recorded verbatim so the cross-provider
+            # join (#134) can be asked of a stored record. All
+            # migrations are the identity: an old record's figures keep
+            # their meaning, and each new field restores as absent — a
+            # pre-boundary market cap has no established denomination
+            # and a pre-capture record holds no vendor account, which
+            # is exactly what their silence downstream should say.
+            # Records written before this store declared a schema are
+            # accepted as schema 1 deliberately — their shape is what
+            # schema 1 describes.
+            schema=4,
+            migrations={
+                1: lambda value: value,
+                2: lambda value: value,
+                3: lambda value: value,
+            },
             accepts_unversioned=True,
         )
         self._acquires = acquires
@@ -144,6 +155,26 @@ class CachedValueProvider:
             "peg_ratio": snapshot.peg_ratio,
             "dividend_yield": snapshot.dividend_yield,
             "market_cap": snapshot.market_cap,
+            "market_cap_denomination": (
+                {
+                    "currency": snapshot.market_cap_denomination.currency,
+                    "basis": snapshot.market_cap_denomination.basis.value,
+                    "because": snapshot.market_cap_denomination.because,
+                }
+                if snapshot.market_cap_denomination is not None
+                else None
+            ),
+            "vendor_identity": (
+                {
+                    "provider": snapshot.vendor_identity.provider,
+                    "symbol": snapshot.vendor_identity.symbol,
+                    "name": snapshot.vendor_identity.name,
+                    "taxonomy": snapshot.vendor_identity.taxonomy,
+                    "exchange": snapshot.vendor_identity.exchange,
+                }
+                if snapshot.vendor_identity is not None
+                else None
+            ),
             "eps": snapshot.eps,
             "circulating_supply": snapshot.circulating_supply,
             "max_supply": snapshot.max_supply,
@@ -212,6 +243,10 @@ class CachedValueProvider:
             peg_ratio=number("peg_ratio"),
             dividend_yield=number("dividend_yield"),
             market_cap=number("market_cap"),
+            market_cap_denomination=cls._denomination(
+                value.get("market_cap_denomination")
+            ),
+            vendor_identity=cls._vendor_identity(value.get("vendor_identity")),
             eps=number("eps"),
             circulating_supply=number("circulating_supply"),
             max_supply=number("max_supply"),
@@ -235,6 +270,74 @@ class CachedValueProvider:
                 observed_at=observed_at,
                 last_known=last_known,
             ),
+        )
+
+    @staticmethod
+    def _denomination(raw: object) -> MarketCapDenomination | None:
+        """A stored denomination, or nothing — never a guessed one.
+
+        A record that predates the boundary, or whose stored shape
+        cannot be read back, restores as no denomination at all: the
+        magnitude then stays incomparable, which is the pre-boundary
+        truth rather than a new claim.
+        """
+
+        if not isinstance(raw, dict):
+            return None
+
+        basis = raw.get("basis")
+        currency = raw.get("currency")
+        because = raw.get("because")
+
+        try:
+            parsed = DenominationBasis(basis) if isinstance(basis, str) else None
+        except ValueError:
+            return None
+
+        if parsed is None or not isinstance(because, str):
+            return None
+
+        try:
+            return MarketCapDenomination(
+                currency=currency if isinstance(currency, str) else None,
+                basis=parsed,
+                because=because,
+            )
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _vendor_identity(raw: object) -> ProviderIdentityClaim | None:
+        """A stored vendor claim, or nothing — never a reconstructed one.
+
+        A record that predates the capture restores with the vendor
+        having said nothing, so the identity join downstream rests on
+        the broker's claim alone and stays honestly assumed.
+        """
+
+        if not isinstance(raw, dict):
+            return None
+
+        def text(field: str) -> str | None:
+            value = raw.get(field)
+
+            return value if isinstance(value, str) and value.strip() else None
+
+        symbol = text("symbol")
+        name = text("name")
+        taxonomy = text("taxonomy")
+        exchange = text("exchange")
+
+        if not (symbol or name or taxonomy or exchange):
+            return None
+
+        return ProviderIdentityClaim(
+            provider=text("provider") or ValueProvider.SOURCE,
+            symbol=symbol or "",
+            name=name,
+            taxonomy=taxonomy,
+            exchange=exchange,
+            isin=None,
         )
 
     @staticmethod

@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.monetary import MarketCapDenomination
 from app.domain.provenance import Provenance
+from app.domain.provider_identity import ProviderIdentityClaim
 
 
 @dataclass(frozen=True)
@@ -19,6 +21,20 @@ class ValuationSnapshot:
     dividend_yield: float | None
 
     market_cap: float | None = None
+
+    #: What the market cap is denominated in, where the payload's own
+    #: arithmetic establishes it — and the honest classification where
+    #: it does not. None on records written before the boundary existed,
+    #: which restore as not established rather than as anything else.
+    market_cap_denomination: MarketCapDenomination | None = None
+
+    #: The vendor's own account of what this symbol is — name, category
+    #: token, venue — recorded verbatim at acquisition so the
+    #: cross-provider identity question (#134) can be asked of a stored
+    #: record. None on records written before it was captured, which
+    #: restore with the vendor having said nothing rather than with a
+    #: reconstructed claim.
+    vendor_identity: ProviderIdentityClaim | None = None
     eps: float | None = None
 
     #: What a token has instead of a balance sheet: how much of it exists,

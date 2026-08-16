@@ -106,6 +106,67 @@ def test_a_replayed_reading_keeps_its_fundamentals(tmp_path: Path) -> None:
     assert replayed.sector == "Technology"
 
 
+def test_a_replayed_reading_keeps_the_vendor_identity_claim(tmp_path: Path) -> None:
+    """The vendor's account of what the symbol is survives the cache.
+
+    Captured at acquisition so the #134 join can be asked of a stored
+    record; a claim that silently vanished on replay would let a
+    disputed identity read as an undisputed one the next morning.
+    """
+
+    from app.domain.provider_identity import ProviderIdentityClaim
+
+    snapshot = ValuationSnapshot(
+        forward_pe=None,
+        trailing_pe=None,
+        peg_ratio=None,
+        dividend_yield=None,
+        market_cap=1_844_386_201_600.0,
+        vendor_identity=ProviderIdentityClaim(
+            provider="Yahoo Finance",
+            symbol="SPCX",
+            name="SPAC and New Issue ETF",
+            taxonomy="ETF",
+        ),
+        reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
+    )
+
+    provider = CountingValueProvider(snapshot)
+    cached = make_value_provider(tmp_path, provider)
+
+    cached.snapshot("SPCX")
+    replayed = cached.snapshot("SPCX")
+
+    assert provider.calls == 1
+    assert replayed.vendor_identity is not None
+    assert replayed.vendor_identity.name == "SPAC and New Issue ETF"
+    assert replayed.vendor_identity.taxonomy == "ETF"
+    assert replayed.vendor_identity.provider == "Yahoo Finance"
+
+
+def test_a_record_without_a_vendor_claim_restores_without_one(
+    tmp_path: Path,
+) -> None:
+    """A pre-capture record says the vendor said nothing — not something."""
+
+    snapshot = ValuationSnapshot(
+        forward_pe=21.5,
+        trailing_pe=None,
+        peg_ratio=None,
+        dividend_yield=None,
+        market_cap=3_000_000_000_000.0,
+        reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
+    )
+
+    provider = CountingValueProvider(snapshot)
+    cached = make_value_provider(tmp_path, provider)
+
+    cached.snapshot("MSFT")
+    replayed = cached.snapshot("MSFT")
+
+    assert replayed.vendor_identity is None
+
+
 def test_the_same_day_produces_the_same_evidence(tmp_path: Path) -> None:
     """A second run must not be able to change a decision on its own."""
 

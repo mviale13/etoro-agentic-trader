@@ -7,6 +7,8 @@ from app.domain.daily_change import ChangeBasis, DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
 from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.market_snapshot import MarketQuote
+from app.domain.monetary import MarketCapDenomination
+from app.domain.provider_identity import CrossProviderIdentity, join_identity
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
 from app.domain.valuation_snapshot import ValuationSnapshot
@@ -15,6 +17,9 @@ from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.earnings_provider import CachedEarningsProvider, ReadDates
 from app.providers.yahoo_market_provider import YahooInstrument
+from app.services.cross_provider_identity_service import (
+    CrossProviderIdentityService,
+)
 from app.services.token_facts_service import TokenFactsService
 
 
@@ -163,7 +168,30 @@ class CompanyFactsService:
             market_cap_magnitude=self._market_cap_magnitude(
                 tokens.established_value("market_cap")
                 if tokens is not None
-                else valuation.market_cap
+                else valuation.market_cap,
+                # The token path carries no denomination here: quality
+                # never reads a token's magnitude (F1), and the crypto
+                # gate owns its own facts. The company path carries what
+                # acquisition established, which is None for every
+                # record written before the boundary.
+                valuation.market_cap_denomination if tokens is None else None,
+                # Whose figure this is — the #134 join over the broker's
+                # claim and the vendor claim stored at acquisition,
+                # derived here on read so the join logic can evolve
+                # without re-acquiring. A record that predates the
+                # capture joins on the broker's claim alone and reads
+                # honestly assumed.
+                join_identity(
+                    item.symbol,
+                    (
+                        CrossProviderIdentityService.from_broker(item),
+                        *(
+                            (valuation.vendor_identity,)
+                            if valuation.vendor_identity is not None
+                            else ()
+                        ),
+                    ),
+                ),
             ),
             realized_volatility=(
                 quote.realized_volatility if quote is not None else None
@@ -251,16 +279,25 @@ class CompanyFactsService:
         )
 
     @staticmethod
-    def _market_cap_magnitude(amount: float | None) -> MarketCapMagnitude | None:
+    def _market_cap_magnitude(
+        amount: float | None,
+        denomination: MarketCapDenomination | None = None,
+        identity: CrossProviderIdentity | None = None,
+    ) -> MarketCapMagnitude | None:
         """The market capitalisation, with what is established about it.
 
-        Two crossings travel with the number and neither is currently
-        settled: the registry's warrant for reading `marketCap` as this
-        company's market capitalisation, and the denomination — which
-        this platform holds for no security, because it reads no
-        currency field for a fundamental. Recorded rather than
-        repaired: reading Yahoo's currency is a new translation and
-        would need its own warrant.
+        Three crossings travel with the number, and they are carried
+        apart because they fail apart. The registry's warrant for
+        reading `marketCap` as this company's market capitalisation is
+        ASSUMED — and where acquisition corroborated the figure against
+        the payload's own price × shares identity, the reading is
+        **checked against corroborating evidence**, which is precisely
+        `TranslationWarrant.VALIDATED`'s meaning, and the denomination
+        that check derived travels with it. Where nothing corroborated,
+        both stay unestablished and the magnitude stays incomparable.
+        The #134 identity rides beside them untouched: establishing a
+        denomination says nothing about whose figure it is, and the
+        magnitude's own conjunction is where that stays true.
         """
 
         if amount is None:
@@ -268,15 +305,27 @@ class CompanyFactsService:
 
         translation = governed("ValuationSnapshot.market_cap")
 
+        registry_warrant = (
+            translation.warrant
+            if translation is not None
+            else TranslationWarrant.UNKNOWN
+        )
+
+        if denomination is not None and denomination.established:
+            return MarketCapMagnitude.measured(
+                amount,
+                warrant=TranslationWarrant.VALIDATED,
+                currency=denomination.currency,
+                currency_is_assumed=False,
+                identity=identity,
+            )
+
         return MarketCapMagnitude.measured(
             amount,
-            warrant=(
-                translation.warrant
-                if translation is not None
-                else TranslationWarrant.UNKNOWN
-            ),
+            warrant=registry_warrant,
             currency=None,
             currency_is_assumed=True,
+            identity=identity,
         )
 
     @staticmethod

@@ -20,8 +20,9 @@ from app.domain.provider_identity import (
     CrossProviderIdentity,
     ProviderIdentityClaim,
     join_identity,
+    vendor_claim,
 )
-from app.domain.provider_translations import ETORO, YAHOO
+from app.domain.provider_translations import ETORO
 from app.domain.watchlist_item import WatchlistItem
 
 
@@ -77,23 +78,10 @@ class CrossProviderIdentityService:
     def from_vendor(symbol: str, info: dict[str, Any]) -> ProviderIdentityClaim:
         """The data vendor's account of the same symbol.
 
-        Yahoo's `quoteType` ("EQUITY", "ETF") is the vendor's own
-        category token and is carried raw for the same reason the
-        broker's id is: it is evidence about what Yahoo thinks, which
-        is exactly what a cross-provider check needs and exactly what
-        must not become a domain classification on the way through.
+        Delegates to the domain's `vendor_claim`, which acquisition
+        also uses to store the claim beside the fundamentals it arrived
+        with — one implementation of what the vendor's payload says
+        about identity, wherever the question is asked from.
         """
 
-        def text(key: str) -> str | None:
-            value = info.get(key)
-
-            return value.strip() if isinstance(value, str) and value.strip() else None
-
-        return ProviderIdentityClaim(
-            provider=YAHOO,
-            symbol=text("symbol") or symbol,
-            name=text("longName") or text("shortName"),
-            taxonomy=text("quoteType"),
-            exchange=text("exchange"),
-            isin=None,
-        )
+        return vendor_claim(symbol, info)
