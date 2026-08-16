@@ -46,6 +46,10 @@ from app.domain.business_quality import (
     MEDIUM_NUMERATOR,
     MINIMUM_ANSWERED,
 )
+from app.domain.decision_participation import (
+    REQUIRED_PARTICIPATING_SIGNALS,
+    REQUIRED_RELATIVE_COVERAGE,
+)
 from app.domain.decision_rules import (
     DECISION_RULES,
     RuleKind,
@@ -115,6 +119,12 @@ GOVERNED: dict[str, object] = {
             for warrant in QualitySignalService.ELIGIBLE_MARKET_CAP_WARRANTS
         )
     ),
+    # The two authority gates. Independent constants, hashed together
+    # because they are one rule: a call is actionable only if both hold.
+    "decision-authority": (
+        REQUIRED_RELATIVE_COVERAGE,
+        REQUIRED_PARTICIPATING_SIGNALS,
+    ),
     "signal-vote": (
         CompanyCommitteeService.VALUE_WEIGHT,
         CompanyCommitteeService.QUALITY_WEIGHT,
@@ -166,6 +176,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "momentum-input-eligibility": (1, RuleStatus.ARGUED, "03e3e0ae4ccf"),
     "market-cap-input-eligibility": (1, RuleStatus.ARGUED, "a3f6c145c2de"),
     "signal-vote": (1, RuleStatus.UNSOURCED, "f2fdf881fe4f"),
+    "decision-authority": (1, RuleStatus.ARGUED, "45b26f7f2a21"),
     "vote-confidence": (1, RuleStatus.UNSOURCED, "16d0753d000f"),
     "cognitive-confidence": (1, RuleStatus.UNSOURCED, "d9b82416ea5b"),
     "evidence-score": (1, RuleStatus.UNSOURCED, "3c712b232fa7"),
@@ -224,7 +235,7 @@ def test_exactly_one_rule_is_licensed() -> None:
     assert [r.key for r in licensed] == ["quality-grounded"]
 
 
-def test_exactly_three_rules_are_argued() -> None:
+def test_exactly_four_rules_are_argued() -> None:
     """Naming a rule still validates nothing; arguing one says where.
 
     The count moves once per warrant consumer, and each entry earns the
@@ -243,6 +254,7 @@ def test_exactly_three_rules_are_argued() -> None:
         "risk-severity",
         "momentum-input-eligibility",
         "market-cap-input-eligibility",
+        "decision-authority",
     ]
 
 
@@ -404,9 +416,16 @@ def test_the_vote_carries_its_rules() -> None:
 
     recommendation = CompanyCommitteeService().evaluate("TEST", signals)
 
+    # Three since the kernel separated direction from authority: the
+    # vote says what the evidence points at, its confidence formula
+    # scores that, and `decision-authority` decides whether the
+    # direction may be acted on at all. A recommendation that carried
+    # only the first two could not tell a reader why a lean was
+    # withheld.
     assert [rule.key for rule in recommendation.rules] == [
         "signal-vote",
         "vote-confidence",
+        "decision-authority",
     ]
 
 
