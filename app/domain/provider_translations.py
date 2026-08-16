@@ -249,6 +249,12 @@ TRANSLATIONS: tuple[ProviderTranslation, ...] = (
     # *derives* from their agreement is a VALIDATED denomination on the
     # magnitude, carried with its because — the inputs never reach a
     # domain fact directly.
+    #
+    # `impliedSharesOutstanding` is deliberately not here and not read
+    # at all: nothing warrants it as a report independent of the
+    # market-cap claim, and it was measured reconstructing cap ÷ price
+    # for 64 of 64 live securities — a circular input would make the
+    # corroboration a tautology (PR #143 amendment).
     ProviderTranslation(
         provider=YAHOO,
         provider_field="currency",
@@ -272,16 +278,6 @@ TRANSLATIONS: tuple[ProviderTranslation, ...] = (
     ProviderTranslation(
         provider=YAHOO,
         provider_field="sharesOutstanding",
-        endpoint=MERGED_INFO,
-        domain_concept="MarketCapDenomination (corroboration input)",
-        kinds=(TranslationKind.SEMANTIC,),
-        warrant=TranslationWarrant.ASSUMED,
-        decision_relevance=DecisionRelevance.GATES_A_DECISION,
-        representation=DomainRepresentation.COUNT,
-    ),
-    ProviderTranslation(
-        provider=YAHOO,
-        provider_field="impliedSharesOutstanding",
         endpoint=MERGED_INFO,
         domain_concept="MarketCapDenomination (corroboration input)",
         kinds=(TranslationKind.SEMANTIC,),

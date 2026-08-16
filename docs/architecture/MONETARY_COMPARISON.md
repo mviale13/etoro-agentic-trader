@@ -1,7 +1,13 @@
 # The denominated monetary comparison boundary
 
-**Status: built. `monetary-comparison@1`. No FX, no threshold change,
-no band change. Stopped for review.**
+**Status: built, amended in review. `monetary-comparison@1`. No FX, no
+threshold change, no band change. Stopped for review.**
+
+Two amendments after the owner's review of the first build (§6–§7):
+the establishing set is restricted to independently warranted share
+counts — `impliedSharesOutstanding` is out, with the measurement that
+decided it — and eligibility is an explicit four-crossing conjunction
+in which identity is a prerequisite, with SPCX as the pinned specimen.
 
 C5. #142 established that no provider field states a market cap's
 denomination and that the platform's one absolute monetary threshold
@@ -39,14 +45,25 @@ established it has no trustworthy meaning, and nothing forced its use.
 
 ## 2. Denomination-aware comparison
 
-`MarketCapMagnitude.comparable_with(threshold, warrants)` — the #136
-conjunction plus the currency identity:
+`MarketCapMagnitude.comparable_with(threshold, warrants)` — the
+explicit four-crossing conjunction:
 
 ```
-measured AND warrant ∈ {VERIFIED, VALIDATED}
-         AND denomination established
-         AND magnitude.currency == threshold.currency
+identity not unresolved (and evaluated at all)      — whose figure is this
+AND measured AND warrant ∈ {VERIFIED, VALIDATED}    — is it a market cap
+AND denomination established                        — in what unit
+AND magnitude.currency == threshold.currency        — may the units meet
 ```
+
+Identity is a **prerequisite, not a parallel substitute**: it is
+checked first, and no other crossing can compensate for it.
+Establishing one crossing never erases another — the property SPCX
+pins in §7. An *assumed* identity passes, by #134's own ruling (every
+live join rests on symbol equality and is named ASSUMED rather than
+silently trusted); an *unresolved* one — the providers' held accounts
+disagree — refuses, with a reason that names identity and never
+currency; an *unevaluated* one refuses too, because a prerequisite
+nobody checked is not a prerequisite met.
 
 Only same-currency comparison is authorised. The refusal wording
 distinguishes the two new cases: an **undenominated** magnitude is
@@ -77,12 +94,21 @@ minor unit (`GBp`, factor 100 — a fact about sterling, not about any
 provider) and the identity holds only at that factor, the cap is in
 the major unit.
 
-`shares` carries every count the payload publishes (`sharesOutstanding`
-and `impliedSharesOutstanding`); the identity holding for **any one**
-of them establishes, since each is the provider's own statement of the
-same quantity. The four input crossings are registered in the
-translation inventory as ASSUMED corroboration inputs — the *derived*
-denomination is what becomes VALIDATED, and it carries its `because`.
+`reported_shares` carries only counts from the **establishing set** —
+`INDEPENDENT_SHARE_COUNT_FIELDS`, fingerprinted under
+`monetary-comparison@1`, today `sharesOutstanding` alone. Membership
+requires an independently warranted semantic origin: a report of
+shares in issue that is not downstream of the market-cap claim it
+would corroborate. A count manufactured as `cap ÷ price` makes the
+identity a tautology that holds in **any** unit — a pre-converted
+dollar cap over a euro price reconciles perfectly against its own
+reconstruction and means nothing — and arithmetic cannot detect the
+direction, because the two derivations are one equation. That is why
+the requirement is semantic and sits on the input, and why widening
+the set re-pins a fingerprint rather than editing a tuple (§6). The
+three input crossings are registered in the translation inventory as
+ASSUMED corroboration inputs — the *derived* denomination is what
+becomes VALIDATED, and it carries its `because`.
 
 Where nothing reconciles, the outcome is **UNRECONCILED** — a
 structural fact about share classes or depositary receipts, typed
@@ -128,43 +154,111 @@ denomination and keeps its silence. Restoration happens per security
 at the next funded `movrvest acquire`, when the corroboration runs
 against a live payload and is stored.
 
-## 6. The recoverable population — measured, with one honest surprise
+## 6. The establishing set — the independence rule, measured
 
-The shipped `corroborate_denomination` was run against the live
-payloads of all 64 equities and funds holding a market cap:
+The first build consulted every count the payload publishes and found
+40 USD-establishable against the audit's 29. The owner's review asked
+the right question: does `impliedSharesOutstanding` have an
+independently warranted semantic origin, or is it downstream of the
+market-cap claim it was corroborating? The determination, from
+evidence already held and nothing else:
+
+- **No origin warrant exists.** The provider boundary registers the
+  field ASSUMED with no statement of what it counts; no provider
+  schema in this repository documents it; the first build's sentence
+  *"each is the provider's own statement of the same quantity"* was
+  asserted, not evidenced.
+- **The live corpus measured it reconstructing `cap ÷ price` for
+  64 of 64 securities** — within 1.1e-7 relative, median 3.1e-8, ETOR
+  to integer exactness — including every dual-class name (GOOG at
+  2.21× its reported count, VOW3.DE at 2.43×), every ADR (DIDIY,
+  SRAD), and SPCX, whose reported count misses by 74%. **An identity
+  that cannot fail checks nothing**: its reconciliation carries no
+  information about the cap's unit.
+- Per the governing distinction: independently corroborated **0 of
+  16** delta names; demonstrably circular at integer reconstruction
+  **1** (ETOR); semantic origin unknown, reconstruction-consistent
+  with derivation **15**. Unknown origin is insufficient authority,
+  not a lesser kind — so the field is out of the establishing set.
+
+The set is now `INDEPENDENT_SHARE_COUNT_FIELDS = ("sharesOutstanding",)`
+in `app/domain/monetary.py`, fingerprinted under
+`monetary-comparison@1` and pinned in
+`tests/test_decision_rule_provenance.py` — widening it is a
+written-down act. Nothing hard-codes a population count; the evidence
+rule earns whatever it earns.
+
+**The population under the amended rule, measured live 2026-08-16**
+(64 equities and funds holding a market cap; 3 more hold none):
 
 | Outcome | Count |
 |---|---|
-| established **USD** — comparable with the threshold today | **40** |
-| established **foreign** — refused pending conversion | **17** (EUR 12, DKK 3, CHF 1, **GBP 1 — BP.L, minor-unit**) |
-| unreconciled / insufficient | 7 |
+| established **USD** — comparable with the threshold today | **34** |
+| established **foreign** — refused pending conversion | **14** (EUR 10, DKK 2, CHF 1, **GBP 1 — BP.L, minor-unit**) |
+| structurally unreconciled | **16** |
+| insufficient inputs | 0 |
 
-**This is 40, not the audit's 29, and the difference is reported
-rather than shipped silently.** #142's probe checked the identity
-against one preferred share count; the shipped rule checks it against
-*every* count the payload publishes, and `impliedSharesOutstanding` —
-which spans all share classes — reconciles GOOG, DIDIY, NOVO-B.CO and
-eight others that the single-count probe called unreconciled. The
-principle is identical (the provider's own arithmetic, no inheritance,
-no heuristic); the evidence consulted is wider. **If the owner prefers
-the audit's exact population, restricting `shares` to
-`sharesOutstanding` alone reproduces 29** — a one-line change and a
-re-pin.
+The 16 unreconciled are exactly the names whose establishment had
+rested on the circular count: AOS, CPNG, DIDIY, ETOR, F, GOOG, H2O.DE,
+META, MSTR, NOVO-B.CO, PLTR, SE, SHOP, SPCX, SRAD, VOW3.DE. The
+audit's session measured 29 USD / 13 foreign over the same rule; the
+difference (34/14) is payload drift between sessions — reported counts
+and caps move into and out of reconciliation as the provider updates
+them, which is the known Yahoo instability and one more reason a
+population count is never pinned. The regression corpus pins
+*specimens* (BP.L, GOOG, the exact-circular construction), not counts.
 
-One consequence worth naming: **SPCX establishes USD** under the wider
-rule and would regain a size factor on re-acquisition — while its
-*cross-provider identity* remains UNRESOLVED (#134 §6). Denomination
-and identity are different crossings; establishing one does not settle
-the other, and the identity boundary still holds whatever this one
-does.
+## 7. Identity is a prerequisite — SPCX, the conjunction's specimen
+
+The owner's second ruling: settling a security's denomination must
+never quietly settle its identity. The wiring that makes it structural:
+
+- **The vendor's identity claim is stored at acquisition**
+  (`ValuationSnapshot.vendor_identity`, fundamentals cache schema 4,
+  identity migration — a pre-capture record restores with the vendor
+  having said nothing). The claim is the vendor's own words — name,
+  category token, venue — recorded verbatim, never a classification.
+- **The join is derived on read** (`CompanyFactsService` →
+  `join_identity` over the broker's claim and the stored vendor
+  claim), so the join logic can evolve without re-acquisition, and
+  the magnitude carries the resulting `CrossProviderIdentity`.
+- **The gate refuses an unresolved or unevaluated identity first**,
+  with wording that names identity and not currency, and Quality's
+  size factor stays unread — never a different band.
+
+The pinned specimen (`tests/test_market_cap_eligibility.py`,
+`tests/test_company_facts_service.py`) is #134's recorded SPCX
+conflict — eToro instrument 15618 *"Space Exploration Technologies
+Corp"* against the vendor's recorded *"SPAC and New Issue ETF"* —
+joined by the live ladder, never special-cased: denomination
+constructed established-USD (the amendment's *even if*), identity
+UNRESOLVED, comparison refused for identity, size factor not restored.
+
+Two live facts reported beside the specimen, not hidden under it.
+Under the amended establishing set, today's SPCX payload establishes
+**nothing anyway** (reported count misses at 1.74 → UNRECONCILED), so
+it is ineligible on two independent grounds. And today's payload
+carries a vendor name that *agrees* with the broker's — *"Space
+Exploration Technologies Corp."*, quoteType EQUITY — so the join
+derived at the next funded acquire may read ASSUMED rather than
+UNRESOLVED. The gate is evidence-driven, not a blacklist: if the
+held claims stop disagreeing, identity stops refusing, exactly as
+#134's own tests demand (*"not special-cased"*). Whether a once-held
+conflicting claim should be *remembered* rather than replaced is a
+question for the identity boundary's own slice, named here and not
+solved.
 
 ## The chain, per restored security
 
 ```
 market-cap claim                    (Yahoo marketCap)
   → denomination established        corroborate_denomination, at acquisition
+                                    (independent share counts only)
   → magnitude VALIDATED + currency  CompanyFactsService._market_cap_magnitude
+    + identity joined on read       join_identity(broker claim, stored vendor claim)
   → comparable with USD 10bn        MarketCapMagnitude.comparable_with
+                                    (identity AND magnitude AND denomination
+                                     AND comparison authority)
   → size factor readable            QualitySignalService._size
   → quality authority possible      quality-authority@1 (3/3 again)
   → band → kernel direction → recommendation   (all unchanged rules)
@@ -184,9 +278,12 @@ pending an authorised currency conversion*. Quality still abstains at
 
 ## Rule and provenance
 
-`monetary-comparison@1`, status **ARGUED**, fingerprint `12627d19b901`
-over the threshold's declared currency and the identical-currency-only
-policy. ARGUED count 5 → 6. `provider-quality@1` untouched.
+`monetary-comparison@1`, status **ARGUED**, fingerprint `92a418fb4a78`
+over the threshold's declared currency, the identical-currency-only
+policy, and the establishing set (`INDEPENDENT_SHARE_COUNT_FIELDS`).
+ARGUED count 5 → 6. `provider-quality@1` untouched (`3adc0fd3fd9f`).
+The rule is unmerged, so the amendment revises version 1 in place
+rather than minting a version 2 against nothing.
 
 ## Non-goals honoured
 

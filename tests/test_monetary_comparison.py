@@ -27,6 +27,7 @@ from app.services.quality_signal_service import (
     ELIGIBLE_MARKET_CAP_WARRANTS,
     QualitySignalService,
 )
+from tests.conftest import assumed_identity
 
 USD_THRESHOLD = QualitySignalService.LARGE_CAP
 
@@ -50,6 +51,19 @@ DIDIY = {
     "financialCurrency": "CNY",
 }
 
+#: GOOG as the live probe measured it (2026-08-16): the reported count
+#: misses the identity by a factor of 2.21 (dual share classes), while
+#: `impliedSharesOutstanding` sits within 6e-8 of cap ÷ price — the
+#: shape of a figure reconstructed from the claim it would corroborate.
+GOOG = {
+    "marketCap": 4_201_472_065_536.0,
+    "regularMarketPrice": 343.54,
+    "sharesOutstanding": 5_527_000_000.0,
+    "impliedSharesOutstanding": 12_229_934_831.0,
+    "currency": "USD",
+    "financialCurrency": "USD",
+}
+
 
 def _magnitude(
     amount: float,
@@ -57,11 +71,15 @@ def _magnitude(
     *,
     established: bool = True,
 ) -> MarketCapMagnitude:
+    # An undisputed identity, so these tests stay about the monetary
+    # terms of the conjunction. The identity term has its own
+    # specimens in test_market_cap_eligibility.py.
     return MarketCapMagnitude.measured(
         amount,
         warrant=TranslationWarrant.VALIDATED,
         currency=currency,
         currency_is_assumed=not established,
+        identity=assumed_identity(),
     )
 
 
@@ -198,7 +216,9 @@ class TestEstablishmentWithoutInheritance:
         snapshot = ValueProvider.from_info(dict(BP_L))
 
         magnitude = CompanyFactsService._market_cap_magnitude(
-            snapshot.market_cap, snapshot.market_cap_denomination
+            snapshot.market_cap,
+            snapshot.market_cap_denomination,
+            assumed_identity("BP.L"),
         )
 
         assert magnitude is not None
@@ -238,10 +258,84 @@ class TestEstablishmentWithoutInheritance:
             )
 
 
+class TestTheEstablishingSetIsIndependent:
+    """A circular identity cannot earn denomination authority.
+
+    The PR #143 amendment's ruling. `cap = price × count` establishes a
+    denomination only where the count is an independently warranted
+    report of shares in issue — a count manufactured as `cap ÷ price`
+    makes the identity a tautology that holds in any unit. Nothing in
+    the provider boundary warrants `impliedSharesOutstanding` as
+    independent, and the live corpus measured it reconstructing
+    cap ÷ price to within 1.1e-7 for 64 of 64 securities, so it is out
+    of the establishing set.
+    """
+
+    def test_an_exactly_circular_count_earns_nothing(self) -> None:
+        """The pinned regression: a bit-exact tautology establishes nothing.
+
+        The count is constructed as exactly `cap ÷ price`, so the
+        identity holds to the last bit — mathematically perfect
+        agreement, and zero evidential weight. If this ever
+        establishes a currency, a pre-converted cap over a local price
+        would establish the wrong one undetectably.
+        """
+
+        cap, price = 4_201_472_065_536.0, 343.54
+
+        snapshot = ValueProvider.from_info(
+            {
+                "marketCap": cap,
+                "regularMarketPrice": price,
+                "impliedSharesOutstanding": cap / price,
+                "currency": "USD",
+            }
+        )
+
+        assert snapshot.market_cap_denomination is not None
+        assert not snapshot.market_cap_denomination.established
+        assert snapshot.market_cap_denomination.basis is DenominationBasis.INSUFFICIENT
+
+    def test_goog_establishes_nothing_through_the_live_adapter(self) -> None:
+        """The delta specimen: dual-class GOOG, live-measured figures.
+
+        Under the amended rule the reported count fails the identity
+        (2.21, structural) and the reconstruction-shaped count is
+        never consulted, so the outcome is UNRECONCILED — not
+        established USD via a figure that cannot fail.
+        """
+
+        snapshot = ValueProvider.from_info(dict(GOOG))
+
+        assert snapshot.market_cap_denomination is not None
+        assert not snapshot.market_cap_denomination.established
+        assert snapshot.market_cap_denomination.basis is DenominationBasis.UNRECONCILED
+
+    def test_the_function_refuses_a_circular_count_passed_directly(self) -> None:
+        """Membership is the caller's contract; arithmetic is the proof.
+
+        `corroborate_denomination` cannot detect direction (the two
+        derivations are one equation), which is exactly why the
+        establishing set is semantic. This pins the demonstration that
+        an exact circular count *would* establish if passed — the
+        tautology is invisible to arithmetic — so the membership
+        restriction upstream is load-bearing, not decorative.
+        """
+
+        cap, price = 18_030_065_664.0, 4.00
+
+        outcome = corroborate_denomination(cap, price, (cap / price,), "EUR")
+
+        # The tautology reconciles in ANY currency — which is the proof
+        # that its reconciliation was never evidence.
+        assert outcome.basis is DenominationBasis.CORROBORATED
+        assert outcome.currency == "EUR"
+
+
 class TestQualityConsumesTheBoundary:
     def _signal(self, denomination: MarketCapDenomination | None):
         magnitude = CompanyFactsService._market_cap_magnitude(
-            50_000_000_000.0, denomination
+            50_000_000_000.0, denomination, assumed_identity()
         )
 
         facts = CompanyFacts(

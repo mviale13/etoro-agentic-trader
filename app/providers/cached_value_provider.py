@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 
 from app.domain.monetary import DenominationBasis, MarketCapDenomination
 from app.domain.provenance import Provenance
+from app.domain.provider_identity import ProviderIdentityClaim
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
 from app.infrastructure.evidence_root import evidence_path
@@ -51,18 +52,25 @@ class CachedValueProvider:
         self._provider = provider or ValueProvider()
         self._cache = cache or JsonCache(
             evidence_path("cache", "fundamentals"),
-            # Schema 2 added `expense_ratio`; schema 3 adds the market
+            # Schema 2 added `expense_ratio`; schema 3 added the market
             # cap's denomination, established at acquisition from the
-            # payload's own arithmetic. Both migrations are the
-            # identity: an old record's figures keep their meaning, and
-            # the new field restores as absent — a pre-boundary market
-            # cap has no established denomination, which is exactly
-            # what its silence downstream should say. Records written
-            # before this store declared a schema are accepted as
-            # schema 1 deliberately — their shape is what schema 1
-            # describes.
-            schema=3,
-            migrations={1: lambda value: value, 2: lambda value: value},
+            # payload's own arithmetic; schema 4 adds the vendor's
+            # identity claim, recorded verbatim so the cross-provider
+            # join (#134) can be asked of a stored record. All
+            # migrations are the identity: an old record's figures keep
+            # their meaning, and each new field restores as absent — a
+            # pre-boundary market cap has no established denomination
+            # and a pre-capture record holds no vendor account, which
+            # is exactly what their silence downstream should say.
+            # Records written before this store declared a schema are
+            # accepted as schema 1 deliberately — their shape is what
+            # schema 1 describes.
+            schema=4,
+            migrations={
+                1: lambda value: value,
+                2: lambda value: value,
+                3: lambda value: value,
+            },
             accepts_unversioned=True,
         )
         self._acquires = acquires
@@ -156,6 +164,17 @@ class CachedValueProvider:
                 if snapshot.market_cap_denomination is not None
                 else None
             ),
+            "vendor_identity": (
+                {
+                    "provider": snapshot.vendor_identity.provider,
+                    "symbol": snapshot.vendor_identity.symbol,
+                    "name": snapshot.vendor_identity.name,
+                    "taxonomy": snapshot.vendor_identity.taxonomy,
+                    "exchange": snapshot.vendor_identity.exchange,
+                }
+                if snapshot.vendor_identity is not None
+                else None
+            ),
             "eps": snapshot.eps,
             "circulating_supply": snapshot.circulating_supply,
             "max_supply": snapshot.max_supply,
@@ -227,6 +246,7 @@ class CachedValueProvider:
             market_cap_denomination=cls._denomination(
                 value.get("market_cap_denomination")
             ),
+            vendor_identity=cls._vendor_identity(value.get("vendor_identity")),
             eps=number("eps"),
             circulating_supply=number("circulating_supply"),
             max_supply=number("max_supply"),
@@ -285,6 +305,40 @@ class CachedValueProvider:
             )
         except ValueError:
             return None
+
+    @staticmethod
+    def _vendor_identity(raw: object) -> ProviderIdentityClaim | None:
+        """A stored vendor claim, or nothing — never a reconstructed one.
+
+        A record that predates the capture restores with the vendor
+        having said nothing, so the identity join downstream rests on
+        the broker's claim alone and stays honestly assumed.
+        """
+
+        if not isinstance(raw, dict):
+            return None
+
+        def text(field: str) -> str | None:
+            value = raw.get(field)
+
+            return value if isinstance(value, str) and value.strip() else None
+
+        symbol = text("symbol")
+        name = text("name")
+        taxonomy = text("taxonomy")
+        exchange = text("exchange")
+
+        if not (symbol or name or taxonomy or exchange):
+            return None
+
+        return ProviderIdentityClaim(
+            provider=text("provider") or ValueProvider.SOURCE,
+            symbol=symbol or "",
+            name=name,
+            taxonomy=taxonomy,
+            exchange=exchange,
+            isin=None,
+        )
 
     @staticmethod
     def _timestamp(raw: object) -> datetime | None:

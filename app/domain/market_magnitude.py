@@ -34,6 +34,7 @@ from dataclasses import dataclass
 
 from app.domain.monetary import MonetaryAmount
 from app.domain.provider_claim import ClaimAbsence
+from app.domain.provider_identity import CrossProviderIdentity, IdentityStanding
 from app.domain.provider_translation import TranslationWarrant
 
 
@@ -61,6 +62,15 @@ class MarketCapMagnitude:
     #: an established one — #134's rule, applied to a magnitude.
     currency_is_assumed: bool = True
 
+    #: Whose market capitalisation this is — the #134 cross-provider
+    #: join for the symbol the figure arrived under. Identity is a
+    #: prerequisite, not a parallel crossing that another crossing can
+    #: compensate for: a figure about a disputed subject stays out of
+    #: every comparison however well its magnitude, denomination and
+    #: translation are established. `None` means the question was never
+    #: evaluated, which is not authority either.
+    identity: CrossProviderIdentity | None = None
+
     absence: ClaimAbsence | None = None
 
     def __post_init__(self) -> None:
@@ -82,6 +92,33 @@ class MarketCapMagnitude:
         return self.amount is not None
 
     @property
+    def identity_authorised(self) -> bool:
+        """Whether the figure's subject is settled enough to consume it.
+
+        Invariant 2 applied to a magnitude: identity is enforced
+        *before* the reading, so this term is a prerequisite the other
+        three crossings can never compensate for. Two states refuse.
+        An **unresolved** join — the providers' own accounts disagree
+        about what the symbol is — poisons every downstream authority:
+        a perfectly denominated figure about a disputed subject is a
+        perfectly denominated answer to an unsettled question. And an
+        **unevaluated** join (`None`) is not authority either: a
+        prerequisite nobody checked is not a prerequisite met.
+
+        An *assumed* join passes, by #134's own ruling: every live
+        join on this platform rests on symbol equality and is named
+        ASSUMED rather than silently trusted. Requiring corroboration
+        here would be the identity boundary's own future tightening,
+        made for the whole platform at once — not smuggled in through
+        one consumer's gate.
+        """
+
+        return (
+            self.identity is not None
+            and self.identity.standing is not IdentityStanding.UNRESOLVED
+        )
+
+    @property
     def denomination_established(self) -> bool:
         """Whether the platform knows what unit this magnitude is in.
 
@@ -98,18 +135,28 @@ class MarketCapMagnitude:
     ) -> bool:
         """Whether this may be compared with an absolute threshold.
 
-        A **conjunction**, because the consumer depends on more than
-        one crossing and they fail independently: the semantic
-        translation must be one this consumer accepts (*is this figure
-        this company's market capitalisation at all*), and the
-        denomination must be established (*in what unit*). Either one
-        unresolved is enough to make the comparison meaningless, and a
-        design that checked only the warrant would pass a figure whose
-        currency nobody knows.
+        An explicit **conjunction over four crossings**, because the
+        consumer depends on all of them and they fail independently:
+
+        - **identity** — whose figure this is (#134); a prerequisite,
+          checked first and substitutable by nothing;
+        - **magnitude** — a measured figure at all;
+        - **translation** — the reading of it as this company's market
+          capitalisation is warranted (*is this figure a market cap*);
+        - **denomination** — the unit it is expressed in is
+          established (*in what unit*).
+
+        Establishing one crossing never settles another: SPCX's USD
+        would be establishable while its identity stays disputed, and
+        a design that let denomination authority stand in for identity
+        authority would compare a perfectly-denominated figure about
+        an unsettled subject. Any one term failing refuses the
+        comparison.
         """
 
         return (
-            self.is_measured
+            self.identity_authorised
+            and self.is_measured
             and self.warrant in warrants
             and self.denomination_established
         )
@@ -151,8 +198,33 @@ class MarketCapMagnitude:
         elif self.comparable_with(threshold, warrants):
             return ""
 
+        if (
+            self.identity is not None
+            and self.identity.standing is IdentityStanding.UNRESOLVED
+        ):
+            # First, because identity is a prerequisite: whatever else
+            # is established about the figure, its subject is not
+            # settled, and the reason must say *identity* — never
+            # currency, and never anything that implies the company's
+            # size.
+            return (
+                "Company size cannot be compared with a size threshold: the "
+                "providers' accounts of what this symbol is disagree — "
+                f"{self.identity.because} — and no market-cap input is "
+                "eligible while the instrument's identity is unresolved, "
+                "whatever else is established about the figure."
+            )
+
         if self.absence is not None:
             return f"Company size is unavailable: {self.absence.stated}."
+
+        if self.identity is None:
+            return (
+                "Company size cannot be compared with a size threshold: "
+                "the cross-provider identity of the instrument was never "
+                "evaluated, and a figure whose subject is unexamined "
+                "cannot enter a comparison."
+            )
 
         if self.warrant not in warrants:
             return (
@@ -190,12 +262,14 @@ class MarketCapMagnitude:
         warrant: TranslationWarrant,
         currency: str | None = None,
         currency_is_assumed: bool = True,
+        identity: CrossProviderIdentity | None = None,
     ) -> MarketCapMagnitude:
         return cls(
             amount=amount,
             warrant=warrant,
             currency=currency,
             currency_is_assumed=currency_is_assumed,
+            identity=identity,
         )
 
     @classmethod
@@ -204,5 +278,6 @@ class MarketCapMagnitude:
         absence: ClaimAbsence,
         *,
         warrant: TranslationWarrant,
+        identity: CrossProviderIdentity | None = None,
     ) -> MarketCapMagnitude:
-        return cls(amount=None, warrant=warrant, absence=absence)
+        return cls(amount=None, warrant=warrant, absence=absence, identity=identity)

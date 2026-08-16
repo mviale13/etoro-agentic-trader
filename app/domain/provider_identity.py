@@ -33,6 +33,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Any
+
+from app.domain.provider_translations import YAHOO
 
 #: Words that appear in an instrument's name to say what *kind* of
 #: instrument it is. Compared only between two providers' names for
@@ -248,6 +251,37 @@ class CrossProviderIdentity:
             f"{self.symbol}: identity is {self.standing.stated.lower()} "
             f"— {self.because}"
         )
+
+
+def vendor_claim(symbol: str, info: dict[str, Any]) -> ProviderIdentityClaim:
+    """The data vendor's account of a symbol, read from its own payload.
+
+    Yahoo's `quoteType` ("EQUITY", "ETF") is the vendor's own category
+    token and is carried raw, exactly as the broker's numeric id is: it
+    is evidence about what the vendor thinks, which is what a
+    cross-provider check needs and what must never become a domain
+    classification on the way through.
+
+    Lives in the domain rather than the identity service because two
+    layers now build it — the service, for an ad-hoc question, and
+    acquisition, which stores the claim beside the fundamentals it
+    arrived with so the join can be asked of a stored record. One
+    concept, one implementation.
+    """
+
+    def text(key: str) -> str | None:
+        value = info.get(key)
+
+        return value.strip() if isinstance(value, str) and value.strip() else None
+
+    return ProviderIdentityClaim(
+        provider=YAHOO,
+        symbol=text("symbol") or symbol,
+        name=text("longName") or text("shortName"),
+        taxonomy=text("quoteType"),
+        exchange=text("exchange"),
+        isin=None,
+    )
 
 
 def _forms(name: str | None) -> frozenset[str]:

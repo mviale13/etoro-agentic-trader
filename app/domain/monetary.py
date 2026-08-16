@@ -26,12 +26,34 @@ Two deliberate absences in this module:
   reports in dollars, and its market cap is in pounds — one instrument,
   three currencies, and any inheritance rule picks a wrong one.
 
-What *can* establish a denomination is arithmetic. Where the
+What *can* establish a denomination is arithmetic — with one
+precondition the arithmetic cannot check for itself. Where the
 provider's own figures satisfy `market_cap = price × shares` exactly,
 the market cap **is** that product, and a product inherits its unit
 from its factors: the cap is denominated in whatever the price is
 quoted in. That is a derivation, not an assumption — and where the
 identity fails, nothing is established and the silence stands.
+
+The precondition is that the share count is a **report of shares in
+issue, independent of the market-cap claim it corroborates**. A count
+manufactured as `cap ÷ price` makes the identity a tautology that
+holds whatever unit the cap is in — a pre-converted dollar cap over a
+euro price yields a "count" that reconciles perfectly and means
+nothing — so a circular count can never earn denomination authority,
+and a count whose origin is unknown is insufficient authority rather
+than a different kind of authority. Arithmetic cannot distinguish the
+directions (`cap = price × shares` and `shares = cap ÷ price` are one
+equation), which is exactly why the requirement is semantic and sits
+on the input: only counts with an independently warranted origin may
+be passed. This platform's registry warrants that for Yahoo's
+`sharesOutstanding` reading (#142's audited corroboration input) and
+for nothing else. `impliedSharesOutstanding` has no origin warrant
+anywhere in the boundary, and the live corpus measured it
+reconstructing `cap ÷ price` to within 1.1e-7 for 64 of 64
+securities — including every dual-class, ADR and disputed-identity
+name whose reported count misses by up to 143% — an identity that
+cannot fail, and therefore checks nothing. It is out of the
+establishing set (PR #143 amendment).
 """
 
 from __future__ import annotations
@@ -45,6 +67,19 @@ from enum import StrEnum
 #: gate's INTERNAL_TOLERANCE is. An order-of-magnitude error cannot
 #: hide inside it.
 IDENTITY_TOLERANCE = 0.005
+
+#: The establishing set: which provider share-count fields may
+#: corroborate a market cap's denomination at all. Membership requires
+#: an independently warranted semantic origin — a report of shares in
+#: issue that is not downstream of the market-cap claim it would
+#: corroborate. `sharesOutstanding` is #142's audited corroboration
+#: input; `impliedSharesOutstanding` is excluded with measurement (it
+#: reconstructs cap ÷ price for 64 of 64 live securities) and would
+#: need a provider-documented independent origin to enter. Governed by
+#: `monetary-comparison@1` and pinned in
+#: tests/test_decision_rule_provenance.py — widening this set is a
+#: written-down act, not an edit.
+INDEPENDENT_SHARE_COUNT_FIELDS: tuple[str, ...] = ("sharesOutstanding",)
 
 #: Quote units that are minor units of a major currency, with the
 #: factor between them. **A fact about the currency, not about any
@@ -152,7 +187,7 @@ class MarketCapDenomination:
 def corroborate_denomination(
     market_cap: float | None,
     price: float | None,
-    shares: tuple[float, ...],
+    reported_shares: tuple[float, ...],
     quote_currency: str | None,
 ) -> MarketCapDenomination:
     """Establish a market cap's denomination from arithmetic, or refuse.
@@ -165,10 +200,14 @@ def corroborate_denomination(
     identity holds at the minor-unit factor instead, the cap is in the
     major unit (BP.L: ratio exactly 0.010 → pounds).
 
-    `shares` may carry more than one published count (shares
-    outstanding, implied shares outstanding); the identity holding for
-    any one of them is the corroboration, since each is the provider's
-    own statement of the same quantity.
+    `reported_shares` carries only counts whose semantic origin is an
+    independently warranted report of shares in issue. **A count
+    derived from the market cap and the price may never be passed**:
+    it makes the identity a tautology that holds in any unit, so its
+    reconciliation earns no denomination authority — and a count whose
+    origin is unknown is insufficient authority, not a lesser kind.
+    The caller owns that membership; today it is Yahoo's
+    `sharesOutstanding` alone (PR #143 amendment).
 
     Everything else refuses. A failed identity is UNRECONCILED — a
     structural fact, not a currency doubt — and missing inputs are
@@ -177,7 +216,7 @@ def corroborate_denomination(
     regression pins.
     """
 
-    counts = tuple(count for count in shares if count and count > 0)
+    counts = tuple(count for count in reported_shares if count and count > 0)
 
     if not market_cap or not price or price <= 0 or not counts or not quote_currency:
         return MarketCapDenomination(

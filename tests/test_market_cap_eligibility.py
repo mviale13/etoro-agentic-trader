@@ -15,6 +15,12 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.company_signals import CompanySignals
 from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.provider_claim import ClaimAbsence
+from app.domain.provider_identity import (
+    CrossProviderIdentity,
+    IdentityStanding,
+    ProviderIdentityClaim,
+    join_identity,
+)
 from app.domain.provider_translation import TranslationWarrant
 from app.services.company_committee_service import CompanyCommitteeService
 from app.services.momentum_signal_service import MomentumSignalService
@@ -24,7 +30,7 @@ from app.services.quality_signal_service import (
 )
 from app.services.risk_signal_service import RiskSignalService
 from app.services.value_signal_service import ValueSignalService
-from tests.conftest import admissible_market_cap
+from tests.conftest import admissible_market_cap, assumed_identity
 
 ABOVE = 50_000_000_000.0
 BELOW = 2_000_000_000.0
@@ -192,7 +198,11 @@ class TestEligibilityIsMembership:
     )
     def test_every_admitted_warrant_scores(self, warrant: TranslationWarrant) -> None:
         magnitude = MarketCapMagnitude.measured(
-            ABOVE, warrant=warrant, currency="USD", currency_is_assumed=False
+            ABOVE,
+            warrant=warrant,
+            currency="USD",
+            currency_is_assumed=False,
+            identity=assumed_identity(),
         )
 
         signal = QualitySignalService().build(
@@ -286,3 +296,142 @@ class TestTheDecisionRegression:
 
         assert quality.quality != "HIGH"
         assert quality.available == 2
+
+
+class TestIdentityIsAPrerequisite:
+    """The four-crossing conjunction, with SPCX as the specimen.
+
+    The PR #143 amendment's second ruling: eligibility is
+    identity AND magnitude AND denomination AND comparison authority,
+    and establishing one crossing never erases another. SPCX is the
+    live case #134 measured — eToro names the symbol a company, the
+    vendor's recorded account named it a fund — so even a USD
+    denomination, however independently established, buys it nothing
+    while the join stays unresolved.
+    """
+
+    @staticmethod
+    def _spcx_identity() -> CrossProviderIdentity:
+        """The #134 join, from the recorded claims — not special-cased."""
+
+        return join_identity(
+            "SPCX",
+            (
+                ProviderIdentityClaim(
+                    provider="eToro",
+                    symbol="SPCX",
+                    instrument_id="15618",
+                    name="Space Exploration Technologies Corp",
+                    taxonomy="5",
+                ),
+                ProviderIdentityClaim(
+                    provider="Yahoo Finance",
+                    symbol="SPCX",
+                    name="SPAC and New Issue ETF",
+                    taxonomy="ETF",
+                ),
+            ),
+        )
+
+    @staticmethod
+    def _spcx_magnitude(identity: CrossProviderIdentity | None) -> MarketCapMagnitude:
+        """Denomination established USD — the amendment's 'even if'."""
+
+        return MarketCapMagnitude.measured(
+            1_844_386_201_600.0,
+            warrant=TranslationWarrant.VALIDATED,
+            currency="USD",
+            currency_is_assumed=False,
+            identity=identity,
+        )
+
+    def test_the_recorded_claims_join_unresolved(self) -> None:
+        identity = self._spcx_identity()
+
+        assert identity.standing is IdentityStanding.UNRESOLVED
+
+    def test_spcx_is_ineligible_while_identity_is_unresolved(self) -> None:
+        """The specimen: established USD, disputed subject, no comparison."""
+
+        magnitude = self._spcx_magnitude(self._spcx_identity())
+
+        assert magnitude.denomination_established
+        assert not magnitude.identity_authorised
+        assert not magnitude.admissible_for_threshold(ELIGIBLE_MARKET_CAP_WARRANTS)
+        assert not magnitude.comparable_with(
+            QualitySignalService.LARGE_CAP, ELIGIBLE_MARKET_CAP_WARRANTS
+        )
+
+    def test_the_refusal_names_identity_not_currency(self) -> None:
+        magnitude = self._spcx_magnitude(self._spcx_identity())
+
+        refusal = magnitude.refusal(
+            ELIGIBLE_MARKET_CAP_WARRANTS, QualitySignalService.LARGE_CAP
+        )
+
+        assert "identity" in refusal
+        assert "currency" not in refusal
+        assert "conversion" not in refusal
+        # And never anything that implies the company's size.
+        assert "small" not in refusal.lower()
+
+    def test_the_quality_size_factor_is_not_restored(self) -> None:
+        signal = QualitySignalService().build(
+            _facts(
+                market_cap=1_844_386_201_600.0,
+                market_cap_magnitude=self._spcx_magnitude(self._spcx_identity()),
+                eps=4.0,
+                dividend_yield=0.02,
+            )
+        )
+
+        assert "Large-cap company." not in _statements(signal)
+        assert signal.available == 2
+        assert signal.quality == "UNKNOWN"
+
+    def test_an_unevaluated_identity_is_not_authority_either(self) -> None:
+        """A prerequisite nobody checked is not a prerequisite met."""
+
+        magnitude = self._spcx_magnitude(None)
+
+        assert not magnitude.identity_authorised
+        assert not magnitude.admissible_for_threshold(ELIGIBLE_MARKET_CAP_WARRANTS)
+
+    def test_an_assumed_identity_passes_by_134s_own_ruling(self) -> None:
+        """ASSUMED is the named live state of every join, not a dispute.
+
+        Tightening this term to require corroboration is the identity
+        boundary's own future ruling, made for the whole platform at
+        once — not smuggled in through one consumer's gate.
+        """
+
+        magnitude = self._spcx_magnitude(assumed_identity("SPCX"))
+
+        assert magnitude.identity_authorised
+        assert magnitude.admissible_for_threshold(ELIGIBLE_MARKET_CAP_WARRANTS)
+
+    def test_establishing_one_crossing_never_erases_another(self) -> None:
+        """Each term fails alone, with every other term satisfied."""
+
+        identity_only_failure = self._spcx_magnitude(self._spcx_identity())
+
+        denomination_only_failure = MarketCapMagnitude.measured(
+            1_844_386_201_600.0,
+            warrant=TranslationWarrant.VALIDATED,
+            identity=assumed_identity("SPCX"),
+        )
+
+        warrant_only_failure = MarketCapMagnitude.measured(
+            1_844_386_201_600.0,
+            warrant=TranslationWarrant.ASSUMED,
+            currency="USD",
+            currency_is_assumed=False,
+            identity=assumed_identity("SPCX"),
+        )
+
+        for magnitude in (
+            identity_only_failure,
+            denomination_only_failure,
+            warrant_only_failure,
+        ):
+            assert not magnitude.admissible_for_threshold(ELIGIBLE_MARKET_CAP_WARRANTS)

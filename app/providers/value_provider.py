@@ -3,8 +3,12 @@ from typing import Any
 
 import yfinance as yf
 
-from app.domain.monetary import corroborate_denomination
+from app.domain.monetary import (
+    INDEPENDENT_SHARE_COUNT_FIELDS,
+    corroborate_denomination,
+)
 from app.domain.provenance import Provenance
+from app.domain.provider_identity import ProviderIdentityClaim, vendor_claim
 from app.domain.valuation_snapshot import ValuationSnapshot
 
 
@@ -77,19 +81,32 @@ class ValueProvider:
             # an input to the identity check, and a cap that does not
             # reconcile establishes nothing (monetary-comparison@1,
             # MARKET_CAP_DENOMINATION.md).
+            #
+            # The establishing set is the domain's fingerprinted
+            # membership — `sharesOutstanding` alone.
+            # `impliedSharesOutstanding` is excluded: no evidence in the
+            # provider boundary warrants it as a report independent of
+            # the market-cap claim, and the live corpus measured it
+            # reconstructing cap ÷ price to within 1.1e-7 for 64 of 64
+            # securities — an identity that cannot fail checks nothing
+            # (PR #143 amendment, MONETARY_COMPARISON.md §6).
             market_cap_denomination=corroborate_denomination(
                 cls._ratio(info.get("marketCap")),
                 cls._ratio(info.get("regularMarketPrice")),
                 tuple(
                     count
-                    for count in (
-                        cls._ratio(info.get("sharesOutstanding")),
-                        cls._ratio(info.get("impliedSharesOutstanding")),
-                    )
+                    for field in INDEPENDENT_SHARE_COUNT_FIELDS
+                    for count in (cls._ratio(info.get(field)),)
                     if count is not None
                 ),
                 cls._text(info.get("currency")),
             ),
+            # The vendor's own account of what this symbol is, recorded
+            # verbatim beside the figures it arrived with, so the
+            # cross-provider identity question (#134) can be asked of a
+            # stored record instead of only of a live payload. A claim,
+            # never a classification.
+            vendor_identity=cls._vendor_identity(info),
             eps=info.get("trailingEps", info.get("forwardEps")),
             circulating_supply=info.get("circulatingSupply"),
             max_supply=info.get("maxSupply"),
@@ -120,6 +137,23 @@ class ValueProvider:
             industry=cls._text(info.get("industry")),
             reading=reading,
         )
+
+    @classmethod
+    def _vendor_identity(cls, info: dict[str, Any]) -> ProviderIdentityClaim | None:
+        """The vendor's identity claim, or nothing where it makes none.
+
+        A payload carrying no name, no category token and no symbol
+        offers no account of what the instrument is, and an empty claim
+        stored beside the figures would read as the vendor having said
+        something.
+        """
+
+        claim = vendor_claim(cls._text(info.get("symbol")) or "", info)
+
+        if not (claim.symbol or claim.name or claim.taxonomy or claim.exchange):
+            return None
+
+        return claim
 
     @staticmethod
     def _ratio(value: object) -> float | None:

@@ -220,6 +220,103 @@ def test_identity_reading_is_carried_from_the_watchlist_item() -> None:
     assert facts.identity_reading is identity
 
 
+def test_a_stored_vendor_claim_reaches_the_magnitudes_identity() -> None:
+    """SPCX end to end: the #134 conflict survives storage and refusal.
+
+    The vendor's account is captured at acquisition and stored with the
+    snapshot; the join is derived here on read. With eToro naming the
+    symbol a company and the stored vendor claim naming it a fund, the
+    join is UNRESOLVED — and the magnitude stays out of the comparison
+    *even with an established USD denomination*, for a reason that
+    names identity rather than currency.
+    """
+
+    from app.domain.monetary import DenominationBasis, MarketCapDenomination
+    from app.domain.provider_identity import (
+        IdentityStanding,
+        ProviderIdentityClaim,
+    )
+    from app.services.quality_signal_service import (
+        ELIGIBLE_MARKET_CAP_WARRANTS,
+        QualitySignalService,
+    )
+
+    snapshot = ValuationSnapshot(
+        forward_pe=None,
+        trailing_pe=None,
+        peg_ratio=None,
+        dividend_yield=None,
+        market_cap=1_844_386_201_600.0,
+        market_cap_denomination=MarketCapDenomination(
+            currency="USD",
+            basis=DenominationBasis.CORROBORATED,
+            because="corroborated in test",
+        ),
+        vendor_identity=ProviderIdentityClaim(
+            provider="Yahoo Finance",
+            symbol="SPCX",
+            name="SPAC and New Issue ETF",
+            taxonomy="ETF",
+        ),
+    )
+
+    item = WatchlistItem(
+        instrument_id=15618,
+        symbol="SPCX",
+        name="Space Exploration Technologies Corp",
+        asset_type_id=5,
+        asset_type_subcategory_id=0,
+        exchange_id=4,
+        rank=1,
+        avatar_url=None,
+    )
+
+    service = CompanyFactsService(
+        market_provider=StubMarketProvider(),  # type: ignore[arg-type]
+        valuation_provider=StubValuationProvider(snapshot),  # type: ignore[arg-type]
+        earnings_provider=StubEarningsProvider(),  # type: ignore[arg-type]
+    )
+
+    facts = asyncio.run(service.build(item))
+
+    magnitude = facts.market_cap_magnitude
+
+    assert magnitude is not None
+    assert magnitude.denomination_established
+    assert magnitude.identity is not None
+    assert magnitude.identity.standing is IdentityStanding.UNRESOLVED
+    assert not magnitude.comparable_with(
+        QualitySignalService.LARGE_CAP, ELIGIBLE_MARKET_CAP_WARRANTS
+    )
+
+    refusal = magnitude.refusal(
+        ELIGIBLE_MARKET_CAP_WARRANTS, QualitySignalService.LARGE_CAP
+    )
+
+    assert "identity" in refusal
+    assert "currency" not in refusal
+
+
+def test_a_record_without_a_vendor_claim_joins_as_assumed() -> None:
+    """A pre-capture record rests on the broker's claim alone.
+
+    The join says so — assumed, not corroborated and not unresolved —
+    which keeps every pre-amendment record exactly as eligible as it
+    was, and no more.
+    """
+
+    from app.domain.provider_identity import IdentityStanding
+
+    facts = make_facts(make_snapshot())
+
+    magnitude = facts.market_cap_magnitude
+
+    assert magnitude is not None
+    assert magnitude.identity is not None
+    assert magnitude.identity.standing is IdentityStanding.ASSUMED
+    assert magnitude.identity_authorised
+
+
 def test_a_stale_identity_ages_the_whole_object() -> None:
     """
     A last-known identity is part of the evidence, and dates it.
