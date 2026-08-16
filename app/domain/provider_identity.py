@@ -31,6 +31,7 @@ whichever source the code happens to read first.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
@@ -285,14 +286,26 @@ def vendor_claim(symbol: str, info: dict[str, Any]) -> ProviderIdentityClaim:
 
 
 def _forms(name: str | None) -> frozenset[str]:
-    """Which instrument-form words a provider's name carries."""
+    """Which instrument-form words a provider's name carries.
+
+    Matched as **words**, never substrings — the lesson #110's
+    validator learned when `sent` matched inside *absent* and
+    *present*, relearned here after a measurement: `etf` matches
+    inside n**etf**lix, so a substring rule read *"Netflix, Inc."*
+    as a fund on both providers' side and manufactured a corroborated
+    join out of an accident of spelling. Measured over the live book:
+    NFLX was the only accidental hit, and the only join the word rule
+    moves — corroborated → assumed, which both pass every gate, so
+    the repair is decision-neutral and the manufactured *reason* is
+    what it removes.
+    """
 
     if not name:
         return frozenset()
 
-    lowered = name.casefold()
+    tokens = frozenset(re.findall(r"[a-z]+", name.casefold()))
 
-    return frozenset(form for form in _INSTRUMENT_FORMS if form in lowered)
+    return frozenset(form for form in _INSTRUMENT_FORMS if form in tokens)
 
 
 def join_identity(

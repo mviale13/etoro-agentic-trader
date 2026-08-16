@@ -130,3 +130,44 @@ class TestTheLiveConflict:
 
         assert identity.standing is IdentityStanding.CORROBORATED
         assert identity.establishes_identity
+
+
+class TestFormsAreWordsNotSubstrings:
+    """#110's boundary lesson, applied to the form lexer.
+
+    `etf` is a substring of n**etf**lix, so substring matching read
+    Netflix as a fund on both providers' side and *corroborated* the
+    join on a manufactured agreement — measured live as the corpus's
+    only accidental hit. A form is a word, and only a word.
+    """
+
+    def test_netflix_is_not_a_fund_on_either_side(self) -> None:
+        identity = CrossProviderIdentityService().identity(
+            "NFLX",
+            item=_item("NFLX", "Netflix, Inc."),
+            info={
+                "symbol": "NFLX",
+                "longName": "Netflix, Inc.",
+                "quoteType": "EQUITY",
+            },
+        )
+
+        # Honest, not manufactured: nothing in either name states a
+        # form, so nothing cross-checks the join.
+        assert identity.standing is IdentityStanding.ASSUMED
+
+    def test_a_hyphenated_form_word_still_counts(self) -> None:
+        """SE's live shape: 'Sea Ltd-ADR' states a form; 'Sea Limited'
+        does not — a stated form against silence stays unresolved."""
+
+        identity = CrossProviderIdentityService().identity(
+            "SE",
+            item=_item("SE", "Sea Ltd-ADR"),
+            info={
+                "symbol": "SE",
+                "longName": "Sea Limited",
+                "quoteType": "EQUITY",
+            },
+        )
+
+        assert identity.standing is IdentityStanding.UNRESOLVED
