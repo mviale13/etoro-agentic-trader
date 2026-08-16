@@ -29,6 +29,11 @@ class ValueSignalService:
             return ValueSignal(
                 valuation="UNKNOWN",
                 confidence=20,
+                # Not a gap in the evidence: a token or a fund has no
+                # earnings to be priced against, so this question leaves
+                # the decision's expected set rather than counting
+                # against its coverage.
+                applicable=not no_earnings,
                 evidence=(
                     Finding.neutral(
                         f"A {asset_class.noun} has no earnings to be priced against."

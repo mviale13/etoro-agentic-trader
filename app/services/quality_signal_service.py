@@ -114,6 +114,10 @@ class QualitySignalService:
             return QualitySignal(
                 quality="UNKNOWN",
                 confidence=20,
+                # The question does not apply, which is not the same as
+                # an unanswered one: it leaves the expected set instead
+                # of lowering coverage.
+                applicable=False,
                 evidence=(
                     Finding.neutral(
                         f"A {asset_class.noun} has no business quality to assess."

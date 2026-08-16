@@ -7,15 +7,13 @@ exhibit it.
 
 These tests state the invariant the owner set — *deleting their
 established LOW-quality evidence must never make the platform tell an
-investor a stronger positive story* — and they are marked
-`xfail(strict=True)` because the platform does not satisfy it yet.
+investor a stronger positive story*.
 
-The strictness is the point. When a kernel design lands and the
-invariant starts holding, these tests **fail for passing
-unexpectedly**, which forces whoever fixes it to come back here,
-delete the marker, and turn the specimens into ordinary regressions.
-A plain skip or a soft xfail would let the repair land silently and
-leave the six names untested afterwards.
+They were marked `xfail(strict=True)` while the kernel scored UNKNOWN
+as zero. `decision-authority@1` made them hold, the strictness failed
+the suite for passing unexpectedly, and the markers came off — which
+is exactly the handover the strictness existed to force. They are
+ordinary regressions now, and the six names stay pinned.
 """
 
 from __future__ import annotations
@@ -126,16 +124,6 @@ def test_the_specimens_read_low_quality_and_hold(
     assert _recommendation(facts) == "HOLD"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "EVIDENCE_DELETION_AUDIT.md: the vote scores UNKNOWN as 0, so "
-        "deleting an adverse signal is scored better than keeping it. "
-        "When a kernel design fixes this, these pass — and strict xfail "
-        "then fails the suite, which is the prompt to delete this "
-        "marker and keep the six as ordinary regressions."
-    ),
-)
 @pytest.mark.parametrize(
     ("symbol", "forward_pe", "market_cap", "eps", "dividend_yield"),
     SPECIMENS,
@@ -148,12 +136,16 @@ def test_forgetting_low_quality_never_tells_a_stronger_positive_story(
     eps: float | None,
     dividend_yield: float | None,
 ) -> None:
-    """The owner's invariant, stated as the target rather than as today.
+    """The owner's invariant, now an ordinary regression.
 
     Deleting *established* adverse evidence — a quality band the
     platform genuinely read as LOW — must never move the
-    investor-facing recommendation up the positivity scale. Today it
-    moves HOLD to BUY for all six.
+    investor-facing recommendation up the positivity scale.
+
+    These were `xfail(strict=True)` while the kernel scored UNKNOWN as
+    zero. `decision-authority@1` made them pass, the strictness failed
+    the suite for passing unexpectedly, and the marker came off here —
+    which is the handover the strictness existed to force.
     """
 
     facts = _facts(symbol, forward_pe, market_cap, eps, dividend_yield)

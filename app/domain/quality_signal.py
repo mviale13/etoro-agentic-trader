@@ -39,3 +39,12 @@ class QualitySignal:
     #: — identity, never endorsement. None where nothing was banded: an
     #: UNKNOWN produced by absence had no meaning assigned at all.
     rule: DecisionRule | None = None
+
+    #: Whether this question applies to the security at all.
+    #:
+    #: False only where the platform positively knows it does not — a
+    #: fund has no earnings to be priced against. Distinct from an
+    #: UNKNOWN band, which means the question applies and the answer is
+    #: not established: the first leaves the decision's expected set,
+    #: the second stays in it and lowers coverage.
+    applicable: bool = True

@@ -239,6 +239,23 @@ PORTFOLIO_FIT = _interprets("portfolio-fit", RuleStatus.UNSOURCED, _AUDIT)
 #: BUY/HOLD/SELL.
 SIGNAL_VOTE = _governs("signal-vote", RuleStatus.UNSOURCED, _AUDIT)
 
+#: Whether a computed direction may be acted on: every applicable
+#: signal established, and at least two of them expressing a reading.
+#:
+#: A rule apart from `signal-vote` because it answers a different
+#: question — the vote says what the evidence points at, this says
+#: whether enough of the expected evidence is in hand to act. The
+#: weights and the BUY/SELL thresholds are untouched by it.
+DECISION_AUTHORITY = _governs(
+    "decision-authority",
+    RuleStatus.ARGUED,
+    "argued in DECISION_KERNEL_ALGEBRA.md (#138): measured over 64 "
+    "readings, relative coverage below 1.00 lets a deletion still "
+    "reach a decisive call, and relative coverage alone makes a fund "
+    "actionable on one signal because a one-signal expected set is "
+    "100% covered by construction — so the two gates are independent",
+)
+
 #: The nine ordered gates and the policy thresholds they read.
 DECISION_GATES = _governs("decision-gates", RuleStatus.UNSOURCED, _AUDIT)
 
@@ -272,6 +289,7 @@ DECISION_RULES: dict[str, DecisionRule] = {
         EVIDENCE_SCORE,
         PORTFOLIO_FIT,
         SIGNAL_VOTE,
+        DECISION_AUTHORITY,
         DECISION_GATES,
         CONVICTION_MEAN,
         ACTIONABLE_BUY,
