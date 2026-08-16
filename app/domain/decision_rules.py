@@ -180,6 +180,25 @@ QUALITY_GROUNDED = _interprets(
 #: One day's price change → BULLISH/NEUTRAL/BEARISH.
 MOMENTUM_BANDS = _interprets("momentum-bands", RuleStatus.UNSOURCED, _AUDIT)
 
+#: Which provider translations Momentum will read as a price move at
+#: all — the eligibility question, upstream of the bands.
+#:
+#: **A separate rule rather than momentum-bands@2**, because the two
+#: are independently evolvable and conflating them would misdescribe
+#: what changed: the bands did not move, and re-versioning them would
+#: claim they had. Admitting a warrant and moving a threshold are
+#: different acts with different evidence, and each must be able to
+#: happen without implying the other.
+MOMENTUM_INPUT_ELIGIBILITY = _interprets(
+    "momentum-input-eligibility",
+    RuleStatus.ARGUED,
+    "argued in momentum_signal_service.py: a daily change is a ratio "
+    "over two closes of one series and is invariant under any linear "
+    "rescaling of it, so the unit and currency an ASSUMED warrant "
+    "leaves open cannot corrupt this quantity — while UNKNOWN, which "
+    "leaves the reading's identity unsettled, is refused",
+)
+
 #: The vote's strength → the recommendation's confidence.
 VOTE_CONFIDENCE = _interprets("vote-confidence", RuleStatus.UNSOURCED, _AUDIT)
 
@@ -227,6 +246,7 @@ DECISION_RULES: dict[str, DecisionRule] = {
         PROVIDER_QUALITY,
         QUALITY_GROUNDED,
         MOMENTUM_BANDS,
+        MOMENTUM_INPUT_ELIGIBILITY,
         VOTE_CONFIDENCE,
         COGNITIVE_CONFIDENCE,
         EVIDENCE_SCORE,

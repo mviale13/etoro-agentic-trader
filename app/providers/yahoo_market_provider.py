@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from math import isfinite, sqrt
 from typing import Any
 
@@ -268,6 +268,12 @@ class YahooMarketProvider:
                 2,
             ),
             change_absence=change_absence,
+            # The closing series' own last date, which this adapter
+            # previously read for alignment and threw away. It is the
+            # only evidence that can tell a move made today from a
+            # Friday close read on a Sunday, and without it the
+            # momentum sentence claimed "today" for both.
+            session_date=YahooMarketProvider._session_date(closes),
             # The provider does report a currency for the listing; this
             # adapter does not read it, and writes the same word for
             # every instrument. Left exactly as it was — repairing it
@@ -286,6 +292,25 @@ class YahooMarketProvider:
                 observed_at=datetime.now(UTC),
             ),
         )
+
+    @staticmethod
+    def _session_date(closes: Any) -> date | None:
+        """The date of the last close, if the series carries one.
+
+        Read from the index the provider already supplies. Nothing is
+        inferred: a series whose index is not dated yields `None`, and
+        the momentum sentence then declines to name a session rather
+        than guessing one.
+        """
+
+        try:
+            stamp = closes.index[-1]
+        except (AttributeError, IndexError):
+            return None
+
+        moment = getattr(stamp, "date", None)
+
+        return moment() if callable(moment) else None
 
     @staticmethod
     def _download_closes(yahoo_symbol: str) -> Any:

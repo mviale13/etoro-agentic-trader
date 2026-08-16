@@ -3,8 +3,11 @@ from typing import Protocol
 
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
+from app.domain.daily_change import ChangeBasis, DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
 from app.domain.market_snapshot import MarketQuote
+from app.domain.provider_translation import TranslationWarrant
+from app.domain.provider_translations import governed
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
@@ -140,6 +143,12 @@ class CompanyFactsService:
             # Market
             current_price=quote.price if quote is not None else None,
             daily_change_pct=(quote.change_percent if quote is not None else None),
+            # The same move, carrying whether it was measured, under
+            # which warrant, and over which session. Momentum reads
+            # this; `daily_change_pct` above stays for every other
+            # caller and is filled from the same quote, so the two
+            # cannot disagree.
+            daily_change=self._daily_change(quote),
             market_cap=(
                 tokens.established_value("market_cap")
                 if tokens is not None
@@ -228,6 +237,55 @@ class CompanyFactsService:
             # Classification
             sector=valuation.sector if has_company else None,
             industry=valuation.industry if has_company else None,
+        )
+
+    @staticmethod
+    def _daily_change(quote: MarketQuote | None) -> DailyChange | None:
+        """The quote's move, with what is established about it.
+
+        Three facts are carried through rather than collapsed: whether
+        anything was measured (the quote now says), the warrant the
+        registry holds for this crossing, and which session the closes
+        actually cover.
+
+        The session is decided by comparing the last close's own date
+        with the date the reading was taken — the only two dates in
+        hand. No trading calendar is consulted: an equal pair
+        establishes *today*, an earlier close establishes *the last
+        session*, and a missing date on either side establishes
+        neither.
+        """
+
+        if quote is None:
+            return None
+
+        translation = governed("MarketQuote.change_percent")
+
+        warrant = (
+            translation.warrant
+            if translation is not None
+            else TranslationWarrant.UNKNOWN
+        )
+
+        if quote.change_absence is not None:
+            return DailyChange.unmeasured(quote.change_absence, warrant=warrant)
+
+        read_on = (
+            quote.reading.observed_at.date() if quote.reading is not None else None
+        )
+
+        if quote.session_date is None or read_on is None:
+            basis = ChangeBasis.UNKNOWN_SESSION
+        elif quote.session_date == read_on:
+            basis = ChangeBasis.SAME_SESSION
+        else:
+            basis = ChangeBasis.LAST_AVAILABLE_SESSION
+
+        return DailyChange.measured(
+            quote.change_percent,
+            warrant=warrant,
+            basis=basis,
+            session_date=quote.session_date,
         )
 
     async def _valuation(

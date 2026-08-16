@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.domain.daily_change import DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
 from app.domain.market_sensitivity import MarketSensitivity
 from app.domain.provenance import Provenance, oldest
@@ -50,6 +51,17 @@ class CompanyFacts:
     # Market
     current_price: float | None = None
     daily_change_pct: float | None = None
+
+    #: The same move, carrying what is established about it: whether it
+    #: was measured at all, the warrant behind the translation, and
+    #: which session it covers. Authoritative where the acquisition
+    #: supplied one; `daily_change_pct` is the legacy float beside it,
+    #: kept because twenty callers construct it directly and because a
+    #: caller writing a bare number *is* asserting a measured change.
+    #:
+    #: The two never disagree on the live path — `CompanyFactsService`
+    #: fills both from one quote — and a guard test asserts it.
+    daily_change: "DailyChange | None" = None
     market_cap: float | None = None
 
     # Risk, measured from the observed price history rather than assumed.
