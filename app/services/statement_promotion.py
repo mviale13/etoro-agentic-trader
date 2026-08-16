@@ -9,40 +9,102 @@ surgery the briefs forbid. So validated evidence sat reachable by
 nobody, one `/tmp` sweep from being a re-spend.
 
 Promotion is the missing verb, and it is deliberately narrow: **moving
-existing evidence between stores, never creating it.** What may travel
-is a `FinancialStatementObservation` the ordinary acquisition pipeline
-already produced — decoded by the store's own codec, schema-gated by the
-store's own version rule, appended through the store's own door. This
-module contains no extractor, no provider, no model seam, and no notion
-of what any observation is worth: `tests/test_statement_promotion.py`
-pins that no analytical name appears in its syntax tree, because the one
+existing evidence between stores, never creating it.** This module
+contains no extractor, no provider, no model seam, and no notion of what
+any observation is worth: `tests/test_statement_promotion.py` pins that
+no analytical name appears in its syntax tree, because the one
 corruption promotion must be incapable of is choosing evidence for the
 answer it would produce.
 
-What travels, travels whole. Facts, anchors, rows, periods, the reading
-provenance with its timestamp, the source identity — the decoded
-dataclass is appended as decoded, and the fidelity test asserts the
-round trip is equality. An observation equal in every field to one the
-target already holds is skipped, deterministically and reported; a file
-another schema wrote, or that decodes to nothing, is refused whole with
-the reason worded. The source artifact is opened read-only and never
-rewritten, whatever happens on the target side.
+## Same schema is not same contract
+
+The first cut of this module gated on `STATEMENT_SCHEMA_VERSION` alone,
+and BQ16's own measurement refuted it: schema 3 contains observations
+produced under materially different semantic contracts. A BQ8 reading of
+Coca-Cola recorded *"no figure located for total_revenue"* under a
+vocabulary that refused `Net Operating Revenues`; BQ11 widened the
+vocabulary by exactly that form, under no schema bump; five later
+readings of the same filing locate the figure. Both decode identically.
+Pooling them makes a contract difference vote as a disagreement —
+measured: the one stale absence turns an honest 5-vs-5 tie into a
+6-of-11 settled absence.
+
+So deserialization is admission to *inspection*, never to a consensus.
+An observation is appendable only when its compatibility with today's
+contract is **proven**, and the proof has two parts:
+
+- **What the record itself can prove.** A located anchor's label is
+  checkable against today's `matches_concept` — a label today's
+  vocabulary refuses is a claim today's contract would not accept.
+- **What only testimony can prove.** An *absence* — "no figure located
+  for X" — is a claim about the producing vocabulary, and the record
+  does not carry which vocabulary that was. A promotion manifest beside
+  the artifacts records an operator's evidence-backed ruling: the
+  artifact's hash, and per concept the fingerprint of the vocabulary it
+  was produced under. An absence is compatible only where that
+  fingerprint equals today's for that concept; the historical record is
+  never retro-stamped — the manifest is a ruling *about* it, tied to
+  its bytes.
+
+Anything unproven is refused. That is the default the whole platform
+runs on: not knowing is never treated as knowing.
 """
 
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from enum import StrEnum
+from hashlib import sha256
 from pathlib import Path
 
 from app.domain.financial_statements import (
     FinancialStatementObservation,
     StatementKind,
+    concept_vocabulary_fingerprint,
+    matches_concept,
 )
 from app.repositories.financial_statement_store import (
     STATEMENT_SCHEMA_VERSION,
     JsonFinancialStatementStore,
 )
+
+#: The operator's compatibility rulings, beside the artifacts they rule.
+MANIFEST_NAME = "promotion-manifest.json"
+
+
+class ImportRuling(StrEnum):
+    """What the importer may do with one observation, and why."""
+
+    #: Proven compatible with today's contract, and not already held.
+    COMPATIBLE = "compatible"
+
+    #: Equal in every field to an observation the target already holds.
+    DUPLICATE = "duplicate"
+
+    #: Proven incompatible: a located label today's vocabulary refuses,
+    #: or an absence produced under a vocabulary that differs from
+    #: today's for that concept.
+    INCOMPATIBLE = "incompatible"
+
+    #: Nothing proves compatibility either way. Refused, by default:
+    #: not knowing is not knowing.
+    UNPROVEN = "compatibility unproven"
+
+
+@dataclass(frozen=True, slots=True)
+class ObservationRuling:
+    """One observation's import ruling, carried with its identity."""
+
+    statement: StatementKind
+    position: int
+    observed_at: str
+
+    ruling: ImportRuling
+    because: str | None = None
+
+    #: The located figures, for the dry-run listing.
+    located: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,17 +116,12 @@ class ArtifactPlan:
     symbol: str | None
     key: str | None
 
-    #: Observations the target does not hold, in the source's own order.
-    new: tuple[FinancialStatementObservation, ...] = ()
-
-    #: Observations equal in every field to one already in the target.
-    duplicates: int = 0
+    rulings: tuple[ObservationRuling, ...] = ()
 
     refused_because: str | None = None
 
-    @property
-    def importable(self) -> bool:
-        return self.refused_because is None and bool(self.new)
+    def counted(self, ruling: ImportRuling) -> int:
+        return sum(1 for ruled in self.rulings if ruled.ruling is ruling)
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,6 +138,7 @@ class StatementPromotion:
     def __init__(self, source_directory: Path, target_directory: Path) -> None:
         self._source_directory = Path(source_directory)
         self._target = JsonFinancialStatementStore(Path(target_directory))
+        self._manifest = self._read_manifest()
 
     def plan(self) -> tuple[ArtifactPlan, ...]:
         """Every artifact in the source, and what promoting it would do.
@@ -92,25 +150,37 @@ class StatementPromotion:
         return tuple(
             self._plan_artifact(path)
             for path in sorted(self._source_directory.glob("*.json"))
+            if path.name != MANIFEST_NAME
         )
 
     def apply(self) -> PromotionOutcome:
-        """Append every importable observation through the ordinary door.
+        """Append every proven-compatible observation through the ordinary door.
 
-        The plan is recomputed at apply time and duplicates are
-        re-checked against the growing target, so promoting a source
-        that holds the same observation twice appends it once — the
-        deterministic answer, not an error.
+        The plan is recomputed at apply time and duplicates re-checked
+        against the growing target, so promoting a source that holds
+        the same observation twice appends it once — the deterministic
+        answer, not an error.
         """
 
         plans = []
         appended = 0
 
         for path in sorted(self._source_directory.glob("*.json")):
+            if path.name == MANIFEST_NAME:
+                continue
+
             plan = self._plan_artifact(path)
             plans.append(plan)
 
-            for observation in plan.new:
+            if plan.refused_because is not None:
+                continue
+
+            observations = self._decode(path, plan.symbol or "", plan.key or "")
+
+            for ruled, observation in zip(plan.rulings, observations, strict=True):
+                if ruled.ruling is not ImportRuling.COMPATIBLE:
+                    continue
+
                 if self._held(observation, plan.key or ""):
                     continue
 
@@ -123,8 +193,9 @@ class StatementPromotion:
 
     def _plan_artifact(self, path: Path) -> ArtifactPlan:
         try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            raw = path.read_bytes()
+            payload = json.loads(raw.decode("utf-8"))
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
             return ArtifactPlan(
                 path=path,
                 symbol=None,
@@ -163,15 +234,26 @@ class StatementPromotion:
                 ),
             )
 
-        source_store = JsonFinancialStatementStore(path.parent)
+        ruled_under = self._manifest.get(path.name)
 
-        decoded = tuple(
-            observation
-            for kind in StatementKind
-            for observation in source_store.read(symbol, key, kind)
-        )
+        if ruled_under is not None:
+            recorded = str(ruled_under.get("sha256", ""))
 
-        if not decoded:
+            if recorded != sha256(raw).hexdigest():
+                return ArtifactPlan(
+                    path=path,
+                    symbol=symbol,
+                    key=key,
+                    refused_because=(
+                        "the artifact does not match the manifest's hash — "
+                        "it changed after the compatibility ruling, so the "
+                        "ruling no longer speaks for it"
+                    ),
+                )
+
+        observations = self._decode(path, symbol, key)
+
+        if not observations:
             return ArtifactPlan(
                 path=path,
                 symbol=symbol,
@@ -182,18 +264,129 @@ class StatementPromotion:
                 ),
             )
 
-        new = tuple(
-            observation
-            for observation in decoded
-            if not self._held(observation, key)
+        rulings = tuple(
+            self._rule(observation, position, key, ruled_under)
+            for position, observation in enumerate(observations)
         )
 
-        return ArtifactPlan(
-            path=path,
-            symbol=symbol,
-            key=key,
-            new=new,
-            duplicates=len(decoded) - len(new),
+        return ArtifactPlan(path=path, symbol=symbol, key=key, rulings=rulings)
+
+    def _rule(
+        self,
+        observation: FinancialStatementObservation,
+        position: int,
+        key: str,
+        ruled_under: dict[str, object] | None,
+    ) -> ObservationRuling:
+        """One observation against today's contract, worst answer first."""
+
+        located = ", ".join(
+            f"{fact.concept.value}={fact.anchor.printed}"
+            for fact in observation.facts
+            if fact.anchor is not None
+        )
+
+        def ruled(
+            ruling: ImportRuling, because: str | None = None
+        ) -> ObservationRuling:
+            return ObservationRuling(
+                statement=observation.statement,
+                position=position,
+                observed_at=observation.reading.observed_at.isoformat(),
+                ruling=ruling,
+                because=because,
+                located=located,
+            )
+
+        if self._held(observation, key):
+            return ruled(ImportRuling.DUPLICATE)
+
+        # What the record itself proves: a located label today's
+        # vocabulary refuses is a claim today's contract would not make.
+        for fact in observation.facts:
+            if fact.anchor is None:
+                continue
+
+            if not matches_concept(fact.concept, fact.anchor.label):
+                return ruled(
+                    ImportRuling.INCOMPATIBLE,
+                    because=(
+                        f"the reading locates {fact.concept.value} on the "
+                        f"label {fact.anchor.label!r}, which today's "
+                        "vocabulary does not accept"
+                    ),
+                )
+
+        # What only testimony proves: which vocabulary an absence was
+        # produced under. No ruling, no entry, no fingerprint — refused.
+        absent = tuple(
+            fact.concept for fact in observation.facts if fact.anchor is None
+        )
+
+        if ruled_under is None:
+            return ruled(
+                ImportRuling.UNPROVEN,
+                because=(
+                    "no manifest entry rules this artifact's producing "
+                    "contract, and an observation's own record cannot prove "
+                    "which vocabulary its absences were read under"
+                ),
+            )
+
+        produced = ruled_under.get("produced_under")
+        fingerprints = produced if isinstance(produced, dict) else {}
+
+        for concept in absent:
+            recorded = fingerprints.get(concept.value)
+
+            if recorded is None:
+                return ruled(
+                    ImportRuling.UNPROVEN,
+                    because=(
+                        f"the manifest records no producing vocabulary for "
+                        f"{concept.value}, whose absence this reading claims"
+                    ),
+                )
+
+            if recorded != concept_vocabulary_fingerprint(concept):
+                return ruled(
+                    ImportRuling.INCOMPATIBLE,
+                    because=(
+                        f"the reading records no figure for {concept.value} "
+                        "under a vocabulary that differs from today's for "
+                        "that concept, so the absence is a claim about a "
+                        "contract this platform no longer reads under"
+                    ),
+                )
+
+        return ruled(ImportRuling.COMPATIBLE)
+
+    # ── plumbing ────────────────────────────────────────────────────
+
+    def _read_manifest(self) -> dict[str, dict[str, object]]:
+        path = self._source_directory / MANIFEST_NAME
+
+        if not path.exists():
+            return {}
+
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
+
+        artifacts = payload.get("artifacts")
+
+        return artifacts if isinstance(artifacts, dict) else {}
+
+    def _decode(
+        self, path: Path, symbol: str, key: str
+    ) -> tuple[FinancialStatementObservation, ...]:
+        source_store = JsonFinancialStatementStore(path.parent)
+
+        return tuple(
+            observation
+            for kind in StatementKind
+            for observation in source_store.read(symbol, key, kind)
         )
 
     def _held(self, observation: FinancialStatementObservation, key: str) -> bool:

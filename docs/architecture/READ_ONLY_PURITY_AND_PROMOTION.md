@@ -151,84 +151,154 @@ observation does not become false evidence because the acquisition was
 accidental; the audit trail stands — it was acquired in violation of a
 read-only contract, BQ15 §10, and Part A is why it cannot recur.
 
-### 6. The operator — `movrvest statement-import`
+### 6. Same schema is not same contract — the amended gate
 
-```bash
-movrvest statement-import SOURCE_DIR [--into TARGET_DIR] [--apply]
-```
+The first cut of the importer gated on `STATEMENT_SCHEMA_VERSION`, and
+BQ16's own measurement refuted it: schema 3 contains observations
+produced under materially different semantic contracts, because
+`6c96ea0` widened `CONCEPT_LABELS` under no bump — exactly as `301cfdf`
+repaired the parser under one. **The missing identity is the vocabulary
+contract**: the schema says what a reading was shown and asked; nothing
+says which labels it was permitted to accept.
 
-Dry-run by default, listing per artifact: symbol, filing, each new
-observation with its statement, read-timestamp and located figures, and
-the exact duplicate count. `--apply` appends — through
-`JsonFinancialStatementStore.append`, the ordinary door, so append-only
-semantics and encoding are the store's own. Ordinary reads never import.
+**The contract identity built**: a deterministic **per-concept
+vocabulary fingerprint** — sha256 over the concept and its normalised,
+sorted accepted forms (`concept_vocabulary_fingerprint`, in the module
+that owns `CONCEPT_LABELS`). Per concept, not per vocabulary, because
+vocabulary moves one concept at a time: the *only* change in the whole
+schema-3 era is `TOTAL_REVENUE` (`ba55a427097938f3` before `6c96ea0`,
+`3cdbddd6a1fcf0e6` today, derived from the historical blob itself);
+every other concept is byte-identical across the era. Git commits were
+rejected as the identity — unrelated code changes would manufacture
+false incompatibility — and model name and timestamp identify nothing
+about interpretation. Two honest limits are stated in the docstring:
+`TOTAL_EQUITY`'s `names_its_own_equity` rule is code, not a constant;
+and parse behaviour is not fingerprinted, because an anchor is checkable
+against the immutable document (the statement audit's approach) — the
+vocabulary is the one axis neither in the schema nor checkable from the
+record.
 
-The promotion invariant, held structurally:
+**The reconciled evidence sets.** BQ16's 20-observation simulation =
+bq13's 15 + the bq11 artifact's 5 — and that artifact holds **both**
+BQ11's single reading (obs 0, 20:43Z) and BQ12's four (obs 1–4,
+21:04–21:05Z): one file, one producing contract, two experiment names.
+Nothing was withheld; the directory name obscured that BQ12 was already
+in both the simulation and the recommendation.
 
-| Requirement | How |
-|---|---|
-| already a valid observation from the normal pipeline | decoded by the store's own codec; anything else refuses whole |
-| provenance survives unchanged | the decoded dataclass is appended as decoded; round-trip **equality** is a test |
-| target accepts its schema | schema ≠ 3 → refused: *"a reading taken under another contract is re-observed, never imported"* |
-| source identity known | no symbol or no source key → refused |
-| nothing altered | source opened read-only, never rewritten (byte-compared in tests); existing target entries never rewritten |
-| duplicates deterministic | whole-dataclass equality — every fact, cell, timestamp, supersession state; skipped and reported; apply-twice appends zero |
-| never for the Quality result | the module's AST is pinned free of `band`, `score`, `quality_of`, `assess`, `statement_consensus_of`, … and of `observe`/`extract`/`fetch`/`resolve` calls |
+**The full compatibility table** — ruled without reading any Business
+Quality outcome:
 
-### 7–8. Validation on copies — supersession, then promotion, separately
+| Obs | Experiment | Read at (UTC) | Filing | Tree | Vocabulary | Compatible with main? | Ruling |
+|---|---|---|---|---|---|---|---|
+| ALL ×1 | BQ8 | 16 Aug 20:04:36 | `0000899051…031` | pre-`6c96ea0` (research/funded-recovery-baseline) | pre-widening | **PROVEN COMPATIBLE** — located labels accepted today; absences name only unchanged concepts | promote |
+| KO ×1 | BQ8 | 16 Aug 20:05:02 | `0001628280…047` | same | pre-widening | **PROVEN INCOMPATIBLE** — records *no figure for `total_revenue`* under the pre-widening vocabulary | refuse |
+| TSLA ×1 | BQ8 | 16 Aug 20:04:11 | `0001628280…952` | same | pre-widening | **PROVEN COMPATIBLE** — same grounds as BQ8 ALL | promote |
+| KO ×1 | BQ11 | 16 Aug 20:43:23 | `0001628280…047` | widened working tree, committed as `6c96ea0` | today's | **PROVEN COMPATIBLE** | promote |
+| KO ×4 | BQ12 | 16 Aug 21:04–21:05 | same | main `10f4904` | today's | **PROVEN COMPATIBLE** | promote |
+| ALL ×5 | BQ13 | 16 Aug 21:23–21:24 | `0000899051…031` | main `6d2fecc` | today's | **PROVEN COMPATIBLE** | promote |
+| TSLA ×5 | BQ13 | 16 Aug 21:23–21:24 | `0001628280…952` | same | today's | **PROVEN COMPATIBLE** | promote |
+| WMT ×5 | BQ13 | 16 Aug 21:23–21:25 | `0000104169…055` | same | today's | **PROVEN COMPATIBLE** | promote |
 
-Production copied to an isolated target; BQ15's supersession already in
-it; then `statement-import --apply` for bq13 and bq11. **20 observations
-appended; re-applying appends 0.** Production `data/statements`:
-untouched, `git status` clean.
+Nothing lands in COMPATIBILITY UNPROVEN: the evidence base is unusually
+strong, and it is evidence, not memory. **A located anchor proves its
+producing vocabulary accepted its label** — `matches_concept` gates
+extraction — so every bq11/bq12/bq13 observation proves its own
+contract through the anchors it carries; BQ8's own report is the
+*measured* proof its vocabulary
+refused that label (its negative control §5); and
+`git diff 9ed6d7d..HEAD` shows exactly one `CONCEPT_LABELS` change in
+the era, so every other concept's absence claims are era-invariant.
 
-| | active | superseded | answered | band |
-|---|---|---|---|---|
-| ALL | 5 → 10 | 5 | 0 → **3** | UNKNOWN → **HIGH 80** |
-| TSLA | 0 → 5 | 5 | 0 → **3** | UNKNOWN → **LOW 40** |
-| WMT | 5 → 10 | 5 | 0 → **2** | UNKNOWN → **LOW 40** |
-| KO | 5 → 10 | 0 | 0 → **0** | UNKNOWN → **UNKNOWN** |
-| the other 20 | unchanged | unchanged | unchanged | unchanged |
+**BQ11 and BQ12 receive the identical ruling, structurally.** Their five
+observations live in one artifact under one manifest entry; eligibility
+is a function of (observation, ruled contract, today's contract) and the
+module is AST-pinned unable to read a band, a score or a consensus — so
+withholding BQ12 for leaving KO tied is not merely forbidden, it is
+inexpressible. Pinned twice more in tests: two same-contract readings
+whose figures point opposite ways receive the same ruling, and the
+eligibility module names no analytical concept.
 
-**KO remains unsettled, and is reported rather than tuned.** Its five
-stale readings were deliberately not superseded (BQ15: absences are not
-audited), so `total_revenue` is a genuine 5-vs-5 dispute —
-`by_majority=False`, no anchor — while `gross_profit` and
-`operating_income` agree **10 of 10** across stale and fresh. Every
-margin needs the unsettled denominator, so KO answers 0 of 3.
+**Why BQ8's KO reading is incompatible, precisely**: before `6c96ea0`,
+`Net Operating Revenues` could not establish `TOTAL_REVENUE`; after it,
+that exact label can. BQ8-KO's *"no figure located for total_revenue"*
+was a true claim under its contract and is not a claim today's contract
+would make of the same filing — measured: pooled, it turns the honest
+5-vs-5 tie into a 6-of-11 settled absence. Its located facts
+(`Gross Profit`, `Operating Income`) are fine; an observation travels
+whole or not at all, so the observation is refused.
 
-**And the bq8 probes must stay archived, measured**: importing bq8's KO
-reading — taken *before* BQ11's vocabulary — makes the absence a
-**6-of-11 majority**, converting an honest tie into a settled *no figure
-located*. A pre-vocabulary reading outvoting five post-vocabulary
-readings is the contract-stale-absence defect BQ14 named, arriving
-through the import door. The operator moves what it is pointed at; it is
-pointed at bq11 and bq13.
+### 6b. The manifest, and how the importer refuses
 
-Simulated production, if the ruling authorises the real write:
-**HIGH 4 · MEDIUM 4 · LOW 3 · UNKNOWN 13** (from 3 · 4 · 1 · 16).
+The historical observations cannot retroactively carry a fingerprint
+they never had. The narrowest honest mechanism is the brief's own: a
+**promotion manifest** beside the artifacts
+(`promotion-manifest.json`), recording per artifact its **sha256**, the
+**per-concept fingerprints of the producing vocabulary**, and the
+**evidence** for that ruling (commits, the anchor proof, BQ8's negative
+control). The manifest is an operator ruling *about* the bytes, tied to
+them by hash — never a retro-stamp on the record.
+
+`movrvest statement-import` now rules **per observation**, worst answer
+first, and the dry run prints every ruling:
+
+| Ruling | When | Default |
+|---|---|---|
+| **duplicate** | equal in every field to a target observation | skipped |
+| **incompatible** | a located label today's vocabulary refuses (provable from the record alone), or an absence whose ruled producing fingerprint differs from today's for that concept | refused, worded |
+| **compatibility unproven** | no manifest, no entry, or a fingerprint missing for an absent concept | **refused — not knowing is not knowing** |
+| **compatible** | every located label accepted today, every absence ruled produced under today's vocabulary | appendable |
+| *(artifact-level)* refused | malformed, wrong schema, or **hash ≠ manifest** (the artifact changed after its ruling) | refused whole |
+
+An arbitrary same-schema store now imports **nothing**: deserialization
+is admission to inspection, never to a consensus.
+
+### 7–8. The complete, non-selective simulation
+
+Every surviving artifact through the same rule — bq8, bq11, bq13, no
+experiment chosen or skipped — against a copy of production carrying
+BQ15's supersession. Production untouched, `git status` clean.
+
+**Appended: 22.** bq8-ALL (1), bq8-TSLA (1), bq11-KO (5), bq13
+ALL/TSLA/WMT (15). **Refused: 1** — bq8-KO, *"the reading records no
+figure for total_revenue under a vocabulary that differs from today's
+for that concept."* Duplicates: 0. Unproven: 0. Re-applying appends 0.
+
+| | active | answered | band |
+|---|---|---|---|
+| ALL | 5 → **11** | 0 → 3 | UNKNOWN → **HIGH 80** — revenue 6/6 agreement across BQ8 and BQ13 readings |
+| TSLA | 0 → **6** | 0 → 3 | UNKNOWN → **LOW 40** — 6/6 |
+| WMT | 5 → **10** | 0 → 2 | UNKNOWN → **LOW 40** |
+| KO | 5 → **10** | 0 → 0 | UNKNOWN → **UNKNOWN** — `total_revenue` an honest 5-vs-5, `by_majority=False`; gross profit and operating income 10/10 |
+| other 20 | unchanged | unchanged | unchanged |
+
+**KO is UNKNOWN and UNKNOWN is accepted.** The tie is the true state of
+ten authoritative readings under one contract; the incompatible eleventh
+that would have "settled" it is exactly what the gate exists to refuse.
+
+Aggregate: **HIGH 4 · MEDIUM 4 · LOW 3 · UNKNOWN 13** (from 3 · 4 · 1 ·
+16).
 
 ### 9. Model readings avoided
 
-**20.** Re-earning these four quorums through `observe-statements`
-against the production root would cost 5 readings × 4 companies. KO's
-five are avoided spend too: its readings are valid and its blocker is
-the tie, which more readings of the same filing would not break — only
-the vocabulary limb (deferred) or superseding the stale absences would.
+**22 promoted without a model call.** Re-earning the same evidence
+through `observe-statements` would cost 20 readings (four quorums), and
+the two BQ8 probes would cost 2 more to reproduce.
 
 ### 10. The exact production write recommended next
 
-One command, twice, after the CTO's ruling — **not executed in BQ16**:
+Three commands, after the ruling — **not executed in BQ16**:
 
 ```bash
 movrvest statement-import data/experiments/statement-observations/bq13/statements --apply
 movrvest statement-import data/experiments/statement-observations/bq11/statements --apply
+movrvest statement-import data/experiments/statement-observations/bq8/statements --apply
 ```
 
-Expected, measured on the copy: 20 observations appended; ALL → HIGH 80,
-TSLA → LOW 40, WMT → LOW 40; KO → UNKNOWN with its tie on the record;
-bands HIGH 4 · MEDIUM 4 · LOW 3 · UNKNOWN 13; zero other companies
-moved. **bq8 is not imported.**
+Order is immaterial; each is idempotent. Expected, measured on the
+copy: 22 appended, bq8-KO refused with its reason printed, ALL → HIGH
+80, TSLA → LOW 40, WMT → LOW 40, KO → UNKNOWN with the tie on the
+record, bands HIGH 4 · MEDIUM 4 · LOW 3 · UNKNOWN 13, zero other
+companies moved.
 
 ## Recorded, not solved
 
@@ -241,6 +311,20 @@ moved. **bq8 is not imported.**
 - **The behavioural purity test covers `financials`**, the defective
   surface; the pure-read commands in §2 were classified by graph
   inspection, not each executed under traps.
+- **New observations still do not carry their producing fingerprints.**
+  The manifest solves transport for the historical corpus honestly; the
+  durable fix — stamping the vocabulary fingerprints on the observation
+  at acquisition, the `located_among` precedent again — belongs to the
+  acquisition path and is deliberately not smuggled into an importer
+  slice. Until it lands, every future isolated experiment needs a
+  manifest authored from repository evidence, exactly as these three
+  were.
+- **The manifest's trust boundary is the operator**, the same boundary
+  `--supersede` and `--apply` already stand on. The importer verifies
+  what a manifest can be checked for — hashes against bytes,
+  fingerprints against today's vocabulary — and takes the producing
+  fingerprints as the operator's evidence-backed testimony, which is
+  what the brief's "evidence-backed compatibility ruling" is.
 
 ## Scope compliance
 

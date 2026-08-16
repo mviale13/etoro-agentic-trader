@@ -2,11 +2,17 @@
 
 The operator half of promotion, and an explicit maintenance action like
 `statement-audit --supersede`: dry-run by default, listing exactly what
-would move; `--apply` is the write. Ordinary reads never import.
+would move and what is refused, per observation; `--apply` is the write.
+Ordinary reads never import.
 
 It never observes, never asks a model, never touches a provider, and
 never rewrites anything — the source is opened read-only, and the target
 only ever gains whole observations through the store's append door.
+Deserialization is admission to inspection, never to a consensus: an
+observation is appended only where its compatibility with today's
+semantic contract is proven, by its own located labels and by the
+promotion manifest's evidence-backed ruling on its absences. Anything
+unproven is refused and says so.
 """
 
 from __future__ import annotations
@@ -14,7 +20,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.infrastructure.evidence_root import evidence_path
-from app.services.statement_promotion import ArtifactPlan, StatementPromotion
+from app.services.statement_promotion import (
+    ArtifactPlan,
+    ImportRuling,
+    StatementPromotion,
+)
 
 
 class StatementImportCommand:
@@ -35,7 +45,7 @@ class StatementImportCommand:
         print(
             "Dry run; nothing is written."
             if not apply
-            else "Applying: new observations will be appended to the target."
+            else "Applying: proven-compatible observations will be appended."
         )
         print()
 
@@ -45,23 +55,26 @@ class StatementImportCommand:
         else:
             plans = promotion.plan()
 
-        importable = 0
+        compatible = 0
 
         for plan in plans:
             _render(plan)
-            importable += len(plan.new)
+            compatible += plan.counted(ImportRuling.COMPATIBLE)
 
         print()
 
         if apply:
             print(f"observations appended: {outcome.appended}")
-        elif importable:
+        elif compatible:
             print(
-                f"observations that would be appended: {importable}. "
+                f"observations that would be appended: {compatible}. "
                 "Nothing was written; re-run with --apply to append them."
             )
         else:
-            print("Nothing to append: the target already holds all of it.")
+            print(
+                "Nothing would be appended: everything is already held, "
+                "refused, or unproven."
+            )
 
         return 0
 
@@ -73,22 +86,27 @@ def _render(plan: ArtifactPlan) -> None:
         print(f"  {name}: REFUSED — {plan.refused_because}")
         return
 
-    print(
-        f"  {name}: {plan.symbol} {plan.key} — "
-        f"{len(plan.new)} new, {plan.duplicates} already held"
+    counts = "  ".join(
+        f"{ruling.value}={plan.counted(ruling)}"
+        for ruling in ImportRuling
+        if plan.counted(ruling)
     )
 
-    for observation in plan.new:
-        located = ", ".join(
-            f"{fact.concept.value}={fact.anchor.printed}"
-            for fact in observation.facts
-            if fact.anchor is not None
+    print(f"  {name}: {plan.symbol} {plan.key} — {counts or 'nothing decoded'}")
+
+    for ruled in plan.rulings:
+        line = (
+            f"      [{ruled.ruling.value}] {ruled.statement.value} "
+            f"read {ruled.observed_at}"
         )
-        print(
-            f"      {observation.statement.value} "
-            f"read {observation.reading.observed_at.isoformat()} — "
-            f"{located or 'no located figures'}"
-        )
+
+        if ruled.located:
+            line += f" — {ruled.located}"
+
+        print(line)
+
+        if ruled.because:
+            print(f"          {ruled.because}")
 
 
 def run(source: str, into: str | None, apply: bool) -> int:
