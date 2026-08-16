@@ -755,6 +755,63 @@ def cited_number(raw: dict[str, Any], named: str) -> float:
     return float(value)
 
 
+def historical_row(
+    table: SourceTable,
+    anchor: ReportedFigure,
+    row: int,
+) -> tuple[ReportedFigure, ...]:
+    """The dated cells of the row an existing reading already authorised.
+
+    The BQ7 boundary, and the whole of it. Two authorities are kept
+    apart and this function stands exactly between them:
+
+    - **the reading** establishes that row *R* of this table answers a
+      financial concept. Nothing here decides that, re-decides it, or
+      infers it from a label — the caller brings an anchor a reading
+      produced and `figure_at` already checked.
+    - **the parser** establishes that the same source row literally
+      prints values under named column headers. Nothing here asserts
+      what those values *mean*.
+
+    So the claim this function supports is narrow and literal: *the
+    document's row R prints these figures under these period headers*.
+    Promotion to a concept for a period stays with the layer that owns
+    concepts.
+
+    **Row identity is verified rather than assumed.** A stored anchor
+    addresses a row by index, and an index is only as stable as the
+    parse that produced it — this platform's own header detection has
+    already changed once, which is what left seven readings holding one
+    cell where the document prints three. So the row is accepted only
+    where the parser's label at that index is *exactly* the label the
+    reading recorded, and where the anchor's own figure is still found
+    on it. Anything else abstains and returns nothing: a missing prior
+    period is a smaller error than one attached to the wrong row.
+    """
+
+    if not table.header_row < row < len(table.rows):
+        return ()
+
+    if table.rows[row].label.strip() != anchor.label.strip():
+        # The index no longer names the row the reading read. Whether
+        # the parse moved or the document did, this is not that row.
+        return ()
+
+    figures = row_figures(table, row)
+
+    if not any(
+        math.isclose(
+            figure.value, anchor.value, rel_tol=_SAME_NUMBER, abs_tol=_SAME_NUMBER
+        )
+        for figure in figures
+    ):
+        # The row no longer carries the figure the reading anchored on,
+        # so the label matching is a coincidence rather than identity.
+        return ()
+
+    return figures
+
+
 def row_figures(table: SourceTable, row: int) -> tuple[ReportedFigure, ...]:
     """
     Every figure one row prints, read off the table by this platform.
