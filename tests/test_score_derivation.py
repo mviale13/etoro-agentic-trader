@@ -229,18 +229,39 @@ def test_the_band_is_exactly_what_it_was_before() -> None:
 
 
 def grounded(symbol: str):
-    """The dossier's own quality derivation for a corpus company."""
+    """The dossier's own quality derivation for a corpus company.
+
+    The statement corpus is named **explicitly**. Before BQ9 this
+    helper constructed the service with no arguments and the store
+    defaulted to the literal `data/statements`, so these three tests
+    read whatever the developer happened to have acquired — the exact
+    ambient-evidence trap #118 exists to remove, still live because
+    this store was the one it missed. `data/statements` is tracked in
+    git, so declaring it keeps the tests reading the same evidence in
+    CI as locally; what changes is that the read is now declared
+    rather than silent.
+    """
+
+    from pathlib import Path
 
     from app.application.executive.decision_evidence_builder import (
         DecisionEvidenceBuilder,
     )
     from app.domain.financial_question import FinancialModel
+    from app.repositories.financial_statement_store import (
+        JsonFinancialStatementStore,
+    )
     from app.services.business_quality_service import quality_of
     from app.services.company_understanding_service import (
         CompanyUnderstandingService,
     )
+    from app.services.financial_statement_service import FinancialStatementService
 
-    understanding = CompanyUnderstandingService().understanding(symbol)
+    corpus = FinancialStatementService(
+        store=JsonFinancialStatementStore(Path("data/statements"))
+    )
+
+    understanding = CompanyUnderstandingService(statements=corpus).understanding(symbol)
 
     quality = quality_of(symbol, understanding.financial, FinancialModel.GENERIC)
 

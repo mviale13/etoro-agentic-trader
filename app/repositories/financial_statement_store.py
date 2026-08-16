@@ -25,6 +25,7 @@ from app.domain.financial_statements import (
 )
 from app.domain.primary_source import PrimarySource
 from app.domain.provenance import Provenance
+from app.infrastructure.evidence_root import evidence_path
 from app.repositories.source_codec import (
     decode_figure,
     decode_source,
@@ -114,9 +115,25 @@ class JsonFinancialStatementStore(FinancialStatementStore):
 
     def __init__(
         self,
-        directory: Path | str = "data/statements",
+        directory: Path | str | None = None,
     ) -> None:
-        self.directory = Path(directory)
+        # The evidence root, asked for rather than assumed. This store
+        # named `data/statements` as a literal and was therefore the
+        # one #118 missed: `MOVRVEST_EVIDENCE_ROOT` redirected every
+        # cache and left this store reading the developer's real
+        # corpus, so the suite's isolation did not cover it and BQ8's
+        # experiment needed an explicit path to stay hermetic.
+        #
+        # Resolved *here* and never in the signature: a default
+        # evaluated at import would freeze the root before a test could
+        # redirect it, which is the same bug wearing a different hat —
+        # and is exactly what ruff caught in three stores during #118.
+        #
+        # An explicit path still wins, unchanged: a caller that says
+        # where its evidence lives is taken at its word.
+        self.directory = (
+            Path(directory) if directory is not None else evidence_path("statements")
+        )
 
     def read(
         self, symbol: str, key: str, statement: StatementKind
