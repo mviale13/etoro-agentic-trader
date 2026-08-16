@@ -16,10 +16,10 @@ semantic interpretation.
 | Warrant | Count | Means |
 |---|---|---|
 | Verified | 1 | checked against the provider or an independent source, and recorded with what was checked |
-| Assumed | 34 | the interpretation exists only in this platform's adapter code |
+| Assumed | 36 | the interpretation exists only in this platform's adapter code |
 | Unknown | 4 | provenance is insufficient to say why this mapping would be valid |
 
-Total governed crossings: **39**.
+Total governed crossings: **41**.
 
 ## The four questions
 
@@ -28,7 +28,7 @@ Total governed crossings: **39**.
 | Identity | What economic instrument does this record describe? | 2 |
 | Vocabulary | What does the provider's category or token mean? | 6 |
 | Unit | What representation is the value expressed in? | 5 |
-| Semantic | What concept does this field actually measure? | 29 |
+| Semantic | What concept does this field actually measure? | 31 |
 
 A crossing may answer more than one — `^TNX` needs a semantic and
 a unit translation on the same field — so these do not sum to the
@@ -47,6 +47,8 @@ total.
 | Yahoo Finance | `sharesOutstanding` | Ticker.info (merged) | MarketCapDenomination (corroboration input) | Semantic | Assumed | gates a decision |
 | Yahoo Finance | `Close (pair)` | yf.download | MarketQuote.change_percent | Unit, Semantic | Assumed | gates a decision |
 | Yahoo Finance | `dividendYield` | Ticker.info (merged) | ValuationSnapshot.dividend_yield | Unit, Semantic | Unknown | gates a decision |
+| Yahoo Finance | `trailingAnnualDividendRate` | Ticker.info (merged) | ValuationSnapshot.dividend_yield (stated zero) | Semantic | Assumed | gates a decision |
+| Yahoo Finance | `trailingAnnualDividendYield` | Ticker.info (merged) | ValuationSnapshot.dividend_yield (stated zero) | Semantic | Assumed | gates a decision |
 | Yahoo Finance | `trailingEps` | Ticker.info (merged) | ValuationSnapshot.eps | Semantic | Assumed | gates a decision |
 | Yahoo Finance | `forwardEps` | Ticker.info (merged) | ValuationSnapshot.eps (substituted) | Semantic | Unknown | gates a decision |
 | Yahoo Finance | `forwardPE` | Ticker.info (merged) | ValuationSnapshot.forward_pe | Semantic | Assumed | gates a decision |
@@ -96,36 +98,40 @@ is not a quantity.
 8. **MarketQuote.change_percent** — Yahoo Finance `Close (pair)`, assumed, gates a decision.
 9. **ValuationSnapshot.dividend_yield** — Yahoo Finance `dividendYield`, unknown, gates a decision.
    two provider schemas serve this key at two scales — quoteSummary as a fraction (0.0517), /v7/finance/quote as percentage points (5.17) — and the client library merges them, so which arrived depends on whether an HTTP call succeeded. No interpretation of the merged field is justified; measured over 77 stored records, 33 are percent-scale and 1 is a fraction.
-10. **ValuationSnapshot.eps** — Yahoo Finance `trailingEps`, assumed, gates a decision.
-11. **ValuationSnapshot.eps (substituted)** — Yahoo Finance `forwardEps`, unknown, gates a decision.
+10. **ValuationSnapshot.dividend_yield (stated zero)** — Yahoo Finance `trailingAnnualDividendRate`, assumed, gates a decision.
+   an amount per share rather than a yield, so only its zero is read — a zero rate and a zero yield are the same statement, while their positive values are different quantities and neither is this field's domain concept.
+11. **ValuationSnapshot.dividend_yield (stated zero)** — Yahoo Finance `trailingAnnualDividendYield`, assumed, gates a decision.
+   a trailing yield where `dividendYield` is forward-looking, so the two are not interchangeable and only the zero — which both spellings agree on — is consumed.
+12. **ValuationSnapshot.eps** — Yahoo Finance `trailingEps`, assumed, gates a decision.
+13. **ValuationSnapshot.eps (substituted)** — Yahoo Finance `forwardEps`, unknown, gates a decision.
    a forecast standing in for a realised figure under one field name. The substitution is decision-visible exactly where trailing and forward earnings differ in sign — the turnaround case — where a loss-making company earns the platform's positive-earnings point on an estimate.
-12. **ValuationSnapshot.forward_pe** — Yahoo Finance `forwardPE`, assumed, gates a decision.
-13. **ValuationSnapshot.market_cap** — Yahoo Finance `marketCap`, assumed, gates a decision.
-14. **YahooInstrument.yahoo_symbol** — Yahoo Finance `<symbol>`, assumed, gates a decision.
-15. **AssetClass** — eToro `assetTypeId`, assumed, selects which analysis runs.
-16. **AssetClass** — eToro `instrumentTypeID`, unknown, selects which analysis runs.
+14. **ValuationSnapshot.forward_pe** — Yahoo Finance `forwardPE`, assumed, gates a decision.
+15. **ValuationSnapshot.market_cap** — Yahoo Finance `marketCap`, assumed, gates a decision.
+16. **YahooInstrument.yahoo_symbol** — Yahoo Finance `<symbol>`, assumed, gates a decision.
+17. **AssetClass** — eToro `assetTypeId`, assumed, selects which analysis runs.
+18. **AssetClass** — eToro `instrumentTypeID`, unknown, selects which analysis runs.
    read through the same four-row table as the watchlist's assetTypeId, and nothing establishes that the two eToro endpoints share a codespace. The broker publishes a taxonomy endpoint that would declare it; nothing calls it.
-17. **ValuationSnapshot.industry** — Yahoo Finance `industry`, assumed, selects which analysis runs.
-18. **ValuationSnapshot.sector** — Yahoo Finance `sector`, assumed, selects which analysis runs.
-19. **ValuationSnapshot.current_ratio** — Yahoo Finance `currentRatio`, assumed, shapes research findings.
-20. **ValuationSnapshot.debt_to_equity** — Yahoo Finance `debtToEquity`, assumed, shapes research findings.
-21. **ValuationSnapshot.earnings_growth** — Yahoo Finance `earningsGrowth`, assumed, shapes research findings.
-22. **ValuationSnapshot.free_cash_flow** — Yahoo Finance `freeCashflow`, assumed, shapes research findings.
-23. **ValuationSnapshot.gross_margin** — Yahoo Finance `grossMargins`, assumed, shapes research findings.
-24. **ValuationSnapshot.net_margin** — Yahoo Finance `profitMargins`, assumed, shapes research findings.
-25. **ValuationSnapshot.operating_cash_flow** — Yahoo Finance `operatingCashflow`, assumed, shapes research findings.
-26. **ValuationSnapshot.operating_margin** — Yahoo Finance `operatingMargins`, assumed, shapes research findings.
-27. **ValuationSnapshot.revenue_growth** — Yahoo Finance `revenueGrowth`, assumed, shapes research findings.
-28. **MarketQuote.currency** — Yahoo Finance `<none — hardcoded>`, assumed, display only.
-29. **MarketQuote.price** — Yahoo Finance `Close`, assumed, display only.
-30. **MarketQuote.price (^TNX)** — Yahoo Finance `Close (^TNX)`, unknown, display only.
+19. **ValuationSnapshot.industry** — Yahoo Finance `industry`, assumed, selects which analysis runs.
+20. **ValuationSnapshot.sector** — Yahoo Finance `sector`, assumed, selects which analysis runs.
+21. **ValuationSnapshot.current_ratio** — Yahoo Finance `currentRatio`, assumed, shapes research findings.
+22. **ValuationSnapshot.debt_to_equity** — Yahoo Finance `debtToEquity`, assumed, shapes research findings.
+23. **ValuationSnapshot.earnings_growth** — Yahoo Finance `earningsGrowth`, assumed, shapes research findings.
+24. **ValuationSnapshot.free_cash_flow** — Yahoo Finance `freeCashflow`, assumed, shapes research findings.
+25. **ValuationSnapshot.gross_margin** — Yahoo Finance `grossMargins`, assumed, shapes research findings.
+26. **ValuationSnapshot.net_margin** — Yahoo Finance `profitMargins`, assumed, shapes research findings.
+27. **ValuationSnapshot.operating_cash_flow** — Yahoo Finance `operatingCashflow`, assumed, shapes research findings.
+28. **ValuationSnapshot.operating_margin** — Yahoo Finance `operatingMargins`, assumed, shapes research findings.
+29. **ValuationSnapshot.revenue_growth** — Yahoo Finance `revenueGrowth`, assumed, shapes research findings.
+30. **MarketQuote.currency** — Yahoo Finance `<none — hardcoded>`, assumed, display only.
+31. **MarketQuote.price** — Yahoo Finance `Close`, assumed, display only.
+32. **MarketQuote.price (^TNX)** — Yahoo Finance `Close (^TNX)`, unknown, display only.
    the value is a yield under the CBOE's times-ten convention (42.5 is 4.25%) entering a field named price, and the currency beside it is invented. Two translations on one field, neither of them checked; the representation is left unnamed because what it should be is exactly what is in dispute.
-31. **ValuationSnapshot.expense_ratio** — Yahoo Finance `netExpenseRatio`, assumed, display only.
-32. **ValuationSnapshot.circulating_supply** — Yahoo Finance `circulatingSupply`, assumed, consumed by nothing.
-33. **ValuationSnapshot.inception** — Yahoo Finance `startDate`, assumed, consumed by nothing.
-34. **ValuationSnapshot.max_supply** — Yahoo Finance `maxSupply`, assumed, consumed by nothing.
-35. **ValuationSnapshot.peg_ratio** — Yahoo Finance `pegRatio`, assumed, consumed by nothing.
-36. **ValuationSnapshot.return_on_equity** — Yahoo Finance `returnOnEquity`, assumed, consumed by nothing.
-37. **ValuationSnapshot.trailing_pe** — Yahoo Finance `trailingPE`, assumed, consumed by nothing.
-38. **ValuationSnapshot.volume_24h** — Yahoo Finance `volume24Hr`, assumed, consumed by nothing.
+33. **ValuationSnapshot.expense_ratio** — Yahoo Finance `netExpenseRatio`, assumed, display only.
+34. **ValuationSnapshot.circulating_supply** — Yahoo Finance `circulatingSupply`, assumed, consumed by nothing.
+35. **ValuationSnapshot.inception** — Yahoo Finance `startDate`, assumed, consumed by nothing.
+36. **ValuationSnapshot.max_supply** — Yahoo Finance `maxSupply`, assumed, consumed by nothing.
+37. **ValuationSnapshot.peg_ratio** — Yahoo Finance `pegRatio`, assumed, consumed by nothing.
+38. **ValuationSnapshot.return_on_equity** — Yahoo Finance `returnOnEquity`, assumed, consumed by nothing.
+39. **ValuationSnapshot.trailing_pe** — Yahoo Finance `trailingPE`, assumed, consumed by nothing.
+40. **ValuationSnapshot.volume_24h** — Yahoo Finance `volume24Hr`, assumed, consumed by nothing.
 

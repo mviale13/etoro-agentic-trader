@@ -73,7 +73,10 @@ class ValueProvider:
             forward_pe=info.get("forwardPE"),
             trailing_pe=info.get("trailingPE"),
             peg_ratio=info.get("pegRatio"),
-            dividend_yield=info.get("dividendYield"),
+            # A payer's yield as the provider serves it, or the
+            # provider's own explicit statement that nothing is paid.
+            # An omission is still an absence — see `_dividend_yield`.
+            dividend_yield=cls._dividend_yield(info),
             market_cap=info.get("marketCap"),
             # The cap's denomination, established from the payload's own
             # arithmetic where it can be, and absent where it cannot.
@@ -137,6 +140,59 @@ class ValueProvider:
             industry=cls._text(info.get("industry")),
             reading=reading,
         )
+
+    @classmethod
+    def _dividend_yield(cls, info: dict[str, Any]) -> float | None:
+        """What the provider says about this company's dividend, or nothing.
+
+        The defect this repairs, measured over the live corpus
+        (QUALITY_BOTTLENECK_AUDIT.md §4): **`dividendYield: 0` never
+        appears** — the provider represents non-payment by *omitting*
+        the field this adapter read, while stating the zero explicitly
+        in two fields it discarded. So every non-payer arrived as
+        *unread*, and `quality-authority@1` correctly refused to band a
+        business on a question it had not answered. 33 companies, 19 of
+        them blocked by nothing else.
+
+        The rule, and its two halves are not symmetric:
+
+        - **A served `dividendYield` wins, unchanged.** Its scale is
+          the #133 defect and is not touched here; this slice widens
+          what is *read*, not how a figure is interpreted.
+        - **An omitted `dividendYield` is read as zero only where the
+          provider states that zero itself** — `trailingAnnualDividendRate`
+          or `trailingAnnualDividendYield` explicitly present and equal
+          to zero. That is a provider statement, not an inference from
+          silence, which is the whole distinction: absence stays
+          absence (`None`), and only a *stated* zero becomes evidence.
+
+        Two guards the corpus forced. A **historical** dividend does
+        not contradict a current zero — ADBE serves
+        `lastDividendValue: 0.0065` from 2005 beside
+        `trailingAnnualDividendRate: 0.0`, and it is a non-payer today.
+        And where the two trailing fields **disagree** (one zero, one
+        positive), nothing is established: two statements of the same
+        fact that contradict each other are not a statement of zero.
+        """
+
+        served = cls._ratio(info.get("dividendYield"))
+
+        if served is not None:
+            return served
+
+        stated = tuple(
+            value
+            for value in (
+                cls._ratio(info.get("trailingAnnualDividendRate")),
+                cls._ratio(info.get("trailingAnnualDividendYield")),
+            )
+            if value is not None
+        )
+
+        if not stated or any(value != 0.0 for value in stated):
+            return None
+
+        return 0.0
 
     @classmethod
     def _vendor_identity(cls, info: dict[str, Any]) -> ProviderIdentityClaim | None:
