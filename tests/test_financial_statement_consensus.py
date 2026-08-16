@@ -124,7 +124,11 @@ def test_a_settled_absence_carries_its_modal_reason_with_the_count() -> None:
     assert fact is not None and fact.anchor is None
     assert fact.unlocated_because is not None
     assert "located no cell" in fact.unlocated_because
-    assert "2 of 3 observations" in fact.unlocated_because
+    # Readings of a filing, never "observations": the count is repeated
+    # attempts on one document, and the wording may not let it read as
+    # independent corroboration (BQ4, STATEMENT_GAP_TRUTHFULNESS.md).
+    assert "2 of 3 readings of one filing" in fact.unlocated_because
+    assert "observations" not in fact.unlocated_because
 
 
 def test_a_tie_settles_nothing_and_serves_its_distribution() -> None:
@@ -139,7 +143,8 @@ def test_a_tie_settles_nothing_and_serves_its_distribution() -> None:
 
     assert fact is not None and fact.anchor is None
     assert fact.unlocated_because is not None
-    assert "unsettled across 2 observations" in fact.unlocated_because
+    assert "unsettled across 2 readings" in fact.unlocated_because
+    assert "observations" not in fact.unlocated_because
     assert "162,878" in fact.unlocated_because
 
 

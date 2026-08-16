@@ -69,6 +69,36 @@ CONCEPT_WORDS: dict[StatementConcept, tuple[str, ...]] = {
         "loss from operations",
         "result from operations",
     ),
+    # Revenue and the bottom line, added after a measurement found the
+    # two concepts that most often blame a company were the two this
+    # table had no entry for — so their `NOT_PRINTED` could never be
+    # weakened, and the platform asserted that Coca-Cola prints no
+    # revenue line while its own reading had located a figure three
+    # rows below `Net Operating Revenues`
+    # (`PROFITABILITY_EVIDENCE_SEMANTICS.md`).
+    #
+    # `revenue` is bare on purpose, as `gross` already is: every label
+    # carrying the word names revenue of some kind, and a filer that
+    # prints revenue lines but no total this platform accepts is a
+    # filer this platform cannot claim prints none. The bottom-line
+    # forms are phrases rather than the bare word `income`, which would
+    # match every interest and fee line on a bank's statement and
+    # weaken the finding on evidence that has nothing to do with it.
+    StatementConcept.TOTAL_REVENUE: (
+        "revenue",
+        "turnover",
+        "net sales",
+        "total sales",
+    ),
+    StatementConcept.NET_INCOME: (
+        "net income",
+        "net earnings",
+        "net profit",
+        "net loss",
+        "profit for the",
+        "profit attributable",
+        "profit after tax",
+    ),
     StatementConcept.TOTAL_CURRENT_ASSETS: ("total current assets",),
     StatementConcept.TOTAL_CURRENT_LIABILITIES: ("total current liabilities",),
 }
