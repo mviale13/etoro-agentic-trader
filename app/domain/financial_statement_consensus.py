@@ -105,6 +105,16 @@ class FinancialStatementConsensus:
     #: The derivation, stated, dated to the newest observation.
     reading: Provenance
 
+    #: How many stored readings an offline audit found the filing itself
+    #: refutes, and which this consensus therefore did not count.
+    #:
+    #: Reported rather than subtracted in silence. A statement that
+    #: holds ten readings and counts five is a different fact from one
+    #: that only ever had five, and an investor reading "5 of 5" is
+    #: owed the difference. They are **superseded, not deleted**: every
+    #: one is still in the store, still dated, still attributable.
+    superseded_count: int = 0
+
     @property
     def is_quorate(self) -> bool:
         return self.state is ConsensusState.QUORATE
@@ -150,6 +160,31 @@ class FinancialStatementConsensus:
             "interpretation this platform has not established."
         )
 
+    def supersession_caveat(self) -> str | None:
+        """What a reader is owed about readings this consensus did not count.
+
+        Silent where nothing was superseded, because most statements
+        have nothing to say here. Where something was, it is said in
+        full: how many readings are held, how many were counted, and
+        that the rest were withdrawn rather than lost.
+        """
+
+        if not self.superseded_count:
+            return None
+
+        held = self.observation_count + self.superseded_count
+
+        return (
+            f"This filing holds {held} stored readings of this statement "
+            f"and {self.observation_count} of them carry authority. An "
+            f"offline audit found the filing itself refutes the other "
+            f"{self.superseded_count} — the figures were read from cells "
+            "the filer heads differently, or from rows it no longer "
+            "prints that way. Those readings are superseded rather than "
+            "deleted: each is still stored, still dated and still "
+            "attributable, and none of them is counted below."
+        )
+
     def fact(self, concept: StatementConcept) -> ConsensusFact | None:
         """The consensus on one concept, if any observation addressed it."""
 
@@ -171,6 +206,25 @@ class FinancialStatementConsensus:
         return self.source.stated()
 
 
+def authoritative(
+    observations: tuple[FinancialStatementObservation, ...],
+) -> tuple[FinancialStatementObservation, ...]:
+    """The readings that still carry a vote, in the order they were taken.
+
+    The door every caller of `statement_consensus_of` should knock on
+    first. A statement whose every reading an audit withdrew is a
+    statement this platform holds no *authoritative* account of — which
+    is an absence, worded like every other absence, and not an error.
+    Deriving a consensus over nothing would be the invented figure
+    invariant 1 forbids, and raising at a page would put a maintenance
+    action behind a page view.
+    """
+
+    return tuple(
+        observation for observation in observations if observation.is_active
+    )
+
+
 def statement_consensus_of(
     observations: tuple[FinancialStatementObservation, ...],
     quorum: int = QUORUM,
@@ -188,6 +242,27 @@ def statement_consensus_of(
     if not observations:
         raise ValueError("A consensus is derived over observations; none were given.")
 
+    # Authority is counted over the readings that still hold it. A
+    # superseded reading is not evidence that disagrees — it is evidence
+    # the filing refutes, and counting it would let the document's own
+    # contradiction vote. The withdrawn ones are carried as a number so
+    # the consensus can say what it did not count, never subtracted in
+    # silence, and never deleted: they remain in the store.
+    withdrawn = tuple(
+        observation for observation in observations if not observation.is_active
+    )
+    authoritative = tuple(
+        observation for observation in observations if observation.is_active
+    )
+
+    if not authoritative:
+        raise ValueError(
+            "Every stored reading of this statement was superseded by an "
+            "audit of the filing, so there is no consensus to derive. The "
+            "readings are still stored; observing the statement again is "
+            "what restores authority."
+        )
+
     keys = {observation.source.key for observation in observations}
 
     if len(keys) > 1:
@@ -204,17 +279,17 @@ def statement_consensus_of(
             f"observations were read from {len(kinds)}."
         )
 
-    count = len(observations)
+    count = len(authoritative)
 
     facts = tuple(
-        _fact_consensus(concept, observations, count)
-        for concept in _addressed(observations)
+        _fact_consensus(concept, authoritative, count)
+        for concept in _addressed(authoritative)
     )
 
     return FinancialStatementConsensus(
-        symbol=observations[0].symbol,
-        statement=observations[0].statement,
-        source=observations[0].source,
+        symbol=authoritative[0].symbol,
+        statement=authoritative[0].statement,
+        source=authoritative[0].source,
         observation_count=count,
         quorum=quorum,
         state=(
@@ -222,9 +297,10 @@ def statement_consensus_of(
             if count >= quorum
             else ConsensusState.INSUFFICIENT_QUORUM
         ),
-        located_among=max(observation.located_among for observation in observations),
+        located_among=max(observation.located_among for observation in authoritative),
         facts=facts,
-        reading=_reading(observations, count, quorum),
+        reading=_reading(authoritative, count, quorum),
+        superseded_count=len(withdrawn),
     )
 
 

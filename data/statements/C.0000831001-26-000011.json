@@ -68,7 +68,8 @@
         "observed_at": "2026-08-09T06:52:26.552018+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_interest_income: the filer heads $ 59,792 with '2025' and the reading recorded 'Years ended December 31,'"
     },
     {
       "facts": [
@@ -138,7 +139,8 @@
         "observed_at": "2026-08-09T06:52:38.049606+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_interest_income: the filer heads $ 59,792 with '2025' and the reading recorded 'Years ended December 31,'"
     },
     {
       "facts": [
@@ -208,7 +210,8 @@
         "observed_at": "2026-08-09T06:52:58.771863+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_interest_income: the filer heads $ 59,792 with '2025' and the reading recorded 'Years ended December 31,'"
     },
     {
       "facts": [
@@ -278,7 +281,8 @@
         "observed_at": "2026-08-09T06:53:08.751211+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_interest_income: the filer heads $ 59,792 with '2025' and the reading recorded 'Years ended December 31,'"
     },
     {
       "facts": [
@@ -348,7 +352,8 @@
         "observed_at": "2026-08-09T06:53:16.073654+00:00",
         "source": "10-K 0000831001-26-000011 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_interest_income: the filer heads $ 59,792 with '2025' and the reading recorded 'Years ended December 31,'"
     }
   ],
   "schema_version": 3,

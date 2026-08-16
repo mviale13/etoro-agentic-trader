@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -109,6 +111,24 @@ class FinancialStatementStore(ABC):
     ) -> tuple[FinancialStatementObservation, ...]:
         """This statement's observations of the most recent filing."""
 
+    @abstractmethod
+    def supersede(self, symbol: str, key: str, reasons: Mapping[int, str]) -> int:
+        """Record why numbered readings of this filing lost authority.
+
+        Addressed by position in the entry's own observation list,
+        which an append-only store makes stable: reading three is
+        reading three forever.
+
+        **Write-once.** A reading that already carries a reason keeps
+        the reason it was given; a second audit may not restate, soften
+        or clear it. That is what keeps this from becoming a general
+        write door onto stored evidence — the only transition it can
+        make is active to superseded, once, and the record of what the
+        reading found is never touched.
+
+        Returns how many readings this call newly superseded.
+        """
+
 
 class JsonFinancialStatementStore(FinancialStatementStore):
     """Statement observations on disk, one file per filing, kept indefinitely."""
@@ -161,6 +181,41 @@ class JsonFinancialStatementStore(FinancialStatementStore):
             encoding="utf-8",
         )
 
+    def supersede(self, symbol: str, key: str, reasons: Mapping[int, str]) -> int:
+        """Record why numbered readings of this filing lost authority."""
+
+        path = self._path(symbol, key)
+        existing = self._restore(path)
+
+        if not existing:
+            return 0
+
+        superseded = 0
+        rewritten: list[FinancialStatementObservation] = []
+
+        for position, observation in enumerate(existing):
+            reason = reasons.get(position)
+
+            if reason is None or not observation.is_active:
+                # Already superseded, or not named by this audit. Either
+                # way the stored reason stands: write-once, so a second
+                # audit cannot restate what the first concluded.
+                rewritten.append(observation)
+                continue
+
+            rewritten.append(
+                replace(observation, superseded_because=reason.strip())
+            )
+            superseded += 1
+
+        if superseded:
+            path.write_text(
+                json.dumps(self._encode(tuple(rewritten)), indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
+
+        return superseded
+
     def latest(
         self, symbol: str, statement: StatementKind
     ) -> tuple[FinancialStatementObservation, ...]:
@@ -206,6 +261,16 @@ class JsonFinancialStatementStore(FinancialStatementStore):
                 {
                     "statement": observation.statement.value,
                     "located_among": observation.located_among,
+                    # Written only where an audit set it, so a store of
+                    # entirely active readings encodes byte-identically
+                    # to one written before the field existed. An
+                    # absent key is the default and reads as authority
+                    # held, which is why no migration is needed.
+                    **(
+                        {"superseded_because": observation.superseded_because}
+                        if observation.superseded_because is not None
+                        else {}
+                    ),
                     "facts": [
                         {
                             "concept": fact.concept.value,
@@ -292,6 +357,14 @@ def _observation(
         # as "one contender". Upgrading it in place would be filling in
         # what the reading never captured.
         located_among=int(stored.get("located_among", 0)),
+        # Same rule, one field later: an entry no audit has ruled on
+        # carries nothing here and still holds its authority. Absence is
+        # the default rather than a claim that an audit cleared it.
+        superseded_because=(
+            str(stored["superseded_because"])
+            if stored.get("superseded_because")
+            else None
+        ),
         facts=tuple(
             StatementFact(
                 concept=StatementConcept(fact["concept"]),

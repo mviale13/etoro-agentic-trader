@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from app.domain.financial_statement_consensus import (
     FinancialStatementConsensus,
+    authoritative,
     statement_consensus_of,
 )
 from app.domain.financial_statements import StatementKind
@@ -106,7 +107,11 @@ class FinancialStatementService:
 
         observations = self._store.read(symbol, source.key, statement)
 
-        if observations:
+        # Held readings that still carry authority. A document whose
+        # every reading an audit withdrew has been read and is not
+        # *known*, so it is read again rather than served from a set
+        # that can no longer settle anything.
+        if authoritative(observations):
             return StatementOutcome(
                 state=KnowledgeState.AVAILABLE_CACHED,
                 statements=statement_consensus_of(observations),
@@ -200,7 +205,15 @@ class FinancialStatementService:
 
         refused: str | None = None
 
-        while len(self._store.read(symbol, source.key, statement)) < target:
+        # Counted over the readings that still carry authority, never
+        # over everything stored. The target is untouched — five is
+        # still five — but a superseded reading has no vote, so letting
+        # it fill the count would mean an audited statement could never
+        # be re-read and its authority never restored.
+        while (
+            len(authoritative(self._store.read(symbol, source.key, statement)))
+            < target
+        ):
             try:
                 observation = await self._extractor.extract(symbol, document, statement)
             except ExtractionRejected as rejected:
@@ -214,7 +227,11 @@ class FinancialStatementService:
 
         observations = self._store.read(symbol, source.key, statement)
 
-        if not observations:
+        if not authoritative(observations):
+            # Either nothing was ever read, or a refusal ended the run
+            # before it could replace what an audit withdrew. Both are
+            # "this statement has no authoritative account", and neither
+            # is a consensus.
             return StatementOutcome(
                 state=KnowledgeState.INVALID_EXTRACTION,
                 statements=None,
@@ -237,9 +254,11 @@ class FinancialStatementService:
         resolves the current filing and reads it where it is new, which
         must never sit behind a page view.
 
-        Returns only the statements this platform holds. A statement
-        absent from the mapping was never observed, which a consumer
-        reports as an absence rather than filling in.
+        Returns only the statements this platform holds *with authority*.
+        A statement absent from the mapping was never observed, or was
+        observed and withdrawn — two different absences, told apart by
+        `withdrawn`, and a consumer words whichever it is rather than
+        filling either in.
         """
 
         held = {}
@@ -252,11 +271,37 @@ class FinancialStatementService:
 
         return held
 
+    def withdrawn(self, symbol: str) -> dict[StatementKind, int]:
+        """Statements held only as readings an audit withdrew, and how many.
+
+        The other half of `established`, and the reason it exists is
+        truthfulness. *"No statement has been read"* and *"every reading
+        of it was superseded"* are different facts about this platform,
+        and a surface that could not tell them apart would report a
+        withdrawal as though the filing had never been opened.
+
+        Read-only, like its sibling: it asks the store and stops.
+        """
+
+        withheld = {}
+
+        for statement in StatementKind:
+            observations = self._store.latest(symbol, statement)
+
+            if observations and not authoritative(observations):
+                withheld[statement] = len(observations)
+
+        return withheld
+
     def _latest(
         self, symbol: str, statement: StatementKind
     ) -> FinancialStatementConsensus | None:
         """Consensus over the newest document's observations, if any."""
 
-        observations = self._store.latest(symbol, statement)
+        # Filtered before the consensus is asked for, because a
+        # statement whose every reading was superseded is one this
+        # platform holds no authoritative account of — an absence a
+        # surface words, not an error it raises.
+        observations = authoritative(self._store.latest(symbol, statement))
 
         return statement_consensus_of(observations) if observations else None

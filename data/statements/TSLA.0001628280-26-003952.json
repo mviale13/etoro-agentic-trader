@@ -140,7 +140,8 @@
         "observed_at": "2026-08-09T06:49:52.334593+00:00",
         "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 94,827 with '2025' and the reading recorded 'Year Ended December 31,'; gross_profit: the filer heads 17,094 with '2025' and the reading recorded 'Year Ended December 31,'; operating_income: the filer heads 4,355 with '2025' and the reading recorded 'Year Ended December 31,'; net_income: the filer heads 3,855 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -282,7 +283,8 @@
         "observed_at": "2026-08-09T06:49:56.432987+00:00",
         "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 94,827 with '2025' and the reading recorded 'Year Ended December 31,'; gross_profit: the filer heads 17,094 with '2025' and the reading recorded 'Year Ended December 31,'; operating_income: the filer heads 4,355 with '2025' and the reading recorded 'Year Ended December 31,'; net_income: the filer heads 3,855 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -424,7 +426,8 @@
         "observed_at": "2026-08-09T06:49:59.981044+00:00",
         "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 94,827 with '2025' and the reading recorded 'Year Ended December 31,'; gross_profit: the filer heads 17,094 with '2025' and the reading recorded 'Year Ended December 31,'; operating_income: the filer heads 4,355 with '2025' and the reading recorded 'Year Ended December 31,'; net_income: the filer heads 3,855 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -566,7 +569,8 @@
         "observed_at": "2026-08-09T06:50:04.394180+00:00",
         "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 94,827 with '2025' and the reading recorded 'Year Ended December 31,'; gross_profit: the filer heads 17,094 with '2025' and the reading recorded 'Year Ended December 31,'; operating_income: the filer heads 4,355 with '2025' and the reading recorded 'Year Ended December 31,'; net_income: the filer heads 3,855 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -708,7 +712,8 @@
         "observed_at": "2026-08-09T06:50:10.505619+00:00",
         "source": "10-K 0001628280-26-003952 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 94,827 with '2025' and the reading recorded 'Year Ended December 31,'; gross_profit: the filer heads 17,094 with '2025' and the reading recorded 'Year Ended December 31,'; operating_income: the filer heads 4,355 with '2025' and the reading recorded 'Year Ended December 31,'; net_income: the filer heads 3,855 with '2025' and the reading recorded 'Year Ended December 31,'"
     }
   ],
   "schema_version": 3,

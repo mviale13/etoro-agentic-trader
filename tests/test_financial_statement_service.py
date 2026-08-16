@@ -262,3 +262,67 @@ def test_last_filings_statements_stand_when_todays_lookup_fails(
     assert outcome.state is KnowledgeState.PROVIDER_ERROR
     assert outcome.statements is not None
     assert outcome.statements.observation_count == 1
+
+
+def test_a_superseded_reading_does_not_fill_the_observe_target(
+    tmp_path: Path,
+) -> None:
+    """An audited statement can be re-read; withdrawn readings do not count."""
+
+    filings = ProviderStub()
+    extractor = ExtractorStub()
+
+    asyncio.run(service(tmp_path, filings, extractor).observe("JPM"))
+    assert extractor.extractions == QUORUM
+
+    store = JsonFinancialStatementStore(tmp_path)
+    withdrawn = store.supersede(
+        "JPM", ACCESSION, dict.fromkeys(range(QUORUM), "the filer heads it 2025")
+    )
+    assert withdrawn == QUORUM
+
+    # The target is unchanged and every stored reading is still there —
+    # but none of them votes, so the spend is taken again.
+    again = asyncio.run(service(tmp_path, filings, extractor).observe("JPM"))
+
+    assert extractor.extractions == QUORUM * 2
+    assert again.statements is not None
+    assert again.statements.observation_count == QUORUM
+    assert again.statements.superseded_count == QUORUM
+    held = store.read("JPM", ACCESSION, StatementKind.INCOME_STATEMENT)
+
+    assert len(held) == QUORUM * 2, "the withdrawn readings are still stored"
+
+
+def test_a_wholly_superseded_statement_reads_as_never_cached(tmp_path: Path) -> None:
+    filings = ProviderStub()
+    extractor = ExtractorStub()
+
+    asyncio.run(service(tmp_path, filings, extractor).statements("JPM"))
+    JsonFinancialStatementStore(tmp_path).supersede(
+        "JPM", ACCESSION, {0: "the filer heads it 2025"}
+    )
+
+    outcome = asyncio.run(service(tmp_path, filings, extractor).statements("JPM"))
+
+    assert outcome.state is KnowledgeState.AVAILABLE_ACQUIRED
+    assert extractor.extractions == 2
+
+
+def test_a_withdrawn_statement_is_not_reported_as_never_read(tmp_path: Path) -> None:
+    filings = ProviderStub()
+
+    asyncio.run(service(tmp_path, filings, ExtractorStub()).observe("JPM"))
+    store = JsonFinancialStatementStore(tmp_path)
+    store.supersede(
+        "JPM", ACCESSION, dict.fromkeys(range(QUORUM), "the filer heads it 2025")
+    )
+
+    read_only = FinancialStatementService(
+        store=store,
+        sources=ResolverStub(filings),  # type: ignore[arg-type]
+        extractor=ExtractorStub(),  # type: ignore[arg-type]
+    )
+
+    assert read_only.established("JPM") == {}
+    assert read_only.withdrawn("JPM") == {StatementKind.INCOME_STATEMENT: QUORUM}

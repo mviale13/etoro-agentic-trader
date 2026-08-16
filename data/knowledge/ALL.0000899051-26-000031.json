@@ -1,0 +1,96 @@
+{
+  "observations": [
+    {
+      "description": "The Allstate Corporation is one of the largest publicly held personal lines insurers in the United States.",
+      "reading": {
+        "observed_at": "2026-08-16T22:10:38.850681+00:00",
+        "source": "10-K 0000899051-26-000031 via SEC EDGAR, read by gpt-5"
+      },
+      "relationships": [],
+      "relationships_asked": true,
+      "segments": [
+        {
+          "description": {
+            "distance": 19,
+            "ownership": "proximity",
+            "quoted": "Offers private passenger auto, homeowners, other personal lines and commercial insurance",
+            "revenue_models": [
+              "premiums"
+            ],
+            "under": "Allstate Protection"
+          },
+          "name": "Allstate Protection",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 96 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 24,
+            "ownership": "proximity",
+            "quoted": "Relates to property and casualty insurance policies written from the 1960s through the mid-1980s",
+            "revenue_models": [
+              "premiums"
+            ],
+            "under": "Run-off Property-Liability"
+          },
+          "name": "Run-off Property-Liability",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 96 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 81,
+            "ownership": "proximity",
+            "quoted": "provide consumer product protection plans, roadside assistance, automotive protection and insurance products",
+            "revenue_models": [
+              "premiums",
+              "services"
+            ],
+            "under": "Protection Services"
+          },
+          "name": "Protection Services",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 96 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        },
+        {
+          "description": {
+            "distance": 9,
+            "ownership": "proximity",
+            "quoted": "Includes holding company activities and certain non-insurance operations",
+            "revenue_models": [],
+            "under": "Corporate"
+          },
+          "name": "Corporate",
+          "revenue": null,
+          "undescribed_because": null,
+          "unmeasured_because": "This filing's management discussion is 96 characters long and prints no table, which makes it a pointer to a document filed separately rather than the discussion itself. The figures exist; they are not in the document this platform read."
+        }
+      ]
+    }
+  ],
+  "schema_version": 14,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "ALLSTATE CORP",
+    "document_format": "html",
+    "identifier": "10-K 0000899051-26-000031",
+    "key": "0000899051-26-000031",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/899051/000089905126000031/all-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-20",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "ALL",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "ALL"
+}

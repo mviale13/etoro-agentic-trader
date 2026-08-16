@@ -102,6 +102,27 @@ class CompanyUnderstandingService:
         held = self._statements.established(symbol)
 
         if not held:
+            withdrawn = self._statements.withdrawn(symbol)
+
+            if withdrawn:
+                # Read, and then unread by an audit of the filing. Saying
+                # "never read" here would hide a withdrawal behind the
+                # wording for a company nobody has looked at.
+                counted = sum(withdrawn.values())
+                names = ", ".join(
+                    statement.value.replace("_", " ") for statement in withdrawn
+                )
+
+                return None, (
+                    f"{symbol}'s {names} has been read, and an offline "
+                    f"audit of the filing withdrew all {counted} of those "
+                    "readings: the figures were taken from cells the filer "
+                    "heads differently. The readings are still stored and "
+                    "none of them is counted. Reading the statement again "
+                    "is what restores authority, and is an explicit spend "
+                    "— `movrvest observe-statements` takes it."
+                )
+
             return None, (
                 f"No financial statement has been read for {symbol}. "
                 "Reading one is an explicit spend, and no surface takes "
