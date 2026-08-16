@@ -94,6 +94,45 @@ TRANSLATIONS: tuple[ProviderTranslation, ...] = (
             "percent-scale and 1 is a fraction"
         ),
     ),
+    # ---- The stated zero (Q1) ----------------------------------------
+    # Read only where `dividendYield` is omitted and the field states
+    # zero itself. The provider never serves `dividendYield: 0` — it
+    # represents non-payment by omission — so these two fields are the
+    # only place a *statement* of non-payment exists, and reading them
+    # is what stops an omission being mistaken for an unanswered
+    # question. A positive value in them is not consumed: this crossing
+    # carries the zero and nothing else.
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="trailingAnnualDividendRate",
+        endpoint=MERGED_INFO,
+        domain_concept="ValuationSnapshot.dividend_yield (stated zero)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.CURRENCY_AMOUNT,
+        because=(
+            "an amount per share rather than a yield, so only its zero "
+            "is read — a zero rate and a zero yield are the same "
+            "statement, while their positive values are different "
+            "quantities and neither is this field's domain concept"
+        ),
+    ),
+    ProviderTranslation(
+        provider=YAHOO,
+        provider_field="trailingAnnualDividendYield",
+        endpoint=MERGED_INFO,
+        domain_concept="ValuationSnapshot.dividend_yield (stated zero)",
+        kinds=(TranslationKind.SEMANTIC,),
+        warrant=TranslationWarrant.ASSUMED,
+        decision_relevance=DecisionRelevance.GATES_A_DECISION,
+        representation=DomainRepresentation.DECIMAL_RATIO,
+        because=(
+            "a trailing yield where `dividendYield` is forward-looking, "
+            "so the two are not interchangeable and only the zero — "
+            "which both spellings agree on — is consumed"
+        ),
+    ),
     ProviderTranslation(
         provider=YAHOO,
         provider_field="forwardPE",
