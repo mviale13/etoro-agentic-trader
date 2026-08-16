@@ -43,19 +43,20 @@ class TestTheDowngradeIsReachable:
         )
 
     def test_a_revenue_label_outside_the_accepted_forms_downgrades(self) -> None:
-        """Coca-Cola's shape, reduced to the one property that matters.
+        """A revenue-like label this platform still does not accept.
 
-        `Net Operating Revenues` is not an accepted label, so the
-        concept is not established — and it must not therefore be
-        claimed that the filer prints no revenue line.
+        Union Pacific's shape. (Coca-Cola's `Net Operating Revenues`
+        played this part until BQ11 earned it as an accepted label; the
+        property under test is unchanged, so it needs a specimen that
+        is still outside the vocabulary.)
         """
 
         assert not matches_concept(
-            StatementConcept.TOTAL_REVENUE, "Net Operating Revenues"
+            StatementConcept.TOTAL_REVENUE, "Total operating revenues"
         )
 
         assert any(
-            word in "net operating revenues"
+            word in "total operating revenues"
             for word in CONCEPT_WORDS[StatementConcept.TOTAL_REVENUE]
         )
 
@@ -97,7 +98,7 @@ class TestWordingIsNotEvidence:
     #: and are **not** accepted forms. Each one is a real row from a
     #: real income statement (KO, UNP, AXP, C, BCS, WMT, MTB).
     CONTAINING_BUT_NOT_ACCEPTED = (
-        (StatementConcept.TOTAL_REVENUE, "Net Operating Revenues"),
+        (StatementConcept.TOTAL_REVENUE, "Total operating revenues"),
         (StatementConcept.TOTAL_REVENUE, "Operating revenues:"),
         (StatementConcept.TOTAL_REVENUE, "Total revenues, net of interest expense"),
         (StatementConcept.TOTAL_REVENUE, "Mortgage banking revenues"),
@@ -152,6 +153,8 @@ class TestWordingIsNotEvidence:
                 "total net sales",
                 "total sales and revenues",
                 "total revenues and other income",
+                # BQ11: earned by Coca-Cola's own arithmetic, one label.
+                "net operating revenues",
             ),
             StatementConcept.NET_INCOME: (
                 "net income",
@@ -198,3 +201,102 @@ class TestSupportedAbsencesSurvive:
                 word in label.casefold()
                 for word in CONCEPT_WORDS[StatementConcept.NET_INCOME]
             )
+
+
+class TestTotalRevenueVocabulary:
+    """What may establish `TOTAL_REVENUE`, and what may never (BQ11).
+
+    The load-bearing distinction of this slice: `CONCEPT_WORDS` is
+    deliberately broad, because its only power is to *weaken* an
+    unsupported absence claim. `CONCEPT_LABELS` establishes a financial
+    fact, so it must be narrow — a label that legitimately downgrades a
+    `NOT_PRINTED` claim must not thereby become the company's top line.
+    """
+
+    #: Real corpus rows that are revenue-like and are **not** the
+    #: company's consolidated top line. Every one of these carries a
+    #: `CONCEPT_WORDS` revenue token, so each would weaken an absence
+    #: claim — and none may establish the concept.
+    COMPONENTS = (
+        ("MTB", "Mortgage banking revenues"),
+        ("FITB", "Wealth and asset management revenue"),
+        ("FITB", "Commercial payments revenue"),
+        ("FITB", "Consumer banking revenue"),
+        ("AXP", "Discount revenue"),
+        ("AXP", "Service fees and other revenue"),
+        ("AXP", "Total non-interest revenues"),
+        ("C", "Total non-interest revenues"),
+        ("ALL", "Other revenue"),
+        ("TRV", "Other revenues"),
+        ("UNP", "Freight revenues"),
+        ("TSLA", "Total automotive revenues"),
+        ("TSLA", "Automotive sales"),
+        ("HON", "Product sales"),
+        ("HON", "Service sales"),
+        ("MTB", "Other revenues from operations"),
+    )
+
+    def test_coca_colas_top_line_is_established(self) -> None:
+        """The one label this slice adds."""
+
+        assert matches_concept(StatementConcept.TOTAL_REVENUE, "Net Operating Revenues")
+
+    @pytest.mark.parametrize(
+        ("symbol", "label"), COMPONENTS, ids=[f"{sym}:{lab}" for sym, lab in COMPONENTS]
+    )
+    def test_a_component_never_becomes_total_revenue(
+        self, symbol: str, label: str
+    ) -> None:
+        assert not matches_concept(StatementConcept.TOTAL_REVENUE, label), (
+            f"{symbol}'s {label!r} is a component, segment or subtotal and "
+            "must never establish the company's top line"
+        )
+
+    def test_the_two_vocabularies_are_broad_and_narrow_respectively(self) -> None:
+        """The distinction, proved in both directions on real rows.
+
+        A component carrying a revenue token reaches `CONCEPT_WORDS` —
+        so a filing printing one may not be said to print no revenue
+        line — while reaching `CONCEPT_LABELS` for none of them. Broad
+        enough to refuse a false absence; narrow enough to refuse a
+        false fact.
+        """
+
+        weakening = [
+            label
+            for _, label in self.COMPONENTS
+            if any(
+                word in label.casefold()
+                for word in CONCEPT_WORDS[StatementConcept.TOTAL_REVENUE]
+            )
+        ]
+
+        # The revenue-token components: every one weakens, none establishes.
+        assert len(weakening) >= 10
+
+        for label in weakening:
+            assert not matches_concept(StatementConcept.TOTAL_REVENUE, label)
+
+    def test_a_revenue_net_of_an_expense_is_not_the_top_line(self) -> None:
+        """AXP and Citigroup print revenue *after* deducting interest.
+
+        A different economic quantity from consolidated total revenue,
+        and refused for that reason rather than for its wording.
+        """
+
+        for label in (
+            "Total revenues net of interest expense",
+            "Total revenues, net of interest expense",
+        ):
+            assert not matches_concept(StatementConcept.TOTAL_REVENUE, label)
+
+    def test_the_addition_is_exactly_one_label(self) -> None:
+        """No family, no pattern, no fuzzy rule — one filing label."""
+
+        added = [
+            label
+            for label in CONCEPT_LABELS[StatementConcept.TOTAL_REVENUE]
+            if "operating" in label
+        ]
+
+        assert added == ["net operating revenues"]

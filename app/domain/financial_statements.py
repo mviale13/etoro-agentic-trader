@@ -294,6 +294,16 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         "total net sales",
         "total sales and revenues",
         "total revenues and other income",
+        # Coca-Cola's top line, and earned by the filing's own
+        # arithmetic rather than by containing the word *revenues*:
+        # `Net Operating Revenues` 47,941 less `Cost of goods sold`
+        # 18,397 is 29,544, which is exactly the `Gross Profit` the
+        # statement prints on the next row. A component or a segment
+        # stands in no such relation to the lines beneath it, which is
+        # what separates this from `Mortgage banking revenues` and
+        # `Wealth and asset management revenue` — both of which remain
+        # refused (BQ11).
+        "net operating revenues",
     ),
     StatementConcept.NET_INCOME: (
         "net income",
