@@ -41,15 +41,34 @@ def test_high_quality() -> None:
 
 
 def test_medium_quality() -> None:
+    """Two of three factors passed, with the third read and failed.
+
+    The dividend must be *read* for a band to be authorised at all
+    since `quality-authority@1`; a company that pays none reads 0.0,
+    which is a measured failure and not an absence.
+    """
+
     signal = QualitySignalService().build(
         company(
             20_000_000_000,
             5.0,
-            None,
+            0.0,
         )
     )
 
     assert signal.quality == "MEDIUM"
+
+
+def test_an_unreadable_factor_withholds_the_band() -> None:
+    """The #140 defect: a partial question set cannot judge a business."""
+
+    signal = QualitySignalService().build(company(20_000_000_000, 5.0, None))
+
+    assert signal.quality == "UNKNOWN"
+    assert signal.earned == 2
+    assert signal.available == 2
+    assert signal.basis is not None
+    assert "dividend could not be read" in signal.basis
 
 
 def test_low_quality() -> None:
@@ -57,7 +76,7 @@ def test_low_quality() -> None:
         company(
             2_000_000_000,
             -1.5,
-            None,
+            0.0,
         )
     )
 

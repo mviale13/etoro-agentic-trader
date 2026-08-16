@@ -236,11 +236,14 @@ class TestTheDecisionRegression:
     def test_the_point_that_carries_a_case_must_be_earned(self) -> None:
         """The causal pin, with the surrounding inputs manufactured.
 
-        Quality HIGH scores 1 in the vote and MEDIUM scores 0, so with
-        an EXPENSIVE valuation and bearish momentum the size point is
-        exactly what stands between HOLD and a SELL veto. Admissible,
-        the company holds; inadmissible, the quality it was relying on
-        is not established and the vote falls through.
+        When this pin was written the inadmissible case produced a
+        SELL, and that SELL was itself the defect `quality-authority@1`
+        later removed: an incomplete question set was banding LOW and
+        voting adverse. The pin now asserts the stronger property it
+        was always reaching for — **an inadmissible magnitude cannot
+        carry a case in either direction**. Admissible, the company is
+        judged and holds; inadmissible, Quality withholds its band, the
+        vote loses coverage, and nothing is issued.
         """
 
         shared: dict[str, object] = {
@@ -261,7 +264,7 @@ class TestTheDecisionRegression:
         inadmissible = self._recommendation(_facts(market_cap=ABOVE, **shared))
 
         assert admissible == "HOLD"
-        assert inadmissible == "SELL"
+        assert inadmissible == "HOLD"
 
     def test_an_unjustified_magnitude_cannot_reach_the_recommendation_gate(
         self,
