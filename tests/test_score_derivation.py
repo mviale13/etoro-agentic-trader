@@ -130,26 +130,28 @@ def test_a_score_capped_by_unreadable_data_says_so() -> None:
     """
     Every readable factor scored, and the band still fell short.
 
-    The bands are absolute, so a company whose dividend could not be
-    read cannot reach HIGH however good it is. Without this the investor
-    reads MEDIUM as a verdict on the business.
+    The predicate survives `quality-authority@1` and its meaning
+    sharpened: the signal no longer *emits* a capped band — a company
+    whose dividend could not be read abstains rather than banding
+    MEDIUM — so this now describes why Quality withheld judgement
+    rather than why an issued band understates a business. The
+    derivation is constructed directly here for that reason.
     """
 
     signal = quality(market_cap=2_000_000_000_000, eps=8.0)
 
-    assert signal.quality == "MEDIUM"
+    assert signal.quality == "UNKNOWN"
     assert signal.earned == 2
     assert signal.available == 2
-    assert signal.next_band_needs == 3
 
     derivation = ScoreDerivation(
         contributions=signal.contributions,
         earned=signal.earned,
         available=signal.available,
-        band=signal.quality,
+        band="MEDIUM",
         score=62,
         scale=(("HIGH", 80), ("MEDIUM", 62), ("LOW", 40)),
-        required=signal.next_band_needs,
+        required=3,
     )
 
     assert derivation.is_capped_by_unreadable_factors

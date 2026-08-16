@@ -159,21 +159,26 @@ def test_quality_can_be_assessed_from_those_facts() -> None:
     never score above LOW whatever the provider returned, and the Artificial
     CIO scored those companies on portfolio health instead.
 
-    **Since `market-cap-input-eligibility@1` the ceiling is MEDIUM on
-    this path**, and the reason is the whole of that rule: the service
-    composes a magnitude whose denomination it cannot establish, so the
-    size factor is refused rather than scored. Earnings and dividends
-    still read, `available` falls to two, and the band says so. This is
-    the end-to-end evidence of the change — a real provider snapshot,
-    through the real service.
+    **Since `quality-authority@1` Quality abstains on this path.** The
+    service composes a magnitude whose denomination it cannot
+    establish, so the size factor is refused; one of three applicable
+    factors is then unreadable and no band is authorised. This is the
+    end-to-end evidence — a real provider snapshot, through the real
+    service.
     """
 
     signal = QualitySignalService().build(make_facts(make_snapshot()))
 
-    assert signal.quality == "MEDIUM"
+    # Since `quality-authority@1` the ceiling is not a band at all: the
+    # size factor is inadmissible, so one of three applicable factors
+    # cannot be read and Quality withholds judgement rather than
+    # banding a business on part of its question set. What was measured
+    # survives — two readable factors, both passed.
+    assert signal.quality == "UNKNOWN"
     assert signal.earned == 2
     assert signal.available == 2
-    assert "Insufficient quality data." not in statements(signal.evidence)
+    assert signal.basis is not None
+    assert "company size could not be read" in signal.basis
     assert "Large-cap company." not in statements(signal.evidence)
 
 

@@ -1,10 +1,16 @@
 from app.domain.asset_class import AssetClass
 from app.domain.company_facts import CompanyFacts
-from app.domain.decision_rules import PROVIDER_QUALITY
+from app.domain.decision_participation import SignalParticipation
+from app.domain.decision_rules import PROVIDER_QUALITY, QUALITY_AUTHORITY
 from app.domain.finding import Finding
 from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
+from app.domain.quality_coverage import (
+    FactorStanding,
+    QualityCoverage,
+    QualityFactor,
+)
 from app.domain.quality_signal import QualitySignal
 from app.domain.score_basis import Contribution
 
@@ -137,40 +143,58 @@ class QualitySignalService:
         # thereby a bad one — so the absence of the point is neutral.
         counted: list[tuple[Finding, int]] = []
 
-        # Size is scored only where the magnitude may honestly be placed
-        # against an absolute threshold. Where it may not, the factor is
-        # **not scored at all** rather than scored zero: a figure the
-        # platform cannot compare says nothing about whether the company
-        # is small, and "no point" is how this ruler spells "small".
-        # That is the same treatment an absent market cap has always
-        # received, which is why the third state needed no new
-        # vocabulary — `available` already records how much of the
-        # question set was readable.
-        size = self._size(company)
+        readings = self._factor_readings(company)
 
-        if size is not None:
-            counted.append(size)
+        for _, reading in readings:
+            if reading is not None:
+                counted.append(reading)
 
-        if company.eps is not None:
-            if company.eps > 0:
-                counted.append((Finding.favourable("Positive earnings."), 1))
-            else:
-                counted.append((Finding.adverse("Negative earnings."), 0))
+        coverage = QualityCoverage(
+            standings=tuple(
+                FactorStanding(
+                    factor=factor,
+                    participation=(
+                        SignalParticipation.PARTICIPATING
+                        if reading is not None
+                        else SignalParticipation.EXPECTED_ABSENT
+                    ),
+                    points=reading[1] if reading is not None else None,
+                )
+                for factor, reading in readings
+            )
+        )
 
-        if company.dividend_yield is not None:
-            if company.dividend_yield > 0:
-                counted.append((Finding.favourable("Dividend-paying business."), 1))
-            else:
-                counted.append((Finding.neutral("No dividend."), 0))
-
-        if not counted:
+        # `quality-authority@1`. The ruler below is unchanged and its
+        # thresholds are untouched — what changed is that it only runs
+        # once every applicable factor has been read. Short of that
+        # Quality abstains rather than banding a business on part of
+        # the question set, which #140 measured turning a company that
+        # passed everything readable into an adverse vote.
+        if not coverage.may_band:
             return QualitySignal(
                 quality="UNKNOWN",
                 confidence=20,
-                evidence=(Finding.neutral("Insufficient quality data."),),
+                rule=QUALITY_AUTHORITY,
+                evidence=(
+                    tuple(finding for finding, _ in counted)
+                    or (Finding.neutral("Insufficient quality data."),)
+                ),
+                # The measured half survives even where no band is
+                # authorised: what was read, and how it did.
+                contributions=tuple(
+                    Contribution(
+                        statement=finding.statement,
+                        points=points,
+                        sense=finding.sense,
+                    )
+                    for finding, points in counted
+                ),
+                earned=coverage.earned,
+                available=coverage.available,
+                basis=coverage.because,
             )
 
-        earned = sum(points for _, points in counted)
+        earned = coverage.earned
 
         quality = self._band(earned)
 
@@ -195,6 +219,44 @@ class QualitySignalService:
             available=len(counted),
             next_band_needs=self._next_band_needs(quality),
         )
+
+    def _factor_readings(
+        self,
+        company: CompanyFacts,
+    ) -> tuple[tuple[QualityFactor, tuple[Finding, int] | None], ...]:
+        """Each quality factor, and its reading where there is one.
+
+        Named per factor rather than accumulated into a count, because
+        #140 found the platform could say how many factors it was
+        missing and never which — so it could not explain a withheld
+        band.
+        """
+
+        return (
+            (QualityFactor.MARKET_SIGNIFICANCE, self._size(company)),
+            (QualityFactor.EARNINGS, self._earnings(company)),
+            (QualityFactor.DIVIDEND, self._dividend(company)),
+        )
+
+    @staticmethod
+    def _earnings(company: CompanyFacts) -> tuple[Finding, int] | None:
+        if company.eps is None:
+            return None
+
+        if company.eps > 0:
+            return (Finding.favourable("Positive earnings."), 1)
+
+        return (Finding.adverse("Negative earnings."), 0)
+
+    @staticmethod
+    def _dividend(company: CompanyFacts) -> tuple[Finding, int] | None:
+        if company.dividend_yield is None:
+            return None
+
+        if company.dividend_yield > 0:
+            return (Finding.favourable("Dividend-paying business."), 1)
+
+        return (Finding.neutral("No dividend."), 0)
 
     def _size(self, company: CompanyFacts) -> tuple[Finding, int] | None:
         """The market-significance factor, or nothing where it cannot be asked.

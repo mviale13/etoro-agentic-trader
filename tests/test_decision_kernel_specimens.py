@@ -42,13 +42,20 @@ POSITIVITY = {"SELL": -1, "HOLD": 0, "BUY": 1}
 #: The figures are the shapes measured in the stored corpus, not
 #: invented — each of these companies reads LOW because its earnings or
 #: its dividend fails, while its forward P/E sits under the cheap band.
+#: A measured dividend of zero stands where the stored record carried
+#: no dividend field. The counterfactual below deletes an
+#: **established** quality band, so all three factors must read —
+#: since `quality-authority@1` a partial set abstains and there is no
+#: established band left to delete. A company that pays nothing
+#: genuinely reads 0.0, so this is the shape the live path produces
+#: once the field is present, not a convenience.
 SPECIMENS = (
-    ("DIDIY", 14.47, 15_911_532_544.0, None, None),
-    ("DV", 11.15, 2_027_261_952.0, 0.37, None),
-    ("LUNR", -328.0, 2_631_417_600.0, -0.87, None),
-    ("MSTR", 2.02, 38_426_419_200.0, -99.16, None),
-    ("ORSTED.CO", 14.44, 187_458_699_264.0, -2.4, None),
-    ("RIVN", -8.96, 23_165_769_728.0, None, None),
+    ("DIDIY", 14.47, 15_911_532_544.0, 0.0, 0.0),
+    ("DV", 11.15, 2_027_261_952.0, 0.37, 0.0),
+    ("LUNR", -328.0, 2_631_417_600.0, -0.87, 0.0),
+    ("MSTR", 2.02, 38_426_419_200.0, -99.16, 0.0),
+    ("ORSTED.CO", 14.44, 187_458_699_264.0, -2.4, 0.0),
+    ("RIVN", -8.96, 23_165_769_728.0, 0.0, 0.0),
 )
 
 
@@ -120,7 +127,12 @@ def test_the_specimens_read_low_quality_and_hold(
 
     quality = QualitySignalService().build(facts, AssetClass.STOCK)
 
+    # These carry an admissible magnitude, so all three factors read and
+    # the band is authorised. LOW here is a judgement of the business —
+    # which is what makes them the right specimens for the deletion
+    # counterfactual below.
     assert quality.quality == "LOW"
+    assert quality.available == 3
     assert _recommendation(facts) == "HOLD"
 
 

@@ -177,6 +177,24 @@ QUALITY_GROUNDED = _interprets(
     "measurement over 24 companies, absences refused rather than scored",
 )
 
+#: Whether Quality may band a business at all: every applicable
+#: factor read, or no band.
+#:
+#: A rule apart from `provider-quality`, whose points, bands and score
+#: map are untouched — this decides only whether that ruler runs. #140
+#: measured that every partial alternative (relative performance, a
+#: coverage floor, a breadth floor) lets deleting a factor move the
+#: band's direction, while requiring the whole applicable set leaves a
+#: deletion no direction to move.
+QUALITY_AUTHORITY = _interprets(
+    "quality-authority",
+    RuleStatus.ARGUED,
+    "argued in QUALITY_BAND_RULER.md (#140): a band earned over part "
+    "of the question set describes the reading rather than the "
+    "business — measured, 33 securities passed every readable factor "
+    "and banded LOW, indistinguishable from the 9 that failed theirs",
+)
+
 #: One day's price change → BULLISH/NEUTRAL/BEARISH.
 MOMENTUM_BANDS = _interprets("momentum-bands", RuleStatus.UNSOURCED, _AUDIT)
 
@@ -280,6 +298,7 @@ DECISION_RULES: dict[str, DecisionRule] = {
         PE_BANDS,
         VALUATION_SCORES,
         PROVIDER_QUALITY,
+        QUALITY_AUTHORITY,
         QUALITY_GROUNDED,
         MOMENTUM_BANDS,
         MOMENTUM_INPUT_ELIGIBILITY,

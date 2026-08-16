@@ -61,6 +61,7 @@ from app.services.momentum_signal_service import MomentumSignalService
 from app.services.quality_signal_service import QualitySignalService
 from app.services.risk_signal_service import RiskSignalService
 from app.services.value_signal_service import ValueSignalService
+from tests.conftest import admissible_market_cap
 
 
 def _fingerprint(payload: object) -> str:
@@ -99,6 +100,10 @@ GOVERNED: dict[str, object] = {
         (MEDIUM_NUMERATOR, MEDIUM_DENOMINATOR),
         tuple(sorted((band.value, score) for band, score in BAND_SCORES.items())),
     ),
+    # The authority rule's constant is the completeness requirement
+    # itself — the ruler it gates is fingerprinted separately as
+    # `provider-quality`, and is untouched.
+    "quality-authority": (QualitySignalService.FACTORS,),
     "momentum-bands": (
         MomentumSignalService.STRONG_POSITIVE_THRESHOLD,
         MomentumSignalService.POSITIVE_THRESHOLD,
@@ -173,6 +178,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "provider-quality": (1, RuleStatus.UNSOURCED, "3adc0fd3fd9f"),
     "quality-grounded": (1, RuleStatus.LICENSED, "02dffb0feb63"),
     "momentum-bands": (1, RuleStatus.UNSOURCED, "2ef4de85d277"),
+    "quality-authority": (1, RuleStatus.ARGUED, "4079e4af87d7"),
     "momentum-input-eligibility": (1, RuleStatus.ARGUED, "03e3e0ae4ccf"),
     "market-cap-input-eligibility": (1, RuleStatus.ARGUED, "a3f6c145c2de"),
     "signal-vote": (1, RuleStatus.UNSOURCED, "f2fdf881fe4f"),
@@ -235,7 +241,7 @@ def test_exactly_one_rule_is_licensed() -> None:
     assert [r.key for r in licensed] == ["quality-grounded"]
 
 
-def test_exactly_four_rules_are_argued() -> None:
+def test_exactly_five_rules_are_argued() -> None:
     """Naming a rule still validates nothing; arguing one says where.
 
     The count moves once per warrant consumer, and each entry earns the
@@ -252,6 +258,7 @@ def test_exactly_four_rules_are_argued() -> None:
 
     assert [r.key for r in argued] == [
         "risk-severity",
+        "quality-authority",
         "momentum-input-eligibility",
         "market-cap-input-eligibility",
         "decision-authority",
@@ -331,9 +338,14 @@ def test_every_scored_basis_carries_the_rules_that_scored_it() -> None:
 
     from app.domain.company_signals import CompanySignals
 
+    # An admissible magnitude, so all three quality factors read and
+    # `provider-quality`'s ruler is actually reached — since
+    # `quality-authority@1` a partial question set abstains and would
+    # never stamp the band rule at all.
     facts = _facts(
         forward_pe=12.0,
         market_cap=20_000_000_000,
+        market_cap_magnitude=admissible_market_cap(20_000_000_000),
         eps=4.2,
         dividend_yield=0.02,
         daily_change_pct=1.0,
@@ -366,6 +378,7 @@ def test_the_signals_carry_their_band_rules() -> None:
     facts = _facts(
         forward_pe=12.0,
         market_cap=20_000_000_000,
+        market_cap_magnitude=admissible_market_cap(20_000_000_000),
         eps=4.2,
         dividend_yield=0.02,
         daily_change_pct=1.0,
@@ -383,7 +396,16 @@ def test_the_signals_carry_their_band_rules() -> None:
     unknowable = _facts()
 
     assert ValueSignalService().build(unknowable).rule is None
-    assert QualitySignalService().build(unknowable).rule is None
+
+    # Quality's abstention is rule-governed since `quality-authority@1`,
+    # for the same reason Momentum's is: a rule decided that the
+    # question set was too incomplete to band, and a reader should be
+    # able to see which.
+    silent_quality = QualitySignalService().build(unknowable)
+
+    assert silent_quality.quality == "UNKNOWN"
+    assert silent_quality.rule is not None
+    assert silent_quality.rule.key == "quality-authority"
 
     # Momentum's abstention is itself rule-governed since the first
     # warrant consumer: it names `momentum-input-eligibility`, the rule
