@@ -21,6 +21,7 @@ from app.domain.financial_question import (
 )
 from app.domain.financial_statement_consensus import (
     FinancialStatementConsensus,
+    authoritative,
     statement_consensus_of,
 )
 from app.domain.financial_statements import STATEMENT_NAMES, StatementKind
@@ -51,13 +52,39 @@ class FinancialsCommand:
     async def run(self, symbol: str, model: FinancialModel | None = None) -> int:
         normalized = symbol.upper().strip()
 
+        stored = {kind: self._store.latest(normalized, kind) for kind in StatementKind}
+
         held = {
             kind: statement_consensus_of(observations)
-            for kind in StatementKind
-            if (observations := self._store.latest(normalized, kind))
+            for kind, observations in stored.items()
+            if authoritative(observations)
         }
 
         if not held:
+            withdrawn = sum(
+                len(observations)
+                for observations in stored.values()
+                if observations and not authoritative(observations)
+            )
+
+            if withdrawn:
+                # Read, and then unread. Reporting this as "no statement
+                # has been read" would hide the withdrawal behind the
+                # wording for a company nobody has opened.
+                print(
+                    f"{normalized} — every stored reading of this security's "
+                    f"statements was superseded by an audit of the filing "
+                    f"({withdrawn} reading(s))."
+                )
+                print()
+                print(
+                    "They are still stored and none of them is counted. "
+                    f"`movrvest statement-audit {normalized}` shows what the "
+                    f"filing said; `movrvest observe-statements {normalized}` "
+                    "restores authority."
+                )
+                return 1
+
             print(f"{normalized} — no statement has been read for this security.")
             print()
             print(
@@ -79,7 +106,16 @@ class FinancialsCommand:
                 because="asked for explicitly, for inspection",
             )
 
-        _render(measure(normalized, held), held, governing)
+        _render(
+            measure(normalized, held),
+            held,
+            governing,
+            withdrawn={
+                kind: len(observations)
+                for kind, observations in stored.items()
+                if observations and not authoritative(observations)
+            },
+        )
 
         return 0
 
@@ -129,6 +165,7 @@ def _render(
     understanding: FinancialUnderstanding,
     held: dict[StatementKind, FinancialStatementConsensus],
     governing: FinancialModelSelection,
+    withdrawn: dict[StatementKind, int],
 ) -> None:
     print(f"{understanding.symbol} — what its own statements measure")
     print()
@@ -136,7 +173,9 @@ def _render(
     print(f"read: {understanding.reading.source}")
 
     missing = tuple(
-        kind for kind in StatementKind if kind not in understanding.statements
+        kind
+        for kind in StatementKind
+        if kind not in understanding.statements and kind not in withdrawn
     )
 
     if missing:
@@ -146,6 +185,15 @@ def _render(
         print(
             "  not yet observed: "
             + ", ".join(STATEMENT_NAMES[kind] for kind in missing)
+        )
+
+    for kind, count in withdrawn.items():
+        # A statement read and then withdrawn is not one nobody opened,
+        # and the two absences must never share a sentence.
+        print(
+            f"  read and withdrawn: {STATEMENT_NAMES[kind]} — an audit of "
+            f"the filing superseded all {count} stored readings, which "
+            "remain stored and count for nothing"
         )
 
     if not understanding.quorate:
@@ -161,6 +209,11 @@ def _render(
 
         if caveat is not None:
             print(f"  PROVENANCE UNCERTAIN ({STATEMENT_NAMES[kind]}): {caveat}")
+
+        withheld = consensus.supersession_caveat()
+
+        if withheld is not None:
+            print(f"  SUPERSEDED READINGS ({STATEMENT_NAMES[kind]}): {withheld}")
 
     _render_language(understanding)
 

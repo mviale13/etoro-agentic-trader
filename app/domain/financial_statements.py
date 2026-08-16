@@ -618,11 +618,39 @@ class FinancialStatementObservation:
     #: can resolve statements as the sequence they are.
     located_among: int = 0
 
+    #: Why this reading no longer carries authority, or nothing where it
+    #: still does.
+    #:
+    #: **Authority, never history.** A superseded reading stays in the
+    #: file, in the order it was taken, and stays readable: what it
+    #: found is still what it found, and deleting it would destroy the
+    #: record of what this platform once believed. What it loses is a
+    #: vote — the consensus stops counting it, and says so.
+    #:
+    #: Defaulted, never invented, exactly as `located_among` is: an
+    #: entry written before this field existed records nothing, which
+    #: reads as *still authoritative* rather than as a claim about an
+    #: audit that never ran. That is why this is a field and not a
+    #: schema version — a defaulted addition changes neither what a
+    #: reading was shown nor what it was asked, so schema-3 entries
+    #: load unchanged and unsuperseded ones encode byte-identically.
+    #:
+    #: Only an offline audit sets it, and only from evidence the source
+    #: document itself carries. The reason is stored rather than a flag
+    #: so that a reader can see *which* cell disagreed with the filing.
+    superseded_because: str | None = None
+
     @property
     def provenance_uncertain(self) -> bool:
         """Whether more than one section could have been this statement."""
 
         return self.located_among > 1
+
+    @property
+    def is_active(self) -> bool:
+        """Whether this reading still carries authority."""
+
+        return self.superseded_because is None
 
     def fact(self, concept: StatementConcept) -> StatementFact | None:
         """This reading's answer for one concept, if it was asked."""

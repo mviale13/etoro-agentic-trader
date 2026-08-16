@@ -44,6 +44,7 @@ from app.commands import (
     reader_defects,
     reader_stability,
     record,
+    statement_audit,
     statement_shape,
     statements,
     status,
@@ -790,6 +791,34 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ticker symbol, for example JPM",
     )
 
+    statement_audit_parser = subparsers.add_parser(
+        "statement-audit",
+        help="Re-examine stored statement readings against the filings themselves",
+        description=(
+            "Ask, of every stored statement reading, whether today's parse "
+            "of the same immutable filing could have produced it. A reading "
+            "the filing itself refutes — the period header it recorded is "
+            "not the one the filer printed, or the row no longer carries "
+            "the figure it anchored on — may lose its vote, and stays "
+            "stored. Read-only unless --supersede is given; it costs a "
+            "fetch, asks no model and reads no score, band or factor"
+        ),
+    )
+    statement_audit_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol. Omit to audit every company with stored readings",
+    )
+    statement_audit_parser.add_argument(
+        "--supersede",
+        action="store_true",
+        help=(
+            "Record the withdrawals. Explicit because this is the one "
+            "action that removes authority from stored evidence; without "
+            "it the audit only reports"
+        ),
+    )
+
     reader_stability_parser = subparsers.add_parser(
         "reader-stability",
         help="Read one filing repeatedly and report how far the readings agree",
@@ -841,6 +870,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "statement-shape":
         return statement_shape.run(args.symbol)
+
+    if args.command == "statement-audit":
+        return statement_audit.run(args.symbol, args.supersede)
 
     if args.command == "observe":
         return await observe.run(args.symbol, args.to)

@@ -92,7 +92,8 @@
         "observed_at": "2026-08-09T06:51:35.737476+00:00",
         "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_income: the filer heads $ 2,851 with '2025' and the reading recorded 'Year Ended December 31,'; net_interest_income: the filer heads 6,948 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -186,7 +187,8 @@
         "observed_at": "2026-08-09T06:51:40.285402+00:00",
         "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_income: the filer heads $ 2,851 with '2025' and the reading recorded 'Year Ended December 31,'; net_interest_income: the filer heads 6,948 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -280,7 +282,8 @@
         "observed_at": "2026-08-09T06:51:45.757325+00:00",
         "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_income: the filer heads $ 2,851 with '2025' and the reading recorded 'Year Ended December 31,'; net_interest_income: the filer heads 6,948 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -374,7 +377,8 @@
         "observed_at": "2026-08-09T06:51:51.326294+00:00",
         "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_income: the filer heads $ 2,851 with '2025' and the reading recorded 'Year Ended December 31,'; net_interest_income: the filer heads 6,948 with '2025' and the reading recorded 'Year Ended December 31,'"
     },
     {
       "facts": [
@@ -468,7 +472,8 @@
         "observed_at": "2026-08-09T06:51:55.784565+00:00",
         "source": "10-K 0000036270-26-000010 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "net_income: the filer heads $ 2,851 with '2025' and the reading recorded 'Year Ended December 31,'; net_interest_income: the filer heads 6,948 with '2025' and the reading recorded 'Year Ended December 31,'"
     }
   ],
   "schema_version": 3,

@@ -92,7 +92,8 @@
         "observed_at": "2026-08-09T06:57:41.939447+00:00",
         "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 713,163 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'; operating_income: the filer heads 29,825 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'"
     },
     {
       "facts": [
@@ -186,7 +187,8 @@
         "observed_at": "2026-08-09T06:57:49.660136+00:00",
         "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 713,163 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'; operating_income: the filer heads 29,825 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'"
     },
     {
       "facts": [
@@ -280,7 +282,8 @@
         "observed_at": "2026-08-09T06:57:57.124780+00:00",
         "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 713,163 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'; operating_income: the filer heads 29,825 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'"
     },
     {
       "facts": [
@@ -374,7 +377,8 @@
         "observed_at": "2026-08-09T06:58:03.008014+00:00",
         "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 713,163 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'; operating_income: the filer heads 29,825 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'"
     },
     {
       "facts": [
@@ -468,7 +472,8 @@
         "observed_at": "2026-08-09T06:58:26.256678+00:00",
         "source": "10-K 0000104169-26-000055 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 713,163 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'; operating_income: the filer heads 29,825 with '2026' and the reading recorded 'Fiscal Years Ended January 31,'"
     },
     {
       "facts": [
