@@ -36,6 +36,7 @@ from app.domain.investment_decision import (
     Refusal,
 )
 from app.domain.provenance import Provenance
+from app.infrastructure.evidence_root import evidence_path
 
 DECISION_SCHEMA_VERSION = 1
 
@@ -43,8 +44,11 @@ DECISION_SCHEMA_VERSION = 1
 class JsonInvestmentDecisionStore:
     """One JSON file per (subject, question) stream, append-only."""
 
-    def __init__(self, directory: Path | str = "data/decisions") -> None:
-        self._directory = Path(directory)
+    def __init__(self, directory: Path | str | None = None) -> None:
+        # The evidence root, resolved at construction (#118, BQ10).
+        self._directory = (
+            Path(directory) if directory is not None else evidence_path("decisions")
+        )
 
     def read(
         self, subject: str, question: DecisionQuestion

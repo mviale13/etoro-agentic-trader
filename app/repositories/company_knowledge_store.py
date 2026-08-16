@@ -21,6 +21,7 @@ from app.domain.primary_source import PrimarySource
 from app.domain.prose_evidence import DescribedSegment, Ownership
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import MeasuredShare
+from app.infrastructure.evidence_root import evidence_path
 from app.repositories.source_codec import (
     decode_figure,
     decode_source,
@@ -201,9 +202,15 @@ class JsonCompanyKnowledgeStore(CompanyKnowledgeStore):
 
     def __init__(
         self,
-        directory: Path | str = "data/knowledge",
+        directory: Path | str | None = None,
     ) -> None:
-        self.directory = Path(directory)
+        # The evidence root, asked for rather than assumed (#118, BQ10).
+        # Resolved here and never in the signature: a default evaluated
+        # at import freezes the root before a test can redirect it.
+        # An explicit path stays authoritative.
+        self.directory = (
+            Path(directory) if directory is not None else evidence_path("knowledge")
+        )
 
     def read(self, symbol: str, key: str) -> tuple[CompanyKnowledgeObservation, ...]:
         path = self._path(symbol, key)
