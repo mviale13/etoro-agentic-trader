@@ -1,0 +1,200 @@
+"""The strongest absence claim the provenance actually supports.
+
+BQ4. Two wording defects, repaired and pinned:
+
+- `CONCEPT_WORDS` had no entry for `TOTAL_REVENUE` or `NET_INCOME`, so
+  their `NOT_PRINTED` could never be downgraded — and the platform
+  asserted that Coca-Cola prints no revenue line while its own reading
+  had located a figure three rows below `Net Operating Revenues`.
+- *"5 of 5 observations"* read as five independent corroborating
+  sightings. Measured, they are five readings of one document by one
+  model inside forty seconds.
+
+The invariant under test: **a failure to locate a concept is not
+evidence that the filer does not print it**, and **repeated readings
+are repeated readings**.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from app.domain.financial_statements import (
+    CONCEPT_LABELS,
+    StatementConcept,
+    matches_concept,
+)
+from app.domain.statement_shape import CONCEPT_WORDS
+
+#: The two concepts BQ3 measured as unweakenable, now covered.
+REPAIRED = (StatementConcept.TOTAL_REVENUE, StatementConcept.NET_INCOME)
+
+
+class TestTheDowngradeIsReachable:
+    """Both repaired concepts can now leave `NOT_PRINTED` at all."""
+
+    @pytest.mark.parametrize("concept", REPAIRED)
+    def test_the_concept_has_downgrade_vocabulary(
+        self, concept: StatementConcept
+    ) -> None:
+        assert CONCEPT_WORDS.get(concept), (
+            f"{concept.value} has no downgrade words, so a label this "
+            "platform fails to read is reported as the filer's absence"
+        )
+
+    def test_a_revenue_label_outside_the_accepted_forms_downgrades(self) -> None:
+        """Coca-Cola's shape, reduced to the one property that matters.
+
+        `Net Operating Revenues` is not an accepted label, so the
+        concept is not established — and it must not therefore be
+        claimed that the filer prints no revenue line.
+        """
+
+        assert not matches_concept(
+            StatementConcept.TOTAL_REVENUE, "Net Operating Revenues"
+        )
+
+        assert any(
+            word in "net operating revenues"
+            for word in CONCEPT_WORDS[StatementConcept.TOTAL_REVENUE]
+        )
+
+    @pytest.mark.parametrize(
+        "label",
+        ["Operating revenues:", "Revenues", "Total revenues, net of interest expense"],
+    )
+    def test_the_measured_revenue_labels_all_downgrade(self, label: str) -> None:
+        """UNP, AXP and Citigroup's own printed labels."""
+
+        assert any(
+            word in label.casefold()
+            for word in CONCEPT_WORDS[StatementConcept.TOTAL_REVENUE]
+        )
+
+    @pytest.mark.parametrize(
+        "label",
+        ["Consolidated Net Income", "Profit after tax", "Consolidated net income"],
+    )
+    def test_the_measured_bottom_line_labels_all_downgrade(self, label: str) -> None:
+        """KO, BCS and WMT — the `NET_INCOME` path is reachable."""
+
+        assert any(
+            word in label.casefold()
+            for word in CONCEPT_WORDS[StatementConcept.NET_INCOME]
+        )
+
+
+class TestWordingIsNotEvidence:
+    """The property the whole repair depends on.
+
+    Downgrade vocabulary decides what may be *said* about an absence.
+    It must never decide what counts as an established financial fact —
+    those are `CONCEPT_LABELS`, matched by exact equality, and this
+    slice does not touch them.
+    """
+
+    #: Labels measured in the live filings that carry a downgrade word
+    #: and are **not** accepted forms. Each one is a real row from a
+    #: real income statement (KO, UNP, AXP, C, BCS, WMT, MTB).
+    CONTAINING_BUT_NOT_ACCEPTED = (
+        (StatementConcept.TOTAL_REVENUE, "Net Operating Revenues"),
+        (StatementConcept.TOTAL_REVENUE, "Operating revenues:"),
+        (StatementConcept.TOTAL_REVENUE, "Total revenues, net of interest expense"),
+        (StatementConcept.TOTAL_REVENUE, "Mortgage banking revenues"),
+        (StatementConcept.NET_INCOME, "Consolidated Net Income"),
+        (StatementConcept.NET_INCOME, "Profit after tax"),
+        (StatementConcept.NET_INCOME, "Net income (loss) from equity method investees"),
+    )
+
+    @pytest.mark.parametrize(("concept", "label"), CONTAINING_BUT_NOT_ACCEPTED)
+    def test_a_downgraded_label_is_still_not_established_evidence(
+        self, concept: StatementConcept, label: str
+    ) -> None:
+        """The load-bearing guard of the whole slice.
+
+        Every one of these labels now *weakens* an absence claim, and
+        not one of them may become a figure this platform accepts. The
+        two vocabularies do overlap — `revenue` is both a downgrade
+        word and an accepted form — so the property under test is not
+        disjointness but that **matching a word is not matching a
+        label**.
+        """
+
+        assert any(word in label.casefold() for word in CONCEPT_WORDS[concept]), (
+            "the label must reach the downgrade at all"
+        )
+
+        assert not matches_concept(concept, label), (
+            f"{label!r} became established evidence for {concept.value}; "
+            "wording vocabulary must never establish a financial fact"
+        )
+
+    @pytest.mark.parametrize("concept", REPAIRED)
+    def test_the_accepted_forms_are_untouched(self, concept: StatementConcept) -> None:
+        """`CONCEPT_LABELS` is out of scope and is not edited here.
+
+        Pinned by content so that widening what counts as evidence —
+        a funded change with its own ruling — cannot ride along with a
+        wording repair.
+        """
+
+        pinned = {
+            StatementConcept.TOTAL_REVENUE: (
+                "total net revenue",
+                "total net revenues",
+                "total revenue",
+                "total revenues",
+                "net revenues",
+                "net revenue",
+                "revenues",
+                "revenue",
+                "net sales",
+                "total net sales",
+                "total sales and revenues",
+                "total revenues and other income",
+            ),
+            StatementConcept.NET_INCOME: (
+                "net income",
+                "net income (loss)",
+                "net earnings",
+                "net earnings (loss)",
+                "profit for the year",
+                "profit for the period",
+            ),
+        }
+
+        assert CONCEPT_LABELS[concept] == pinned[concept]
+
+
+class TestSupportedAbsencesSurvive:
+    """The repair may only weaken claims that were never supported."""
+
+    def test_a_bank_statement_still_prints_no_gross_profit(self) -> None:
+        """JPM and TRV's shape: no `gross` word anywhere, so the strong
+        claim stays strong. The repair must not reach it."""
+
+        assert "gross" in CONCEPT_WORDS[StatementConcept.GROSS_PROFIT]
+
+        bank_labels = ("Total net revenue", "Net interest income", "Net income")
+
+        assert not any(
+            word in label.casefold()
+            for label in bank_labels
+            for word in CONCEPT_WORDS[StatementConcept.GROSS_PROFIT]
+        )
+
+    def test_the_bare_word_income_is_not_a_bottom_line_word(self) -> None:
+        """The guard that keeps every interest and fee line out.
+
+        `income` alone would downgrade `NET_INCOME` on any bank
+        statement, weakening a finding on evidence that has nothing to
+        do with the bottom line.
+        """
+
+        assert "income" not in CONCEPT_WORDS[StatementConcept.NET_INCOME]
+
+        for label in ("Interest income", "Total interest income", "Other income"):
+            assert not any(
+                word in label.casefold()
+                for word in CONCEPT_WORDS[StatementConcept.NET_INCOME]
+            )

@@ -269,13 +269,15 @@ def _fact_consensus(
     if not counted.by_majority or counted.modal is None:
         unlocated_because = (
             f"Where the statement prints this figure is unsettled across "
-            f"{counted.readings} observations: {_distribution(counted)}."
+            f"{counted.readings} readings: {_distribution(counted)}."
         )
     elif counted.modal.stated == NO_FIGURE:
         unlocated_because = _modal_reason(
             tuple(fact.unlocated_because for fact in addressed if not fact.is_located),
-            fallback="No observation located a figure for this concept.",
-            counted=f"{counted.agreeing} of {counted.readings} observations",
+            fallback="No reading located a figure for this concept.",
+            counted=_repeated_readings(
+                counted.agreeing, counted.readings, observations
+            ),
         )
     else:
         anchor, row = _settled(counted.modal.stated, addressed)
@@ -330,6 +332,35 @@ def _modal_reason(
     stated = worded.modal.stated if worded.modal is not None else fallback
 
     return f"{stated} ({counted}.)"
+
+
+def _repeated_readings(
+    agreeing: int,
+    readings: int,
+    observations: tuple[FinancialStatementObservation, ...],
+) -> str:
+    """How many readings agreed, and of how many documents.
+
+    The wording this platform is entitled to. *"5 of 5 observations"*
+    reads as five independent corroborating sightings; measured, the
+    five are five readings of **one** document by one model within
+    forty seconds (`PROFITABILITY_EVIDENCE_SEMANTICS.md` §5). Repeated
+    readings of one filing are repeated readings, and saying so is the
+    difference between counting evidence and counting attempts.
+
+    The document count is not invented: every observation carries the
+    `PrimarySource` it was read from, so the distinct count is a fact
+    the store already holds. Where more than one document is behind a
+    consensus the sentence says that instead — the phrasing narrows to
+    what is true rather than asserting a single filing.
+    """
+
+    documents = len({observation.source.stated() for observation in observations})
+
+    if documents == 1:
+        return f"{agreeing} of {readings} readings of one filing"
+
+    return f"{agreeing} of {readings} readings across {documents} filings"
 
 
 def _distribution(measured: Agreement) -> str:
