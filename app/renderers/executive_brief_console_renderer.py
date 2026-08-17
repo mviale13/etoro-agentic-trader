@@ -60,9 +60,17 @@ class ExecutiveBriefConsoleRenderer:
             # The Artificial CIO's own conviction in this decision. The
             # brief carried only the committees' agreement, so a RECOMMEND
             # printed a number that answered a different question.
+            #
+            # Where none was reached the absence is printed as an absence.
+            # A percentage is only meaningful over a number, and 0% would
+            # read as the CIO's lowest possible confidence in the case.
             console.print(
                 "Conviction: "
-                f"{ExecutiveBriefConsoleRenderer._percent(case.conviction / 100)}"
+                + (
+                    ExecutiveBriefConsoleRenderer._percent(case.conviction / 100)
+                    if case.conviction is not None
+                    else "not stated — the case cites no supporting reason"
+                )
             )
 
             # How old the evidence under this decision is. Absent readings

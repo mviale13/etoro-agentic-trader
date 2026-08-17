@@ -72,11 +72,14 @@ class RankedInvestmentCaseResponse(BaseModel):
     rank: int
     symbol: str
     recommendation: str
-    conviction: int
+
+    #: Null where the CIO withheld one. Never zero, never substituted.
+    conviction: int | None
 
     #: The conviction put into words, e.g. "High Conviction". Worded by the
-    #: backend so no surface invents its own thresholds.
-    conviction_label: str
+    #: backend so no surface invents its own thresholds, and null where
+    #: there is no conviction to word.
+    conviction_label: str | None
 
     committee_agreement: int
 

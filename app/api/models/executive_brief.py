@@ -19,11 +19,16 @@ class InvestmentCaseResponse(BaseModel):
     confidence: float | None = None
 
     #: The Artificial CIO's own conviction in this decision, 0-100.
-    conviction: int = 0
+    #:
+    #: Null where it withheld one. The defaults here were `0` and
+    #: "Low Conviction" — a brief that failed to carry a conviction
+    #: presented the case as the worst the scale can express.
+    conviction: int | None = None
 
     #: The conviction put into words, e.g. "High Conviction". Worded by the
-    #: backend so no surface invents its own thresholds.
-    conviction_label: str = "Low Conviction"
+    #: backend so no surface invents its own thresholds, and null where
+    #: there is no conviction to word.
+    conviction_label: str | None = None
 
     summary: str
 

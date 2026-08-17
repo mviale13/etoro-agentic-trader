@@ -159,11 +159,33 @@ class DecisionJournal:
         return DecisionRecord(
             symbol=event.symbol,
             state=state,
-            conviction=int(event.payload.get("conviction", 0)),
+            # Absent stays absent. `int(..., 0)` read a withheld conviction
+            # — and a record written before the field existed — as a
+            # decision taken at zero conviction, which is the strongest
+            # negative judgment on the scale rather than the absence of
+            # one. The next cycle would then report a rise out of nothing.
+            conviction=DecisionJournal._to_conviction(
+                event.payload.get("conviction"),
+            ),
             rationale=str(event.payload.get("rationale", "")),
             decided_at=event.timestamp,
             scores=DecisionJournal._to_scores(event.payload.get("scores")),
         )
+
+    @staticmethod
+    def _to_conviction(raw: object) -> int | None:
+        """The conviction as recorded, or nothing where none was."""
+
+        if raw is None:
+            return None
+
+        if isinstance(raw, bool) or not isinstance(raw, int | float | str):
+            return None
+
+        try:
+            return int(raw)
+        except (TypeError, ValueError):
+            return None
 
     @staticmethod
     def _to_scores(raw: object) -> RecordedScores:

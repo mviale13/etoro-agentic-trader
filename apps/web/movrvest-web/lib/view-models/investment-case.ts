@@ -58,8 +58,10 @@ export interface RankedInvestmentCaseViewModel {
   symbol: string;
   /** Decision state, e.g. PREPARE, INVESTIGATE, REJECT. */
   recommendation: string;
-  conviction: number;
-  convictionLevel: ConvictionLevel;
+  /** Null where the CIO withheld one — never rendered as a zero. */
+  conviction: number | null;
+  /** Null with it: a label is a word for a number, and there is none. */
+  convictionLevel: ConvictionLevel | null;
   committeeAgreement: number;
   /** This security's own safety, higher being safer. Null where its
    *  price history was too short to measure — never the same as safe. */

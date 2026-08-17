@@ -277,8 +277,9 @@ export interface DossierTransition {
   at: string;
   fromState: string;
   toState: string;
-  fromConviction: number;
-  toConviction: number;
+  /** Either side may be absent, and an absent conviction is not a low one. */
+  fromConviction: number | null;
+  toConviction: number | null;
   /** The change in one line, worded by the backend. */
   stated: string;
   /** The rationale the CIO recorded at the time, verbatim. */
@@ -303,8 +304,10 @@ export interface DossierDecisionCourse {
   lastRecordedAt: string | null;
   /** Most recent first. */
   transitions: readonly DossierTransition[];
-  /** The course in one sentence, worded by the backend. */
-  stated: string;
+  /** The course in one sentence, worded by the backend. Null where there
+      is no course to state — `absentBecause` carries the reason, and the
+      two are mutually exclusive by construction. */
+  stated: string | null;
   /** Why there is no course — a first review has nothing to have
       changed from. Null where there is one. */
   absentBecause: string | null;
@@ -354,8 +357,10 @@ export interface DossierViewModel {
   definition: DossierDefinition;
 
   decisionState: string;
-  conviction: number;
-  convictionLabel: string;
+  /** Null where the CIO withheld one — never rendered as a zero. */
+  conviction: number | null;
+  /** Null with it: there is no word for a number nobody put on the case. */
+  convictionLabel: string | null;
   /** Null where no committee could form a view — not disagreement. */
   committeeAgreement: number | null;
   rationale: string;
@@ -480,7 +485,8 @@ export interface DossierReviewCondition {
 
 export interface DossierSynthesis {
   state: string;
-  conviction: number;
+  /** Null where the CIO withheld one, carried through unchanged. */
+  conviction: number | null;
   because: readonly DossierSynthesisFact[];
   becauseAbsent: string | null;
   despite: readonly DossierSynthesisFact[];
@@ -1152,14 +1158,10 @@ function parseDecisionCourse(value: unknown): DossierDecisionCourse | null {
         item.to_state,
         `decision_course.transitions[${index}].to_state`,
       ),
-      fromConviction: requireNumber(
-        item.from_conviction,
-        `decision_course.transitions[${index}].from_conviction`,
-      ),
-      toConviction: requireNumber(
-        item.to_conviction,
-        `decision_course.transitions[${index}].to_conviction`,
-      ),
+      // Either side may be absent. `stated` below is the backend's own
+      // sentence and already leaves the conviction clause out where it is.
+      fromConviction: optionalNumber(item.from_conviction),
+      toConviction: optionalNumber(item.to_conviction),
       // The backend's own sentences are required, never defaulted: a
       // transition without them is exactly what this section must not
       // invent.
@@ -1174,7 +1176,13 @@ function parseDecisionCourse(value: unknown): DossierDecisionCourse | null {
       moved: stringList(item.moved),
       unexplained: item.unexplained === true,
     })),
-    stated: requireString(value.stated, "decision_course.stated"),
+    // The backend sends "" — not null — where there is no course to
+    // state, and `requireString` rejects an empty string. So a security
+    // with exactly one recorded review threw here, and the whole dossier
+    // rendered "the backend is unreachable" over a payload that had
+    // arrived intact. Found by DV2 on UNP; the sentence it belongs with
+    // is `absent_because`, which was populated the whole time.
+    stated: optionalString(value.stated, "decision_course.stated"),
     absentBecause: optionalString(
       value.absent_because,
       "decision_course.absent_because",
@@ -2066,7 +2074,7 @@ function parseSynthesis(value: unknown): DossierSynthesis | null {
 
   return {
     state: requireString(value.state, "synthesis.state"),
-    conviction: requireNumber(value.conviction, "synthesis.conviction"),
+    conviction: optionalNumber(value.conviction),
     because: parseSynthesisFacts(value.because, "synthesis.because"),
     becauseAbsent: optionalString(
       value.because_absent,
@@ -2220,8 +2228,8 @@ function parseDossier(payload: unknown): DossierViewModel {
     symbol: requireString(payload.symbol, "symbol"),
     definition: parseDefinition(payload.definition),
     decisionState: requireString(payload.decision_state, "decision_state"),
-    conviction: requireNumber(payload.conviction, "conviction"),
-    convictionLabel: requireString(
+    conviction: optionalNumber(payload.conviction),
+    convictionLabel: optionalString(
       payload.conviction_label,
       "conviction_label",
     ),

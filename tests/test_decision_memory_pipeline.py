@@ -16,10 +16,12 @@ from tests.test_brain_context import (
     make_portfolio,
 )
 from tests.test_decision_journal import make_decision
+from tests.test_security_evidence import make_company
 
 
 def make_brain(
     repository: JsonEventRepository | None = None,
+    evidenced: bool = False,
 ) -> Brain:
     history = (
         MemoryPerception(repository=repository).execute()
@@ -32,6 +34,10 @@ def make_brain(
         market=make_market(),
         investment_policy=make_policy(),
         decision_history=history,
+        # A security the signals found something in favour of. A case
+        # citing no supporting reason now carries no conviction at all,
+        # so a test about conviction *moving* needs one to move.
+        evidence={"MSFT": (make_company("MSFT"),)} if evidenced else {},
     ).build()
 
 
@@ -197,7 +203,7 @@ def test_a_conviction_that_moved_says_which_scores_moved_under_it(
 
     workspace = ExecutivePipeline().execute(
         symbol="MSFT",
-        brain=make_brain(repository),
+        brain=make_brain(repository, evidenced=True),
     )
 
     assert workspace.thesis is not None

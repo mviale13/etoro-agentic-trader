@@ -420,9 +420,18 @@ def _deliberation(
     if not panel.spoke:
         return None
 
+    # A conviction is named only where one was reached. Where it was
+    # withheld the decision still stands and is still stated — what is
+    # absent is the number, and "at conviction None/100" would be the
+    # evidence-free precision this withholding exists to remove.
     prevailed = (
         f"The Artificial CIO decided {decision.state.value} at conviction "
         f"{decision.conviction}/100. {decision.rationale}"
+        if decision.conviction is not None
+        else (
+            f"The Artificial CIO decided {decision.state.value}, without "
+            f"putting a conviction on it. {decision.rationale}"
+        )
     )
 
     return Deliberation(

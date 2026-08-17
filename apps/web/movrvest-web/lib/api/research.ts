@@ -100,8 +100,8 @@ function parseCandidate(
     name: requireString(payload.name, at("name")),
     source: requireString(payload.source, at("source")),
     recommendation: requireString(payload.recommendation, at("recommendation")),
-    conviction: requireNumber(payload.conviction, at("conviction")),
-    convictionLabel: requireString(
+    conviction: optionalNumber(payload.conviction, at("conviction")),
+    convictionLabel: optionalString(
       payload.conviction_label,
       at("conviction_label"),
     ),

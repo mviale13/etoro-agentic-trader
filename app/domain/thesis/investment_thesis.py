@@ -22,7 +22,11 @@ class InvestmentThesis:
     #: the committees' agreement and nothing about how strongly the CIO
     #: held the view. The two answer different questions and are now both
     #: reported, each under its own name.
-    conviction: int
+    #:
+    #: None where the CIO withheld one, and never filled in here: a thesis
+    #: is where a number is most likely to be read as the strength of the
+    #: case, so it is exactly where an invented one does most damage.
+    conviction: int | None
 
     summary: str
 

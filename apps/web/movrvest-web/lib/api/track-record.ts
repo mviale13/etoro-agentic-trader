@@ -11,7 +11,10 @@ const BACKEND_URL =
 export interface TrackRecordOutcome {
   symbol: string;
   state: string;
-  conviction: number;
+  /** Null where the decision carried none. The price move is measured
+      regardless: what the security did does not depend on whether the
+      platform put a number on the decision. */
+  conviction: number | null;
   decidedOn: string;
   pricedOn: string;
   changePct: number;
@@ -94,7 +97,11 @@ function parseOutcome(payload: unknown, index: number): TrackRecordOutcome {
   return {
     symbol: requireString(payload.symbol, at("symbol")),
     state: requireString(payload.state, at("state")),
-    conviction: requireNumber(payload.conviction, at("conviction")),
+    conviction:
+      typeof payload.conviction === "number" &&
+      Number.isFinite(payload.conviction)
+        ? payload.conviction
+        : null,
     decidedOn: requireString(payload.decided_on, at("decided_on")),
     pricedOn: requireString(payload.priced_on, at("priced_on")),
     changePct: requireNumber(payload.change_pct, at("change_pct")),

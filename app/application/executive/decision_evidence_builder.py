@@ -242,7 +242,17 @@ class DecisionEvidenceBuilder:
             # A known security always leaves a recommendation here, even an
             # unpriceable one; nothing at all means the symbol named nothing
             # the platform could gather evidence about.
-            security_evidenced=company is not None,
+            #
+            # A quorate grounded assessment is security-level evidence too,
+            # and read from a stronger source than the provider strip. This
+            # tested the provider half alone, so a company the platform had
+            # read a 10-K for was reported as one it held nothing about —
+            # and the decision said so on the page printing the band.
+            security_evidenced=company is not None or quality_assessment is not None,
+            # The assessment itself, not its conclusion. Every sentence
+            # about quality below and downstream is worded from this one
+            # object, which is the same object the score above came from.
+            grounded_quality=quality_assessment,
             asset_class=asset_class,
             actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
@@ -257,7 +267,12 @@ class DecisionEvidenceBuilder:
             findings=ledger,
             opinions=committee_opinions,
             context_risks=context_risks,
-            missing_evidence=self._missing_evidence(company, symbol, asset_class),
+            missing_evidence=self._missing_evidence(
+                company,
+                symbol,
+                asset_class,
+                quality_assessment,
+            ),
             catalysts=catalysts,
             # The two mappings this builder applies to the vote: a BUY
             # is the execution trigger, a SELL is a veto. Stamped where
@@ -971,11 +986,13 @@ class DecisionEvidenceBuilder:
 
         return Finding.neutral(statement, Dimension.RESEARCH)
 
-    @staticmethod
+    @classmethod
     def _missing_evidence(
+        cls,
         company: CompanyRecommendation | None,
         symbol: str,
         asset_class: AssetClass | None = None,
+        grounded: BusinessQuality | None = None,
     ) -> tuple[str, ...]:
         """
         What this case is short of, and that a later cycle could supply.
@@ -987,22 +1004,46 @@ class DecisionEvidenceBuilder:
         it again under *still missing* both repeats the evidence and
         sends the investor back to wait for something that will never
         arrive. Only what could still be read is named here.
+
+        And only what is genuinely absent. Every clause here read the
+        provider signals while the quality *score* was read from the
+        grounded assessment, so the two halves of one page disagreed:
+        AAPL's review condition said quality was unavailable beside its own
+        MEDIUM 62, and DIS's beside a HIGH 80. The quality clause now comes
+        from the assessment that governs the score.
         """
-
-        if company is None:
-            return (f"No security-level analysis is available for {symbol}.",)
-
-        missing: list[str] = []
 
         # Only an asset positively known to have no company is exempt.
         # An unclassified one is short of data, which may yet arrive.
         has_company = asset_class is None or not asset_class.has_no_company
 
+        missing: list[str] = []
+
+        if company is None:
+            # Said as the half it is. A grounded assessment may stand
+            # beside this absence, and "no security-level analysis" over
+            # the whole case would deny it.
+            missing.append(
+                f"No security-level analysis is available for {symbol}."
+                if grounded is None
+                else (
+                    f"No market analysis has been gathered for {symbol}: no "
+                    "price, valuation, risk or earnings reading stands "
+                    "beside the filing evidence."
+                )
+            )
+
+            quality_gap = cls._absent_quality(company, symbol, grounded, has_company)
+
+            return (*missing, quality_gap) if quality_gap else tuple(missing)
+
         if has_company and company.signals.value.valuation == "UNKNOWN":
             missing.append(f"Valuation data is unavailable for {symbol}.")
 
-        if has_company and company.signals.quality.quality == "UNKNOWN":
-            missing.append(f"Quality data is unavailable for {symbol}.")
+        quality_gap = cls._absent_quality(company, symbol, grounded, has_company)
+
+        if quality_gap:
+            missing.append(quality_gap)
 
         if company.signals.risk is None or company.signals.risk.level == "UNKNOWN":
             # Not "too short": this platform has not read enough of the
@@ -1022,3 +1063,57 @@ class DecisionEvidenceBuilder:
             )
 
         return tuple(missing)
+
+    @staticmethod
+    def _absent_quality(
+        company: CompanyRecommendation | None,
+        symbol: str,
+        grounded: BusinessQuality | None,
+        has_company: bool,
+    ) -> str | None:
+        """What is missing about quality, from the reading that governs it.
+
+        Three states, and collapsing any two of them prints a falsehood:
+
+        - **assessed and banded** — nothing is missing, whichever route
+          produced the band;
+        - **assessed and inconclusive** — the statements reached quorum and
+          the questions they answer were too few to band. The reading
+          happened, so calling the data unavailable denies evidence this
+          page displays and sends the investor to acquire what is already
+          held. The assessment states its own arithmetic; it is quoted;
+        - **genuinely unavailable** — no grounded assessment exists at all
+          and the provider proxy reads UNKNOWN.
+
+        The precedence is `_quality_value`'s, unchanged and deliberately
+        not re-derived in spirit: a grounded assessment governs outright
+        where one exists, and the provider proxy is consulted only where
+        none does. That is what makes this sentence and that score two
+        readings of one object rather than two objects.
+        """
+
+        if not has_company:
+            return None
+
+        if grounded is not None:
+            if grounded.score is not None:
+                return None
+
+            # What a later cycle could supply, which is what this list is
+            # for — deliberately not the assessment's own arithmetic. The
+            # CIO's rationale quotes that, and one page rendering the same
+            # sentence under two headings is the repetition the
+            # presentation-ownership audit measured six times.
+            answerable = len(grounded.factors) - grounded.answered
+
+            return (
+                f"Business quality for {symbol} was assessed and could not "
+                f"be concluded: {answerable} of {len(grounded.factors)} "
+                "quality questions are still unanswerable from its "
+                "established figures."
+            )
+
+        if company is not None and company.signals.quality.quality == "UNKNOWN":
+            return f"Quality data is unavailable for {symbol}."
+
+        return None

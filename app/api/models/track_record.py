@@ -8,7 +8,11 @@ class OutcomeResponse(BaseModel):
 
     symbol: str
     state: str
-    conviction: int
+
+    #: Null where the decision carried none. The price move is still
+    #: measured: what the security did does not depend on whether the
+    #: platform put a number on the decision.
+    conviction: int | None
     decided_on: str
 
     #: The close the move is measured from, and the day it belongs to —

@@ -77,7 +77,9 @@ class DecisionSynthesisResponse(BaseModel):
     """
 
     state: str
-    conviction: int
+
+    #: Null where the CIO withheld one, carried through unchanged.
+    conviction: int | None
 
     because: list[SynthesisFactResponse]
     because_absent: str | None

@@ -139,8 +139,16 @@ function CaseRow({
               </span>
             ) : null}
 
-            <span className="text-sm font-semibold tabular-nums text-slate-950">
-              {investmentCase.conviction}
+            {/* An em dash where the CIO withheld the number. Blank would
+                read as a value that failed to arrive. */}
+            <span
+              className={`text-sm font-semibold tabular-nums ${
+                investmentCase.conviction === null
+                  ? "text-slate-400"
+                  : "text-slate-950"
+              }`}
+            >
+              {investmentCase.conviction ?? "—"}
             </span>
           </span>
 
@@ -173,7 +181,11 @@ function CaseRow({
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Figure
             label="Conviction"
-            value={`${investmentCase.conviction} / 100`}
+            value={
+              investmentCase.conviction === null
+                ? "Not stated"
+                : `${investmentCase.conviction} / 100`
+            }
           />
 
           <Figure
