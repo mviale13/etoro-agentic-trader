@@ -46,4 +46,10 @@ def quality_of(
         symbol=symbol,
         answers=answer_questions(model, understanding),
         source=understanding.source,
+        # Carried, never consulted. The answers above are produced from
+        # `understanding.measures`, which this quantity is in none of, so
+        # the band is what it was before this line existed — and the
+        # reason a bank's margins are unavailable stops looking like a
+        # filer that printed nothing.
+        incomparable_top_line=understanding.incomparable_top_line,
     )

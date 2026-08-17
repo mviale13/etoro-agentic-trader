@@ -186,10 +186,12 @@ class ExecutivePipeline:
         # and this slice changes no routing — so a company reaches the
         # default, and the questions this score asks are the same three
         # under either model.
-        workspace.quality = quality_of(
-            symbol,
-            self.understanding.understanding(symbol).financial,
-        )
+        # Resolved once and both halves carried. Asking twice would let
+        # the assessment and the reason there is none come from two
+        # reads of the store.
+        understood = self.understanding.understanding(symbol)
+
+        workspace.quality = quality_of(symbol, understood.financial)
 
         workspace.evidence = self.evidence_builder.build(
             symbol,
@@ -198,6 +200,12 @@ class ExecutivePipeline:
             workspace.committee_opinions,
             findings=workspace.findings,
             quality_assessment=workspace.quality,
+            # Why there is no grounded assessment, where there is none.
+            # A statement read and then audited away is not a statement
+            # nobody read, and the builder cannot tell them apart from
+            # `quality_assessment=None` alone.
+            financial_standing=understood.financial_standing,
+            financial_absent_because=understood.financial_absent_because,
         )
 
         workspace.decision = self.decision_engine.decide(

@@ -180,6 +180,95 @@ class EstablishedMeasure:
         return MEASURE_NAMES[self.measure]
 
 
+class FinancialEvidenceStanding(StrEnum):
+    """Why this platform holds, or does not hold, a financial understanding.
+
+    The structured form of a distinction the composing service already
+    drew in prose and nothing downstream could read. *Never read* and
+    *read, then withdrawn by an audit* are different facts about this
+    platform, and a consumer that could not tell them apart treated a
+    withdrawal as an absence — which let a provider's three proxies
+    score a company whose every statement reading had been audited away.
+
+    The states are exhaustive over that service's own branches, so a
+    consumer switches on this member rather than reading a sentence.
+    """
+
+    #: A `FinancialUnderstanding` was derived. Everything else here is a
+    #: reason there is none.
+    ESTABLISHED = "established"
+
+    #: Readings are held and **none of them carries authority**: an
+    #: offline audit of the filing withdrew every one. The evidence is
+    #: still stored, still readable, and counts for nothing until a
+    #: funded re-reading replaces it.
+    WITHDRAWN_BY_AUDIT = "withdrawn by audit"
+
+    #: No statement has ever been read for this security.
+    NEVER_READ = "never read"
+
+    #: Authoritative readings are held and no understanding can be
+    #: derived from them — today, only a company observed across two
+    #: filings, whose consensuses `measure` refuses to mix.
+    UNMEASURABLE = "unmeasurable"
+
+
+@dataclass(frozen=True, slots=True)
+class IncomparableTopLine:
+    """A consolidated top line this platform read and cannot rule on.
+
+    The worded half of an accepted refusal. Where a filer strikes its
+    consolidated total *after* financing cost — the shape every bank
+    prints — this platform establishes the figure and has no
+    profitability ruler for it: every threshold it applies compares a
+    margin against gross revenue, and a denominator with a bank's
+    largest single cost already deducted is not that quantity.
+
+    So the figure is carried, with its evidence, and the absence of a
+    ruler is **stated rather than left to look like missing evidence**.
+    Invariant 10 in its semantic form: an established number is
+    authority to report the number, never authority to invent what the
+    number means. Nothing here is a score, a band, a threshold or a
+    verdict, and no arithmetic is performed on the figure.
+    """
+
+    #: The filer's own row label, verbatim.
+    label: str
+
+    #: The figure as the filer printed it, verbatim. A string, because
+    #: this layer reports the cell and computes nothing from it.
+    printed: str
+
+    #: The checked cell and its row, carried exactly as an established
+    #: measure carries its basis — so an investor checks the claim
+    #: against the document rather than trusting it.
+    basis: tuple[ReportedFigure, ...] = ()
+
+    #: The document this was read from, as an investor would cite it.
+    source: str = ""
+
+    #: The narrowest agreement beneath the figure.
+    support: Agreement | None = None
+
+    def stated(self) -> str:
+        """Why the figure is held and no verdict follows from it."""
+
+        cited = self.basis[0].stated() if self.basis else f'"{self.label}"'
+
+        return (
+            f"This platform read the company's consolidated top line — "
+            f"{cited} — and it is struck after financing cost: the "
+            "statement prints a net interest income subtotal above it, so "
+            "interest expense is already deducted from the total. Every "
+            "profitability threshold this platform applies compares a "
+            "margin against gross revenue, and no comparable ruler for a "
+            "top line struck after financing cost has been established. "
+            "So no margin is computed from it, no profitability verdict "
+            "is reached and no quality band is claimed. That is a limit "
+            "of this platform's rulers, not a finding about the company."
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class FinancialUnderstanding:
     """What the filer's own statements measure, and how firmly.
@@ -227,6 +316,21 @@ class FinancialUnderstanding:
     #: different fact from a statement that was read and established
     #: neither marker.
     language: EstablishedLanguage | None = None
+
+    #: The consolidated top line this platform established and has no
+    #: profitability ruler for, where the statements establish one.
+    #:
+    #: Reported, and **consumed by no measure, factor, threshold or
+    #: band**: it exists so that a company whose top line was read can be
+    #: told apart from one whose statements printed nothing, and both
+    #: from one this platform can rule on. `measures` above is untouched
+    #: by it and every margin it carries stays absent for the reason its
+    #: own consensus gave.
+    #:
+    #: None where the statements establish a gross total — the ordinary
+    #: case, in which the existing ruler applies and there is nothing to
+    #: refuse — and None where nothing was established at all.
+    incomparable_top_line: IncomparableTopLine | None = None
 
     def of(self, measure: FinancialMeasure) -> EstablishedMeasure | None:
         """This platform's answer for one measure."""
