@@ -119,23 +119,34 @@ def test_an_absence_a_later_vocabulary_explains_stops_voting() -> None:
 
 
 def test_the_live_unp_specimen_resolves() -> None:
-    """The real five and five, from the store."""
+    """The real five and five, now both sides in production.
+
+    Until BQ20's recommended append the two halves lived in two stores
+    and this control composed them. They are one store now, which is a
+    stronger specimen and the same rule: five absences withdrawn, the
+    located label settling the claim.
+    """
 
     prod = JsonFinancialStatementStore("data/statements")
-    fresh = JsonFinancialStatementStore(
-        "data/experiments/statement-observations/bq19/statements"
-    )
-    key = "0000100885-26-000037"
+    held = prod.read("UNP", "0000100885-26-000037", INCOME)
 
-    stale = prod.read("UNP", key, INCOME)
-    native = fresh.read("UNP", key, INCOME)
+    assert len(held) == 10
 
-    assert len(stale) == 5 and len(native) == 5
-
-    fact = statement_consensus_of((*stale, *native)).fact(REVENUE)
+    consensus = statement_consensus_of(held)
+    fact = consensus.fact(REVENUE)
 
     assert fact.withdrawn_absences == 5
     assert fact.anchor is not None
+    assert fact.anchor.label == NEW_FORM
+    assert fact.agreement.by_majority
+
+    # Concept-locality, on the live specimen rather than a fixture: the
+    # readings whose revenue absence was withdrawn keep every other
+    # fact and go on voting with it.
+    earnings = consensus.fact(EARNINGS)
+
+    assert earnings.withdrawn_absences == 0
+    assert earnings.agreement.answers[0].given == 10
 
 
 # ── control 2: KO, under the same generic rule ──────────────────────
