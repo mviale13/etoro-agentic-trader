@@ -92,7 +92,8 @@
         "observed_at": "2026-08-09T06:52:04.524958+00:00",
         "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 37,442 with '2025' and the reading recorded 'Years Ended December 31,'; net_income: the filer heads 4,772 with '2025' and the reading recorded 'Years Ended December 31,'"
     },
     {
       "facts": [
@@ -186,7 +187,8 @@
         "observed_at": "2026-08-09T06:52:14.008983+00:00",
         "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 37,442 with '2025' and the reading recorded 'Years Ended December 31,'; net_income: the filer heads 4,772 with '2025' and the reading recorded 'Years Ended December 31,'"
     },
     {
       "facts": [
@@ -280,7 +282,8 @@
         "observed_at": "2026-08-09T06:52:20.576769+00:00",
         "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 37,442 with '2025' and the reading recorded 'Years Ended December 31,'; net_income: the filer heads 4,772 with '2025' and the reading recorded 'Years Ended December 31,'"
     },
     {
       "facts": [
@@ -374,7 +377,8 @@
         "observed_at": "2026-08-09T06:52:27.182653+00:00",
         "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
       },
-      "statement": "income_statement"
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 37,442 with '2025' and the reading recorded 'Years Ended December 31,'; net_income: the filer heads 4,772 with '2025' and the reading recorded 'Years Ended December 31,'"
     },
     {
       "facts": [
@@ -466,6 +470,792 @@
       "located_among": 1,
       "reading": {
         "observed_at": "2026-08-09T06:52:33.821060+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement",
+      "superseded_because": "total_revenue: the filer heads 37,442 with '2025' and the reading recorded 'Years Ended December 31,'; net_income: the filer heads 4,772 with '2025' and the reading recorded 'Years Ended December 31,'"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net sales",
+              "printed": "34,717",
+              "value": 34717.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net sales",
+              "printed": "33,009",
+              "value": 33009.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "revenue_net_of_interest_expense",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the consolidated total revenue or income the statement reports for the most recent period **where that total includes net interest income** \u2014 that is, a top line struck after interest expense has already been deducted, typically printed immediately below a net interest income line and combining it with non-interest revenue. This concept, and not total revenue, answers such a total. Not a gross revenue line struck before any financing cost; not a component of the total, such as fee, trading or non-interest revenue on its own; not a subtotal struck after a provision for credit losses; and not a total of a parent company alone rather than of the consolidated group in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "5,740",
+              "value": 5740.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "5,672",
+              "value": 5672.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T20:52:20.025506+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net sales",
+              "printed": "34,717",
+              "value": 34717.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net sales",
+              "printed": "33,009",
+              "value": 33009.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "revenue_net_of_interest_expense",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the consolidated total revenue or income the statement reports for the most recent period **where that total includes net interest income** \u2014 that is, a top line struck after interest expense has already been deducted, typically printed immediately below a net interest income line and combining it with non-interest revenue. This concept, and not total revenue, answers such a total. Not a gross revenue line struck before any financing cost; not a component of the total, such as fee, trading or non-interest revenue on its own; not a subtotal struck after a provision for credit losses; and not a total of a parent company alone rather than of the consolidated group in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "5,740",
+              "value": 5740.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "5,672",
+              "value": 5672.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T20:52:30.255398+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net sales",
+              "printed": "34,717",
+              "value": 34717.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net sales",
+              "printed": "33,009",
+              "value": 33009.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "revenue_net_of_interest_expense",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the consolidated total revenue or income the statement reports for the most recent period **where that total includes net interest income** \u2014 that is, a top line struck after interest expense has already been deducted, typically printed immediately below a net interest income line and combining it with non-interest revenue. This concept, and not total revenue, answers such a total. Not a gross revenue line struck before any financing cost; not a component of the total, such as fee, trading or non-interest revenue on its own; not a subtotal struck after a provision for credit losses; and not a total of a parent company alone rather than of the consolidated group in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "5,740",
+              "value": 5740.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "5,672",
+              "value": 5672.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T20:52:37.829596+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net sales",
+              "printed": "34,717",
+              "value": 34717.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net sales",
+              "printed": "33,009",
+              "value": 33009.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "revenue_net_of_interest_expense",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the consolidated total revenue or income the statement reports for the most recent period **where that total includes net interest income** \u2014 that is, a top line struck after interest expense has already been deducted, typically printed immediately below a net interest income line and combining it with non-interest revenue. This concept, and not total revenue, answers such a total. Not a gross revenue line struck before any financing cost; not a component of the total, such as fee, trading or non-interest revenue on its own; not a subtotal struck after a provision for credit losses; and not a total of a parent company alone rather than of the consolidated group in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "5,740",
+              "value": 5740.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "5,672",
+              "value": 5672.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T20:52:44.246040+00:00",
+        "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 5,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net sales",
+            "printed": "37,442",
+            "value": 37442.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net sales",
+              "printed": "37,442",
+              "value": 37442.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net sales",
+              "printed": "34,717",
+              "value": 34717.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 5,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net sales",
+              "printed": "33,009",
+              "value": 33009.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "revenue_net_of_interest_expense",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the consolidated total revenue or income the statement reports for the most recent period **where that total includes net interest income** \u2014 that is, a top line struck after interest expense has already been deducted, typically printed immediately below a net interest income line and combining it with non-interest revenue. This concept, and not total revenue, answers such a total. Not a gross revenue line struck before any financing cost; not a component of the total, such as fee, trading or non-interest revenue on its own; not a subtotal struck after a provision for credit losses; and not a total of a parent company alone rather than of the consolidated group in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+            "cell": {
+              "column": 3,
+              "row": 21,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "4,772",
+            "value": 4772.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 3,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "4,772",
+              "value": 4772.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 9,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "5,740",
+              "value": 5740.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENT OF OPERATIONS",
+              "cell": {
+                "column": 15,
+                "row": 21,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "5,672",
+              "value": 5672.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T20:52:49.608921+00:00",
         "source": "10-K 0000773840-26-000013 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
