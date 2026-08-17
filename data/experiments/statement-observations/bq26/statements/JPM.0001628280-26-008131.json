@@ -1,0 +1,1051 @@
+{
+  "observations": [
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading cited the row the filer labels \"Total net revenue\" at table 0, row 15, column 3 for total_revenue, and this statement's own structure reads that row as revenue_net_of_interest_expense instead \u2014 a net interest income subtotal decides which of the two a total is, and it decided against this one. The figure is the filer's and is established under the other concept."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "revenue_net_of_interest_expense",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T11:50:51.144182+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading cited the row the filer labels \"Total net revenue\" at table 0, row 15, column 3 for total_revenue, and this statement's own structure reads that row as revenue_net_of_interest_expense instead \u2014 a net interest income subtotal decides which of the two a total is, and it decided against this one. The figure is the filer's and is established under the other concept."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "revenue_net_of_interest_expense",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T11:51:01.320223+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading cited the row the filer labels \"Total net revenue\" at table 0, row 15, column 3 for total_revenue, and this statement's own structure reads that row as revenue_net_of_interest_expense instead \u2014 a net interest income subtotal decides which of the two a total is, and it decided against this one. The figure is the filer's and is established under the other concept."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "revenue_net_of_interest_expense",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T11:51:13.266095+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading cited the row the filer labels \"Total net revenue\" at table 0, row 15, column 3 for total_revenue, and this statement's own structure reads that row as revenue_net_of_interest_expense instead \u2014 a net interest income subtotal decides which of the two a total is, and it decided against this one. The figure is the filer's and is established under the other concept."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "revenue_net_of_interest_expense",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T11:51:24.291630+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": null,
+          "concept": "total_revenue",
+          "row": [],
+          "unlocated_because": "The reading cited the row the filer labels \"Total net revenue\" at table 0, row 15, column 3 for total_revenue, and this statement's own structure reads that row as revenue_net_of_interest_expense instead \u2014 a net interest income subtotal decides which of the two a total is, and it decided against this one. The figure is the filer's and is established under the other concept."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 15,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total net revenue",
+            "printed": "182,447",
+            "value": 182447.0
+          },
+          "concept": "revenue_net_of_interest_expense",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total net revenue",
+              "printed": "182,447",
+              "value": 182447.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total net revenue",
+              "printed": "177,556",
+              "value": 177556.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 15,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total net revenue",
+              "printed": "158,104",
+              "value": 158104.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "operating_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's operating income for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 27,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 57,048",
+            "value": 57048.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 57,048",
+              "value": 57048.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 58,471",
+              "value": 58471.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 27,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 49,552",
+              "value": 49552.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "Consolidated statements of income",
+            "cell": {
+              "column": 3,
+              "row": 14,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net interest income",
+            "printed": "95,443",
+            "value": 95443.0
+          },
+          "concept": "net_interest_income",
+          "row": [
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 3,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net interest income",
+              "printed": "95,443",
+              "value": 95443.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 4,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net interest income",
+              "printed": "92,583",
+              "value": 92583.0
+            },
+            {
+              "caption": "Consolidated statements of income",
+              "cell": {
+                "column": 5,
+                "row": 14,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net interest income",
+              "printed": "89,267",
+              "value": 89267.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "revenue_net_of_interest_expense": "3e077c247f109a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T11:51:36.863056+00:00",
+        "source": "10-K 0001628280-26-008131 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    }
+  ],
+  "schema_version": 3,
+  "source": {
+    "authority": "regulator_filed",
+    "company": "JPMORGAN CHASE & CO",
+    "document_format": "html",
+    "identifier": "10-K 0001628280-26-008131",
+    "key": "0001628280-26-008131",
+    "language": "en",
+    "location": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+    "provider": "SEC EDGAR",
+    "published_on": "2026-02-13",
+    "reporting_period": {
+      "ends_on": "2025-12-31",
+      "starts_on": null
+    },
+    "source_type": "annual_report",
+    "symbol": "JPM",
+    "verification": [
+      "register_indexed"
+    ]
+  },
+  "symbol": "JPM"
+}
