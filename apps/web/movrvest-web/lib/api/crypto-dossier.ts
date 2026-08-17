@@ -1346,8 +1346,36 @@ function parseJournal(record: UnknownRecord): JournalView {
 
 // ── the whole dossier ───────────────────────────────────────────────
 
+/** One open question, in the words of the layer that owns it. */
+export interface UnresolvedQuestionView {
+  owner: string;
+  stated: string;
+}
+
+/**
+ * The Artificial CIO's answer for this asset — `digital-asset-gates@1`,
+ * a projection of recorded judgments. Everything is a state or a
+ * sentence the backend worded; there is deliberately no conviction
+ * field, and the withheld-conviction sentence is all a surface may
+ * render in its place.
+ */
+export interface DecisionView {
+  state: string;
+  rationale: string;
+  established: readonly string[];
+  notApplicable: readonly string[];
+  unresolved: readonly UnresolvedQuestionView[];
+  materialUncertainties: readonly string[];
+  adverse: readonly string[];
+  adverseAbsent: string;
+  ceiling: string;
+  convictionWithheldBecause: string;
+  silentCommittees: readonly string[];
+}
+
 export interface CryptoDossier {
   symbol: string;
+  decision: DecisionView;
   identity: CryptoIdentity;
   protocol: ProtocolView | null;
   assessment: AssessmentView;
@@ -1372,11 +1400,41 @@ export interface CryptoDossierResult {
   error?: string;
 }
 
+function parseDecision(record: UnknownRecord): DecisionView {
+  return {
+    state: requireString(record.state, "decision.state"),
+    rationale: requireString(record.rationale, "decision.rationale"),
+    established: stringList(record.established),
+    notApplicable: stringList(record.not_applicable),
+    unresolved: recordList(record.unresolved, "decision.unresolved").map(
+      (item, index) => ({
+        owner: requireString(item.owner, `decision.unresolved[${index}].owner`),
+        stated: requireString(
+          item.stated,
+          `decision.unresolved[${index}].stated`,
+        ),
+      }),
+    ),
+    materialUncertainties: stringList(record.material_uncertainties),
+    adverse: stringList(record.adverse),
+    // Required, not optional: an empty adverse list without its reason
+    // would leave this page inventing the sentence.
+    adverseAbsent: requireString(record.adverse_absent, "decision.adverse_absent"),
+    ceiling: requireString(record.ceiling, "decision.ceiling"),
+    convictionWithheldBecause: requireString(
+      record.conviction_withheld_because,
+      "decision.conviction_withheld_because",
+    ),
+    silentCommittees: stringList(record.silent_committees),
+  };
+}
+
 function parseDossier(payload: unknown): CryptoDossier {
   const record = requireRecord(payload, "dossier");
 
   return {
     symbol: requireString(record.symbol, "symbol"),
+    decision: parseDecision(requireRecord(record.decision, "decision")),
     identity: parseIdentity(requireRecord(record.playbook, "playbook")),
     protocol: optionalSection(record.protocol, "protocol", (value) => ({
       entities: recordList(value.entities, "protocol.entities").map(

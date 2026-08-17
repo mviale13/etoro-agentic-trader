@@ -67,6 +67,7 @@ from app.application.workspace.portfolio_briefing_service import (
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
 from app.domain.committee.panel import Panel
+from app.domain.crypto_archetype import ASSIGNMENTS
 from app.domain.decision_history import (
     ConvictionChange,
     DecisionHistory,
@@ -816,6 +817,26 @@ async def dossier(
     """
 
     normalized_symbol = symbol.upper().strip()
+
+    # A digital asset this platform reads has one decision surface, and
+    # it is not this one. This route answered BTC with a conviction of
+    # 46 from provider-fed signals the crypto rulings retired, beside a
+    # crypto dossier that held the platform's best-grounded evidence and
+    # refused to score — one asset, two live product answers. Gone, not
+    # redirected: the two payloads share no shape, so a redirect would
+    # hand a parser a page it cannot read. The gate is `ASSIGNMENTS` —
+    # the same declaration the crypto corpus and its switcher serve, so
+    # the two surfaces cannot disagree about which assets it covers —
+    # and it runs before the pipeline, so retirement costs no build.
+    if normalized_symbol in ASSIGNMENTS:
+        raise HTTPException(
+            status_code=410,
+            detail=(
+                f"The executive dossier no longer answers for {normalized_symbol}: "
+                "a digital asset has one decision surface, "
+                f"GET /crypto/{normalized_symbol}/dossier."
+            ),
+        )
 
     brain = await builder.build(
         focus_symbols=(normalized_symbol,),

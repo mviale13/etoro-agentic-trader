@@ -351,6 +351,22 @@ ACTIONABLE_BUY = _governs("actionable-buy", RuleStatus.UNSOURCED, _AUDIT)
 #: A SELL vote is an analyst veto — REJECT, ahead of every score.
 VETO_SELL = _governs("veto-sell", RuleStatus.UNSOURCED, _AUDIT)
 
+#: The digital-asset gates: posture arithmetic over recorded committee
+#: judgments, with INVESTIGATE as a structural ceiling. No number
+#: appears anywhere in the rule — the argument is written at the
+#: implementation (`app/cio/digital_asset_decision.py`).
+DIGITAL_ASSET_GATES = _governs(
+    "digital-asset-gates",
+    RuleStatus.ARGUED,
+    "argued in digital_asset_decision.py from the committee protocol's "
+    "own vocabulary: a question established as applicable is a "
+    "direction research can take, an asset none of whose questions is "
+    "applicable cannot be investigated toward anything, and nothing "
+    "passes INVESTIGATE because no crypto conclusion has an "
+    "established investment meaning and no quality band or valuation "
+    "instrument exists for a digital asset",
+)
+
 
 #: Every rule, by key. The registry a test can walk and a surface can
 #: quote; adding a decision-bearing threshold without registering it
@@ -380,5 +396,6 @@ DECISION_RULES: dict[str, DecisionRule] = {
         CONVICTION_MEAN,
         ACTIONABLE_BUY,
         VETO_SELL,
+        DIGITAL_ASSET_GATES,
     )
 }

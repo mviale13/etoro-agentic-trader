@@ -904,7 +904,11 @@ export interface DossierSupply {
 export interface DossierResult {
   /** Null when the backend was unreachable — nothing stands in. */
   dossier: DossierViewModel | null;
-  source: "backend" | "unavailable";
+  /** "retired": the backend answered 410 — this symbol's case lives on
+      the crypto dossier, and the caller should send the reader there
+      rather than render an error over a page that deliberately no
+      longer exists. */
+  source: "backend" | "unavailable" | "retired";
   backendUrl: string;
   error?: string;
 }
@@ -2359,6 +2363,18 @@ export async function getDossier(symbol: string): Promise<DossierResult> {
         Accept: "application/json",
       },
     });
+
+    // 410 is not a failure: the backend retired this surface for the
+    // crypto corpus, and the same asset's case lives at
+    // /crypto/{symbol}/dossier. Distinguished from unreachable so the
+    // page can redirect instead of apologising.
+    if (response.status === 410) {
+      return {
+        dossier: null,
+        source: "retired",
+        backendUrl: endpoint,
+      };
+    }
 
     if (!response.ok) {
       const responseBody = await response.text();

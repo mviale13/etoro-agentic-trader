@@ -11,6 +11,8 @@ import { ExecutiveNarrative } from "@/components/executive/ExecutiveNarrative";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { redirect } from "next/navigation";
+
 import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierAgreement,
@@ -60,6 +62,13 @@ export default async function DossierPage({ params }: DossierPageProps) {
   const normalizedSymbol = symbol.toUpperCase();
 
   const result = await getDossier(normalizedSymbol);
+
+  // The backend retired this surface for the crypto corpus: one asset,
+  // one decision surface. The reader is sent to the canonical page
+  // rather than shown a tombstone.
+  if (result.source === "retired") {
+    redirect(`/crypto/${normalizedSymbol}`);
+  }
 
   return (
     <DashboardLayout>

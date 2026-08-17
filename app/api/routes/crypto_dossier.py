@@ -57,6 +57,9 @@ from app.services.crypto_asset_quality_service import CryptoAssetQualityService
 from app.services.crypto_intelligence_service import CryptoIntelligenceService
 from app.services.crypto_market_service import CryptoMarketService
 from app.services.crypto_playbook_service import CryptoPlaybookService
+from app.services.digital_asset_decision_service import (
+    DigitalAssetDecisionService,
+)
 from app.services.intelligence_journal_service import IntelligenceJournalService
 from app.services.investor_assessment_service import InvestorAssessmentService
 from app.services.protocol_fundamentals_service import ProtocolFundamentalsService
@@ -134,6 +137,15 @@ async def get_crypto_dossier(
 
     return {
         "symbol": asset,
+        # ── the Artificial CIO's answer, from judged states only ──
+        # A projection of recorded judgments and assessment statements
+        # (`digital-asset-gates@1`), serialised by the domain. Nothing
+        # is scored, nothing is stored, and requesting it cannot
+        # manufacture a judgment event — the rule reads what `movrvest
+        # judge` recorded and stops. This is the one canonical decision
+        # surface for a digital asset; the legacy executive dossier now
+        # answers 410 for every asset in this corpus.
+        "decision": DigitalAssetDecisionService().decide(asset).as_dict(),
         # ── what am I looking at ──
         "playbook": crypto_playbook_response(playbook),
         "protocol": protocol_fundamentals_response(
