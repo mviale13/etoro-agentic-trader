@@ -220,9 +220,7 @@ def authoritative(
     action behind a page view.
     """
 
-    return tuple(
-        observation for observation in observations if observation.is_active
-    )
+    return tuple(observation for observation in observations if observation.is_active)
 
 
 def statement_consensus_of(

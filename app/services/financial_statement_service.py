@@ -211,8 +211,7 @@ class FinancialStatementService:
         # it fill the count would mean an audited statement could never
         # be re-read and its authority never restored.
         while (
-            len(authoritative(self._store.read(symbol, source.key, statement)))
-            < target
+            len(authoritative(self._store.read(symbol, source.key, statement))) < target
         ):
             try:
                 observation = await self._extractor.extract(symbol, document, statement)

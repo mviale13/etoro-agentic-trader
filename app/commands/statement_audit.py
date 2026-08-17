@@ -101,9 +101,7 @@ class StatementAuditCommand:
 
         held = [
             (position, observation)
-            for position, observation in enumerate(
-                self._entry(symbol, source.key)
-            )
+            for position, observation in enumerate(self._entry(symbol, source.key))
         ]
 
         if not held:
@@ -129,9 +127,7 @@ class StatementAuditCommand:
 
     def _record(self, symbol: str, rulings: tuple[ObservationRuling, ...]) -> int:
         refuted = {
-            ruling.position: ruling.because()
-            for ruling in rulings
-            if ruling.supersedes
+            ruling.position: ruling.because() for ruling in rulings if ruling.supersedes
         }
 
         if not refuted:

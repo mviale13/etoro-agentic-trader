@@ -204,9 +204,7 @@ class JsonFinancialStatementStore(FinancialStatementStore):
                 rewritten.append(observation)
                 continue
 
-            rewritten.append(
-                replace(observation, superseded_because=reason.strip())
-            )
+            rewritten.append(replace(observation, superseded_because=reason.strip()))
             superseded += 1
 
         if superseded:

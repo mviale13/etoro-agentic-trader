@@ -122,9 +122,7 @@ def test_existing_target_observations_are_never_rewritten(tmp_path: Path) -> Non
     target_store.append(observation())
     held_before = target_store.read("JPM", ACCESSION, INCOME)
 
-    JsonFinancialStatementStore(source).append(
-        other_filing(key="0000019617-26-000200")
-    )
+    JsonFinancialStatementStore(source).append(other_filing(key="0000019617-26-000200"))
     manifested(source)
 
     StatementPromotion(source, target).apply()
@@ -276,9 +274,7 @@ def test_a_located_label_todays_vocabulary_refuses_is_incompatible(
     original = observation()
     rewritten = dataclasses.replace(
         original,
-        facts=(
-            dataclasses.replace(original.facts[0], anchor=renamed, row=(renamed,)),
-        ),
+        facts=(dataclasses.replace(original.facts[0], anchor=renamed, row=(renamed,)),),
     )
     JsonFinancialStatementStore(source).append(rewritten)
     manifested(source)
