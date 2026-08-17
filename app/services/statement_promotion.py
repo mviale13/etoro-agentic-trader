@@ -36,18 +36,23 @@ contract is **proven**, and the proof has two parts:
 - **What the record itself can prove.** A located anchor's label is
   checkable against today's `matches_concept` — a label today's
   vocabulary refuses is a claim today's contract would not accept.
-- **What only testimony can prove.** An *absence* — "no figure located
-  for X" — is a claim about the producing vocabulary, and the record
-  does not carry which vocabulary that was. A promotion manifest beside
-  the artifacts records an operator's evidence-backed ruling: the
+- **What the record can prove once it is stamped.** An *absence* — "no
+  figure located for X" — is a claim about the producing vocabulary, and
+  the document cannot refute it. Since BQ17 every observation carries
+  `produced_under`, the fingerprint of the vocabulary each of its
+  concepts was read under, stamped at acquisition. An absence is
+  compatible where that fingerprint equals today's for that concept.
+- **What only testimony can prove.** Records taken before BQ17 carry no
+  stamp, and are never retro-stamped. For those a promotion manifest
+  beside the artifacts records an operator's evidence-backed ruling: the
   artifact's hash, and per concept the fingerprint of the vocabulary it
-  was produced under. An absence is compatible only where that
-  fingerprint equals today's for that concept; the historical record is
-  never retro-stamped — the manifest is a ruling *about* it, tied to
-  its bytes.
+  was produced under — a ruling *about* the bytes, tied to them.
 
-Anything unproven is refused. That is the default the whole platform
-runs on: not knowing is never treated as knowing.
+The record's own stamp is consulted first and the manifest second, so
+testimony can never overrule an observation that answers for itself.
+Where neither speaks, the ruling is unproven and unproven is refused.
+That is the default the whole platform runs on: not knowing is never
+treated as knowing.
 """
 
 from __future__ import annotations
@@ -317,42 +322,55 @@ class StatementPromotion:
                     ),
                 )
 
-        # What only testimony proves: which vocabulary an absence was
-        # produced under. No ruling, no entry, no fingerprint — refused.
+        # Which vocabulary an absence was produced under. Two sources,
+        # in this order, because a record that carries its own answer
+        # should never be ruled on by testimony about it: the
+        # observation's native stamp (everything acquired since BQ17),
+        # then the manifest (the historical bridge). Neither — refused.
         absent = tuple(
             fact.concept for fact in observation.facts if fact.anchor is None
         )
 
-        if ruled_under is None:
+        manifested = ruled_under.get("produced_under") if ruled_under else None
+        by_manifest = manifested if isinstance(manifested, dict) else {}
+
+        if not observation.produced_under and ruled_under is None:
+            # No account of the producing contract from either source.
+            # Checked before the absences rather than inside the loop,
+            # because a reading that happens to locate everything is
+            # still a reading nothing vouches for — deserialization is
+            # admission to inspection, never to a consensus.
             return ruled(
                 ImportRuling.UNPROVEN,
                 because=(
-                    "no manifest entry rules this artifact's producing "
-                    "contract, and an observation's own record cannot prove "
-                    "which vocabulary its absences were read under"
+                    "the observation carries no producing contract and no "
+                    "manifest entry rules this artifact, so which vocabulary "
+                    "it was read under is unknown — and unknown is refused"
                 ),
             )
 
-        produced = ruled_under.get("produced_under")
-        fingerprints = produced if isinstance(produced, dict) else {}
-
         for concept in absent:
-            recorded = fingerprints.get(concept.value)
+            native = observation.produced_contract_for(concept)
+            recorded = native if native is not None else by_manifest.get(concept.value)
 
             if recorded is None:
                 return ruled(
                     ImportRuling.UNPROVEN,
                     because=(
-                        f"the manifest records no producing vocabulary for "
-                        f"{concept.value}, whose absence this reading claims"
+                        f"nothing records which vocabulary {concept.value} "
+                        "was read under, and this reading claims its "
+                        "absence — the observation carries no producing "
+                        "contract and no manifest entry supplies one"
                     ),
                 )
 
             if recorded != concept_vocabulary_fingerprint(concept):
+                whose = "the reading" if native is not None else "the manifest"
+
                 return ruled(
                     ImportRuling.INCOMPATIBLE,
                     because=(
-                        f"the reading records no figure for {concept.value} "
+                        f"{whose} records no figure for {concept.value} "
                         "under a vocabulary that differs from today's for "
                         "that concept, so the absence is a claim about a "
                         "contract this platform no longer reads under"

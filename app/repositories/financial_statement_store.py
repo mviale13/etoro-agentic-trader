@@ -20,6 +20,7 @@ from typing import Any
 
 from app.domain.evidence import EvidenceNotApplicable
 from app.domain.financial_statements import (
+    ConceptContract,
     FinancialStatementObservation,
     StatementConcept,
     StatementFact,
@@ -271,6 +272,20 @@ class JsonFinancialStatementStore(FinancialStatementStore):
                         if observation.superseded_because is not None
                         else {}
                     ),
+                    # Written only where a reading carried it, so an
+                    # entry taken before acquisition stamped the
+                    # producing contract re-encodes byte-identically.
+                    # An absent key is "not recorded", never "today's".
+                    **(
+                        {
+                            "produced_under": {
+                                stamped.concept.value: stamped.fingerprint
+                                for stamped in observation.produced_under
+                            }
+                        }
+                        if observation.produced_under
+                        else {}
+                    ),
                     "facts": [
                         {
                             "concept": fact.concept.value,
@@ -342,6 +357,14 @@ def _only(
     )
 
 
+def _stamped(stored: dict[str, Any]) -> dict[str, Any]:
+    """The producing-contract fingerprints this entry recorded, if any."""
+
+    recorded = stored.get("produced_under")
+
+    return recorded if isinstance(recorded, dict) else {}
+
+
 def _observation(
     symbol: str,
     source: PrimarySource,
@@ -364,6 +387,22 @@ def _observation(
             str(stored["superseded_because"])
             if stored.get("superseded_because")
             else None
+        ),
+        # Read back, never recomputed. Recomputing would make every
+        # stored reading claim it was produced under whatever contract
+        # is running now, which is the one thing this field exists to
+        # make impossible — an entry without it stays without it.
+        # Restored in the vocabulary's own order rather than the JSON
+        # object's, which `sort_keys` alphabetises: a decode that
+        # depended on key order would make a promoted observation
+        # unequal to the one it was copied from.
+        produced_under=tuple(
+            ConceptContract(
+                concept=concept,
+                fingerprint=str(_stamped(stored)[concept.value]),
+            )
+            for concept in StatementConcept
+            if concept.value in _stamped(stored)
         ),
         facts=tuple(
             StatementFact(
