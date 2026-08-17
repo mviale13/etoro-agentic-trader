@@ -272,15 +272,21 @@ def test_the_verdict_is_carried_as_data_never_as_prose() -> None:
     """
     A surface that recovered it by splitting a sentence would be doing
     domain reasoning where none belongs.
+
+    The specimen was JPMorgan until BQ23 refused its `Total net revenue`
+    as a measure net of financing cost, which leaves it with one answered
+    factor and no band. Union Pacific carries the same shape — three
+    factors, three distinct verdicts — and the claim under test never was
+    about a bank.
     """
 
-    derivation = grounded("JPM")
+    derivation = grounded("UNP")
 
     assert derivation is not None
 
     verdicts = [item.verdict for item in derivation.contributions]
 
-    assert verdicts == ["excellent", "weak", "declining"]
+    assert verdicts == ["excellent", "weak", "moderate"]
 
     # And the statement is the question alone, with no verdict folded in.
     assert all("—" not in item.statement for item in derivation.contributions)
@@ -304,16 +310,21 @@ def test_coverage_answers_a_different_question_from_the_share() -> None:
 
 def test_three_companies_at_the_same_score_are_distinguishable() -> None:
     """
-    The whole point of the slice. AAPL, PG and JPM all show 62; the
+    The whole point of the slice. PG, AAPL and CB all show 62; the
     collapsed row must not present them as the same finding.
 
     Distinguishable from *fields alone* — no string is parsed and no
     threshold is compared to tell them apart.
+
+    The pair that only verdicts separate was PG and JPM until BQ23
+    refused JPMorgan's top line. Apple and Chubb now hold that
+    relationship exactly, which is the more useful specimen anyway: two
+    companies of different kinds, identical sense mix, different verdicts.
     """
 
     shapes = {}
 
-    for symbol in ("AAPL", "PG", "JPM"):
+    for symbol in ("PG", "AAPL", "CB"):
         derivation = grounded(symbol)
 
         assert derivation is not None
@@ -326,10 +337,10 @@ def test_three_companies_at_the_same_score_are_distinguishable() -> None:
 
     assert len({shapes[symbol] for symbol in shapes}) == 3
 
-    # The sense mix alone separates AAPL; only the verdicts separate
-    # PG from JPM, which is why the verdict had to become a field.
-    assert shapes["PG"][0] == shapes["JPM"][0]
-    assert shapes["PG"][1] != shapes["JPM"][1]
+    # The sense mix alone separates PG; only the verdicts separate
+    # AAPL from CB, which is why the verdict had to become a field.
+    assert shapes["AAPL"][0] == shapes["CB"][0]
+    assert shapes["AAPL"][1] != shapes["CB"][1]
 
 
 def test_a_score_that_knows_no_candidate_set_leaves_coverage_absent() -> None:

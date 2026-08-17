@@ -297,9 +297,15 @@ def _unestablished(
 
     The consensus already worded why the figure is absent — the reading
     located no such cell, the statement was never located, the claim did
-    not settle — and this layer passes that through rather than
-    restating it. Compensating for a gap and re-wording one are the same
-    mistake at different volumes.
+    not settle, or the statement's own structure disproved the concept —
+    and this layer passes that through rather than restating it.
+    Compensating for a gap and re-wording one are the same mistake at
+    different volumes.
+
+    `absent_because` rather than `unlocated_because`, because a refused
+    figure is not an unlocated one: the filer printed it and this
+    platform declined it, and reading only the unlocated wording would
+    report that refusal as no reason at all.
     """
 
     if fact is None:
@@ -310,7 +316,7 @@ def _unestablished(
 
     return (
         f"{MEASURE_NAMES[name]} needs {concept.value}, which is not "
-        f"established: {fact.unlocated_because}"
+        f"established: {fact.absent_because}"
     )
 
 

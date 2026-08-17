@@ -16,7 +16,7 @@ the anchored row and cannot vary independently of it.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from app.domain.absence_supersession import voting
 from app.domain.agreement import Agreement, agreement
@@ -26,6 +26,7 @@ from app.domain.financial_statements import (
     StatementFact,
     StatementKind,
 )
+from app.domain.financing_cost_refusal import FactRefusal, refusal_for
 from app.domain.knowledge_consensus import QUORUM, ConsensusState
 from app.domain.primary_source import PrimarySource
 from app.domain.provenance import Provenance
@@ -78,11 +79,42 @@ class ConsensusFact:
     #: they said.
     withdrawn_absences: int = 0
 
+    #: A figure the readings settled on and this statement's own
+    #: structure disproved for this concept.
+    #:
+    #: Kept beside the claim rather than turned into an absence: the
+    #: filer printed the figure, and reporting *no figure located* about
+    #: a document that prints one would be false. The refused figure and
+    #: the figure that disproved it both travel here, so a surface can
+    #: say what was declined and why without re-deriving anything.
+    refused: FactRefusal | None = None
+
     @property
     def is_located(self) -> bool:
-        """Whether the statement was settled to print this figure."""
+        """Whether the statement was settled to print this figure.
+
+        `False` for a refused figure. The concept is unanswered — which
+        is the whole of the refusal — and `refused` is where a reader
+        finds out that the answer was declined rather than missing.
+        """
 
         return self.anchor is not None
+
+    @property
+    def absent_because(self) -> str | None:
+        """Why this concept has no figure, whichever kind of absence it is.
+
+        The one door a consumer should read. A refusal and an absence are
+        different facts and are worded apart, but every consumer that
+        reports *why there is no number* wants whichever applies, and
+        asking for `unlocated_because` alone would report a refusal as
+        nothing at all.
+        """
+
+        if self.refused is not None:
+            return self.refused.because
+
+        return self.unlocated_because
 
 
 @dataclass(frozen=True, slots=True)
@@ -213,6 +245,39 @@ class FinancialStatementConsensus:
 
         return tuple(fact for fact in self.facts if fact.is_located)
 
+    @property
+    def refused_facts(self) -> tuple[ConsensusFact, ...]:
+        """The concepts whose settled figure this statement's structure refused.
+
+        Beside `located_facts` rather than inside it, and never subtracted
+        from anything: a concept the filer printed and this platform
+        declined is a third state, and a surface that could only see
+        located-or-absent would report it as the filer's silence.
+        """
+
+        return tuple(fact for fact in self.facts if fact.refused is not None)
+
+    def refusal_caveat(self) -> str | None:
+        """What a reader is owed about a figure that was printed and declined.
+
+        Silent where nothing was refused. Where something was, it names
+        the concept and quotes the reason the domain rule worded, because
+        the alternative is a blank space that reads as a filer printing
+        nothing.
+        """
+
+        refused = self.refused_facts
+
+        if not refused:
+            return None
+
+        return " ".join(
+            f"This platform read a figure for {fact.concept.value} and does "
+            f"not count it. {fact.refused.because}"
+            for fact in refused
+            if fact.refused is not None
+        )
+
     def stated_source(self) -> str:
         """The document as an investor would cite it."""
 
@@ -292,9 +357,18 @@ def statement_consensus_of(
 
     count = len(authoritative)
 
-    facts = tuple(
-        _fact_consensus(concept, authoritative, count)
-        for concept in _addressed(authoritative)
+    # Two passes, because the second one is cross-concept. Each claim is
+    # settled on its own first — content-blind, over the readings
+    # entitled to answer it — and only then is the settled set asked
+    # whether one statement's structure disproves another's semantic
+    # role. A single pass could not do it: the figure that disproves a
+    # top line is a different concept's, and it must be settled before
+    # it can disprove anything.
+    facts = _refused(
+        tuple(
+            _fact_consensus(concept, authoritative, count)
+            for concept in _addressed(authoritative)
+        )
     )
 
     return FinancialStatementConsensus(
@@ -313,6 +387,41 @@ def statement_consensus_of(
         reading=_reading(authoritative, count, quorum),
         superseded_count=len(withdrawn),
     )
+
+
+def _refused(facts: tuple[ConsensusFact, ...]) -> tuple[ConsensusFact, ...]:
+    """The settled facts, with any the statement's own structure disproves.
+
+    Every fact is returned, in order, whether or not anything happened to
+    it — a refusal is a property carried on the claim, never a claim
+    removed from the set.
+    """
+
+    established = {
+        fact.concept: fact.anchor for fact in facts if fact.anchor is not None
+    }
+
+    return tuple(_refuse_one(fact, established) for fact in facts)
+
+
+def _refuse_one(
+    fact: ConsensusFact,
+    established: dict[StatementConcept, ReportedFigure],
+) -> ConsensusFact:
+    """One fact, refused its concept where the structure says it must be.
+
+    The anchor and row move onto the refusal rather than being dropped:
+    the concept is unanswered, and the figure the filer printed is still
+    reportable. Nothing is written and the observations are untouched —
+    this is a property of today's derivation only.
+    """
+
+    refusal = refusal_for(fact.concept, fact.anchor, fact.row, established)
+
+    if refusal is None:
+        return fact
+
+    return replace(fact, anchor=None, row=(), refused=refusal)
 
 
 def _addressed(

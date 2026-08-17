@@ -77,9 +77,20 @@ def _render_statements(consensus: FinancialStatementConsensus) -> None:
     for fact in consensus.facts:
         print(f"  {fact.concept.value}")
 
+        if fact.refused is not None:
+            # Printed by the filer and declined by this platform — the
+            # third state, and it must never render as the filer's
+            # silence.
+            refused = fact.refused
+            print(f"    figure: REFUSED — {refused.standing.value}")
+            print(f"      the filer prints: {refused.figure.stated()}")
+            print(f"      because: {refused.because}")
+            _agreement("located", fact.agreement, indent="    ")
+            continue
+
         if fact.anchor is None:
             print("    figure: absent")
-            print(f"      because: {fact.unlocated_because or 'not stated'}")
+            print(f"      because: {fact.absent_because or 'not stated'}")
             _agreement("located", fact.agreement, indent="    ")
             continue
 
