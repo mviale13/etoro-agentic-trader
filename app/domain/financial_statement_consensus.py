@@ -18,15 +18,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from app.domain.absence_supersession import voting
+from app.domain.absence_supersession import rule_absences
 from app.domain.agreement import Agreement, agreement
+from app.domain.assignment_supersession import rule_assignments
 from app.domain.financial_statements import (
     FinancialStatementObservation,
     StatementConcept,
     StatementFact,
     StatementKind,
 )
-from app.domain.financing_cost_refusal import FactRefusal, refusal_for
+from app.domain.financing_cost_refusal import GOVERNED, FactRefusal, refusal_for
 from app.domain.knowledge_consensus import QUORUM, ConsensusState
 from app.domain.primary_source import PrimarySource
 from app.domain.provenance import Provenance
@@ -78,6 +79,18 @@ class ConsensusFact:
     #: withdrawn readings remain stored, unaltered, and still say what
     #: they said.
     withdrawn_absences: int = 0
+
+    #: How many readings' positive assignment of a figure to this concept
+    #: a later native reading superseded, and which therefore did not
+    #: vote.
+    #:
+    #: The mirror of `withdrawn_absences`, reported on the same terms: a
+    #: claim settled with five assignments withdrawn is a different fact
+    #: from one settled outright, and the reader is owed the difference.
+    #: The withdrawn readings remain stored, unaltered, and still say
+    #: what they said — including the figure, which stays historical
+    #: evidence.
+    withdrawn_assignments: int = 0
 
     #: A figure the readings settled on and this statement's own
     #: structure disproved for this concept.
@@ -418,10 +431,62 @@ def _refuse_one(
 
     refusal = refusal_for(fact.concept, fact.anchor, fact.row, established)
 
-    if refusal is None:
-        return fact
+    if refusal is not None:
+        return replace(fact, anchor=None, row=(), refused=refusal)
 
-    return replace(fact, anchor=None, row=(), refused=refusal)
+    if fact.anchor is None and fact.withdrawn_assignments:
+        # The composition BQ27 owes BQ23. Readings that assigned a figure
+        # here were withdrawn because the same figure settled under a
+        # mutually exclusive concept — so the truthful account of this
+        # concept is still the structural refusal of that figure, worded
+        # by the same rule that refuses a settled positive, and never the
+        # bare absence the surviving voters recorded. One reason, not
+        # two: the surviving voters' own sentence says the same thing and
+        # yields to it.
+        carried = _carried_refusal(fact.concept, established)
+
+        if carried is not None:
+            return replace(fact, refused=carried, unlocated_because=None)
+
+    return fact
+
+
+def _carried_refusal(
+    concept: StatementConcept,
+    established: dict[StatementConcept, ReportedFigure],
+) -> FactRefusal | None:
+    """BQ23's refusal of the figure now settled under the sibling concept.
+
+    Fires only where an assignment was withdrawn (the caller's guard) and
+    the mutually exclusive sibling's figure is settled in this consensus —
+    which is exactly the evidence that withdrew the assignment. A genuine
+    tie has no withdrawal and is never masked by this: unsettled stays
+    unsettled, worded as such.
+    """
+
+    governed = GOVERNED.get(concept)
+
+    if governed is None:
+        return None
+
+    marker, requirement = governed
+
+    for sibling, (sibling_marker, sibling_requirement) in GOVERNED.items():
+        if (
+            sibling is concept
+            or sibling_marker is not marker
+            or sibling_requirement is requirement
+        ):
+            continue
+
+        anchor = established.get(sibling)
+
+        if anchor is None:
+            continue
+
+        return refusal_for(concept, anchor, (anchor,), established)
+
+    return None
 
 
 def _addressed(
@@ -448,17 +513,38 @@ def _fact_consensus(
     """One concept's claim, counted over the observations that addressed it.
 
     Counted over those still entitled to answer, which is not always all
-    of them. An absence recorded under a vocabulary that provably could
-    not have accepted the label a later reading located is a true
-    statement about a narrower contract, and letting it vote deadlocks
-    the claim it was never in a position to settle. The withdrawal is
-    concept-local: the same reading's other facts are untouched, and its
-    stored bytes are untouched.
+    of them, and there are two authority rules rather than one:
+
+    - an **absence** recorded under a vocabulary that provably could not
+      have accepted the label a later reading located is a true statement
+      about a narrower contract, and letting it vote deadlocks the claim
+      it was never in a position to settle (BQ20);
+    - a **positive assignment** of a physical fact that a later native
+      reading — asked about both concepts — assigned to a mutually
+      exclusive concept on the statement's own evidence is a true answer
+      to a question the fact no longer takes, and letting it vote turns a
+      later, better-qualified assignment into a manufactured tie (BQ27).
+
+    Both withdrawals are concept-local: the same reading's other facts
+    are untouched, and its stored bytes are untouched.
     """
 
-    entitled = voting(concept, observations)
+    silenced_absences = {
+        ruling.position
+        for ruling in rule_absences(concept, observations)
+        if not ruling.votes
+    }
+    silenced_assignments = {
+        ruling.position
+        for ruling in rule_assignments(concept, observations)
+        if not ruling.votes
+    }
 
-    withdrawn = len(observations) - len(entitled)
+    entitled = tuple(
+        observation
+        for position, observation in enumerate(observations)
+        if position not in silenced_absences and position not in silenced_assignments
+    )
 
     addressed = tuple(
         fact
@@ -495,7 +581,8 @@ def _fact_consensus(
         concept=concept,
         addressed_in=len(addressed),
         observations=count,
-        withdrawn_absences=withdrawn,
+        withdrawn_absences=len(silenced_absences),
+        withdrawn_assignments=len(silenced_assignments),
         anchor=anchor,
         row=row,
         unlocated_because=unlocated_because,

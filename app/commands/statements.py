@@ -85,6 +85,15 @@ def _render_statements(consensus: FinancialStatementConsensus) -> None:
             print(f"    figure: REFUSED — {refused.standing.value}")
             print(f"      the filer prints: {refused.figure.stated()}")
             print(f"      because: {refused.because}")
+            if fact.withdrawn_assignments:
+                print(
+                    f"      note: {fact.withdrawn_assignments} stored "
+                    "reading(s) assigned this figure here before the "
+                    "concept it answers existed; a semantically qualified "
+                    "reading superseded that assignment, and they do not "
+                    "vote for this concept. The readings and the figure "
+                    "remain stored."
+                )
             _agreement("located", fact.agreement, indent="    ")
             continue
 
