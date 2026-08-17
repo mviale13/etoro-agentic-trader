@@ -196,6 +196,20 @@ class DigitalAssetDecision:
     #: sentence.
     judged: bool = False
 
+    #: The exact recorded judgments this decision rests on, sorted so two
+    #: readings of one evidence set cannot differ by ordering.
+    #:
+    #: References, never copies. A judgment is immutable and already
+    #: stored under its own id, so carrying the id is enough to establish
+    #: what informed a decision — and duplicating the committee's payload
+    #: here would create a second copy that could drift from the first.
+    #:
+    #: They are also what makes *nothing changed* checkable rather than
+    #: assumed: re-judging an asset mints a new record id, so an
+    #: unchanged set is positive evidence that the same evidence produced
+    #: the same answer.
+    judgment_ids: tuple[str, ...] = ()
+
     #: The named, versioned rule this decision was reached under —
     #: *produced under this exact rule*, never *this is the correct way
     #: to invest*. Same regime as the equity decision's `decided_under`.
@@ -229,6 +243,7 @@ class DigitalAssetDecision:
             "conviction_withheld_because": self.conviction_withheld_because,
             "silent_committees": list(self.silent_committees),
             "judged": self.judged,
+            "judgment_ids": list(self.judgment_ids),
             "decided_under": [
                 {"key": rule.key, "version": rule.version}
                 for rule in self.decided_under
@@ -262,6 +277,7 @@ def decide_digital_asset(
         # A committee spoke, whatever it said — including that it cannot
         # tell whether its question applies.
         judged=bool(items),
+        judgment_ids=tuple(sorted(item.judgment_id for item in items)),
         established=tuple(item.stated for item in answered),
         not_applicable=tuple(
             f"{item.committee.name}: {item.because or item.posture.stated}"
@@ -456,4 +472,8 @@ def as_executive_decision(decision: DigitalAssetDecision) -> ExecutiveDecision:
             *decision.material_uncertainties,
         ),
         decided_under=decision.decided_under,
+        # The records this rests on, carried so the journal can establish
+        # what informed a decision without re-deriving it, and so an
+        # unchanged evidence set is checkable rather than assumed.
+        evidence_records=decision.judgment_ids,
     )

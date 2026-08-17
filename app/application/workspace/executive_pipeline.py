@@ -304,10 +304,16 @@ class ExecutivePipeline:
             catalysts=workspace.thesis.catalysts,
         )
 
-        # Deliberately not journalled. A decision derived from recorded
-        # judgments is a projection, recomputed on every read — writing
-        # it back would create a second history of the same judgments,
-        # and DV3 left the crypto journal question open on purpose.
+        if self.journal is not None:
+            # Recorded with no scores, because none exist. DV4 withheld
+            # this write on the grounds that a projection recomputed on
+            # every read would create a second history of the same
+            # judgments — true of a rule that wrote once a day, and no
+            # longer true: the decision names the judgment records it
+            # rests on, so the journal appends only when that set or the
+            # answer over it has actually moved. Opening a page all day
+            # writes nothing.
+            self.journal.record(workspace.decision)
 
         workspace.brief = self.brief_builder.build(workspace)
 

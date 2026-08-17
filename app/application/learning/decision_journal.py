@@ -28,6 +28,19 @@ class DecisionJournal:
     evaluation the same day — a second dashboard load, a second CLI run —
     therefore does not inflate the record. A state that changes during the
     day is recorded, because the change is what happened.
+
+    **Where a decision names the records it rests on, sameness is checked
+    rather than assumed.** A decision reached from scores has no stable
+    identity behind it, so the day is the finest resolution at which two
+    of them can honestly be called the same, and that rule is unchanged.
+    A decision reached from recorded judgments carries their ids: an
+    unchanged set is positive evidence that the same evidence produced
+    the same answer, and a changed set is evidence that it did not —
+    which is #113's *evidence moved under a steady answer*, the ordinary
+    case, and the one a day-and-state rule silently drops. Such a
+    decision is therefore compared against the last one recorded rather
+    than against today's, so a page view can append only when something
+    actually moved, and re-reading a page all day appends nothing.
     """
 
     def __init__(
@@ -60,6 +73,18 @@ class DecisionJournal:
             "conviction": decision.conviction,
             "rationale": decision.rationale,
         }
+
+        # The rules this decision was reached under, and the records it
+        # rested on. Written only where the decision carries them, so no
+        # existing record shape changes and an absent key keeps meaning
+        # *this predates the stamp* rather than *no rule applied*.
+        if decision.decided_under:
+            payload["decided_under"] = [
+                rule.identity for rule in decision.decided_under
+            ]
+
+        if decision.evidence_records:
+            payload["evidence_records"] = list(decision.evidence_records)
 
         if evidence is not None:
             payload["scores"] = {
@@ -130,11 +155,35 @@ class DecisionJournal:
         decision: ExecutiveDecision,
         symbol: str,
     ) -> bool:
+        """Whether this decision is one the record already holds.
+
+        Two questions, and which one applies depends on what the decision
+        can prove about itself rather than on what kind of asset it is.
+        """
+
+        history = self.history(symbol)
+
+        if decision.evidence_records:
+            latest = history.latest
+
+            # Same answer, same rules, same records beneath it: nothing
+            # has happened since the last one. Compared against the
+            # latest rather than against today's, because *nothing
+            # changed* is here a checkable fact rather than a convention
+            # about how often to write.
+            return (
+                latest is not None
+                and latest.state is decision.state
+                and latest.evidence_records == decision.evidence_records
+                and latest.decided_under
+                == tuple(rule.identity for rule in decision.decided_under)
+            )
+
         decided_on = decision.decided_at.date()
 
         return any(
             record.state is decision.state and record.decided_at.date() == decided_on
-            for record in self.history(symbol).records
+            for record in history.records
         )
 
     @staticmethod
@@ -170,7 +219,27 @@ class DecisionJournal:
             rationale=str(event.payload.get("rationale", "")),
             decided_at=event.timestamp,
             scores=DecisionJournal._to_scores(event.payload.get("scores")),
+            decided_under=DecisionJournal._to_strings(
+                event.payload.get("decided_under"),
+            ),
+            evidence_records=DecisionJournal._to_strings(
+                event.payload.get("evidence_records"),
+            ),
         )
+
+    @staticmethod
+    def _to_strings(raw: object) -> tuple[str, ...]:
+        """A recorded list of identities, or an honest empty one.
+
+        Absent for every record written before the field existed, which
+        is the truth about them: the rule was not noted, not that none
+        applied.
+        """
+
+        if not isinstance(raw, list):
+            return ()
+
+        return tuple(str(item) for item in raw)
 
     @staticmethod
     def _to_conviction(raw: object) -> int | None:
