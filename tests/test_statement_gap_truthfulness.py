@@ -45,18 +45,18 @@ class TestTheDowngradeIsReachable:
     def test_a_revenue_label_outside_the_accepted_forms_downgrades(self) -> None:
         """A revenue-like label this platform still does not accept.
 
-        Union Pacific's shape. (Coca-Cola's `Net Operating Revenues`
-        played this part until BQ11 earned it as an accepted label; the
-        property under test is unchanged, so it needs a specimen that
-        is still outside the vocabulary.)
+        M&T's shape. (Coca-Cola's `Net Operating Revenues` played this
+        part until BQ11 earned it, and Union Pacific's `Total operating
+        revenues` until BQ19 did; the property under test is unchanged,
+        so it needs a specimen that is still outside the vocabulary.)
         """
 
         assert not matches_concept(
-            StatementConcept.TOTAL_REVENUE, "Total operating revenues"
+            StatementConcept.TOTAL_REVENUE, "Mortgage banking revenues"
         )
 
         assert any(
-            word in "total operating revenues"
+            word in "mortgage banking revenues"
             for word in CONCEPT_WORDS[StatementConcept.TOTAL_REVENUE]
         )
 
@@ -98,7 +98,6 @@ class TestWordingIsNotEvidence:
     #: and are **not** accepted forms. Each one is a real row from a
     #: real income statement (KO, UNP, AXP, C, BCS, WMT, MTB).
     CONTAINING_BUT_NOT_ACCEPTED = (
-        (StatementConcept.TOTAL_REVENUE, "Total operating revenues"),
         (StatementConcept.TOTAL_REVENUE, "Operating revenues:"),
         (StatementConcept.TOTAL_REVENUE, "Total revenues, net of interest expense"),
         (StatementConcept.TOTAL_REVENUE, "Mortgage banking revenues"),
@@ -155,6 +154,10 @@ class TestWordingIsNotEvidence:
                 "total revenues and other income",
                 # BQ11: earned by Coca-Cola's own arithmetic, one label.
                 "net operating revenues",
+                # BQ19: earned by Union Pacific's own arithmetic —
+                # 23,220 + 1,290 = 24,510, an addition of two revenue
+                # components with no expense deducted. One label again.
+                "total operating revenues",
             ),
             StatementConcept.NET_INCOME: (
                 "net income",
@@ -290,8 +293,16 @@ class TestTotalRevenueVocabulary:
         ):
             assert not matches_concept(StatementConcept.TOTAL_REVENUE, label)
 
-    def test_the_addition_is_exactly_one_label(self) -> None:
-        """No family, no pattern, no fuzzy rule — one filing label."""
+    def test_every_operating_form_was_earned_one_filing_at_a_time(self) -> None:
+        """No family, no pattern, no fuzzy rule — filing labels, one each.
+
+        Two now, and the count is not the property: each was measured
+        against one filer's own arithmetic and added alone. A rule that
+        admitted an *operating revenue* family would also admit
+        `Operating revenues:` — the heading Union Pacific prints above
+        its components, which carries no figure and must never
+        establish anything.
+        """
 
         added = [
             label
@@ -299,4 +310,8 @@ class TestTotalRevenueVocabulary:
             if "operating" in label
         ]
 
-        assert added == ["net operating revenues"]
+        assert added == ["net operating revenues", "total operating revenues"]
+
+        assert not matches_concept(
+            StatementConcept.TOTAL_REVENUE, "Operating revenues:"
+        )
