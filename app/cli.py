@@ -14,6 +14,7 @@ from app.commands import (
     company,
     considerations,
     credentials,
+    crypto_decision,
     crypto_events,
     crypto_market,
     crypto_playbook,
@@ -344,6 +345,27 @@ def build_parser() -> argparse.ArgumentParser:
         "symbol",
         nargs="?",
         help="Ticker symbol, for example BTC or HYPE. Omit for the corpus matrix",
+    )
+
+    crypto_decision_parser = subparsers.add_parser(
+        "crypto-decision",
+        help="What the Artificial CIO concludes about a digital asset",
+        description=(
+            "The canonical answer, asked rather than computed: the same "
+            "decision the crypto dossier renders, the portfolio brief "
+            "carries and the research pipeline admits on. Shows the posture, "
+            "why, what is established, what is the wrong instrument for this "
+            "asset, what is still open and what a later cycle could settle — "
+            "each in the words of the layer that established it. Read-only, "
+            "no model, no fetch: it prints what `judge` recorded and appends "
+            "nothing. No conviction is stated because none exists, and "
+            "nothing here is scored, ranked or combined"
+        ),
+    )
+    crypto_decision_parser.add_argument(
+        "symbol",
+        nargs="?",
+        help="Ticker symbol, for example BTC. Omit for the corpus",
     )
 
     crypto_quality_parser = subparsers.add_parser(
@@ -958,6 +980,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "crypto-quality":
         return await crypto_quality.run(args.symbol)
+
+    if args.command == "crypto-decision":
+        return await crypto_decision.run(args.symbol)
 
     if args.command == "issuance":
         return await issuance.run(args.symbol)
