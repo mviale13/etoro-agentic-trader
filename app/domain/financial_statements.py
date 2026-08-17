@@ -26,6 +26,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import StrEnum
+from hashlib import sha256
 
 from app.domain.evidence import normalised
 from app.domain.primary_source import PrimarySource, SourceDocument
@@ -543,6 +544,52 @@ def matches_concept(concept: StatementConcept, label: str) -> bool:
         return True
 
     return concept is StatementConcept.TOTAL_EQUITY and names_its_own_equity(label)
+
+
+def concept_vocabulary_fingerprint(concept: StatementConcept) -> str:
+    """The identity of one concept's accepted vocabulary, as a value.
+
+    The gap this closes was measured before it was named. The schema
+    version says what a reading was *shown* and *asked*; it does not say
+    which labels the reading was permitted to *accept* — `301cfdf`
+    bundled a parser repair invisibly under the schema-3 bump, and
+    `6c96ea0` widened `TOTAL_REVENUE` by one form under no bump at all.
+    So two observations can share a schema and disagree about what an
+    absence means: a pre-widening reading's *"no figure located for
+    total_revenue"* was true under its vocabulary and is not a claim
+    today's vocabulary would make of the same filing.
+
+    A fingerprint over the normalised, sorted forms answers the transport
+    question — *may these two readings participate in one consensus
+    under today's interpretation?* — per concept, which matters because
+    vocabulary moves one concept at a time: every concept but
+    `TOTAL_REVENUE` is unchanged across the whole schema-3 corpus, and a
+    per-vocabulary hash would incompatibilise absences the change never
+    touched.
+
+    Two honest limits, stated rather than hidden. `TOTAL_EQUITY` also
+    accepts rows by `names_its_own_equity`, which is code and not a
+    constant, so its fingerprint identifies the list and not the rule.
+    And parse behaviour is not here at all — an anchor is checkable
+    against the immutable document (the statement audit's approach), so
+    the vocabulary is the one axis that is neither in the schema nor
+    checkable from the record.
+    """
+
+    forms = sorted(normalised(form) for form in CONCEPT_LABELS[concept])
+
+    digest = sha256("\n".join([concept.value, *forms]).encode("utf-8"))
+
+    return digest.hexdigest()[:16]
+
+
+def vocabulary_fingerprints() -> dict[str, str]:
+    """Every concept's vocabulary identity, under the live contract."""
+
+    return {
+        concept.value: concept_vocabulary_fingerprint(concept)
+        for concept in StatementConcept
+    }
 
 
 @dataclass(frozen=True, slots=True)

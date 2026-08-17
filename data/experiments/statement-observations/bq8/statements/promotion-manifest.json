@@ -1,0 +1,59 @@
+{
+  "artifacts": {
+    "ALL.0000899051-26-000031.json": {
+      "evidence": "Produced 2026-08-16T20:04-20:05Z under the pre-widening tree (research/funded-recovery-baseline, before 6c96ea0 existed). Proof the vocabulary refused 'Net Operating Revenues': BQ8's own negative control measured it live - FUNDED_RECOVERY_BASELINE.md section 5 records KO's total_revenue and net_income establishing nothing while the accepted label 'Gross Profit' captured three dated cells. TOTAL_REVENUE therefore carries the pre-widening fingerprint, computed from the 6c96ea0^ blob itself. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "ba55a427097938f3"
+      },
+      "sha256": "7b23ba44b36f42f1b5dc015a3110a87bd78a96ba0da36fbfa7292950b6afcde6"
+    },
+    "KO.0001628280-26-010047.json": {
+      "evidence": "Produced 2026-08-16T20:04-20:05Z under the pre-widening tree (research/funded-recovery-baseline, before 6c96ea0 existed). Proof the vocabulary refused 'Net Operating Revenues': BQ8's own negative control measured it live - FUNDED_RECOVERY_BASELINE.md section 5 records KO's total_revenue and net_income establishing nothing while the accepted label 'Gross Profit' captured three dated cells. TOTAL_REVENUE therefore carries the pre-widening fingerprint, computed from the 6c96ea0^ blob itself. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "ba55a427097938f3"
+      },
+      "sha256": "ab237b3d1e71e86cc00296a8ae3a047dc25dee27b8aeaf42a11c5ff0bf0cbf2d"
+    },
+    "TSLA.0001628280-26-003952.json": {
+      "evidence": "Produced 2026-08-16T20:04-20:05Z under the pre-widening tree (research/funded-recovery-baseline, before 6c96ea0 existed). Proof the vocabulary refused 'Net Operating Revenues': BQ8's own negative control measured it live - FUNDED_RECOVERY_BASELINE.md section 5 records KO's total_revenue and net_income establishing nothing while the accepted label 'Gross Profit' captured three dated cells. TOTAL_REVENUE therefore carries the pre-widening fingerprint, computed from the 6c96ea0^ blob itself. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "ba55a427097938f3"
+      },
+      "sha256": "893c9746e96d04ab7d64342cc90ddf7ed3ac281bb7fc5a98061c5d6687cb7c25"
+    }
+  },
+  "manifest_version": 1
+}

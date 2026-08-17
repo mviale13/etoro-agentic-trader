@@ -1,0 +1,59 @@
+{
+  "artifacts": {
+    "ALL.0000899051-26-000031.json": {
+      "evidence": "Produced 2026-08-16T21:23-21:25Z on main at 6d2fecc (post-#159, a docs-only merge), whose CONCEPT_LABELS are byte-identical to HEAD's. The three artifacts' TOTAL_REVENUE anchors ('Total revenues') are accepted under both the pre- and post-widening vocabulary, and their absence claims name only concepts whose vocabulary never changed in the schema-3 era. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "3cdbddd6a1fcf0e6"
+      },
+      "sha256": "7098daec84c7ff4384336edb608f7eca8822c38d479d5dc729f8e48f36335880"
+    },
+    "TSLA.0001628280-26-003952.json": {
+      "evidence": "Produced 2026-08-16T21:23-21:25Z on main at 6d2fecc (post-#159, a docs-only merge), whose CONCEPT_LABELS are byte-identical to HEAD's. The three artifacts' TOTAL_REVENUE anchors ('Total revenues') are accepted under both the pre- and post-widening vocabulary, and their absence claims name only concepts whose vocabulary never changed in the schema-3 era. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "3cdbddd6a1fcf0e6"
+      },
+      "sha256": "7a79d834cde81f8c4dba6d521233324c255f35c7325bbb4c6602686d191bdf25"
+    },
+    "WMT.0000104169-26-000055.json": {
+      "evidence": "Produced 2026-08-16T21:23-21:25Z on main at 6d2fecc (post-#159, a docs-only merge), whose CONCEPT_LABELS are byte-identical to HEAD's. The three artifacts' TOTAL_REVENUE anchors ('Total revenues') are accepted under both the pre- and post-widening vocabulary, and their absence claims name only concepts whose vocabulary never changed in the schema-3 era. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "3cdbddd6a1fcf0e6"
+      },
+      "sha256": "6eb862d1cf687d27fcbbc6870e05ccb58f46330c8e5b6a1293cf978a45cfb7c2"
+    }
+  },
+  "manifest_version": 1
+}

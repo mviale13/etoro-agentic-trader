@@ -1,0 +1,23 @@
+{
+  "artifacts": {
+    "KO.0001628280-26-010047.json": {
+      "evidence": "Observation 0 produced 2026-08-16T20:43Z (BQ11) under the widened working tree committed sixteen minutes later as 6c96ea0; observations 1-4 produced 21:04-21:05Z (BQ12) on the merged tree (10f4904). Structural proof of the widened vocabulary for every observation: each carries a TOTAL_REVENUE anchor labelled 'Net Operating Revenues', and an anchor is validated against CONCEPT_LABELS at extraction, so a located anchor proves its label was accepted when read - impossible under any earlier vocabulary. No CONCEPT_LABELS change since 6c96ea0. git log/diff over app/domain/financial_statements.py shows exactly one CONCEPT_LABELS change in the schema-3 era: 6c96ea0 adds the single form 'net operating revenues' under TOTAL_REVENUE. Every other concept's vocabulary is byte-identical from 301cfdf (schema 3) to HEAD, so its fingerprint is today's throughout.",
+      "produced_under": {
+        "capital_expenditures": "06fac55212e2d171",
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_cash_flow": "75808c3c365519be",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_current_assets": "33c0487dbf61abbf",
+        "total_current_liabilities": "32e555fa31d3668d",
+        "total_equity": "3f12679fada5f2f5",
+        "total_liabilities": "dcf5dec12f8a13d5",
+        "total_revenue": "3cdbddd6a1fcf0e6"
+      },
+      "sha256": "a8b3fd2f10ff51c1503c74b2e707d8a23d3b354c53adb623e777c9faa39e3ce9"
+    }
+  },
+  "manifest_version": 1
+}
