@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.domain.absence_supersession import voting
 from app.domain.agreement import Agreement, agreement
 from app.domain.financial_statements import (
     FinancialStatementObservation,
@@ -64,6 +65,18 @@ class ConsensusFact:
     unlocated_because: str | None
 
     agreement: Agreement
+
+    #: How many readings recorded an absence for this concept that a
+    #: later vocabulary provably invalidated, and which therefore did
+    #: not vote.
+    #:
+    #: Reported rather than subtracted in silence, for the reason
+    #: `superseded_count` is: a claim settled by five of five where five
+    #: more were withdrawn is a different fact from one settled by five
+    #: of five outright, and the reader is owed the difference. The
+    #: withdrawn readings remain stored, unaltered, and still say what
+    #: they said.
+    withdrawn_absences: int = 0
 
     @property
     def is_located(self) -> bool:
@@ -323,11 +336,24 @@ def _fact_consensus(
     observations: tuple[FinancialStatementObservation, ...],
     count: int,
 ) -> ConsensusFact:
-    """One concept's claim, counted over the observations that addressed it."""
+    """One concept's claim, counted over the observations that addressed it.
+
+    Counted over those still entitled to answer, which is not always all
+    of them. An absence recorded under a vocabulary that provably could
+    not have accepted the label a later reading located is a true
+    statement about a narrower contract, and letting it vote deadlocks
+    the claim it was never in a position to settle. The withdrawal is
+    concept-local: the same reading's other facts are untouched, and its
+    stored bytes are untouched.
+    """
+
+    entitled = voting(concept, observations)
+
+    withdrawn = len(observations) - len(entitled)
 
     addressed = tuple(
         fact
-        for observation in observations
+        for observation in entitled
         if (fact := observation.fact(concept)) is not None
     )
 
@@ -360,6 +386,7 @@ def _fact_consensus(
         concept=concept,
         addressed_in=len(addressed),
         observations=count,
+        withdrawn_absences=withdrawn,
         anchor=anchor,
         row=row,
         unlocated_because=unlocated_because,
