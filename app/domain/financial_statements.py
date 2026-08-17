@@ -305,6 +305,34 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         # `Wealth and asset management revenue` — both of which remain
         # refused (BQ11).
         "net operating revenues",
+        # One more, on the same standard (BQ19). Union Pacific totals
+        # `Freight revenues` 23,220 and `Other revenues` 1,290 to
+        # 24,510 exactly — an addition of two revenue components with
+        # no expense deducted, which is what makes it a gross top line
+        # rather than a net one. It occurs once in the whole corpus.
+        "total operating revenues",
+        # Two further candidates were measured and **rejected**, each on
+        # its own evidence rather than as a bundle.
+        #
+        # `total revenues net of interest expense` (American Express,
+        # Citigroup) reconciles — and the reconciliation is the refusal:
+        # 54,865 + 25,598 **− 8,234** = 72,229 subtracts an expense, so
+        # the line is a different economic quantity from a consolidated
+        # top line. BQ11 ruled exactly that and pinned it, and this
+        # slice found no evidence to overturn it. *(The inconsistency
+        # that Goldman's accepted `Total net revenues` is built the same
+        # way is real, recorded in BQ19, and belongs to whichever slice
+        # argues that ruling — not to a vocabulary widening.)*
+        #
+        # `total income` (Barclays, NatWest) reconciles too, and is
+        # refused for a collision the sweep found: M&T prints the
+        # identical phrase in a table titled *Condensed Statement of
+        # Income*, where it totals `Dividends from consolidated
+        # subsidiaries` 2,776 with interest of 116 to 2,916. That is the
+        # parent company alone, against consolidated interest income of
+        # 10,486. Only the concept-to-statement partition keeps the two
+        # apart today, and that is a boundary rather than a property of
+        # the label.
     ),
     StatementConcept.NET_INCOME: (
         "net income",
