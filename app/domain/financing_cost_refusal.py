@@ -251,6 +251,43 @@ def _because(
     )
 
 
+def survivors_for(
+    contested: tuple[StatementConcept, ...],
+    figure: ReportedFigure,
+    established: dict[StatementConcept, ReportedFigure],
+) -> tuple[StatementConcept, ...]:
+    """Which of these concepts the statement's structure leaves standing.
+
+    The arbitration a contested cell needs, and deliberately nothing more.
+    One printed row may be in two concepts' vocabularies — `Total net
+    revenues` is in both `TOTAL_REVENUE`'s and
+    `REVENUE_NET_OF_INTEREST_EXPENSE`'s — and a lexical match is a
+    candidacy rather than ownership. This asks each candidate's own
+    structural requirement and returns the ones the statement does not
+    refute, in the order given.
+
+    **It decides by evidence or it does not decide.** A candidate whose
+    concept declares no requirement cannot be refuted and therefore always
+    survives, which leaves two survivors and no winner — correct, because
+    the platform holds nothing that could tell them apart. Nothing here
+    reads a name, a vocabulary size, a recency or a position in an enum,
+    and reversing the input cannot change the answer.
+
+    Three outcomes, and the caller must handle all three:
+
+    - **one survivor** — the statement says which concept owns the cell;
+    - **none** — the cell answers none of them, which is not a tie;
+    - **more than one** — ambiguity, and the caller must refuse rather
+      than choose.
+    """
+
+    return tuple(
+        concept
+        for concept in contested
+        if refusal_for(concept, figure, (figure,), established) is None
+    )
+
+
 def precedes_in_one_column(
     marker: ReportedFigure,
     candidate: ReportedFigure,

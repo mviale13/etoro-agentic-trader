@@ -22,10 +22,12 @@ from app.domain.financial_statements import (
     statement_tables,
     statement_text,
 )
+from app.domain.financing_cost_refusal import survivors_for
 from app.domain.primary_source import SourceDocument
 from app.domain.provenance import Provenance
 from app.domain.tabular_evidence import (
     CellReference,
+    ReportedFigure,
     SourceTable,
     cited_number,
     cited_reference,
@@ -300,9 +302,28 @@ class FinancialStatementExtractor:
     ) -> tuple[StatementFact, ...]:
         """
         Each located concept checked against the cell it cites, in order:
-        existence and agreement, correspondence, distinctness — then the
-        row expansion, which is this platform's own reading and needs no
-        check because nothing asserted it.
+        existence and agreement, correspondence, **semantic qualification
+        where a concept declares one**, then distinctness — and finally
+        the row expansion, which is this platform's own reading and needs
+        no check because nothing asserted it.
+
+        The third step is BQ25's, and the order is the whole of it. Two
+        concepts can accept one printed label — `Total net revenues` is in
+        both `TOTAL_REVENUE`'s vocabulary and
+        `REVENUE_NET_OF_INTEREST_EXPENSE`'s — and distinctness used to run
+        first, so the concept that happened to come earlier in the
+        enumeration claimed the cell and the other raised, rejecting the
+        **whole observation**. Goldman and JPMorgan lost their net income
+        and their net interest income to a collision about a third
+        concept.
+
+        Enum order is not evidence. A lexical match is a candidacy, so the
+        candidates are held until each concept's own structural
+        requirement can be asked of them, and only then is uniqueness
+        enforced. Where the evidence leaves one candidate standing it owns
+        the cell; where it leaves none the cell answers none of them; and
+        where it leaves more than one the reading is refused, because
+        choosing would be the guess this stage exists to prevent.
         """
 
         located: dict[StatementConcept, dict[str, Any]] = {}
@@ -333,25 +354,16 @@ class FinancialStatementExtractor:
 
             located[concept] = raw
 
-        facts = []
-        cited: set[CellReference] = set()
+        # 1. Lexical candidates. Every located concept resolved to a
+        #    checked anchor whose label its own vocabulary accepts. A
+        #    label that answers no concept is still a reading error and
+        #    still rejects here — that is not a collision.
+        candidates: dict[StatementConcept, ReportedFigure] = {}
 
         for concept in concepts_of(statement):
             raw = located.get(concept)
 
             if raw is None:
-                facts.append(
-                    StatementFact(
-                        concept=concept,
-                        anchor=None,
-                        unlocated_because=(
-                            f"The reading located no cell holding "
-                            f"{CONCEPT_QUESTIONS[concept]} in the tables "
-                            f"printed under the {STATEMENT_NAMES[statement]}'s "
-                            "title."
-                        ),
-                    )
-                )
                 continue
 
             try:
@@ -368,27 +380,100 @@ class FinancialStatementExtractor:
                         f"filer labels {anchor.label!r}, which this platform "
                         "does not read as answering it."
                     )
-
-                if anchor.cell in cited:
-                    raise EvidenceNotApplicable(
-                        f"The figure for {concept.value!r} cites a cell "
-                        "already read as another concept, so one of the two "
-                        "is not what it was said to be."
-                    )
             except (EvidenceNotApplicable, TypeError, ValueError) as inapplicable:
                 raise ExtractionRejected(str(inapplicable)) from inapplicable
 
-            cited.add(anchor.cell)
+            candidates[concept] = anchor
 
-            facts.append(
-                StatementFact(
-                    concept=concept,
-                    anchor=anchor,
-                    row=row_figures(tables[anchor.cell.table], anchor.cell.row),
+        # 2. Semantic qualification, for the cells more than one candidate
+        #    claims. The evidence a requirement reads is the *uncontested*
+        #    anchors: a cell still being arbitrated cannot arbitrate.
+        owners, declined = self._arbitrate(candidates)
+
+        # 3. Uniqueness, after qualification rather than before it.
+        settled: dict[CellReference, StatementConcept] = {}
+
+        for concept, anchor in owners.items():
+            held = settled.get(anchor.cell)
+
+            if held is not None:
+                raise ExtractionRejected(
+                    f"The figure for {concept.value!r} cites a cell already "
+                    f"read as {held.value!r}, and this platform holds no "
+                    "evidence that tells the two apart, so one of them is "
+                    "not what it was said to be."
                 )
-            )
 
-        return tuple(facts)
+            settled[anchor.cell] = concept
+
+        return tuple(
+            StatementFact(
+                concept=concept,
+                anchor=owners[concept],
+                row=row_figures(
+                    tables[owners[concept].cell.table], owners[concept].cell.row
+                ),
+            )
+            if concept in owners
+            else StatementFact(
+                concept=concept,
+                anchor=None,
+                unlocated_because=declined.get(
+                    concept,
+                    (
+                        f"The reading located no cell holding "
+                        f"{CONCEPT_QUESTIONS[concept]} in the tables printed "
+                        f"under the {STATEMENT_NAMES[statement]}'s title."
+                    ),
+                ),
+            )
+            for concept in concepts_of(statement)
+        )
+
+    @staticmethod
+    def _arbitrate(
+        candidates: dict[StatementConcept, ReportedFigure],
+    ) -> tuple[dict[StatementConcept, ReportedFigure], dict[StatementConcept, str]]:
+        """Which candidate owns each contested cell, decided by the statement.
+
+        Returns the surviving owners and, for every candidate the evidence
+        set aside, the reason in words. A concept that lost a contested
+        cell is *not* an absence the reading failed to find, and its
+        wording must not read like one.
+        """
+
+        by_cell: dict[CellReference, list[StatementConcept]] = {}
+
+        for concept, anchor in candidates.items():
+            by_cell.setdefault(anchor.cell, []).append(concept)
+
+        # The evidence: anchors no other candidate is claiming. A figure
+        # under arbitration cannot be the thing that settles arbitration.
+        established = {
+            concept: anchor
+            for concept, anchor in candidates.items()
+            if len(by_cell[anchor.cell]) == 1
+        }
+
+        owners: dict[StatementConcept, ReportedFigure] = {}
+        declined: dict[StatementConcept, str] = {}
+
+        for cell, contested in by_cell.items():
+            if len(contested) == 1:
+                owners[contested[0]] = candidates[contested[0]]
+                continue
+
+            figure = candidates[contested[0]]
+            surviving = survivors_for(tuple(contested), figure, established)
+
+            for concept in contested:
+                if concept in surviving:
+                    owners[concept] = candidates[concept]
+                    continue
+
+                declined[concept] = _lost_to(concept, surviving, figure, cell)
+
+        return owners, declined
 
     @staticmethod
     def _unlocated(
@@ -426,6 +511,41 @@ class FinancialStatementExtractor:
                 observed_at=datetime.now(UTC),
             ),
         )
+
+
+def _lost_to(
+    concept: StatementConcept,
+    surviving: tuple[StatementConcept, ...],
+    figure: ReportedFigure,
+    cell: CellReference,
+) -> str:
+    """Why a lexically valid candidate does not own the cell it cited.
+
+    Worded apart from an ordinary absence on purpose. *The reading located
+    no cell* would be false here: the reading located one, this platform
+    read it, and the statement's own structure said the row answers
+    something else.
+    """
+
+    where = f'the row the filer labels "{figure.label}" at {cell.stated()}'
+
+    if surviving:
+        named = ", ".join(other.value for other in surviving)
+
+        return (
+            f"The reading cited {where} for {concept.value}, and this "
+            f"statement's own structure reads that row as {named} instead — "
+            "a net interest income subtotal decides which of the two a total "
+            "is, and it decided against this one. The figure is the filer's "
+            "and is established under the other concept."
+        )
+
+    return (
+        f"The reading cited {where} for {concept.value}, and this "
+        "statement's own structure supports neither that concept nor the "
+        "other it was contested with, so the row is read as answering "
+        "neither."
+    )
 
 
 def _no_statement(document: SourceDocument, statement: StatementKind) -> str:
