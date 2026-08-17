@@ -59,30 +59,45 @@ async def research_candidates(
 
     candidates: list[ResearchCandidateResponse] = []
 
-    for rank, workspace in enumerate(research.workspaces, start=1):
+    # A rank is a place in the conviction order, so only a case carrying
+    # a conviction takes one. The unranked are still researched and still
+    # explained; they are not numbered against each other on nothing.
+    position = 0
+
+    for workspace in research.workspaces:
         decision = workspace.decision
         evidence = workspace.evidence
         thesis = workspace.thesis
 
-        if decision is None or evidence is None or thesis is None:
+        # Evidence is deliberately not required. A digital asset produces
+        # none — its judgment comes from recorded committee judgments
+        # rather than from provider scores — and requiring it here would
+        # drop a watched token from the research pipeline entirely
+        # rather than show it with the answer this platform actually has.
+        if decision is None or thesis is None:
             continue
 
         candidate = research.candidates.get(workspace.symbol)
 
+        if decision.conviction is not None:
+            position += 1
+
         candidates.append(
             ResearchCandidateResponse(
-                rank=rank,
+                rank=position if decision.conviction is not None else None,
                 symbol=workspace.symbol,
                 name=candidate.name if candidate else workspace.symbol,
                 source=candidate.source if candidate else "",
                 recommendation=decision.state.value,
                 conviction=decision.conviction,
                 conviction_label=conviction_label(decision.conviction),
-                quality_score=evidence.quality_score,
-                valuation_score=evidence.valuation_score,
-                safety_score=evidence.safety_score,
-                portfolio_fit_score=evidence.portfolio_fit_score,
-                evidence_score=evidence.evidence_score,
+                quality_score=evidence.quality_score if evidence else None,
+                valuation_score=evidence.valuation_score if evidence else None,
+                safety_score=evidence.safety_score if evidence else None,
+                portfolio_fit_score=(
+                    evidence.portfolio_fit_score if evidence else None
+                ),
+                evidence_score=evidence.evidence_score if evidence else None,
                 evidence_as_of=(
                     decision.evidence_as_of.stated()
                     if decision.evidence_as_of is not None

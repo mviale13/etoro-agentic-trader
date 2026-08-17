@@ -82,8 +82,13 @@ function CaseRow({
   return (
     <details className="group">
       <summary className="grid cursor-pointer grid-cols-[2.5rem_1fr_auto] items-center gap-x-4 gap-y-1 px-5 py-4 hover:bg-slate-50 sm:grid-cols-[2.5rem_7rem_1fr_auto]">
+        {/* A rank belongs to a case that carries a conviction. An
+            unranked case shows a dash rather than a number over an
+            order that does not exist. */}
         <span className="text-sm font-semibold tabular-nums text-slate-400">
-          {String(investmentCase.rank).padStart(2, "0")}
+          {investmentCase.rank === null
+            ? "—"
+            : String(investmentCase.rank).padStart(2, "0")}
         </span>
 
         <span className="flex flex-col">
@@ -190,7 +195,11 @@ function CaseRow({
 
           <Figure
             label="Committee agreement"
-            value={`${investmentCase.committeeAgreement}%`}
+            value={
+              investmentCase.committeeAgreement === null
+                ? "Not asked"
+                : `${investmentCase.committeeAgreement}%`
+            }
           />
 
           {/* This security's own, not the account's — and higher is safer,

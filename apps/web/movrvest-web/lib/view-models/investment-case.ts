@@ -54,7 +54,8 @@ export interface ExecutiveActionViewModel {
 }
 
 export interface RankedInvestmentCaseViewModel {
-  rank: number;
+  /** Null where the case carries no conviction: no order to rank in. */
+  rank: number | null;
   symbol: string;
   /** Decision state, e.g. PREPARE, INVESTIGATE, REJECT. */
   recommendation: string;
@@ -62,7 +63,8 @@ export interface RankedInvestmentCaseViewModel {
   conviction: number | null;
   /** Null with it: a label is a word for a number, and there is none. */
   convictionLevel: ConvictionLevel | null;
-  committeeAgreement: number;
+  /** Null where no committee spoke — never rendered as a zero. */
+  committeeAgreement: number | null;
   /** This security's own safety, higher being safer. Null where its
    *  price history was too short to measure — never the same as safe. */
   safetyScore: number | null;

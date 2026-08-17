@@ -28,10 +28,15 @@ from app.application.thesis.investment_thesis_builder import (
 )
 from app.brain import Brain
 from app.cio.artificial_cio import ExecutiveDecisionEngine
+from app.cio.digital_asset_decision import as_executive_decision
+from app.domain.asset_class import AssetClass
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.business_quality_service import quality_of
 from app.services.company_understanding_service import (
     CompanyUnderstandingService,
+)
+from app.services.digital_asset_decision_service import (
+    DigitalAssetDecisionService,
 )
 
 from .executive_workspace import ExecutiveWorkspace
@@ -79,6 +84,13 @@ class ExecutivePipeline:
     #: grounded quality score adds no spend to an evaluation.
     understanding: CompanyUnderstandingService = field(
         default_factory=CompanyUnderstandingService,
+    )
+
+    #: The one authoritative crypto judgment path. Read-only: it projects
+    #: recorded committee judgments and stored assessment statements, so
+    #: evaluating a digital asset costs no fetch and asks no model.
+    digital_assets: DigitalAssetDecisionService = field(
+        default_factory=DigitalAssetDecisionService,
     )
 
     @classmethod
@@ -138,6 +150,17 @@ class ExecutivePipeline:
         workspace.reasoning = (
             reasoning if reasoning is not None else self.reasoning.reason(brain)
         )
+
+        # What kind of instrument this is, from the Brain — the narrowest
+        # boundary at which this platform knows, and the same one the
+        # evidence builder already consults. A digital asset's investment
+        # judgment is settled by the crypto path and by nothing else, so
+        # the branch is here rather than repeated downstream, and it turns
+        # on the asset class rather than on any list of symbols.
+        asset_class = brain.asset_class_for(symbol)
+
+        if asset_class is AssetClass.CRYPTO:
+            return self._digital_asset(workspace, brain)
 
         # The findings are gathered once, before anything states a
         # position over them, so that a committee's references and the
@@ -218,6 +241,75 @@ class ExecutivePipeline:
         workspace.brief = self.brief_builder.build(
             workspace,
         )
+
+        return workspace
+
+    def _digital_asset(
+        self,
+        workspace: ExecutiveWorkspace,
+        brain: Brain,
+    ) -> ExecutiveWorkspace:
+        """One judgment for one digital asset, wherever it is shown.
+
+        The measured defect this closes: BTC's canonical dossier answered
+        INVESTIGATE with no conviction, and the same holding in the
+        portfolio brief answered INVESTIGATE **conviction 46**, ranked
+        eleventh of fourteen, with *"Market robustness: robust — $1,308.7bn"*
+        printed as a reason for it and its annualised volatility printed
+        against it. Two reasoning systems, one asset, and only the retired
+        one had a number.
+
+        **Nothing is decided here.** The decision is the crypto path's,
+        translated into the record shape the surfaces read; the equity
+        route below it is not run at all rather than run and discarded,
+        because a provider-fed finding that exists is a finding something
+        downstream can find.
+
+        No committee opinions, no evidence and no quality assessment:
+        those are the *company* reasoning system's outputs, and a digital
+        asset has no company. Their absence is what makes it structurally
+        impossible for the equity committees' agreement or a provider
+        score to reappear beside a crypto holding.
+        """
+
+        symbol = workspace.symbol
+
+        reasoning = workspace.reasoning
+
+        assert reasoning is not None
+
+        workspace.decision = as_executive_decision(
+            self.digital_assets.decide(symbol),
+        )
+
+        workspace.thesis = self.thesis_builder.build(
+            symbol=symbol,
+            reasoning=reasoning,
+            committee_opinions=(),
+            decision=workspace.decision,
+            history=brain.decision_history_for(symbol),
+            # No scores were produced, and none is passed. The thesis
+            # reports what moved since the last decision, and for a
+            # digital asset there is no number that could move.
+            evidence=None,
+            asset_class=AssetClass.CRYPTO,
+        )
+
+        workspace.action = self.action_builder.build(
+            decision=workspace.decision,
+            held=any(
+                holding.symbol.upper().strip() == symbol.upper().strip()
+                for holding in brain.portfolio.holdings
+            ),
+            catalysts=workspace.thesis.catalysts,
+        )
+
+        # Deliberately not journalled. A decision derived from recorded
+        # judgments is a projection, recomputed on every read — writing
+        # it back would create a second history of the same judgments,
+        # and DV3 left the crypto journal question open on purpose.
+
+        workspace.brief = self.brief_builder.build(workspace)
 
         return workspace
 

@@ -34,7 +34,9 @@ class ResearchCandidateResponse(BaseModel):
     evidence them, not because they were omitted for brevity.
     """
 
-    rank: int
+    #: Position in the conviction order. Null where the candidate carries
+    #: no conviction — there is no order for it to hold a place in.
+    rank: int | None
     symbol: str
     name: str
 
@@ -62,7 +64,10 @@ class ResearchCandidateResponse(BaseModel):
     #: an unmeasured risk is never reported as a safe security.
     safety_score: int | None = None
 
-    evidence_score: int
+    #: How much of the expected evidence was gathered. Null for a
+    #: digital asset: its judgment rests on recorded committee
+    #: judgments, and no coverage score is produced for it.
+    evidence_score: int | None
 
     #: How much room the portfolio has for this security under the
     #: investor's own policy — funding room and concentration room. Null

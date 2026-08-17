@@ -95,7 +95,9 @@ function parseCandidate(
   const symbol = requireString(payload.symbol, at("symbol"));
 
   return {
-    rank: requireNumber(payload.rank, at("rank")),
+    // Null where the candidate carries no conviction: no order to
+    // hold a place in.
+    rank: optionalNumber(payload.rank, at("rank")),
     symbol,
     name: requireString(payload.name, at("name")),
     source: requireString(payload.source, at("source")),
@@ -111,7 +113,7 @@ function parseCandidate(
       at("valuation_score"),
     ),
     safetyScore: optionalNumber(payload.safety_score, at("safety_score")),
-    evidenceScore: requireNumber(payload.evidence_score, at("evidence_score")),
+    evidenceScore: optionalNumber(payload.evidence_score, at("evidence_score")),
     portfolioFitScore: optionalNumber(
       payload.portfolio_fit_score,
       at("portfolio_fit_score"),

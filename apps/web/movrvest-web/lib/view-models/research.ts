@@ -23,7 +23,8 @@ export interface ResearchFunnelViewModel {
 }
 
 export interface ResearchCandidateViewModel {
-  rank: number;
+  /** Null where the candidate carries no conviction. */
+  rank: number | null;
   symbol: string;
   name: string;
   /** The watchlist that names it. */
@@ -41,7 +42,8 @@ export interface ResearchCandidateViewModel {
   valuationScore: number | null;
   /** From this security's own volatility and deepest observed fall. */
   safetyScore: number | null;
-  evidenceScore: number;
+  /** Null for a digital asset: no coverage score is produced. */
+  evidenceScore: number | null;
 
   /** Room the portfolio has for this security, under the investor's policy. */
   portfolioFitScore: number | null;
