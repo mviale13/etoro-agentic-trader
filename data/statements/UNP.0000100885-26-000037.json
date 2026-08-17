@@ -709,6 +709,996 @@
         "source": "10-K 0000100885-26-000037 via SEC EDGAR, read by gpt-5"
       },
       "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 4,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total operating revenues",
+            "printed": "24,510",
+            "value": 24510.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total operating revenues",
+              "printed": "24,510",
+              "value": 24510.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total operating revenues",
+              "printed": "24,250",
+              "value": 24250.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total operating revenues",
+              "printed": "24,119",
+              "value": 24119.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 13,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating income",
+            "printed": "9,846",
+            "value": 9846.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating income",
+              "printed": "9,846",
+              "value": 9846.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating income",
+              "printed": "9,713",
+              "value": 9713.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating income",
+              "printed": "9,082",
+              "value": 9082.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 18,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 7,138",
+            "value": 7138.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 7,138",
+              "value": 7138.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 6,747",
+              "value": 6747.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 6,379",
+              "value": 6379.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T08:09:11.011703+00:00",
+        "source": "10-K 0000100885-26-000037 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 4,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total operating revenues",
+            "printed": "24,510",
+            "value": 24510.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total operating revenues",
+              "printed": "24,510",
+              "value": 24510.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total operating revenues",
+              "printed": "24,250",
+              "value": 24250.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total operating revenues",
+              "printed": "24,119",
+              "value": 24119.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 13,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating income",
+            "printed": "9,846",
+            "value": 9846.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating income",
+              "printed": "9,846",
+              "value": 9846.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating income",
+              "printed": "9,713",
+              "value": 9713.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating income",
+              "printed": "9,082",
+              "value": 9082.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 18,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 7,138",
+            "value": 7138.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 7,138",
+              "value": 7138.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 6,747",
+              "value": 6747.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 6,379",
+              "value": 6379.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T08:09:33.320651+00:00",
+        "source": "10-K 0000100885-26-000037 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 4,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total operating revenues",
+            "printed": "24,510",
+            "value": 24510.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total operating revenues",
+              "printed": "24,510",
+              "value": 24510.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total operating revenues",
+              "printed": "24,250",
+              "value": 24250.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total operating revenues",
+              "printed": "24,119",
+              "value": 24119.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 13,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating income",
+            "printed": "9,846",
+            "value": 9846.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating income",
+              "printed": "9,846",
+              "value": 9846.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating income",
+              "printed": "9,713",
+              "value": 9713.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating income",
+              "printed": "9,082",
+              "value": 9082.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 18,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 7,138",
+            "value": 7138.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 7,138",
+              "value": 7138.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 6,747",
+              "value": 6747.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 6,379",
+              "value": 6379.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T08:09:40.461153+00:00",
+        "source": "10-K 0000100885-26-000037 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 4,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total operating revenues",
+            "printed": "24,510",
+            "value": 24510.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total operating revenues",
+              "printed": "24,510",
+              "value": 24510.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total operating revenues",
+              "printed": "24,250",
+              "value": 24250.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total operating revenues",
+              "printed": "24,119",
+              "value": 24119.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 13,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating income",
+            "printed": "9,846",
+            "value": 9846.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating income",
+              "printed": "9,846",
+              "value": 9846.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating income",
+              "printed": "9,713",
+              "value": 9713.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating income",
+              "printed": "9,082",
+              "value": 9082.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 18,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 7,138",
+            "value": 7138.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 7,138",
+              "value": 7138.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 6,747",
+              "value": 6747.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 6,379",
+              "value": 6379.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T08:09:47.837249+00:00",
+        "source": "10-K 0000100885-26-000037 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
+    },
+    {
+      "facts": [
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 4,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Total operating revenues",
+            "printed": "24,510",
+            "value": 24510.0
+          },
+          "concept": "total_revenue",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Total operating revenues",
+              "printed": "24,510",
+              "value": 24510.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Total operating revenues",
+              "printed": "24,250",
+              "value": 24250.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 4,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Total operating revenues",
+              "printed": "24,119",
+              "value": 24119.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "gross_profit",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the company's gross profit for the most recent period the statement reports, where the statement prints that line in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 13,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Operating income",
+            "printed": "9,846",
+            "value": 9846.0
+          },
+          "concept": "operating_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Operating income",
+              "printed": "9,846",
+              "value": 9846.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Operating income",
+              "printed": "9,713",
+              "value": 9713.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 13,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Operating income",
+              "printed": "9,082",
+              "value": 9082.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": {
+            "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+            "cell": {
+              "column": 3,
+              "row": 18,
+              "table": 0
+            },
+            "column_header": "2025",
+            "label": "Net income",
+            "printed": "$ 7,138",
+            "value": 7138.0
+          },
+          "concept": "net_income",
+          "row": [
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 3,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2025",
+              "label": "Net income",
+              "printed": "$ 7,138",
+              "value": 7138.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 4,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2024",
+              "label": "Net income",
+              "printed": "$ 6,747",
+              "value": 6747.0
+            },
+            {
+              "caption": "CONSOLIDATED STATEMENTS OF INCOME Union Pacific Corporation and Subsidiary Companies",
+              "cell": {
+                "column": 5,
+                "row": 18,
+                "table": 0
+              },
+              "column_header": "2023",
+              "label": "Net income",
+              "printed": "$ 6,379",
+              "value": 6379.0
+            }
+          ],
+          "unlocated_because": null
+        },
+        {
+          "anchor": null,
+          "concept": "net_interest_income",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the net interest income the statement reports for the most recent period \u2014 interest earned less interest paid, as a single line the statement prints \u2014 where the statement prints that line. Not a subtotal struck after it, such as net interest income after a provision for credit losses in the tables printed under the income statement's title."
+        },
+        {
+          "anchor": null,
+          "concept": "premium_revenue",
+          "row": [],
+          "unlocated_because": "The reading located no cell holding the insurance premium revenue the statement reports for the most recent period, as a revenue line of the statement, where the statement prints that line. Not premiums written, and not a movement in unearned premiums \u2014 both are amounts other than the revenue the period earned in the tables printed under the income statement's title."
+        }
+      ],
+      "located_among": 1,
+      "produced_under": {
+        "gross_profit": "36b11e47cf234c1f",
+        "net_income": "c5983f89b332a0c7",
+        "net_interest_income": "8c3e67f9872329b5",
+        "operating_income": "668db132db8b57bd",
+        "premium_revenue": "87e065f39c345a37",
+        "total_revenue": "ea9df9c5adbc7f44"
+      },
+      "reading": {
+        "observed_at": "2026-08-17T08:09:55.109570+00:00",
+        "source": "10-K 0000100885-26-000037 via SEC EDGAR, read by gpt-5"
+      },
+      "statement": "income_statement"
     }
   ],
   "schema_version": 3,
