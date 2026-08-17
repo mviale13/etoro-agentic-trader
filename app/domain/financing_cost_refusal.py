@@ -81,18 +81,55 @@ class RefusalStanding(StrEnum):
     #: total after financing cost rather than a gross top line.
     NET_OF_FINANCING_COST = "constructed from net interest income"
 
+    #: The mirror. A candidate for the net-of-financing concept where the
+    #: statement prints no net interest income above it, so nothing
+    #: evidences that a financing cost was deducted at all. `Total income`
+    #: over a parent company's dividends from its subsidiaries is the
+    #: specimen this exists for.
+    FINANCING_COST_NOT_EVIDENCED = "no net interest income is printed above it"
 
-#: Which concept each refusal governs, and which concept's presence
-#: disproves it. Declared as a pair rather than coded into a branch, so
-#: that adding a second structural refusal cannot quietly widen this one.
+
+class Requirement(StrEnum):
+    """What the marker's position must be for the concept to stand."""
+
+    #: The marker must *not* precede the figure. `TOTAL_REVENUE` is gross
+    #: revenue before financing cost.
+    ABSENT_ABOVE = "absent above"
+
+    #: The marker *must* precede the figure. The net-of-financing concept
+    #: is defined by including it.
+    PRESENT_ABOVE = "present above"
+
+
+#: Which concept each rule governs, which concept's position decides it,
+#: and which way. Declared as data rather than branched on, so that a
+#: third structural rule resolves through the same line.
 #:
-#: One entry. `TOTAL_REVENUE` is the only concept whose contract states a
-#: gross reading, and `NET_INTEREST_INCOME` is the only concept that
-#: positively evidences a financing cost already deducted. Neither half
-#: generalises: a premium revenue line says nothing about financing, and
-#: net income is net of everything by definition.
-GOVERNED: dict[StatementConcept, StatementConcept] = {
-    StatementConcept.TOTAL_REVENUE: StatementConcept.NET_INTEREST_INCOME,
+#: Two entries, and they are **one predicate read with opposite
+#: polarity** — which is the whole reason they live together. The same
+#: net interest subtotal that disproves a gross top line is what
+#: establishes a net-of-financing one, so a statement cannot be read as
+#: supporting both and cannot be read as supporting neither.
+#:
+#: `NET_INTEREST_INCOME` is the marker in both because it is the only
+#: concept that positively evidences a financing cost already deducted.
+#: Neither entry generalises: a premium revenue line says nothing about
+#: financing, and net income is net of everything by definition.
+GOVERNED: dict[StatementConcept, tuple[StatementConcept, Requirement]] = {
+    StatementConcept.TOTAL_REVENUE: (
+        StatementConcept.NET_INTEREST_INCOME,
+        Requirement.ABSENT_ABOVE,
+    ),
+    StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE: (
+        StatementConcept.NET_INTEREST_INCOME,
+        Requirement.PRESENT_ABOVE,
+    ),
+}
+
+#: Which standing each unmet requirement carries.
+STANDINGS: dict[Requirement, RefusalStanding] = {
+    Requirement.ABSENT_ABOVE: RefusalStanding.NET_OF_FINANCING_COST,
+    Requirement.PRESENT_ABOVE: RefusalStanding.FINANCING_COST_NOT_EVIDENCED,
 }
 
 
@@ -118,8 +155,11 @@ class FactRefusal:
     #: Its row, carried with it exactly as a located fact would carry it.
     row: tuple[ReportedFigure, ...]
 
-    #: The figure whose presence disproved the concept.
-    disproved_by: ReportedFigure
+    #: The figure whose position decided the refusal, where there was
+    #: one. `None` for a requirement that was unmet because the marker is
+    #: absent — there is then no figure to name, and inventing one would
+    #: be worse than saying so.
+    disproved_by: ReportedFigure | None
 
     because: str
 
@@ -145,32 +185,69 @@ def refusal_for(
     if figure is None:
         return None
 
-    disproving = GOVERNED.get(concept)
+    governed = GOVERNED.get(concept)
 
-    if disproving is None:
+    if governed is None:
         return None
+
+    disproving, requirement = governed
 
     marker = established.get(disproving)
 
-    if marker is None or not precedes_in_one_column(marker, figure):
+    precedes = marker is not None and precedes_in_one_column(marker, figure)
+
+    if precedes is (requirement is Requirement.PRESENT_ABOVE):
+        # The requirement is met, so the concept stands.
         return None
 
     return FactRefusal(
         concept=concept,
-        standing=RefusalStanding.NET_OF_FINANCING_COST,
+        standing=STANDINGS[requirement],
         figure=figure,
         row=row,
-        disproved_by=marker,
-        because=(
+        disproved_by=marker if precedes else None,
+        because=_because(concept, requirement, figure, marker, precedes),
+    )
+
+
+def _because(
+    concept: StatementConcept,
+    requirement: Requirement,
+    figure: ReportedFigure,
+    marker: ReportedFigure | None,
+    precedes: bool,
+) -> str:
+    """Why the figure was refused, in the terms the reader can check."""
+
+    printed = f'"{figure.label}" {figure.printed} at {figure.cell.stated()}'
+
+    if requirement is Requirement.ABSENT_ABOVE:
+        assert marker is not None and precedes
+
+        return (
             f'The statement prints "{marker.label}" {marker.printed} at '
-            f"{marker.cell.stated()}, above "
-            f'"{figure.label}" {figure.printed} at {figure.cell.stated()} '
-            f'and in the same column ("{figure.column_header}"). So the '
-            f"figure is a total after financing cost, not the gross "
-            f"{concept.value} this concept names, and it is a different "
-            "economic quantity. The filer did print it, and this platform "
-            "holds no concept for it yet."
-        ),
+            f"{marker.cell.stated()}, above {printed} and in the same column "
+            f'("{figure.column_header}"). So the figure is a total after '
+            f"financing cost, not the gross {concept.value} this concept "
+            "names, and it is a different economic quantity. The filer did "
+            "print it, and this platform reads it as "
+            f"{StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE.value} "
+            "instead."
+        )
+
+    where = (
+        f'it prints "{marker.label}" {marker.printed} at {marker.cell.stated()}, '
+        "which is not above it in the same column"
+        if marker is not None
+        else "the statement establishes no net interest income at all"
+    )
+
+    return (
+        f"{printed.capitalize()} was read as {concept.value}, and this "
+        f"statement does not support it: {where}. Nothing here evidences "
+        "that a financing cost was already deducted, so the figure is not "
+        "shown to be the quantity this concept names. The filer did print "
+        "it, and this platform declines to say what it is."
     )
 
 

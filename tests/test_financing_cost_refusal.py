@@ -32,18 +32,22 @@ from app.services.financial_statement_service import FinancialStatementService
 from tests.test_financial_statement_store import source
 
 
-def _code_of(path: str) -> str:
+def _code_of(path: str, *, only: str | None = None) -> str:
     """The module's executable source, every docstring removed.
 
     Written with `ast` rather than a string split because the prose in
     this rule cites the filings that earned it — as it should — and a
     scan that could not tell prose from code would either fail on the
     citation or pass on a company name in a branch.
+
+    `only` narrows to one function, which is what lets a scan distinguish
+    *deciding* from *wording*: the rule may quote a filer's row label in
+    the sentence it produces, and may never read one to reach a verdict.
     """
 
     import ast
 
-    tree = ast.parse(pathlib.Path(path).read_text())
+    tree: ast.AST = ast.parse(pathlib.Path(path).read_text())
 
     for node in ast.walk(tree):
         if not isinstance(
@@ -61,11 +65,23 @@ def _code_of(path: str) -> str:
         ):
             node.body = body[1:] or [ast.Pass()]
 
+    if only is not None:
+        found = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == only
+        ]
+
+        assert found, f"{only} is not defined in {path}"
+
+        tree = found[0]
+
     return ast.unparse(tree)
 
 
 INCOME = StatementKind.INCOME_STATEMENT
 REVENUE = StatementConcept.TOTAL_REVENUE
+NET_OF_INTEREST = StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE
 NII = StatementConcept.NET_INTEREST_INCOME
 EARNINGS = StatementConcept.NET_INCOME
 
@@ -129,21 +145,52 @@ def held(symbol: str):
 # ── the rule reads structure, and only structure ─────────────────────
 
 
-def test_the_rule_governs_one_pair_and_names_no_company() -> None:
-    """One concept refused, one concept disproving it, and no list."""
+def test_the_rule_governs_one_predicate_read_both_ways_and_names_no_company() -> None:
+    """Two concepts, one marker, opposite polarity — and no company list.
 
-    assert GOVERNED == {REVENUE: NII}
+    The pair is the design: the same net interest subtotal that disproves
+    a gross top line is what establishes a net-of-financing one, so a
+    statement can support neither reading twice nor both at once.
+    """
 
-    # No company may be named in the rule, and no word of a label may
-    # decide it. The prose cites the measurement that earned the rule, so
-    # every docstring is stripped and only executable code is searched.
-    code = _code_of("app/domain/financing_cost_refusal.py")
+    from app.domain.financing_cost_refusal import Requirement
+
+    assert GOVERNED == {
+        REVENUE: (NII, Requirement.ABSENT_ABOVE),
+        NET_OF_INTEREST: (NII, Requirement.PRESENT_ABOVE),
+    }
+
+    module = "app/domain/financing_cost_refusal.py"
+
+    # No company may be named in the rule. Docstrings are stripped, so the
+    # prose that cites the filings which earned it is not searched.
+    #
+    # Word boundaries, not containment: a substring scan reported `GS`
+    # inside the identifier `STANDINGS`, which is the same false-positive
+    # shape that once let a ticker corroborate itself on the letters
+    # *etf*. A ticker is a word or it is not a ticker.
+    import re
+
+    code = _code_of(module)
 
     for name in ("GS", "JPM", "AXP", "Goldman", "JPMorgan", "American Express"):
-        assert name not in code, name
+        assert not re.search(rf"\b{re.escape(name)}\b", code), name
 
-    for word in ('"net"', "'net'", "casefold", "lower()", "startswith", "in label"):
+    # No text comparison of any kind, anywhere in the module.
+    for word in ("casefold", "lower()", "startswith", "endswith", "match"):
         assert word not in code, word
+
+    # And the two functions that *decide* never read a row label at all.
+    # `_because` does, because it words the refusal — which is the
+    # distinction this scan exists to hold: quoting a label is not reading
+    # one.
+    for deciding in ("refusal_for", "precedes_in_one_column"):
+        body = _code_of(module, only=deciding)
+
+        assert "label" not in body, deciding
+        assert "printed" not in body, deciding
+
+    assert "label" in _code_of(module, only="_because")
 
 
 def test_a_marker_below_the_total_disproves_nothing() -> None:

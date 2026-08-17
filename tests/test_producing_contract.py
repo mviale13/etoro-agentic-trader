@@ -73,17 +73,22 @@ def stamped(**changes) -> object:
 
 
 def test_the_stamp_covers_every_concept_the_statement_asks() -> None:
+    """Every concept, derived from the contract rather than listed here.
+
+    Listed, this test asserted a snapshot of the vocabulary and failed the
+    next time a concept was added — which is the opposite of what it is
+    for. What it must guarantee is that the stamp covers *whatever* the
+    statement asks, so it reads the same function the extractor does.
+    """
+
+    from app.domain.financial_statements import concepts_of
+
     stamp = producing_contract(INCOME)
 
-    assert {contract.concept for contract in stamp} == {
-        concept
-        for concept in StatementConcept
-        if concept in {LOCATED, ABSENT, UNTOUCHED}
-    } | {
-        StatementConcept.OPERATING_INCOME,
-        StatementConcept.NET_INTEREST_INCOME,
-        StatementConcept.PREMIUM_REVENUE,
-    }
+    assert {contract.concept for contract in stamp} == set(concepts_of(INCOME))
+
+    # And the three the rest of this file exercises are among them.
+    assert {LOCATED, ABSENT, UNTOUCHED} <= {contract.concept for contract in stamp}
 
     # Fingerprints, never the forms: the vocabulary itself is not copied
     # into every observation of every company.

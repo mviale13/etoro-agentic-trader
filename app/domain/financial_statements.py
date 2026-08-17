@@ -89,6 +89,35 @@ class StatementConcept(StrEnum):
     """
 
     TOTAL_REVENUE = "total_revenue"
+
+    #: The consolidated top line a financial institution reports, which
+    #: is a different economic quantity from `TOTAL_REVENUE` and not a
+    #: spelling of it.
+    #:
+    #: Three filers print it under three labels and one construction —
+    #: non-interest revenue plus net interest income — reconciling
+    #: exactly: Goldman 44,724 + 13,559 = 58,283 `Total net revenues`,
+    #: JPMorgan 87,004 + 95,443 = 182,447 `Total net revenue`, American
+    #: Express 54,865 + 17,364 = 72,229 `Total revenues net of interest
+    #: expense`. Interest expense has already been deducted inside the
+    #: net interest subtotal, so the figure is a total *after* financing
+    #: cost and cannot stand where a gross revenue stands
+    #: (`docs/architecture/REVENUE_NET_OF_INTEREST.md`).
+    #:
+    #: Its name says *revenue net of interest expense* rather than *net
+    #: revenue*, because `Net sales`, `Net revenues` and `Net Operating
+    #: Revenues` are net of returns, discounts and excise taxes — a
+    #: revenue adjustment, not an expense — and three of the eleven gross
+    #: top lines this platform establishes carry the word.
+    #:
+    #: **A label alone can never establish it.** `Total income` names
+    #: this quantity at Barclays and NatWest and names a parent-company
+    #: aggregate at M&T, so the concept is qualified structurally as well
+    #: as lexically: see `app/domain/financing_cost_refusal.py`, which
+    #: reads the filer's own typesetting of the net interest subtotal and
+    #: refuses a candidate the structure does not support.
+    REVENUE_NET_OF_INTEREST_EXPENSE = "revenue_net_of_interest_expense"
+
     GROSS_PROFIT = "gross_profit"
     OPERATING_INCOME = "operating_income"
     NET_INCOME = "net_income"
@@ -131,6 +160,7 @@ class StatementConcept(StrEnum):
 #: one statement — the rule `statement_consensus_of` enforces.
 CONCEPT_STATEMENT: dict[StatementConcept, StatementKind] = {
     StatementConcept.TOTAL_REVENUE: StatementKind.INCOME_STATEMENT,
+    StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE: StatementKind.INCOME_STATEMENT,
     StatementConcept.GROSS_PROFIT: StatementKind.INCOME_STATEMENT,
     StatementConcept.OPERATING_INCOME: StatementKind.INCOME_STATEMENT,
     StatementConcept.NET_INCOME: StatementKind.INCOME_STATEMENT,
@@ -223,6 +253,26 @@ STATEMENT_NAMES: dict[StatementKind, str] = {
 CONCEPT_QUESTIONS: dict[StatementConcept, str] = {
     StatementConcept.TOTAL_REVENUE: (
         "the company's total revenue for the most recent period the statement reports"
+    ),
+    # Deliberately far more specific than the question above it, and
+    # written that way for a reason the extractor makes unavoidable: one
+    # cell may answer only one concept, so the reading has to be able to
+    # tell these two apart from their questions alone. The disambiguation
+    # is carried entirely here, in a question no earlier reading was ever
+    # asked, so that `total_revenue`'s own wording stays byte-identical
+    # and no stored observation is retroactively asked something else.
+    StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE: (
+        "the consolidated total revenue or income the statement reports for "
+        "the most recent period **where that total includes net interest "
+        "income** — that is, a top line struck after interest expense has "
+        "already been deducted, typically printed immediately below a net "
+        "interest income line and combining it with non-interest revenue. "
+        "This concept, and not total revenue, answers such a total. Not a "
+        "gross revenue line struck before any financing cost; not a "
+        "component of the total, such as fee, trading or non-interest "
+        "revenue on its own; not a subtotal struck after a provision for "
+        "credit losses; and not a total of a parent company alone rather "
+        "than of the consolidated group"
     ),
     StatementConcept.GROSS_PROFIT: (
         "the company's gross profit for the most recent period the statement "
@@ -333,6 +383,33 @@ CONCEPT_LABELS: dict[StatementConcept, tuple[str, ...]] = {
         # 10,486. Only the concept-to-statement partition keeps the two
         # apart today, and that is a boundary rather than a property of
         # the label.
+    ),
+    # Every form observed in the live corpus for this quantity, and
+    # **none of them is sufficient on its own**. Two are shared with
+    # `TOTAL_REVENUE` (where BQ23 refuses them structurally) and one names
+    # a parent-company aggregate elsewhere in this very corpus, so the
+    # structural qualification in `financing_cost_refusal` is what decides
+    # whether a located candidate establishes the concept at all.
+    StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE: (
+        # Goldman Sachs, JPMorgan. Also in `TOTAL_REVENUE`, and refused
+        # there by structure: the same row cannot be both, and this is
+        # the concept it belongs to.
+        "total net revenues",
+        "total net revenue",
+        # American Express, Citigroup. The filer says outright what the
+        # construction is, and BQ11 refused it as a top line for exactly
+        # that reason — a refusal this concept does not overturn but
+        # accommodates.
+        "total revenues net of interest expense",
+        "total revenues, net of interest expense",
+        # Barclays, NatWest. Both print their own net interest income
+        # above it. M&T prints the identical phrase over `Dividends from
+        # consolidated subsidiaries` in a table captioned *Condensed
+        # Statement of Income* — the parent company alone, with no net
+        # interest subtotal above it — and the structural gate refuses
+        # that specimen on its own evidence rather than on the
+        # concept-to-statement boundary BQ19 had to rely on.
+        "total income",
     ),
     StatementConcept.NET_INCOME: (
         "net income",
