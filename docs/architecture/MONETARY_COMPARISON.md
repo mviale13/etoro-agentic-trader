@@ -30,7 +30,7 @@ frozen pair whose currency cannot be blank. The policy ruling lives at
 [quality_signal_service.py](../../app/services/quality_signal_service.py):
 
 ```python
-LARGE_CAP_THRESHOLD = 10_000_000_000          # unchanged, still fingerprinted
+LARGE_CAP_THRESHOLD = 10_000_000_000  # unchanged, still fingerprinted
 LARGE_CAP = MonetaryAmount(amount=float(LARGE_CAP_THRESHOLD), currency="USD")
 ```
 

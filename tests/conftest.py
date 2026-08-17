@@ -88,6 +88,19 @@ NETWORK_SEAMS = (
     "app.providers.primary_sources.HyperliquidInfo",
     "app.providers.primary_sources.CardanoLedger",
     "app.providers.primary_sources.BitcoinExplorer",
+    # Added by CI1, and the two of them are the same omission twice:
+    # this list is named per class, so a chain surface written after it
+    # is unguarded until somebody remembers. `ArbitrumRpc` and
+    # `SubtensorRpc` sit in the same module as the four above and were
+    # never added, and `tests/test_hermetic_boundary.py` now enumerates
+    # the module rather than trusting the memory.
+    "app.providers.primary_sources.ArbitrumRpc",
+    "app.providers.primary_sources.SubtensorRpc",
+    # The S5.2 issuance reader, and the leak CI1 was opened for. It is
+    # a whole provider rather than a chain adapter, which is why it was
+    # missed: the crypto dossier constructed it inline, so eight tests
+    # of a *payload's shape* asked mempool.space whether it was up.
+    "app.providers.issuance_rule_provider.IssuanceRuleProvider",
 )
 
 #: What each seam's wire method is called. Named per seam because these
@@ -99,6 +112,12 @@ SEAM_METHODS = {
     "app.providers.primary_sources.HyperliquidInfo": ("_post",),
     "app.providers.primary_sources.CardanoLedger": ("_get",),
     "app.providers.primary_sources.BitcoinExplorer": ("_get",),
+    "app.providers.primary_sources.ArbitrumRpc": ("_post",),
+    "app.providers.primary_sources.SubtensorRpc": ("_post",),
+    # Two, because this one speaks both: a REST get for Bitcoin's tip
+    # and blockchair's stats, a JSON-RPC post for Solana's inflation.
+    # Naming only the first would have left Solana's schedule live.
+    "app.providers.issuance_rule_provider.IssuanceRuleProvider": ("_get", "_rpc"),
 }
 
 
@@ -134,6 +153,41 @@ def hermetic_evidence_root(monkeypatch, tmp_path_factory):
     from app.infrastructure.evidence_root import ROOT_ENV
 
     monkeypatch.setenv(ROOT_ENV, str(tmp_path_factory.mktemp("evidence")))
+
+
+@pytest.fixture(autouse=True)
+def hermetic_route_acquisition():
+    """Routes compose their evidence from stored doors, as a page must.
+
+    The wire is already blocked below, so a route that reached for it
+    would go red rather than slow — but red is the wrong answer when
+    the thing under test is a payload's shape. This supplies the same
+    reading the rest of the crypto dossier already uses: a stored door
+    onto the temp evidence root, which holds nothing, so the route
+    renders the honest absence its siblings render.
+
+    Declared here rather than in three test files because the default
+    belongs with the other hermetic defaults. A test that genuinely
+    wants an acquiring provider overrides it back, visibly.
+    """
+
+    from app.api.dependencies import get_issuance_rule_provider
+    from app.api.main import app
+    from app.providers.cached_issuance_provider import CachedIssuanceRuleProvider
+
+    # A nullary callable, deliberately: FastAPI inspects an override's
+    # signature to build its dependency, and `stored` takes an optional
+    # cache — which it tries to resolve as a request field and refuses.
+    # The lambda also defers construction to request time, so the cache
+    # is rooted at the temp evidence directory rather than at whatever
+    # the root was when this fixture ran.
+    app.dependency_overrides[get_issuance_rule_provider] = lambda: (
+        CachedIssuanceRuleProvider.stored()
+    )
+
+    yield
+
+    app.dependency_overrides.pop(get_issuance_rule_provider, None)
 
 
 @pytest.fixture(autouse=True)

@@ -118,8 +118,11 @@ owner's brief:
   ```python
   from app.services.company_understanding_service import CompanyUnderstandingService
   from app.services.business_quality_service import quality_of
+
   service = CompanyUnderstandingService()
-  graded = quality_of(symbol, service.understanding(symbol).financial)   # model= is the crux
+  graded = quality_of(
+      symbol, service.understanding(symbol).financial
+  )  # model= is the crux
   ```
 
   `quality_of`'s third parameter is `model: FinancialModel`, defaulting

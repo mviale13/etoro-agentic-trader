@@ -16,10 +16,29 @@ from app.application.brain.brain_snapshot_service import BrainSnapshotService
 from app.application.brain.perception.market_perception import MarketPerception
 from app.brokers.etoro_account import EtoroAccountBroker
 from app.config import Settings
+from app.providers.issuance_rule_provider import IssuanceRuleProvider
 from app.services.account_service import AccountService
 from app.services.brief_service import BriefService
 from app.services.dashboard_service import DashboardService
 from app.services.earnings_calendar_service import EarningsCalendarService
+
+
+def get_issuance_rule_provider() -> IssuanceRuleProvider:
+    """The issuance rule reader the crypto dossier composes.
+
+    Declared here for the reason this module exists: the crypto dossier
+    built it inline, so the route reached four chain endpoints the
+    moment it was called and its tests measured whether those hosts
+    were up. Nothing about the payload's shape needs the wire, and the
+    suite went red on other people's outages.
+
+    The default is unchanged — this is the same provider the route
+    always constructed, with acquisition intact. What moves is only
+    where it is constructed, so a test can name a stored reader instead
+    of inheriting one from process state.
+    """
+
+    return IssuanceRuleProvider()
 
 
 def get_brain_builder_service() -> BrainBuilderService:

@@ -35,8 +35,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies import get_issuance_rule_provider
 from app.api.models.asset_profile_adapter import asset_profile_response
 from app.api.models.crypto_dossier_adapter import (
     asset_quality_response,
@@ -88,7 +89,10 @@ async def get_corpus() -> dict[str, Any]:
 
 
 @router.get("/{symbol}/dossier")
-async def get_crypto_dossier(symbol: str) -> dict[str, Any]:
+async def get_crypto_dossier(
+    symbol: str,
+    issuance: IssuanceRuleProvider = Depends(get_issuance_rule_provider),
+) -> dict[str, Any]:
     """Everything held about one digital asset, in one read.
 
     404 for a security this platform does not read as a token, rather
@@ -150,7 +154,7 @@ async def get_crypto_dossier(symbol: str) -> dict[str, Any]:
         "supply": supply_response(
             SupplySemanticsService().established(asset, asset_class)
         ),
-        "issuance": issuance_response(IssuanceRuleProvider().rule(asset)),
+        "issuance": issuance_response(issuance.rule(asset)),
         # ── the market it trades in, and its peers ──
         "market": crypto_market_response(
             CryptoMarketService().context(asset, asset_class)
