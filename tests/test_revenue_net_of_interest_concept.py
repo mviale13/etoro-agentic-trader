@@ -451,10 +451,14 @@ def test_the_concept_appears_only_where_it_was_natively_asked() -> None:
                 if asked:
                     holders.append(symbol)
 
-    # Exactly the three filers the ruling appended, five readings each.
+    # The three filers the ruling appended, five readings each — and HON,
+    # whose five readings BQ18 acquired to replace a quorum the repaired
+    # parser refuted. HON's are here for the reason the assertion above
+    # states rather than as an exception: a reading produced today
+    # carries today's contract, and `asked == stamped` holds for it.
     from collections import Counter
 
-    assert Counter(holders) == {"GS": 5, "JPM": 5, "AXP": 5}
+    assert Counter(holders) == {"GS": 5, "JPM": 5, "AXP": 5, "HON": 5}
 
 
 def test_the_concept_needs_no_registry_entry_and_stays_safe_without_one() -> None:
@@ -628,4 +632,8 @@ def test_the_production_bands_are_exactly_what_bq23_left() -> None:
         quality = quality_of(symbol, understanding)
         tally[quality.band.value if quality is not None else "UNKNOWN"] += 1
 
-    assert dict(tally) == {"HIGH": 3, "MEDIUM": 4, "LOW": 3, "UNKNOWN": 14}
+    # BQ18 moved exactly one company: HON, UNKNOWN → MEDIUM, when five
+    # fresh readings under the repaired parser made its growth factors
+    # answerable. Nothing else in the corpus moved, which is what the
+    # unchanged HIGH, LOW and the single-step UNKNOWN say.
+    assert dict(tally) == {"HIGH": 3, "MEDIUM": 5, "LOW": 3, "UNKNOWN": 13}
