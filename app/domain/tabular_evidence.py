@@ -134,6 +134,23 @@ class TableRow:
 
     cells: tuple[str, ...]
 
+    #: The extents of spanned cells whose text was *not* repeated into
+    #: the columns their colspan asserted — each as ``(first, count)``
+    #: over this row's cell indices, ``count`` columns starting at
+    #: ``first``.
+    #:
+    #: A spanned cell's words are repeated into every column it covers,
+    #: so those extents need no record. A spanned *number* is not — a
+    #: value spanned for centering must not become several addressable
+    #: copies of one printed figure — and that protection erased a fact
+    #: the filer asserted: Honeywell heads six columns of figures with
+    #: one spanned "2025", and dropping the extent left the year on the
+    #: first column and the figures at the fourth, under nothing. The
+    #: extent is the evidence; it is carried here so the header
+    #: association can read it, and a figure still occupies exactly one
+    #: address.
+    spans: tuple[tuple[int, int], ...] = ()
+
     @property
     def label(self) -> str:
         """What the row is called, which is its leading cell."""
@@ -239,9 +256,43 @@ class SourceTable:
         return 0
 
     def column_header(self, column: int) -> str:
-        """What the header row calls this column, which is usually the period."""
+        """What the header row calls this column, which is usually the period.
 
-        return self.cell(self.header_row, column) or ""
+        The cell itself where it prints anything — and where it is blank,
+        the spanned header cell whose colspan the filer asserted covers
+        this column, if the header row records one. That second clause is
+        not neighbour-filling: a blank cell between two headers proves
+        nothing about which of them it belongs to, and an earlier repair
+        that filled rightward was falsified for exactly that reason. Only
+        the extent the filer's own markup asserted may cover a column,
+        which is what `TableRow.spans` preserves — Honeywell's "2025"
+        spans six columns and its figures sit in the fourth, and that
+        figure is 2025's because the filer said so, never because 2025 is
+        the nearest header to its left.
+
+        A spanned cell that prints nothing covers nothing: an empty
+        stretch of columns stays unheaded, and a figure beneath it stays
+        refused as a number whose period is unproven.
+        """
+
+        named = self.cell(self.header_row, column) or ""
+
+        if named.strip():
+            return named
+
+        row = self.rows[self.header_row] if self.header_row < len(self.rows) else None
+
+        if row is None:
+            return ""
+
+        for first, count in row.spans:
+            if first <= column < first + count and first < len(row.cells):
+                covering = row.cells[first].strip()
+
+                if covering:
+                    return covering
+
+        return ""
 
     def stated(self) -> str:
         """The table as an extraction is shown it: addressable, verbatim."""

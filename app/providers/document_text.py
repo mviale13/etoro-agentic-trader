@@ -50,9 +50,20 @@ _CELL = re.compile(r"(?is)<t[dh]\b[^>]*>")
 #: expanding them puts the same column at a different index on every row.
 _COLSPAN = re.compile(r'(?is)\bcolspan\s*=\s*["\']?\s*(\d+)')
 
+#: The vertical sibling, and ignoring it was Honeywell's whole defect: a
+#: cell spanning down occupies its columns in the rows beneath it, and a
+#: grid that drops that leaves every later cell of those rows shifted
+#: left by the spanned cell's width. Honeywell's year row sits under an
+#: empty label stub spanning down from the row above, so "2025" landed on
+#: the label column and its figures sat under nothing.
+_ROWSPAN = re.compile(r'(?is)\browspan\s*=\s*["\']?\s*(\d+)')
+
 #: An upper bound on that, because the number is written by whoever wrote
 #: the document and a cell claiming ten thousand columns is not one.
 _WIDEST = 64
+
+#: The same bound downward.
+_DEEPEST = 64
 
 _ROW_END = re.compile(r"(?is)</tr\s*>")
 
@@ -510,11 +521,21 @@ def _widened(
     The continuation's label column is dropped — it is the repeated join
     key, not a new column — and everything after it lands to the right
     of the columns already read, which is where the page would have put
-    it had it been wide enough.
+    it had it been wide enough. A continuation's span extents shift with
+    its cells, less the dropped label column, so they keep covering the
+    same columns they covered on their own page.
     """
 
     return tuple(
-        TableRow(cells=row.cells + more.cells[1:])
+        TableRow(
+            cells=row.cells + more.cells[1:],
+            spans=row.spans
+            + tuple(
+                (first + len(row.cells) - 1, count)
+                for first, count in more.spans
+                if first >= 1
+            ),
+        )
         for row, more in zip(rows, continuation, strict=True)
     )
 
@@ -584,23 +605,35 @@ def _without_nested(table: str) -> str:
 
 
 def _rows(table: str) -> tuple[TableRow, ...]:
-    """The table's rows, as a grid with the empty edges of it pruned."""
+    """The table's rows, as a grid with the empty edges of it pruned.
+
+    The rowspan ledger threads through in document order, because that
+    is the only order in which "the cell above still occupies this
+    column" means anything.
+    """
 
     starts = [match.start() for match in _ROW.finditer(table)]
 
     printed = []
+    carried: dict[int, tuple[int, str]] = {}
 
     for index, start in enumerate(starts):
         end = starts[index + 1] if index + 1 < len(starts) else len(table)
 
         closing = _ROW_END.search(table, start, end)
 
-        printed.append(_cells(table[start : closing.start() if closing else end]))
+        cells, extents, carried = _cells(
+            table[start : closing.start() if closing else end], carried
+        )
+
+        printed.append((cells, extents))
 
     return _gridded(printed)
 
 
-def _gridded(printed: list[tuple[str, ...]]) -> tuple[TableRow, ...]:
+def _gridded(
+    printed: list[tuple[tuple[str, ...], tuple[tuple[int, int], ...]]],
+) -> tuple[TableRow, ...]:
     """
     Rows of cells made into a grid, and the spacing pruned as a grid.
 
@@ -615,33 +648,65 @@ def _gridded(printed: list[tuple[str, ...]]) -> tuple[TableRow, ...]:
     on it under the wrong heading — quietly destroying the one assumption
     a share of a total rests on. A column that is empty in every row can
     go without disturbing anything, because every row loses the same one.
+
+    A span's extent is remapped through the same prune, so it keeps
+    covering exactly the surviving columns the filer's colspan asserted
+    and never gains one the prune moved next to it.
     """
 
     if not printed:
         return ()
 
-    width = max(len(cells) for cells in printed)
+    width = max(len(cells) for cells, _ in printed)
 
-    grid = [(*cells, *("",) * (width - len(cells))) for cells in printed]
+    grid = [
+        ((*cells, *("",) * (width - len(cells))), extents) for cells, extents in printed
+    ]
 
     columns = [
         index
         for index in range(width)
-        if any(row[index] not in _SPACING for row in grid)
+        if any(row[index] not in _SPACING for row, _ in grid)
     ]
 
-    rows = [
-        TableRow(cells=tuple(row[index] for index in columns))
-        for row in grid
-        if any(cell for cell in row)
-    ]
+    position = {original: pruned for pruned, original in enumerate(columns)}
+
+    rows = []
+
+    for row, extents in grid:
+        if not any(cell for cell in row):
+            continue
+
+        spans = []
+
+        for first, span_width in extents:
+            covered = [
+                position[original]
+                for original in range(first, min(first + span_width, width))
+                if original in position
+            ]
+
+            if len(covered) > 1:
+                spans.append((covered[0], covered[-1] - covered[0] + 1))
+
+        rows.append(
+            TableRow(
+                cells=tuple(row[index] for index in columns),
+                spans=tuple(spans),
+            )
+        )
 
     return tuple(rows)
 
 
-def _cells(row: str) -> tuple[str, ...]:
+def _cells(
+    row: str,
+    carried: dict[int, tuple[int, str]],
+) -> tuple[tuple[str, ...], tuple[tuple[int, int], ...], dict[int, tuple[int, str]]]:
     """
-    What the row's cells print, every one of them, empty ones included.
+    What the row's cells print, every one of them, empty ones included —
+    the extents of the spans whose text was not repeated, and the columns
+    this row's cells occupy in the rows beneath it.
 
     A filer's table is half spacing: blank cells between columns, a
     currency symbol in a column of its own. Dropping them reads better
@@ -654,16 +719,39 @@ def _cells(row: str) -> tuple[str, ...]:
     The blanks stay. A cell that carries nothing is refused as evidence
     later, on the grounds that it prints no number, which costs nothing
     and keeps the grid a grid.
+
+    `carried` is the rowspan ledger: columns a cell of an earlier row
+    still occupies here, each with the rows it has left and the text it
+    places. They are laid down exactly where the earlier row put them —
+    this row's own cells fill around them, which is what the filer's
+    rowspan asserted and what a browser does. Ignoring it was
+    Honeywell's whole defect: the empty label stub above its year row
+    spans down, so the years landed three columns left of the figures
+    they head.
     """
 
     opened = list(_CELL.finditer(row))
 
     cells: list[str] = []
+    extents: list[tuple[int, int]] = []
+    below: dict[int, tuple[int, str]] = {}
+
+    def placed_carried() -> None:
+        while len(cells) in carried:
+            remaining, text = carried[len(cells)]
+
+            if remaining > 1:
+                below[len(cells)] = (remaining - 1, text)
+
+            cells.append(text)
 
     for index, match in enumerate(opened):
+        placed_carried()
+
         end = opened[index + 1].start() if index + 1 < len(opened) else len(row)
 
         text = flatten(row[match.start() : end]).text.strip()
+        first = len(cells)
         cells.append(text)
 
         spans = _COLSPAN.search(match.group(0))
@@ -681,10 +769,35 @@ def _cells(row: str) -> tuple[str, ...]:
         # ever seeing it. Nor is a lone currency symbol, which is the
         # front of the one value beside it and must not multiply into a
         # symbol for every column it was stretched across.
+        #
+        # What the filer's colspan asserted is kept even where the text
+        # is not repeated: a spanned *year* is a header whose columns
+        # would otherwise sit under nothing, and the extent is the only
+        # record of which columns it heads. An empty spanned cell covers
+        # nothing worth recording.
         words = text and read_number(text) is None and text not in _CURRENCY
         cells.extend((text if words else "") for _ in range(max(0, width - 1)))
 
-    return _with_currency_absorbed(cells)
+        if width > 1 and text and not words:
+            extents.append((first, width))
+
+        # The rows this cell covers beneath its own, on the same rule
+        # colspan holds to: words are repeated into every row the filer
+        # asserted they cover — a label spanning three rows names all
+        # three — and a number or a currency symbol is never repeated,
+        # so a figure stays one addressable cell. The columns are
+        # occupied either way, which is the alignment the defect was
+        # about.
+        depths = _ROWSPAN.search(match.group(0))
+        depth = min(int(depths.group(1)), _DEEPEST) if depths else 1
+
+        if depth > 1:
+            for column in range(first, first + width):
+                below[column] = (depth - 1, text if words else "")
+
+    placed_carried()
+
+    return _with_currency_absorbed(cells), tuple(extents), below
 
 
 def _with_currency_absorbed(cells: list[str]) -> tuple[str, ...]:
