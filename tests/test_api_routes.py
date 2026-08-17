@@ -430,13 +430,15 @@ def test_a_dossier_declares_what_kind_of_case_it_is(
 def test_a_crypto_dossier_is_a_crypto_dossier(
     client: TestClient,
 ) -> None:
-    """A token's case is declared crypto, and company sections do not belong.
+    """A corpus token's case lives on the crypto surface, and only there.
 
-    The three acceptance cases of the asset-class slice, at the wire:
-    the quality score is not called "Business quality"; the filings
-    sections are not sent as not-yet-read work — a token publishes no
-    filings, and the reason says it is a property of the asset class;
-    and the case is titled as what it is.
+    This test used to pin the executive dossier's crypto *flavouring* —
+    the asset-class slice's acceptance cases. DV3 retired the surface
+    itself: one asset must not expose two live investment
+    recommendations from different reasoning systems, and the crypto
+    dossier is the one that consumes the crypto evidence. The route now
+    answers 410 before the pipeline runs, whatever Brain is wired —
+    which is why the stub below is never consulted.
     """
 
     portfolio = make_portfolio()
@@ -465,50 +467,10 @@ def test_a_crypto_dossier_is_a_crypto_dossier(
         brain
     )
 
-    body = client.get("/executive/BTC/dossier").json()
+    response = client.get("/executive/BTC/dossier")
 
-    definition = body["definition"]
-
-    assert definition["kind"] == "crypto"
-    assert definition["title"] == "Crypto dossier"
-    assert definition["classification_heading"] == "Asset type"
-    assert definition["analysis_heading"] == "Asset type"
-
-    # A company classification never renders over a token: the section
-    # is not sent at all rather than sent empty.
-    assert body["classification"] is None
-
-    # Not applicable is not missing: the sections are absent, and the
-    # reason is a property of the asset class rather than unread work.
-    assert definition["filings_apply"] is False
-    assert "publishes no filings" in definition["filings_inapplicable_because"]
-    assert body["understanding"] is None
-
-    # A network reading is asset quality. Calling it business quality
-    # presented a crypto score as a company judgment nobody made.
-    assert body["scores"]["quality"]["label"] == "Asset quality"
-
-    # The judged market facts travel with the case: grouped rows, each
-    # with a standing, and the rejection ledger beside them. Content
-    # depends on what the stores hold; the shape does not.
-    profile = body["asset_profile"]
-
-    assert profile is not None
-    assert [group["title"] for group in profile["groups"]] == [
-        "Market",
-        "Trading activity",
-        "Supply",
-        "Dilution context",
-        "History",
-    ]
-
-    for group in profile["groups"]:
-        for row in group["rows"]:
-            assert row["label"]
-            assert row["standing"]
-            assert row["standing_stated"]
-
-    assert isinstance(profile["rejected"], list)
+    assert response.status_code == 410
+    assert "/crypto/BTC/dossier" in response.json()["detail"]
 
 
 def test_dossier_reports_an_unevidenced_symbol_as_unevidenced(

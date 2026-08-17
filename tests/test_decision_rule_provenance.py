@@ -38,6 +38,8 @@ from app.application.executive.decision_evidence_builder import (
 )
 from app.cio.artificial_cio import ArtificialCIO
 from app.cio.decision_policy import DecisionPolicy
+from app.cio.decision_state import DecisionState
+from app.cio.digital_asset_decision import _APPLICABLE_POSTURES
 from app.domain.business_quality import (
     BAND_SCORES,
     HIGH_DENOMINATOR,
@@ -196,6 +198,16 @@ GOVERNED: dict[str, object] = {
     ),
     "actionable-buy": ("recommendation == BUY",),
     "veto-sell": ("recommendation == SELL",),
+    # No numeric constant exists in this rule; what it governs is the
+    # posture partition and the two reachable states, hashed so neither
+    # can widen under an unchanged version. RECOMMEND appearing in this
+    # tuple would mean somebody made a digital asset actionable, and
+    # that is exactly the edit this pin exists to make deliberate.
+    "digital-asset-gates": (
+        tuple(sorted(posture.value for posture in _APPLICABLE_POSTURES)),
+        (DecisionState.MONITOR.value, DecisionState.INVESTIGATE.value),
+        "conviction-always-withheld",
+    ),
 }
 
 
@@ -231,6 +243,9 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "conviction-mean": (2, RuleStatus.UNSOURCED, "b8cd60d55c95"),
     "actionable-buy": (1, RuleStatus.UNSOURCED, "87618568469b"),
     "veto-sell": (1, RuleStatus.UNSOURCED, "7734b674289c"),
+    # DV3. Widening the applicable-posture set, adding a reachable
+    # state, or letting a conviction through requires re-pinning here.
+    "digital-asset-gates": (1, RuleStatus.ARGUED, "f05180f01fda"),
 }
 
 
@@ -304,6 +319,10 @@ def test_exactly_six_rules_are_argued() -> None:
         "momentum-input-eligibility",
         "market-cap-input-eligibility",
         "decision-authority",
+        # DV3: argued in digital_asset_decision.py from the committee
+        # protocol's own vocabulary — posture arithmetic with a
+        # structural INVESTIGATE ceiling, no number anywhere.
+        "digital-asset-gates",
     ]
 
 

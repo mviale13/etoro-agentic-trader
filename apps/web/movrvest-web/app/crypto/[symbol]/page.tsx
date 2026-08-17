@@ -10,6 +10,7 @@ import {
   type CorpusAsset,
   type CryptoDossier,
   type CryptoIdentity,
+  type DecisionView,
   type CryptoQuestionView,
   type FactsView,
   type IntelligenceView,
@@ -147,6 +148,7 @@ function Sections({ dossier }: { dossier: CryptoDossier }) {
   return (
     <div className="mt-8 space-y-10">
       <Identity symbol={dossier.symbol} identity={dossier.identity} />
+      <Decision symbol={dossier.symbol} decision={dossier.decision} />
       <Assessment assessment={dossier.assessment} />
       <Committees
         committees={dossier.committees.committees}
@@ -195,6 +197,148 @@ function Tag({ children }: { children: React.ReactNode }) {
     <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
       {children}
     </span>
+  );
+}
+
+/**
+ * The Artificial CIO's answer, worded entirely by the backend.
+ *
+ * There is no conviction figure and no field for one: the backend
+ * serves the withheld-conviction sentence, and rendering anything
+ * numeric beside this state would manufacture the confidence DV1
+ * measured on the retired executive surface. Every list below is
+ * quoted — established conclusions carry their own "investment meaning
+ * not established" clause, and NOT APPLICABLE is kept apart from
+ * unresolved because *does not apply* and *not yet answerable* are
+ * opposite readings of a missing answer.
+ */
+function Decision({
+  symbol,
+  decision,
+}: {
+  symbol: string;
+  decision: DecisionView;
+}) {
+  return (
+    <section aria-labelledby="decision">
+      <Heading id="decision">What the Artificial CIO concludes</Heading>
+
+      <div className="mt-3 space-y-4">
+        <Card>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-2xl font-semibold tracking-tight text-slate-950">
+              {decision.state}
+            </span>
+            <Tag>conviction not stated</Tag>
+          </div>
+
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            {decision.rationale}
+          </p>
+
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            {decision.convictionWithheldBecause}
+          </p>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            {decision.ceiling}
+          </p>
+        </Card>
+
+        {decision.established.length > 0 ? (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Established, and quoted with what it is not
+            </p>
+            <ul className="mt-2 space-y-2">
+              {decision.established.map((line) => (
+                <li key={line} className="text-sm leading-6 text-slate-700">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
+
+        {decision.unresolved.length > 0 ? (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Open questions, each in its owner&apos;s words
+            </p>
+            <ul className="mt-2 space-y-2">
+              {decision.unresolved.map((question) => (
+                <li
+                  key={`${question.owner}-${question.stated}`}
+                  className="text-sm leading-6 text-slate-700"
+                >
+                  <span className="font-semibold text-slate-900">
+                    {question.owner}:
+                  </span>{" "}
+                  {question.stated}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
+
+        {decision.materialUncertainties.length > 0 ? (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Material uncertainty — stated as uncertainty, never as adverse
+            </p>
+            <ul className="mt-2 space-y-2">
+              {decision.materialUncertainties.map((line) => (
+                <li key={line} className="text-sm leading-6 text-slate-700">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
+
+        {decision.notApplicable.length > 0 ? (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              The wrong instrument for {symbol} — knowledge, never adverse
+            </p>
+            <ul className="mt-2 space-y-2">
+              {decision.notApplicable.map((line) => (
+                <li key={line} className="text-sm leading-6 text-slate-600">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
+
+        {decision.adverse.length === 0 ? (
+          <p className="text-xs leading-5 text-slate-500">
+            {decision.adverseAbsent}
+          </p>
+        ) : (
+          <Card>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Against this asset
+            </p>
+            <ul className="mt-2 space-y-2">
+              {decision.adverse.map((line) => (
+                <li key={line} className="text-sm leading-6 text-slate-700">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {decision.silentCommittees.length > 0 ? (
+          <p className="text-xs leading-5 text-slate-500">
+            Committees with no recorded judgment:{" "}
+            {decision.silentCommittees.join(", ")}. A committee that never
+            ran is not one that answered.
+          </p>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
