@@ -222,6 +222,18 @@ class ExecutiveDecision(BaseModel):
     #: this exact rule*, never *this is the correct way to invest*.
     decided_under: tuple[DecisionRule, ...] = ()
 
+    #: The exact records this decision rests on, where it rests on
+    #: records that carry their own identity.
+    #:
+    #: Empty for a decision reached from scores: those are computed from
+    #: readings that have no stable identity of their own, and inventing
+    #: one to fill this field would claim a traceability that does not
+    #: exist. A decision that *does* name its sources can be compared
+    #: against an earlier one exactly — which is what lets the journal
+    #: tell *the same answer from the same evidence* from *the same
+    #: answer from new evidence*.
+    evidence_records: tuple[str, ...] = ()
+
     decided_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
     )

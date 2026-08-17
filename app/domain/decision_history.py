@@ -206,6 +206,23 @@ class DecisionRecord:
     #: the journal kept them — an absence, never a set of zeroes.
     scores: RecordedScores = field(default_factory=RecordedScores)
 
+    #: The named, versioned rules this decision was reached under, as
+    #: their `key@version` identities.
+    #:
+    #: **Empty means the record predates the stamp, never that no rule
+    #: applied.** Every decision recorded before this field existed was
+    #: reached under some rule; what is missing is the note of which. An
+    #: empty tuple is therefore an honest silence, and it is what
+    #: distinguishes a record written by the retired crypto path from one
+    #: written under `digital-asset-gates@1` — without a single stored
+    #: byte being rewritten.
+    decided_under: tuple[str, ...] = ()
+
+    #: The exact records this decision rested on, where it rested on
+    #: records carrying their own identity. Empty for a decision reached
+    #: from scores, which have none.
+    evidence_records: tuple[str, ...] = ()
+
 
 @dataclass(frozen=True, slots=True)
 class DecisionHistory:
