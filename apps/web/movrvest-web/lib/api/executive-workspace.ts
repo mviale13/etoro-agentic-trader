@@ -69,12 +69,12 @@ interface PriorityPayload {
 }
 
 interface RankedCasePayload {
-  rank: number;
+  rank: number | null;
   symbol: string;
   recommendation: string;
   conviction: number | null;
   conviction_label: string | null;
-  committee_agreement: number;
+  committee_agreement: number | null;
   playbook_name: string | null;
   safety_score: number | null;
   summary: string;
@@ -271,7 +271,9 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
       ),
     })),
     investment_cases: cases.filter(isRecord).map((item, index) => ({
-      rank: requireNumber(item.rank, `investment_cases[${index}].rank`),
+      // Null where the case carries no conviction — there is no
+      // conviction order for it to hold a position in.
+      rank: optionalNumber(item.rank),
       symbol: requireString(item.symbol, `investment_cases[${index}].symbol`),
       recommendation: requireString(
         item.recommendation,
@@ -285,10 +287,8 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.conviction_label,
         `investment_cases[${index}].conviction_label`,
       ),
-      committee_agreement: requireNumber(
-        item.committee_agreement,
-        `investment_cases[${index}].committee_agreement`,
-      ),
+      // Null where no committee spoke. Zero would say they disagreed.
+      committee_agreement: optionalNumber(item.committee_agreement),
       playbook_name: optionalString(
         item.playbook_name,
         `investment_cases[${index}].playbook_name`,

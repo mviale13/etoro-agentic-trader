@@ -69,7 +69,10 @@ class RankedInvestmentCaseResponse(BaseModel):
     projections — are deliberately absent rather than estimated.
     """
 
-    rank: int
+    #: Position in the conviction order. Null where the case carries no
+    #: conviction: there is no order to hold a place in, and a number
+    #: here would rank cases against each other on nothing.
+    rank: int | None
     symbol: str
     recommendation: str
 
@@ -81,7 +84,9 @@ class RankedInvestmentCaseResponse(BaseModel):
     #: there is no conviction to word.
     conviction_label: str | None
 
-    committee_agreement: int
+    #: Null where no committee spoke. Zero would say they disagreed
+    #: completely, which is the opposite of an unasked question.
+    committee_agreement: int | None
 
     #: How calm this security's own price history is, higher being safer.
     #:

@@ -114,7 +114,7 @@ router = APIRouter(
 
 def _committee_agreement(
     workspace: ExecutiveWorkspace,
-) -> int:
+) -> int | None:
     """How far the committees that spoke pointed the same way, as a percentage.
 
     This used to average their confidence floats while being called
@@ -123,13 +123,17 @@ def _committee_agreement(
 
     A committee that could not form a view is silent, not opposed, and
     is not counted either way.
+
+    **None where none spoke**, which the panel has always returned and
+    this function used to flatten to zero — the panel's own comment says
+    zero would claim they disagreed completely. It went unnoticed while
+    every case ran the company committees. A digital asset runs none of
+    them: its committees are the crypto ones, which the matrix refuses
+    to combine into a single agreement, so the honest answer here is
+    that this question was not asked.
     """
 
-    agreement = Panel(opinions=workspace.committee_opinions).agreement_pct
-
-    # Nobody spoke. Zero would say they disagreed completely, which is
-    # the opposite of what an empty panel means.
-    return 0 if agreement is None else agreement
+    return Panel(opinions=workspace.committee_opinions).agreement_pct
 
 
 @router.get(
@@ -165,7 +169,16 @@ async def portfolio_briefing(
 
     cases: list[RankedInvestmentCaseResponse] = []
 
-    for rank, workspace in enumerate(briefing.workspaces, start=1):
+    # A rank is a position in the conviction order, so it belongs only to
+    # a case that carries a conviction. Counting every case gave the
+    # unranked tail positions — 10th, 11th, 14th — over an order that is
+    # merely the sequence the broker reported the holdings in, and an
+    # investor reading "10th of 14" has been told something nobody
+    # measured. The tail is still listed and still explained; it is not
+    # numbered.
+    position = 0
+
+    for workspace in briefing.workspaces:
         decision = workspace.decision
         thesis = workspace.thesis
         reasoning = workspace.reasoning
@@ -174,9 +187,12 @@ async def portfolio_briefing(
         if decision is None or thesis is None or reasoning is None:
             continue
 
+        if decision.conviction is not None:
+            position += 1
+
         cases.append(
             RankedInvestmentCaseResponse(
-                rank=rank,
+                rank=position if decision.conviction is not None else None,
                 symbol=workspace.symbol,
                 recommendation=decision.state.value,
                 conviction=decision.conviction,

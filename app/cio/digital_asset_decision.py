@@ -71,6 +71,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.cio.decision_state import DecisionState
+from app.cio.executive_decision import ExecutiveDecision
 from app.domain.decision_rules import DIGITAL_ASSET_GATES, DecisionRule
 from app.domain.investment_consideration import (
     AssetConsiderations,
@@ -378,3 +379,59 @@ def _unresolved(
         )
 
     return tuple(open_questions)
+
+
+def as_executive_decision(decision: DigitalAssetDecision) -> ExecutiveDecision:
+    """The same judgment in the record shape every surface already reads.
+
+    **A translation, never a second decision.** Nothing is computed here:
+    the state, the rationale and every sentence are carried from the
+    canonical answer above, and `decided_under` carries
+    `digital-asset-gates@1` so a reader can establish which reasoning
+    system produced the record. That stamp is the provenance — an
+    executive record produced by the equity gates carries
+    `decision-gates` and `conviction-mean` instead, and the two can
+    never be confused for one another.
+
+    **What is deliberately empty, and why.**
+
+    - `key_strengths` and `key_risks`. A structural conclusion is not a
+      strength. Both committee vocabularies say so in their own words —
+      one documents its answers as structural facts and explicitly not
+      favourable ones, the other states that its verdicts are
+      deliberately not ordered — and the bridge's licensing table is
+      empty besides. Filing a conclusion under *what argues for this
+      security* would author the investment meaning that table refuses
+      to grant, so both lists are empty and the rationale carries the
+      meaning instead.
+    - `conviction`. Withheld by construction, and there is no arithmetic
+      here that could produce one.
+
+    `evidence_weighed` is the neutral field — *whatever the signals
+    measured, favourable or not* — so the committees' conclusions and
+    their wrong-instrument findings both belong there, each still
+    carrying its own clause. A wrong-instrument finding travelling as
+    evidence weighed can never be read as an adverse one; travelling as
+    a *risk* it inevitably would be.
+    """
+
+    return ExecutiveDecision(
+        symbol=decision.symbol,
+        state=decision.state,
+        conviction=None,
+        rationale=decision.rationale,
+        # Conclusions and applicability findings, quoted. Neither is a
+        # grade, and this is the one field that says so by not saying
+        # otherwise.
+        evidence_weighed=(*decision.established, *decision.not_applicable),
+        key_strengths=(),
+        key_risks=(),
+        # What a later cycle could supply. An open question keeps its
+        # owner's name, and a material spread is a reading that could be
+        # settled — never an adverse finding about the asset.
+        missing_evidence=(
+            *(f"{item.owner}: {item.stated}" for item in decision.unresolved),
+            *decision.material_uncertainties,
+        ),
+        decided_under=decision.decided_under,
+    )
