@@ -418,34 +418,43 @@ def test_the_new_concept_is_pinned_and_no_other_vocabulary_moved() -> None:
         assert concept_vocabulary_fingerprint(concept) == fingerprint, concept
 
 
-def test_no_stored_observation_gained_the_concept() -> None:
-    """No backfill, and none possible: a reading carries what it was asked.
+def test_the_concept_appears_only_where_it_was_natively_asked() -> None:
+    """No backfill: a reading carries what it was asked, and nothing more.
 
-    The architecture was built for this — `_addressed` reads the concepts
-    from the observations rather than from the live vocabulary, "because a
-    stored reading may predate a concept the vocabulary gained since".
+    Until BQ28's phase-0 append this asserted the concept appeared nowhere
+    in production. The appended natives carry it — they were asked it, and
+    stamp it — and the invariant that survives the append is the real one:
+    every stored observation that holds a fact for the concept also holds
+    a native `produced_under` stamp for it, and no observation without the
+    stamp gained the fact. `_addressed` reads the concepts from the
+    observations rather than from the live vocabulary, "because a stored
+    reading may predate a concept the vocabulary gained since".
     """
 
     store = JsonFinancialStatementStore(PRODUCTION)
     service = FinancialStatementService(store)
 
+    holders = []
+
     for symbol in _symbols():
         for statement, consensus in service.established(symbol).items():
             assert statement is not None
 
-            concepts = {fact.concept for fact in consensus.facts}
-
-            assert NET_OF_INTEREST not in concepts, symbol
-
             for observation in store.read(
                 symbol, consensus.source.key, consensus.statement
             ):
-                assert NET_OF_INTEREST not in {
-                    fact.concept for fact in observation.facts
-                }, symbol
-                assert NET_OF_INTEREST not in {
-                    stamped.concept for stamped in observation.produced_under
-                }, symbol
+                asked = NET_OF_INTEREST in {fact.concept for fact in observation.facts}
+                stamped = observation.produced_contract_for(NET_OF_INTEREST) is not None
+
+                assert asked == stamped, symbol
+
+                if asked:
+                    holders.append(symbol)
+
+    # Exactly the three filers the ruling appended, five readings each.
+    from collections import Counter
+
+    assert Counter(holders) == {"GS": 5, "JPM": 5, "AXP": 5}
 
 
 def test_the_concept_needs_no_registry_entry_and_stays_safe_without_one() -> None:

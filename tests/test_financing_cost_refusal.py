@@ -513,20 +513,25 @@ def test_the_readings_are_byte_identical_after_the_derivation() -> None:
 
     assert before == after
 
-    # And every reading still says it located the figure.
-    for observation in after:
+    # The store now holds both generations — five pre-BQ17 positives and
+    # five stamped natives, since BQ28's phase-0 append — and neither was
+    # rewritten. The old five still say they located the figure and still
+    # carry no provenance; the natives still carry theirs.
+    old = [observation for observation in after if observation.produced_under == ()]
+    native = [observation for observation in after if observation.produced_under != ()]
+
+    assert len(old) == 5 and len(native) == 5
+
+    for observation in old:
         fact = observation.fact(REVENUE)
 
         assert fact is not None
         assert fact.anchor is not None
         assert fact.anchor.label == "Total net revenues"
-
-    # Provenance is a property of the reading, and it is untouched too:
-    # this is a semantic authority rule downstream of extraction, not a
-    # producing-contract change.
-    for observation in after:
-        assert observation.produced_under == ()
         assert observation.produced_contract_for(REVENUE) is None
+
+    for observation in native:
+        assert observation.produced_contract_for(REVENUE) == "ea9df9c5adbc7f44"
 
 
 def test_no_vocabulary_moved_and_no_fingerprint_with_it() -> None:

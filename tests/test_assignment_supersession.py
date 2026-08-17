@@ -47,7 +47,6 @@ NII = StatementConcept.NET_INTEREST_INCOME
 EARNINGS = StatementConcept.NET_INCOME
 
 PRODUCTION = "data/statements"
-PRESERVED = "data/experiments/statement-observations/bq26/statements"
 
 #: Goldman's shape, from the filing itself: the marker one row above the
 #: contested total, net income far below, one table, one column.
@@ -370,12 +369,20 @@ def test_the_identity_is_five_conjuncts_and_value_is_never_sufficient() -> None:
 
 
 def mixed(symbol: str, key: str):
+    """The ten readings, now one store.
+
+    Until BQ28's phase-0 append the two halves lived in two stores and
+    this helper composed them; production now holds both, which is the
+    stronger specimen and the same rule. The preserved copies remain
+    durable and duplicate what was appended — verified by the importer's
+    duplicate=15 on re-execution — so production alone is read here.
+    """
+
     production = JsonFinancialStatementStore(PRODUCTION).read(symbol, key, INCOME)
-    preserved = JsonFinancialStatementStore(PRESERVED).read(symbol, key, INCOME)
 
-    assert len(production) == 5 and len(preserved) == 5
+    assert len(production) == 10
 
-    return statement_consensus_of((*production, *preserved))
+    return statement_consensus_of(production)
 
 
 def test_goldman_resolves_to_a_refusal_not_a_tie() -> None:
@@ -460,12 +467,9 @@ def test_the_live_mixed_set_is_order_independent() -> None:
     production = JsonFinancialStatementStore(PRODUCTION).read(
         "GS", "0000886982-26-000091", INCOME
     )
-    preserved = JsonFinancialStatementStore(PRESERVED).read(
-        "GS", "0000886982-26-000091", INCOME
-    )
 
-    forward = statement_consensus_of((*production, *preserved)).fact(REVENUE)
-    backward = statement_consensus_of((*preserved, *production)).fact(REVENUE)
+    forward = statement_consensus_of(production).fact(REVENUE)
+    backward = statement_consensus_of(tuple(reversed(production))).fact(REVENUE)
 
     assert forward is not None and backward is not None
     assert forward.withdrawn_assignments == backward.withdrawn_assignments == 5
@@ -508,20 +512,34 @@ def test_the_stored_readings_are_byte_identical_after_the_derivation() -> None:
 
     assert before == after
 
-    for observation_ in after:
+    # The superseded five still say what they said — the positive intact,
+    # the provenance untouched — and the native five still carry their
+    # stamps. Withdrawal rewrote neither side.
+    old = [o for o in after if o.produced_under == ()]
+    native = [o for o in after if o.produced_under != ()]
+
+    assert len(old) == 5 and len(native) == 5
+
+    for observation_ in old:
         fact = observation_.fact(REVENUE)
 
         assert fact is not None and fact.anchor is not None
         assert fact.anchor.label == "Total net revenues"
-        assert observation_.produced_under == ()
+
+    for observation_ in native:
+        assert observation_.produced_contract_for(TARGET) == "3e077c247f109a37"
 
 
-def test_the_rule_is_inert_on_production() -> None:
-    """No production consensus withdraws an assignment, and no fact moved.
+def test_the_rule_fires_exactly_where_the_corpus_says_it_must() -> None:
+    """Two withdrawals in the whole corpus, and only where a native
+    reassignment exists.
 
-    Production holds no observation of the new concept, so obligation 1
-    can never be met — checked across the whole corpus rather than
-    asserted.
+    Until BQ28's phase-0 append this pinned the rule as inert — production
+    held no observation of the new concept, so obligation 1 could not be
+    met anywhere. The append created exactly two qualifying sites, and the
+    blast radius is pinned as exactly those two: GS's and JPM's
+    `total_revenue`, five withdrawn each, and not one other fact of any
+    company moved.
     """
 
     import pathlib
@@ -534,10 +552,18 @@ def test_the_rule_is_inert_on_production() -> None:
         {p.name.split(".")[0] for p in pathlib.Path(PRODUCTION).glob("*.json")}
     )
 
-    for symbol in symbols:
-        for consensus in service.established(symbol).values():
-            for fact in consensus.facts:
-                assert fact.withdrawn_assignments == 0, (symbol, fact.concept)
+    withdrawn = {
+        (symbol, fact.concept): fact.withdrawn_assignments
+        for symbol in symbols
+        for consensus in service.established(symbol).values()
+        for fact in consensus.facts
+        if fact.withdrawn_assignments
+    }
+
+    assert withdrawn == {
+        ("GS", REVENUE): 5,
+        ("JPM", REVENUE): 5,
+    }
 
 
 def test_no_fingerprint_and_no_schema_moved() -> None:
