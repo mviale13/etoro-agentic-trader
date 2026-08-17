@@ -17,6 +17,7 @@ from app.domain.financial_statements import (
     StatementKind,
     concepts_of,
     matches_concept,
+    producing_contract,
     statement_contenders,
     statement_tables,
     statement_text,
@@ -276,6 +277,10 @@ class FinancialStatementExtractor:
             symbol=symbol.upper().strip(),
             statement=statement,
             facts=facts,
+            # The vocabulary this reading was permitted to accept,
+            # stamped at the instant it read. Acquisition is the only
+            # place where the live contract *is* the producing contract.
+            produced_under=producing_contract(statement),
             located_among=statement_contenders(document, statement),
             source=document.source,
             reading=Provenance(
@@ -404,6 +409,12 @@ class FinancialStatementExtractor:
                 )
                 for concept in concepts_of(statement)
             ),
+            # Stamped here too, and it matters more here than anywhere:
+            # every fact in this observation is an absence, and an
+            # absence is a claim about the vocabulary that failed to
+            # match — the one claim a later reader cannot check against
+            # the document.
+            produced_under=producing_contract(statement),
             located_among=statement_contenders(document, statement),
             source=document.source,
             reading=Provenance(

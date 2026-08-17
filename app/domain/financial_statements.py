@@ -593,6 +593,46 @@ def vocabulary_fingerprints() -> dict[str, str]:
 
 
 @dataclass(frozen=True, slots=True)
+class ConceptContract:
+    """The vocabulary one concept was read under, as the reading found it.
+
+    A fact *about the producer*, stamped once when the observation is
+    taken and never touched again. That is the whole point: BQ16 could
+    only rule on the historical corpus through operator testimony —
+    an authored manifest, reasoned from repository history — because the
+    records themselves carried no trace of which labels their reader was
+    permitted to accept. Everything taken from here on carries its own.
+    """
+
+    concept: StatementConcept
+
+    #: `concept_vocabulary_fingerprint` at the moment of reading. The
+    #: fingerprint, never the forms: a reader that stored the vocabulary
+    #: itself would put a copy of `CONCEPT_LABELS` in every observation
+    #: of every company, and the question this answers is only whether
+    #: two contracts are the same one.
+    fingerprint: str
+
+
+def producing_contract(statement: StatementKind) -> tuple[ConceptContract, ...]:
+    """The vocabulary identity of every concept this statement is asked.
+
+    Called at acquisition, and only there. It reads the live
+    `CONCEPT_LABELS` because at that instant the live contract *is* the
+    producing contract — which is exactly why nothing on the read path
+    may ever call it. See `FinancialStatementObservation.produced_under`.
+    """
+
+    return tuple(
+        ConceptContract(
+            concept=concept,
+            fingerprint=concept_vocabulary_fingerprint(concept),
+        )
+        for concept in concepts_of(statement)
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class StatementFact:
     """One concept, either located and checked or absent with its reason.
 
@@ -686,6 +726,31 @@ class FinancialStatementObservation:
     #: document itself carries. The reason is stored rather than a flag
     #: so that a reader can see *which* cell disagreed with the filing.
     superseded_because: str | None = None
+
+    #: Which vocabulary each of this reading's concepts was read under.
+    #:
+    #: **A property of the producer, and never of the reader.** Stamped
+    #: once, at acquisition, from the live `CONCEPT_LABELS`; decoded
+    #: verbatim thereafter. An old record opened under a new contract
+    #: keeps saying what it always said, because saying otherwise would
+    #: make the record agree with whatever code happens to be running —
+    #: which is the failure BQ16 had to hire an operator's testimony to
+    #: work around.
+    #:
+    #: Empty for everything taken before this field existed, and empty
+    #: means *not recorded* rather than *matched today's*: `located_among`
+    #: records 0 for the same reason, and BQ16's manifest is the honest
+    #: bridge for those records rather than a backfill.
+    produced_under: tuple[ConceptContract, ...] = ()
+
+    def produced_contract_for(self, concept: StatementConcept) -> str | None:
+        """The vocabulary this reading read one concept under, if recorded."""
+
+        for stamped in self.produced_under:
+            if stamped.concept is concept:
+                return stamped.fingerprint
+
+        return None
 
     @property
     def provenance_uncertain(self) -> bool:
