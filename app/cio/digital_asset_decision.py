@@ -178,6 +178,24 @@ class DigitalAssetDecision:
     #: corpus cannot read as a complete one.
     silent_committees: tuple[str, ...] = field(default=())
 
+    #: Whether the reasoning system that judges this asset has anything to
+    #: say about it — that is, whether any committee has recorded a
+    #: judgment for it at all.
+    #:
+    #: **Not a measure of how much is known, and never a grade.** Both of
+    #: TAO's committees recorded that they cannot establish whether their
+    #: questions apply; that is an informed state reached by running, and
+    #: it reads True. False is the one state in which this platform has
+    #: not looked — no committee has concluded anything, so there is
+    #: nothing for a surface to admit or an investor to read.
+    #:
+    #: It exists because the rationale already carried this distinction
+    #: and carried it only in prose: *"No committee has recorded a
+    #: judgment about this asset"*. A caller deciding whether the asset
+    #: can be researched at all would otherwise have had to match on a
+    #: sentence.
+    judged: bool = False
+
     #: The named, versioned rule this decision was reached under —
     #: *produced under this exact rule*, never *this is the correct way
     #: to invest*. Same regime as the equity decision's `decided_under`.
@@ -210,6 +228,7 @@ class DigitalAssetDecision:
             # whole of what a surface may render.
             "conviction_withheld_because": self.conviction_withheld_because,
             "silent_committees": list(self.silent_committees),
+            "judged": self.judged,
             "decided_under": [
                 {"key": rule.key, "version": rule.version}
                 for rule in self.decided_under
@@ -240,6 +259,9 @@ def decide_digital_asset(
         symbol=considerations.asset,
         state=state,
         rationale=rationale,
+        # A committee spoke, whatever it said — including that it cannot
+        # tell whether its question applies.
+        judged=bool(items),
         established=tuple(item.stated for item in answered),
         not_applicable=tuple(
             f"{item.committee.name}: {item.because or item.posture.stated}"

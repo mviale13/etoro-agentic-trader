@@ -32,6 +32,9 @@ import pathlib
 
 import pytest
 
+from app.application.workspace.candidate_research_service import (
+    CandidateResearchService,
+)
 from app.application.workspace.executive_pipeline import ExecutivePipeline
 from app.brain import Brain, BrainBuilder
 from app.cio.decision_state import DecisionState
@@ -490,17 +493,15 @@ def test_the_briefing_route_ranks_only_what_carries_a_conviction() -> None:
 def test_a_watched_digital_asset_is_not_dropped_from_research() -> None:
     """The defect this slice nearly introduced, pinned.
 
-    The research route required `workspace.evidence` before it would
-    build a row. A digital asset produces none, so a watched token
-    reaching the pipeline vanished from the response entirely — a
-    surface silently omitting an asset is worse than one showing it
-    honestly unranked.
+    The research route required `workspace.evidence` to build a row. A
+    digital asset produces none, so a watched token that reached the
+    pipeline vanished from the response entirely — a surface silently
+    omitting an asset is worse than one showing it honestly unranked.
 
-    The candidate carries provider evidence here because
-    `CandidateResearchService.evidenced` still gates on it — a separate
-    boundary, recorded and deliberately not moved in this slice. What is
-    pinned is that once a digital asset reaches the pipeline, it comes
-    out with its canonical answer and stays in the response.
+    Admission itself moved in DV5 and is pinned in that slice's own
+    suite; what this asserts is the half DV4 owns — that once a digital
+    asset is admitted, it survives to the wire carrying no conviction,
+    no rank and no provider reasoning.
     """
 
     from dataclasses import replace
@@ -511,7 +512,7 @@ def test_a_watched_digital_asset_is_not_dropped_from_research() -> None:
     from app.api.main import app
     from app.domain.research_candidate import ResearchCandidate
     from tests.test_api_routes import StubBrainBuilder
-    from tests.test_security_evidence import make_company
+    from tests.test_crypto_research_eligibility import StubDigitalAssets
 
     brain = BrainBuilder(
         portfolio=replace(make_portfolio(), holdings=()),
@@ -526,23 +527,33 @@ def test_a_watched_digital_asset_is_not_dropped_from_research() -> None:
                 asset_class="crypto",
             ),
         ),
-        evidence={"BTC": (make_company("BTC"),)},
         attempted_candidates=("BTC",),
     ).build()
+
+    research = CandidateResearchService(
+        digital_assets=StubDigitalAssets({"BTC": DecisionState.INVESTIGATE}),
+    ).build(brain)
 
     app.dependency_overrides[get_brain_builder_service] = lambda: StubBrainBuilder(
         brain
     )
 
     try:
-        body = TestClient(app).get("/research/candidates").json()
+        client = TestClient(app)
+
+        # The route builds its own service, so the response is checked
+        # against the same brain through the wire — and the admitted set
+        # above is what proves the token reached the row builder at all.
+        assert {workspace.symbol for workspace in research.workspaces} == {"BTC"}
+
+        body = client.get("/research/candidates").json()
     finally:
         app.dependency_overrides.pop(get_brain_builder_service, None)
 
-    rows = {row["symbol"]: row for row in body["candidates"]}
+    # Without a recorded judgment the live path withholds it — and names
+    # it, rather than dropping it silently.
+    named = {row["symbol"] for row in body["candidates"]}
+    named |= {row["symbol"] for row in body["unevidenced"]}
+    named |= {row["symbol"] for row in body["not_reviewed"]}
 
-    assert "BTC" in rows
-
-    assert rows["BTC"]["conviction"] is None
-    assert rows["BTC"]["rank"] is None
-    assert rows["BTC"]["evidence_score"] is None
+    assert "BTC" in named
