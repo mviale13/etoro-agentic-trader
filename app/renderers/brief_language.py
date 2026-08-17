@@ -27,8 +27,16 @@ def health_label(score: float) -> str:
     return "At risk"
 
 
-def conviction_label(conviction: int) -> str:
-    """Put a word to the Artificial CIO's 0-100 conviction in a decision."""
+def conviction_label(conviction: int | None) -> str | None:
+    """Put a word to the Artificial CIO's 0-100 conviction in a decision.
+
+    Nothing where there is no conviction to label. "Low Conviction" is a
+    judgment about a case, and a case the CIO declined to put a number on
+    has not been judged that way — it has not been judged at all.
+    """
+
+    if conviction is None:
+        return None
 
     if conviction >= 85:
         return "Very High Conviction"

@@ -275,8 +275,14 @@ def test_executive_brief_route_serves_a_brief_for_the_symbol(
     for priority in body["priorities"]:
         assert priority["urgency_band"] in {"now", "today", "monitor"}
 
+    # A conviction and its label travel together or neither is served.
+    # This fixture's Brain holds no security-level evidence, so the case
+    # cites nothing in its favour and the CIO withholds both.
     for case in body["investment_cases"]:
-        assert case["conviction_label"].endswith("Conviction")
+        if case["conviction"] is None:
+            assert case["conviction_label"] is None
+        else:
+            assert case["conviction_label"].endswith("Conviction")
 
 
 def test_executive_brief_states_plainly_when_a_symbol_is_not_evidenced(
@@ -319,7 +325,14 @@ def test_dossier_route_serves_the_complete_case_for_a_symbol(
 
     assert body["symbol"] == "MSFT"
     assert body["decision_state"]
-    assert body["conviction_label"].endswith("Conviction")
+
+    # Served together or not at all: a label is a word for a number, and
+    # there is no word for a number nobody put on the case.
+    if body["conviction"] is None:
+        assert body["conviction_label"] is None
+    else:
+        assert body["conviction_label"].endswith("Conviction")
+
     assert body["rationale"]
 
     # The scores the decision was made on: measured or null, never filled.

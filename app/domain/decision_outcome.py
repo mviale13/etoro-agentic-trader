@@ -25,7 +25,12 @@ class DecisionOutcome:
 
     symbol: str
     state: DecisionState
-    conviction: int
+
+    #: The conviction the decision was taken at, where it carried one.
+    #: A record whose conviction was withheld is still an outcome — the
+    #: state was decided and the price did what it did — so the window is
+    #: measured and the number is simply absent.
+    conviction: int | None
     decided_at: datetime
 
     #: The close the decision is measured from, and the day it is the

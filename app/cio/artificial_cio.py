@@ -262,13 +262,22 @@ class ArtificialCIO:
         evidence: DecisionEvidence,
     ) -> str:
         """
-        Why quality is missing: not yet read, or not a question that applies.
+        Why quality is missing: not yet read, read and inconclusive, or moot.
 
         "Business quality has not been measured" promises a measurement that
         is coming. For a cryptocurrency none is: there is no business to
         assess and no earnings to price it against, so the case would sit at
         INVESTIGATE forever while the wording implied otherwise. The limit
         is this platform's, and it is stated as this platform's.
+
+        And it is equally false the other way. A company whose statements
+        reached quorum *was* measured — the reading simply could not
+        conclude, because too few of the questions its financial model asks
+        could be answered from established figures. Saying that reading
+        never happened denies evidence the same page displays, and it sends
+        the investor to acquire something already held. The assessment's own
+        arithmetic is quoted rather than summarised, so the sentence cannot
+        drift from the object the score came from.
         """
 
         asset_class = evidence.asset_class
@@ -279,6 +288,15 @@ class ArtificialCIO:
                 "assess, and this platform judges an investment case on "
                 "both. Its measured risk and portfolio fit are reported, "
                 "but no recommendation rests on them alone."
+            )
+
+        grounded = evidence.grounded_quality
+
+        if grounded is not None:
+            return (
+                f"Business quality was assessed from {grounded.source} and "
+                "could not be concluded, so the case cannot progress beyond "
+                f"research. {grounded.stated()}"
             )
 
         return (
@@ -317,7 +335,7 @@ class ArtificialCIO:
     def _calculate_conviction(
         evidence: DecisionEvidence,
         state: DecisionState,
-    ) -> int:
+    ) -> int | None:
         """
         Average the scores that exist, all pointing the same way.
 
@@ -330,7 +348,21 @@ class ArtificialCIO:
         to be written here, in the one place that happened to need it;
         it is now `DecisionEvidence.safety_score`, and every surface shows
         the same number this arithmetic uses.
+
+        **A conviction requires something to be convinced by.** Where the
+        case cites no supporting reason the number is withheld, not
+        defaulted: an average over portfolio fit and an evidence-coverage
+        discount is arithmetic about the account and the reading, and
+        printing it beside an empty `because` presents it as confidence in
+        a security nobody argued for. Four holdings each showed 64 that
+        way — two of them from a two-term mean and two from a three-term
+        one, agreeing by coincidence rather than by measurement.
+
+        The arithmetic itself is untouched. Only its licence to speak is.
         """
+
+        if not evidence.strengths:
+            return None
 
         measured = [
             score
@@ -344,7 +376,10 @@ class ArtificialCIO:
             if score is not None
         ]
 
-        conviction = round(sum(measured) / len(measured)) if measured else 0
+        if not measured:
+            return None
+
+        conviction = round(sum(measured) / len(measured))
 
         return min(conviction, ArtificialCIO.CONVICTION_LIMITS[state])
 

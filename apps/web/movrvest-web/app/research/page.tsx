@@ -380,8 +380,10 @@ export default async function ResearchPage() {
   const funnel = pipeline?.funnel;
   const candidates = pipeline?.candidates ?? [];
 
+  // Over the candidates that carry one. A withheld conviction is not a
+  // zero competing for the maximum; it simply does not enter.
   const highestConviction = candidates.reduce(
-    (highest, candidate) => Math.max(highest, candidate.conviction),
+    (highest, candidate) => Math.max(highest, candidate.conviction ?? highest),
     0,
   );
 

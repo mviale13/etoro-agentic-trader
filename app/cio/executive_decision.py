@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.cio.decision_state import DecisionState
 from app.domain.asset_class import AssetClass
+from app.domain.business_quality import BusinessQuality
 from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.decision_rules import DecisionRule
 from app.domain.finding import FindingLedger
@@ -90,7 +91,30 @@ class DecisionEvidence(BaseModel):
     #: measured, and the two must not share a rationale: one says "we have
     #: no analysis of this"; the other says "we analysed it and this part
     #: was unavailable".
+    #:
+    #: *Any* is the whole of it, and it used to be keyed to one half. This
+    #: read `company is not None` — the provider-fed analysis alone — so a
+    #: company whose own audited statements had reached quorum and banded
+    #: was reported as a security the platform held nothing about. UNP
+    #: printed a grounded MEDIUM 62 on the same page as "there is nothing
+    #: to base a decision on".
     security_evidenced: bool = True
+
+    #: The grounded quality assessment governing this case, where the
+    #: company's statements reached quorum.
+    #:
+    #: Carried so that the gate, the rationale and the review condition
+    #: read the one object the scores section renders. It is not a second
+    #: quality result and nothing re-derives a band from it: the score
+    #: above was computed from this very object, and this is that object
+    #: rather than a copy of its conclusion. One rendered page cannot
+    #: contradict itself about quality if there is only one quality to
+    #: read.
+    #:
+    #: None where no such assessment exists — no statements, or none at
+    #: quorum — which is the state where a provider proxy legitimately
+    #: stands in.
+    grounded_quality: BusinessQuality | None = None
 
     #: What kind of asset this is. The Artificial CIO needs it to tell a
     #: measurement that has not arrived from a question that does not
@@ -160,7 +184,20 @@ class ExecutiveDecision(BaseModel):
 
     symbol: str
     state: DecisionState
-    conviction: int = Field(ge=0, le=100)
+
+    #: How much conviction this case carries, or nothing at all.
+    #:
+    #: None where the decision cites no supporting reason. Four companies
+    #: with wildly different evidence — a freshly-banded railroad, a
+    #: semantically-refused bank, a stale industrial, a deadlocked staple —
+    #: each printed 64 beside an empty `key_strengths`, an empty
+    #: `evidence_weighed` and a rationale saying no basis existed. A number
+    #: standing next to "nothing" is confidence nobody computed.
+    #:
+    #: Never zero in its place: zero is the lowest conviction on the scale,
+    #: which is itself a judgment, and this is the absence of one. Same rule
+    #: as every score on `DecisionEvidence`, for the same reason.
+    conviction: int | None = Field(default=None, ge=0, le=100)
 
     rationale: str
     evidence_as_of: Provenance | None = None

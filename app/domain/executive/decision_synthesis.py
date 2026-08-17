@@ -167,7 +167,11 @@ class DecisionSynthesis:
 
     symbol: str
     state: DecisionState
-    conviction: int
+
+    #: Carried through from the decision, absence included. A case whose
+    #: conviction was withheld is stated without one rather than with a
+    #: number this layer would have to invent to fill the field.
+    conviction: int | None
 
     #: The strongest facts arguing for the decision, strongest first.
     because: tuple[SynthesisFact, ...]

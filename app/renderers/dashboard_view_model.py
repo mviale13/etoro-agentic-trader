@@ -21,7 +21,10 @@ class DashboardInvestmentCase:
     symbol: str
     recommendation: str
     confidence: float | None
-    conviction: int
+
+    #: None where the CIO withheld one. Carried as an absence so the view
+    #: renders one, rather than a zero the reader would take for a verdict.
+    conviction: int | None
     summary: str
     #: Which way the case has been moving across recorded decisions.
     #: None when nothing was ever recorded.

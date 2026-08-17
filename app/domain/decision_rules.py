@@ -130,10 +130,15 @@ def _interprets(key: str, status: RuleStatus, because: str) -> DecisionRule:
     )
 
 
-def _governs(key: str, status: RuleStatus, because: str) -> DecisionRule:
+def _governs(
+    key: str,
+    status: RuleStatus,
+    because: str,
+    version: int = 1,
+) -> DecisionRule:
     return DecisionRule(
         key=key,
-        version=1,
+        version=version,
         status=status,
         kind=RuleKind.GOVERNS_DECISION,
         because=because,
@@ -310,10 +315,35 @@ DECISION_AUTHORITY = _governs(
 )
 
 #: The nine ordered gates and the policy thresholds they read.
-DECISION_GATES = _governs("decision-gates", RuleStatus.UNSOURCED, _AUDIT)
+#:
+#: **@2** — the thresholds are untouched; what a gate *reads* changed.
+#: The security-evidence gate tested the provider-fed analysis alone, so
+#: a company whose own statements had reached quorum fell through it and
+#: the case was worded "there is nothing to base a decision on" beside
+#: the grounded band the same page printed. A quorate grounded
+#: assessment is now security-level evidence, and the gate order, the
+#: policy constants and every other gate are as they were.
+DECISION_GATES = _governs(
+    "decision-gates",
+    RuleStatus.UNSOURCED,
+    _AUDIT + "; evidence input widened in DECISION_EVIDENCE_CONVERGENCE.md",
+    version=2,
+)
 
 #: The unweighted mean of present scores, capped by state.
-CONVICTION_MEAN = _governs("conviction-mean", RuleStatus.UNSOURCED, _AUDIT)
+#:
+#: **@2** — the mean itself is unchanged. What changed is its licence to
+#: speak: a case citing no supporting reason is left without a number
+#: rather than given one. Four holdings each printed 64 beside an empty
+#: `because` and a rationale saying no basis existed, two of them from a
+#: two-term mean and two from a three-term one — agreement by
+#: coincidence, read by an investor as a measurement.
+CONVICTION_MEAN = _governs(
+    "conviction-mean",
+    RuleStatus.UNSOURCED,
+    _AUDIT + "; withheld without a supporting reason, DECISION_EVIDENCE_CONVERGENCE.md",
+    version=2,
+)
 
 #: A BUY vote is the execution trigger — the final gate to RECOMMEND.
 ACTIONABLE_BUY = _governs("actionable-buy", RuleStatus.UNSOURCED, _AUDIT)

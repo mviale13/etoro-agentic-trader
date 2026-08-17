@@ -175,7 +175,13 @@ GOVERNED: dict[str, object] = {
         "mean-of-cognitive-and-vote-confidence",
     ),
     "portfolio-fit": ("mean-of-policy-rooms-x100",),
-    "decision-gates": tuple(sorted(DecisionPolicy().model_dump().items())),
+    "decision-gates": (
+        tuple(sorted(DecisionPolicy().model_dump().items())),
+        # What the security-evidence gate reads. Not a threshold — the
+        # gate has none — but decision-bearing all the same: it selects
+        # INVESTIGATE outright, ahead of every score.
+        "security-evidence: provider-analysis-or-quorate-grounded-quality",
+    ),
     "conviction-mean": (
         "unweighted-mean-of-present-scores",
         tuple(
@@ -184,6 +190,9 @@ GOVERNED: dict[str, object] = {
                 for state, cap in ArtificialCIO.CONVICTION_LIMITS.items()
             )
         ),
+        # The precondition, hashed with the arithmetic because a mean
+        # that may not be emitted is a different rule from one that must.
+        "withheld-without-a-supporting-reason",
     ),
     "actionable-buy": ("recommendation == BUY",),
     "veto-sell": ("recommendation == SELL",),
@@ -213,8 +222,13 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "cognitive-confidence": (1, RuleStatus.UNSOURCED, "d9b82416ea5b"),
     "evidence-score": (1, RuleStatus.UNSOURCED, "3c712b232fa7"),
     "portfolio-fit": (1, RuleStatus.UNSOURCED, "f487032fc7dd"),
-    "decision-gates": (1, RuleStatus.UNSOURCED, "526d6052908c"),
-    "conviction-mean": (1, RuleStatus.UNSOURCED, "7a0e480ff48b"),
+    # Both moved in DV2, the evidence-convergence slice. The gate reads a
+    # wider evidence set (a quorate grounded assessment is security-level
+    # evidence); the mean is unchanged and may now decline to speak. No
+    # threshold in either was edited, and the version says so anyway —
+    # what a rule *reads* is as decision-bearing as where it cuts.
+    "decision-gates": (2, RuleStatus.UNSOURCED, "afc1c3f4915d"),
+    "conviction-mean": (2, RuleStatus.UNSOURCED, "b8cd60d55c95"),
     "actionable-buy": (1, RuleStatus.UNSOURCED, "87618568469b"),
     "veto-sell": (1, RuleStatus.UNSOURCED, "7734b674289c"),
 }

@@ -84,7 +84,13 @@ def make_company(
             research=research,
             earnings=earnings,
         ),
-        evidence=(Finding.neutral(f"{symbol} evidence."),),
+        # A favourable reading, because a case that cites nothing in its
+        # favour now carries no conviction — and these fixtures stand for
+        # companies the signals found something good about.
+        evidence=(
+            Finding.neutral(f"{symbol} evidence."),
+            Finding.favourable(f"{symbol} earns its cost of capital."),
+        ),
     )
 
 
@@ -381,7 +387,10 @@ def test_the_accounts_condition_is_not_evidence_about_a_security() -> None:
     reasoning = ReasoningService().reason(brain)
     weighed = build_evidence(brain, "GOOD").evidence_weighed
 
-    assert weighed == ("GOOD evidence.",)
+    assert weighed == (
+        "GOOD evidence.",
+        "GOOD earns its cost of capital.",
+    )
 
     for strength in reasoning.portfolio.strengths:
         assert strength not in weighed

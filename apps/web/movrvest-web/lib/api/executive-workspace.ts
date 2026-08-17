@@ -72,8 +72,8 @@ interface RankedCasePayload {
   rank: number;
   symbol: string;
   recommendation: string;
-  conviction: number;
-  conviction_label: string;
+  conviction: number | null;
+  conviction_label: string | null;
   committee_agreement: number;
   playbook_name: string | null;
   safety_score: number | null;
@@ -277,11 +277,11 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
         item.recommendation,
         `investment_cases[${index}].recommendation`,
       ),
-      conviction: requireNumber(
-        item.conviction,
-        `investment_cases[${index}].conviction`,
-      ),
-      conviction_label: requireString(
+      // Null where the CIO withheld one. Required would reject the
+      // payload outright, turning a case with no conviction into a page
+      // that will not load.
+      conviction: optionalNumber(item.conviction),
+      conviction_label: optionalString(
         item.conviction_label,
         `investment_cases[${index}].conviction_label`,
       ),
@@ -379,7 +379,16 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
  * dashboard renders. An unknown label fails loudly instead of being guessed
  * into a band the CIO never assigned.
  */
-function parseConvictionLabel(value: string, field: string): ConvictionLevel {
+function parseConvictionLabel(
+  value: string | null,
+  field: string,
+): ConvictionLevel | null {
+  // No label because there is no conviction. Not an unknown label — the
+  // throw below still guards against a word this surface cannot render.
+  if (value === null) {
+    return null;
+  }
+
   const known: readonly ConvictionLevel[] = [
     "Very High Conviction",
     "High Conviction",

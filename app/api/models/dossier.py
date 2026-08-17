@@ -729,8 +729,10 @@ class RecordedTransitionResponse(BaseModel):
 
     from_state: str
     to_state: str
-    from_conviction: int
-    to_conviction: int
+    #: Either side may be absent, and an absent conviction is never a
+    #: low one — `stated` above leaves the clause out entirely.
+    from_conviction: int | None
+    to_conviction: int | None
 
     #: The change in one line, worded by the domain.
     stated: str
@@ -1025,11 +1027,16 @@ class DossierResponse(BaseModel):
 
     # ── The decision ────────────────────────────────────────────────
     decision_state: str
-    conviction: int
+
+    #: Null where the CIO withheld one, which it does wherever the case
+    #: cites no supporting reason. Never zero, and never substituted:
+    #: the state is the decision, and the number is a separate claim.
+    conviction: int | None
 
     #: The conviction put into words. Worded by the backend so no surface
-    #: invents its own thresholds.
-    conviction_label: str
+    #: invents its own thresholds — and null where there is no conviction
+    #: to word, because "Low Conviction" is a judgment nobody made.
+    conviction_label: str | None
 
     #: How far the committees that spoke agreed. None where none could —
     #: which is not the same as their having disagreed.

@@ -121,8 +121,12 @@ class RecordedTransition:
 
     from_state: str
     to_state: str
-    from_conviction: int
-    to_conviction: int
+
+    #: Either side may be absent, and an absent conviction is not a low
+    #: one. `stated` words the transition without it rather than printing
+    #: a blank where a number belongs.
+    from_conviction: int | None
+    to_conviction: int | None
 
     #: The rationale recorded with the later decision, verbatim.
     rationale: str
@@ -138,12 +142,18 @@ class RecordedTransition:
 
     @property
     def stated(self) -> str:
-        """The change as the investor reads it."""
+        """The change as the investor reads it.
 
-        return (
-            f"{self.from_state} → {self.to_state}, "
-            f"conviction {self.from_conviction} → {self.to_conviction}"
-        )
+        The state change is the fact; the conviction move is a detail
+        beneath it, and is named only where both sides carry a number.
+        """
+
+        change = f"{self.from_state} → {self.to_state}"
+
+        if self.from_conviction is None or self.to_conviction is None:
+            return change
+
+        return f"{change}, conviction {self.from_conviction} → {self.to_conviction}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,7 +194,11 @@ class DecisionRecord:
 
     symbol: str
     state: DecisionState
-    conviction: int
+
+    #: None where the CIO withheld one. Read back as it was written: a
+    #: record that carried no conviction must not decode as a zero, or
+    #: the next cycle reports a rise out of an absence.
+    conviction: int | None
     rationale: str
     decided_at: datetime
 
@@ -326,7 +340,7 @@ class DecisionHistory:
 
     def conviction_change_against(
         self,
-        conviction: int,
+        conviction: int | None,
         scores: RecordedScores,
         labels: Mapping[str, str] = SCORE_LABELS,
     ) -> ConvictionChange | None:
@@ -343,6 +357,13 @@ class DecisionHistory:
         recorded before the scores were produces the movement with an
         honest silence about its causes.
 
+        The same rule now governs the conviction itself. A movement is
+        arithmetic between two numbers, so where either side has none there
+        is no movement to report — a case that gained or lost its *licence*
+        to carry a conviction did not thereby gain or lose conviction, and
+        subtracting against a withheld figure would publish the difference
+        as a change of mind.
+
         `labels` is how the caller's dossier kind names the scores — a
         token's quality moving is an asset-quality move, not a business-
         quality one. The keys are the record's and never vary.
@@ -351,6 +372,9 @@ class DecisionHistory:
         latest = self.latest
 
         if latest is None:
+            return None
+
+        if conviction is None or latest.conviction is None:
             return None
 
         delta = conviction - latest.conviction

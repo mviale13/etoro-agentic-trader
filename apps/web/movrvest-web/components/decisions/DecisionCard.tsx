@@ -27,9 +27,13 @@ interface DecisionCardProps {
   /** Decision state, e.g. RECOMMEND, PREPARE, INVESTIGATE — never
    *  translated into trading language. The investor decides. */
   decisionState: string;
-  conviction: number;
-  /** The conviction put into words by the backend. */
-  convictionLabel: string;
+  /** Null where the CIO withheld one, which it does wherever the case
+   *  cites no supporting reason. Rendered as an absence, never a zero:
+   *  a 0% bar is the lowest conviction the scale expresses, and this is
+   *  the absence of a position on that scale. */
+  conviction: number | null;
+  /** The conviction put into words by the backend. Null with it. */
+  convictionLabel: string | null;
   /** Short labels such as the watchlist that names this security. */
   tags?: readonly string[];
   /**
@@ -110,21 +114,30 @@ export function DecisionCard({
               Executive conviction
             </p>
 
-            <span className="mt-1 block text-4xl font-semibold tracking-[-0.05em] text-slate-950">
-              {conviction}%
+            <span
+              className={`mt-1 block text-4xl font-semibold tracking-[-0.05em] ${
+                conviction === null ? "text-slate-400" : "text-slate-950"
+              }`}
+            >
+              {conviction === null ? "Not stated" : `${conviction}%`}
             </span>
           </div>
 
           <p className="max-w-36 text-right text-sm font-medium leading-5 text-slate-600">
-            {convictionLabel}
+            {convictionLabel ?? "No supporting reason cited"}
           </p>
         </div>
 
+        {/* No bar where there is no number. An empty track is the honest
+            shape: a zero-width fill would be indistinguishable from a
+            conviction of zero, which is a judgment nobody made. */}
         <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-slate-950"
-            style={{ width: `${conviction}%` }}
-          />
+          {conviction === null ? null : (
+            <div
+              className="h-full rounded-full bg-slate-950"
+              style={{ width: `${conviction}%` }}
+            />
+          )}
         </div>
       </div>
 

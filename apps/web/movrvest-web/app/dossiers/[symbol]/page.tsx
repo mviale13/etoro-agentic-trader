@@ -2121,12 +2121,24 @@ function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
             Conviction
           </dt>
 
-          <dd className="mt-2 text-xl font-semibold text-slate-950">
-            {dossier.conviction} / 100
+          {/* Withheld where the decision cites no supporting reason. Shown
+              as the absence it is: a blank beside "/ 100" would read as a
+              number that failed to load, and a 0 as the lowest conviction
+              the scale can express. Neither is what happened. */}
+          <dd
+            className={`mt-2 text-xl font-semibold ${
+              dossier.conviction === null ? "text-slate-400" : "text-slate-950"
+            }`}
+          >
+            {dossier.conviction === null
+              ? "Not stated"
+              : `${dossier.conviction} / 100`}
           </dd>
 
           <p className="mt-1 text-xs text-slate-500">
-            {dossier.convictionLabel} — the Artificial CIO&apos;s own view
+            {dossier.convictionLabel === null
+              ? "The Artificial CIO put no conviction on this case: it cites no supporting reason."
+              : `${dossier.convictionLabel} — the Artificial CIO's own view`}
           </p>
         </div>
 
