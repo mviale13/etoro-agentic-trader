@@ -68,8 +68,30 @@ from app.providers.document_text import Flattened, begins_a_block, typesets_bloc
 #: digits must follow it, and no third digit may. So `Item 1. 10 years
 #: ago` still reads as Item 1 with its full stop, and `Item 5.02` no
 #: longer reads as Item 5 with the fraction thrown away.
+#: The suffix is part of the item number only where it is lexically
+#: bounded. Without `(?![A-Za-z])` the optional `a`-`c` group, matched
+#: case-insensitively, takes the **first letter of the section's own
+#: title**: `Item 1 Business` was discovered as Item 1B, `Item 1 Company
+#: overview` as Item 1C, and Honeywell's `ITEM 1 About Honeywell` as
+#: Item 1A — so Honeywell's Item 1 was never a candidate at all and the
+#: resolved sequence began at 1A. Measured over the 24 held annual
+#: reports in `ANNUAL_SECTION_LOCATION_CORPUS.md`.
+#:
+#: The boundary is bound to the **suffix** rather than trailed after the
+#: whole optional chain, and the difference is not cosmetic. Written as
+#: `([a-c])?(?![A-Za-z])` the lookahead also fires where no suffix
+#: matched, so `Item 5.02Departure` — a fraction immediately followed by
+#: a title — backtracks past its own fraction and reads as a bare
+#: Item 5, silently undoing #191. Written as `(?:([a-c])(?![A-Za-z]))?`
+#: the constraint applies only to a suffix that actually matched, which
+#: is what the defect is about.
+#:
+#: A genuine suffix followed by punctuation, a space or the end of the
+#: text still matches: `Item 1A.`, `ITEM 1A RISK FACTORS`,
+#: `Item 1A—Risk Factors`, `Item 1A`. And `match.start()` — every offset
+#: into the flattened text — is untouched either way.
 _CANDIDATE = re.compile(
-    r"(?i)\bitem\s+(\d{1,2})(?:\.(\d{2})(?!\d))?\s*([a-c])?\s*[.:—-]?"
+    r"(?i)\bitem\s+(\d{1,2})(?:\.(\d{2})(?!\d))?\s*(?:([a-c])(?![A-Za-z]))?\s*[.:—-]?"
 )
 
 #: How a filer refers to a section rather than beginning one. Read from

@@ -341,7 +341,38 @@ body heading beyond width — and should not be guessed at.
   item);
 - AXP's repair, which this task was told not to make and does not.
 
-## 12. Scope compliance
+## 12. Status — what this corpus led to
+
+**Repair 1 is built.** `section_locator._CANDIDATE` now binds the
+optional suffix with a lexical boundary, so a section title is no
+longer read as an item suffix. Measured on the corpus above: **2 of 24
+companies move — HON, whose Item 1 is recovered, and GS** — **0 genuine
+item suffixes are lost**, and the dotted current-report numbering is
+unchanged over 68 re-checked Item 5.02 filings.
+
+One detail the implementation changed from this report's recommendation,
+and the reason is worth keeping: the guard is written
+`(?:([a-c])(?![A-Za-z]))?` rather than `([a-c])?(?![A-Za-z])`. Trailed
+after the whole optional chain the lookahead also fires where **no**
+suffix matched, so `Item 5.02Departure` backtracks past its own fraction
+and reads as a bare Item 5 — silently undoing #191. Bound to the suffix,
+the constraint applies only to a suffix that actually matched.
+
+**Everything else in this report remains open and refused:**
+
+- the **generic annual-section rewire** — `edgar_filings._section` is
+  still not wired to this module, and CB and FITB are still
+  unadjudicated;
+- **AXP's empty business section** — still a known defect, still
+  unrepaired, and still 86,613 characters the filer printed;
+- **RF's and MET's contents-versus-body openings** — unchanged by the
+  repair and still awaiting a measured tie-break, not a guessed one;
+- **20-F form dispatch** — still missing, and eight of the rows above
+  still ask for the wrong item.
+
+Nothing above was rewritten to reflect the repair.
+
+## 13. Scope compliance
 
 Research only · no production implementation · `_section`,
 `section_locator` and `statement_locator` **unchanged on disk** — the
