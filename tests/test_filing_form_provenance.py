@@ -84,6 +84,9 @@ class _Filing:
     income_statement_contenders = 0
     balance_sheet_contenders = 0
     cash_flow_contenders = 0
+    # A filing that read both sections refuses neither.
+    business_refusal = None
+    discussion_refusal = None
     reference = reference("10-K")
 
 

@@ -7,6 +7,7 @@ from datetime import date
 from enum import StrEnum
 
 from app.domain.prose_evidence import Region
+from app.domain.section_refusal import RefusedSection
 from app.domain.tabular_evidence import SourceTable
 
 
@@ -344,6 +345,26 @@ class SourceDocument:
     income_statement_contenders: int = 0
     balance_sheet_contenders: int = 0
     cash_flow_contenders: int = 0
+
+    #: Why this document could not supply its business description, where
+    #: it could not. `None` where the section was read — including where
+    #: the filer genuinely printed a short one, which is a reading rather
+    #: than a refusal.
+    #:
+    #: **Carried here rather than raised**, because a document whose
+    #: business section cannot be read may still carry audited financial
+    #: statements this platform reads perfectly well. Citigroup is
+    #: exactly that: its Item 1 is a page range into another component,
+    #: and its income statement, balance sheet and cash flow statement
+    #: are printed in full. An exception would have taken all three away
+    #: to report the first.
+    business_refusal: RefusedSection | None = None
+
+    #: The same, for the performance discussion, and separate on purpose.
+    #: A filing may print one and not the other, and a platform that
+    #: refused both because one was missing would be reporting its own
+    #: coupling as the filer's silence.
+    discussion_refusal: RefusedSection | None = None
 
 
 class PrimarySourceUnavailable(Exception):

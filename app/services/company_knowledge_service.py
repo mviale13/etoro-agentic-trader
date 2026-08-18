@@ -43,6 +43,14 @@ class KnowledgeState(StrEnum):
       help, which is exactly what makes it different from a gap.
     - `INVALID_EXTRACTION` — a document was read and failed grounding
       validation. Nothing from it is trusted or partly stored.
+    - `DOCUMENT_REFUSED` — the authoritative document exists, was
+      retrieved and was parsed, and the section this platform needs
+      cannot be supplied from the component or structure it supports.
+      **Not a coverage gap**: another provider is not the remedy and an
+      immediate retry cannot help, because nothing failed. A future
+      capability — following the page ranges a cross-reference index
+      names — may change the answer, which is what makes it different
+      from a filing that simply does not contain the section.
     """
 
     AVAILABLE_CACHED = "available_cached"
@@ -50,6 +58,7 @@ class KnowledgeState(StrEnum):
     UNAVAILABLE = "unavailable"
     PROVIDER_ERROR = "provider_error"
     INVALID_EXTRACTION = "invalid_extraction"
+    DOCUMENT_REFUSED = "document_refused"
 
     @property
     def is_available(self) -> bool:
@@ -60,7 +69,14 @@ class KnowledgeState(StrEnum):
 
     @property
     def may_succeed_later(self) -> bool:
-        """Whether asking again could plausibly produce a different answer."""
+        """Whether asking again could plausibly produce a different answer.
+
+        `DOCUMENT_REFUSED` is deliberately **false**. Nothing failed and
+        nothing is intermittent: the filing says what it says, and the
+        same request will be refused for the same structural reason for
+        as long as this platform reads the same component. What could
+        change the answer is a capability, not a retry.
+        """
 
         return self is KnowledgeState.PROVIDER_ERROR
 
@@ -217,6 +233,17 @@ class CompanyKnowledgeService:
                 absent_because=str(failure),
             )
 
+        # **Before any model call.** A refused section is not a failed
+        # reading: nothing was extracted, nothing failed grounding, and
+        # nothing is written. `INVALID_EXTRACTION` would say the
+        # opposite of all three, and it would bill for the privilege.
+        if document.business_refusal is not None:
+            return KnowledgeOutcome(
+                state=KnowledgeState.DOCUMENT_REFUSED,
+                knowledge=self._latest(symbol),
+                absent_because=document.business_refusal.stated(),
+            )
+
         try:
             extracted = await self._extractor.extract(symbol, document)
         except ExtractionRejected as rejected:
@@ -282,6 +309,17 @@ class CompanyKnowledgeService:
                 ),
                 knowledge=self._latest(symbol),
                 absent_because=str(unavailable),
+            )
+
+        # The same gate on the funded path, and it matters more here:
+        # `observe` spends up to the quorum, so reading a refused
+        # section would bill five model calls for a document that
+        # carries no section to read.
+        if document.business_refusal is not None:
+            return KnowledgeOutcome(
+                state=KnowledgeState.DOCUMENT_REFUSED,
+                knowledge=self._latest(symbol),
+                absent_because=document.business_refusal.stated(),
             )
 
         refused: str | None = None

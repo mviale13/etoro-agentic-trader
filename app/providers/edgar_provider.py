@@ -90,6 +90,12 @@ class EdgarProvider:
 
         return SourceDocument(
             source=source,
+            # Carried, not raised. A filing whose business section is a
+            # page range into another component still prints audited
+            # statements this platform reads, and an exception would
+            # take all three away to report the first.
+            business_refusal=filing.business_refusal,
+            discussion_refusal=filing.discussion_refusal,
             business_description=filing.business_text,
             business_regions=filing.business_regions,
             performance_discussion=filing.discussion_text,

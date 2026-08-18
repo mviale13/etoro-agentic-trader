@@ -10,6 +10,7 @@ import httpx
 
 from app.domain.financial_statements import StatementKind
 from app.domain.prose_evidence import Region
+from app.domain.section_refusal import RefusedSection, SectionRefusal
 from app.domain.tabular_evidence import SourceTable
 from app.providers.document_text import (
     Flattened,
@@ -19,7 +20,7 @@ from app.providers.document_text import (
     read_tables,
     typesets_blocks,
 )
-from app.providers.section_locator import Item
+from app.providers.section_locator import Item, discover
 from app.providers.section_locator import locate as locate_section
 from app.providers.statement_locator import LocatedStatements
 from app.providers.statement_locator import locate as locate_statements
@@ -172,6 +173,22 @@ _DIRECTING_CUE = re.compile(r"(?i)\b(?:see|refer(?:red)?\s+to)\b")
 #: `flatten` preserves — and never a line break inside a sentence.
 _SENTENCE_EDGE = re.compile(r"(?:\.[ \t]|\n[ \t]*\n)")
 
+#: How a filer names its own cross-reference apparatus for this form.
+#: Read from the document rather than assumed: Citigroup prints
+#: "FORM 10-K CROSS-REFERENCE INDEX", Barclays "SEC Form 20-F Cross
+#: reference information" and NatWest "SEC Form 20-F cross reference
+#: guide", and the three wordings are the filers' own.
+#:
+#: **The phrase alone establishes nothing, and that was measured.**
+#: Fifth Third prints it twice and Honeywell three times, and both print
+#: their sections perfectly well — so a keyword rule would refuse two
+#: readable filings. It is one half of a conjunction; the other half is
+#: that the expected section run is absent.
+_CROSS_REFERENCE_APPARATUS = re.compile(
+    r"(?i)(?:form\s+(?:20-f|10-k)\s+)?cross[-\s]?reference"
+    r"\s+(?:guide|index|information)"
+)
+
 #: How much of a referenced section is read, in characters.
 #:
 #: Measured on the filing that earned this mechanism. JPMorgan's Item 1
@@ -283,6 +300,13 @@ class Filing:
     income_statement_contenders: int = 0
     balance_sheet_contenders: int = 0
     cash_flow_contenders: int = 0
+
+    #: Why a section could not be supplied, where it could not. `None`
+    #: where the section was read. Carried rather than raised, so a
+    #: filing whose business section is a page range still yields its
+    #: audited statements.
+    business_refusal: RefusedSection | None = None
+    discussion_refusal: RefusedSection | None = None
 
 
 def _governed_by_displacement(sentence: str) -> bool:
@@ -420,9 +444,28 @@ class EdgarFilings:
         # equality against the normalised form the regulator stated,
         # never a prefix, never a suffix stripped, and never a
         # default. #207 carried the form here for this line.
+        business_refusal: RefusedSection | None = None
+        discussion_refusal: RefusedSection | None = None
+
         if normalized_form(reference.form) == "10-K":
             business, _, regions = self._located(document, flat, Item(1))
             discussion, tables, _ = self._located(document, flat, Item(7))
+
+            # A refusal is produced only where the section is absent, and
+            # it is established from the document rather than from the
+            # emptiness. The two sections are asked separately: a filing
+            # may print one and not the other, and refusing both because
+            # one is missing would report this reader's coupling as the
+            # filer's silence.
+            if not business:
+                business_refusal = self._refusal(
+                    document, flat, Item(1), "business description", reference
+                )
+
+            if not discussion:
+                discussion_refusal = self._refusal(
+                    document, flat, Item(7), "performance discussion", reference
+                )
         else:
             business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
             discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
@@ -483,6 +526,8 @@ class EdgarFilings:
             cash_flow_contenders=statements.contenders.get(
                 StatementKind.CASH_FLOW_STATEMENT, 0
             ),
+            business_refusal=business_refusal,
+            discussion_refusal=discussion_refusal,
         )
 
     @staticmethod
@@ -680,6 +725,69 @@ class EdgarFilings:
         )
 
     # ── the document ────────────────────────────────────────────────
+
+    @staticmethod
+    def _refusal(
+        document: str,
+        flat: Flattened,
+        wanted: Item,
+        expected: str,
+        reference: FilingReference,
+    ) -> RefusedSection:
+        """Why this document could not supply this section.
+
+        Established from structure, never from emptiness. "The text came
+        back empty" is the symptom all of these share and evidence for
+        none of them, so each branch below names something that was
+        observed in the document.
+
+        The cross-reference case is the measured conjunction and not the
+        phrase: **the expected section run is absent** *and* **the filer
+        prints its own cross-reference apparatus**. Over the 24 held
+        annual reports the conjunction identifies exactly three filings
+        with no false positive, where the phrase alone would also have
+        refused Fifth Third and Honeywell, which print both the phrase
+        and their sections.
+        """
+
+        found = discover(flat.text)
+        candidates_for = [entry for entry in found if entry[0].order == wanted.order]
+        apparatus = len(_CROSS_REFERENCE_APPARATUS.findall(flat.text))
+
+        shared = {
+            "expected": expected,
+            "form": reference.form,
+            "filing": reference.accession or reference.url,
+        }
+
+        if not candidates_for and apparatus:
+            return RefusedSection(
+                reason=SectionRefusal.CROSS_REFERENCE_INDEX,
+                observed=(
+                    f"The filing prints no {wanted.stated()} heading and "
+                    f"carries its own cross-reference index."
+                ),
+                **shared,
+            )
+
+        if not candidates_for:
+            return RefusedSection(
+                reason=SectionRefusal.EXPECTED_SECTION_NOT_PRINTED,
+                observed=(
+                    f"No {wanted.stated()} heading occurs anywhere in the "
+                    f"{len(flat.text):,} characters read."
+                ),
+                **shared,
+            )
+
+        return RefusedSection(
+            reason=SectionRefusal.SECTION_LOCATION_REFUSED,
+            observed=(
+                f"{len(candidates_for)} occurrence(s) of {wanted.stated()} "
+                "were discovered and none resolved into a coherent section."
+            ),
+            **shared,
+        )
 
     @staticmethod
     def _located(
