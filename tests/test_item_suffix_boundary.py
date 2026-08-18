@@ -239,16 +239,20 @@ def test_the_statement_locator_still_imports_only_what_it_did() -> None:
         assert f"section_locator.{name}" not in source, name
 
 
-def test_the_annual_report_reader_uses_this_module_for_exactly_10_k() -> None:
+def test_the_annual_report_reader_uses_this_module_for_the_mapped_forms() -> None:
     """Superseded: the rewire was refused when this was written, then ruled.
 
     The suffix guard this file tests is now load-bearing on the annual
     path rather than merely adjacent to it — `Item 1 Business` being
     discovered as `Item 1B` would break the very readings the cutover
-    corrects. The assertion is inverted to say so.
+    corrects. The assertion is inverted to say so, and the 20-F dispatch
+    widens what depends on it: `Item 4` must not be discovered as
+    `Item 4B`, which a 20-F prints (*4.B Business Overview*).
     """
+
+    from app.providers.edgar_filings import ANNUAL_SECTION_ITEMS
 
     source = pathlib.Path("app/providers/edgar_filings.py").read_text()
 
     assert "section_locator" in source
-    assert 'normalized_form(reference.form) == "10-K"' in source
+    assert set(ANNUAL_SECTION_ITEMS) == {"10-K", "20-F"}

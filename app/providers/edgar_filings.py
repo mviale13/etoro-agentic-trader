@@ -96,6 +96,31 @@ _ITEM_7A = (
     "report of independent registered public accounting firm",
 )
 
+#: Which numbered items carry the two sections this platform reads, per
+#: **exact** regulator form.
+#:
+#: The item numbers are not a convention this platform chose. The SEC
+#: prescribes both forms' item sequences, and they do not correspond:
+#: a domestic filer describes its business under **Item 1** and reviews
+#: its performance under **Item 7**, while a foreign private issuer
+#: describes the same business under **Item 4** — *Information on the
+#: Company* — and reviews it under **Item 5** — *Operating and Financial
+#: Review and Prospects*. A 20-F's Item 1 is *Identity of Directors,
+#: Senior Management and Advisers*, which is why asking a 20-F for
+#: Item 1 does not merely read the wrong section: it reads a section
+#: about **people** as though it were a description of the **business**.
+#:
+#: **Keyed by exact normalised form, never by prefix and never with a
+#: default.** `20-F/A` is a different document — Barclays' prints only
+#: Items 17-18 — and a form this platform has not mapped resolves to
+#: nothing here rather than borrowing another form's item numbers. That
+#: is the whole of the dispatch: a lookup that either answers or does
+#: not.
+ANNUAL_SECTION_ITEMS: dict[str, tuple[Item, Item]] = {
+    "10-K": (Item(1), Item(7)),
+    "20-F": (Item(4), Item(5)),
+}
+
 #: Where the primary financial statements are is resolved structurally,
 #: as the run they form, in `app.providers.statement_locator`. The title
 #: anchors that used to live here selected by widest-title-match and
@@ -437,34 +462,50 @@ class EdgarFilings:
 
         flat = flatten(document)
 
-        # **Exactly `10-K`, and nothing that merely begins with it.**
-        # `10-K/A` is a different document — measured: Disney's and
-        # Tesla's print only Items 10-15 — and an unclassified source
-        # is not a domestic annual report either. So this is an
-        # equality against the normalised form the regulator stated,
-        # never a prefix, never a suffix stripped, and never a
-        # default. #207 carried the form here for this line.
+        # **Exactly the form the regulator stated, and nothing that
+        # merely begins with it.** `10-K/A` and `20-F/A` are different
+        # documents — measured: Disney's and Tesla's print only Items
+        # 10-15, Barclays' only Items 17-18 — and an unclassified source
+        # is not an annual report of either kind. So this is a lookup on
+        # the normalised form, never a prefix, never a suffix stripped,
+        # and never a default. #207 carried the form here for this line.
+        #
+        # **The two forms differ only in which items are asked for.**
+        # Everything below the lookup — the locator, the refusal, the
+        # separation of the two sections — is the same code on both, and
+        # that is the point: a 20-F is not a special case of a 10-K, it
+        # is the same reading against a different item map.
         business_refusal: RefusedSection | None = None
         discussion_refusal: RefusedSection | None = None
 
-        if normalized_form(reference.form) == "10-K":
-            business, _, regions = self._located(document, flat, Item(1))
-            discussion, tables, _ = self._located(document, flat, Item(7))
+        mapped = ANNUAL_SECTION_ITEMS.get(normalized_form(reference.form))
+
+        if mapped is not None:
+            wanted_business, wanted_discussion = mapped
+
+            business, _, regions = self._located(document, flat, wanted_business)
+            discussion, tables, _ = self._located(document, flat, wanted_discussion)
 
             # A refusal is produced only where the section is absent, and
             # it is established from the document rather than from the
             # emptiness. The two sections are asked separately: a filing
             # may print one and not the other, and refusing both because
             # one is missing would report this reader's coupling as the
-            # filer's silence.
+            # filer's silence. Measured on Barclays and NatWest, where
+            # both are refused — and they are refused *independently*,
+            # each from its own absent item run.
             if not business:
                 business_refusal = self._refusal(
-                    document, flat, Item(1), "business description", reference
+                    document, flat, wanted_business, "business description", reference
                 )
 
             if not discussion:
                 discussion_refusal = self._refusal(
-                    document, flat, Item(7), "performance discussion", reference
+                    document,
+                    flat,
+                    wanted_discussion,
+                    "performance discussion",
+                    reference,
                 )
         else:
             business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)

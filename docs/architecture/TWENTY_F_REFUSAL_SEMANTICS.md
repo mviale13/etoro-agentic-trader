@@ -403,3 +403,32 @@ Carrier only · **no 20-F dispatch**, no page-range or
 incorporated-document traversal, no `section_locator` change, no DB
 repair, no issuer branch · **zero model calls** · no data mutation ·
 Codex's unpublished `d203609` not read, reused or published.
+
+---
+
+## 7. Implementation status — 2026-08-19 · the exact 20-F dispatch
+
+**Step 3 of §4's order is built.** See
+[`TWENTY_F_SECTION_DISPATCH.md`](TWENTY_F_SECTION_DISPATCH.md).
+
+`ANNUAL_SECTION_ITEMS` maps exact normalised form to the pair of items
+that form prints — `10-K` to Item 1 / Item 7, `20-F` to Item 4 / Item 5
+— and `_read` dispatches on a lookup with no default and no prefix
+match. Stage 1's simulated readings became production readings and the
+four text digests are unchanged from this report's table.
+
+| | this report predicted | production produces |
+|---|---|---|
+| **DB** business | `41e8ba511f4ab522`, 108 chars early | same digest, prelude accepted |
+| **DB** review | `303a025e43de8172` | same digest |
+| **MUFG** business | `b2fb647ce987ad32` | same digest |
+| **MUFG** review | `7db7c0e8fcfd6b28` | same digest |
+| **BCS**, **NWG** | refused, both sections | `CROSS_REFERENCE_INDEX` ×4 |
+
+**All 40 10-K readings and all 72 statement spans are byte-identical**,
+Citigroup's refusal included. Barclays and NatWest refuse both narrative
+sections and still yield their income statement and balance sheet, which
+is §6's carrier result demonstrated on the second form.
+
+**Step 4 — page-range and incorporated-document traversal — remains
+unscoped**, and remains what BCS, NWG and C are refused *for*.

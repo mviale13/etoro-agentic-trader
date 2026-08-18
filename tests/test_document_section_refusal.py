@@ -189,13 +189,21 @@ def test_the_two_sections_refuse_independently() -> None:
     assert read.discussion_refusal is not None, "Item 7 is absent and must say so"
 
 
-def test_a_form_on_the_legacy_path_produces_no_refusal_yet() -> None:
-    """20-F dispatch is a later slice; this carrier does not anticipate it."""
+def test_a_form_on_the_legacy_path_still_produces_no_refusal() -> None:
+    """An unmapped form reads legacily and refuses nothing.
+
+    `20-F` was on this list when the carrier shipped and has since been
+    dispatched, so it moved to the case below. What the list is *for* is
+    unchanged: a form this platform has not mapped falls to the legacy
+    reader, which produces no refusal at all — the gap `UNSUPPORTED_FORM`
+    is reserved for and which nothing yet fills.
+    """
 
     document = "<html><body><p>Nothing numbered at all.</p></body></html>"
 
-    for form in ("20-F", "10-K/A", "8-K", ""):
+    for form in ("10-K/A", "20-F/A", "8-K", ""):
         assert filing(document, form=form).business_refusal is None
+        assert filing(document, form=form).discussion_refusal is None
 
 
 def test_the_producer_names_no_company() -> None:
@@ -204,6 +212,12 @@ def test_the_producer_names_no_company() -> None:
     The prose above the detector names Citigroup, Barclays and NatWest in
     order to say where their wordings came from, and a substring search
     over the file would call that explanation a branch.
+
+    The 20-F dispatch widens what this has to hold for: Deutsche Bank and
+    MUFG are the two filings it newly reads, and their names must not
+    appear in anything the module executes either. A dispatch that worked
+    only because four issuers were spelled into it would pass every
+    measurement in this file and generalise to nothing.
     """
 
     import ast
@@ -230,7 +244,16 @@ def test_the_producer_names_no_company() -> None:
         and node.value not in docstrings
     ]
 
-    for symbol in ("citigroup", "barclays", "natwest", "bcs", "nwg", "mufg"):
+    for symbol in (
+        "citigroup",
+        "barclays",
+        "natwest",
+        "deutsche",
+        "bcs",
+        "nwg",
+        "mufg",
+        " db ",
+    ):
         offenders = [text for text in executed if symbol in text.casefold()]
 
         assert offenders == [], f"{symbol}: {offenders}"
