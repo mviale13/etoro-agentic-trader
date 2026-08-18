@@ -444,13 +444,30 @@ Individuals terms describe*. A build cannot infer the second.
 ### Display-only semantics
 
 `PersonalNewsLead` has one status, `DISPLAY_ONLY`, and no field for a
-score, a sentiment, a cluster, a topic or a verdict. **Provider
-sentiment and `sentiment_reasoning` are not carried at all** — not
-hidden behind a flag, but absent from the type, so no surface can reach
-them. There is **no `updated_at`**: §3 established the provider has no
-such field, and a null one would imply it could be filled. The payload
-also excludes provider request ids, authenticated URLs, raw payloads and
-`next_url`.
+score, a cluster, a topic or a verdict. There is **no `updated_at`**:
+§3 established the provider has no such field, and a null one would
+imply it could be filled. The payload also excludes provider request
+ids, authenticated URLs, raw payloads and `next_url`.
+
+**Massive's sentiment is quoted, narrowly, as an icon.** Read from the
+`insights` entry for the **exact** queried ticker — an article naming
+forty-four companies carries forty-four opinions, and a neighbour's is
+not this one's. Normalised to two directions or nothing:
+`positive`/`bullish` → positive, `negative`/`bearish` → negative, and
+**neutral, mixed, unknown, absent or self-contradicting → no icon**,
+because §3 measured that field emitting two scales through one key and
+a middle value would be this platform reading the provider's
+uncertainty. **`sentiment_reasoning` is not carried in any form** — an
+icon is a quotation, a paragraph is an argument. The disclosure is
+written in the domain, like every other sentence:
+
+> *"Sentiment icons, where present, show Massive's classification for
+> this ticker. They are not MOVRvest analysis."*
+
+**It propagates nowhere.** It does not order or filter the list, is
+never counted or aggregated, and a test asserts the words
+`ProviderSentiment` and `provider_sentiment` appear in exactly three
+files. Colour supports the arrow and never carries its meaning alone.
 
 Every sentence a reader sees is written in the domain and printed
 unchanged by the frontend — the explanation, the reason a result is
@@ -458,6 +475,34 @@ empty, the per-item relevance caveat and the coverage notice. The
 component computes nothing, ranks nothing and sorts nothing: **the
 provider's order survives**, because reordering by relevance is the
 judgment this feature does not make.
+
+### Two blocking boundaries, both moved off the critical path
+
+**The route is `def`, not `async def`.** One reading is three paced
+requests — around twenty-six seconds of blocking sleep — and on an
+`async def` path operation that runs on the event loop and stops the
+entire API for the duration. Declared synchronous, FastAPI hands it to
+its worker threadpool, where blocking is what the threads are for. The
+scheduler stays synchronous and stays shared: an `async` limiter would
+pace one loop's callers and leave anything outside it free to burst, and
+a second scheduler would divide one allowance in two.
+
+**The dossier never awaits the news.** `TickerNews` is an async server
+component behind its own `Suspense` boundary, so the investment case
+renders when its own request finishes and the news streams in
+underneath — once, with no polling and no retry. The fallback says
+*"Loading ticker news…"* and nothing else. A news failure renders
+nothing and leaves everything above it untouched, and the section
+remains outside the dossier API and the decision object.
+
+### The rows
+
+Each item is a native `<details>`/`<summary>` disclosure — keyboard
+operable, screen-reader announced, and expanded by find-in-page without
+a line of JavaScript. Collapsed: sentiment icon where present, headline,
+publisher, publication time and an expansion indicator. Expanded: the
+provider's summary unchanged, the author where present, the
+ticker-association caveat and the publisher link.
 
 ### The rate limiter
 

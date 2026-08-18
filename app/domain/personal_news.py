@@ -3,11 +3,10 @@
 This is a discovery surface. It is not a News Analyst, not a Company
 Development Radar, not evidence, not a materiality assessment and not a
 recommendation — and the type system is where that is enforced rather
-than the prose: there is no field here for a score, a sentiment, a
-cluster, a topic or a verdict, and a lead's status has exactly one
-member.
+than the prose: there is no field here for a score, a cluster, a topic
+or a verdict, and a lead's status has exactly one member.
 
-Three measurements from `MASSIVE_FREE_PERSONAL_NEWS_MEASUREMENT.md`
+Four measurements from `MASSIVE_FREE_PERSONAL_NEWS_MEASUREMENT.md`
 shape every decision below.
 
 **A ticker association is not aboutness.** One article in the measured
@@ -19,6 +18,17 @@ one.
 
 **The provider has no last-updated field.** There is deliberately no
 `updated_at` here. A null one would imply the provider could fill it.
+
+**The provider's sentiment is quoted, and only as an icon.** It is read
+from the `insights` entry for the *exact* queried ticker — another
+associated ticker's opinion is a different opinion about a different
+company — and normalised to two directions or nothing, because the
+measured field emitted `positive`, `negative`, `bullish`, `bearish`,
+`neutral` and `mixed` through one key, which is more than one scale.
+`sentiment_reasoning` is not carried in any form: an icon is a
+quotation and a paragraph is an argument. Invariant 10 governs the
+rest — the classification is Massive's and so is its meaning, and this
+platform says whose it is rather than adopting it.
 
 **A ticker can change hands.** `PARA` resolved to Paramount Global in
 2023 and to Banzai International today, and a news item carries only the
@@ -38,6 +48,67 @@ class LeadStatus(StrEnum):
     """What a displayed lead is. There is one, and that is the point."""
 
     DISPLAY_ONLY = "DISPLAY_ONLY"
+
+
+class ProviderSentiment(StrEnum):
+    """Massive's own classification for the queried ticker, as quoted.
+
+    Two members and no third. `neutral`, `mixed`, `unknown`, an absent
+    insight and two insights for the same ticker that disagree all
+    resolve to `None` rather than to a member — a middle value would be
+    this platform's reading of the provider's uncertainty, and reading
+    it is exactly what this feature does not do.
+    """
+
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+
+
+#: What the provider prints, and what this platform is willing to quote
+#: it as. `bullish`/`bearish` sit in the same field as
+#: `positive`/`negative` in the measured corpus — two scales through one
+#: key — so both spellings collapse to one direction and everything else
+#: is dropped rather than guessed at.
+_SENTIMENT_DIRECTIONS = {
+    "positive": ProviderSentiment.POSITIVE,
+    "bullish": ProviderSentiment.POSITIVE,
+    "negative": ProviderSentiment.NEGATIVE,
+    "bearish": ProviderSentiment.NEGATIVE,
+}
+
+
+def provider_sentiment_for(ticker: str, insights: object) -> ProviderSentiment | None:
+    """Massive's classification for exactly this ticker, or nothing.
+
+    Selected on the insight's own `ticker`, never on position and never
+    from the article's other associations: an article naming forty-four
+    companies carries opinions about forty-four companies, and the only
+    one that may be shown here is the one about the company being asked
+    about.
+
+    Where the exact ticker carries several insights that do not agree,
+    the answer is nothing. Taking the first would hide the provider's
+    own disagreement, and taking a majority would be this platform
+    deciding what the provider meant.
+    """
+
+    if not isinstance(insights, list):
+        return None
+
+    directions = [
+        _SENTIMENT_DIRECTIONS.get(str(entry.get("sentiment", "")).strip().casefold())
+        for entry in insights
+        if isinstance(entry, dict)
+        and str(entry.get("ticker", "")).strip().upper() == ticker.strip().upper()
+    ]
+
+    # One insight, and one this platform is willing to quote. Anything
+    # else — none, several that disagree, or a value outside the two
+    # directions — shows no icon.
+    if len(set(directions)) != 1:
+        return None
+
+    return directions[0]
 
 
 class NewsOutcome(StrEnum):
@@ -73,9 +144,15 @@ class PersonalNewsLead:
 
     Every field is the provider's own, unchanged. Nothing here is
     summarised, scored, ranked, clustered or interpreted by this
-    platform, and the provider's sentiment and reasoning are not carried
-    at all — they were measured in the corpus and deliberately left
-    outside this type, so no surface can reach them.
+    platform.
+
+    `provider_sentiment` is the one thing quoted rather than merely
+    passed through, and it is quoted narrowly: Massive's classification
+    for this exact ticker, reduced to a direction or to nothing, with
+    the provider's reasoning left behind entirely. It is shown as an
+    icon and it reaches nothing — it does not order this list, does not
+    filter it, is never counted, and no field on this type or any other
+    aggregates it.
     """
 
     provider_article_id: str
@@ -88,11 +165,24 @@ class PersonalNewsLead:
     published_at: datetime
     article_url: str
 
+    #: Massive's classification for the queried ticker, or nothing.
+    #: Never inferred from the headline or the summary, and never taken
+    #: from another associated ticker's insight.
+    provider_sentiment: ProviderSentiment | None = None
+
     status: LeadStatus = LeadStatus.DISPLAY_ONLY
 
     @property
     def associated_ticker_count(self) -> int:
         return len(self.associated_tickers)
+
+    def stated_sentiment(self) -> str:
+        """The icon's accessible wording, naming whose opinion it is."""
+
+        if self.provider_sentiment is None:
+            return ""
+
+        return f"Massive sentiment: {self.provider_sentiment.value}"
 
     def stated_association(self) -> str:
         """What this platform can say about the article's relevance.
@@ -190,4 +280,21 @@ class PersonalNewsResult:
             "Publisher coverage is limited and may be concentrated. No "
             "items returned does not mean that no material development "
             "occurred."
+        )
+
+    @property
+    def sentiment_notice(self) -> str:
+        """Whose classification the icons are, said where they are shown.
+
+        Worded here rather than on the surface for the same reason every
+        other sentence is: an icon that appears beside a headline on this
+        platform's page will be read as this platform's opinion unless
+        the page says otherwise, and what it says is a claim about
+        evidence.
+        """
+
+        return (
+            "Sentiment icons, where present, show Massive's "
+            "classification for this ticker. They are not MOVRvest "
+            "analysis."
         )

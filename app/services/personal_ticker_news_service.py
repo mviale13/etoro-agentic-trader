@@ -49,6 +49,7 @@ from app.domain.personal_news import (
     NewsOutcome,
     PersonalNewsLead,
     PersonalNewsResult,
+    provider_sentiment_for,
 )
 from app.providers.massive_news_provider import (
     MassiveNewsProvider,
@@ -241,6 +242,12 @@ class PersonalTickerNewsService:
         articles with similar headlines are two articles; deciding they
         describe one development is the judgment this feature does not
         make.
+
+        **The provider's sentiment is read here and used for nothing.**
+        It is attached to the lead it came from and never consulted
+        again: it does not decide what is kept, does not reorder what
+        is, and is counted nowhere. The provider's order survives this
+        method intact.
         """
 
         seen: set[str] = set()
@@ -290,6 +297,9 @@ class PersonalTickerNewsService:
                     author=str(item.get("author", "") or ""),
                     published_at=published,
                     article_url=url,
+                    provider_sentiment=provider_sentiment_for(
+                        symbol, item.get("insights")
+                    ),
                     status=LeadStatus.DISPLAY_ONLY,
                 )
             )

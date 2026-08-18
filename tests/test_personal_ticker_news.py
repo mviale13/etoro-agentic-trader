@@ -14,7 +14,12 @@ from datetime import date
 import pytest
 
 from app.config import Settings
-from app.domain.personal_news import LeadStatus, NewsOutcome
+from app.domain.personal_news import (
+    LeadStatus,
+    NewsOutcome,
+    ProviderSentiment,
+    provider_sentiment_for,
+)
 from app.providers.massive_news_provider import (
     MAXIMUM_PAGE,
     MINIMUM_SPACING_SECONDS,
@@ -61,7 +66,8 @@ def article(
         "author": "A Writer",
         "published_utc": published,
         "article_url": url,
-        # Measured in the corpus and deliberately not carried outward.
+        # Measured in the corpus. Only the exact queried ticker's
+        # entry may ever be quoted, and only as a direction.
         "insights": [{"ticker": "ADBE", "sentiment": "positive"}],
         "amp_url": "https://publisher.example/amp",
         "keywords": ["software"],
@@ -349,14 +355,13 @@ def test_the_provider_failing_is_a_worded_result_not_an_exception() -> None:
 # ── what may never leave the module ─────────────────────────────────
 
 
-def test_no_lead_carries_sentiment_a_timestamp_it_lacks_or_a_cursor() -> None:
-    """Sentiment was measured and is not adopted; `updated_at` does not exist."""
+def test_no_lead_carries_reasoning_a_timestamp_it_lacks_or_a_cursor() -> None:
+    """The provider's argument stays behind; only its direction is quoted."""
 
     service, _ = served(identities=held("1", "1"))
     lead = service.news_for("ADBE").leads[0]
 
     for forbidden in (
-        "sentiment",
         "sentiment_reasoning",
         "insights",
         "updated_at",
@@ -364,6 +369,9 @@ def test_no_lead_carries_sentiment_a_timestamp_it_lacks_or_a_cursor() -> None:
         "request_id",
     ):
         assert not hasattr(lead, forbidden), forbidden
+
+    # The direction itself is carried, and it is the exact ticker's.
+    assert lead.provider_sentiment is ProviderSentiment.POSITIVE
 
 
 def test_the_route_payload_carries_nothing_it_may_not() -> None:
@@ -382,7 +390,16 @@ def test_the_route_payload_carries_nothing_it_may_not() -> None:
 
     flattened = str(payload).casefold()
 
-    for forbidden in ("sentiment", "insights", "next_url", "apikey", "authorization"):
+    # `sentiment_reasoning` and not `sentiment`: the disclosure names
+    # the icons, so the word itself is expected. What may never appear
+    # is the provider's argument, its raw payload, or a credential.
+    for forbidden in (
+        "sentiment_reasoning",
+        "insights",
+        "next_url",
+        "apikey",
+        "authorization",
+    ):
         assert forbidden not in flattened, forbidden
 
 
@@ -614,5 +631,327 @@ def test_no_decision_path_imports_personal_news() -> None:
 
         if "personal_ticker_news" in source or "personal_news" in source:
             offenders.append(relative)
+
+    assert offenders == [], offenders
+
+
+# ── the provider's sentiment: quoted narrowly, propagated nowhere ────
+
+
+def insight(ticker: str, sentiment: str) -> dict:
+    return {"ticker": ticker, "sentiment": sentiment, "sentiment_reasoning": "why"}
+
+
+@pytest.mark.parametrize(
+    ("printed", "expected"),
+    [
+        ("positive", ProviderSentiment.POSITIVE),
+        ("bullish", ProviderSentiment.POSITIVE),
+        ("POSITIVE", ProviderSentiment.POSITIVE),
+        ("  Bullish ", ProviderSentiment.POSITIVE),
+        ("negative", ProviderSentiment.NEGATIVE),
+        ("bearish", ProviderSentiment.NEGATIVE),
+        ("BEARISH", ProviderSentiment.NEGATIVE),
+    ],
+)
+def test_two_spellings_of_one_direction_normalise_to_it(printed, expected) -> None:
+    """`positive`/`bullish` and `negative`/`bearish` share one field."""
+
+    assert provider_sentiment_for("ADBE", [insight("ADBE", printed)]) is expected
+
+
+@pytest.mark.parametrize(
+    "printed",
+    ["neutral", "mixed", "unknown", "", "somewhat positive", "positive-ish"],
+)
+def test_anything_that_is_not_a_direction_is_no_icon(printed) -> None:
+    assert provider_sentiment_for("ADBE", [insight("ADBE", printed)]) is None
+
+
+@pytest.mark.parametrize(
+    "insights",
+    [
+        None,
+        [],
+        "positive",
+        [{"ticker": "ADBE"}],
+        [{"sentiment": "positive"}],
+        ["positive"],
+    ],
+)
+def test_a_missing_or_malformed_insight_is_no_icon(insights) -> None:
+    assert provider_sentiment_for("ADBE", insights) is None
+
+
+def test_only_the_exact_queried_tickers_insight_is_read() -> None:
+    """An article naming many companies carries many opinions.
+
+    The one that may be shown is the one about the company being asked
+    about — never a neighbour's, and never the first in the list.
+    """
+
+    insights = [
+        insight("MSFT", "negative"),
+        insight("NVDA", "bearish"),
+        insight("ADBE", "positive"),
+        insight("AAPL", "bearish"),
+    ]
+
+    assert provider_sentiment_for("ADBE", insights) is ProviderSentiment.POSITIVE
+    assert provider_sentiment_for("MSFT", insights) is ProviderSentiment.NEGATIVE
+    assert provider_sentiment_for("KO", insights) is None
+
+
+def test_another_tickers_insight_never_stands_in_for_a_missing_one() -> None:
+    """The queried ticker has no insight, so there is no icon."""
+
+    assert provider_sentiment_for("ADBE", [insight("MSFT", "positive")]) is None
+
+
+@pytest.mark.parametrize(
+    "insights",
+    [
+        [insight("ADBE", "positive"), insight("ADBE", "negative")],
+        [insight("ADBE", "bullish"), insight("ADBE", "bearish")],
+        [insight("ADBE", "positive"), insight("ADBE", "neutral")],
+        [insight("ADBE", "neutral"), insight("ADBE", "bearish")],
+    ],
+)
+def test_the_exact_ticker_disagreeing_with_itself_is_no_icon(insights) -> None:
+    """Taking the first would hide it; taking a majority would decide it."""
+
+    assert provider_sentiment_for("ADBE", insights) is None
+
+
+def test_the_exact_ticker_agreeing_with_itself_is_still_read() -> None:
+    repeated = [insight("ADBE", "positive"), insight("ADBE", "bullish")]
+
+    assert provider_sentiment_for("ADBE", repeated) is ProviderSentiment.POSITIVE
+
+
+def test_sentiment_is_never_inferred_from_the_words_of_an_article() -> None:
+    """No insight, however the headline and summary read."""
+
+    page = [
+        {
+            **article("a1"),
+            "title": "Adobe soars on a stunning, record-breaking quarter",
+            "description": "Excellent results beat every expectation.",
+            "insights": [],
+        }
+    ]
+    service, _ = served(page=page, identities=held("1", "1"))
+
+    assert service.news_for("ADBE").leads[0].provider_sentiment is None
+
+
+def test_sentiment_changes_neither_the_order_nor_the_membership() -> None:
+    """The provider's order survives, and nothing is filtered by mood."""
+
+    page = [
+        {**article("a1"), "insights": [insight("ADBE", "negative")]},
+        {**article("a2"), "insights": [insight("ADBE", "positive")]},
+        {**article("a3"), "insights": []},
+        {**article("a4"), "insights": [insight("ADBE", "bearish")]},
+    ]
+    service, _ = served(page=page, identities=held("1", "1"))
+
+    leads = service.news_for("ADBE").leads
+
+    assert [lead.provider_article_id for lead in leads] == ["a1", "a2", "a3", "a4"]
+    assert [lead.provider_sentiment for lead in leads] == [
+        ProviderSentiment.NEGATIVE,
+        ProviderSentiment.POSITIVE,
+        None,
+        ProviderSentiment.NEGATIVE,
+    ]
+
+
+def test_the_icon_says_whose_classification_it_is() -> None:
+    service, _ = served(identities=held("1", "1"))
+    lead = service.news_for("ADBE").leads[0]
+
+    assert lead.stated_sentiment() == "Massive sentiment: positive"
+
+
+def test_the_disclosure_is_written_by_the_backend() -> None:
+    from datetime import UTC, datetime
+
+    from app.domain.personal_news import PersonalNewsResult
+
+    result = PersonalNewsResult(
+        queried_ticker="ADBE",
+        outcome=NewsOutcome.DISPLAY_ONLY,
+        retrieved_at=datetime(2026, 8, 18, tzinfo=UTC),
+    )
+
+    assert result.sentiment_notice == (
+        "Sentiment icons, where present, show Massive's classification "
+        "for this ticker. They are not MOVRvest analysis."
+    )
+
+
+def test_the_payload_carries_a_direction_and_never_the_reasoning() -> None:
+    from fastapi.testclient import TestClient
+
+    from app.api.main import app
+
+    with TestClient(app) as client:
+        payload = client.get("/personal-news/ADBE").json()
+
+    assert "sentiment_notice" in payload
+    assert "not MOVRvest analysis" in payload["sentiment_notice"]
+    assert "sentiment_reasoning" not in str(payload)
+
+
+# ── the event loop ──────────────────────────────────────────────────
+
+
+def test_the_route_is_synchronous_so_it_cannot_block_the_event_loop() -> None:
+    """Three paced requests are ~26 seconds of blocking sleep.
+
+    On an `async def` path operation that happens on the event loop and
+    stops the whole API. Declared `def`, FastAPI runs it in its worker
+    threadpool instead.
+    """
+
+    import inspect
+
+    from app.api.routes.personal_news import get_personal_ticker_news
+
+    assert not inspect.iscoroutinefunction(get_personal_ticker_news)
+
+
+def test_the_scheduler_stayed_synchronous_and_shared() -> None:
+    """The fix is where the route runs, not what the limiter is."""
+
+    import inspect
+
+    from app.providers import massive_news_provider
+
+    assert not inspect.iscoroutinefunction(RequestScheduler.wait_turn)
+    assert isinstance(massive_news_provider.SCHEDULER, RequestScheduler)
+
+
+# ── the dossier render ──────────────────────────────────────────────
+
+
+def dossier_page() -> str:
+    from pathlib import Path
+
+    return (
+        Path(__file__).resolve().parents[1]
+        / "apps/web/movrvest-web/app/dossiers/[symbol]/page.tsx"
+    ).read_text()
+
+
+def ticker_news_component() -> str:
+    from pathlib import Path
+
+    return (
+        Path(__file__).resolve().parents[1]
+        / "apps/web/movrvest-web/components/dossier/TickerNews.tsx"
+    ).read_text()
+
+
+def test_the_dossier_never_awaits_the_news_before_it_renders() -> None:
+    """The investment case must not wait on a discovery surface.
+
+    One reading is three requests paced thirteen seconds apart, so an
+    await here would hold the whole page behind roughly half a minute of
+    something that reaches no part of it.
+    """
+
+    page = dossier_page()
+
+    assert "getPersonalNews" not in page, "the page fetches the news itself"
+    assert "await getPersonalNews" not in page
+
+
+def test_the_news_is_streamed_behind_its_own_suspense_boundary() -> None:
+    page = dossier_page()
+
+    assert "<Suspense fallback={<TickerNewsFallback />}>" in page
+    assert "<TickerNews symbol={dossier.symbol} />" in page
+
+    # The fetch lives in the streamed component, not on the page.
+    assert "await getPersonalNews" in ticker_news_component()
+
+
+def test_the_fallback_is_quiet_and_says_only_that_it_is_loading() -> None:
+    component = ticker_news_component()
+
+    assert "Loading ticker news…" in component
+
+
+def test_a_news_failure_cannot_affect_the_dossier() -> None:
+    """A failed read renders nothing, and nothing above it is touched."""
+
+    component = ticker_news_component()
+
+    assert "if (!news) {" in component
+    assert "return null;" in component
+
+
+def test_the_rows_are_native_disclosure_controls() -> None:
+    """`<details>`/`<summary>`: keyboard and screen-reader operable
+    without a line of JavaScript."""
+
+    component = ticker_news_component()
+
+    assert "<details" in component
+    assert "<summary" in component
+    assert "useState" not in component, "an accordion was scripted"
+
+
+def test_the_headline_does_not_depend_on_colour_or_the_icon() -> None:
+    """The icon is decorative; its meaning is in the backend's words."""
+
+    component = ticker_news_component()
+
+    assert 'aria-hidden="true"' in component
+    assert "sr-only" in component
+    assert "{lead.sentimentLabel}" in component
+    assert "{lead.headline}" in component
+
+
+def test_the_news_reaches_no_dossier_payload_or_decision_object() -> None:
+    """It is fetched beside the case, never inside it."""
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    dossier_client = (root / "apps/web/movrvest-web/lib/api/dossier.ts").read_text()
+
+    assert "personal-news" not in dossier_client
+    assert "PersonalNews" not in dossier_client
+
+    backend = (root / "app/api/routes/executive.py").read_text()
+
+    assert "personal_news" not in backend
+    assert "personal_ticker_news" not in backend
+
+
+def test_provider_sentiment_reaches_no_decision_bearing_module() -> None:
+    """Massive's classification is quoted on one surface and nowhere else."""
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "app"
+    allowed = {
+        "domain/personal_news.py",
+        "services/personal_ticker_news_service.py",
+        "api/routes/personal_news.py",
+    }
+
+    offenders = [
+        str(path.relative_to(root))
+        for path in root.rglob("*.py")
+        if str(path.relative_to(root)) not in allowed
+        and (
+            "ProviderSentiment" in path.read_text()
+            or "provider_sentiment" in path.read_text()
+        )
+    ]
 
     assert offenders == [], offenders

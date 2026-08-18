@@ -29,6 +29,10 @@ export interface PersonalNewsLead {
   author: string;
   publishedAt: string;
   articleUrl: string;
+  /** Massive's classification for this ticker: "positive", "negative" or null. */
+  providerSentiment: "positive" | "negative" | null;
+  /** The accessible wording for the icon, written by the backend. */
+  sentimentLabel: string;
   status: string;
 }
 
@@ -38,6 +42,8 @@ export interface PersonalNewsView {
   /** Why this result is what it is, worded by the backend. */
   stated: string;
   coverageNotice: string;
+  /** Whose classification the icons are. Backend-written. */
+  sentimentNotice: string;
   retrievedAt: string;
   heading: string;
   explanation: string;
@@ -65,6 +71,7 @@ export async function getPersonalNews(
       outcome: String(payload.outcome ?? ""),
       stated: String(payload.stated ?? ""),
       coverageNotice: String(payload.coverage_notice ?? ""),
+      sentimentNotice: String(payload.sentiment_notice ?? ""),
       retrievedAt: String(payload.retrieved_at ?? ""),
       heading: String(payload.heading ?? "Ticker News"),
       explanation: String(payload.explanation ?? ""),
@@ -85,6 +92,12 @@ export async function getPersonalNews(
               author: String(lead.author ?? ""),
               publishedAt: String(lead.published_at ?? ""),
               articleUrl: String(lead.article_url ?? ""),
+              providerSentiment:
+                lead.provider_sentiment === "positive" ||
+                lead.provider_sentiment === "negative"
+                  ? lead.provider_sentiment
+                  : null,
+              sentimentLabel: String(lead.sentiment_label ?? ""),
               status: String(lead.status ?? ""),
             }),
           )

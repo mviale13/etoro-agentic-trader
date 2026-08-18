@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,10 +15,11 @@ import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { redirect } from "next/navigation";
 
-import { TickerNews } from "@/components/dossier/TickerNews";
+import {
+  TickerNews,
+  TickerNewsFallback,
+} from "@/components/dossier/TickerNews";
 import { getDossier } from "@/lib/api/dossier";
-import { getPersonalNews } from "@/lib/api/personal-news";
-import type { PersonalNewsView } from "@/lib/api/personal-news";
 import type {
   DossierAgreement,
   DossierAssetProfile,
@@ -66,11 +69,6 @@ export default async function DossierPage({ params }: DossierPageProps) {
 
   const result = await getDossier(normalizedSymbol);
 
-  // Personal Ticker News is a separate, off-by-default read. It is
-  // fetched beside the dossier rather than inside it, because it is a
-  // discovery surface and reaches no part of the investment case.
-  const news = await getPersonalNews(normalizedSymbol);
-
   // The backend retired this surface for the crypto corpus: one asset,
   // one decision surface. The reader is sent to the canonical page
   // rather than shown a tombstone.
@@ -104,7 +102,7 @@ export default async function DossierPage({ params }: DossierPageProps) {
         </Link>
 
         {result.dossier ? (
-          <Dossier dossier={result.dossier} news={news} />
+          <Dossier dossier={result.dossier} />
         ) : (
           <Unavailable backendUrl={result.backendUrl} error={result.error} />
         )}
@@ -1668,13 +1666,7 @@ function Supply({ supply, symbol }: { supply: DossierSupply; symbol: string }) {
   );
 }
 
-function Dossier({
-  dossier,
-  news,
-}: {
-  dossier: DossierViewModel;
-  news: PersonalNewsView | null;
-}) {
+function Dossier({ dossier }: { dossier: DossierViewModel }) {
   return (
     <div className="mt-8 space-y-10">
       {/* A token's analysis lives on its own surface, because a token is
@@ -1769,8 +1761,18 @@ function Dossier({
 
       {/* Last, and deliberately: an unverified discovery surface sits
           after the case rather than beside it, so nothing above it
-          reads as though it were evidence the case rests on. */}
-      <TickerNews news={news} />
+          reads as though it were evidence the case rests on.
+
+          Behind Suspense, and that is load-bearing rather than
+          decorative. One reading is three provider requests paced
+          thirteen seconds apart, so awaiting it here would hold the
+          entire investment case behind roughly half a minute of a
+          discovery surface that reaches no part of it. It streams in
+          on its own, once, and a failure inside it leaves everything
+          above untouched. */}
+      <Suspense fallback={<TickerNewsFallback />}>
+        <TickerNews symbol={dossier.symbol} />
+      </Suspense>
     </div>
   );
 }
