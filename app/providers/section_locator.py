@@ -24,11 +24,12 @@ So the two jobs are separated here:
 ```text
 normalize for discovery      → every plausible occurrence, typography ignored
 score each occurrence        → named structural evidence, for and against
+set the listing aside        → a contents entry may not open what it lists
 resolve the sequence         → the most coherent progression of items
 close at the next peer       → the boundary is a heading, never a mention
 ```
 
-Two invariants govern it, and both are checked by tests:
+Three invariants govern it, and all three are checked by tests:
 
 1. **A typographic difference may change candidate discovery, but may
    not alone establish a section boundary.** Whitespace and case are
@@ -37,6 +38,14 @@ Two invariants govern it, and both are checked by tests:
    coherence with the surrounding item sequence.** The next section
    begins because the document says a peer began, not because a string
    appeared.
+3. **A heading in a listing is still a heading.** It is barred from
+   *opening* the item it lists and nothing more — never struck from the
+   evidence, never denied to an item that has no other candidate. The
+   third step exists because typography ran out: measured over 119
+   block-beginning occurrences, every one of them begins a block and
+   capitals are a filer's habit rather than a role, so the structure
+   that separates a contents entry from the section it points at is not
+   in the candidate at all. It is in what follows the candidate.
 
 Nothing here compensates for a locator failure downstream. A section
 this module cannot find is returned absent, and the reader is left to
@@ -136,6 +145,38 @@ _HEADING_LINE = 160
 #: filed separately, so this sits well below it and that pointer is
 #: still read as the section it is.
 _LISTING_WIDEST = 300
+
+#: How far one entry of a listing may sit from the next and still be
+#: read as part of the same listing. A contents entry's neighbour is the
+#: next line of the same table; a section's neighbour is whatever the
+#: prose mentions next, which is usually far away and occasionally very
+#: close.
+#:
+#: Measured over the 24 held annual reports
+#: (`CONTENTS_BODY_HEADING_SELECTION.md`): at this distance the chain
+#: below runs 12 to 22 for every contents entry in the corpus and 0 or 1
+#: for every body heading, and the reading of all 48 sections is
+#: identical across every setting from 1,000 to 4,000 paired with a
+#: chain of 5 to 10 — 49 of 54 settings agree exactly. It is a plateau
+#: rather than a fitted constant, and this sits inside it.
+#:
+#: Widening it is not free: at 5,000 Union Pacific's *body* heading
+#: chains four steps, and at 3,000 JPMorgan's pointer chains six.
+_LISTING_STEP_WIDEST = 2_000
+
+#: How long that chain must run before the candidate is reading as an
+#: entry in a listing rather than as a section that happens to be
+#: followed by a mention of a later item.
+#:
+#: Measured on the same corpus: the longest chain following anything
+#: that is not a listing entry is **4** — JPMorgan's Item 7, whose Part
+#: II prints Item 7, 7A, 8 and 9 as consecutive pointer blocks, which is
+#: a list of items with page numbers because that is what JPMorgan
+#: filed. The shortest chain following a genuine contents entry is
+#: **12**, and four separate filers print exactly that. Nothing in the
+#: corpus sits between 5 and 11, so this is the middle of an empty band
+#: rather than a line drawn against the nearest case.
+_LISTING_SHORTEST = 6
 
 
 @dataclass(frozen=True, slots=True)
@@ -436,6 +477,116 @@ def candidates(markup: str, flat: Flattened) -> tuple[Candidate, ...]:
     )
 
 
+def listing_runs(occurrences: tuple[Candidate, ...]) -> tuple[int, ...]:
+    """For each occurrence, how much more of the listing follows it.
+
+    One number per occurrence, in the order they were discovered: the
+    length of the unbroken chain that follows, where every step advances
+    the item sequence and no step is longer than `_LISTING_STEP_WIDEST`.
+    The chain stops at the first step that goes too far or fails to
+    advance — it is a run, not a count of what happens to be nearby.
+
+    Read over **every** discovered occurrence rather than over the
+    accepted ones, and that is load-bearing rather than incidental. A
+    contents entry's neighbours include lines that begin no block of
+    their own, and a body heading's chain is broken by exactly the prose
+    cross-references the evidence layer rejects. Both belong to the
+    reading; asking this question of the survivors would ask it of a
+    different document.
+
+    Deliberately blind to width, position, capitalisation, page numbers
+    and the words "table of contents" — the last of which points the
+    wrong way, because a filing prints it as a running page header and
+    it therefore lands nearer the body heading than the contents entry
+    that lists it.
+    """
+
+    runs: list[int] = []
+
+    for index in range(len(occurrences)):
+        length = 0
+        cursor = index
+
+        while cursor + 1 < len(occurrences):
+            here, following = occurrences[cursor], occurrences[cursor + 1]
+
+            if following.at - here.at > _LISTING_STEP_WIDEST:
+                break
+
+            if following.item.order <= here.item.order:
+                break
+
+            length += 1
+            cursor += 1
+
+        runs.append(length)
+
+    return tuple(runs)
+
+
+def openings(
+    occurrences: tuple[Candidate, ...],
+    accepted: tuple[Candidate, ...],
+) -> tuple[Candidate, ...]:
+    """The accepted candidates that may open a section, listings aside.
+
+    A candidate whose chain reaches `_LISTING_SHORTEST` is an entry in a
+    listing of items, and an entry in a listing is not the thing it
+    lists. So it is set aside — **for its own item only, and only where
+    that item has somewhere else to open.**
+
+    Both halves of that sentence were earned by a filing.
+
+    *For its own item only*: a contents listing is one chain running
+    through Item 1, 1A, 1B, 2 and onwards, so every item in the document
+    has an entry in it. Deciding eligibility per item keeps one chain
+    from reaching across and unseating an item it merely passed through.
+
+    *Only where that item has somewhere else to open*: Honeywell prints
+    its item numbers **nowhere but** its "FORM 10-K CROSS-REFERENCE
+    INDEX" — its sections are titled "About Honeywell" and carry no
+    number at all. Struck outright, its Item 1 and Item 7 become absent,
+    which is this platform reporting nothing about a filing it can
+    partly read. Retained, they stay exactly what they were. The rule is
+    a preference between candidates, never a veto over one.
+
+    Order is preserved, so the resolution downstream is as deterministic
+    as it was.
+
+    One consequence is recorded rather than guarded against, because no
+    filing in the acceptance corpus produces it: a retained entry is a
+    full candidate, so a *fragment* of a listing — the items that have
+    no body heading anywhere in the document — stays in the sequence and
+    could in principle out-score the body's own run, whose steps are
+    wide but few. Every filing measured either prints a body heading for
+    the items it lists, collapsing the fragment to nothing, or prints
+    none at all, which is Honeywell and is the case this clause is for.
+    """
+
+    runs = dict(
+        zip(
+            (found.at for found in occurrences),
+            listing_runs(occurrences),
+            strict=True,
+        )
+    )
+
+    listing = {
+        candidate.at: runs.get(candidate.at, 0) >= _LISTING_SHORTEST
+        for candidate in accepted
+    }
+
+    elsewhere = {
+        candidate.item.order for candidate in accepted if not listing[candidate.at]
+    }
+
+    return tuple(
+        candidate
+        for candidate in accepted
+        if not listing[candidate.at] or candidate.item.order not in elsewhere
+    )
+
+
 def sequence(accepted: tuple[Candidate, ...]) -> tuple[Candidate, ...]:
     """The most coherent progression of items the document describes.
 
@@ -448,14 +599,21 @@ def sequence(accepted: tuple[Candidate, ...]) -> tuple[Candidate, ...]:
     So the accepted candidates are read as a sequence and the best
     increasing run through them is chosen — increasing in item order,
     advancing in position, and rewarded for the width each step spans.
-    Two things fall out of that without either being a special case:
+    One thing falls out of that without being a special case:
 
-    - A table of contents is a perfectly ordered run of items whose
-      steps are a few characters wide, so the body's run — the same
-      items, tens of thousands of characters apart — outscores it.
     - A prose mention of a later item cannot close a section, because
       choosing it would leave the genuine heading for that same item
       stranded later in the sequence, which no coherent run does.
+
+    A second thing was claimed here and is false, and the correction is
+    why `openings` exists. A table of contents does *not* lose to the
+    body it points at: its entry for Item 1 can step straight to the
+    body's Item 1A, and that single step is wider than the body's own —
+    so rewarding width prefers the listing. Measured over the 24 held
+    annual reports, twelve of them opened Item 1 on a contents entry
+    this way, and Goldman Sachs began doing so only when #199 made its
+    contents entry a candidate for the first time. Width cannot tell a
+    listing from a section, and nothing here pretends otherwise now.
 
     Ties are broken toward the earlier position, so the resolution is
     deterministic for a given document.
@@ -535,7 +693,7 @@ def locate(
     found = candidates(markup, flat)
     accepted = tuple(candidate for candidate in found if candidate.is_heading)
 
-    run = sequence(accepted)
+    run = sequence(openings(found, accepted))
 
     for index, candidate in enumerate(run):
         if candidate.item.order != wanted.order:

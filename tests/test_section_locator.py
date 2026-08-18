@@ -7,10 +7,16 @@ companies are named because the slice was earned by measuring them.
 
 from app.providers.document_text import flatten
 from app.providers.section_locator import (
+    _LISTING_SHORTEST,
+    _LISTING_STEP_WIDEST,
+    Candidate,
+    Evidence,
     Item,
     candidates,
     discover,
+    listing_runs,
     locate,
+    openings,
     sequence,
 )
 
@@ -25,6 +31,30 @@ def body(text: str) -> str:
     """Filler wide enough that a section reads as a section."""
 
     return f"<p>{text * 400}</p>"
+
+
+def occurrence(item: Item, at: int, supported: bool = True) -> Candidate:
+    """One discovered occurrence, at a chosen offset.
+
+    The listing run is arithmetic over offsets and item order, so it can
+    be asked its boundary questions directly rather than through a
+    filing contrived to produce them.
+    """
+
+    return Candidate(
+        item=item,
+        at=at,
+        printed=item.stated(),
+        evidence=(Evidence("begins a block the filer typeset", supported),),
+    )
+
+
+def listing(*items: Item, start: int = 0, step: int = 20) -> tuple[Candidate, ...]:
+    """A run of item entries, evenly spaced, the way a listing prints."""
+
+    return tuple(
+        occurrence(item, start + index * step) for index, item in enumerate(items)
+    )
 
 
 # ── discovery: typography may be normalised away ────────────────────
@@ -125,8 +155,13 @@ def test_the_contents_listing_loses_to_the_body_it_points_at() -> None:
     """
     Danaher's case. The table of contents is a perfectly ordered run of
     items — it cannot be rejected by ordering, and it is not rejected
-    by typography either. What separates it from the body is that its
-    steps are a few characters wide where the body's are thousands.
+    by typography either.
+
+    Three entries is a listing too short to be set aside by `openings`,
+    so this case still turns on width, and it is kept as the record of
+    what width alone can and cannot do: it settles a three-entry listing
+    and, measured over the corpus, gets a twenty-entry one wrong. The
+    cases below are the ones it gets wrong.
     """
 
     markup = (
@@ -251,6 +286,243 @@ def test_every_observation_is_named_and_directional() -> None:
             assert observed.observation
             assert isinstance(observed.supports, bool)
             assert observed.stated().startswith(("+ ", "- "))
+
+
+# ── the third invariant: a heading in a listing may not open it ─────
+
+
+def test_the_run_counts_only_an_unbroken_advancing_chain() -> None:
+    """What the chain is, and the two ways it stops."""
+
+    chain = listing(Item(1), Item(1, "A"), Item(1, "B"), Item(2), Item(3))
+
+    assert listing_runs(chain) == (4, 3, 2, 1, 0)
+
+
+def test_a_chain_stops_where_the_sequence_stops_advancing() -> None:
+    """A repeated or falling item is a different listing, not more of one."""
+
+    repeated = listing(Item(1), Item(1, "A"), Item(1, "A"), Item(2))
+    assert listing_runs(repeated)[0] == 1
+
+    falling = listing(Item(1), Item(1, "A"), Item(1), Item(2))
+    assert listing_runs(falling)[0] == 1
+
+    scattered = listing(Item(7), Item(3), Item(9))
+    assert listing_runs(scattered) == (0, 1, 0)
+
+
+def test_a_chain_stops_at_a_step_wider_than_the_listing_allows() -> None:
+    """1,999 and 2,000 continue the listing; 2,001 is somewhere else."""
+
+    assert _LISTING_STEP_WIDEST == 2_000
+
+    for step, expected in ((1_999, 1), (2_000, 1), (2_001, 0)):
+        pair = (occurrence(Item(1), 0), occurrence(Item(1, "A"), step))
+
+        assert listing_runs(pair)[0] == expected, step
+
+
+def test_five_entries_are_not_a_listing_and_six_are() -> None:
+    """The boundary the corpus put in the middle of an empty band.
+
+    Nothing measured over the 24 held annual reports has a chain of 5 to
+    11: the longest chain following anything that is not a listing entry
+    is 4, and the shortest following a genuine contents entry is 12.
+    """
+
+    ladder = (
+        Item(1),
+        Item(1, "A"),
+        Item(1, "B"),
+        Item(1, "C"),
+        Item(2),
+        Item(3),
+        Item(4),
+    )
+
+    five = listing(*ladder[:6])
+    six = listing(*ladder)
+
+    assert listing_runs(five)[0] == _LISTING_SHORTEST - 1
+    assert listing_runs(six)[0] == _LISTING_SHORTEST
+
+    # Five entries do not make a listing, so a body heading does not
+    # displace the first of them; six do.
+    five_with_body = five + (occurrence(Item(1), 50_000),)
+    six_with_body = six + (occurrence(Item(1), 50_000),)
+
+    assert five[0] in openings(five_with_body, five_with_body)
+    assert six[0] not in openings(six_with_body, six_with_body)
+
+
+def test_the_run_reads_item_order_and_not_printed_digits() -> None:
+    """1 < 1A < 1B < 2, and 5.02 < 5.03 < 7.01 — #201's own semantics.
+
+    Sorted as strings, '10' precedes '2' and a dotted item has no place
+    at all, so a listing would appear to stop advancing and a contents
+    entry would open the section it lists.
+    """
+
+    suffixed = listing(Item(1), Item(1, "A"), Item(1, "B"), Item(1, "C"), Item(2))
+    assert listing_runs(suffixed)[0] == 4
+
+    two_digit = listing(Item(2), Item(9), Item(10), Item(11))
+    assert listing_runs(two_digit)[0] == 3
+
+    dotted = listing(
+        Item(5, fraction="02"),
+        Item(5, fraction="03"),
+        Item(7, fraction="01"),
+        Item(9, fraction="01"),
+    )
+    assert listing_runs(dotted)[0] == 3
+
+    # A bare Item 5 sorts before Item 5.02, as a filer's own sequence does.
+    bare_then_dotted = listing(Item(5), Item(5, fraction="02"))
+    assert listing_runs(bare_then_dotted)[0] == 1
+
+
+def test_one_listing_entry_and_one_body_heading_leave_the_body() -> None:
+    """Regions Financial's case, reduced: both begin blocks, one lists."""
+
+    contents = listing(
+        Item(1),
+        Item(1, "A"),
+        Item(1, "B"),
+        Item(1, "C"),
+        Item(2),
+        Item(3),
+        Item(4),
+    )
+    bodies = (occurrence(Item(1), 50_000), occurrence(Item(1, "A"), 120_000))
+    every = contents + bodies
+
+    eligible = openings(every, every)
+
+    assert contents[0] not in eligible
+    assert bodies[0] in eligible
+
+
+def test_several_listing_entries_and_one_body_leave_only_the_body() -> None:
+    """A filing may print its contents twice; neither copy opens a section."""
+
+    first = listing(
+        Item(1), Item(1, "A"), Item(1, "B"), Item(1, "C"), Item(2), Item(3), Item(4)
+    )
+    second = listing(
+        Item(1),
+        Item(1, "A"),
+        Item(1, "B"),
+        Item(1, "C"),
+        Item(2),
+        Item(3),
+        Item(4),
+        start=10_000,
+    )
+    real = occurrence(Item(1), 50_000)
+    every = first + second + (real,)
+
+    eligible = openings(every, every)
+
+    assert [found for found in eligible if found.item == Item(1)] == [real]
+
+
+def test_where_every_candidate_lists_they_are_all_retained() -> None:
+    """Honeywell's case: its sections carry no item number at all.
+
+    Its only occurrences of Item 1 and Item 7 are inside its own
+    "FORM 10-K CROSS-REFERENCE INDEX". Struck outright, the filing goes
+    silent about sections it does print; retained, it says exactly what
+    it said before. The rule is a preference, never a veto.
+    """
+
+    index = listing(
+        Item(1), Item(1, "A"), Item(1, "B"), Item(1, "C"), Item(2), Item(3), Item(4)
+    )
+
+    assert openings(index, index) == index
+
+
+def test_one_listing_chain_does_not_unseat_another_item() -> None:
+    """One chain runs through every item, so eligibility is per item.
+
+    Item 1 has a body to open it and its entry is set aside. Item 3 is
+    printed nowhere but the listing, and keeps it.
+    """
+
+    contents = listing(
+        Item(1), Item(1, "A"), Item(1, "B"), Item(1, "C"), Item(2), Item(3), Item(4)
+    )
+    real = occurrence(Item(1), 50_000)
+    every = contents + (real,)
+
+    eligible = openings(every, every)
+    kept = {found.item for found in eligible}
+
+    assert Item(3) in kept
+    assert Item(2) in kept
+    assert contents[0] not in eligible
+    assert real in eligible
+
+
+def test_the_listing_run_is_read_before_anything_is_set_aside() -> None:
+    """A set-aside entry still counts toward the chain that removed it.
+
+    The run is measured over every discovered occurrence — including the
+    prose cross-references the evidence layer rejects — so the reading
+    does not change with which candidates survived it.
+    """
+
+    contents = listing(
+        Item(1), Item(1, "A"), Item(1, "B"), Item(1, "C"), Item(2), Item(3), Item(4)
+    )
+    real = occurrence(Item(1), 50_000)
+    every = contents + (real,)
+
+    # Only the two Item 1 occurrences ever reach the evidence layer here;
+    # the chain that condemns the first is made of the others.
+    accepted = (contents[0], real)
+
+    assert openings(every, accepted) == (real,)
+
+
+def test_a_listing_entry_is_set_aside_and_still_explains_itself() -> None:
+    """Discovery is untouched, and the rejected entry is still reported.
+
+    Which is what places the rule between discovery and resolution: the
+    contents entry is discovered, is observed to begin a block, is not
+    allowed to open the section, and is still handed to the reader as a
+    candidate that was considered.
+    """
+
+    printed = ("1.", "1A.", "1B.", "1C.", "2.", "3.", "4.")
+
+    contents = "".join(
+        f"<p>Item {number} Heading {page}</p>"
+        for page, number in enumerate(printed, start=3)
+    )
+    sections = "".join(
+        f"<p>ITEM\xa0{number} HEADING</p>" + body(f"Section {number} prose. ")
+        for number in printed
+    )
+
+    markup = f"<p>FORM 10-K INDEX</p>{contents}{sections}"
+
+    flat = flatten(markup)
+    every = candidates(markup, flat)
+    accepted = tuple(found for found in every if found.is_heading)
+
+    listed = next(found for found in every if found.item == Item(1))
+
+    assert listed.is_heading, "discovery and evidence are untouched"
+    assert listed not in openings(every, accepted), "but it may not open the section"
+
+    section = locate(markup, flat, Item(1))
+
+    assert section is not None
+    assert "Section 1. prose" in flat.text[section.at : section.ends]
+    assert listed.at in {other.at for other in section.rejected}
 
 
 def test_a_cross_reference_phrase_is_matched_on_whole_words() -> None:
