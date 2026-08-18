@@ -83,6 +83,7 @@ Orchestration lives in `app/application/workspace`:
 | `app/providers` | Provider access, cached: `CachedValueProvider`, `CachedMarketProvider` |
 | `app/providers/primary_source_provider.py` | The acquisition seam: `PrimarySourceResolver`, EDGAR first, ESEF second |
 | `app/providers/edgar_provider.py`, `edgar_filings.py` | SEC filings — the regulator's own record |
+| `app/domain/leadership_event.py`, `app/providers/sec_leadership_provider.py`, `app/services/leadership_event_service.py` | Regulator-filed equity leadership events — Item 5.02 candidate selection, exact filed facts, explicit acquisition and a stored read-only door; decision-neutral |
 | `app/providers/esef_provider.py`, `esef_filings.py` | European filings, read from the filer's IFRS tagging |
 | `app/providers/issuer_identity.py`, `european_issuers.py` | Which company a European ticker means, before anything is read for it |
 | `app/providers/investor_relations_provider.py`, `investor_relations_sources.py` | The company's own published report, from a reviewed location and a reviewed hash |

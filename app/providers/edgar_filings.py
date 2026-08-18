@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date
+from typing import cast
 
 import httpx
 
@@ -140,6 +141,19 @@ class FilingReference:
 
 
 @dataclass(frozen=True, slots=True)
+class CurrentReportReference:
+    """One SEC current report selected from the regulator's own index."""
+
+    symbol: str
+    company: str
+    form: str
+    filed_on: date
+    accession: str
+    url: str
+    items: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class Filing:
     """One annual report, and the parts of it this platform read."""
 
@@ -235,6 +249,121 @@ class EdgarFilings:
         ticker = symbol.upper().strip()
 
         return self._latest_reference(self._cik(ticker), ticker)
+
+    def current_reports(
+        self,
+        symbol: str,
+        item: str,
+        since: date,
+    ) -> tuple[CurrentReportReference, ...]:
+        """The recent 8-K reports whose SEC index names one numbered item.
+
+        Item 5.02 is deliberately selected from the submissions index before
+        any document is fetched.  A full-text search over every 8-K would be
+        an unbounded provider spend and would confuse a mention of an item
+        with a filing made under it.
+        """
+
+        ticker = symbol.upper().strip()
+        cik = self._cik(ticker)
+
+        try:
+            submissions = self._get(SUBMISSIONS_URL.format(cik=cik)).json()
+        except Exception as error:
+            raise FilingUnavailable(
+                f"The SEC filing index for {ticker} could not be read."
+            ) from error
+
+        recent = submissions.get("filings", {}).get("recent", {})
+        forms = recent.get("form", [])
+        found: list[CurrentReportReference] = []
+
+        for index, form in enumerate(forms):
+            if form not in ("8-K", "8-K/A"):
+                continue
+
+            try:
+                filed_on = date.fromisoformat(str(recent["filingDate"][index]))
+                accession = str(recent["accessionNumber"][index])
+                document = str(recent["primaryDocument"][index])
+            except (IndexError, KeyError, ValueError):
+                continue
+
+            if filed_on < since:
+                continue
+
+            reported_items = tuple(
+                part.strip()
+                for part in str(_at(recent.get("items", []), index) or "").split(",")
+                if part.strip()
+            )
+
+            if item not in reported_items:
+                continue
+
+            found.append(
+                CurrentReportReference(
+                    symbol=ticker,
+                    company=str(submissions.get("name", ticker)),
+                    form=form,
+                    filed_on=filed_on,
+                    accession=accession,
+                    url=ARCHIVE_URL.format(
+                        cik=cik,
+                        accession=accession.replace("-", ""),
+                        document=document,
+                    ),
+                    items=reported_items,
+                )
+            )
+
+        found.sort(key=lambda report: (report.filed_on, report.accession), reverse=True)
+
+        return tuple(found)
+
+    def read_current_item(self, reference: CurrentReportReference, item: str) -> str:
+        """One numbered item from one immutable current report."""
+
+        return self.current_item(self._get(reference.url).text, item)
+
+    @staticmethod
+    def current_item(document: str, item: str) -> str:
+        """Locate a numbered current-report item where it is typeset.
+
+        A current report normally prints the item once in its contents and
+        once over the filed text.  Both begin blocks, so the wider span wins,
+        exactly as for the annual-report section locator.  The next typeset
+        numbered item closes it; a reference inside a sentence does not.
+        """
+
+        flat = flatten(document)
+        pattern = re.compile(rf"(?i)\bitem\s+{re.escape(item)}\b")
+        every_item = re.compile(r"(?i)\bitem\s+\d{1,2}\.\d{2}\b")
+        starts = [match.start() for match in pattern.finditer(flat.text)]
+
+        if not starts:
+            return ""
+
+        structured = typesets_blocks(document)
+        pairs: list[tuple[int, int]] = []
+
+        for start in starts:
+            candidates = [
+                match.start()
+                for match in every_item.finditer(flat.text, start + len(item))
+                if not structured or begins_a_block(document, flat, match.start())
+            ]
+
+            pairs.append((start, min(candidates) if candidates else len(flat.text)))
+
+        titled = (
+            [pair for pair in pairs if begins_a_block(document, flat, pair[0])]
+            if structured
+            else []
+        )
+        widest = max(titled or pairs, key=lambda pair: pair[1] - pair[0])
+
+        return flat.text[widest[0] : widest[1]].strip()
 
     def read(self, reference: FilingReference) -> Filing:
         """The sections of one filing this platform reads."""
@@ -658,6 +787,15 @@ def _every(text: str, needle: str) -> list[int]:
         at = text.find(needle, at + 1)
 
     return found
+
+
+def _at(values: object, index: int) -> object | None:
+    """One submissions-array value, or None when the SEC row is ragged."""
+
+    if not isinstance(values, list) or index >= len(values):
+        return None
+
+    return cast(object, values[index])
 
 
 def _occurrences(text: str, headings: tuple[str, ...]) -> list[int]:

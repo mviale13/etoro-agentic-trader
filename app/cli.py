@@ -34,6 +34,7 @@ from app.commands import (
     judge,
     judgment_history,
     knowledge,
+    leadership,
     market,
     morning,
     observe,
@@ -161,6 +162,45 @@ def build_parser() -> argparse.ArgumentParser:
     company_parser.add_argument(
         "symbol",
         help="Ticker symbol, for example MSFT, NVDA or BTC",
+    )
+
+    leadership_parser = subparsers.add_parser(
+        "leadership",
+        help="Show regulator-filed executive leadership changes",
+        description=(
+            "Show covered CEO, CFO, COO and President transitions already "
+            "read from SEC Form 8-K Item 5.02. Events and filed sentences "
+            "only: no management-quality score and no investment conclusion. "
+            "Read-only; it reaches no provider"
+        ),
+    )
+    leadership_parser.add_argument(
+        "symbol",
+        help="SEC-listed ticker symbol, for example ADBE",
+    )
+    leadership_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show accession numbers, source links, identities and declined reports",
+    )
+
+    acquire_leadership_parser = subparsers.add_parser(
+        "acquire-leadership",
+        help="Read recent SEC executive leadership filings for one company",
+        description=(
+            "Read the company's recent SEC Form 8-K Item 5.02 reports, retain "
+            "only covered executive transitions, and fill the stored door "
+            "`movrvest leadership` serves. Explicit because this reaches the SEC"
+        ),
+    )
+    acquire_leadership_parser.add_argument(
+        "symbol",
+        help="SEC-listed ticker symbol, for example ADBE",
+    )
+    acquire_leadership_parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Show accession numbers, source links, identities and declined reports",
     )
 
     evaluate_parser = subparsers.add_parser(
@@ -912,6 +952,12 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "company":
         return await company.run(args.symbol)
+
+    if args.command == "leadership":
+        return await leadership.run(args.symbol, args.evidence)
+
+    if args.command == "acquire-leadership":
+        return await leadership.run(args.symbol, args.evidence, acquire=True)
 
     if args.command == "evaluate":
         return await evaluate.run(args.symbol)
