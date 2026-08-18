@@ -53,6 +53,9 @@ SETTINGS_READERS = (
     "app.providers.token_insight_provider",
     "app.providers.token_facts_provider",
     "app.providers.coingecko_facts_provider",
+    # Personal Ticker News: a metered personal allowance, and the
+    # service resolves both its gates and its key from settings.
+    "app.services.personal_ticker_news_service",
 )
 
 #: Every variable that could turn a reading or a drafting on, or hand it
@@ -70,6 +73,9 @@ MODEL_ENVIRONMENT = (
     "ANTHROPIC_AUTH_TOKEN",
     "TOKENINSIGHT_API_KEY",
     "COINGECKO_API_KEY",
+    "MASSIVE_API_KEY",
+    "MOVRVEST_PERSONAL_NEWS",
+    "MOVRVEST_PERSONAL_NEWS_USE",
 )
 
 
@@ -101,6 +107,9 @@ NETWORK_SEAMS = (
     # missed: the crypto dossier constructed it inline, so eight tests
     # of a *payload's shape* asked mempool.space whether it was up.
     "app.providers.issuance_rule_provider.IssuanceRuleProvider",
+    # Personal Ticker News. Keyed, paced and personal: a test that
+    # reached it would spend a single user's five-a-minute allowance.
+    "app.providers.massive_news_provider.MassiveNewsProvider",
 )
 
 #: What each seam's wire method is called. Named per seam because these
@@ -118,6 +127,11 @@ SEAM_METHODS = {
     # and blockchair's stats, a JSON-RPC post for Solana's inflation.
     # Naming only the first would have left Solana's schedule live.
     "app.providers.issuance_rule_provider.IssuanceRuleProvider": ("_get", "_rpc"),
+    # `_live`, not `_get`: `_get` carries the pacing, the status
+    # handling and the redaction, and a guard there would have made
+    # all three untestable. This is the one method that opens a
+    # connection of its own.
+    "app.providers.massive_news_provider.MassiveNewsProvider": ("_live",),
 }
 
 

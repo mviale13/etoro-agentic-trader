@@ -36,8 +36,52 @@ KEYLESS_MODULES = (
 )
 
 
+#: What constructing a client looks like, so a call on the thing it
+#: returns counts as the wire too.
+CLIENT_FACTORIES = frozenset({"Client", "Session", "AsyncClient"})
+
+
+def _client_names(node: ast.AST) -> set[str]:
+    """Names this body binds to a freshly constructed HTTP client.
+
+    `with httpx.Client(...) as client:` and `client = httpx.Client(...)`
+    are the same thing to a reader and were invisible to the rule below,
+    which only recognised `httpx.get(...)` on the module itself. The
+    first provider written the idiomatic way would have been enumerated
+    as touching no wire at all — a guard silently guarding nothing, which
+    is the failure this module exists to make loud.
+    """
+
+    bound: set[str] = set()
+
+    def constructs(value: ast.AST) -> bool:
+        return (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Attribute)
+            and value.func.attr in CLIENT_FACTORIES
+            and isinstance(value.func.value, ast.Name)
+            and value.func.value.id in {"requests", "httpx"}
+        )
+
+    for inner in ast.walk(node):
+        if isinstance(inner, ast.withitem):
+            if constructs(inner.context_expr) and isinstance(
+                inner.optional_vars, ast.Name
+            ):
+                bound.add(inner.optional_vars.id)
+
+        if isinstance(inner, ast.Assign) and constructs(inner.value):
+            for target in inner.targets:
+                if isinstance(target, ast.Name):
+                    bound.add(target.id)
+
+    return bound
+
+
 def _touches_the_wire(node: ast.AST) -> bool:
     """Whether this function body calls an HTTP library directly."""
+
+    reaches = {"requests", "httpx"} | _client_names(node)
 
     for inner in ast.walk(node):
         if not isinstance(inner, ast.Call):
@@ -49,7 +93,7 @@ def _touches_the_wire(node: ast.AST) -> bool:
             isinstance(call, ast.Attribute)
             and call.attr in WIRE_CALLS
             and isinstance(call.value, ast.Name)
-            and call.value.id in {"requests", "httpx"}
+            and call.value.id in reaches
         ):
             return True
 

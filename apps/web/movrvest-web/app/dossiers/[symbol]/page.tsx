@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,6 +15,10 @@ import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { redirect } from "next/navigation";
 
+import {
+  TickerNews,
+  TickerNewsFallback,
+} from "@/components/dossier/TickerNews";
 import { getDossier } from "@/lib/api/dossier";
 import type {
   DossierAgreement,
@@ -1752,6 +1758,21 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       ) : null}
 
       <WhyTrustThis dossier={dossier} />
+
+      {/* Last, and deliberately: an unverified discovery surface sits
+          after the case rather than beside it, so nothing above it
+          reads as though it were evidence the case rests on.
+
+          Behind Suspense, and that is load-bearing rather than
+          decorative. One reading is three provider requests paced
+          thirteen seconds apart, so awaiting it here would hold the
+          entire investment case behind roughly half a minute of a
+          discovery surface that reaches no part of it. It streams in
+          on its own, once, and a failure inside it leaves everything
+          above untouched. */}
+      <Suspense fallback={<TickerNewsFallback />}>
+        <TickerNews symbol={dossier.symbol} />
+      </Suspense>
     </div>
   );
 }

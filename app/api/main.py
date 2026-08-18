@@ -19,6 +19,7 @@ from app.api.routes.home import router as home_router
 from app.api.routes.investor_dna import router as investor_dna_router
 from app.api.routes.market import router as market_router
 from app.api.routes.observation import router as observation_router
+from app.api.routes.personal_news import router as personal_news_router
 from app.api.routes.portfolio import router as portfolio_router
 from app.api.routes.portfolio_health import (
     router as portfolio_health_router,
@@ -66,6 +67,7 @@ app.include_router(observation_router)
 app.include_router(committee_router)
 app.include_router(committee_matrix_router)
 app.include_router(crypto_dossier_router)
+app.include_router(personal_news_router)
 app.include_router(dashboard_router)
 app.include_router(executive_dashboard_router)
 app.include_router(executive_router)
