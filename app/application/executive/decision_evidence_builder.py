@@ -35,6 +35,7 @@ from app.domain.decision_rules import (
     VALUATION_SCORES as VALUATION_SCORES_RULE,
 )
 from app.domain.executive_decision import DecisionEvidence
+from app.domain.financial_understanding import FinancialEvidenceStanding
 from app.domain.finding import (
     Dimension,
     Finding,
@@ -134,6 +135,10 @@ class DecisionEvidenceBuilder:
         findings: FindingLedger | None = None,
         today: date | None = None,
         quality_assessment: BusinessQuality | None = None,
+        financial_standing: FinancialEvidenceStanding = (
+            FinancialEvidenceStanding.NEVER_READ
+        ),
+        financial_absent_because: str | None = None,
     ) -> DecisionEvidence:
         portfolio = reasoning.portfolio
         market = reasoning.market
@@ -157,7 +162,7 @@ class DecisionEvidenceBuilder:
             None,
         )
 
-        quality = self._quality_value(company, quality_assessment)
+        quality = self._quality_value(company, quality_assessment, financial_standing)
 
         cognitive_confidence = (
             portfolio.confidence + market.confidence + risk.confidence
@@ -228,7 +233,12 @@ class DecisionEvidenceBuilder:
             # measurement, and a reader who cannot see it cannot tell the
             # two apart.
             score_bases=ScoreBases(
-                quality=self._quality_basis(company, quality_assessment),
+                quality=self._quality_basis(
+                    company,
+                    quality_assessment,
+                    financial_standing,
+                    financial_absent_because,
+                ),
                 evidence=self._evidence_basis(
                     company,
                     reasoning,
@@ -285,6 +295,7 @@ class DecisionEvidenceBuilder:
         cls,
         company: CompanyRecommendation | None,
         grounded: BusinessQuality | None,
+        standing: FinancialEvidenceStanding = FinancialEvidenceStanding.NEVER_READ,
     ) -> int | None:
         """How good the business is, from the filing where it was read.
 
@@ -295,10 +306,23 @@ class DecisionEvidenceBuilder:
         three proxies. Falling back there would let a company the
         filing could not describe borrow a score from its market
         capitalisation.
+
+        **And a withdrawal is not an absence.** Where every reading of
+        every statement this platform holds was withdrawn by an audit,
+        there is no grounded object at all — so the guarantee above,
+        written about an `UNKNOWN` *band*, did not reach the case and the
+        provider route re-opened underneath it. That is the same defect
+        the band rule exists to prevent, arriving through the one door
+        the band cannot cover: not *too little was established to say*
+        but *what was established has been taken away*. It is refused
+        here, and refused on the member rather than on the sentence.
         """
 
         if grounded is not None:
             return grounded.score
+
+        if standing is FinancialEvidenceStanding.WITHDRAWN_BY_AUDIT:
+            return None
 
         return cls._quality_score(company)
 
@@ -416,11 +440,16 @@ class DecisionEvidenceBuilder:
         cls,
         company: CompanyRecommendation | None,
         grounded: BusinessQuality | None = None,
+        standing: FinancialEvidenceStanding = FinancialEvidenceStanding.NEVER_READ,
+        absent_because: str | None = None,
     ) -> ScoreBasis:
         """How good the business is, and by whose ruler."""
 
         if grounded is not None:
             return cls._grounded_quality_basis(grounded)
+
+        if standing is FinancialEvidenceStanding.WITHDRAWN_BY_AUDIT:
+            return cls._withdrawn_quality_basis(absent_because)
 
         if company is None:
             return ScoreBasis(
@@ -516,6 +545,46 @@ class DecisionEvidenceBuilder:
         )
 
     @classmethod
+    def _withdrawn_quality_basis(
+        cls,
+        absent_because: str | None,
+    ) -> ScoreBasis:
+        """Read, then unread by an audit — and therefore not scored.
+
+        The sentence is the composing service's, carried rather than
+        composed: that layer knows which statements were withdrawn and
+        how many, and re-authoring it here would put the same claim in
+        two places with one of them guessing. Where none was supplied,
+        the fact is still stated — an unworded withdrawal is not a
+        licence to score.
+
+        **No rule is stamped.** A withdrawal assigns no meaning, and a
+        stamp would say a ruler had run.
+        """
+
+        # Two sentences, two owners. The first is the composing service's
+        # account of *what happened to the evidence*, quoted; the second
+        # is this layer's account of *what it did about it*, which is the
+        # only part it knows. Repeating the first would put one claim in
+        # two voices, and the re-observation clause belongs to whichever
+        # of them already carries it.
+        happened = absent_because or (
+            "Every financial statement reading this platform holds for this "
+            "security was withdrawn by an offline audit of the filing, so "
+            "none of them is counted. Reading the statement again is what "
+            "restores authority, and it is an explicit spend."
+        )
+
+        return ScoreBasis(
+            basis=(
+                f"{happened} No business quality is scored from them: a "
+                "withdrawn reading is stored history rather than a current "
+                "assessment, and the provider's proxies are not consulted "
+                "in its place."
+            ),
+        )
+
+    @classmethod
     def _grounded_quality_basis(
         cls,
         grounded: BusinessQuality,
@@ -534,6 +603,16 @@ class DecisionEvidenceBuilder:
         scored = [factor for factor in grounded.factors if factor.is_answered]
 
         evidence: list[str] = []
+
+        # First, because it is the reason the factors below are
+        # unavailable rather than one more absence beside them. The
+        # sentence is the domain object's own: this layer renders it and
+        # does not compose one, so a reader and the platform's own
+        # reasoning are looking at the same words.
+        refused = grounded.incomparable_top_line
+
+        if refused is not None:
+            evidence.append(refused.stated())
 
         for factor in grounded.factors:
             if factor.is_answered:
@@ -561,6 +640,7 @@ class DecisionEvidenceBuilder:
                 f"{len(grounded.factors)} questions its financial model "
                 "could answer from established figures. It is not a "
                 "complete measure of business quality."
+                + (f" {refused.stated()}" if refused is not None else "")
             ),
             evidence=tuple(evidence),
             derivation=cls._grounded_derivation(grounded),

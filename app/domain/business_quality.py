@@ -61,6 +61,7 @@ from app.domain.financial_question import (
     FinancialQuestionKey,
     QuestionAnswer,
 )
+from app.domain.financial_understanding import IncomparableTopLine
 from app.domain.finding import Sense
 from app.domain.tabular_evidence import ReportedFigure
 
@@ -275,6 +276,19 @@ class BusinessQuality:
     #: Where the facts came from, carried for the surface that shows it.
     source: str
 
+    #: A consolidated top line the statements established that no
+    #: threshold here can read, where there is one.
+    #:
+    #: It changes **nothing** about the arithmetic above: it is not a
+    #: factor, it enters neither `favourable` nor `answered`, and
+    #: `band_for` never sees it. What it changes is what a reader is
+    #: told. Without it, a company whose top line was read and refused
+    #: renders identically to one whose filer printed nothing — and the
+    #: honest difference between *we have no figure* and *we have the
+    #: figure and no comparable ruler* is exactly what an investor
+    #: needs in order to know whether waiting will help.
+    incomparable_top_line: IncomparableTopLine | None = None
+
     @property
     def score(self) -> int | None:
         """The 0-100 figure, or nothing where the band is UNKNOWN."""
@@ -341,12 +355,19 @@ def assess(
     symbol: str,
     answers: tuple[QuestionAnswer, ...],
     source: str,
+    incomparable_top_line: IncomparableTopLine | None = None,
 ) -> BusinessQuality:
     """Band the established figures, from answers another layer produced.
 
     Deterministic and total: the same answers produce the same
     assessment, and every factor in `QUALITY_QUESTIONS` appears in the
     result whether or not it was answerable.
+
+    `incomparable_top_line` is carried through and takes part in no
+    arithmetic. It is passed in for the same reason `source` is — this
+    function authors no evidence and looks nothing up — and the band
+    below is computed from `answers` alone, so a caller cannot change a
+    verdict by supplying one.
     """
 
     by_key = {answer.question: answer for answer in answers}
@@ -365,6 +386,7 @@ def assess(
         answered=len(counted),
         band=band_for(favourable, len(counted)),
         source=source,
+        incomparable_top_line=incomparable_top_line,
     )
 
 

@@ -28,7 +28,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.domain.business_understanding import BusinessUnderstanding
-from app.domain.financial_understanding import FinancialUnderstanding
+from app.domain.financial_understanding import (
+    FinancialEvidenceStanding,
+    FinancialUnderstanding,
+)
 from app.services.company_knowledge_service import CompanyKnowledgeService
 from app.services.financial_engine import measure
 from app.services.financial_statement_service import FinancialStatementService
@@ -54,6 +57,17 @@ class CompanyUnderstanding:
     financial: FinancialUnderstanding | None
     financial_absent_because: str | None
 
+    #: Why the financial half is present or absent, as a member rather
+    #: than as a sentence.
+    #:
+    #: The reason it exists: the sentence beside it already told
+    #: *never read* apart from *read, then withdrawn by an audit*, and no
+    #: consumer could act on the difference without matching words in
+    #: prose. So the decision layer treated a withdrawal as an absence
+    #: and let a provider's proxies score a company whose every statement
+    #: reading had been audited away. A consumer switches on this.
+    financial_standing: FinancialEvidenceStanding = FinancialEvidenceStanding.NEVER_READ
+
     @property
     def is_understood(self) -> bool:
         """Whether this platform has read anything about the company."""
@@ -78,7 +92,7 @@ class CompanyUnderstandingService:
         normalized = symbol.upper().strip()
 
         business, business_absent = self._business(normalized)
-        financial, financial_absent = self._financial(normalized)
+        financial, financial_absent, standing = self._financial(normalized)
 
         return CompanyUnderstanding(
             symbol=normalized,
@@ -86,6 +100,7 @@ class CompanyUnderstandingService:
             business_absent_because=business_absent,
             financial=financial,
             financial_absent_because=financial_absent,
+            financial_standing=standing,
         )
 
     def _business(self, symbol: str) -> tuple[BusinessUnderstanding | None, str | None]:
@@ -98,7 +113,16 @@ class CompanyUnderstandingService:
 
     def _financial(
         self, symbol: str
-    ) -> tuple[FinancialUnderstanding | None, str | None]:
+    ) -> tuple[FinancialUnderstanding | None, str | None, FinancialEvidenceStanding]:
+        """The financial half, its reason, and which of four states it is in.
+
+        The standing is returned from the same branch that words the
+        reason, so the two can never disagree and no consumer has to
+        recover one from the other. That is the whole repair: the
+        branches were already right and only their conclusion was
+        expressible.
+        """
+
         held = self._statements.established(symbol)
 
         if not held:
@@ -113,20 +137,28 @@ class CompanyUnderstandingService:
                     statement.value.replace("_", " ") for statement in withdrawn
                 )
 
-                return None, (
-                    f"{symbol}'s {names} has been read, and an offline "
-                    f"audit of the filing withdrew all {counted} of those "
-                    "readings: the figures were taken from cells the filer "
-                    "heads differently. The readings are still stored and "
-                    "none of them is counted. Reading the statement again "
-                    "is what restores authority, and is an explicit spend "
-                    "— `movrvest observe-statements` takes it."
+                return (
+                    None,
+                    (
+                        f"{symbol}'s {names} has been read, and an offline "
+                        f"audit of the filing withdrew all {counted} of those "
+                        "readings: the figures were taken from cells the filer "
+                        "heads differently. The readings are still stored and "
+                        "none of them is counted. Reading the statement again "
+                        "is what restores authority, and is an explicit spend "
+                        "— `movrvest observe-statements` takes it."
+                    ),
+                    FinancialEvidenceStanding.WITHDRAWN_BY_AUDIT,
                 )
 
-            return None, (
-                f"No financial statement has been read for {symbol}. "
-                "Reading one is an explicit spend, and no surface takes "
-                "it — `movrvest observe-statements` does."
+            return (
+                None,
+                (
+                    f"No financial statement has been read for {symbol}. "
+                    "Reading one is an explicit spend, and no surface takes "
+                    "it — `movrvest observe-statements` does."
+                ),
+                FinancialEvidenceStanding.NEVER_READ,
             )
 
         # `measure` refuses a mixed-document mapping outright, which is
@@ -135,6 +167,11 @@ class CompanyUnderstandingService:
         # observed across two filings holds consensuses of both. The
         # refusal is reported rather than raised.
         try:
-            return measure(symbol, held), None
+            return measure(symbol, held), None, FinancialEvidenceStanding.ESTABLISHED
         except ValueError as refused:
-            return None, str(refused)
+            # Authoritative readings are held and no understanding
+            # follows from them. Deliberately not the withdrawal state:
+            # nothing was audited away here, and the provider route is
+            # left exactly as it was rather than gated on a shape no
+            # company in the corpus is currently in.
+            return None, str(refused), FinancialEvidenceStanding.UNMEASURABLE

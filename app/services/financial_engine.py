@@ -39,6 +39,7 @@ from app.domain.financial_understanding import (
     EstablishedMeasure,
     FinancialMeasure,
     FinancialUnderstanding,
+    IncomparableTopLine,
 )
 from app.domain.provenance import Provenance
 from app.domain.statement_language import language_of
@@ -198,6 +199,61 @@ def measure(
             if (income := statements.get(StatementKind.INCOME_STATEMENT)) is not None
             else None
         ),
+        # Derived here and consumed by no recipe. `RECIPES` above is the
+        # only door into the measures, and this quantity is in none of
+        # its entries — a test asserts that, and asserts that nothing in
+        # the question, factor or band layers names the concept at all.
+        incomparable_top_line=_incomparable_top_line(
+            statements.get(StatementKind.INCOME_STATEMENT)
+        ),
+    )
+
+
+def _incomparable_top_line(
+    income: FinancialStatementConsensus | None,
+) -> IncomparableTopLine | None:
+    """The established top line no profitability threshold here can read.
+
+    Structural, and it fires on exactly one shape: the gross total is
+    **not** established and a total struck after financing cost **is**.
+    Both halves are load-bearing.
+
+    The first keeps the corporate ruler untouched — where a filer prints
+    a gross total, that total governs and there is nothing to refuse.
+    The second is why this is a statement about evidence rather than a
+    guess: the concept it reads carries its own structural requirement,
+    that the filer printed a net interest income subtotal above the row,
+    so an unestablished or merely-labelled claim reaches nothing here.
+
+    No label is matched, no sentence is read and no figure is combined
+    with another.
+    """
+
+    if income is None:
+        return None
+
+    gross = income.fact(StatementConcept.TOTAL_REVENUE)
+
+    if gross is not None and gross.is_located:
+        return None
+
+    struck = income.fact(StatementConcept.REVENUE_NET_OF_INTEREST_EXPENSE)
+
+    if struck is None or not struck.is_located or struck.anchor is None:
+        return None
+
+    return IncomparableTopLine(
+        label=struck.anchor.label,
+        printed=struck.anchor.printed,
+        # The checked cell first and the rest of its row behind it, the
+        # order every established measure carries its basis in. The
+        # anchor is filtered out of the tail rather than printed twice.
+        basis=(
+            struck.anchor,
+            *(cell for cell in struck.row if cell.cell != struck.anchor.cell),
+        ),
+        source=income.stated_source(),
+        support=struck.agreement,
     )
 
 
