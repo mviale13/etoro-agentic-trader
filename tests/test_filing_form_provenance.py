@@ -334,26 +334,35 @@ def test_an_amendment_read_explicitly_still_carries_its_own_form() -> None:
 # ── zero behaviour change ───────────────────────────────────────────
 
 
-def test_the_dispatch_is_an_equality_against_exactly_one_form() -> None:
-    """Superseded by the exact 10-K cutover, and inverted rather than deleted.
+def test_the_dispatch_is_an_exact_lookup_over_the_mapped_forms() -> None:
+    """Superseded twice, and narrowed rather than deleted each time.
 
     When this slice shipped it asserted that `_read` consulted no
     locator, because carrying the form and reading it were deliberately
-    separate PRs. The reading has since been ruled and built, so what
-    matters now is *how* the form is read: an equality against one
-    normalised value, and nothing looser.
+    separate PRs. The 10-K cutover made it an equality against one
+    normalised value; the 20-F dispatch makes it a lookup over two. What
+    the assertion has always been about is unchanged: **how tightly the
+    form is matched**, never how many forms are mapped.
     """
+
+    from app.providers.edgar_filings import ANNUAL_SECTION_ITEMS
+
+    assert set(ANNUAL_SECTION_ITEMS) == {"10-K", "20-F"}
+
+    # No default, and nothing a looser match would let through. Asked of
+    # the mapping itself rather than of the source, because the question
+    # is what the dispatch *answers*, not how it is spelled.
+    for looser in ("10-K/A", "20-F/A", "10-K ", "20-f", "8-K", "", "NOT-A-FORM"):
+        assert ANNUAL_SECTION_ITEMS.get(looser) is None, looser
 
     section = (ROOT / "app/providers/edgar_filings.py").read_text()
 
     body = section[section.index("def _read(") :]
     body = body[: body.index("\n    @staticmethod")]
 
-    assert 'normalized_form(reference.form) == "10-K"' in body
-
     # The three ways a looser match would let the wrong document through.
     assert "startswith" not in body, "a prefix match would admit 10-K/A"
-    assert "in ANNUAL_FORMS" not in body, "membership would admit 20-F"
+    assert "in ANNUAL_FORMS" not in body, "membership would admit the amendments"
     assert 'replace("/A"' not in body and 'rstrip("/A")' not in body
 
     # Both paths are present: the located one and the legacy one.
@@ -398,15 +407,22 @@ def test_every_constructor_still_passes_keywords() -> None:
     assert positional == [], positional
 
 
-def test_the_form_now_selects_the_reader_and_only_for_exact_10_k() -> None:
+def test_the_form_selects_the_reader_and_only_for_the_mapped_forms() -> None:
     """Superseded: the form was inert here, and now it chooses the reader.
 
     This test used to assert that one document read under every form
     produced one identical result, which was the mechanism behind #207's
-    byte-identity. The exact 10-K cutover changes that on purpose — and
-    only for `10-K`. So the assertion becomes the cutover's own contract:
-    every other form, including both amendments, the blank and an
-    unfamiliar one, still reads identically to each other.
+    byte-identity. The 10-K cutover changed that on purpose, and the
+    20-F dispatch changes it once more — for `20-F` and nothing else.
+    So the assertion stays the cutover's own contract: every *unmapped*
+    form, including both amendments, the blank and an unfamiliar one,
+    still reads identically to each other.
+
+    This document prints 10-K item numbers, so reading it as a 20-F asks
+    for Item 4 and Item 5 and correctly finds neither. That is the
+    dispatch working: a form is not a hint, and a 20-F reader does not
+    fall back to a domestic filer's item numbers because the domestic
+    ones happen to be present.
     """
 
     markup = (
@@ -424,11 +440,11 @@ def test_the_form_now_selects_the_reader_and_only_for_exact_10_k() -> None:
 
             return Response()
 
-    legacy_forms = ("", "20-F", "10-K/A", "20-F/A", "8-K", "NOT-A-FORM")
+    legacy_forms = ("", "10-K/A", "20-F/A", "8-K", "NOT-A-FORM")
 
     read = {
         form: Reading().read_url("https://example.invalid/x.htm", form=form)
-        for form in (*legacy_forms, "10-K")
+        for form in (*legacy_forms, "10-K", "20-F")
     }
 
     business = {read[form].business_text for form in legacy_forms}
@@ -448,6 +464,13 @@ def test_the_form_now_selects_the_reader_and_only_for_exact_10_k() -> None:
     assert read["10-K"].business_text.startswith("ITEM\xa01. BUSINESS")
     assert "What it does" in read["10-K"].business_text
     assert read["10-K"].discussion_text.startswith("ITEM\xa07.")
+
+    # `20-F` asks for the items a 20-F prints, finds neither in a
+    # document that prints a 10-K's, and refuses both — separately.
+    assert read["20-F"].business_text == ""
+    assert read["20-F"].discussion_text == ""
+    assert read["20-F"].business_refusal is not None
+    assert read["20-F"].discussion_refusal is not None
 
     # And the form still arrived, so this is not identity by ignorance.
     assert read["20-F"].reference.form == "20-F"

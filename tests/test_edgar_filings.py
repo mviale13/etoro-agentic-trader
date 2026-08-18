@@ -100,11 +100,14 @@ def test_the_legacy_reader_still_prefers_the_section_over_its_entry() -> None:
     at, *for the legacy reader*, is that it runs a few characters to its
     neighbour.
 
-    Read under a form the cutover does not claim, because that reader is
-    still what every non-`10-K` filing gets.
+    Read under a form no cutover claims, because that reader is still
+    what every unmapped filing gets. `20-F` used to serve as the
+    unmapped specimen here and no longer can: it is now dispatched to
+    Item 4 and Item 5, so this document — which prints a 10-K's item
+    numbers — would be refused rather than read legacily.
     """
 
-    assert "makes machines" in read(TWO_ENTRY_CONTENTS, form="20-F").business_text
+    assert "makes machines" in read(TWO_ENTRY_CONTENTS, form="8-K").business_text
 
 
 def test_a_two_entry_listing_is_below_the_measured_listing_threshold() -> None:

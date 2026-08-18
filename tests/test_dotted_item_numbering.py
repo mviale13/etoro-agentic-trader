@@ -168,31 +168,39 @@ def test_asking_for_an_item_the_document_does_not_carry_returns_nothing() -> Non
 # ── inertness ───────────────────────────────────────────────────────────
 
 
-def test_the_annual_report_path_reaches_this_module_only_for_exact_10_K() -> None:
-    """Superseded by the exact 10-K cutover, and narrowed rather than deleted.
+def test_the_annual_report_path_reaches_this_module_only_for_mapped_forms() -> None:
+    """Superseded twice by the annual cutovers, narrowed rather than deleted.
 
     This test used to assert `"section_locator" not in` the reader, on the
     stated grounds that rewiring it was "a separate question with a
     separately measured blast radius". That question has since been
     measured (`ANNUAL_SECTION_READER_CUTOVER_MEASUREMENT.md`) and ruled,
-    and the reader now uses the locator — **for exactly one form.**
+    and the reader now uses the locator — for the **mapped** forms, which
+    the 20-F dispatch takes from one to two.
 
     So the invariant this file cares about survives in the form that
     still matters: the dotted current-report numbering cannot be reached
-    from the annual path, because the annual path asks for `Item(1)` and
-    `Item(7)` and never for a fraction.
+    from the annual path, because every item the annual path asks for is
+    a whole number.
     """
+
+    from app.providers.edgar_filings import ANNUAL_SECTION_ITEMS
+
+    # Asked of the mapping rather than of the source text: what settles
+    # this is which items the dispatch can request, and a grep over a
+    # 1,000-line module would answer a different question.
+    asked = [item for pair in ANNUAL_SECTION_ITEMS.values() for item in pair]
+
+    assert asked, "the annual path must ask for something"
+
+    for item in asked:
+        assert item.fraction == "", item
+        assert item.suffix == "", item
+        assert item.stated() == f"Item {item.number}", item
 
     source = pathlib.Path("app/providers/edgar_filings.py").read_text()
 
-    assert 'normalized_form(reference.form) == "10-K"' in source
     assert "startswith" not in source, "a prefix match would admit 10-K/A"
-
-    # The annual path asks for bare items, so no dotted item number can
-    # reach it. Tested on the construction rather than on the word:
-    # `_section`'s docstring says "a small fraction of it" in ordinary
-    # English, and a substring match would have called that a defect.
-    assert "Item(1)" in source and "Item(7)" in source
     assert "fraction=" not in source
 
 
