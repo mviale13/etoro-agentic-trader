@@ -604,3 +604,151 @@ promoted, no consensus, understanding, analyst, committee, CIO or
 decision change · `git status --porcelain data/` empty · no form
 dispatch · no ticker, filer or form exception anywhere in the rule ·
 Codex's unpublished `d203609` not read, reused or published.
+
+---
+
+## 13. Implementation status — 2026-08-18
+
+**Built and merged as specified in §11.** The selector is live in
+`section_locator`; nothing else moved.
+
+### The layer, exactly
+
+Two functions between `candidates()` and `sequence()`, and one line
+changed in `locate()`:
+
+```python
+found = candidates(markup, flat)  # discovery: untouched
+accepted = tuple(c for c in found if c.is_heading)  # evidence:  untouched
+run = sequence(openings(found, accepted))  # ← the only change
+```
+
+| added | what it does |
+|---|---|
+| `_LISTING_STEP_WIDEST = 2_000` | how far one entry of a listing may sit from the next |
+| `_LISTING_SHORTEST = 6` | how long the chain must run to be a listing |
+| `listing_runs(occurrences)` | one run length per occurrence, in discovery order — pure arithmetic over offsets and `Item.order` |
+| `openings(occurrences, accepted)` | the accepted candidates that may open a section |
+
+**`Evidence`, `Candidate`, `is_heading`, `observe()`, `_CANDIDATE`,
+`discover()`, `sequence()` and `_width_score` are unchanged.**
+`statement_locator` is unchanged. `_section` is still not wired to this
+module, so **no live reading moves today**; the impact is on future
+acquisitions and on the annual-section rewire when it is ruled on.
+
+Four properties the implementation holds to, each with a test:
+
+1. **The run is read over every *discovered* occurrence**, not over the
+   accepted ones — so a set-aside entry still counts toward the chain
+   that condemned it, and the prose cross-references the evidence layer
+   rejects still break a body heading's chain. Asking the survivors
+   would be asking a different document.
+2. **Eligibility is decided per item.** One contents chain runs through
+   every item in the filing; scoping the decision to an item's own
+   candidates stops that chain unseating an item it merely passed
+   through.
+3. **Nothing is vetoed.** Where an item's only candidates are listing
+   entries they are all retained, and `locate()` returns exactly what it
+   returned before.
+4. **Order and tie-breaking are preserved** — `openings` filters a tuple
+   and never reorders it.
+
+### Corpus movement, as built
+
+**48 of 48 readings reproduce §7's measurement exactly.** 12 move, 36
+are identical, **every closing peer is unchanged**, and no span is
+over-wide:
+
+| reading | opening | width | closing |
+|---|---|---|---|
+| AAPL Item 1 | 19,179 → **22,458** | 19,333 → **16,054** | 38,512 — unchanged |
+| ALL Item 1 | 131,576 → **133,231** | 60,650 → **58,995** | 192,226 — unchanged |
+| CB Item 1 | 196,475 → **197,887** | 82,121 → **80,709** | 278,596 — unchanged |
+| COF Item 1 | 175,868 → **180,881** | 89,282 → **84,269** | 265,150 — unchanged |
+| DIS Item 1 | 64,786 → **71,215** | 73,195 → **66,766** | 137,981 — unchanged |
+| GS Item 1 | 196,218 → **200,346** | 156,079 → **151,951** | 352,297 — unchanged |
+| JPM Item 1 | 238,585 → **240,062** | 40,653 → **39,176** | 279,238 — unchanged |
+| MET Item 1 | 380,376 → **387,791** | 109,704 → **102,289** | 490,080 — unchanged |
+| MTB Item 1 | 125,985 → **134,198** | 85,896 → **77,683** | 211,881 — unchanged |
+| PG Item 1 | 42,718 → **45,046** | 16,623 → **14,295** | 59,341 — unchanged |
+| RF Item 1 | 118,097 → **134,930** | 91,902 → **75,069** | 209,999 — unchanged |
+| UNP Item 1 | 31,655 → **40,317** | 35,680 → **27,018** | 67,335 — unchanged |
+
+All twelve are Item 1 and every one is a contents-entry opening replaced
+by the filer's own body heading. **FITB is unchanged** — it was never
+wrong. **AXP, HON, MUFG, DB, BCS, NWG and C are byte-identical**, as is
+every Item 7 in the corpus.
+
+**Current-report neutrality: 244 of 244 Item 5.02 spans identical**, 241
+located, and the same three residuals — `CVX 0000093410-22-000042`,
+`NKE 0000320187-22-000025`, `NKE 0001628280-22-012729`. The listing rule
+never fires on a current report, because an 8-K prints too few items to
+chain six of them.
+
+### Why Goldman Sachs necessarily changes
+
+#199's literal control said GS must not move. It moves, and it must:
+
+| | opening | closing | width |
+|---|---|---|---|
+| pre-#199 | 200,346 | 352,297 | 151,951 |
+| after #199 | **196,218** | 352,297 | 156,079 |
+| now | **200,346** | 352,297 | 151,951 |
+
+Before the suffix guard, `Item 1 Business` in Goldman's contents was
+discovered as `Item 1B`, so the contents entry **was not a candidate at
+all** and the body was the only Item 1 there was. #199 fixed the
+discovery defect and, in doing so, handed `_width_score` a contents
+entry it had never seen — which it preferred, because the contents
+entry's single step to the body's Item 1A is wider than the body's own.
+
+So **GS is one of the twelve**, and the control and the objective are
+the same question with opposite answers. What #199 actually recovered —
+Item 1 located, closing at 352,297 — is preserved exactly, and the
+opening returns to the value #199 inherited. Nothing about the suffix
+guard is undone: `Item 1 Business` is still discovered as Item 1, and
+Honeywell's recovery is still Honeywell's recovery.
+
+### One property recorded rather than guarded
+
+A retained listing entry is a full candidate, so a **fragment** of a
+listing — the items with no body heading anywhere in the document —
+stays in the sequence and could in principle out-score the body's own
+run, whose steps are wide but few. Every filing in the corpus either
+prints a body heading for the items it lists, collapsing the fragment to
+nothing, or prints none at all, which is Honeywell and is what the
+retention clause exists for. **No filing measured produces the middle
+case**, so it is documented in `openings` and not defended against.
+
+### Still unresolved, and untouched by this slice
+
+- **Running page headers.** Deutsche Bank's Item 4 still opens on one,
+  **108 characters (0.058%) before its body heading**, and no signal
+  measured distinguishes a running header from a body heading. Left
+  exactly as it was, deliberately.
+- **JPMorgan's pointer structure** — a filing whose sections are
+  consecutive pointer blocks with page numbers is shaped like a table of
+  contents. Correctly classified at the chosen step distance and
+  misclassified at 3,000; one specimen is not a corpus.
+- **Honeywell's unnumbered body.** Its sections are titled *"About
+  Honeywell"* and carry no item number, so a numbered selector has
+  nothing to find. Its 72- and 96-character index readings are
+  preserved, and they are still index readings.
+- **Citigroup is still unreadable** — no item heading of any form.
+- **Form propagation and 20-F dispatch** — not built, not started.
+  `PrimarySource` still carries no `form` field.
+- **Incorporated-document traversal** — BCS and NWG still print no Item
+  4 or Item 5, and no page range is followed into any component.
+- **The annual-section rewire.** `_section` is still not wired to
+  `section_locator`, so this slice changes no reading in production
+  today.
+
+### Scope compliance
+
+`section_locator` only · `Evidence`, discovery, width scoring and peer
+resolution unchanged beyond removing ineligible candidates · no
+permanent veto · no later-occurrence, widest-span, ticker, filer or form
+exception · no running-header repair · no form propagation, no 20-F
+dispatch, no annual-section rewire · **zero model calls** · no
+production data mutation, `git status --porcelain data/` empty ·
+Codex's unpublished `d203609` not read, reused or published.
