@@ -331,18 +331,31 @@ def test_an_amendment_read_explicitly_still_carries_its_own_form() -> None:
 # ── zero behaviour change ───────────────────────────────────────────
 
 
-def test_no_section_dispatch_was_added() -> None:
-    """This slice carries the form. It does not read it."""
+def test_the_dispatch_is_an_equality_against_exactly_one_form() -> None:
+    """Superseded by the exact 10-K cutover, and inverted rather than deleted.
+
+    When this slice shipped it asserted that `_read` consulted no
+    locator, because carrying the form and reading it were deliberately
+    separate PRs. The reading has since been ruled and built, so what
+    matters now is *how* the form is read: an equality against one
+    normalised value, and nothing looser.
+    """
 
     section = (ROOT / "app/providers/edgar_filings.py").read_text()
 
     body = section[section.index("def _read(") :]
     body = body[: body.index("\n    @staticmethod")]
 
-    for wired in ("section_locator", "locate(", "reference.form", "ANNUAL_FORMS"):
-        assert wired not in body, f"_read now consults {wired}"
+    assert 'normalized_form(reference.form) == "10-K"' in body
 
-    assert "_ITEM_1" in body and "_ITEM_7" in body, "the items must be unchanged"
+    # The three ways a looser match would let the wrong document through.
+    assert "startswith" not in body, "a prefix match would admit 10-K/A"
+    assert "in ANNUAL_FORMS" not in body, "membership would admit 20-F"
+    assert 'replace("/A"' not in body and 'rstrip("/A")' not in body
+
+    # Both paths are present: the located one and the legacy one.
+    assert "self._located(" in body
+    assert "_ITEM_1" in body and "_ITEM_7" in body, "the legacy path must remain"
 
 
 def test_the_item_anchors_are_untouched() -> None:
@@ -382,14 +395,15 @@ def test_every_constructor_still_passes_keywords() -> None:
     assert positional == [], positional
 
 
-def test_the_form_cannot_influence_which_section_is_selected() -> None:
-    """The same document read under every form yields the same sections.
+def test_the_form_now_selects_the_reader_and_only_for_exact_10_k() -> None:
+    """Superseded: the form was inert here, and now it chooses the reader.
 
-    The corpus controls in
-    `ANNUAL_SECTION_READER_CUTOVER_MEASUREMENT.md` show 48 of 48 readings
-    byte-identical and the discussion-table total unmoved at 226. This is
-    the mechanism beneath that: nothing downstream of the reference reads
-    the form, so it cannot change a span whatever it says.
+    This test used to assert that one document read under every form
+    produced one identical result, which was the mechanism behind #207's
+    byte-identity. The exact 10-K cutover changes that on purpose — and
+    only for `10-K`. So the assertion becomes the cutover's own contract:
+    every other form, including both amendments, the blank and an
+    unfamiliar one, still reads identically to each other.
     """
 
     markup = (
@@ -407,25 +421,30 @@ def test_the_form_cannot_influence_which_section_is_selected() -> None:
 
             return Response()
 
+    legacy_forms = ("", "20-F", "10-K/A", "20-F/A", "8-K", "NOT-A-FORM")
+
     read = {
         form: Reading().read_url("https://example.invalid/x.htm", form=form)
-        for form in ("", "10-K", "20-F", "10-K/A", "8-K", "NOT-A-FORM")
+        for form in (*legacy_forms, "10-K")
     }
 
-    business = {filing.business_text for filing in read.values()}
-    discussion = {filing.discussion_text for filing in read.values()}
+    business = {read[form].business_text for form in legacy_forms}
+    discussion = {read[form].discussion_text for form in legacy_forms}
 
-    assert len(business) == 1, "the form changed the business section"
-    assert len(discussion) == 1, "the form changed the discussion"
+    assert len(business) == 1, "the form changed a legacy reading"
+    assert len(discussion) == 1, "the form changed a legacy discussion"
 
-    # And the reading is *identically defective* under every form, which
-    # is the requirement: production reads this document's table-of-
-    # contents entry rather than its body, and misses the discussion
-    # entirely because the closing anchor is matched literally against a
-    # non-breaking space. Both defects are preserved exactly. The
-    # locator repairs them, and wiring the locator is the next slice.
+    # Every legacy form keeps the reading exactly as it was, defects
+    # included: the literal reader takes this document's contents entry
+    # rather than its body, and misses the discussion entirely because
+    # the closing anchor is matched against a non-breaking space.
     assert business.pop() == "Item 1. Business 3"
     assert discussion.pop() == ""
+
+    # And exactly `10-K` now reads the body instead.
+    assert read["10-K"].business_text.startswith("ITEM\xa01. BUSINESS")
+    assert "What it does" in read["10-K"].business_text
+    assert read["10-K"].discussion_text.startswith("ITEM\xa07.")
 
     # And the form still arrived, so this is not identity by ignorance.
     assert read["20-F"].reference.form == "20-F"

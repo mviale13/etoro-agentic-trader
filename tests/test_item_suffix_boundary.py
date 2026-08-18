@@ -239,9 +239,16 @@ def test_the_statement_locator_still_imports_only_what_it_did() -> None:
         assert f"section_locator.{name}" not in source, name
 
 
-def test_the_annual_report_reader_still_does_not_use_this_module() -> None:
-    """The generic rewire remains refused; this repair does not begin it."""
+def test_the_annual_report_reader_uses_this_module_for_exactly_10_k() -> None:
+    """Superseded: the rewire was refused when this was written, then ruled.
+
+    The suffix guard this file tests is now load-bearing on the annual
+    path rather than merely adjacent to it — `Item 1 Business` being
+    discovered as `Item 1B` would break the very readings the cutover
+    corrects. The assertion is inverted to say so.
+    """
 
     source = pathlib.Path("app/providers/edgar_filings.py").read_text()
 
-    assert "section_locator" not in source
+    assert "section_locator" in source
+    assert 'normalized_form(reference.form) == "10-K"' in source

@@ -19,6 +19,8 @@ from app.providers.document_text import (
     read_tables,
     typesets_blocks,
 )
+from app.providers.section_locator import Item
+from app.providers.section_locator import locate as locate_section
 from app.providers.statement_locator import LocatedStatements
 from app.providers.statement_locator import locate as locate_statements
 
@@ -112,6 +114,63 @@ _ITEM_7A = (
 _REFERRED = re.compile(
     r'(?i)(?:under\s+the\s+(?:heading|caption)s?|entitled)\s*[“"]([^”"]{6,90})[”"]'
 )
+
+#: How a filer says the content *is somewhere else* rather than merely
+#: pointing the reader at a related disclosure. Only the first appends a
+#: chapter to the business description.
+#:
+#: The distinction was invisible until the 10-K locator cutover widened
+#: Capital One's Item 1 from 17,165 characters to its true 84,268, and
+#: the extra text turned out to contain the filer's own sentence:
+#: *"…and related risks for our business, see "Item 1A. Risk Factors"
+#: under the headings "We face risks related to our operational,
+#: technological and organizational infrastructure,"…"*. Every existing
+#: gate passed — the filer really did write `under the headings`, the
+#: quoted heading really does begin exactly one block, and it really
+#: does point out of Item 1 — so **80,000 characters of risk factors
+#: were appended to a business description**. Nothing had ever asked
+#: what the *relationship* was.
+#:
+#: JPMorgan's is the shape this mechanism exists for: *"A description of
+#: the Firm's reportable business segments … **is provided in** the
+#: Management's discussion and analysis … under the heading "Business
+#: Segment & Corporate Results""*. The content is stated to live there.
+#: Capital One's `see` directs a reader; JPMorgan's `is provided in`
+#: displaces content.
+_DISPLACEMENT_CUE = re.compile(
+    r"(?i)\b(?:provided|presented|included|described|set\s+forth)\b"
+)
+
+#: How a filer directs a reader somewhere without moving anything there.
+#: `see`, `please see`, `refer to`, `referred to`.
+_DIRECTING_CUE = re.compile(r"(?i)\b(?:see|refer(?:red)?\s+to)\b")
+
+#: How far back the assertion is looked for: to the start of the sentence
+#: the reference sits in, and no further.
+#:
+#: **A character distance cannot do this job, and that was measured.**
+#: Over the four references the 20-company 10-K cohort prints, the
+#: nearest displacement verb is 171 characters back for JPMorgan (the one
+#: that should be followed) and **216 characters back for M&T** (which
+#: should not, and whose verb belongs to an entirely different sentence
+#: about its website). Any window wide enough for JPMorgan admits M&T.
+#: The sentence is the unit because the claim is a sentence's claim.
+#:
+#: A sentence bound can fall on an abbreviation's full stop — Capital
+#: One's does, on `"Item 1A."` — and the consequence is a shorter
+#: lookbehind and therefore a refusal. **Refusal is the safe direction
+#: for eligibility**: a reference not followed costs the evidence it
+#: would have added, and one followed wrongly costs 80,000 characters of
+#: another section presented as this one.
+#:
+#: **A single newline is a wrap, not a sentence end**, and treating it as
+#: one broke the mechanism's own calibration fixture: this module's
+#: `_REFERRED` is whitespace-tolerant precisely because "a filer wraps
+#: 'under the heading' across two lines as readily as it prints it on
+#: one", and the flattened prose keeps those breaks. So the bound is a
+#: full stop followed by space, or a blank line — the paragraph break
+#: `flatten` preserves — and never a line break inside a sentence.
+_SENTENCE_EDGE = re.compile(r"(?:\.[ \t]|\n[ \t]*\n)")
 
 #: How much of a referenced section is read, in characters.
 #:
@@ -226,6 +285,41 @@ class Filing:
     cash_flow_contenders: int = 0
 
 
+def _governed_by_displacement(sentence: str) -> bool:
+    """Whether the cue that governs this reference moves content or points at it.
+
+    **The nearest cue governs, not any cue.** One sentence carries more
+    than one clause, and "Results are presented in Note 2, and for risks
+    see Item 1A under the heading …" contains a displacement cue that has
+    nothing to do with the reference at the end of it. Asking whether a
+    displacement verb appeared *somewhere* would follow that reference and
+    append the risk factors — the same defect Capital One exposed, one
+    clause further along.
+
+    So every cue between the start of the sentence and the reference is
+    read, and only the last one before it is consulted. A directing cue
+    that follows a displacement cue therefore refuses, which is exactly
+    the case above.
+
+    Refusal is the default in every unclear case: no cue at all, a
+    directing cue nearest, or two cues ending at the same position and so
+    not deterministically orderable. **A reference not followed costs the
+    evidence it would have added; one followed wrongly costs 80,000
+    characters of another section presented as this one.**
+    """
+
+    cues = [(found.end(), True) for found in _DISPLACEMENT_CUE.finditer(sentence)]
+    cues += [(found.end(), False) for found in _DIRECTING_CUE.finditer(sentence)]
+
+    if not cues:
+        return False
+
+    nearest = max(end for end, _ in cues)
+    governing = {displaces for end, displaces in cues if end == nearest}
+
+    return governing == {True}
+
+
 class EdgarFilings:
     """
     Fetch a company's latest annual report from SEC EDGAR.
@@ -319,8 +413,19 @@ class EdgarFilings:
 
         flat = flatten(document)
 
-        business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
-        discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
+        # **Exactly `10-K`, and nothing that merely begins with it.**
+        # `10-K/A` is a different document — measured: Disney's and
+        # Tesla's print only Items 10-15 — and an unclassified source
+        # is not a domestic annual report either. So this is an
+        # equality against the normalised form the regulator stated,
+        # never a prefix, never a suffix stripped, and never a
+        # default. #207 carried the form here for this line.
+        if normalized_form(reference.form) == "10-K":
+            business, _, regions = self._located(document, flat, Item(1))
+            discussion, tables, _ = self._located(document, flat, Item(7))
+        else:
+            business, _, regions = self._section(document, flat, _ITEM_1, _ITEM_1A)
+            discussion, tables, _ = self._section(document, flat, _ITEM_7, _ITEM_7A)
         # The statements are resolved together, as the run they are.
         # A title match is not a location: this document prints
         # "consolidated balance sheets" in five block-beginning
@@ -439,8 +544,21 @@ class EdgarFilings:
 
         lowered = flat.text.casefold()
 
-        for quoted in _REFERRED.findall(within):
-            heading = quoted.strip().strip(",").strip()
+        for match in _REFERRED.finditer(within):
+            # **What the filer says the relationship is.** Read from the
+            # sentence the reference sits in, because the assertion is
+            # that sentence's and a neighbouring one's verb is not
+            # evidence about this reference. A clause that merely directs
+            # the reader — `see`, `refer to` — is an ordinary
+            # cross-reference and appends nothing.
+            before = within[: match.start()]
+            edges = list(_SENTENCE_EDGE.finditer(before))
+            sentence = before[edges[-1].end() :] if edges else before
+
+            if not _governed_by_displacement(sentence):
+                continue
+
+            heading = match.group(1).strip().strip(",").strip()
 
             blocks = [
                 at
@@ -562,6 +680,52 @@ class EdgarFilings:
         )
 
     # ── the document ────────────────────────────────────────────────
+
+    @staticmethod
+    def _located(
+        document: str,
+        flat: Flattened,
+        wanted: Item,
+    ) -> tuple[str, tuple[SourceTable, ...], tuple[Region, ...]]:
+        """One numbered item, as `section_locator` resolved it.
+
+        The structural replacement for `_section` on exactly one form.
+        Where the legacy reader pairs every literal opening with the next
+        literal closing and keeps the widest pair, this asks the locator
+        for the section and takes the answer: the opening it selected and
+        the peer heading it closed at.
+
+        **The located offsets drive everything.** The prose, the markup
+        span, the tables and the regions all come from the same `at` and
+        `ends`, so there is no second search under the legacy anchors and
+        no way for the text to describe one span while the tables come
+        from another. `strip()` trims surrounding whitespace off the
+        prose only; it never moves the offsets the markup is cut at.
+
+        **A refusal is an absence, and never a fall back to the legacy
+        reader.** Returning the old span when the locator declines would
+        restore exactly the defect the locator exists to remove — and it
+        would do it silently, on the filings hardest to read. Measured in
+        `ANNUAL_SECTION_READER_CUTOVER_MEASUREMENT.md`: the legacy reader
+        opens ten of these sections on a table-of-contents entry and
+        closes ten more catastrophically wrongly, Goldman's Item 7 at
+        1,202 characters of an 311,737-character section. An empty
+        section is reported as absent, which is the honest outcome and
+        the one the reader above already handles.
+        """
+
+        located = locate_section(document, flat, wanted)
+
+        if located is None:
+            return ("", (), ())
+
+        opens, closes = flat.markup_span(located.at, located.ends)
+
+        return (
+            flat.text[located.at : located.ends].strip(),
+            read_tables(document[opens:closes]),
+            read_regions(document, flat, located.at, located.ends),
+        )
 
     @staticmethod
     def _section(
