@@ -450,6 +450,71 @@ def test_a_clause_that_states_the_content_is_elsewhere_still_appends() -> None:
     assert "offers deposit and lending products" in filing.business_text
 
 
+def clause(sentence: str) -> str:
+    """One filing whose Item 1 carries exactly the sentence given."""
+
+    return f"""\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Firm has two segments. {sentence}</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>{"filler " * 200}</p>
+<p>SEGMENT RESULTS</p>
+<p>Consumer Banking offers deposit products through branches.</p>
+</body></html>
+"""
+
+
+def follows(sentence: str) -> bool:
+    return (
+        "offers deposit products" in read(clause(sentence), form="10-K").business_text
+    )
+
+
+def test_a_directing_cue_after_a_displacement_cue_refuses() -> None:
+    """The nearest cue governs, not any cue in the sentence.
+
+    A single sentence carries more than one clause, and the displacement
+    verb here belongs to a different one. Asking whether a displacement
+    verb appeared *somewhere* would follow this reference and append the
+    risk factors — Capital One's defect, one clause further along.
+    """
+
+    assert not follows(
+        "Results are presented in Note 2, and for risks see the disclosures "
+        "under the heading &#8220;Segment Results&#8221;."
+    )
+
+
+def test_a_displacement_cue_after_a_directing_cue_still_follows() -> None:
+    """The earlier clause directs; the one that governs displaces."""
+
+    assert follows(
+        "For additional background see Note 2; the segment descriptions are "
+        "provided in MD&amp;A under the heading &#8220;Segment Results&#8221;."
+    )
+
+
+def test_a_reference_with_no_relationship_cue_at_all_refuses() -> None:
+    """M&T's shape: a website navigation label, not a document reference."""
+
+    assert not follows(
+        "The Company also makes available on its website, under the heading "
+        "&#8220;Segment Results&#8221;, certain governance documents."
+    )
+
+
+@pytest.mark.parametrize(
+    "cue",
+    ["refer to", "referred to", "please see", "see"],
+)
+def test_every_directing_cue_the_contract_names_refuses(cue) -> None:
+    assert not follows(
+        f"The segment descriptions are provided in Note 2, and {cue} the "
+        "disclosures under the heading &#8220;Segment Results&#8221;."
+    )
+
+
 @pytest.mark.parametrize(
     "verb",
     ["is provided in", "are presented in", "is included in", "are set forth in"],

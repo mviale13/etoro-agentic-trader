@@ -137,10 +137,13 @@ _REFERRED = re.compile(
 #: Segment & Corporate Results""*. The content is stated to live there.
 #: Capital One's `see` directs a reader; JPMorgan's `is provided in`
 #: displaces content.
-_DISPLACED = re.compile(
-    r"(?i)\b(?:is|are|was|were)\s+(?:also\s+)?"
-    r"(?:provided|presented|included|described|set\s+forth)\b"
+_DISPLACEMENT_CUE = re.compile(
+    r"(?i)\b(?:provided|presented|included|described|set\s+forth)\b"
 )
+
+#: How a filer directs a reader somewhere without moving anything there.
+#: `see`, `please see`, `refer to`, `referred to`.
+_DIRECTING_CUE = re.compile(r"(?i)\b(?:see|refer(?:red)?\s+to)\b")
 
 #: How far back the assertion is looked for: to the start of the sentence
 #: the reference sits in, and no further.
@@ -280,6 +283,41 @@ class Filing:
     income_statement_contenders: int = 0
     balance_sheet_contenders: int = 0
     cash_flow_contenders: int = 0
+
+
+def _governed_by_displacement(sentence: str) -> bool:
+    """Whether the cue that governs this reference moves content or points at it.
+
+    **The nearest cue governs, not any cue.** One sentence carries more
+    than one clause, and "Results are presented in Note 2, and for risks
+    see Item 1A under the heading …" contains a displacement cue that has
+    nothing to do with the reference at the end of it. Asking whether a
+    displacement verb appeared *somewhere* would follow that reference and
+    append the risk factors — the same defect Capital One exposed, one
+    clause further along.
+
+    So every cue between the start of the sentence and the reference is
+    read, and only the last one before it is consulted. A directing cue
+    that follows a displacement cue therefore refuses, which is exactly
+    the case above.
+
+    Refusal is the default in every unclear case: no cue at all, a
+    directing cue nearest, or two cues ending at the same position and so
+    not deterministically orderable. **A reference not followed costs the
+    evidence it would have added; one followed wrongly costs 80,000
+    characters of another section presented as this one.**
+    """
+
+    cues = [(found.end(), True) for found in _DISPLACEMENT_CUE.finditer(sentence)]
+    cues += [(found.end(), False) for found in _DIRECTING_CUE.finditer(sentence)]
+
+    if not cues:
+        return False
+
+    nearest = max(end for end, _ in cues)
+    governing = {displaces for end, displaces in cues if end == nearest}
+
+    return governing == {True}
 
 
 class EdgarFilings:
@@ -517,7 +555,7 @@ class EdgarFilings:
             edges = list(_SENTENCE_EDGE.finditer(before))
             sentence = before[edges[-1].end() :] if edges else before
 
-            if not _DISPLACED.search(sentence):
+            if not _governed_by_displacement(sentence):
                 continue
 
             heading = match.group(1).strip().strip(",").strip()

@@ -580,11 +580,26 @@ sequence**, not from a second numbered-item grammar.
 
 ### The rule, and why JPM passes while COF refuses
 
-> A referenced chapter is followed only where **the sentence containing
-> the reference states that the content is provided, presented, included,
-> described or set forth** there. A sentence that merely directs the
-> reader — `see`, `refer to` — is an ordinary cross-reference and appends
-> nothing.
+> Between the start of the sentence and the reference, read every
+> **relationship cue** — displacement (*provided, presented, included,
+> described, set forth*) and directing (*see, please see, refer to,
+> referred to*). **The cue nearest the reference governs.** The chapter
+> is followed only where that cue displaces content. No cue, a directing
+> cue nearest, or two cues ending at the same position and so not
+> deterministically orderable: refuse.
+
+**It is the nearest cue, not any cue, and the difference is a real
+defect.** One sentence carries more than one clause. *"Results are
+presented in Note 2, and for risks **see** the disclosures under the
+heading …"* contains a displacement cue that has nothing to do with the
+reference at the end of it — and a rule asking whether a displacement
+verb appeared *somewhere in the sentence* would follow that reference
+and append the risk factors. That is Capital One's defect again, one
+clause further along, and it is the reason this gate reads clauses
+rather than sentences. The converse also holds: *"For additional
+background **see** Note 2; the segment descriptions **are provided in**
+MD&A under the heading …"* is followed, because the cue that governs the
+heading displaces.
 
 JPMorgan writes *"A description of the Firm's reportable business
 segments … **is provided in** the Management's discussion and analysis …
@@ -665,24 +680,44 @@ Capital One's sentence in order to explain the defect.
 
 ### Downstream
 
-**No decision-bearing field moves, and the reason is stronger than
-neutrality.** `CompanyKnowledgeService.established()` — the store-only
+**The safety claim is that nothing downstream moves, and that is what
+was measured.** `CompanyKnowledgeService.established()` — the store-only
 door every surface and decision path reads — is **byte-identical across
 all 24 companies** before and after, together with
 `CompanyUnderstandingService`. Measured without network, deterministically.
 
-The reason it cannot move is worth recording: **the held knowledge is at
-schema 11 and the store requires 14**, and DP1's ownership partition is
-the kind that cannot pool, so there is no cross-schema read. Every
-company's consensus is therefore `unavailable` today regardless of this
-change, and no segment, quality band, committee position, recommendation
-or CIO decision draws on a filing at all.
+**The availability distribution, stated exactly rather than rounded
+into a stronger claim.** An earlier draft of this section said every
+consensus is unavailable and no decision draws on a filing. **That was
+wrong**, and the measurement output it was drawn from said so on its own
+face:
+
+| state | companies |
+|---|---|
+| `unavailable` | **23** |
+| `available_cached` | **1** — Allstate |
+
+Allstate's record is the only one in the held store written at the
+current knowledge schema: **31 records are at schema 11 and 2 at schema
+12, and exactly 1 at schema 14**, and DP1's ownership partition cannot
+pool, so the other 23 are not read. Allstate's consensus carries **four
+named segments — Allstate Protection, Protection Services, Run-off
+Property-Liability and Corporate — with no share on any of them and no
+description on any of them**, and `CompanyUnderstanding` is computed from
+it.
+
+**Allstate's business reading does move under this cutover** (58,745 →
+58,994), and its consensus is nevertheless byte-identical — because the
+stored observation was made from the old span and is not re-read. That
+is the correct and sufficient statement: **before and after are
+byte-identical for every downstream field**, not *everything is
+unavailable*.
 
 A live brain-and-recommendation diff was attempted and **rejected as
 unsound rather than reported**: it returned Yahoo `HTTPStatusError`s
 under rate limiting, and this repository's own standing note is that a
 single provider run is not truth. Such a diff would have measured
-Yahoo's availability, not this change.
+Yahoo's availability, not this change, and none of it is relied on here.
 
 **So the real exposure was always the next funded observe** — and that is
 exactly why the Capital One repair had to land before merge. Without it,
