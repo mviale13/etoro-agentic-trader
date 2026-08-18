@@ -37,8 +37,9 @@ display-only news inbox for one personal, non-commercial user.
 > AAPL and KO share seven articles.
 >
 > **So the intended v1 use — discovering Adobe AI competitive reporting
-> — is not supported by this corpus.** What the endpoint reliably
-> supplies is retail commentary and press-release wire, not reporting.
+> — is not supported by this corpus.** The sample did not contain broad
+> established-independent publisher coverage. It was dominated by retail
+> investment commentary and press-release distribution.
 
 ---
 
@@ -238,10 +239,13 @@ gate; it establishes only that the window contains no reassignment.
 Per company, distinct publishers in 50 items: **AAPL 1 · KO 1** · INTC 2
 · F 3 · CVX 3 · ADBE 4 · BA 4 · BCS 4 · PFE 4 · T 4 · PARA 5 · UNP 5.
 
-This is retail commentary plus a press-release wire. It is not a
-cross-section of what is being reported about a company, and **no query
-form, window or pagination changes it** — it is who the provider
-aggregates.
+**The sample did not contain broad established-independent publisher
+coverage. It was dominated by retail investment commentary and
+press-release distribution.** The Motley Fool, Benzinga and
+Investing.com all publish journalism and commentary; the measured
+problem is **concentration and authority**, not the absence of
+journalism. And **no query form, window or pagination changes it** — it
+is who the provider aggregates.
 
 **Benzinga content arrives through the standard endpoint.** 52 items
 were published by Benzinga without any `/benzinga/` endpoint being
@@ -346,17 +350,23 @@ limit are specified in §4.
 **Publisher concentration.** Five publishers wrote all 600 items; The
 Motley Fool wrote 67% of them; Apple's and Coca-Cola's fifty items each
 came from a single publisher. Combined with articles carrying up to 44
-tickers, what the endpoint supplies is **retail commentary and
-press-release wire, associated with a symbol** — not a cross-section of
-what is being reported about a company.
+tickers: **the sample did not contain broad established-independent
+publisher coverage, and was dominated by retail investment commentary
+and press-release distribution, associated with a symbol.**
+
+**The problem is concentration and authority, not the absence of
+journalism.** The Motley Fool, Benzinga and Investing.com all publish
+journalism and commentary; what the corpus lacks is *breadth* and
+*independent established publishers*, and five sources cannot be a
+cross-section however good any one of them is.
 
 **This defeats the stated v1 use directly.** The intended boundary
 names *"Adobe AI competitive reporting may be discovered and displayed
-through Massive standard News."* Competitive reporting is journalism,
-and journalism is the one thing this corpus does not contain. The other
-three v1 clauses are unaffected: SEC-evidenced events remain
-established elsewhere, and display-only plus no-automatic-effect are
-boundaries this measurement respects throughout.
+through Massive standard News."* Discovering competitive reporting
+requires the breadth this sample does not have. The other three v1
+clauses are unaffected: SEC-evidenced events remain established
+elsewhere, and display-only plus no-automatic-effect are boundaries this
+measurement respects throughout.
 
 ### What would change the answer
 
