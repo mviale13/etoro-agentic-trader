@@ -1,6 +1,10 @@
 """Locating the sections of a 10-K, in the structure the filer typeset."""
 
+import pathlib
+from dataclasses import replace
 from datetime import date
+
+import pytest
 
 from app.providers.edgar_filings import EdgarFilings, Filing, FilingReference
 
@@ -13,10 +17,15 @@ REFERENCE = FilingReference(
 )
 
 
-def read(document: str) -> Filing:
-    """The sections this platform reads out of one filing's markup."""
+def read(document: str, form: str = "10-K") -> Filing:
+    """The sections this platform reads out of one filing's markup.
 
-    return EdgarFilings()._read(REFERENCE, document)
+    The form is a parameter because the reader now has two paths: exactly
+    `10-K` goes through `section_locator`, and everything else keeps the
+    literal reader. A test that means one of them says which.
+    """
+
+    return EdgarFilings()._read(replace(REFERENCE, form=form), document)
 
 
 #: The shape that cost Caterpillar its segment sizes. A sentence in the
@@ -70,14 +79,10 @@ def test_locating_the_section_is_what_puts_its_tables_within_reach() -> None:
     assert len(read(CROSS_REFERENCED).discussion_tables) == 1
 
 
-def test_a_contents_entry_begins_a_block_and_still_loses_to_the_section() -> None:
-    """
-    Structure alone does not settle it — a table of contents is typeset
-    as headings too. What separates the entry from the section it points
-    at is that it runs a few characters to its neighbour.
-    """
-
-    contents = """\
+#: Two contents entries over a body. Kept because it is the shape the
+#: legacy reader was built against, and it is now read by two different
+#: rules depending on the form.
+TWO_ENTRY_CONTENTS = """\
 <html><body>
 <p>ITEM 1. Business 4</p>
 <p>ITEM 1A. Risk Factors 12</p>
@@ -87,7 +92,64 @@ def test_a_contents_entry_begins_a_block_and_still_loses_to_the_section() -> Non
 </body></html>
 """
 
-    assert "makes machines" in read(contents).business_text
+
+def test_the_legacy_reader_still_prefers_the_section_over_its_entry() -> None:
+    """
+    Structure alone does not settle it — a table of contents is typeset
+    as headings too. What separates the entry from the section it points
+    at, *for the legacy reader*, is that it runs a few characters to its
+    neighbour.
+
+    Read under a form the cutover does not claim, because that reader is
+    still what every non-`10-K` filing gets.
+    """
+
+    assert "makes machines" in read(TWO_ENTRY_CONTENTS, form="20-F").business_text
+
+
+def test_a_two_entry_listing_is_below_the_measured_listing_threshold() -> None:
+    """The locator's honest residual, pinned rather than hidden.
+
+    `section_locator` sets a contents entry aside when at least six
+    further items follow it in one chain — the band measured in
+    `CONTENTS_BODY_HEADING_SELECTION.md`, where every real contents
+    listing in the 24-filing corpus runs 12 to 22 entries. A listing of
+    **two** is far below that, so the entry is not set aside and width
+    decides, exactly as it did before the selector existed.
+
+    A 10-K lists Items 1 through 16, so no filing in the corpus prints a
+    two-entry listing and this shape has never been observed. It is
+    recorded here so that the residual is a known property of the
+    threshold rather than a surprise: **the cutover inherits it from a
+    ruled selector rather than introducing it.**
+    """
+
+    filing = read(TWO_ENTRY_CONTENTS, form="10-K")
+
+    # The entry is selected and closed at the entry beside it, so the
+    # section is the listing line alone. At this scale every step is
+    # under the width floor, so nothing separates the two readings and
+    # the earlier one wins the tie.
+    assert filing.business_text == "ITEM 1. Business 4"
+    assert "makes machines" not in filing.business_text
+
+
+def test_a_realistic_listing_sends_the_10_k_reader_to_the_body() -> None:
+    """Six chained entries is a listing, and the body opens the section."""
+
+    entries = "".join(
+        f"<p>ITEM {number}. Heading {number}</p>"
+        for number in ("1", "1A", "1B", "1C", "2", "3", "4")
+    )
+    sections = "".join(
+        f"<p>ITEM\xa0{number}. HEADING</p><p>{'Section prose. ' * 300}</p>"
+        for number in ("1", "1A", "1B", "1C", "2", "3", "4")
+    )
+
+    filing = read(f"<html><body>{entries}{sections}</body></html>", form="10-K")
+
+    assert filing.business_text.startswith("ITEM\xa01. HEADING")
+    assert "Heading 1A" not in filing.business_text, "a contents entry opened it"
 
 
 def test_a_document_with_no_structure_is_read_by_width_as_before() -> None:
@@ -337,3 +399,170 @@ def test_a_filing_without_statements_leaves_them_unstated() -> None:
 
     assert filing.income_statement_text == ""
     assert filing.income_statement_tables == ()
+
+
+# ── a reference is followed only where content was displaced ─────────
+
+#: Capital One's shape, reduced. Every gate that existed passed: the
+#: filer really writes `under the headings`, the quoted heading really
+#: begins exactly one block, and it really does point out of Item 1 — so
+#: 80,000 characters of risk factors were appended to a business
+#: description. What was missing was any test of the *relationship*.
+DIRECTING = """\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Company issues credit cards and takes deposits. For more
+information about technology, data protection and data security, and
+related risks for our business, see &#8220;Item 1A. Risk
+Factors&#8221; under the headings &#8220;We face risks related to our
+operational infrastructure&#8221; and &#8220;A cyber-attack could
+disrupt us&#8221;.</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>{padding}</p>
+<p>We face risks related to our operational infrastructure</p>
+<p>Our ability to retain and attract customers depends on technology we
+must operate and adapt in a rapidly changing environment.</p>
+</body></html>
+""".format(padding="filler " * 200)
+
+
+def test_a_clause_that_only_directs_the_reader_appends_nothing() -> None:
+    """`see X under the heading Y` is a cross-reference, not displacement.
+
+    The defect the 10-K locator cutover exposed: correcting Capital One's
+    business span from 17,165 characters to its true 84,268 brought this
+    sentence inside it, and every existing gate passed.
+    """
+
+    filing = read(DIRECTING, form="10-K")
+
+    assert "issues credit cards" in filing.business_text
+    assert "retain and attract customers" not in filing.business_text
+    assert "rapidly changing environment" not in filing.business_text
+
+
+def test_a_clause_that_states_the_content_is_elsewhere_still_appends() -> None:
+    """JPMorgan's shape. `is provided in … under the heading` displaces."""
+
+    filing = read(REFERRING, form="10-K")
+
+    assert "two reportable business segments" in filing.business_text
+    assert "offers deposit and lending products" in filing.business_text
+
+
+@pytest.mark.parametrize(
+    "verb",
+    ["is provided in", "are presented in", "is included in", "are set forth in"],
+)
+def test_every_displacement_verb_the_contract_names_is_accepted(verb) -> None:
+    document = f"""\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Firm has two segments. A description of them {verb} the
+Management&#8217;s discussion and analysis section under the heading
+&#8220;Segment Results&#8221;.</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>{"filler " * 200}</p>
+<p>SEGMENT RESULTS</p>
+<p>Consumer Banking offers deposit products through branches.</p>
+</body></html>
+"""
+
+    assert "offers deposit products" in read(document, form="10-K").business_text
+
+
+def test_a_verb_in_a_neighbouring_sentence_is_not_evidence() -> None:
+    """The assertion is a sentence's, and a character window cannot tell.
+
+    Measured over the four references the 20-company cohort prints: the
+    nearest displacement verb is 171 characters back for JPMorgan, which
+    should be followed, and 216 back for M&T, which should not — its verb
+    belongs to a different sentence about its own website. Any window
+    wide enough for the first admits the second.
+    """
+
+    document = f"""\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Firm has two segments. A description of our people is provided in
+our sustainability report. The Company also makes available on its
+website, under the heading &#8220;Segment Results&#8221;, certain
+governance documents.</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>{"filler " * 200}</p>
+<p>SEGMENT RESULTS</p>
+<p>Consumer Banking offers deposit products through branches.</p>
+</body></html>
+"""
+
+    assert "offers deposit products" not in read(document, form="10-K").business_text
+
+
+def test_a_sentence_wrapped_across_lines_is_still_one_sentence() -> None:
+    """A single newline is a wrap, not a sentence end.
+
+    `_REFERRED` is whitespace-tolerant for exactly this reason, and the
+    flattened prose keeps the filer's line breaks. Treating a lone
+    newline as a boundary refused the mechanism's own calibration
+    fixture, whose clause wraps twice.
+    """
+
+    document = f"""\
+<html><body>
+<p>ITEM 1. Business</p>
+<p>The Firm has two segments. A description of them is provided in the
+Management&#8217;s discussion and analysis section of this Form 10-K
+under
+the heading &#8220;Segment Results&#8221;.</p>
+<p>ITEM 1A. Risk Factors</p>
+<p>{"filler " * 200}</p>
+<p>SEGMENT RESULTS</p>
+<p>Consumer Banking offers deposit products through branches.</p>
+</body></html>
+"""
+
+    assert "offers deposit products" in read(document, form="10-K").business_text
+
+
+def test_the_gate_reads_no_section_name_and_no_company() -> None:
+    """No literal `Risk Factors`, no width rule, no allowlist.
+
+    Three repairs the ruling forbade, asserted against what the module
+    *executes* rather than against its text — the prose above the gate
+    quotes Capital One's own sentence in order to explain the defect, and
+    a substring search over the whole file would call that explanation a
+    violation.
+    """
+
+    import ast
+
+    tree = ast.parse(pathlib.Path("app/providers/edgar_filings.py").read_text())
+
+    docstrings = set()
+
+    for node in ast.walk(tree):
+        if isinstance(
+            node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+        ):
+            doc = ast.get_docstring(node, clean=False)
+
+            if doc is not None:
+                docstrings.add(doc)
+
+    executed = [
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and node.value not in docstrings
+    ]
+
+    for forbidden in ("risk factor", "capital one", "jpmorgan", "cof", "jpm"):
+        offenders = [text for text in executed if forbidden in text.casefold()]
+
+        assert offenders == [], f"{forbidden!r} is executed: {offenders}"
+
+    # And the cap the ruling protected has not been quietly lowered.
+    from app.providers.edgar_filings import _FOLLOWED_WIDEST
+
+    assert _FOLLOWED_WIDEST == 80_000

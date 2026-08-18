@@ -502,3 +502,217 @@ keyword-only, with a test that keeps them so · **zero model calls** · no
 data mutation, `git status --porcelain data/` empty · no Ticker News,
 Business Quality, committee, CIO or recommendation change · Codex's
 unpublished `d203609` not read, reused or published.
+
+---
+
+## 11. Implementation status — 2026-08-18 · exact 10-K cutover
+
+**Built, with one defect found by the acceptance and repaired before
+merge.** Business and discussion are located by `section_locator` when —
+and only when — the production reference carries the exact normalised
+form `10-K`.
+
+### Two corrections to this report
+
+**§8's "28 of the 40 10-K readings" was wrong.** Its own recorded data
+says **25** raw spans differ, and **two of those 25 are one-character
+`.strip()` artefacts** (COF review 227,549 vs 227,550, JPM review 395 vs
+396). Measured through the real reader, **23 readings move** — 11
+business and 12 discussion.
+
+**§7's "226 → 657" is not this slice's basis and does not apply.** That
+figure counted `_section`'s tables over the raw Item 7 span across all 24
+filings. The reader's own `discussion_tables` — which includes the
+referenced-chapter fallback — is **249 → 629 for the 20-company exact
+10-K cohort**, with the four 20-F filings unmoved at **1 → 1**. The two
+numbers are not comparable and the earlier one is superseded for this
+purpose.
+
+### The dispatch
+
+```python
+if normalized_form(reference.form) == "10-K":
+    business, _, regions = self._located(document, flat, Item(1))
+    discussion, tables, _ = self._located(document, flat, Item(7))
+else:
+    ...the literal reader, unchanged...
+```
+
+An **equality**, never `startswith`, never with `/A` stripped, never
+defaulting on blank. `_located` takes the locator's `at` and `ends` for
+prose, markup span, tables and regions from one resolution — there is no
+second search under the legacy anchors — and **a refusal returns an
+absent section with no fall back to the legacy span**, because falling
+back would restore the defect silently on the filings hardest to read.
+
+### The defect the acceptance found: `_referenced` had no relationship test
+
+Correcting Capital One's business span from 17,165 characters to its true
+84,268 brought the filer's own sentence inside it:
+
+> *"…and related risks for our business, **see** "Item 1A. Risk Factors"
+> under the headings "We face risks related to our operational,
+> technological and organizational infrastructure,"…"*
+
+**Every gate that existed passed.** The filer really writes `under the
+headings`; the quoted heading really begins exactly one block; it really
+does point out of Item 1. So `_referenced` followed it and `_joined`
+appended **80,000 characters of risk factors to a business
+description** — 84,268 became 164,270. Nothing had ever asked what the
+*relationship* was.
+
+**Capital One is the specimen; the missing test is the finding.**
+
+### The labelled inventory — all 20 10-K filings, negative controls included
+
+The whole cohort prints **four** `_REFERRED` matches inside a located
+Item 1. Sixteen companies print none.
+
+| company | clause verb | heading quoted | occurrences | block-beginning | target owned by | appended before | adjudication |
+|---|---|---|---|---|---|---|---|
+| **JPM** | ***is provided in*** | *Business Segment & Corporate Results* | 9 | **1** | Item 15 span (the tail after a pointer-style item list) | **80,000** | **DIRECT CONTENT DISPLACEMENT** |
+| **COF** | *see* | *We face risks related to our operational…* | 6 | **1** | **Item 1A** | **80,000** | **ORDINARY CROSS-REFERENCE** |
+| ALL | *please see* | *Allstate Protection Segment – Products and Distribution* | 1 | **0** | — | 0 | ORDINARY CROSS-REFERENCE |
+| MTB | *(none — a website label)* | *Corporate Governance:* | 1 | **0** | — | 0 | ORDINARY CROSS-REFERENCE |
+
+The owning item is read from **`section_locator`'s own resolved
+sequence**, not from a second numbered-item grammar.
+
+### The rule, and why JPM passes while COF refuses
+
+> A referenced chapter is followed only where **the sentence containing
+> the reference states that the content is provided, presented, included,
+> described or set forth** there. A sentence that merely directs the
+> reader — `see`, `refer to` — is an ordinary cross-reference and appends
+> nothing.
+
+JPMorgan writes *"A description of the Firm's reportable business
+segments … **is provided in** the Management's discussion and analysis …
+under the heading …"* — the content is stated to live there. Capital One
+writes *"…**see** "Item 1A. Risk Factors" under the headings …"* — a
+reader is directed to a related disclosure. **`is provided in` displaces
+content; `see` does not.**
+
+**The sentence is the unit, and a character window cannot do this job —
+that was measured.** Across the four references, the nearest displacement
+verb is **171 characters back for JPMorgan**, which must be followed, and
+**216 characters back for M&T**, which must not: M&T's verb belongs to an
+entirely different sentence about its own website. **Any window wide
+enough for JPMorgan admits M&T.**
+
+Two properties of the sentence bound, both deliberate:
+
+- **A single newline is a wrap, not a sentence end.** `_REFERRED` is
+  whitespace-tolerant precisely because "a filer wraps 'under the
+  heading' across two lines as readily as it prints it on one", and the
+  flattened prose keeps those breaks. Treating a lone newline as a
+  boundary refused the mechanism's own calibration fixture, whose clause
+  wraps twice. The bound is a full stop followed by space, or a blank
+  line.
+- **The bound can fall on an abbreviation's full stop** — Capital One's
+  does, on `"Item 1A."` — and the consequence is a shorter lookbehind and
+  therefore a refusal. **Refusal is the safe direction for
+  eligibility**: a reference not followed costs the evidence it would
+  have added; one followed wrongly costs 80,000 characters of another
+  section presented as this one.
+
+**No structural gate was added, and that is a measured decision rather
+than an omission.** The owning item corroborates Capital One's refusal —
+its target sits inside **Item 1A** — but it cannot corroborate
+JPMorgan's acceptance: JPMorgan files a pointer-style 10-K whose Items
+1–15 are a short list, so its Item 7 is a 396-character pointer
+(*"…entitled "Management's discussion and analysis," appears on pages
+46–160"*) and the real chapter sits in the million-character tail the
+locator attributes to Item 15. Separating "the tail of a pointer filing"
+from "a genuine Item 1A" needs a width rule, which the ruling forbids.
+**One specimen cannot earn a structural gate**, so the clause carries it
+and the structure is reported.
+
+None of the forbidden repairs was used: no company special-case, no
+search for the words *Risk Factors*, no width rejection,
+`_FOLLOWED_WIDEST` still **80,000**, no allowlist, no model, and
+`section_locator` untouched. A test asserts the module *executes* no
+string containing a section name or either company, checked over the AST
+with docstrings excluded — because the prose above the gate quotes
+Capital One's sentence in order to explain the defect.
+
+### Required results
+
+| | before | after |
+|---|---|---|
+| **COF** business | 17,165 | **84,268** (adjudicated 84,269) |
+| **COF** reference append | — | **0** — the 80,000-character Item 1A append is gone |
+| **JPM** business | 119,177 | **119,177**, byte-identical |
+| **JPM** reference append | 80,000 | **80,000**, with 334 regions and 24 tables intact |
+| every other reference output | 0 | **0** |
+
+### Cutover acceptance
+
+| gate | result |
+|---|---|
+| Stage 0 at `_read` | **20 exact `10-K`, 4 exact `20-F`**, no blank, no amendment; re-run after the repair |
+| genuine 10-K reader movements | **23** — business **11**, discussion **12** |
+| raw-span differences vs `.strip()` artefacts | 25 raw, of which **2 are 1-character strip artefacts** → 23 |
+| located spans vs the adjudicated corpus | **39 of 40 match within ±2.** The fortieth is JPM business at 119,177, which is `_joined(39,175, 80,000)` by design and byte-identical |
+| exact 10-K discussion tables | **249 → 629** |
+| 20-F readings | **8 of 8 byte-identical** |
+| statement spans and tables | **unchanged, all 24** |
+| Item 5.02 | **244 of 244 identical**, same three residuals |
+| amendments and unclassified forms | on the legacy path, tested |
+| legacy fallback after a 10-K refusal | **none**, tested |
+| `ANNUAL_FORMS` | unchanged |
+| data mutation · Ticker News | none · untouched |
+
+### Downstream
+
+**No decision-bearing field moves, and the reason is stronger than
+neutrality.** `CompanyKnowledgeService.established()` — the store-only
+door every surface and decision path reads — is **byte-identical across
+all 24 companies** before and after, together with
+`CompanyUnderstandingService`. Measured without network, deterministically.
+
+The reason it cannot move is worth recording: **the held knowledge is at
+schema 11 and the store requires 14**, and DP1's ownership partition is
+the kind that cannot pool, so there is no cross-schema read. Every
+company's consensus is therefore `unavailable` today regardless of this
+change, and no segment, quality band, committee position, recommendation
+or CIO decision draws on a filing at all.
+
+A live brain-and-recommendation diff was attempted and **rejected as
+unsound rather than reported**: it returned Yahoo `HTTPStatusError`s
+under rate limiting, and this repository's own standing note is that a
+single provider run is not truth. Such a diff would have measured
+Yahoo's availability, not this change.
+
+**So the real exposure was always the next funded observe** — and that is
+exactly why the Capital One repair had to land before merge. Without it,
+the next funded acquisition of Capital One would have extracted a
+business description containing 80,000 characters of risk factors. With
+it, the classification is:
+
+- **directly earned by the corrected 10-K span**: 23 reader movements,
+  and 380 additional discussion tables (249 → 629);
+- **expected absence after a locator refusal**: Citigroup, unchanged and
+  still unreadable;
+- **unexpected propagation**: **none remaining** — the one instance found
+  was Capital One's, and it is repaired.
+
+### Inherited residual, retained
+
+A **two-entry** contents listing sits far below #202's measured six-entry
+threshold, so width decides and the entry wins — the pre-selector
+behaviour, now reachable from the annual path for the first time. A 10-K
+lists Items 1 through 16, so no filing in the corpus prints such a
+listing and the shape is **unobserved**. It is pinned in a test and
+**inherited from a ruled selector rather than introduced here**, and this
+slice does not address it.
+
+### Scope compliance
+
+Exact `10-K` only · no 20-F dispatch, no amendment selection, no
+incorporated-document traversal beyond narrowing what `_referenced` may
+follow, no `section_locator` change, no two-entry-listing repair · five
+superseded guards **narrowed rather than deleted**, each recording its
+supersession · **zero model calls** · no data mutation, `git status
+--porcelain data/` empty · Ticker News untouched and display-only ·
+Codex's unpublished `d203609` not read, reused or published.

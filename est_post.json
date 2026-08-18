@@ -1,0 +1,128 @@
+{
+ "AAPL": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "bcc9b2d2edd5c691"
+ },
+ "ALL": {
+  "described": 0,
+  "segments": [
+   "Allstate Protection|None|e3b0c44298fc",
+   "Corporate|None|e3b0c44298fc",
+   "Protection Services|None|e3b0c44298fc",
+   "Run-off Property-Liability|None|e3b0c44298fc"
+  ],
+  "state": "available_cached",
+  "understanding": "6be24bddee58458c"
+ },
+ "AXP": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "d99e359c90bc373f"
+ },
+ "BCS": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "ac84559209187cc7"
+ },
+ "C": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "71e4e365b972206b"
+ },
+ "CB": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "f998ae39fa22baf6"
+ },
+ "COF": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "1f7ea0e79b25a889"
+ },
+ "DB": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "90b388a25be310dd"
+ },
+ "DIS": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "cf237841b6a57027"
+ },
+ "FITB": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "4a600e96a14602d9"
+ },
+ "GS": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "054a6f54b97ca938"
+ },
+ "HON": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "3ca1eabaf5bf99fc"
+ },
+ "JPM": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "32d78c63570aa06a"
+ },
+ "KO": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "85c65aa8c991c83e"
+ },
+ "MET": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "0c516da3aab05f37"
+ },
+ "MTB": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "5690d02055b16600"
+ },
+ "MUFG": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "affd3a4651201972"
+ },
+ "NWG": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "6367fdc7f6f5baa8"
+ },
+ "PG": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "b20f8fab13c42fe3"
+ },
+ "RF": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "1a56d289a7d8b047"
+ },
+ "TRV": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "23b52aef8a873481"
+ },
+ "TSLA": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "c7f446ccddf66afe"
+ },
+ "UNP": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "c97534b809a07056"
+ },
+ "WMT": {
+  "knowledge": null,
+  "state": "unavailable",
+  "understanding": "0e69b8607b647b75"
+ }
+}

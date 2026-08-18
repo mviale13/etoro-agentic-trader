@@ -168,19 +168,32 @@ def test_asking_for_an_item_the_document_does_not_carry_returns_nothing() -> Non
 # ── inertness ───────────────────────────────────────────────────────────
 
 
-def test_the_annual_report_path_cannot_reach_this_module() -> None:
-    """`edgar_filings` locates its sections with its own literal rule.
+def test_the_annual_report_path_reaches_this_module_only_for_exact_10_K() -> None:
+    """Superseded by the exact 10-K cutover, and narrowed rather than deleted.
 
-    Which is why this change cannot move `business_text` or
-    `discussion_text` for any company. Rewiring that path is a separate
-    question with a separately measured blast radius — 26 of 48 section
-    reads move and one is lost — and is recorded in the report rather
-    than taken here.
+    This test used to assert `"section_locator" not in` the reader, on the
+    stated grounds that rewiring it was "a separate question with a
+    separately measured blast radius". That question has since been
+    measured (`ANNUAL_SECTION_READER_CUTOVER_MEASUREMENT.md`) and ruled,
+    and the reader now uses the locator — **for exactly one form.**
+
+    So the invariant this file cares about survives in the form that
+    still matters: the dotted current-report numbering cannot be reached
+    from the annual path, because the annual path asks for `Item(1)` and
+    `Item(7)` and never for a fraction.
     """
 
     source = pathlib.Path("app/providers/edgar_filings.py").read_text()
 
-    assert "section_locator" not in source
+    assert 'normalized_form(reference.form) == "10-K"' in source
+    assert "startswith" not in source, "a prefix match would admit 10-K/A"
+
+    # The annual path asks for bare items, so no dotted item number can
+    # reach it. Tested on the construction rather than on the word:
+    # `_section`'s docstring says "a small fraction of it" in ordinary
+    # English, and a substring match would have called that a defect.
+    assert "Item(1)" in source and "Item(7)" in source
+    assert "fraction=" not in source
 
 
 def test_statement_location_cannot_reach_the_changed_names() -> None:
