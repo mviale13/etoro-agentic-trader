@@ -266,3 +266,140 @@ the immutable EDGAR address · no data mutation, `git status
 --porcelain data/` empty · no Business Quality, committee, CIO,
 recommendation or Ticker News change · Ticker News remains display-only
 · Codex's unpublished `d203609` not read, reused or published.
+
+---
+
+## 6. Implementation status — 2026-08-18 · the refusal carrier
+
+**Built.** The carrier only. **No 20-F dispatch**, and no page-range or
+incorporated-document traversal.
+
+### Two parts, because they answer different questions
+
+| | |
+|---|---|
+| `KnowledgeState.DOCUMENT_REFUSED` | **what operational situation occurred** |
+| `SectionRefusal` + `RefusedSection` | **why this document could not supply this section** |
+
+The reason is **not** attached to `UNAVAILABLE`. That state means a gap
+in coverage — *try another provider* — and a document that was retrieved
+and parsed successfully is not one.
+
+### The sixth state
+
+`DOCUMENT_REFUSED`: `is_available` **false**, `may_succeed_later`
+**false**, always carries `absent_because`, and retains older cached
+knowledge exactly as the other current-document failures do. It is
+deliberately not retryable — nothing failed and nothing is intermittent,
+so the same request is refused for the same structural reason until a
+*capability* changes. A test pins all six members' properties and that
+the five existing ones did not move.
+
+### The typed reason
+
+| member | when |
+|---|---|
+| `CROSS_REFERENCE_INDEX` | the section is represented by an index into another component or page range |
+| `EXPECTED_SECTION_NOT_PRINTED` | the mapped form prints no candidate, and no index explains it |
+| `SECTION_LOCATION_REFUSED` | candidates exist and no coherent location survived |
+| `UNSUPPORTED_FORM` | no section mapping exists for the regulator's form |
+
+**A reason is established, never inferred from emptiness.** "The text
+came back empty" is the symptom all four share and evidence for none, so
+each branch names something observed in the document — *"The filing
+prints no Item 1 heading and carries its own cross-reference index"*,
+*"No Item 1 heading occurs anywhere in the 1,532,908 characters read"*,
+*"9 occurrence(s) of Item 1 were discovered and none resolved into a
+coherent section"*.
+
+The reason owns its wording, and every member names the filing and its
+form, what was expected, what was observed, what capability is missing,
+and — as its closing sentence — **that no claim about the company
+follows**. A test asserts none of the six forbidden phrasings appears in
+any member.
+
+### The carrier's location
+
+`SourceDocument.business_refusal` and `SourceDocument.discussion_refusal`
+— **two carriers, because a filing may print one section and not the
+other**, and refusing both because one is missing would report this
+reader's coupling as the filer's silence. Both default to `None`, and an
+AST audit asserts every `SourceDocument` construction passes keywords.
+
+**Nothing raises.** `EdgarProvider.fetch` does *not* raise for an empty
+business description, and `PrimarySourceUnavailable` and
+`PrimarySourceProviderError` keep their meanings exactly.
+
+### Financial-statement neutrality — the load-bearing result
+
+**Citigroup, measured:**
+
+| | |
+|---|---|
+| business description | **refused**, `CROSS_REFERENCE_INDEX` |
+| income statement | **4,725 characters** |
+| balance sheet | **2,128 characters** |
+| cash flow statement | **3,325 characters** |
+
+An exception would have taken all three away to report the first. All 48
+readings and every statement span across the 24 filings are
+**byte-identical** to before this slice.
+
+### The Citigroup correction
+
+#198 recorded C as *"document unreadable — no item heading of any
+form"*, and #206 and #208 inherited it. It is now
+`DOCUMENT_REFUSED` with:
+
+> *"The SEC 10-K filing (0000831001-26-000011) is available, but its
+> business description is supplied through a cross-reference index
+> pointing to content outside the document component this platform
+> reads. The filing prints no Item 1 heading and carries its own
+> cross-reference index. MOVRvest did not follow those page or component
+> references, so no business description was established from this
+> filing. Nothing follows from this about what the company does."*
+
+The behaviour is unchanged — C still yields no business section. What
+changed is that the platform can now say why, and that the reason is
+about the document.
+
+### The pinned cases
+
+| | today | after 20-F dispatch |
+|---|---|---|
+| **C** | **`CROSS_REFERENCE_INDEX`** | unchanged |
+| FITB · HON | **no refusal** — both readable | unchanged |
+| DB · MUFG | no refusal — legacy path | no refusal, sections located |
+| BCS · NWG | no refusal — legacy path | **`CROSS_REFERENCE_INDEX`** |
+
+**No company-symbol branch.** The detector is the measured conjunction —
+the expected section run is absent **and** the filer prints its own
+cross-reference apparatus — and a test asserts the module *executes* no
+string naming any of the six issuers, checked over the AST with
+docstrings excluded, because the prose above the detector quotes their
+wordings to say where it came from.
+
+### The consumer
+
+`CompanyKnowledgeService` refuses **before any extraction**, on both the
+`knowledge` and the `observe` paths — the second matters more, because
+`observe` spends to the quorum and would otherwise bill five model calls
+for a document carrying no section to read. Zero extractor calls, zero
+store writes, older cached knowledge retained, and **never**
+`INVALID_EXTRACTION`: nothing was extracted and nothing failed grounding.
+
+### Controls
+
+Five existing states unchanged · **48 readings and every statement span
+byte-identical** · exact 10-K spans from #208 unchanged · 244/244 Item
+5.02 unchanged · Ticker News untouched · no data mutation · no model
+calls in any test · all constructors keyword-safe by AST audit · stored
+sources decode compatibly, because the carriers live on the *document*
+and never on the stored identity.
+
+### Scope compliance
+
+Carrier only · **no 20-F dispatch**, no page-range or
+incorporated-document traversal, no `section_locator` change, no DB
+repair, no issuer branch · **zero model calls** · no data mutation ·
+Codex's unpublished `d203609` not read, reused or published.
