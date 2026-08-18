@@ -401,3 +401,104 @@ Business Quality, committee, CIO, recommendation or Ticker News change ·
 Personal Ticker News remains display-only under the personal Massive
 licence and is untouched · `git status --porcelain data/` empty · Codex's
 unpublished `d203609` not read, reused or published.
+
+---
+
+## 10. Implementation status — 2026-08-18 · form provenance only
+
+**Built: the form is data. Nothing else changed.**
+
+### The order was wrong, and the owner corrected it
+
+§8 proposed the 10-K cutover first, on the grounds that it needs no form
+input. That was mistaken, and the reason is worth keeping: **with
+`form=""` on every production reference, "the 10-K cutover" is not a
+form-restricted change — it is a new default.** Items 1/7 applied
+unconditionally would reach the 20-F filings too, so what looked like a
+safe partial cutover was the existing form defect standing behind a
+better locator. Provenance comes first.
+
+**The revised order:**
+
+1. **form provenance** — this slice;
+2. **exact 10-K cutover** — restricted to documents whose form says `10-K`;
+3. **exact 20-F dispatch** — Items 4/5, with BCS, NWG and DB refused by name;
+4. **amendment-selection research** — its own measurement.
+
+### What the repair is
+
+| | |
+|---|---|
+| `PrimarySource.form` | **new field**, last and defaulted, carrying the regulator's own designation |
+| `PrimarySource.is_form_classified` | whether the publisher stated one at all |
+| `normalized_form()` | trims and upper-cases, **and nothing else** |
+| `AMENDED_ANNUAL_FORMS` | `("10-K/A", "20-F/A")`, named so the exclusion from `ANNUAL_FORMS` is a statement rather than an omission |
+| `EdgarFilings.read_url(url, form="")` | the form is **given**, never inferred |
+| `EdgarProvider.resolve` | populates `form=reference.form` |
+| `EdgarProvider.fetch` | passes `form=source.form` into `read_url` |
+| `source_codec` | encodes the form; decodes an absent one as unclassified |
+
+The path now holds end to end: **SEC submissions index → `FilingReference`
+→ `PrimarySource` → `EdgarProvider.fetch` → `read_url` → `_read`.** A
+production read no longer arrives at the section reader with `form=""`
+where the regulator supplied one.
+
+**Nothing is parsed.** `identifier` still carries `"10-K 0000320193-…"`
+as a human label, and a test searches the source of all four touched
+modules for `identifier.split`, `identifier.partition`,
+`identifier.startswith`, `location.split` and `url.split`. A URL, a
+filename and a label are not metadata.
+
+**Unclassified stays unclassified.** ESEF and investor-relations sources
+neither populate nor forward a form, so theirs is empty — and empty means
+*the publisher has no such designation*, never *10-K*. `normalized_form`
+maps no unfamiliar form onto a familiar one: `11-K`, `40-F` and `6-K`
+survive as themselves, and `10-K/A` never becomes `10-K`.
+
+### Zero behaviour change, measured
+
+| control | result |
+|---|---|
+| the 48 production annual readings | **byte-identical** — spans, SHA-256 digests, table counts and region counts all unmoved, **including every known defect** |
+| discussion tables across the corpus | **226 → 226** (the recovery to 657 belongs to the cutover) |
+| 244 Item 5.02 readings | **244 of 244 identical**, same three residuals |
+| statement readings | unchanged — `locate_statements` is independent of `_section` and untouched |
+| `_section` wired to `section_locator` | **no** — a test reads `_read`'s body and asserts it mentions no locator, no `reference.form` and no `ANNUAL_FORMS` |
+| `_ITEM_1` / `_ITEM_1A` / `_ITEM_7` / `_ITEM_7A` | pinned unchanged by test |
+| `ANNUAL_FORMS` | pinned `("10-K", "20-F")` |
+| decision-bearing fields | unchanged — the 48 readings are the decision layer's only input from this path, and a test asserts no Business Quality, recommendation, committee, CIO, decision, brain or analyst module reads `source.form` |
+
+The mechanism beneath the byte-identity is pinned hermetically rather
+than only measured: one synthetic document is read under `""`, `10-K`,
+`20-F`, `10-K/A`, `8-K` and `NOT-A-FORM`, and all six produce the same
+business text and the same discussion — **identically defective**, since
+production reads that document's contents entry rather than its body and
+misses the discussion entirely. Both defects are preserved exactly, and
+the form still arrives, so the identity is not identity by ignorance.
+
+### Amendments
+
+`ANNUAL_FORMS` is unchanged and `AMENDED_ANNUAL_FORMS` is now named
+beside it with the measurement attached: Disney's and Tesla's `10-K/A`
+print **only Items 10–15**, Barclays' `20-F/A` **only Items 17–18**. An
+amendment read **explicitly** carries its own accurate form — a test
+proves `10-K/A` and `20-F/A` survive discovery, the source and the read
+— but it may not replace the latest complete annual filing, and nothing
+here lets it.
+
+### Still not done
+
+The 10-K cutover, the 20-F dispatch, Deutsche Bank's running-header
+opening, amendment document selection, incorporated-document traversal
+beyond the existing `_referenced`, and Citigroup's unreadability. None of
+them is touched by this slice, and each keeps its refusal from §6.
+
+### Scope compliance
+
+Form provenance only · **`_section` not wired**, no dispatch, no change
+to Items 1/7 or 4/5, no change to `ANNUAL_FORMS` · all 29 construction
+sites of `PrimarySource` and `FilingReference` audited by AST and found
+keyword-only, with a test that keeps them so · **zero model calls** · no
+data mutation, `git status --porcelain data/` empty · no Ticker News,
+Business Quality, committee, CIO or recommendation change · Codex's
+unpublished `d203609` not read, reused or published.

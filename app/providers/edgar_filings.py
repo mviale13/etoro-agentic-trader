@@ -36,6 +36,33 @@ ARCHIVE_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{docume
 #: business description this platform reads.
 ANNUAL_FORMS = ("10-K", "20-F")
 
+#: An amended annual filing is not a substitute for the annual
+#: filing, and `ANNUAL_FORMS` deliberately excludes both amended
+#: forms. Measured in
+#: `ANNUAL_SECTION_READER_CUTOVER_MEASUREMENT.md`: Disney's and
+#: Tesla's `10-K/A` print **only Items 10-15** and Barclays'
+#: `20-F/A` **only Items 17-18**, so an amendment selected as the
+#: latest annual report would be a document that does not contain
+#: the business description at all. An amendment read *explicitly*
+#: carries its own accurate form; it may not replace the complete
+#: filing.
+AMENDED_ANNUAL_FORMS = ("10-K/A", "20-F/A")
+
+
+def normalized_form(form: str) -> str:
+    """The regulator's designation, normalised for case and space only.
+
+    `"10-k "` and `"10-K"` are the same filing type and must compare
+    equal; `"10-K"` and `"10-K/A"` are different documents and must
+    not. So this trims and upper-cases and does nothing else — no
+    stripping of the amendment suffix, no mapping of an unknown form
+    onto a known one, and no inference from anything but the string
+    the regulator supplied.
+    """
+
+    return form.strip().upper()
+
+
 #: Where Item 1 ends: the risk factors that follow it, or Item 2 where a
 #: filer omits them.
 #: A section ends at the next item's heading — or, where the filer does
@@ -241,19 +268,28 @@ class EdgarFilings:
 
         return self._read(reference, self._get(reference.url).text)
 
-    def read_url(self, url: str) -> Filing:
+    def read_url(self, url: str, form: str = "") -> Filing:
         """
         The sections of the filing at this address.
 
         For a caller holding a canonical primary source rather than an
         EDGAR reference: everything needed to read the document is in its
         location, and the identity travels on the source itself.
+
+        **The form travels too, and it has to be given.** This is the one
+        path production takes, and it used to construct `form=""` — so
+        the section reader below has never once been told which form it
+        was reading, and no form-aware dispatch could honestly be written
+        above it. It is still not inferred here: a URL, a filename and an
+        identifier prefix are all labels rather than metadata, and a
+        caller that does not know the form passes nothing and gets
+        nothing.
         """
 
         return self._read(
             FilingReference(
                 company="",
-                form="",
+                form=normalized_form(form),
                 filed_on=date.min,
                 accession="",
                 url=url,
@@ -513,7 +549,7 @@ class EdgarFilings:
 
             return FilingReference(
                 company=str(submissions.get("name", ticker)),
-                form=form,
+                form=normalized_form(form),
                 filed_on=date.fromisoformat(str(recent["filingDate"][index])),
                 accession=accession,
                 url=url,

@@ -44,6 +44,7 @@ def encode_source(source: PrimarySource) -> dict[str, Any]:
         "provider": source.provider,
         "authority": source.authority.value,
         "verification": [check.value for check in source.verification],
+        "form": source.form,
     }
 
 
@@ -66,6 +67,12 @@ def decode_source(stored: dict[str, Any]) -> PrimarySource:
         verification=tuple(
             IdentityCheck(value) for value in stored.get("verification", ())
         ),
+        # Read with a default rather than required, because a record
+        # written before the form was a field genuinely does not
+        # carry one. Absent decodes as unclassified, which is what it
+        # is — and decoding never repairs, so nothing here invents a
+        # form for a document whose form was never stored.
+        form=str(stored.get("form", "")),
     )
 
 
