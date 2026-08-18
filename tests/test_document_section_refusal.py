@@ -283,6 +283,72 @@ def test_every_reason_names_the_filing_and_disclaims_a_company_claim(reason) -> 
     assert "Nothing follows from this about what the company does." in stated
 
 
+@pytest.mark.parametrize("reason", list(SectionRefusal))
+@pytest.mark.parametrize("form", ["10-K", "20-F", "8-K", ""])
+def test_every_refusal_establishes_the_real_document_first(reason, form) -> None:
+    """The promise `stated()` makes, pinned on every member.
+
+    A refusal that opens on what the document does *not* print, without
+    first establishing that the document is there, reads as a statement
+    about the filer's disclosure rather than about this reader. Only
+    the cross-reference member used to say it.
+    """
+
+    stated = replace(refusal(reason), form=form).stated()
+
+    assert "is available" in stated, f"{reason} / {form!r}: {stated}"
+    assert stated.index("is available") < stated.index("business description")
+
+
+def test_the_unsupported_form_wording_names_the_form_it_cannot_map() -> None:
+    stated = replace(refusal(SectionRefusal.UNSUPPORTED_FORM), form="8-K").stated()
+
+    assert stated == (
+        "The SEC filing (0000831001-26-000011) is available, but this "
+        "platform has no section mapping for regulator form 8-K. It "
+        "therefore did not look for or establish a business description in "
+        "this document. The filing prints no Item 1 heading. Nothing "
+        "follows from this about what the company does."
+    )
+
+
+def test_an_unstated_form_is_said_as_an_absence_and_never_papered_over() -> None:
+    """No designation is a fact about the publisher's metadata.
+
+    The word "filing" must not stand in for a form here: *"no section
+    mapping for a filing"* would read as a refusal of the document
+    rather than of a designation this platform never received.
+    """
+
+    stated = replace(refusal(SectionRefusal.UNSUPPORTED_FORM), form="").stated()
+
+    assert stated == (
+        "The SEC filing (0000831001-26-000011) is available, but no "
+        "regulator form designation was supplied with it, so this platform "
+        "has no section mapping to apply. It therefore did not look for or "
+        "establish a business description in this document. The filing "
+        "prints no Item 1 heading. Nothing follows from this about what the "
+        "company does."
+    )
+
+
+@pytest.mark.parametrize("reason", list(SectionRefusal))
+@pytest.mark.parametrize("form", ["10-K", "20-F", "8-K", "S-1", ""])
+def test_no_refusal_renders_malformed_wording(reason, form) -> None:
+    """A regulator's designation is a token, not a noun to inflect.
+
+    `a 8-K` and `an 10-K` are what an indefinite article produces over a
+    designation whose spoken first sound the code cannot know, and
+    `filing ,` is what a form interpolated as an empty string leaves
+    behind. All three were reachable before this correction.
+    """
+
+    stated = replace(refusal(reason), form=form).stated()
+
+    for malformed in ("filing ,", " ,", "  ", "a 8-K", "an 10-K", "a 20-F"):
+        assert malformed not in stated, f"{reason} / {form!r}: {stated}"
+
+
 # ── the consumer ────────────────────────────────────────────────────
 
 

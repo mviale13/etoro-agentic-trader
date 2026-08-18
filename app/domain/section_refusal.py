@@ -99,6 +99,13 @@ class RefusedSection:
         that no claim about the company follows. The last is not
         decoration — it is the sentence that keeps a limit of this
         reader from being read as a fact about the filer.
+
+        **The first of the five is load-bearing and is worded the same
+        way in every branch.** A refusal that opens by describing what
+        the document does *not* print, without first establishing that
+        the document is there, reads as a statement about the filer's
+        disclosure. Every member says the filing *is available* before
+        it says anything else, and a test pins that on all of them.
         """
 
         named = f"{self.form} filing" if self.form else "filing"
@@ -118,26 +125,42 @@ class RefusedSection:
 
         if self.reason is SectionRefusal.EXPECTED_SECTION_NOT_PRINTED:
             return (
-                f"The SEC {named}{cited} prints no section this platform "
-                f"could read as the {self.expected}, and no cross-reference "
-                f"index explaining where it went.{seen} No "
+                f"The SEC {named}{cited} is available, and it prints no "
+                f"section this platform could read as the {self.expected}, "
+                "nor a cross-reference index explaining where it went."
+                f"{seen} No "
                 f"{self.expected} was established from this filing. "
                 "Nothing follows from this about what the company does."
             )
 
         if self.reason is SectionRefusal.SECTION_LOCATION_REFUSED:
             return (
-                f"The SEC {named}{cited} prints candidates for the "
-                f"{self.expected}, and this platform could not settle "
-                f"where the section begins.{seen} It is refused rather "
+                f"The SEC {named}{cited} is available, and it prints "
+                f"candidates for the {self.expected} this platform could not "
+                f"resolve into a section it can say begins anywhere.{seen} "
+                "It is refused rather "
                 "than guessed at, so no "
                 f"{self.expected} was established from this filing. "
                 "Nothing follows from this about what the company does."
             )
 
+        # The form is named rather than articled — "regulator form 8-K",
+        # never "a 8-K" — because the designation is a token the
+        # regulator assigned and not a noun this sentence may inflect.
+        # An unstated designation is said as an absence and never
+        # papered over with the word "filing" standing in for a form.
+        mapping = (
+            f"this platform has no section mapping for regulator form {self.form}"
+            if self.form
+            else (
+                "no regulator form designation was supplied with it, so this "
+                "platform has no section mapping to apply"
+            )
+        )
+
         return (
-            f"This platform has no section mapping for a {self.form or 'filing'} "
-            f", so it did not look for a {self.expected} in "
-            f"{self.filing or 'this document'}.{seen} Nothing follows from "
-            "this about what the company does."
+            f"The SEC filing{cited} is available, but {mapping}. It "
+            f"therefore did not look for or establish a {self.expected} in "
+            f"this document.{seen} Nothing follows from this about what the "
+            "company does."
         )
