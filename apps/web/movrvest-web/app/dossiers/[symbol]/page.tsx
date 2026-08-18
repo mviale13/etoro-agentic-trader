@@ -13,7 +13,10 @@ import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { redirect } from "next/navigation";
 
+import { TickerNews } from "@/components/dossier/TickerNews";
 import { getDossier } from "@/lib/api/dossier";
+import { getPersonalNews } from "@/lib/api/personal-news";
+import type { PersonalNewsView } from "@/lib/api/personal-news";
 import type {
   DossierAgreement,
   DossierAssetProfile,
@@ -63,6 +66,11 @@ export default async function DossierPage({ params }: DossierPageProps) {
 
   const result = await getDossier(normalizedSymbol);
 
+  // Personal Ticker News is a separate, off-by-default read. It is
+  // fetched beside the dossier rather than inside it, because it is a
+  // discovery surface and reaches no part of the investment case.
+  const news = await getPersonalNews(normalizedSymbol);
+
   // The backend retired this surface for the crypto corpus: one asset,
   // one decision surface. The reader is sent to the canonical page
   // rather than shown a tombstone.
@@ -96,7 +104,7 @@ export default async function DossierPage({ params }: DossierPageProps) {
         </Link>
 
         {result.dossier ? (
-          <Dossier dossier={result.dossier} />
+          <Dossier dossier={result.dossier} news={news} />
         ) : (
           <Unavailable backendUrl={result.backendUrl} error={result.error} />
         )}
@@ -1660,7 +1668,13 @@ function Supply({ supply, symbol }: { supply: DossierSupply; symbol: string }) {
   );
 }
 
-function Dossier({ dossier }: { dossier: DossierViewModel }) {
+function Dossier({
+  dossier,
+  news,
+}: {
+  dossier: DossierViewModel;
+  news: PersonalNewsView | null;
+}) {
   return (
     <div className="mt-8 space-y-10">
       {/* A token's analysis lives on its own surface, because a token is
@@ -1752,6 +1766,11 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       ) : null}
 
       <WhyTrustThis dossier={dossier} />
+
+      {/* Last, and deliberately: an unverified discovery surface sits
+          after the case rather than beside it, so nothing above it
+          reads as though it were evidence the case rests on. */}
+      <TickerNews news={news} />
     </div>
   );
 }

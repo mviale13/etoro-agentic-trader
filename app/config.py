@@ -44,6 +44,20 @@ class Settings(BaseSettings):
     #: lifts the rate limit for the daily acquisition batch.
     coingecko_api_key: str = ""
 
+    #: Massive's Stocks Basic key, for Personal Ticker News.
+    massive_api_key: str = ""
+
+    #: Personal Ticker News, off unless both of these say otherwise. Two
+    #: variables rather than one, because they answer different
+    #: questions: the flag says *this build may run the feature*, and the
+    #: confirmation says *the person running it is the single personal
+    #: non-commercial user the provider's Individuals terms describe*.
+    #: One switch could not tell a developer enabling a feature from an
+    #: operator accepting a licence boundary, and the licence is the half
+    #: that cannot be inferred from a build.
+    movrvest_personal_news: str = ""
+    movrvest_personal_news_use: str = ""
+
     allowed_symbols: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["BTC", "ETH", "SOL", "SPY", "QQQ"]
     )

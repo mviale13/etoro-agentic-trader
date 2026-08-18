@@ -405,3 +405,162 @@ persisted · the API key appears in no file, commit, test, fixture or
 line of this report, and `.env` was never copied · `git status
 --porcelain data/` empty · Codex's unpublished `d203609` not read,
 reused or published.
+
+---
+
+## 9. Implementation status — 2026-08-18 · Personal Ticker News v1
+
+**Built.** The narrowed product, exactly as §7's blocker allows and no
+wider.
+
+### The narrowed promise
+
+> **"Recent articles Massive associates with this ticker."**
+
+Not *news about this company*, because the provider asserts association
+and not subject: one measured article carries 44 tickers. Not
+*developments*, not *verified news*, not *independent reporting*, not
+*material events*, not *market consensus*, not *news analysis* — the
+section is headed **"Ticker News"** and none of those words appears on
+it. It is a private, single-user, on-demand **discovery surface**.
+
+### Personal-use runtime gates
+
+Three, and all three must be open. Any one closed is a worded
+unavailable state and **no provider call is attempted** — a gate that
+refuses after asking has not gated anything.
+
+| gate | |
+|---|---|
+| `MOVRVEST_PERSONAL_NEWS` | **`false` by default** |
+| `MOVRVEST_PERSONAL_NEWS_USE` | must equal `I_CONFIRM_PERSONAL_SINGLE_USER` **exactly** — a lowercase spelling is not the phrase, because the point is that somebody read it |
+| `MASSIVE_API_KEY` | configured on the normal Settings boundary |
+
+Two variables rather than one, because they answer different questions:
+the flag says *this build may run the feature*, the confirmation says
+*the person running it is the single personal non-commercial user the
+Individuals terms describe*. A build cannot infer the second.
+
+### Display-only semantics
+
+`PersonalNewsLead` has one status, `DISPLAY_ONLY`, and no field for a
+score, a sentiment, a cluster, a topic or a verdict. **Provider
+sentiment and `sentiment_reasoning` are not carried at all** — not
+hidden behind a flag, but absent from the type, so no surface can reach
+them. There is **no `updated_at`**: §3 established the provider has no
+such field, and a null one would imply it could be filled. The payload
+also excludes provider request ids, authenticated URLs, raw payloads and
+`next_url`.
+
+Every sentence a reader sees is written in the domain and printed
+unchanged by the frontend — the explanation, the reason a result is
+empty, the per-item relevance caveat and the coverage notice. The
+component computes nothing, ranks nothing and sorts nothing: **the
+provider's order survives**, because reordering by relevance is the
+judgment this feature does not make.
+
+### The rate limiter
+
+One **process-wide** `RequestScheduler`, module level, because the
+allowance belongs to the key rather than to whoever constructed a
+client. Single-threaded starts behind one lock, **≥13 s between request
+start times**, monotonic clock, **no burst allowance and no retry**. A
+429 becomes `PROVIDER_UNAVAILABLE` and is never asked again.
+
+**Requests are counted client-side**, because §2 measured that Massive
+returns no rate-limit header of any kind. The clock and the sleep are
+injected, so the spacing is pinned by a fake clock and **no test sleeps
+in real time**.
+
+### The identity refusal
+
+The flow is fixed: one page of at most 50, **`next_url` ignored**, the
+oldest `published_utc` on that page, then the ticker resolved at today
+and at that date. **Nothing is displayed until the comparison
+completes.**
+
+| outcome | when |
+|---|---|
+| `DISPLAY_ONLY` | the same non-empty CIK at both ends |
+| `ISSUER_REASSIGNED` | different CIKs — **the whole result is refused**, not filtered, because no news item says which issuer it belongs to |
+| `IDENTITY_UNRESOLVED` | no reference record, or a record with no CIK — an unidentified issuer is not a permissive default |
+| `PROVIDER_UNAVAILABLE` | any provider error, including 429 |
+| `NO_ITEMS_RETURNED` | an empty page, meaning that and nothing else |
+| `NOT_ENABLED` | a closed gate, with no call attempted |
+
+**This is a window-boundary identity test, not per-article identity
+resolution.** An article published within days of a reassignment can
+still sit on the permitted side of it. Closing that would cost one
+reference call per distinct article date, which five requests a minute
+cannot pay. Stated, not hidden.
+
+**PARA refuses** — Banzai International today, Paramount Global across
+the returned window. **BA and BCS pass** under their measured identities.
+
+### Association, de-duplication and links
+
+The queried ticker must appear in `tickers` or the item is dropped.
+`associated_ticker_count` is shown, and above one the lead words its own
+caveat: *"This article is associated with {n} tickers; relevance to
+{ticker} has not been verified."* **No ticker-count threshold rejects
+anything** — no measurement earned one.
+
+De-duplication is **exact provider article id within the returned page,
+and nothing else**. Headline similarity is not used, and two articles
+are never inferred to describe one development.
+
+Article links are **HTTPS only**, opened externally by the reader,
+**never proxied or fetched**, and called the publisher article URL
+rather than canonical.
+
+### No persistence, no propagation
+
+Nothing is written to disk: not provider responses, not
+`PersonalNewsLead` objects, not fixtures. Nothing enters evidence,
+knowledge, journals, events or decisions. Process memory holds only what
+the current request needs and disappears on restart. **No article body
+is ever retrieved**, so none can be cached.
+
+A test walks the source of Business Quality, recommendation, committee,
+CIO, decision and `CompanyDevelopment` modules and asserts none of them
+mentions this feature. Another watches `open` through a whole reading
+and asserts nothing was written.
+
+### One guard this slice repaired
+
+`test_hermetic_boundary` enumerates wire-touching classes from the AST,
+and recognised only `httpx.get(...)` on the module itself. The idiomatic
+`with httpx.Client(...) as client: client.get(...)` was **invisible to
+it**, so the first provider written that way would have been enumerated
+as touching no wire at all — a guard silently guarding nothing, which is
+the exact failure that module exists to make loud. The detector now
+follows a client bound by a `with` block or an assignment.
+
+### Publisher concentration remains a named limitation
+
+§5 is not repaired by this slice and is not presented as repaired. The
+coverage notice sits under every result, shown whether or not there are
+items:
+
+> *"Publisher coverage is limited and may be concentrated. No items
+> returned does not mean that no material development occurred."*
+
+**Adobe AI commentary may be surfaced by this feature. It is not
+established as fact, is not assessed, and reaches nothing.** Whatever
+appears here is an unverified discovery result that a reader opens for
+themselves.
+
+### Scope compliance
+
+`Settings`, one provider, one domain module, one service, one route, one
+frontend section and its client · **no AI interpretation, no narrative
+grouping, no `CompanyDevelopment`, no commercial licensing, no Massive
+MCP, no SDK, no WebSocket, no `/benzinga/` endpoint, no automatic
+pagination, no publisher article retrieval** · no form-aware
+annual-section dispatch · **zero model calls** · no Business Quality,
+committee, CIO or recommendation change · no data mutation, `git status
+--porcelain data/` empty · **no additional live Massive calls were made
+for this implementation** — every behaviour is tested against payload
+shapes recorded in §3–§5 · the API key appears in no file, commit, test,
+fixture or line of this report · Codex's unpublished `d203609` not read,
+reused or published.
