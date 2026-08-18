@@ -70,11 +70,17 @@ class EdgarProvider:
             # difference from an ESEF package and is recorded as one
             # rather than assumed away because EDGAR is a regulator.
             verification=(IdentityCheck.REGISTER_INDEXED,),
+            # The regulator stated the form; it is carried as data
+            # rather than left to be parsed back out of `identifier`.
+            form=reference.form,
         )
 
     def fetch(self, source: PrimarySource) -> SourceDocument:
         try:
-            filing = self._filings.read_url(source.location)
+            # The form travels with the source, so the section reader
+            # is told which document it is reading. It is read from
+            # the field and never parsed back out of `identifier`.
+            filing = self._filings.read_url(source.location, form=source.form)
         except Exception as error:
             # Reaching a document that the index says exists failed, which
             # is an outage rather than a gap in coverage.

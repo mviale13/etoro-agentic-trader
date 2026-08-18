@@ -192,6 +192,37 @@ class PrimarySource:
     #: where it came from, and this says what was actually proven.
     verification: tuple[IdentityCheck, ...]
 
+    #: The regulator's own designation for this filing — `"10-K"`,
+    #: `"20-F"`, `"10-K/A"`, `"8-K"` — exactly as the submissions index
+    #: states it, normalised only for case and surrounding space.
+    #:
+    #: Empty where the publisher has no such designation, and that is a
+    #: fact rather than a gap: an ESEF package and a company's own
+    #: investor-relations report are not filed under a regulator's form,
+    #: and **a provider that cannot say must not be handed a guess.**
+    #: Empty means *unclassified*, never *10-K*.
+    #:
+    #: It is a field because it used to be a string prefix, and that cost
+    #: a capability. The form travelled inside `identifier` as
+    #: `"10-K 0000320193-25-000079"`, so reading it back meant parsing a
+    #: label — and `EdgarFilings.read_url`, the one path production
+    #: actually takes, built its reference from a URL and set the form to
+    #: `""`. Measured in
+    #: `ANNUAL_SECTION_READER_CUTOVER_MEASUREMENT.md`: **every production
+    #: read reached the section reader with no form at all**, which is
+    #: why a form-aware dispatch could not honestly be written above it.
+    #:
+    #: Last in the field order and defaulted — all 29 construction sites
+    #: of this class and `FilingReference` were audited by AST and every
+    #: one passes keywords, so nothing positional can break.
+    form: str = ""
+
+    @property
+    def is_form_classified(self) -> bool:
+        """Whether the publisher stated a form for this document."""
+
+        return bool(self.form)
+
     def stated(self) -> str:
         """The document as an investor would cite it."""
 
