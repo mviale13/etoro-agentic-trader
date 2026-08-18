@@ -955,3 +955,17 @@ def test_provider_sentiment_reaches_no_decision_bearing_module() -> None:
     ]
 
     assert offenders == [], offenders
+
+
+def test_the_row_divider_is_structural_and_not_a_first_child_rule() -> None:
+    """Every `<details>` is the only child of its own `<li>`.
+
+    So a `first:` rule on the row matches every row, and the divider it
+    was meant to suppress on the first item disappears from all of them.
+    The list owns the separation instead.
+    """
+
+    component = ticker_news_component()
+
+    assert "divide-y divide-slate-100" in component
+    assert "first:border-t-0" not in component

@@ -65,7 +65,10 @@ function TickerNewsSection({ news }: { news: PersonalNewsView }) {
       </header>
 
       {news.displayable ? (
-        <ol className="mt-6">
+        // The divider belongs to the list, not to the row: each
+        // <details> is the only child of its own <li>, so a `first:`
+        // rule on the row matches every row and removes every divider.
+        <ol className="mt-6 divide-y divide-slate-100">
           {news.leads.map((lead) => (
             <li key={lead.providerArticleId}>
               <NewsRow lead={lead} />
@@ -101,7 +104,7 @@ function TickerNewsSection({ news }: { news: PersonalNewsView }) {
  */
 function NewsRow({ lead }: { lead: PersonalNewsLead }) {
   return (
-    <details className="group border-t border-slate-100 py-3 first:border-t-0 [&::-webkit-details-marker]:hidden">
+    <details className="group py-3 [&::-webkit-details-marker]:hidden">
       <summary className="flex cursor-pointer list-none items-start gap-3 rounded-lg px-1 py-1 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900">
         <SentimentIcon lead={lead} />
 
