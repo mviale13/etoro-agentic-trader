@@ -5,11 +5,23 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol
 
+from app.domain.issuer_identity import IssuerIdentity, issuer_id_in, reconcile
 from app.domain.primary_source import (
     PrimarySource,
     PrimarySourceUnavailable,
     SourceDocument,
 )
+
+
+class HeldIdentity(Protocol):
+    """What this platform already believes a symbol denotes.
+
+    A callable rather than a store, so the resolver stays a provider
+    seam and does not learn how evidence is kept. `None` where nothing
+    is held, which is a first reading rather than an agreement.
+    """
+
+    def __call__(self, symbol: str) -> IssuerIdentity | None: ...
 
 
 class PrimarySourceProvider(Protocol):
@@ -76,7 +88,18 @@ class PrimarySourceResolver:
     def __init__(
         self,
         providers: Sequence[PrimarySourceProvider] | None = None,
+        held_identity: HeldIdentity | None = None,
     ) -> None:
+        # Resolved at construction and never in a signature, which is
+        # the rule `evidence_root` earned: a default frozen at import
+        # binds to whatever the process was pointed at first.
+        if held_identity is None:
+            from app.services.issuer_identity_service import held_issuer_identity
+
+            held_identity = held_issuer_identity
+
+        self._held_identity = held_identity
+
         if providers is None:
             from app.providers.edgar_provider import EdgarProvider
             from app.providers.esef_provider import EsefProvider
@@ -99,12 +122,40 @@ class PrimarySourceResolver:
 
         for provider in self._providers:
             try:
-                return provider.resolve(symbol), provider
+                resolved = provider.resolve(symbol)
             except PrimarySourceUnavailable as unavailable:
                 reasons.append(f"{provider.name}: {unavailable}")
+                continue
+
+            # Before the document is fetched, and before anything reads
+            # a word of it. A reassignment is not an outage and must not
+            # fall through to the next provider: `IssuerReassigned`
+            # propagates rather than joining `reasons`, because trying
+            # the next register for a symbol whose issuer is in doubt is
+            # how the wrong company's filing gets served anyway.
+            reconcile(self._held_identity(symbol), _claimed(resolved))
+
+            return resolved, provider
 
         raise PrimarySourceUnavailable(
             " ".join(reasons)
             or f"No primary-source provider is configured, so nothing was "
             f"looked for on {symbol}."
         )
+
+
+def _claimed(source: PrimarySource) -> IssuerIdentity:
+    """The identity a freshly resolved source asserts about its symbol.
+
+    Read from the document's own address, which every source already
+    carries — so this needed no new field and no stored record was
+    rewritten to gain the guarantee.
+    """
+
+    return IssuerIdentity(
+        symbol=source.symbol,
+        registry=source.provider,
+        issuer_id=issuer_id_in(source.location) or "",
+        name=source.company,
+        observed_on=source.published_on,
+    )
