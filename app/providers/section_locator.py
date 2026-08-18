@@ -57,7 +57,20 @@ from app.providers.document_text import Flattened, begins_a_block, typesets_bloc
 #: which is exactly what a literal match could not see — and matching
 #: this way preserves every offset, so the span cut out of the markup is
 #: the span that was found.
-_CANDIDATE = re.compile(r"(?i)\bitem\s+(\d{1,2})\s*([a-c])?\s*[.:—-]?")
+#:
+#: The dotted group reads the *other* numbering the regulator uses. An
+#: annual report numbers its items `1`, `1A`, `7A`; a current report
+#: numbers them `5.02`, `9.01`. Both are "Item N" to a reader and only
+#: one of them was expressible here.
+#:
+#: It is bound as tightly as it can be, because this pattern governs the
+#: annual-report path too: the dot must touch the number, exactly two
+#: digits must follow it, and no third digit may. So `Item 1. 10 years
+#: ago` still reads as Item 1 with its full stop, and `Item 5.02` no
+#: longer reads as Item 5 with the fraction thrown away.
+_CANDIDATE = re.compile(
+    r"(?i)\bitem\s+(\d{1,2})(?:\.(\d{2})(?!\d))?\s*([a-c])?\s*[.:—-]?"
+)
 
 #: How a filer refers to a section rather than beginning one. Read from
 #: the words immediately before the occurrence, because a cross-reference
@@ -105,19 +118,45 @@ _LISTING_WIDEST = 300
 
 @dataclass(frozen=True, slots=True)
 class Item:
-    """A filing item as an orderable thing: 1, then 1A, then 2."""
+    """A filing item as an orderable thing: 1, then 1A, then 2.
+
+    Two regulator numberings, one type. An annual report counts its items
+    `1`, `1A`, `2`; a current report counts them `1.01`, `5.02`, `9.01`.
+    The fraction is empty for the first and set for the second, so an
+    annual report's items are exactly what they were.
+    """
 
     number: int
+
     suffix: str = ""
 
-    @property
-    def order(self) -> tuple[int, str]:
-        """What makes 1 < 1A < 1B < 2 a fact rather than a convention."""
+    #: The two digits after the dot, as printed — `"02"` of `5.02`.
+    #: Empty for an annual report's items, which have no fraction rather
+    #: than a fraction of zero.
+    #:
+    #: Last, and deliberately: `Item(1, "A")` meant a suffix before this
+    #: field existed and still does. A new field that silently changed
+    #: what an existing call means is the kind of break a type checker
+    #: cannot see.
+    fraction: str = ""
 
-        return (self.number, self.suffix)
+    @property
+    def order(self) -> tuple[int, str, str]:
+        """What makes 1 < 1A < 1B < 2 a fact rather than a convention.
+
+        And 5.02 < 5.03 < 7.01 by the same line. The fraction is compared
+        as the two printed digits rather than as a number, which is the
+        same ordering — `"01" < "02" < "10"` — without inventing a value
+        for an item that has none: a bare `Item 5` sorts before `5.02`,
+        which is what a filer's own sequence does.
+        """
+
+        return (self.number, self.fraction, self.suffix)
 
     def stated(self) -> str:
-        return f"Item {self.number}{self.suffix}"
+        dotted = f".{self.fraction}" if self.fraction else ""
+
+        return f"Item {self.number}{dotted}{self.suffix}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -251,10 +290,15 @@ def discover(text: str) -> tuple[tuple[Item, int, str], ...]:
 
     for match in _CANDIDATE.finditer(text):
         number = int(match.group(1))
-        suffix = (match.group(2) or "").upper()
+        fraction = match.group(2) or ""
+        suffix = (match.group(3) or "").upper()
 
         found.append(
-            (Item(number=number, suffix=suffix), match.start(), match.group(0))
+            (
+                Item(number=number, fraction=fraction, suffix=suffix),
+                match.start(),
+                match.group(0),
+            )
         )
 
     return tuple(found)
