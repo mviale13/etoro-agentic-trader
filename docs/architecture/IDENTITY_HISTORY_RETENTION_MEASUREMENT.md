@@ -215,3 +215,37 @@ Events call · no model call · evidence root isolated and left empty,
 `data/` clean, no production mutation · #145 not merged, rebased or
 modified · `DOCUMENT_REFUSED`, `section_locator`, statements, Business
 Quality, committees, CIO and News untouched.
+
+---
+
+## 10. Owner ruling — 2026-08-19
+
+**Retention is adopted, exactly as §7 specifies.** Every explicit
+funded fundamentals acquisition preserves the identity claims it
+observed — both claims verbatim, the optional raw tenancy fields, and
+the standing derived at capture — in a new append-only stream under the
+evidence root, written **before** the latest-value cache replacement,
+schema on every record. The fundamentals cache is not modified or
+migrated; a fresh installation has empty history; SPCX's 2026-08-13
+contradiction is **not** reconstructed from prose or fixtures.
+
+**The gating question is answered: option 3, for now — visible, never
+gating.** `IdentityStanding` stays current-claims-only, the current
+UNRESOLVED gate is unchanged, and **no historical gate exists**. The
+read surface must disclose explicitly that historical contradiction is
+not decision-bearing.
+
+**The lifecycle wording is fixed**: a previously UNRESOLVED capture
+followed by newer agreement is worded *"previously disputed; current
+claims agree"* — never *resolved* and never *corrected*, because §5
+measured that no resolution evidence class is uniformly available and
+absence from the newest payload is not one. **No resolution-event type
+is built** until a resolving evidence class is; **no tenancy inference**
+— `firstTradeDate` and `ipoExpectedDate` are retained as raw
+observations and infer nothing, because PARA impeached the field as a
+rule.
+
+No backfill, no Ticker Events integration, no Daily CIO scheduler yet,
+and PR #145 stays open and parked: this adopts the retention half of
+its question and leaves the gating half where §8 put it — decidable
+later, on retained evidence.
