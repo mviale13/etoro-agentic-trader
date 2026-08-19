@@ -4,11 +4,18 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from app.domain.identity_observation import ProviderIdentityObservation
 from app.domain.monetary import DenominationBasis, MarketCapDenomination
 from app.domain.provenance import Provenance
-from app.domain.provider_identity import ProviderIdentityClaim
+from app.domain.provider_identity import (
+    ProviderIdentityClaim,
+    join_identity,
+)
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.infrastructure.cache.json_cache import CachedEntry, JsonCache
+from app.infrastructure.evidence.identity_observation_store import (
+    IdentityObservationStore,
+)
 from app.infrastructure.evidence_root import evidence_path
 from app.providers.value_provider import ValueProvider
 
@@ -48,8 +55,13 @@ class CachedValueProvider:
         provider: ValueProvider | None = None,
         cache: JsonCache | None = None,
         acquires: bool = True,
+        observations: IdentityObservationStore | None = None,
     ) -> None:
         self._provider = provider or ValueProvider()
+        # The identity observation stream — written by the observing
+        # acquisition path only, before the cache's replacement, and by
+        # nothing else in this class. Resolved at construction (#118).
+        self._observations = observations or IdentityObservationStore()
         self._cache = cache or JsonCache(
             evidence_path("cache", "fundamentals"),
             # Schema 2 added `expense_ratio`; schema 3 added the market
@@ -135,6 +147,83 @@ class CachedValueProvider:
                 return self._restore(entry, last_known=True)
 
             raise
+
+        self._cache.write(key, self._encode(snapshot))
+
+        return snapshot
+
+    def snapshot_observing(
+        self,
+        symbol: str,
+        broker: ProviderIdentityClaim,
+    ) -> ValuationSnapshot:
+        """The acquiring read that also remembers what it observed.
+
+        `snapshot` with one addition and one caller: before the cache's
+        destructive latest-value replacement, the identity claims this
+        funded read actually observed — the broker's, supplied by the
+        acquisition that knows it, and the vendor's, from the payload
+        just fetched — are appended to the observation stream, with the
+        standing derived from them at this moment and the raw tenancy
+        fields the payload happened to carry.
+
+        **The order is the contract**: observation first, replacement
+        second, so the store that forgets can never get ahead of the
+        one that remembers. And only this method appends — a read
+        served from today's cache observed nothing new, a failure that
+        serves the last known reading observed nothing at all, and the
+        plain `snapshot` door stays exactly what every read path
+        already consumes.
+        """
+
+        key = symbol.upper().strip()
+        entry = self._cache.read(key)
+
+        held = self._restore(entry) if entry is not None else None
+
+        if held is not None and held.carries_nothing:
+            held = None
+            entry = None
+
+        if held is not None and entry is not None:
+            if not self._acquires or entry.is_from_today():
+                return held
+
+        if not self._acquires:
+            return UNREAD
+
+        try:
+            observed = self._provider.observed(symbol)
+        except Exception:
+            if entry is not None:
+                return self._restore(entry, last_known=True)
+
+            raise
+
+        snapshot = observed.snapshot
+        vendor = snapshot.vendor_identity
+
+        # A payload offering no identity claim leaves nothing to
+        # preserve: recording an empty vendor account would read as the
+        # vendor having said something.
+        if vendor is not None:
+            reading = snapshot.reading
+
+            self._observations.append(
+                ProviderIdentityObservation(
+                    symbol=key,
+                    captured_at=(
+                        reading.observed_at
+                        if reading is not None
+                        else datetime.now(UTC)
+                    ),
+                    broker=broker,
+                    vendor=vendor,
+                    standing=join_identity(key, (broker, vendor)).standing,
+                    first_trade_date_ms=observed.first_trade_date_ms,
+                    ipo_expected_date=observed.ipo_expected_date,
+                )
+            )
 
         self._cache.write(key, self._encode(snapshot))
 

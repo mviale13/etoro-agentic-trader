@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
@@ -10,6 +11,21 @@ from app.domain.monetary import (
 from app.domain.provenance import Provenance
 from app.domain.provider_identity import ProviderIdentityClaim, vendor_claim
 from app.domain.valuation_snapshot import ValuationSnapshot
+
+
+@dataclass(frozen=True, slots=True)
+class ObservedValuation:
+    """One payload's snapshot, with the raw tenancy fields beside it.
+
+    The tenancy fields are observations, never inputs: #215 measured
+    `firstTradeDate` marking SPCX's tenancy boundary and failing to
+    mark PARA's, so nothing reads meaning out of them here or anywhere
+    downstream — they travel to the identity observation stream raw.
+    """
+
+    snapshot: ValuationSnapshot
+    first_trade_date_ms: int | None = None
+    ipo_expected_date: str | None = None
 
 
 class ValueProvider:
@@ -42,8 +58,26 @@ class ValueProvider:
         marked as last known.
         """
 
+        return self.observed(symbol).snapshot
+
+    def observed(
+        self,
+        symbol: str,
+    ) -> ObservedValuation:
+        """One fetch, and everything this platform keeps from it.
+
+        The snapshot as `snapshot` has always built it, plus the raw
+        tenancy fields the same payload carries — read here because the
+        payload is consumed here, and carried *beside* the snapshot
+        rather than inside it: the fundamentals cache's shape is frozen
+        (#215 ruling), and these fields belong to the identity
+        observation stream, not to the valuation.
+        """
+
+        info = yf.Ticker(symbol).info
+
         snapshot = self.from_info(
-            yf.Ticker(symbol).info,
+            info,
             reading=Provenance(source=self.SOURCE, observed_at=datetime.now(UTC)),
         )
 
@@ -52,7 +86,22 @@ class ValueProvider:
                 f"{self.SOURCE} returned no usable fundamentals for {symbol}"
             )
 
-        return snapshot
+        first_trade = info.get("firstTradeDateMilliseconds")
+        ipo_expected = info.get("ipoExpectedDate")
+
+        return ObservedValuation(
+            snapshot=snapshot,
+            first_trade_date_ms=(
+                int(first_trade)
+                if isinstance(first_trade, int) and not isinstance(first_trade, bool)
+                else None
+            ),
+            ipo_expected_date=(
+                str(ipo_expected).strip()
+                if isinstance(ipo_expected, str) and ipo_expected.strip()
+                else None
+            ),
+        )
 
     @classmethod
     def from_info(
