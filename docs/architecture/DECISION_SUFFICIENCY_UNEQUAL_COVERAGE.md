@@ -15,10 +15,11 @@ mutation and the whole-tree digest asserted it.
 **The course layer already operates honestly under unequal coverage.**
 Every one of the 18 securities received an explicit course or an
 explicit refusal; the hard floor is invariant across size, fame and
-coverage — the same five families demote a US large-cap and a French
+coverage — the same six families demote a US large-cap and a French
 bank identically — and the honest action ceiling for limited evidence
-already exists in the vocabulary: PREPARE/WAIT and INVESTIGATE/RESEARCH
-are doing exactly that job today, correctly.
+already exists in the vocabulary: PREPARE — HOLD for a held security,
+WAIT for an unheld one — and INVESTIGATE/RESEARCH are doing exactly
+that job today, correctly.
 
 **OPEN/ADD cannot yet be permitted under limited evidence, for four
 measured reasons.** Conviction is not comparable across coverage —
@@ -239,9 +240,9 @@ become a stored fact before its decision role can even be measured.
    is honoured; the door is the quorum fall-through.
 7. **No** — not with current conviction semantics (it rises as
    coverage falls) and no magnitude contract.
-8. **Yes** — PREPARE/WAIT and INVESTIGATE/RESEARCH are already the
-   honest action ceiling, and the matrix shows them doing that job
-   correctly on every gap.
+8. **Yes** — PREPARE (HOLD or WAIT, depending on ownership) and
+   INVESTIGATE/RESEARCH are already the honest action ceiling, and the
+   matrix shows them doing that job correctly on every gap.
 9/10. **No and no** — AAPL/MSFT (broad) sit at PREPARE; CYD (sparse)
    at INVESTIGATE for a *named* reason (quality unanswerable), and no
    ablation worsened any verdict through absence alone. The one
@@ -317,3 +318,48 @@ the tree digest asserted byte-identical · `.env` in process memory
 only; no balance, credential or account identifier in this report · no
 completeness or confidence percentage computed anywhere · production
 `data/` untouched.
+
+---
+
+## 9. Owner ruling — 2026-08-19
+
+Conclusion B is accepted, with two factual corrections applied above:
+the measured hard floor counts **six** families (identity free of
+unresolved conflict · price · market-cap crossing · forward P/E ·
+quality answer · vote coverage), and the honest non-capital ceiling is
+**PREPARE with HOLD or WAIT depending on ownership**, alongside
+INVESTIGATE/RESEARCH.
+
+**A. A capital-asking course may stand beside named gaps.**
+RECOMMEND/OPEN or RECOMMEND/ADD remains a valid course when the
+invariant hard safety floor passes, the missing evidence is explicitly
+named, the missing evidence is not represented as negative evidence,
+the platform does not claim complete underwriting, and no automatic
+execution occurs. **Missing analytical depth does not automatically
+require demotion.**
+
+**B. Until an action-magnitude contract exists, OPEN/ADD is a course
+for the investor to consider — never a bounded capital instruction.**
+
+**C. Conviction is not coverage-comparable and is forbidden from any
+position-sizing or action-ceiling calculation under the present
+semantics.** Conviction is *not* to be redesigned in the next slice:
+excluding an unsuitable input is preferable to opening a calibration
+project without evidence that the product needs it.
+
+**D. Gap-naming and quality-authority naming are approved requirements
+for the eventual capital-action presentation** — carried separately
+from the positive rationale if changing the canonical rationale would
+alter decision semantics.
+
+**E. DOCUMENT_REFUSED propagation remains required for affected
+companies, and it is a local evidence-integrity gap, not a global
+prerequisite for measuring position size.** It must not delay the
+magnitude measurement; it is parked as a named follow-on.
+
+**F. The measured hard floor is accepted as the current contract, not
+declared permanently optimal.** No P/E, vote-coverage, quality,
+identity or other threshold change is authorized here.
+
+**G. Information gaps may only preserve or reduce a future action
+envelope. Removing evidence must never increase permitted capital.**
