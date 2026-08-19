@@ -19,6 +19,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from app.domain.capital_envelope import (
+    CapitalActionEnvelope,
+    EnvelopeKind,
+    QualityAuthority,
+)
 from app.domain.daily_cycle import (
     ComparisonBasis,
     ComparisonOutcome,
@@ -95,6 +100,10 @@ class DailyCycleStore:
                         "action_statement": entry.action_statement,
                         "action_because": entry.action_because,
                         "asks_for_something": entry.asks_for_something,
+                        # Optional and backward-compatible under the same
+                        # schema: a pre-envelope record simply lacks the
+                        # key and decodes exactly as it always did.
+                        "envelope": _encode_envelope(entry.envelope),
                     }
                     for entry in finished.decisions
                 ],
@@ -244,6 +253,7 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
                         action_statement=str(entry.get("action_statement", "")),
                         action_because=str(entry.get("action_because", "")),
                         asks_for_something=bool(entry.get("asks_for_something", False)),
+                        envelope=_decode_envelope(entry.get("envelope")),
                     )
                     for entry in row.get("decisions", [])
                 ),
@@ -281,6 +291,81 @@ def _comparison(raw: Any) -> ComparisonBasis:
         outcome=ComparisonOutcome(raw["outcome"]),
         prior_cycle_id=str(raw.get("prior_cycle_id", "")),
         because=str(raw.get("because", "")),
+    )
+
+
+def _encode_envelope(
+    envelope: CapitalActionEnvelope | None,
+) -> dict[str, Any] | None:
+    if envelope is None:
+        return None
+
+    return {
+        "symbol": envelope.symbol,
+        "course": envelope.course,
+        "kind": envelope.kind.value,
+        "policy_source": envelope.policy_source,
+        "policy_version": envelope.policy_version,
+        "evidence_ceiling": envelope.evidence_ceiling,
+        "capacity_ceiling_pct": envelope.capacity_ceiling_pct,
+        "final_pct": envelope.final_pct,
+        "binding_constraint": envelope.binding_constraint,
+        "because": envelope.because,
+        "named_gaps": list(envelope.named_gaps),
+        "quality_authority": (
+            envelope.quality_authority.value
+            if envelope.quality_authority is not None
+            else None
+        ),
+        "starter_capped": envelope.starter_capped,
+        "price_as_of": envelope.price_as_of,
+        "portfolio_as_of": envelope.portfolio_as_of,
+        "liquidity": envelope.liquidity,
+    }
+
+
+def _decode_envelope(raw: Any) -> CapitalActionEnvelope | None:
+    """Absent means a pre-envelope record; malformed refuses the record.
+
+    A `None` or missing key is the old contract and decodes as it
+    always did. A present-but-unreadable envelope raises, which the
+    caller counts as an unreadable record — never a silently dropped
+    field on an otherwise-trusted line.
+    """
+
+    if raw is None:
+        return None
+
+    if not isinstance(raw, dict):
+        raise ValueError("an envelope is a mapping")
+
+    return CapitalActionEnvelope(
+        symbol=str(raw["symbol"]),
+        course=str(raw["course"]),
+        kind=EnvelopeKind(raw["kind"]),
+        policy_source=str(raw["policy_source"]),
+        policy_version=str(raw["policy_version"]),
+        evidence_ceiling=str(raw.get("evidence_ceiling", "")),
+        capacity_ceiling_pct=(
+            float(raw["capacity_ceiling_pct"])
+            if raw.get("capacity_ceiling_pct") is not None
+            else None
+        ),
+        final_pct=(
+            float(raw["final_pct"]) if raw.get("final_pct") is not None else None
+        ),
+        binding_constraint=str(raw.get("binding_constraint", "")),
+        because=str(raw.get("because", "")),
+        named_gaps=tuple(str(gap) for gap in raw.get("named_gaps", [])),
+        quality_authority=(
+            QualityAuthority(raw["quality_authority"])
+            if raw.get("quality_authority") is not None
+            else None
+        ),
+        starter_capped=bool(raw.get("starter_capped", False)),
+        price_as_of=str(raw.get("price_as_of", "")),
+        portfolio_as_of=str(raw.get("portfolio_as_of", "")),
+        liquidity=str(raw.get("liquidity", "")),
     )
 
 

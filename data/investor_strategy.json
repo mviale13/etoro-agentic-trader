@@ -1,5 +1,5 @@
 {
-  "status": "draft",
+  "status": "active",
   "strategy": {
     "name": "My Investment Strategy",
     "description": "Personal investment objectives, portfolio limits and decision rules."
@@ -37,5 +37,13 @@
     "require_human_approval": true,
     "automatic_trading_enabled": false
   },
-  "notes": []
+  "notes": [],
+  "capital_envelope": {
+    "starter_max_total_position_pct": 1.0,
+    "standard_initial_position_pct": 3.0,
+    "max_add_weight_change_pct": 2.0,
+    "price_max_age_minutes": 15,
+    "portfolio_max_age_minutes": 15,
+    "reduce_policy": "restore_to_policy_cap"
+  }
 }

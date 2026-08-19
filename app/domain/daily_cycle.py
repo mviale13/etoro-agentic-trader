@@ -30,6 +30,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
+from app.domain.capital_envelope import CapitalActionEnvelope
+
 
 class CycleStatus(StrEnum):
     """How the cycle's orchestration ended. Terminal states only.
@@ -94,6 +96,13 @@ class DecisionSummary:
     action_statement: str = ""
     action_because: str = ""
     asks_for_something: bool = False
+
+    #: The Capital Action Envelope for an OPEN, ADD or policy-compliance
+    #: REDUCE course — display-only, normalized, and optional twice
+    #: over: absent on non-capital courses, and absent on records
+    #: written before the envelope existed, which decode exactly as
+    #: they always did.
+    envelope: CapitalActionEnvelope | None = None
 
 
 class ComparisonOutcome(StrEnum):
