@@ -12,7 +12,7 @@ none of its inputs.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -20,15 +20,21 @@ from app.domain.capital_envelope import (
     LIQUIDITY_UNMEASURED,
     CapitalActionEnvelope,
     EnvelopeKind,
+    PortfolioObservation,
+    PriceObservation,
     QualityAuthority,
     capacity_for,
     envelope_for,
+    portfolio_observation_for,
+    price_observation_for,
 )
 from app.domain.capital_policy import (
     CapitalPolicy,
     CapitalPolicyReading,
     ReducePolicy,
 )
+from app.domain.market_snapshot import MarketQuote
+from app.domain.provenance import Provenance
 from app.services.capital_policy_service import CapitalPolicyService
 
 MOMENT = datetime(2026, 8, 19, 15, 0, tzinfo=UTC)
@@ -90,10 +96,56 @@ def reading_for(tmp_path, document: dict) -> CapitalPolicyReading:
     return CapitalPolicyService(path).reading()
 
 
+def observed_portfolio(*, minutes_old: float = 2.0) -> PortfolioObservation:
+    """A broker snapshot aged through the real factory."""
+
+    return portfolio_observation_for(
+        last_sync=MOMENT - timedelta(minutes=minutes_old),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+
+def quote_for(
+    symbol: str = "KO",
+    *,
+    minutes_old: float = 2.0,
+    price: float = 61.0,
+    last_known: bool = False,
+    dated: bool = True,
+) -> MarketQuote:
+    return MarketQuote(
+        symbol=symbol,
+        name=symbol,
+        price=price,
+        change_percent=0.0,
+        reading=(
+            Provenance(
+                source="Yahoo Finance",
+                observed_at=MOMENT - timedelta(minutes=minutes_old),
+                last_known=last_known,
+            )
+            if dated
+            else None
+        ),
+    )
+
+
+def observed_price(*, fresh: bool = True, symbol: str = "KO") -> PriceObservation:
+    """The exact quote's own verdict, through the real factory."""
+
+    return price_observation_for(
+        symbol=symbol,
+        quote=quote_for(symbol, minutes_old=2.0 if fresh else 40.0),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+
 def capacity(
     *,
     cash: float = 58.0,
-    weight: float = 0.0,
+    weight: float | None = 0.0,
     fresh: bool = True,
     answered: bool = True,
     total: float | None = 10_000.0,
@@ -103,7 +155,7 @@ def capacity(
         total_value=total,
         cash_pct=cash,
         current_weight_pct=weight,
-        portfolio_fresh=fresh,
+        portfolio=observed_portfolio(minutes_old=2.0 if fresh else 20.0),
         broker_answered=answered,
     )
 
@@ -128,9 +180,8 @@ def envelope(
         named_gaps=gaps,
         quality_authority=authority,
         hard_floor_passes=floor,
-        price_fresh=price_fresh,
-        price_as_of="Yahoo Finance, 2 minutes ago",
-        portfolio_as_of="2026-08-19 15:00 UTC",
+        price=observed_price(fresh=price_fresh),
+        portfolio_as_of="broker snapshot, 2026-08-19 14:58 UTC",
         drawdown_depth_pct=drawdown,
         is_equity=equity,
     )
@@ -627,3 +678,684 @@ def test_32_personal_news_and_sentiment_stay_outside_the_envelope() -> None:
 
         assert "personal_news" not in source, module
         assert "sentiment" not in source, module
+
+
+# ── 33: one policy location ─────────────────────────────────────────
+
+
+def test_33_the_policy_source_is_tracked_configuration_not_evidence(
+    monkeypatch, tmp_path
+) -> None:
+    """Redirecting MOVRVEST_EVIDENCE_ROOT must not redirect the policy.
+
+    The strategy file is tracked configuration (the recorded exemption
+    in test_evidence_root_invariant), so the capital policy reads the
+    same physical document InvestorStrategyService addresses — and an
+    isolated evidence root still resolves the owner's live policy.
+    """
+
+    import ast
+    import pathlib
+
+    from app.infrastructure.evidence_root import ROOT_ENV
+    from app.services.investor_strategy_service import (
+        STRATEGY_PATH,
+        InvestorStrategyService,
+    )
+
+    monkeypatch.setenv(ROOT_ENV, str(tmp_path))
+
+    assert CapitalPolicyService()._path == STRATEGY_PATH
+    assert InvestorStrategyService()._path == STRATEGY_PATH
+    assert CapitalPolicyService()._path == InvestorStrategyService()._path
+
+    live = CapitalPolicyService().reading()
+
+    assert live.policy is not None, (
+        "the live tracked strategy is active and readable under a "
+        "redirected evidence root"
+    )
+    assert live.policy.source == "investor_strategy.json"
+
+    injected = tmp_path / "strategy.json"
+
+    assert CapitalPolicyService(injected)._path == injected
+
+    tree = ast.parse(pathlib.Path("app/services/capital_policy_service.py").read_text())
+    modules = [
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    ]
+
+    assert all("evidence_root" not in module for module in modules), (
+        "the capital policy service must not hang from the evidence root"
+    )
+
+
+# ── 34–37: the portfolio observation clock is the broker's ──────────
+
+
+def test_34_a_timezone_aware_recent_broker_time_passes_and_is_stated() -> None:
+    observed = portfolio_observation_for(
+        last_sync=MOMENT - timedelta(minutes=2),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert observed.fresh
+    assert observed.as_of == "broker snapshot, 2026-08-19 14:58 UTC"
+    assert observed.refused_because == ""
+
+
+def test_35_a_broker_time_older_than_the_limit_refuses_and_still_dates() -> None:
+    observed = portfolio_observation_for(
+        last_sync=MOMENT - timedelta(minutes=20),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert not observed.fresh
+    assert "older than the policy's 15-minute limit" in observed.refused_because
+    assert observed.as_of == "broker snapshot, 2026-08-19 14:40 UTC", (
+        "a stale refusal still says when the snapshot was taken"
+    )
+
+
+def test_36_absent_naive_and_future_broker_times_refuse_distinctly() -> None:
+    absent = portfolio_observation_for(last_sync=None, policy=policy(), now=MOMENT)
+    naive = portfolio_observation_for(
+        last_sync=datetime(2026, 8, 19, 14, 58),
+        policy=policy(),
+        now=MOMENT,
+    )
+    future = portfolio_observation_for(
+        last_sync=MOMENT + timedelta(minutes=5),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert "carries no observation time" in absent.refused_because
+    assert "carries no timezone" in naive.refused_because
+    assert "in the future" in future.refused_because
+
+    for observed in (absent, naive, future):
+        assert not observed.fresh
+        assert observed.as_of == "", (
+            "an unusable broker time is never replaced by the evaluation clock"
+        )
+
+    reasons = {
+        absent.refused_because,
+        naive.refused_because,
+        future.refused_because,
+    }
+
+    assert len(reasons) == 3
+
+
+def test_37_a_fresh_brain_with_an_old_broker_sync_refuses_in_production_shape(
+    tmp_path,
+) -> None:
+    """The Brain is assembled now; the broker reading inside it is old.
+
+    Stamping assembly time would pass this envelope. The gate must read
+    `brain.portfolio.last_sync` and refuse.
+    """
+
+    from types import SimpleNamespace
+
+    from app.commands.cycle import _envelope
+    from app.domain.executive.executive_action import ActionKind
+
+    brain = SimpleNamespace(
+        portfolio=SimpleNamespace(last_sync=MOMENT - timedelta(minutes=20)),
+        asset_class_for=lambda symbol: (
+            __import__(
+                "app.domain.asset_class", fromlist=["AssetClass"]
+            ).AssetClass.STOCK
+        ),
+    )
+    workspace = SimpleNamespace(
+        decision=SimpleNamespace(symbol="KO", missing_evidence=()),
+        action=SimpleNamespace(kind=ActionKind.OPEN),
+        quality=None,
+        evidence=None,
+    )
+
+    result = _envelope(
+        workspace,
+        policy_reading=reading_for(tmp_path, strategy_document()),
+        brain=brain,
+        weights={},
+        cash_pct=58.0,
+        total_value=10_000.0,
+        drawdown_pct=2.0,
+        quotes={"KO": quote_for("KO", minutes_old=2.0)},
+        evaluated_at=MOMENT,
+    )
+
+    assert result is not None
+    assert result.kind is EnvelopeKind.REFUSED
+    assert "older than the policy's 15-minute limit" in result.because
+    assert result.portfolio_as_of.startswith("broker snapshot,"), (
+        "portfolio_as_of describes the broker timestamp, not Brain assembly"
+    )
+
+
+# ── 38–43: the price belongs to the exact security ──────────────────
+
+
+def test_38_no_quote_and_another_symbols_quote_both_refuse() -> None:
+    missing = price_observation_for(
+        symbol="ADBE", quote=None, policy=policy(), now=MOMENT
+    )
+
+    assert not missing.fresh
+    assert "no market quote for ADBE" in missing.refused_because
+    assert "another security's price cannot stand in for it" in (
+        missing.refused_because
+    )
+
+    neighbour = price_observation_for(
+        symbol="ADBE",
+        quote=quote_for("AAPL", minutes_old=1.0),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert not neighbour.fresh
+    assert "names AAPL, not ADBE" in neighbour.refused_because
+
+
+def test_39_a_quote_without_provenance_refuses() -> None:
+    observed = price_observation_for(
+        symbol="ADBE",
+        quote=quote_for("ADBE", dated=False),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert not observed.fresh
+    assert "carries no provenance" in observed.refused_because
+
+
+def test_40_a_last_known_reading_refuses_however_recent() -> None:
+    observed = price_observation_for(
+        symbol="KO",
+        quote=quote_for("KO", minutes_old=1.0, last_known=True),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert not observed.fresh
+    assert "did not answer" in observed.refused_because
+    assert "recency cannot repair" in observed.refused_because
+
+
+def test_41_non_finite_and_non_positive_prices_refuse() -> None:
+    for bad in (float("nan"), float("inf"), 0.0, -5.0):
+        observed = price_observation_for(
+            symbol="KO",
+            quote=quote_for("KO", price=bad),
+            policy=policy(),
+            now=MOMENT,
+        )
+
+        assert not observed.fresh, bad
+        assert "not a positive finite figure" in observed.refused_because, bad
+
+
+def test_42_staleness_and_clock_faults_refuse_and_freshness_quotes_provenance() -> None:
+    stale = price_observation_for(
+        symbol="KO",
+        quote=quote_for("KO", minutes_old=40.0),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert not stale.fresh
+    assert "older than the policy's 15-minute limit" in stale.refused_because
+
+    naive_quote = MarketQuote(
+        symbol="KO",
+        name="KO",
+        price=61.0,
+        change_percent=0.0,
+        reading=Provenance(
+            source="Yahoo Finance",
+            observed_at=datetime(2026, 8, 19, 14, 58),
+        ),
+    )
+    naive = price_observation_for(
+        symbol="KO", quote=naive_quote, policy=policy(), now=MOMENT
+    )
+
+    assert "carries no timezone" in naive.refused_because
+
+    future = price_observation_for(
+        symbol="KO",
+        quote=quote_for("KO", minutes_old=-5.0),
+        policy=policy(),
+        now=MOMENT,
+    )
+
+    assert "in the future" in future.refused_because
+
+    fresh_quote = quote_for("KO", minutes_old=2.0)
+    fresh = price_observation_for(
+        symbol="KO", quote=fresh_quote, policy=policy(), now=MOMENT
+    )
+
+    assert fresh.fresh
+    assert fresh_quote.reading is not None
+    assert fresh.as_of == fresh_quote.reading.stated(MOMENT), (
+        "price_as_of is the exact quote's own provenance wording"
+    )
+    assert fresh.as_of == "Yahoo Finance, 2 minutes ago"
+
+
+def test_43_a_fresh_neighbour_cannot_authorize_this_symbol_in_production_shape(
+    tmp_path,
+) -> None:
+    """AAPL has a fresh reading; ADBE exists without provenance.
+
+    An ADBE OPEN must refuse on ADBE's own quote — the discriminating
+    control against any market-wide freshness shortcut.
+    """
+
+    from types import SimpleNamespace
+
+    from app.commands.cycle import _envelope
+    from app.domain.asset_class import AssetClass
+    from app.domain.executive.executive_action import ActionKind
+
+    brain = SimpleNamespace(
+        portfolio=SimpleNamespace(last_sync=MOMENT - timedelta(minutes=2)),
+        asset_class_for=lambda symbol: AssetClass.STOCK,
+    )
+    quotes = {
+        "AAPL": quote_for("AAPL", minutes_old=2.0),
+        "ADBE": quote_for("ADBE", dated=False),
+    }
+    policy_reading = reading_for(tmp_path, strategy_document())
+
+    def open_workspace(symbol: str):
+        return SimpleNamespace(
+            decision=SimpleNamespace(symbol=symbol, missing_evidence=()),
+            action=SimpleNamespace(kind=ActionKind.OPEN),
+            quality=None,
+            evidence=None,
+        )
+
+    def run_one(symbol: str):
+        return _envelope(
+            open_workspace(symbol),
+            policy_reading=policy_reading,
+            brain=brain,
+            weights={},
+            cash_pct=58.0,
+            total_value=10_000.0,
+            drawdown_pct=2.0,
+            quotes=quotes,
+            evaluated_at=MOMENT,
+        )
+
+    adbe = run_one("ADBE")
+
+    assert adbe is not None
+    assert adbe.kind is EnvelopeKind.REFUSED
+    assert "the ADBE quote carries no provenance" in adbe.because
+
+    aapl = run_one("AAPL")
+
+    assert aapl is not None
+    assert aapl.kind is EnvelopeKind.UPWARD_BOUNDED, (
+        "the same cycle authorizes the symbol whose own quote is fresh"
+    )
+    assert aapl.price_as_of == "Yahoo Finance, 2 minutes ago"
+
+
+# ── 44–45: an unknown held weight is not zero ────────────────────────
+
+
+def test_44_add_and_reduce_with_an_unresolved_weight_refuse_in_words() -> None:
+    unresolved = capacity(weight=None)
+
+    assert unresolved.capacity_pct is None
+    assert "could not be resolved from the broker's own rows" in (
+        unresolved.refused_because
+    )
+
+    add = envelope("add", cap=unresolved)
+
+    assert add.kind is EnvelopeKind.REFUSED
+    assert add.evidence_ceiling == "", (
+        "an unresolved ADD receives no standard or starter allowance"
+    )
+    assert add.final_pct is None
+    assert "could not be resolved" in add.because
+
+    reduce = envelope("reduce", cap=unresolved)
+
+    assert reduce.kind is EnvelopeKind.REFUSED, (
+        "an unresolved REDUCE must not become NO_POLICY_MAGNITUDE"
+    )
+    assert reduce.kind is not EnvelopeKind.NO_POLICY_MAGNITUDE
+    assert "could not be resolved" in reduce.because
+
+
+def test_45_open_uses_zero_only_because_the_course_says_unheld(tmp_path) -> None:
+    """Course-aware weights through the production wiring.
+
+    A broker row that cannot be resolved to a symbol contributes no
+    weight; an ADD on that security refuses, while an OPEN on a
+    security the course itself states is unheld proceeds from zero.
+    """
+
+    from types import SimpleNamespace
+
+    from app.commands.cycle import _envelope, _portfolio_weights
+    from app.domain.asset_class import AssetClass
+    from app.domain.executive.executive_action import ActionKind
+
+    brain = SimpleNamespace(
+        portfolio=SimpleNamespace(
+            total_value=10_000.0,
+            last_sync=MOMENT - timedelta(minutes=2),
+            allocation=SimpleNamespace(cash=58.0),
+            holdings=(
+                SimpleNamespace(
+                    instrument_id=7,
+                    market_value_usd=800.0,
+                    is_resolved=False,
+                    symbol="",
+                ),
+                SimpleNamespace(
+                    instrument_id=8,
+                    market_value_usd=500.0,
+                    is_resolved=True,
+                    symbol="KO",
+                ),
+            ),
+        ),
+        asset_class_for=lambda symbol: AssetClass.STOCK,
+    )
+
+    weights, cash_pct, total_value = _portfolio_weights(brain)
+
+    assert "PEP" not in weights, "the unresolved row yields no symbol weight"
+    assert weights["KO"] == 5.0
+
+    policy_reading = reading_for(tmp_path, strategy_document())
+    quotes = {
+        "PEP": quote_for("PEP", minutes_old=2.0),
+        "ADBE": quote_for("ADBE", minutes_old=2.0),
+    }
+
+    def workspace(symbol: str, kind: ActionKind):
+        return SimpleNamespace(
+            decision=SimpleNamespace(symbol=symbol, missing_evidence=()),
+            action=SimpleNamespace(kind=kind),
+            quality=None,
+            evidence=None,
+        )
+
+    def run_one(symbol: str, kind: ActionKind):
+        return _envelope(
+            workspace(symbol, kind),
+            policy_reading=policy_reading,
+            brain=brain,
+            weights=weights,
+            cash_pct=cash_pct,
+            total_value=total_value,
+            drawdown_pct=2.0,
+            quotes=quotes,
+            evaluated_at=MOMENT,
+        )
+
+    add = run_one("PEP", ActionKind.ADD)
+
+    assert add is not None
+    assert add.kind is EnvelopeKind.REFUSED
+    assert "could not be resolved from the broker's own rows" in add.because
+
+    opened = run_one("ADBE", ActionKind.OPEN)
+
+    assert opened is not None
+    assert opened.kind is EnvelopeKind.UPWARD_BOUNDED, (
+        "OPEN proceeds from zero because the course states unheld"
+    )
+
+
+# ── 46–48: persisted-object invariants ──────────────────────────────
+
+
+def test_46_every_valid_envelope_kind_round_trips_through_the_store(
+    tmp_path,
+) -> None:
+    from app.domain.daily_cycle import (
+        ComparisonBasis,
+        ComparisonOutcome,
+        CycleFinished,
+        CycleStage,
+        CycleStarted,
+        CycleStatus,
+        DecisionSummary,
+        StageOutcome,
+    )
+    from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
+
+    specimens = {
+        EnvelopeKind.UPWARD_BOUNDED: envelope("open"),
+        EnvelopeKind.ZERO_CAPACITY: envelope("open", cap=capacity(weight=20.0)),
+        EnvelopeKind.REDUCTION_FLOOR: envelope("reduce", cap=capacity(weight=24.5)),
+        EnvelopeKind.NO_POLICY_MAGNITUDE: envelope("reduce", cap=capacity(weight=10.0)),
+        EnvelopeKind.REFUSED: envelope("open", floor=False),
+    }
+
+    for kind, specimen in specimens.items():
+        assert specimen.kind is kind, "each specimen is its intended shape"
+
+    store = DailyCycleStore(tmp_path / "cycles")
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        CycleFinished(
+            cycle_id="c1",
+            finished_at=MOMENT,
+            status=CycleStatus.COMPLETE,
+            stages=(CycleStage(name="decisions", outcome=StageOutcome.RAN),),
+            comparison=ComparisonBasis(outcome=ComparisonOutcome.INITIAL_BASELINE),
+            decisions=tuple(
+                DecisionSummary(
+                    symbol=f"S{index}",
+                    state="RECOMMEND",
+                    rationale="r",
+                    action_kind=specimen.course,
+                    envelope=specimen,
+                )
+                for index, specimen in enumerate(specimens.values())
+            ),
+        )
+    )
+
+    log = store.log()
+
+    assert log.unreadable_records == 0
+
+    decoded = log.records[0].finished
+
+    assert decoded is not None
+
+    for stored, specimen in zip(decoded.decisions, specimens.values(), strict=True):
+        assert stored.envelope == specimen, "exact round-trip, every kind"
+
+
+def test_47_contradictory_envelope_shapes_are_refused_at_construction() -> None:
+    def build(**overrides):
+        values = dict(
+            symbol="KO",
+            course="open",
+            kind=EnvelopeKind.REFUSED,
+            policy_source="investor_strategy.json",
+            policy_version="testversion1",
+            because="a stated reason",
+        )
+        values.update(overrides)
+
+        return CapitalActionEnvelope(**values)
+
+    upward = dict(
+        kind=EnvelopeKind.UPWARD_BOUNDED,
+        because="",
+        final_pct=1.0,
+        capacity_ceiling_pct=5.0,
+        evidence_ceiling="standard_initial",
+        binding_constraint="the evidence ceiling",
+    )
+
+    # The valid shapes construct.
+    build(**upward)
+    build(
+        kind=EnvelopeKind.ZERO_CAPACITY,
+        because="",
+        binding_constraint="the cash floor (funding room)",
+    )
+    build(kind=EnvelopeKind.REDUCTION_FLOOR, course="reduce", because="", final_pct=2.0)
+    build(kind=EnvelopeKind.NO_POLICY_MAGNITUDE, course="reduce", because="")
+    build(kind=EnvelopeKind.REFUSED)
+
+    contradictions: list[dict] = [
+        {**upward, "course": "reduce"},
+        {**upward, "final_pct": None},
+        {**upward, "final_pct": 0.0},
+        {**upward, "capacity_ceiling_pct": None},
+        {**upward, "evidence_ceiling": ""},
+        {**upward, "binding_constraint": ""},
+        {**upward, "final_pct": float("nan")},
+        {**upward, "final_pct": -1.0},
+        {**upward, "capacity_ceiling_pct": float("inf") * -1},
+        {**upward, "starter_capped": True},
+        dict(
+            kind=EnvelopeKind.ZERO_CAPACITY,
+            because="",
+            final_pct=1.0,
+            binding_constraint="the cash floor (funding room)",
+        ),
+        dict(
+            kind=EnvelopeKind.ZERO_CAPACITY,
+            course="reduce",
+            because="",
+            binding_constraint="the cash floor (funding room)",
+        ),
+        dict(kind=EnvelopeKind.ZERO_CAPACITY, because="", binding_constraint=""),
+        dict(kind=EnvelopeKind.REDUCTION_FLOOR, because="", final_pct=2.0),
+        dict(
+            kind=EnvelopeKind.REDUCTION_FLOOR,
+            course="reduce",
+            because="",
+            final_pct=None,
+        ),
+        dict(
+            kind=EnvelopeKind.NO_POLICY_MAGNITUDE,
+            course="reduce",
+            because="",
+            final_pct=1.0,
+        ),
+        dict(kind=EnvelopeKind.NO_POLICY_MAGNITUDE, course="add", because=""),
+        dict(because=""),
+        dict(because="   "),
+        dict(final_pct=1.0),
+    ]
+
+    for overrides in contradictions:
+        with pytest.raises(ValueError):
+            build(**overrides)
+
+
+def test_48_a_contradictory_stored_envelope_makes_the_record_unreadable(
+    tmp_path,
+) -> None:
+    from app.domain.daily_cycle import (
+        ComparisonBasis,
+        ComparisonOutcome,
+        CycleFinished,
+        CycleStage,
+        CycleStarted,
+        CycleStatus,
+        DecisionSummary,
+        StageOutcome,
+    )
+    from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
+
+    store = DailyCycleStore(tmp_path / "cycles")
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        CycleFinished(
+            cycle_id="c1",
+            finished_at=MOMENT,
+            status=CycleStatus.COMPLETE,
+            stages=(CycleStage(name="decisions", outcome=StageOutcome.RAN),),
+            comparison=ComparisonBasis(outcome=ComparisonOutcome.INITIAL_BASELINE),
+            decisions=(
+                DecisionSummary(
+                    symbol="KO",
+                    state="RECOMMEND",
+                    rationale="r",
+                    action_kind="open",
+                    envelope=envelope("open"),
+                ),
+            ),
+        )
+    )
+
+    clean = store.log()
+
+    assert clean.unreadable_records == 0
+    assert len(clean.records) == 1
+
+    # Corrupt the stored envelope into a contradictory shape: an upward
+    # bound that carries no final figure.
+    path = next((tmp_path / "cycles").glob("*.jsonl"))
+    lines = path.read_text().splitlines()
+    mutated = []
+
+    for line in lines:
+        row = json.loads(line)
+
+        if row.get("kind") == "finished":
+            row["decisions"][0]["envelope"]["final_pct"] = None
+
+        mutated.append(json.dumps(row))
+
+    path.write_text("\n".join(mutated) + "\n")
+
+    corrupted = store.log()
+
+    assert corrupted.unreadable_records == 1, (
+        "a contradictory envelope refuses the whole record through the "
+        "existing unreadable count"
+    )
+
+    # And removing the field entirely is the old contract: a
+    # pre-envelope record stays valid, envelope None.
+    mutated = []
+
+    for line in path.read_text().splitlines():
+        row = json.loads(line)
+
+        if row.get("kind") == "finished":
+            del row["decisions"][0]["envelope"]
+
+        mutated.append(json.dumps(row))
+
+    path.write_text("\n".join(mutated) + "\n")
+
+    old_contract = store.log()
+
+    assert old_contract.unreadable_records == 0
+
+    finished = old_contract.records[0].finished
+
+    assert finished is not None
+    assert finished.decisions[0].envelope is None

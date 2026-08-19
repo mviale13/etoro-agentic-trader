@@ -21,10 +21,13 @@ company size or fame, and never described as adequate.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from app.domain.capital_policy import CapitalPolicy
+from app.domain.market_snapshot import MarketQuote
 
 #: Disclosed verbatim on every envelope. No equity volume, ADV or
 #: spread figure exists on this platform, so no liquidity ceiling can
@@ -41,6 +44,200 @@ class QualityAuthority(StrEnum):
     GROUNDED = "grounded"
     PROVIDER = "provider"
     UNAVAILABLE = "unavailable"
+
+
+@dataclass(frozen=True, slots=True)
+class PortfolioObservation:
+    """The broker snapshot's own timestamp, aged — or why it cannot be.
+
+    The portfolio observation clock is the broker's `last_sync`, never
+    the moment this platform assembled its Brain: stamping assembly
+    time would make the freshness gate vacuous, because a Brain is
+    always assembled just before it is read, however old the broker
+    reading beneath it is.
+    """
+
+    fresh: bool = False
+    as_of: str = ""
+    refused_because: str = ""
+
+    def __post_init__(self) -> None:
+        if self.fresh == bool(self.refused_because.strip()):
+            raise ValueError(
+                "a portfolio observation is exactly one of: fresh, or refused in words"
+            )
+
+        if self.fresh and not self.as_of.strip():
+            raise ValueError("a fresh portfolio observation names its broker timestamp")
+
+
+def portfolio_observation_for(
+    *,
+    last_sync: datetime | None,
+    policy: CapitalPolicy,
+    now: datetime,
+) -> PortfolioObservation:
+    """Age the broker's own snapshot time against the policy limit.
+
+    An absent, naive or future timestamp refuses rather than being
+    replaced by the evaluation clock — substituting `now` for a missing
+    broker time is exactly the vacuous gate this function exists to
+    prevent. A refused observation may still carry `as_of` where the
+    broker time itself was readable (the stale case), so the render can
+    say *when* the snapshot was taken while refusing to build on it.
+    """
+
+    if last_sync is None:
+        return PortfolioObservation(
+            refused_because=(
+                "the broker snapshot carries no observation time, and an "
+                "undated portfolio cannot pass a freshness gate"
+            )
+        )
+
+    if last_sync.tzinfo is None or last_sync.utcoffset() is None:
+        return PortfolioObservation(
+            refused_because=(
+                "the broker snapshot's observation time carries no "
+                "timezone, so its age cannot be established"
+            )
+        )
+
+    if last_sync > now:
+        return PortfolioObservation(
+            refused_because=(
+                "the broker snapshot's observation time is in the future, "
+                "which is a clock fault rather than a fresh reading"
+            )
+        )
+
+    stated = f"broker snapshot, {last_sync.astimezone(UTC):%Y-%m-%d %H:%M} UTC"
+    age_minutes = (now - last_sync).total_seconds() / 60.0
+
+    if age_minutes > policy.portfolio_max_age_minutes:
+        return PortfolioObservation(
+            as_of=stated,
+            refused_because=(
+                "the portfolio snapshot is older than the policy's "
+                f"{policy.portfolio_max_age_minutes:g}-minute limit"
+            ),
+        )
+
+    return PortfolioObservation(fresh=True, as_of=stated)
+
+
+@dataclass(frozen=True, slots=True)
+class PriceObservation:
+    """The exact security's own quote verdict — never a neighbour's.
+
+    Freshness, provenance and the figure all belong to the one quote
+    resolved for the decision's own symbol. A market-wide reading or a
+    fresh price for another symbol authorizes nothing here, which is
+    why this type exists instead of a boolean a caller could derive
+    from either.
+    """
+
+    fresh: bool = False
+    as_of: str = ""
+    refused_because: str = ""
+
+    def __post_init__(self) -> None:
+        if self.fresh == bool(self.refused_because.strip()):
+            raise ValueError(
+                "a price observation is exactly one of: fresh, or refused in words"
+            )
+
+        if self.fresh and not self.as_of.strip():
+            raise ValueError("a fresh price observation names its quote's provenance")
+
+
+def price_observation_for(
+    *,
+    symbol: str,
+    quote: MarketQuote | None,
+    policy: CapitalPolicy,
+    now: datetime,
+) -> PriceObservation:
+    """The exact quote's own authority to price this symbol, or a refusal.
+
+    Reads only the quote's own fields — its symbol, its price, its
+    reading's `observed_at` and `last_known` — and words `as_of` from
+    that reading's own provenance. Degradation is not age: a last-known
+    reading refuses however recent it is, because the source did not
+    answer and recency cannot repair that.
+    """
+
+    wanted = symbol.upper().strip()
+
+    if quote is None:
+        return PriceObservation(
+            refused_because=(
+                f"no market quote for {wanted} was acquired this cycle, "
+                "and another security's price cannot stand in for it"
+            )
+        )
+
+    if quote.symbol.upper().strip() != wanted:
+        return PriceObservation(
+            refused_because=(
+                f"the resolved quote names {quote.symbol.upper().strip()}, "
+                f"not {wanted}, and another security's price cannot stand "
+                "in for it"
+            )
+        )
+
+    if quote.reading is None:
+        return PriceObservation(
+            refused_because=(
+                f"the {wanted} quote carries no provenance, and an undated "
+                "price cannot pass a freshness gate"
+            )
+        )
+
+    if quote.reading.last_known:
+        return PriceObservation(
+            refused_because=(
+                f"the price source did not answer and the {wanted} figure "
+                "is a last-known reading; recency cannot repair a degraded "
+                "reading"
+            )
+        )
+
+    observed_at = quote.reading.observed_at
+
+    if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+        return PriceObservation(
+            refused_because=(
+                f"the {wanted} price's observation time carries no "
+                "timezone, so its age cannot be established"
+            )
+        )
+
+    if observed_at > now:
+        return PriceObservation(
+            refused_because=(
+                f"the {wanted} price's observation time is in the future, "
+                "which is a clock fault rather than a fresh reading"
+            )
+        )
+
+    if not math.isfinite(quote.price) or quote.price <= 0:
+        return PriceObservation(
+            refused_because=(
+                f"the {wanted} quote's price is not a positive finite "
+                "figure, and no envelope rests on an unusable price"
+            )
+        )
+
+    if quote.reading.age(now).total_seconds() / 60.0 > policy.price_max_age_minutes:
+        return PriceObservation(
+            refused_because=(
+                f"the {wanted} price is older than the policy's "
+                f"{policy.price_max_age_minutes:g}-minute limit"
+            )
+        )
+
+    return PriceObservation(fresh=True, as_of=quote.reading.stated(now))
 
 
 class EnvelopeKind(StrEnum):
@@ -106,7 +303,7 @@ def capacity_for(
     total_value: float | None,
     cash_pct: float | None,
     current_weight_pct: float | None,
-    portfolio_fresh: bool,
+    portfolio: PortfolioObservation,
     broker_answered: bool,
 ) -> PortfolioCapacity:
     """The hard room for one security, or a refusal in the reading's words.
@@ -115,10 +312,12 @@ def capacity_for(
     `concentration_room = max(0, max_single − current_weight)`
     `capacity = min(funding_room, concentration_room)`
 
-    A broker that did not answer, an unusable total, an unmappable
-    weight or a stale snapshot each refuse — an absent reading is never
-    converted to zero, because zero is a measured empty account and
-    that is a different statement.
+    A broker that did not answer, an unusable total, an unusable
+    snapshot clock, an unreadable cash allocation or an unresolved held
+    weight each refuse — an absent reading is never converted to zero,
+    because zero is a measured empty account and that is a different
+    statement. The freshness verdict arrives as the broker snapshot's
+    own aged timestamp, so its refusal keeps that reading's words.
     """
 
     if not broker_answered:
@@ -137,19 +336,23 @@ def capacity_for(
             )
         )
 
-    if not portfolio_fresh:
+    if not portfolio.fresh:
+        return PortfolioCapacity(refused_because=portfolio.refused_because)
+
+    if cash_pct is None:
         return PortfolioCapacity(
             refused_because=(
-                "the portfolio snapshot is older than the policy's "
-                f"{policy.portfolio_max_age_minutes:g}-minute limit"
+                "the account's cash allocation could not be read, and "
+                "capacity is refused rather than guessed"
             )
         )
 
-    if cash_pct is None or current_weight_pct is None:
+    if current_weight_pct is None:
         return PortfolioCapacity(
             refused_because=(
-                "a required holding or cash reading could not be mapped "
-                "safely, and capacity is refused rather than guessed"
+                "the held weight for this security could not be resolved "
+                "from the broker's own rows, and capacity is refused rather "
+                "than guessed"
             )
         )
 
@@ -201,6 +404,74 @@ class CapitalActionEnvelope:
     portfolio_as_of: str = ""
 
     liquidity: str = LIQUIDITY_UNMEASURED
+
+    def __post_init__(self) -> None:
+        """Contradictory shapes cannot be written or accepted from storage.
+
+        The same rule at both doors: a fresh construction and a stored
+        line decode through this constructor, so an envelope whose kind
+        and fields disagree raises here — and the store's decoder
+        already counts a raising line as an unreadable record.
+        """
+
+        for label, value in (
+            ("capacity ceiling", self.capacity_ceiling_pct),
+            ("final figure", self.final_pct),
+        ):
+            if value is not None and (not math.isfinite(value) or value < 0):
+                raise ValueError(
+                    f"an envelope's {label} must be finite and non-negative"
+                )
+
+        if self.starter_capped and self.evidence_ceiling != "starter":
+            raise ValueError(
+                "starter_capped is compatible only with the starter evidence ceiling"
+            )
+
+        upward = self.course in ("open", "add")
+
+        if self.kind is EnvelopeKind.UPWARD_BOUNDED:
+            if not upward:
+                raise ValueError("an upward bound belongs to an open or add course")
+
+            if self.final_pct is None or self.final_pct <= 0:
+                raise ValueError("an upward bound carries a positive final figure")
+
+            if self.capacity_ceiling_pct is None:
+                raise ValueError("an upward bound names its capacity ceiling")
+
+            if not self.evidence_ceiling:
+                raise ValueError("an upward bound names its evidence ceiling")
+
+            if not self.binding_constraint:
+                raise ValueError("an upward bound names its binding constraint")
+        elif self.kind is EnvelopeKind.ZERO_CAPACITY:
+            if not upward:
+                raise ValueError("zero capacity belongs to an open or add course")
+
+            if self.final_pct is not None:
+                raise ValueError("zero capacity carries no final figure")
+
+            if not self.binding_constraint:
+                raise ValueError("zero capacity names its binding constraint")
+        elif self.kind is EnvelopeKind.REDUCTION_FLOOR:
+            if self.course != "reduce":
+                raise ValueError("a reduction floor belongs to a reduce course")
+
+            if self.final_pct is None or self.final_pct <= 0:
+                raise ValueError("a reduction floor carries a positive final figure")
+        elif self.kind is EnvelopeKind.NO_POLICY_MAGNITUDE:
+            if self.course != "reduce":
+                raise ValueError("no-policy-magnitude belongs to a reduce course")
+
+            if self.final_pct is not None:
+                raise ValueError("no-policy-magnitude carries no final figure")
+        elif self.kind is EnvelopeKind.REFUSED:
+            if not self.because.strip():
+                raise ValueError("a refusal carries its reason in words")
+
+            if self.final_pct is not None:
+                raise ValueError("a refusal carries no final figure")
 
     @property
     def stated(self) -> str:
@@ -259,8 +530,7 @@ def envelope_for(
     named_gaps: tuple[str, ...],
     quality_authority: QualityAuthority,
     hard_floor_passes: bool,
-    price_fresh: bool,
-    price_as_of: str,
+    price: PriceObservation,
     portfolio_as_of: str,
     drawdown_depth_pct: float | None,
     is_equity: bool,
@@ -270,7 +540,9 @@ def envelope_for(
     Deterministic; conviction is not a parameter and cannot become one
     without changing this signature, which is the test's hook. Every
     ceiling is a minimum, so information can only preserve or reduce
-    the result — the ruling's monotonicity, by construction.
+    the result — the ruling's monotonicity, by construction. The price
+    input is the exact security's own quote verdict, so a refusal here
+    keeps that quote's words and a market-wide reading has no way in.
     """
 
     def refused(because: str) -> CapitalActionEnvelope:
@@ -284,7 +556,7 @@ def envelope_for(
             because=because,
             named_gaps=named_gaps,
             quality_authority=quality_authority,
-            price_as_of=price_as_of,
+            price_as_of=price.as_of,
             portfolio_as_of=portfolio_as_of,
         )
 
@@ -301,7 +573,13 @@ def envelope_for(
         if capacity.current_weight_pct is None:
             return refused(capacity.refused_because or "the held weight is unknown")
 
-        overweight = capacity.current_weight_pct - policy.max_single_position_pct
+        # Branch on the figure the envelope will carry: the constructor
+        # requires a reduction floor to be positive, so the rounded
+        # value decides which shape exists rather than being applied
+        # after the choice.
+        overweight = round(
+            capacity.current_weight_pct - policy.max_single_position_pct, 4
+        )
 
         if overweight > 0:
             return CapitalActionEnvelope(
@@ -311,11 +589,11 @@ def envelope_for(
                 policy_source=policy.source,
                 policy_version=policy.version,
                 capacity_ceiling_pct=capacity.capacity_pct,
-                final_pct=round(overweight, 4),
+                final_pct=overweight,
                 binding_constraint="the single-position policy cap",
                 named_gaps=named_gaps,
                 quality_authority=quality_authority,
-                price_as_of=price_as_of,
+                price_as_of=price.as_of,
                 portfolio_as_of=portfolio_as_of,
             )
 
@@ -328,7 +606,7 @@ def envelope_for(
             capacity_ceiling_pct=capacity.capacity_pct,
             named_gaps=named_gaps,
             quality_authority=quality_authority,
-            price_as_of=price_as_of,
+            price_as_of=price.as_of,
             portfolio_as_of=portfolio_as_of,
         )
 
@@ -342,11 +620,8 @@ def envelope_for(
     if capacity.capacity_pct is None:
         return refused(capacity.refused_because)
 
-    if not price_fresh:
-        return refused(
-            "the price is absent or older than the policy's "
-            f"{policy.price_max_age_minutes:g}-minute limit"
-        )
+    if not price.fresh:
+        return refused(price.refused_because)
 
     if drawdown_depth_pct is None:
         # An absent reading is not zero: without a drawdown measurement
@@ -382,7 +657,10 @@ def envelope_for(
         ceiling_name = "max_add_change"
         room = policy.max_add_weight_change_pct
 
-    final = min(room, capacity.capacity_pct)
+    # Branch on the figure the envelope will carry — the constructor
+    # requires an upward bound to be positive, so the rounded value
+    # decides which shape exists.
+    final = round(min(room, capacity.capacity_pct), 4)
 
     if final <= 0:
         binding = (
@@ -403,7 +681,7 @@ def envelope_for(
             named_gaps=named_gaps,
             quality_authority=quality_authority,
             starter_capped=limited,
-            price_as_of=price_as_of,
+            price_as_of=price.as_of,
             portfolio_as_of=portfolio_as_of,
         )
 
@@ -415,7 +693,7 @@ def envelope_for(
         policy_version=policy.version,
         evidence_ceiling=ceiling_name,
         capacity_ceiling_pct=capacity.capacity_pct,
-        final_pct=round(final, 4),
+        final_pct=final,
         binding_constraint=(
             "the evidence ceiling"
             if room <= capacity.capacity_pct
@@ -424,6 +702,6 @@ def envelope_for(
         named_gaps=named_gaps,
         quality_authority=quality_authority,
         starter_capped=limited,
-        price_as_of=price_as_of,
+        price_as_of=price.as_of,
         portfolio_as_of=portfolio_as_of,
     )

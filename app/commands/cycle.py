@@ -36,6 +36,8 @@ from app.domain.capital_envelope import (
     QualityAuthority,
     capacity_for,
     envelope_for,
+    portfolio_observation_for,
+    price_observation_for,
 )
 from app.domain.capital_policy import CapitalPolicyReading
 from app.domain.daily_cycle import (
@@ -53,7 +55,7 @@ from app.domain.daily_cycle import (
     movement,
     no_action_permitted,
 )
-from app.domain.provenance import Provenance
+from app.domain.market_snapshot import MarketQuote
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.capital_policy_service import CapitalPolicyService
@@ -128,9 +130,8 @@ def _envelope(
     cash_pct: float | None,
     total_value: float | None,
     drawdown_pct: float | None,
-    market_reading: Provenance | None,
-    quoted: set[str],
-    perceived_at: datetime,
+    quotes: dict[str, MarketQuote],
+    evaluated_at: datetime,
 ) -> CapitalActionEnvelope | None:
     """The envelope for one workspace's course, or None for non-capital ones.
 
@@ -138,6 +139,11 @@ def _envelope(
     course arrives as `workspace.action.kind`, never derived from a
     decision-state string. Conviction is not read here and cannot be:
     `envelope_for` has no parameter it could arrive through.
+
+    Two observation clocks, both the reading's own and neither this
+    process's: the portfolio is aged from the broker snapshot's
+    `last_sync`, and the price from the exact security's own quote —
+    `evaluated_at` is only the moment both ages are measured at.
     """
 
     # The caller only reaches here with both halves present; the guard
@@ -167,26 +173,31 @@ def _envelope(
 
     policy = policy_reading.policy
 
-    now = datetime.now(UTC)
-    portfolio_age_minutes = (now - perceived_at).total_seconds() / 60.0
+    portfolio_observed = portfolio_observation_for(
+        last_sync=getattr(brain.portfolio, "last_sync", None),
+        policy=policy,
+        now=evaluated_at,
+    )
+    price_observed = price_observation_for(
+        symbol=symbol,
+        quote=quotes.get(symbol),
+        policy=policy,
+        now=evaluated_at,
+    )
 
-    price_reading_age = (
-        market_reading.age(now).total_seconds() / 60.0
-        if market_reading is not None
-        else None
-    )
-    price_fresh = (
-        symbol in quoted
-        and price_reading_age is not None
-        and price_reading_age <= policy.price_max_age_minutes
-    )
+    # OPEN's zero is licensed by the course, not by absence: the
+    # canonical course says the security is unheld, so a missing broker
+    # row is the stated state. ADD and REDUCE act on a holding, and a
+    # holding whose weight could not be resolved refuses rather than
+    # pretending emptiness.
+    current_weight = weights.get(symbol, 0.0) if kind == "open" else weights.get(symbol)
 
     capacity = capacity_for(
         policy=policy,
         total_value=total_value,
         cash_pct=cash_pct,
-        current_weight_pct=weights.get(symbol, 0.0),
-        portfolio_fresh=portfolio_age_minutes <= policy.portfolio_max_age_minutes,
+        current_weight_pct=current_weight,
+        portfolio=portfolio_observed,
         broker_answered=total_value is not None,
     )
 
@@ -213,9 +224,8 @@ def _envelope(
         # disposition whose gates the #219 measurement showed require
         # the whole six-family floor; a reduction does not consult it.
         hard_floor_passes=True,
-        price_fresh=price_fresh,
-        price_as_of=(market_reading.stated() if market_reading is not None else ""),
-        portfolio_as_of=f"{perceived_at:%Y-%m-%d %H:%M UTC}",
+        price=price_observed,
+        portfolio_as_of=portfolio_observed.as_of,
         drawdown_depth_pct=drawdown_pct,
         is_equity=brain.asset_class_for(symbol) is AssetClass.STOCK,
     )
@@ -272,7 +282,11 @@ async def run(
 
     try:
         brain = await (brains or BrainBuilderService()).build()
-        perceived_at = datetime.now(UTC)
+
+        # The moment observation ages are measured at — never any
+        # reading's own observation time, which stays the broker's or
+        # the quote provider's to state.
+        evaluated_at = datetime.now(UTC)
 
         service = briefings or PortfolioBriefingService(
             pipeline=ExecutivePipeline(
@@ -304,8 +318,9 @@ async def run(
             round(drawdown.current_depth * 100.0, 4) if drawdown is not None else None
         )
 
-        market_reading = getattr(brain.market, "reading", None)
-        quoted = {quote.symbol.upper().strip() for quote in brain.market.quotes}
+        # Each envelope resolves the exact security's own quote from
+        # this map; no market-wide reading authorizes any of them.
+        quotes = {quote.symbol.upper().strip(): quote for quote in brain.market.quotes}
 
         for workspace in workspaces:
             if workspace.decision is not None and workspace.action is not None:
@@ -332,9 +347,8 @@ async def run(
                             cash_pct=cash_pct,
                             total_value=total_value,
                             drawdown_pct=drawdown_pct,
-                            market_reading=market_reading,
-                            quoted=quoted,
-                            perceived_at=perceived_at,
+                            quotes=quotes,
+                            evaluated_at=evaluated_at,
                         ),
                     )
                 )

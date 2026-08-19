@@ -9,15 +9,20 @@ from app.services.investment_policy_mapper import (
     InvestmentPolicyMapper,
 )
 
+#: The one physical owner-strategy document. Tracked configuration,
+#: deliberately outside MOVRVEST_EVIDENCE_ROOT — the exemption and its
+#: reason are recorded in tests/test_evidence_root_invariant.py
+#: (`OUTSIDE_THE_ROOT`). Every reader of the owner's strategy addresses
+#: this constant, so the platform cannot grow a second policy location.
+STRATEGY_PATH = Path("data/investor_strategy.json")
+
 
 class InvestorStrategyService:
     def __init__(
         self,
         path: Path | None = None,
     ) -> None:
-        self._path = path or Path(
-            "data/investor_strategy.json",
-        )
+        self._path = path or STRATEGY_PATH
 
     def load(self) -> dict[str, Any]:
         with self._path.open(
