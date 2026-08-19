@@ -781,3 +781,197 @@ def test_the_store_lives_under_the_evidence_root(monkeypatch, tmp_path) -> None:
     store = DailyCycleStore()
 
     assert str(store.path).startswith(str(tmp_path))
+
+
+# ── final contract pins: no silent drops ────────────────────────────
+
+
+def test_no_security_disappears_when_its_pass_is_incomplete(tmp_path, capsys) -> None:
+    """One carried, two refused in words — three symbols, all accounted.
+
+    A workspace whose canonical pass produced no disposition or no
+    course is a per-security refusal inside a COMPLETE cycle, named for
+    which half was missing — never a silent drop, never a manufactured
+    action, and never a PARTIAL merely because one security refused.
+    """
+
+    broken_no_action = SimpleNamespace(
+        symbol="AZN",
+        decision=SimpleNamespace(
+            symbol="AZN",
+            state=SimpleNamespace(value="PREPARE"),
+            rationale="r",
+            conviction=50,
+            evidence_as_of=None,
+        ),
+        action=None,
+    )
+    broken_no_decision = SimpleNamespace(symbol="CYD", decision=None, action=None)
+
+    _, store, _ = cycle_run(
+        tmp_path,
+        decision("KO", "PREPARE"),
+        broken_no_action,
+        broken_no_decision,
+    )
+
+    finished = store.log().records[0].finished
+    rendered = capsys.readouterr().out
+
+    assert finished is not None
+    assert finished.status is CycleStatus.COMPLETE, (
+        "one refused security does not degrade execution status"
+    )
+    assert [entry.symbol for entry in finished.decisions] == ["KO"]
+
+    course_missing = next(r for r in finished.refusals if r.startswith("AZN"))
+    disposition_missing = next(r for r in finished.refusals if r.startswith("CYD"))
+
+    assert "a disposition and no course" in course_missing
+    assert "no disposition" in disposition_missing
+
+    for refusal in (course_missing, disposition_missing):
+        assert "constrains what the cycle can say" in refusal
+        assert "says nothing about the business" in refusal
+        assert refusal in finished.attention
+        assert refusal in rendered
+
+    assert NO_ACTION not in rendered
+
+
+def test_no_useful_pair_for_any_security_is_failed(tmp_path, capsys) -> None:
+    """Every workspace defective: no useful decision pass at all."""
+
+    code, store, _ = cycle_run(
+        tmp_path,
+        SimpleNamespace(symbol="AZN", decision=None, action=None),
+    )
+
+    finished = store.log().records[0].finished
+
+    assert code == 1
+    assert finished is not None
+    assert finished.status is CycleStatus.FAILED
+    assert any("AZN" in refusal for refusal in finished.refusals), (
+        "the refused security is still accounted for in the terminal record"
+    )
+
+
+# ── final contract pins: three separate defect counts ───────────────
+
+
+def test_the_three_stream_defects_are_counted_separately(tmp_path) -> None:
+    """One unreadable, one unsupported, one anomaly — exactly 1 / 1 / 1.
+
+    Unknown-schema JSON is not unreadable; malformed JSON is; a decoded
+    but invalid two-event lifecycle is an anomaly. Collapsing any two
+    would let one defect class hide inside another's count.
+    """
+
+    store = DailyCycleStore(tmp_path / "cycles")
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))  # anomaly
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write("{malformed json\n")  # unreadable
+        handle.write(
+            '{"schema": 9, "kind": "started", "cycle_id": "x"}\n'
+        )  # unsupported
+
+    log = store.log()
+
+    assert log.unreadable_records == 1
+    assert log.unsupported_schemas == 1
+    assert log.lifecycle_anomalies == 1
+    assert not log.is_complete_stream
+
+
+def test_the_refusal_reason_names_the_individual_counts(tmp_path, capsys) -> None:
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    capsys.readouterr()
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write("{malformed\n")
+
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store),
+            brains=BrainStub(),
+            briefings=BriefingStub(decision("KO", "PREPARE")),
+        )
+    )
+
+    finished = store.log().records[1].finished
+
+    assert finished is not None
+    assert finished.comparison.outcome is ComparisonOutcome.REFUSED
+    assert "1 unreadable record(s)" in finished.comparison.because
+    assert "0 unsupported-schema record(s)" in finished.comparison.because
+    assert "0 lifecycle anomaly(ies)" in finished.comparison.because
+
+
+# ── final contract pins: comparison-basis invariants ────────────────
+
+
+def test_every_contradictory_basis_shape_is_unconstructable() -> None:
+    """Each outcome permits exactly one field pattern; whitespace is empty."""
+
+    import pytest
+
+    # Valid shapes construct.
+    ComparisonBasis(outcome=ComparisonOutcome.INITIAL_BASELINE)
+    ComparisonBasis(outcome=ComparisonOutcome.COMPARED, prior_cycle_id="prev1")
+    ComparisonBasis(outcome=ComparisonOutcome.REFUSED, because="stream incomplete")
+
+    invalid = [
+        # INITIAL_BASELINE with anything filled.
+        dict(outcome=ComparisonOutcome.INITIAL_BASELINE, prior_cycle_id="p"),
+        dict(outcome=ComparisonOutcome.INITIAL_BASELINE, because="r"),
+        # COMPARED without a prior, or with a reason.
+        dict(outcome=ComparisonOutcome.COMPARED),
+        dict(outcome=ComparisonOutcome.COMPARED, prior_cycle_id="   "),
+        dict(outcome=ComparisonOutcome.COMPARED, prior_cycle_id="p", because="r"),
+        # REFUSED without a reason, or with a prior.
+        dict(outcome=ComparisonOutcome.REFUSED),
+        dict(outcome=ComparisonOutcome.REFUSED, because="   "),
+        dict(outcome=ComparisonOutcome.REFUSED, because="r", prior_cycle_id="p"),
+    ]
+
+    for fields in invalid:
+        with pytest.raises(ValueError):
+            ComparisonBasis(**fields)
+
+
+def test_a_stored_contradictory_basis_makes_the_record_unreadable(
+    tmp_path,
+) -> None:
+    """It decodes into no lifecycle and participates in no movement."""
+
+    store = DailyCycleStore(tmp_path / "cycles")
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+
+    corrupt = {
+        "schema": 1,
+        "kind": "finished",
+        "cycle_id": "c1",
+        "at": MOMENT.isoformat(),
+        "status": "complete",
+        "stages": [],
+        "comparison": {"outcome": "compared", "prior_cycle_id": "  "},
+        "decisions": [{"symbol": "KO", "state": "RECOMMEND", "rationale": "r"}],
+    }
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(corrupt) + "\n")
+
+    log = store.log()
+
+    assert log.unreadable_records == 1
+    assert not log.is_complete_stream
+    assert log.records[0].is_interrupted, (
+        "the invalid terminal paired with nothing — the cycle stays dangling"
+    )
+    assert log.latest_terminal() is None, "no movement can rest on it"

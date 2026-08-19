@@ -127,29 +127,47 @@ async def run(
         workspaces = briefing.workspaces if briefing is not None else ()
 
         # The course comes from `workspace.action` and nowhere else —
-        # the pipeline's own ExecutiveAction, carried verbatim. Nothing
-        # here re-infers actionability from the decision state, and a
-        # workspace without an action is a contract violation this
-        # command surfaces rather than papers over.
-        decisions = tuple(
-            DecisionSummary(
-                symbol=workspace.decision.symbol,
-                state=workspace.decision.state.value,
-                rationale=workspace.decision.rationale,
-                conviction=workspace.decision.conviction,
-                evidence_as_of=(
-                    workspace.decision.evidence_as_of.stated()
-                    if workspace.decision.evidence_as_of is not None
-                    else ""
-                ),
-                action_kind=workspace.action.kind.value,
-                action_statement=workspace.action.statement,
-                action_because=workspace.action.because,
-                asks_for_something=workspace.action.kind.asks_for_something,
-            )
-            for workspace in workspaces
-            if workspace.decision is not None and workspace.action is not None
-        )
+        # the pipeline's own ExecutiveAction, carried verbatim. And no
+        # security disappears: a workspace whose pass produced no
+        # disposition or no course is *refused in words*, named for
+        # which half was missing, rather than filtered out of the
+        # cycle's account. Nothing manufactures an action and nothing
+        # infers one from a decision state.
+        carried: list[DecisionSummary] = []
+
+        for workspace in workspaces:
+            if workspace.decision is not None and workspace.action is not None:
+                carried.append(
+                    DecisionSummary(
+                        symbol=workspace.decision.symbol,
+                        state=workspace.decision.state.value,
+                        rationale=workspace.decision.rationale,
+                        conviction=workspace.decision.conviction,
+                        evidence_as_of=(
+                            workspace.decision.evidence_as_of.stated()
+                            if workspace.decision.evidence_as_of is not None
+                            else ""
+                        ),
+                        action_kind=workspace.action.kind.value,
+                        action_statement=workspace.action.statement,
+                        action_because=workspace.action.because,
+                        asks_for_something=workspace.action.kind.asks_for_something,
+                    )
+                )
+            elif workspace.decision is None:
+                refusals = refusals + (
+                    f"{workspace.symbol}: the decision pass produced no "
+                    "disposition; this constrains what the cycle can say "
+                    "and says nothing about the business",
+                )
+            else:
+                refusals = refusals + (
+                    f"{workspace.symbol}: the decision pass produced a "
+                    "disposition and no course; this constrains what the "
+                    "cycle can say and says nothing about the business",
+                )
+
+        decisions = tuple(carried)
         stages.append(CycleStage(name="decisions", outcome=StageOutcome.RAN))
     except Exception as error:
         stages.append(_failed_stage("decisions", error))
@@ -183,7 +201,8 @@ async def run(
             outcome=ComparisonOutcome.REFUSED,
             because=(
                 "the held cycle stream is incomplete "
-                f"({held.skipped_records} unreadable/unsupported record(s), "
+                f"({held.unreadable_records} unreadable record(s), "
+                f"{held.unsupported_schemas} unsupported-schema record(s), "
                 f"{held.lifecycle_anomalies} lifecycle anomaly(ies)), and an "
                 "unreadable record may be the actual previous cycle"
             ),
@@ -267,9 +286,11 @@ def render(record: CycleRecord, held_before: CycleLog) -> str:
     # Disclosure of the stream's own limits and of interrupted runs.
     if not held_before.is_complete_stream:
         lines.append(
-            f"{held_before.skipped_records} stored cycle record(s) could not "
-            "be read; the lifecycle shown is derived from the readable ones "
-            "only."
+            "The held cycle stream is incomplete — "
+            f"{held_before.unreadable_records} unreadable record(s), "
+            f"{held_before.unsupported_schemas} unsupported-schema record(s), "
+            f"{held_before.lifecycle_anomalies} lifecycle anomaly(ies); the "
+            "lifecycle shown is derived from the readable ones only."
         )
 
     for dangling in held_before.dangling:

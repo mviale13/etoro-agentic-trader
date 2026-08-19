@@ -118,6 +118,16 @@ class ComparisonOutcome(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class ComparisonBasis:
+    """A typed basis whose shape is enforced, not described.
+
+    Each outcome permits exactly one field pattern, checked at
+    construction — so a stored record carrying a contradictory shape
+    (a baseline with a prior id, a comparison with no prior, a refusal
+    with no reason) cannot be constructed at all, which is what makes
+    it *unreadable* on decode rather than quietly reinterpreted.
+    Whitespace is not content: a blank-padded id or reason is empty.
+    """
+
     outcome: ComparisonOutcome
 
     #: The prior cycle compared against. Filled exactly when COMPARED.
@@ -125,6 +135,22 @@ class ComparisonBasis:
 
     #: Why the comparison was refused. Filled exactly when REFUSED.
     because: str = ""
+
+    def __post_init__(self) -> None:
+        prior = bool(self.prior_cycle_id.strip())
+        reason = bool(self.because.strip())
+
+        valid = {
+            ComparisonOutcome.INITIAL_BASELINE: not prior and not reason,
+            ComparisonOutcome.COMPARED: prior and not reason,
+            ComparisonOutcome.REFUSED: not prior and reason,
+        }[self.outcome]
+
+        if not valid:
+            raise ValueError(
+                f"a {self.outcome.value} basis does not carry "
+                f"prior_cycle_id={self.prior_cycle_id!r}, because={self.because!r}"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,14 +222,24 @@ class CycleRecord:
 class CycleLog:
     """Every cycle held, oldest first, with the stream's own honesty.
 
-    `skipped_records` counts non-empty stored lines this reader could
-    not decode — unknown future schemas and unreadable lines, refused
-    and counted rather than pooled (#216's rule, applied to cycles).
-    A log with skipped lines does not claim a complete lifecycle.
+    Three defect counts travel separately, because they are three
+    different facts: malformed or shape-invalid lines are *unreadable*,
+    valid JSON under an unknown schema is *unsupported* (refused, never
+    misread — #216's rule, applied to cycles), and decoded events that
+    form no valid two-event lifecycle are *anomalies*. A log holding
+    any of the three does not claim a complete lifecycle.
     """
 
     records: tuple[CycleRecord, ...] = ()
-    skipped_records: int = 0
+
+    #: Malformed JSON, or a current-schema record whose shape does not
+    #: decode — including a comparison basis carrying a contradictory
+    #: shape, which is refused at construction.
+    unreadable_records: int = 0
+
+    #: Valid JSON under a schema this reader does not know. Not
+    #: unreadable — a future format is refused, never misread.
+    unsupported_schemas: int = 0
 
     #: Events that decode but form no valid two-event lifecycle: a
     #: FINISHED with no STARTED, a second STARTED or FINISHED for one
@@ -215,7 +251,13 @@ class CycleLog:
 
     @property
     def is_complete_stream(self) -> bool:
-        return self.skipped_records == 0 and self.lifecycle_anomalies == 0
+        """True only when all three defect counts are zero."""
+
+        return (
+            self.unreadable_records == 0
+            and self.unsupported_schemas == 0
+            and self.lifecycle_anomalies == 0
+        )
 
     @property
     def dangling(self) -> tuple[CycleRecord, ...]:

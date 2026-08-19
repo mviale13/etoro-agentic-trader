@@ -132,7 +132,8 @@ class DailyCycleStore:
         started: dict[str, CycleStarted] = {}
         order: list[str] = []
         finished: dict[str, CycleFinished] = {}
-        skipped = 0
+        unreadable = 0
+        unsupported = 0
         anomalies = 0
 
         if self.path.exists():
@@ -146,17 +147,27 @@ class DailyCycleStore:
                     try:
                         row = json.loads(line)
                     except json.JSONDecodeError:
-                        skipped += 1
+                        # Malformed JSON is unreadable.
+                        unreadable += 1
                         continue
 
-                    if not isinstance(row, dict) or row.get("schema") != SCHEMA:
-                        skipped += 1
+                    if isinstance(row, dict) and row.get("schema") != SCHEMA:
+                        # Valid JSON under an unknown schema is refused,
+                        # never misread — and never called unreadable.
+                        unsupported += 1
+                        continue
+
+                    if not isinstance(row, dict):
+                        unreadable += 1
                         continue
 
                     decoded = _decode(row)
 
                     if decoded is None:
-                        skipped += 1
+                        # A current-schema record whose shape does not
+                        # decode — a contradictory comparison basis
+                        # included — is unreadable.
+                        unreadable += 1
                     elif isinstance(decoded, CycleStarted):
                         if decoded.cycle_id in started:
                             # A second STARTED for one cycle_id.
@@ -184,7 +195,8 @@ class DailyCycleStore:
 
         return CycleLog(
             records=records,
-            skipped_records=skipped,
+            unreadable_records=unreadable,
+            unsupported_schemas=unsupported,
             lifecycle_anomalies=anomalies,
         )
 
@@ -249,6 +261,16 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
 
 
 def _comparison(raw: Any) -> ComparisonBasis:
+    """The stored basis, or a raised refusal to read a contradictory one.
+
+    `ComparisonBasis` enforces its own shape at construction, so a
+    stored combination the vocabulary forbids — a baseline carrying a
+    prior id, a comparison without one, a refusal without a reason —
+    raises here, `_decode` returns None, and the whole record counts as
+    unreadable rather than decoding into a lifecycle or participating
+    in movement.
+    """
+
     if not isinstance(raw, dict):
         return ComparisonBasis(
             outcome=ComparisonOutcome.REFUSED,
