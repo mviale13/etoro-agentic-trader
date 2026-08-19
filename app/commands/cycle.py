@@ -29,6 +29,8 @@ from app.application.workspace.portfolio_briefing_service import (
 )
 from app.domain.daily_cycle import (
     NO_ACTION,
+    ComparisonBasis,
+    ComparisonOutcome,
     CycleFinished,
     CycleLog,
     CycleRecord,
@@ -38,12 +40,30 @@ from app.domain.daily_cycle import (
     DecisionSummary,
     StageOutcome,
     movement,
+    no_action_permitted,
 )
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.market_acquisition_service import MarketAcquisitionService
 
 __all__ = ["run"]
+
+
+def _failed_stage(name: str, error: Exception) -> CycleStage:
+    """A stage failure, worded for the record rather than copied from it.
+
+    Provider exceptions carry URLs, query parameters and sometimes
+    credentials. What the durable record needs is which stage failed
+    and what kind of failure it was — so the wording is built here from
+    the stage's name and the exception's *class*, and the exception's
+    own text never reaches the store or the render.
+    """
+
+    return CycleStage(
+        name=name,
+        outcome=StageOutcome.FAILED,
+        because=f"the {name} stage failed ({type(error).__name__})",
+    )
 
 
 def new_cycle_id() -> str:
@@ -80,13 +100,7 @@ async def run(
     try:
         acquired = await (acquisition or MarketAcquisitionService()).acquire()
     except Exception as error:
-        stages.append(
-            CycleStage(
-                name="acquisition",
-                outcome=StageOutcome.FAILED,
-                because=f"{type(error).__name__}: {error}"[:300],
-            )
-        )
+        stages.append(_failed_stage("acquisition", error))
     else:
         asked = len(acquired.securities)
         priced = len(acquired.priced)
@@ -112,6 +126,11 @@ async def run(
         briefing = service.build(brain)
         workspaces = briefing.workspaces if briefing is not None else ()
 
+        # The course comes from `workspace.action` and nowhere else —
+        # the pipeline's own ExecutiveAction, carried verbatim. Nothing
+        # here re-infers actionability from the decision state, and a
+        # workspace without an action is a contract violation this
+        # command surfaces rather than papers over.
         decisions = tuple(
             DecisionSummary(
                 symbol=workspace.decision.symbol,
@@ -123,19 +142,17 @@ async def run(
                     if workspace.decision.evidence_as_of is not None
                     else ""
                 ),
+                action_kind=workspace.action.kind.value,
+                action_statement=workspace.action.statement,
+                action_because=workspace.action.because,
+                asks_for_something=workspace.action.kind.asks_for_something,
             )
             for workspace in workspaces
-            if workspace.decision is not None
+            if workspace.decision is not None and workspace.action is not None
         )
         stages.append(CycleStage(name="decisions", outcome=StageOutcome.RAN))
     except Exception as error:
-        stages.append(
-            CycleStage(
-                name="decisions",
-                outcome=StageOutcome.FAILED,
-                because=f"{type(error).__name__}: {error}"[:300],
-            )
-        )
+        stages.append(_failed_stage("decisions", error))
 
     # ── status: which stages ran, and nothing about item coverage ───
     ran = {stage.name for stage in stages if stage.outcome is StageOutcome.RAN}
@@ -149,15 +166,65 @@ async def run(
     else:
         status = CycleStatus.PARTIAL
 
-    produced, changed, unchanged = movement(decisions, held.latest_terminal())
+    # The comparison basis, typed and persisted — never a nullable id
+    # whose meaning has to be guessed. An incomplete stream refuses the
+    # comparison outright: the unreadable or anomalous record may be
+    # the actual previous cycle, and a disclosure beside a derived
+    # change would not make the change safe.
+    previous = held.latest_terminal() if held.is_complete_stream else None
+
+    if status is CycleStatus.FAILED:
+        comparison = ComparisonBasis(
+            outcome=ComparisonOutcome.REFUSED,
+            because="no useful decision pass was completed",
+        )
+    elif not held.is_complete_stream:
+        comparison = ComparisonBasis(
+            outcome=ComparisonOutcome.REFUSED,
+            because=(
+                "the held cycle stream is incomplete "
+                f"({held.skipped_records} unreadable/unsupported record(s), "
+                f"{held.lifecycle_anomalies} lifecycle anomaly(ies)), and an "
+                "unreadable record may be the actual previous cycle"
+            ),
+        )
+    elif previous is None:
+        comparison = ComparisonBasis(outcome=ComparisonOutcome.INITIAL_BASELINE)
+    else:
+        comparison = ComparisonBasis(
+            outcome=ComparisonOutcome.COMPARED,
+            prior_cycle_id=previous.cycle_id,
+        )
+
+    if comparison.outcome is ComparisonOutcome.COMPARED and previous is not None:
+        produced, changed, unchanged = movement(decisions, previous)
+    else:
+        produced, changed, unchanged = (), (), ()
 
     by_symbol = {entry.symbol: entry for entry in decisions}
+
+    # Attention: changed dispositions, newly produced courses that ask
+    # for something, refusals, and failed required stages — in that
+    # order. A newly produced course that asks for nothing is still
+    # newly considered, and is reported as that rather than as an
+    # action.
     attention = (
         tuple(
             f"{symbol}: now {by_symbol[symbol].state} — {by_symbol[symbol].rationale}"
             for symbol in changed
         )
+        + tuple(
+            f"{symbol}: {by_symbol[symbol].action_statement} "
+            f"({by_symbol[symbol].action_kind})"
+            for symbol in produced
+            if by_symbol[symbol].asks_for_something
+        )
         + refusals
+        + tuple(
+            f"the {stage.name} stage failed — {stage.because}"
+            for stage in stages
+            if stage.outcome is StageOutcome.FAILED
+        )
     )
 
     finished = CycleFinished(
@@ -168,6 +235,7 @@ async def run(
         securities_asked=asked,
         securities_priced=priced,
         refusals=refusals,
+        comparison=comparison,
         decisions=decisions,
         newly_produced=produced,
         changed=changed,
@@ -253,28 +321,75 @@ def render(record: CycleRecord, held_before: CycleLog) -> str:
         lines.extend(f"  {refusal}" for refusal in finished.refusals)
 
     lines.append("")
-    lines.append(
-        f"Decisions: {len(finished.decisions)} securities considered — "
-        f"{len(finished.newly_produced)} newly produced, "
-        f"{len(finished.changed)} changed, {len(finished.unchanged)} unchanged."
-    )
 
-    if finished.changed:
-        lines.append("Changed, with the rationale recorded at decision time:")
+    comparison = finished.comparison
+
+    if comparison.outcome is ComparisonOutcome.INITIAL_BASELINE:
+        lines.append(
+            "Initial cycle recorded; no previous completed cycle exists for "
+            "change comparison."
+        )
+        lines.append(
+            f"Current courses ({len(finished.decisions)} securities considered):"
+        )
+        lines.extend(
+            f"  {entry.symbol}: {entry.state} — {entry.action_statement} "
+            f"({entry.action_kind})"
+            for entry in finished.decisions
+        )
+    elif comparison.outcome is ComparisonOutcome.REFUSED:
+        lines.append(
+            f"Change comparison refused: {comparison.because}. No changed, "
+            "unchanged or newly-produced classification is claimed for this "
+            "cycle."
+        )
+        lines.append(
+            f"Current courses ({len(finished.decisions)} securities considered):"
+        )
+        lines.extend(
+            f"  {entry.symbol}: {entry.state} — {entry.action_statement} "
+            f"({entry.action_kind})"
+            for entry in finished.decisions
+        )
+    else:
+        lines.append(
+            f"Decisions (against cycle {comparison.prior_cycle_id}): "
+            f"{len(finished.decisions)} securities considered — "
+            f"{len(finished.newly_produced)} newly produced, "
+            f"{len(finished.changed)} changed, "
+            f"{len(finished.unchanged)} unchanged."
+        )
+
         by_symbol = {entry.symbol: entry for entry in finished.decisions}
 
-        for symbol in finished.changed:
-            entry = by_symbol[symbol]
-            lines.append(f"  {symbol}: now {entry.state} — {entry.rationale}")
-    elif finished.decisions:
-        lines.append("No recommendation changed against the previous cycle.")
+        if finished.changed:
+            lines.append("Changed, with the rationale recorded at decision time:")
+
+            for symbol in finished.changed:
+                entry = by_symbol[symbol]
+                lines.append(f"  {symbol}: now {entry.state} — {entry.rationale}")
+
+        if finished.newly_produced:
+            lines.append("Newly considered:")
+
+            for symbol in finished.newly_produced:
+                entry = by_symbol[symbol]
+                course = (
+                    f" — {entry.action_statement} ({entry.action_kind})"
+                    if entry.asks_for_something
+                    else f" ({entry.state}; its course asks for nothing yet)"
+                )
+                lines.append(f"  {symbol}{course}")
+
+        if not finished.changed and not finished.newly_produced:
+            lines.append("No recommendation changed against the previous cycle.")
 
     lines.append("")
 
-    if finished.changed or finished.refusals:
+    if no_action_permitted(finished):
+        lines.append(NO_ACTION)
+    elif finished.attention:
         lines.append("Consider today:")
         lines.extend(f"  {item}" for item in finished.attention)
-    else:
-        lines.append(NO_ACTION)
 
     return "\n".join(lines)

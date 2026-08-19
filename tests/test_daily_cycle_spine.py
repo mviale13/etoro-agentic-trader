@@ -1,11 +1,12 @@
 """The Daily CIO cycle spine: identity, order, honesty.
 
-#217 measured the absences this slice fills: no cycle identity existed,
-so "nothing changed" and "the cycle failed" were indistinguishable; and
-decisions entered the journal by page views, so change detection was a
-fact about page traffic. Every case below pins one of the fifteen
-acceptance requirements of the owner's ruling — or pins that nothing
-else moved.
+#217 measured the absences the spine fills; the owner's amendment
+sharpened four truths this file now pins: the course travels with the
+disposition (`workspace.action`, carried, never re-inferred); the first
+cycle is an initial baseline, not a quiet day; an incomplete stream
+refuses the comparison instead of decorating it; and a lifecycle
+anomaly is counted, never pooled. Plus one hygiene rule: an exception's
+own text never reaches the durable record.
 """
 
 from __future__ import annotations
@@ -19,16 +20,19 @@ from app.application.learning.decision_journal import DecisionJournal
 from app.commands.cycle import new_cycle_id, render, run
 from app.domain.daily_cycle import (
     NO_ACTION,
+    ComparisonBasis,
+    ComparisonOutcome,
     CycleFinished,
     CycleLog,
-    CycleRecord,
     CycleStage,
     CycleStarted,
     CycleStatus,
     DecisionSummary,
     StageOutcome,
     movement,
+    no_action_permitted,
 )
+from app.domain.executive.executive_action import ActionKind
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 
 MOMENT = datetime(2026, 8, 19, 12, 0, tzinfo=UTC)
@@ -54,7 +58,9 @@ class AcquisitionStub:
         )
 
         if self._fail:
-            raise RuntimeError("the broker did not answer")
+            raise RuntimeError(
+                "GET https://broker.invalid/pnl?account=ACCT-99&key=sk-FAKE-123"
+            )
 
         return SimpleNamespace(
             securities=(
@@ -65,13 +71,28 @@ class AcquisitionStub:
         )
 
 
-def decision(symbol: str, state: str, rationale: str = "held basis") -> object:
+def decision(
+    symbol: str,
+    state: str,
+    rationale: str = "held basis",
+    kind: ActionKind = ActionKind.HOLD,
+    statement: str = "Keep the position as it is.",
+) -> object:
+    """One workspace-shaped pair: the decision and its pipeline course."""
+
     return SimpleNamespace(
-        symbol=symbol,
-        state=SimpleNamespace(value=state),
-        rationale=rationale,
-        conviction=60,
-        evidence_as_of=None,
+        decision=SimpleNamespace(
+            symbol=symbol,
+            state=SimpleNamespace(value=state),
+            rationale=rationale,
+            conviction=60,
+            evidence_as_of=None,
+        ),
+        action=SimpleNamespace(
+            kind=kind,
+            statement=statement,
+            because=rationale,
+        ),
     )
 
 
@@ -81,24 +102,22 @@ class BrainStub:
 
 
 class BriefingStub:
-    def __init__(self, *decisions, fail: bool = False) -> None:
-        self._decisions = decisions
+    def __init__(self, *workspaces, fail: bool = False) -> None:
+        self._workspaces = workspaces
         self._fail = fail
 
     def build(self, brain):
         if self._fail:
-            raise RuntimeError("the pipeline could not run")
-
-        return SimpleNamespace(
-            workspaces=tuple(
-                SimpleNamespace(decision=entry) for entry in self._decisions
+            raise RuntimeError(
+                "pipeline exploded at https://internal.invalid?token=sk-FAKE-456"
             )
-        )
+
+        return SimpleNamespace(workspaces=self._workspaces)
 
 
 def cycle_run(
     tmp_path,
-    *decisions_,
+    *workspaces,
     fail_acquisition: bool = False,
     fail_decisions: bool = False,
 ) -> tuple[int, DailyCycleStore, AcquisitionStub]:
@@ -110,14 +129,14 @@ def cycle_run(
             store=store,
             acquisition=acquisition,
             brains=BrainStub(),
-            briefings=BriefingStub(*decisions_, fail=fail_decisions),
+            briefings=BriefingStub(*workspaces, fail=fail_decisions),
         )
     )
 
     return code, store, acquisition
 
 
-# ── 1–2: the lifecycle ──────────────────────────────────────────────
+# ── the lifecycle (acceptance 1–2, 6, 9) ────────────────────────────
 
 
 def test_started_is_durable_before_acquisition_begins(tmp_path, capsys) -> None:
@@ -140,74 +159,6 @@ def test_a_successful_run_is_one_started_and_one_complete_terminal(
     assert not log.records[0].is_interrupted
 
 
-# ── 3: refusals coexist with COMPLETE ───────────────────────────────
-
-
-def test_item_level_refusals_coexist_with_complete(tmp_path, capsys) -> None:
-    """Execution status and evidence sufficiency are separate dimensions."""
-
-    code, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
-
-    finished = store.log().records[0].finished
-
-    assert finished is not None
-    assert finished.status is CycleStatus.COMPLETE
-    assert finished.refusals == ("HYPE: no price came back",)
-    assert finished.securities_priced == 1
-    assert finished.securities_asked == 2
-
-    rendered = capsys.readouterr().out
-
-    assert "COMPLETE" in rendered
-    assert "HYPE: no price came back" in rendered
-    # A gap is a fact about the evidence, never about the business.
-    assert "says nothing about the business itself" in rendered
-
-
-# ── 4–5: PARTIAL and FAILED ─────────────────────────────────────────
-
-
-def test_a_failed_stage_with_a_useful_decision_pass_is_partial(
-    tmp_path, capsys
-) -> None:
-    code, store, _ = cycle_run(
-        tmp_path, decision("KO", "PREPARE"), fail_acquisition=True
-    )
-
-    finished = store.log().records[0].finished
-
-    assert code == 0
-    assert finished is not None
-    assert finished.status is CycleStatus.PARTIAL
-    assert any(
-        stage.name == "acquisition"
-        and stage.outcome is StageOutcome.FAILED
-        and "did not answer" in stage.because
-        for stage in finished.stages
-    )
-
-
-def test_no_useful_decision_pass_is_failed(tmp_path, capsys) -> None:
-    code, store, _ = cycle_run(tmp_path, fail_decisions=True)
-
-    finished = store.log().records[0].finished
-
-    assert code == 1
-    assert finished is not None
-    assert finished.status is CycleStatus.FAILED
-
-    rendered = capsys.readouterr().out
-
-    # Acceptance 10, the failing half: a failed cycle never reads as a
-    # quiet one.
-    assert "failed cycle, not a quiet one" in rendered
-    assert "No recommendation changed" not in rendered
-    assert NO_ACTION not in rendered
-
-
-# ── 6: the dangling STARTED ─────────────────────────────────────────
-
-
 def test_a_dangling_started_renders_as_interrupted(tmp_path) -> None:
     store = DailyCycleStore(tmp_path / "cycles")
 
@@ -224,6 +175,7 @@ def test_a_dangling_started_renders_as_interrupted(tmp_path) -> None:
     assert "FAILED" not in rendered
     assert "PARTIAL" not in rendered
     assert "changed" not in rendered.casefold()
+    assert NO_ACTION not in rendered
 
 
 def test_the_next_run_discloses_the_previous_interruption(tmp_path, capsys) -> None:
@@ -246,12 +198,450 @@ def test_the_next_run_discloses_the_previous_interruption(tmp_path, capsys) -> N
     assert "interrupted" in rendered
 
 
-# ── 7–8: tagging, and isolation from page traffic ───────────────────
+def test_a_second_run_receives_a_distinct_cycle_id(tmp_path, capsys) -> None:
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store),
+            brains=BrainStub(),
+            briefings=BriefingStub(decision("KO", "PREPARE")),
+        )
+    )
+
+    log = store.log()
+
+    assert len(log.records) == 2
+    assert log.records[0].cycle_id != log.records[1].cycle_id
+    assert new_cycle_id() != new_cycle_id()
+
+
+# ── demonstration 1: the initial baseline ───────────────────────────
+
+
+def test_the_first_cycle_is_an_initial_baseline_and_shows_its_courses(
+    tmp_path, capsys
+) -> None:
+    """A first cycle has nothing to have changed from, and says so.
+
+    It reports the baseline, displays the courses the canonical
+    pipeline produced — an OPEN course included — and claims neither a
+    previous comparison nor a quiet day.
+    """
+
+    _, store, _ = cycle_run(
+        tmp_path,
+        decision(
+            "KO",
+            "RECOMMEND",
+            "quality banded",
+            kind=ActionKind.OPEN,
+            statement="Consider opening a position.",
+        ),
+    )
+
+    finished = store.log().records[0].finished
+
+    assert finished is not None
+    assert finished.comparison.outcome is ComparisonOutcome.INITIAL_BASELINE
+    assert finished.newly_produced == ()
+    assert finished.changed == ()
+    assert finished.unchanged == ()
+
+    rendered = capsys.readouterr().out
+
+    assert (
+        "Initial cycle recorded; no previous completed cycle exists for "
+        "change comparison." in rendered
+    )
+    assert "KO: RECOMMEND — Consider opening a position. (open)" in rendered
+    assert "No recommendation changed" not in rendered
+    assert "nothing changed" not in rendered.casefold()
+    assert NO_ACTION not in rendered
+
+
+# ── demonstration 2: a newly produced actionable course ─────────────
+
+
+def test_a_new_actionable_security_reaches_attention_with_its_course(
+    tmp_path, capsys
+) -> None:
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    capsys.readouterr()
+
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store),
+            brains=BrainStub(),
+            briefings=BriefingStub(
+                decision("KO", "PREPARE"),
+                decision(
+                    "DIS",
+                    "RECOMMEND",
+                    "case satisfied",
+                    kind=ActionKind.OPEN,
+                    statement="Consider opening a position.",
+                ),
+            ),
+        )
+    )
+
+    finished = store.log().records[1].finished
+    rendered = capsys.readouterr().out
+
+    assert finished is not None
+    assert finished.comparison.outcome is ComparisonOutcome.COMPARED
+    assert finished.newly_produced == ("DIS",)
+    assert any(
+        "DIS: Consider opening a position. (open)" in a for a in finished.attention
+    )
+    assert "Newly considered:" in rendered
+    assert "DIS — Consider opening a position. (open)" in rendered
+    assert NO_ACTION not in rendered
+
+
+def test_a_new_non_actionable_course_is_newly_considered_not_an_action(
+    tmp_path, capsys
+) -> None:
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    capsys.readouterr()
+
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store),
+            brains=BrainStub(),
+            briefings=BriefingStub(
+                decision("KO", "PREPARE"),
+                decision(
+                    "AZN",
+                    "INVESTIGATE",
+                    kind=ActionKind.WATCH,
+                    statement="Nothing to do yet.",
+                ),
+            ),
+        )
+    )
+
+    finished = store.log().records[1].finished
+    rendered = capsys.readouterr().out
+
+    assert finished is not None
+    assert finished.newly_produced == ("AZN",)
+    assert not any("AZN" in item for item in finished.attention)
+    assert "AZN (INVESTIGATE; its course asks for nothing yet)" in rendered
+
+
+# ── demonstration 3: PARTIAL never reads quiet ──────────────────────
+
+
+def test_partial_reports_the_failed_stage_and_never_no_action(tmp_path, capsys) -> None:
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    capsys.readouterr()
+
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store, fail=True),
+            brains=BrainStub(),
+            briefings=BriefingStub(decision("KO", "PREPARE")),
+        )
+    )
+
+    finished = store.log().records[1].finished
+    rendered = capsys.readouterr().out
+
+    assert finished is not None
+    assert finished.status is CycleStatus.PARTIAL
+    assert finished.changed == ()
+    assert any("acquisition stage failed" in item for item in finished.attention)
+    assert "the acquisition stage failed (RuntimeError)" in rendered
+    assert NO_ACTION not in rendered
+
+
+# ── demonstration 4: the one quiet shape ────────────────────────────
+
+
+def test_no_action_is_said_exactly_and_only_in_the_one_permitted_shape(
+    tmp_path, capsys
+) -> None:
+    """COMPLETE + valid prior comparison + nothing changed + no asking
+    course + no refusal + no failed stage — and only that."""
+
+    store = DailyCycleStore(tmp_path / "cycles")
+
+    class CleanAcquisition:
+        async def acquire(self):
+            return SimpleNamespace(
+                securities=(SimpleNamespace(symbol="KO", priced=True),),
+                priced=("KO",),
+            )
+
+    for _ in range(2):
+        asyncio.run(
+            run(
+                store=store,
+                acquisition=CleanAcquisition(),
+                brains=BrainStub(),
+                briefings=BriefingStub(decision("KO", "PREPARE")),
+            )
+        )
+
+    rendered = capsys.readouterr().out
+    finished = store.log().records[1].finished
+
+    assert finished is not None
+    assert finished.status is CycleStatus.COMPLETE
+    assert finished.comparison.outcome is ComparisonOutcome.COMPARED
+    assert no_action_permitted(finished)
+    assert NO_ACTION in rendered
+    assert "No recommendation changed against the previous cycle." in rendered
+
+
+def test_refusals_forbid_no_action_even_on_a_complete_cycle(tmp_path, capsys) -> None:
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    capsys.readouterr()
+
+    # Second run: HYPE unpriced again — COMPLETE, compared, unchanged,
+    # and still not a quiet day.
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store),
+            brains=BrainStub(),
+            briefings=BriefingStub(decision("KO", "PREPARE")),
+        )
+    )
+
+    finished = store.log().records[1].finished
+    rendered = capsys.readouterr().out
+
+    assert finished is not None
+    assert finished.status is CycleStatus.COMPLETE
+    assert finished.refusals == ("HYPE: no price came back",)
+    assert not no_action_permitted(finished)
+    assert NO_ACTION not in rendered
+    assert "says nothing about the business itself" in rendered
+
+
+# ── demonstration 5: incomplete history refuses movement ────────────
+
+
+def test_an_unreadable_line_between_cycles_refuses_the_comparison(
+    tmp_path, capsys
+) -> None:
+    """A disclosure beside a derived change does not make it safe.
+
+    The unreadable record may be the actual previous cycle, so the
+    comparison is refused, nothing is classified, and the day is
+    unclassified rather than quiet.
+    """
+
+    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    capsys.readouterr()
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write('{"schema": 9, "kind": "finished", "cycle_id": "future"}\n')
+
+    asyncio.run(
+        run(
+            store=store,
+            acquisition=AcquisitionStub(store),
+            brains=BrainStub(),
+            briefings=BriefingStub(decision("KO", "RECOMMEND", "moved")),
+        )
+    )
+
+    finished = store.log().records[1].finished
+    rendered = capsys.readouterr().out
+
+    assert finished is not None
+    assert finished.comparison.outcome is ComparisonOutcome.REFUSED
+    assert "incomplete" in finished.comparison.because
+    assert finished.changed == ()
+    assert finished.unchanged == ()
+    assert finished.newly_produced == ()
+    assert "Change comparison refused" in rendered
+    assert "No recommendation changed" not in rendered
+    assert NO_ACTION not in rendered
+    # The present is still recorded and shown.
+    assert finished.decisions[0].symbol == "KO"
+    assert "Current courses" in rendered
+
+
+# ── demonstration 6: lifecycle anomalies ────────────────────────────
+
+
+def test_every_lifecycle_anomaly_is_counted_and_never_pooled(tmp_path) -> None:
+    store = DailyCycleStore(tmp_path / "cycles")
+
+    finished_line = {
+        "schema": 1,
+        "kind": "finished",
+        "cycle_id": "c1",
+        "at": MOMENT.isoformat(),
+        "status": "complete",
+        "stages": [],
+        "comparison": {"outcome": "initial_baseline"},
+    }
+
+    store.path.parent.mkdir(parents=True, exist_ok=True)
+    store.path.touch()
+
+    # Terminal before start, then the start, then a duplicate start,
+    # then two finishes — one valid pairing at most, three anomalies…
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(finished_line) + "\n")  # terminal-before-start
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))  # dup
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(finished_line) + "\n")  # the valid pairing
+        handle.write(json.dumps(finished_line) + "\n")  # duplicate finished
+
+    # …plus an orphan FINISHED for a cycle that never started.
+    orphan = dict(finished_line, cycle_id="ghost")
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(orphan) + "\n")
+
+    log = store.log()
+
+    assert len(log.records) == 1, "one valid lifecycle survives"
+    assert log.lifecycle_anomalies == 4
+    assert not log.is_complete_stream
+
+
+def test_a_byte_identical_duplicate_is_still_a_second_event(tmp_path) -> None:
+    store = DailyCycleStore(tmp_path / "cycles")
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+
+    line = store.path.read_text().strip()
+
+    with store.path.open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
+
+    log = store.log()
+
+    assert log.lifecycle_anomalies == 1
+    assert not log.is_complete_stream
+
+
+# ── demonstration 7: no secret reaches the record ───────────────────
+
+
+def test_stage_failures_persist_no_url_account_or_key(tmp_path, capsys) -> None:
+    """The exception's own text never reaches the store or the render."""
+
+    cycle_run(
+        tmp_path,
+        decision("KO", "PREPARE"),
+        fail_acquisition=True,
+    )
+
+    store = DailyCycleStore(tmp_path / "cycles")
+    stored = store.path.read_text()
+    rendered = capsys.readouterr().out
+
+    for leaked in ("broker.invalid", "ACCT-99", "sk-FAKE-123", "https://"):
+        assert leaked not in stored
+        assert leaked not in rendered
+
+    finished = store.log().records[0].finished
+
+    assert finished is not None
+    assert any(
+        stage.because == "the acquisition stage failed (RuntimeError)"
+        for stage in finished.stages
+    )
+
+
+def test_a_failed_decision_pass_also_leaks_nothing(tmp_path, capsys) -> None:
+    code, store, _ = cycle_run(tmp_path, fail_decisions=True)
+    stored = store.path.read_text()
+    rendered = capsys.readouterr().out
+
+    assert code == 1
+    for leaked in ("internal.invalid", "sk-FAKE-456", "https://"):
+        assert leaked not in stored
+        assert leaked not in rendered
+
+    assert "failed cycle, not a quiet one" in rendered
+    assert "No recommendation changed" not in rendered
+    assert NO_ACTION not in rendered
+
+
+# ── demonstration 8: the course comes from workspace.action ────────
+
+
+def test_the_production_summary_is_built_from_workspace_action() -> None:
+    """Pinned on the source, so no injected seam can bypass it.
+
+    The AST of the command's DecisionSummary construction must source
+    every action field from `workspace.action`, and no actionability
+    may be re-inferred from a state string.
+    """
+
+    import ast
+    import pathlib
+
+    tree = ast.parse(pathlib.Path("app/commands/cycle.py").read_text())
+
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "DecisionSummary"
+    ]
+
+    assert len(calls) == 1, "one production construction"
+
+    keywords = {kw.arg: ast.dump(kw.value) for kw in calls[0].keywords}
+
+    for field in ("action_kind", "action_statement", "action_because"):
+        assert field in keywords
+        assert "attr='action'" in keywords[field], (
+            f"{field} must come from workspace.action"
+        )
+
+    assert "asks_for_something" in keywords
+    assert "attr='asks_for_something'" in keywords["asks_for_something"], (
+        "actionability is the ActionKind's own property, never re-inferred"
+    )
+
+    source = pathlib.Path("app/commands/cycle.py").read_text()
+
+    for reinfer in ('== "RECOMMEND"', "state in (", "RECOMMEND,"):
+        assert reinfer not in source, "no actionability from state strings"
+
+
+def test_the_stored_summary_round_trips_the_course(tmp_path, capsys) -> None:
+    _, store, _ = cycle_run(
+        tmp_path,
+        decision(
+            "KO",
+            "RECOMMEND",
+            kind=ActionKind.OPEN,
+            statement="Consider opening a position.",
+        ),
+    )
+
+    entry = store.log().records[0].finished.decisions[0]  # type: ignore[union-attr]
+
+    assert entry.action_kind == "open"
+    assert entry.action_statement == "Consider opening a position."
+    assert entry.asks_for_something is True
+
+
+# ── demonstration 9 and the journal stamp (acceptance 7, 11) ────────
 
 
 def test_cycle_decision_entries_all_carry_the_cycle_id() -> None:
-    """The journal stamp: present with a cycle, absent without one."""
-
     saved = []
 
     class Repository:
@@ -282,26 +672,42 @@ def test_cycle_decision_entries_all_carry_the_cycle_id() -> None:
     assert tagged.payload["cycle_id"] == "cycle0001"
     assert "cycle_id" not in untagged.payload
 
-    # Acceptance 11's journal half: the only difference the stamp makes
-    # is the stamp — every recorded fact is byte-identical beside it.
     without_stamp = {k: v for k, v in tagged.payload.items() if k != "cycle_id"}
 
     assert without_stamp == untagged.payload
 
 
-def test_untagged_page_view_entries_never_create_a_cycle_change(tmp_path) -> None:
-    """Movement is derived from cycle records only, by construction.
+def test_the_cycle_carries_judgment_and_never_reinterprets_it() -> None:
+    """The command consumes workspace fields; it imports neither the
+    decision engine nor the action builder, so identical inputs keep
+    identical outputs by construction."""
 
-    A page view writes a journal event and no cycle event, so it cannot
-    reach `movement` at all — the comparison base is the previous
-    cycle's own terminal record.
-    """
+    import ast
+    import pathlib
 
+    tree = ast.parse(pathlib.Path("app/commands/cycle.py").read_text())
+
+    imports = [
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    ]
+
+    for forbidden in (
+        "app.cio",
+        "app.application.executive.executive_action_builder",
+        "app.application.executive.decision_evidence_builder",
+    ):
+        assert not any(module.startswith(forbidden) for module in imports), forbidden
+
+
+def test_untagged_page_view_entries_never_create_a_cycle_change() -> None:
     previous = CycleFinished(
         cycle_id="prev00000001",
         finished_at=MOMENT,
         status=CycleStatus.COMPLETE,
         stages=(CycleStage(name="decisions", outcome=StageOutcome.RAN),),
+        comparison=ComparisonBasis(outcome=ComparisonOutcome.INITIAL_BASELINE),
         decisions=(DecisionSummary(symbol="KO", state="PREPARE", rationale="r"),),
     )
 
@@ -312,170 +718,15 @@ def test_untagged_page_view_entries_never_create_a_cycle_change(tmp_path) -> Non
     assert changed == ()
     assert unchanged == ("KO",)
 
-    # And a real state move is a change, with nothing else consulted.
     moved = (DecisionSummary(symbol="KO", state="RECOMMEND", rationale="r2"),)
 
     assert movement(moved, previous)[1] == ("KO",)
 
 
-def test_the_first_cycle_claims_no_changes(tmp_path) -> None:
-    current = (DecisionSummary(symbol="KO", state="PREPARE", rationale="r"),)
-
-    produced, changed, unchanged = movement(current, None)
-
-    assert produced == ("KO",)
-    assert changed == ()
-    assert unchanged == ()
-
-
-# ── 9: distinct cycle ids ───────────────────────────────────────────
-
-
-def test_a_second_run_receives_a_distinct_cycle_id(tmp_path, capsys) -> None:
-    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
-
-    asyncio.run(
-        run(
-            store=store,
-            acquisition=AcquisitionStub(store),
-            brains=BrainStub(),
-            briefings=BriefingStub(decision("KO", "PREPARE")),
-        )
-    )
-
-    log = store.log()
-
-    assert len(log.records) == 2
-    assert log.records[0].cycle_id != log.records[1].cycle_id
-    assert new_cycle_id() != new_cycle_id()
-
-
-# ── 10: "no changes" vs FAILED vs interrupted ───────────────────────
-
-
-def test_no_changes_is_its_own_state_and_never_a_failure_reading(
-    tmp_path, capsys
-) -> None:
-    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
-    capsys.readouterr()
-
-    # Second cycle, same decision: completed, nothing changed.
-    asyncio.run(
-        run(
-            store=store,
-            acquisition=AcquisitionStub(store),
-            brains=BrainStub(),
-            briefings=BriefingStub(decision("KO", "PREPARE")),
-        )
-    )
-
-    rendered = capsys.readouterr().out
-
-    assert "COMPLETE" in rendered
-    assert "No recommendation changed against the previous cycle." in rendered
-    assert "failed" not in rendered.casefold().replace("no price came back", "")
-
-    # And with a change, the contemporaneous rationale rides along.
-    asyncio.run(
-        run(
-            store=store,
-            acquisition=AcquisitionStub(store),
-            brains=BrainStub(),
-            briefings=BriefingStub(decision("KO", "RECOMMEND", "quality banded")),
-        )
-    )
-
-    changed = capsys.readouterr().out
-
-    assert "KO: now RECOMMEND — quality banded" in changed
-
-
-def test_no_action_is_said_exactly_and_only_when_nothing_calls_for_it(
-    tmp_path,
-) -> None:
-    quiet = CycleFinished(
-        cycle_id="c1",
-        finished_at=MOMENT,
-        status=CycleStatus.COMPLETE,
-        stages=(CycleStage(name="decisions", outcome=StageOutcome.RAN),),
-        securities_asked=1,
-        securities_priced=1,
-        decisions=(DecisionSummary(symbol="KO", state="PREPARE", rationale="r"),),
-        unchanged=("KO",),
-    )
-
-    rendered = render(
-        CycleRecord(
-            started=CycleStarted(cycle_id="c1", started_at=MOMENT), finished=quiet
-        ),
-        CycleLog(),
-    )
-
-    assert NO_ACTION in rendered
-
-    with_refusal = CycleFinished(
-        cycle_id="c2",
-        finished_at=MOMENT,
-        status=CycleStatus.COMPLETE,
-        stages=quiet.stages,
-        securities_asked=2,
-        securities_priced=1,
-        refusals=("HYPE: no price came back",),
-        decisions=quiet.decisions,
-        unchanged=("KO",),
-        attention=("HYPE: no price came back",),
-    )
-
-    rendered = render(
-        CycleRecord(
-            started=CycleStarted(cycle_id="c2", started_at=MOMENT),
-            finished=with_refusal,
-        ),
-        CycleLog(),
-    )
-
-    assert NO_ACTION not in rendered
-    assert "Consider today:" in rendered
-
-
-# ── 15: unknown schemas refused, never pooled ───────────────────────
-
-
-def test_unknown_cycle_schemas_are_counted_and_never_pooled(tmp_path) -> None:
-    store = DailyCycleStore(tmp_path / "cycles")
-
-    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
-    store.append_finished(
-        CycleFinished(
-            cycle_id="c1",
-            finished_at=MOMENT,
-            status=CycleStatus.COMPLETE,
-            stages=(),
-            decisions=(DecisionSummary(symbol="KO", state="PREPARE", rationale="r"),),
-        )
-    )
-
-    with store.path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps({"schema": 9, "kind": "finished", "cycle_id": "c9"}))
-        handle.write("\nnot json at all\n")
-
-    log = store.log()
-
-    assert len(log.records) == 1
-    assert log.skipped_records == 2
-    assert not log.is_complete_stream
-
-    rendered = render(log.records[0], log)
-
-    assert "could not be read" in rendered
-
-
-# ── 12–14: what this slice must not introduce ───────────────────────
+# ── what this slice must not introduce (acceptance 12) ──────────────
 
 
 def test_the_cycle_module_reaches_no_forbidden_path() -> None:
-    """AST over the new modules: no model, news, trade or message import."""
-
     import ast
     import pathlib
 
@@ -516,9 +767,7 @@ def test_the_cycle_module_reaches_no_forbidden_path() -> None:
 
 
 def test_the_render_vocabulary_keeps_the_standing_rules(tmp_path, capsys) -> None:
-    """No resolved/corrected; a gap is never a claim about the company."""
-
-    _, store, _ = cycle_run(tmp_path, decision("KO", "PREPARE"))
+    cycle_run(tmp_path, decision("KO", "PREPARE"))
 
     rendered = capsys.readouterr().out.casefold()
 

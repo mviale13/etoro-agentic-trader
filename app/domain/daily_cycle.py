@@ -69,12 +69,17 @@ class CycleStage:
 
 @dataclass(frozen=True, slots=True)
 class DecisionSummary:
-    """One security's disposition, as the cycle's pass produced it.
+    """One security's disposition and course, as the cycle's pass produced them.
 
     Carries only facts available at cycle time: the state, the
-    contemporaneous rationale the journal already holds, and the
-    evidence date the decision itself carries. Never a later-rebuilt
-    synthesis presented as contemporaneous.
+    contemporaneous rationale the journal already holds, the evidence
+    date the decision itself carries — and the **course**, which is
+    `workspace.action` as the existing pipeline built it. The action is
+    the canonical answer to *what should the investor consider*, and it
+    is carried verbatim: kind, statement, reason, and whether the
+    existing `ActionKind` says it asks for something. Nothing here
+    re-infers actionability from a decision-state string, and never a
+    later-rebuilt synthesis presented as contemporaneous.
     """
 
     symbol: str
@@ -82,6 +87,44 @@ class DecisionSummary:
     rationale: str
     conviction: int | None = None
     evidence_as_of: str = ""
+
+    #: The course, from the pipeline's own `ExecutiveAction` — carried,
+    #: never reinterpreted.
+    action_kind: str = ""
+    action_statement: str = ""
+    action_because: str = ""
+    asks_for_something: bool = False
+
+
+class ComparisonOutcome(StrEnum):
+    """What the cycle's change comparison rested on. Typed, never guessed.
+
+    A nullable prior-id whose meaning has to be inferred is exactly the
+    ambiguity the two-event lifecycle removed from status; the
+    comparison gets the same treatment.
+    """
+
+    #: The first valid cycle: no previous completed cycle exists, so no
+    #: change classification is claimed at all.
+    INITIAL_BASELINE = "initial_baseline"
+
+    #: Compared against one named prior cycle's terminal record.
+    COMPARED = "compared"
+
+    #: The comparison was refused — the held stream is incomplete, or no
+    #: useful decision pass ran — and no movement was classified.
+    REFUSED = "refused"
+
+
+@dataclass(frozen=True, slots=True)
+class ComparisonBasis:
+    outcome: ComparisonOutcome
+
+    #: The prior cycle compared against. Filled exactly when COMPARED.
+    prior_cycle_id: str = ""
+
+    #: Why the comparison was refused. Filled exactly when REFUSED.
+    because: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,9 +149,18 @@ class CycleFinished:
     #: The decision pass over the active book.
     decisions: tuple[DecisionSummary, ...] = ()
 
-    #: Movement against the previous cycle's terminal record — computed
-    #: from cycle-tagged facts only, never from page-view journal
-    #: entries, so page traffic can never manufacture a change here.
+    #: What the movement below rests on. INITIAL_BASELINE and REFUSED
+    #: carry empty movement — an unclassified day, never a quiet one.
+    comparison: ComparisonBasis = ComparisonBasis(
+        outcome=ComparisonOutcome.REFUSED,
+        because="the record carries no comparison basis",
+    )
+
+    #: Movement against the named previous cycle's terminal record —
+    #: computed from cycle-tagged facts only, never from page-view
+    #: journal entries, and only under a COMPARED basis: an incomplete
+    #: stream refuses the comparison outright, because the unreadable
+    #: record may be the actual previous cycle.
     newly_produced: tuple[str, ...] = ()
     changed: tuple[str, ...] = ()
     unchanged: tuple[str, ...] = ()
@@ -153,9 +205,17 @@ class CycleLog:
     records: tuple[CycleRecord, ...] = ()
     skipped_records: int = 0
 
+    #: Events that decode but form no valid two-event lifecycle: a
+    #: FINISHED with no STARTED, a second STARTED or FINISHED for one
+    #: cycle_id, a terminal before its start. Counted and disclosed,
+    #: never pooled into a valid record — and a byte-identical duplicate
+    #: is still a second lifecycle event, with no recovery precedence
+    #: invented for it.
+    lifecycle_anomalies: int = 0
+
     @property
     def is_complete_stream(self) -> bool:
-        return self.skipped_records == 0
+        return self.skipped_records == 0 and self.lifecycle_anomalies == 0
 
     @property
     def dangling(self) -> tuple[CycleRecord, ...]:
@@ -185,18 +245,16 @@ NO_ACTION = "No action suggested."
 
 def movement(
     current: tuple[DecisionSummary, ...],
-    previous: CycleFinished | None,
+    previous: CycleFinished,
 ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
-    """Produced / changed / unchanged, against the previous cycle only.
+    """Produced / changed / unchanged, against one named previous cycle.
 
-    With no previous terminal record every disposition is newly
-    produced and no change is claimed — a first cycle has nothing to
-    have changed *from*, and inventing a baseline would manufacture
-    exactly the false movement this comparison exists to prevent.
+    Called only under a COMPARED basis. The no-previous case is not a
+    parameter here any more: it is `INITIAL_BASELINE`, a typed state
+    that classifies nothing — a first cycle has nothing to have changed
+    *from*, and an incomplete stream refuses the comparison before this
+    function is reached.
     """
-
-    if previous is None:
-        return (tuple(entry.symbol for entry in current), (), ())
 
     before = {entry.symbol: entry.state for entry in previous.decisions}
 
@@ -209,3 +267,33 @@ def movement(
     )
 
     return (produced, changed, unchanged)
+
+
+def no_action_permitted(finished: CycleFinished) -> bool:
+    """Whether `No action suggested.` may be said, and nothing weaker.
+
+    All six, together: the cycle completed; a valid previous-cycle
+    comparison exists; no disposition changed; no newly produced course
+    asks for something; nothing was refused; and no required stage
+    failed. PARTIAL, FAILED, initial-baseline and comparison-refused
+    cycles never reach it — an unclassified or degraded day is not a
+    quiet one. And when it is said, it is a statement about the cycle's
+    findings, never an assessment that the portfolio is safe.
+    """
+
+    by_symbol = {entry.symbol: entry for entry in finished.decisions}
+
+    asking_new = any(
+        by_symbol[symbol].asks_for_something
+        for symbol in finished.newly_produced
+        if symbol in by_symbol
+    )
+
+    return (
+        finished.status is CycleStatus.COMPLETE
+        and finished.comparison.outcome is ComparisonOutcome.COMPARED
+        and not finished.changed
+        and not asking_new
+        and not finished.refusals
+        and all(stage.outcome is StageOutcome.RAN for stage in finished.stages)
+    )

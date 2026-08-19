@@ -20,6 +20,8 @@ from pathlib import Path
 from typing import Any
 
 from app.domain.daily_cycle import (
+    ComparisonBasis,
+    ComparisonOutcome,
     CycleFinished,
     CycleLog,
     CycleRecord,
@@ -77,6 +79,11 @@ class DailyCycleStore:
                 "securities_asked": finished.securities_asked,
                 "securities_priced": finished.securities_priced,
                 "refusals": list(finished.refusals),
+                "comparison": {
+                    "outcome": finished.comparison.outcome.value,
+                    "prior_cycle_id": finished.comparison.prior_cycle_id,
+                    "because": finished.comparison.because,
+                },
                 "decisions": [
                     {
                         "symbol": entry.symbol,
@@ -84,6 +91,10 @@ class DailyCycleStore:
                         "rationale": entry.rationale,
                         "conviction": entry.conviction,
                         "evidence_as_of": entry.evidence_as_of,
+                        "action_kind": entry.action_kind,
+                        "action_statement": entry.action_statement,
+                        "action_because": entry.action_because,
+                        "asks_for_something": entry.asks_for_something,
                     }
                     for entry in finished.decisions
                 ],
@@ -104,12 +115,25 @@ class DailyCycleStore:
     # ── reading ─────────────────────────────────────────────────────
 
     def log(self) -> CycleLog:
-        """Every cycle, oldest first, with the skipped-line count."""
+        """Every valid cycle oldest first, and every departure counted.
+
+        A valid lifecycle is one STARTED followed — in file order — by
+        at most one FINISHED for the same cycle_id. Everything else is
+        a **lifecycle anomaly**: a FINISHED with no earlier STARTED
+        (orphan or terminal-before-start — from a reader's seat the
+        same defect), a second STARTED for one id, a second FINISHED
+        for one id. Anomalous events are counted and never pooled into
+        a valid record — a byte-identical duplicate is still a second
+        lifecycle event, and no recovery precedence is invented for it.
+        Any anomaly makes the stream incomplete, which refuses
+        historical movement upstream.
+        """
 
         started: dict[str, CycleStarted] = {}
         order: list[str] = []
         finished: dict[str, CycleFinished] = {}
         skipped = 0
+        anomalies = 0
 
         if self.path.exists():
             with self.path.open(encoding="utf-8") as handle:
@@ -134,18 +158,35 @@ class DailyCycleStore:
                     if decoded is None:
                         skipped += 1
                     elif isinstance(decoded, CycleStarted):
-                        if decoded.cycle_id not in started:
+                        if decoded.cycle_id in started:
+                            # A second STARTED for one cycle_id.
+                            anomalies += 1
+                        else:
                             started[decoded.cycle_id] = decoded
                             order.append(decoded.cycle_id)
                     else:
-                        finished.setdefault(decoded.cycle_id, decoded)
+                        if decoded.cycle_id not in started:
+                            # Terminal with no start seen yet: an orphan
+                            # FINISHED or a terminal-before-start. Not
+                            # paired later — the ordering is the
+                            # lifecycle, and this event broke it.
+                            anomalies += 1
+                        elif decoded.cycle_id in finished:
+                            # A second FINISHED for one cycle_id.
+                            anomalies += 1
+                        else:
+                            finished[decoded.cycle_id] = decoded
 
         records = tuple(
             CycleRecord(started=started[cycle_id], finished=finished.get(cycle_id))
             for cycle_id in order
         )
 
-        return CycleLog(records=records, skipped_records=skipped)
+        return CycleLog(
+            records=records,
+            skipped_records=skipped,
+            lifecycle_anomalies=anomalies,
+        )
 
 
 # ── the line format ─────────────────────────────────────────────────
@@ -175,6 +216,7 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
                 securities_asked=int(row.get("securities_asked", 0)),
                 securities_priced=int(row.get("securities_priced", 0)),
                 refusals=tuple(str(item) for item in row.get("refusals", [])),
+                comparison=_comparison(row.get("comparison")),
                 decisions=tuple(
                     DecisionSummary(
                         symbol=str(entry["symbol"]),
@@ -186,6 +228,10 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
                             else None
                         ),
                         evidence_as_of=str(entry.get("evidence_as_of", "")),
+                        action_kind=str(entry.get("action_kind", "")),
+                        action_statement=str(entry.get("action_statement", "")),
+                        action_because=str(entry.get("action_because", "")),
+                        asks_for_something=bool(entry.get("asks_for_something", False)),
                     )
                     for entry in row.get("decisions", [])
                 ),
@@ -200,6 +246,20 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
         return None
     except (KeyError, TypeError, ValueError):
         return None
+
+
+def _comparison(raw: Any) -> ComparisonBasis:
+    if not isinstance(raw, dict):
+        return ComparisonBasis(
+            outcome=ComparisonOutcome.REFUSED,
+            because="the record carries no comparison basis",
+        )
+
+    return ComparisonBasis(
+        outcome=ComparisonOutcome(raw["outcome"]),
+        prior_cycle_id=str(raw.get("prior_cycle_id", "")),
+        because=str(raw.get("because", "")),
+    )
 
 
 def _time(value: Any) -> datetime:
