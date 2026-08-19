@@ -27,6 +27,7 @@ from app.commands import (
     evaluate,
     explain,
     financials,
+    identity_history,
     intelligence,
     intelligence_brief,
     intelligence_journal,
@@ -581,6 +582,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show the record ids, the cited refs and both change axes",
     )
 
+    identity_history_parser = subparsers.add_parser(
+        "identity-history",
+        help="Show what each provider has claimed this instrument was, look by look",
+        description=(
+            "The append-only identity observation stream, oldest first: both "
+            "providers' claims verbatim from every explicit funded "
+            "acquisition, the standing derived at each capture, and the raw "
+            "tenancy fields the payload carried. A past dispute followed by "
+            "newer agreement is worded as previously disputed with current "
+            "claims agreeing — never as resolved or corrected, because no "
+            "resolution evidence class is uniformly available. Read-only, no "
+            "model, appends nothing, and historical contradiction is not "
+            "decision-bearing"
+        ),
+    )
+    identity_history_parser.add_argument(
+        "symbol",
+        help="Ticker symbol, for example SE",
+    )
+
     journal_parser = subparsers.add_parser(
         "intelligence-journal",
         help="Show what this platform has observed over time, and how often",
@@ -1016,6 +1037,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "intelligence-journal":
         return await intelligence_journal.run(args.symbol, args.evidence)
+
+    if args.command == "identity-history":
+        return await identity_history.run(args.symbol)
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

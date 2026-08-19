@@ -308,6 +308,7 @@ class BatchCountingProvider:
 class ValuationStub:
     def __init__(self) -> None:
         self.asked: list[str] = []
+        self.observed_with: list[tuple[str, object]] = []
 
     def snapshot(self, symbol: str) -> ValuationSnapshot:
         self.asked.append(symbol)
@@ -319,6 +320,19 @@ class ValuationStub:
             dividend_yield=None,
             reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
         )
+
+    def snapshot_observing(
+        self,
+        symbol: str,
+        broker: object,
+        *,
+        subject: str,
+    ) -> ValuationSnapshot:
+        """The observing door: same reading, and the broker claim arrives."""
+
+        self.observed_with.append((symbol, subject, broker))
+
+        return self.snapshot(symbol)
 
 
 class CalendarStub:
@@ -548,3 +562,32 @@ def test_the_benchmark_is_downloaded_once_for_a_whole_batch(
     )
 
     assert downloads.count(YahooMarketProvider.BENCHMARK_SYMBOL) == 1
+
+
+def test_book_and_candidate_fundamentals_go_through_the_observing_door() -> None:
+    """The acquisition carries the broker claim to the funded read.
+
+    Broker claims are never persisted, so the acquisition is the only
+    layer that can hand one to the observation stream — a book or
+    candidate security must be read through `snapshot_observing`, and
+    the claim that arrives must be the broker's own account.
+    """
+
+    service, _ = make_cycle((HoldingStub(1, "AAPL"), HoldingStub(2, "KO")))
+    valuations = service._valuations  # noqa: SLF001
+
+    asyncio.run(service.acquire(candidate_budget=0))
+
+    assert valuations.observed_with, "no funded read carried a broker claim"
+
+    for _, subject, broker in valuations.observed_with:
+        assert broker.provider == "eToro"
+        assert broker.symbol
+        assert broker.taxonomy is not None, "the raw assetTypeId travels"
+        assert subject == broker.symbol, "filed under the investor's symbol"
+
+    # The stub's observing door delegates to its plain one, so `asked`
+    # mirrors it; what matters is that every funded read arrived WITH a
+    # broker claim — none reached the plain door directly.
+    assert {symbol for symbol, _, _ in valuations.observed_with} == {"AAPL", "KO"}
+    assert len(valuations.observed_with) == len(valuations.asked)

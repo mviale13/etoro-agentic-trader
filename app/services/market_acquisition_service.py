@@ -16,6 +16,7 @@ from app.domain.market_acquisition import (
 from app.domain.monetary_translation import TRANSLATABLE_TO_USD
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.protocol_entities import entities_for
+from app.domain.provider_identity import ProviderIdentityClaim
 from app.domain.research_candidate import ResearchCandidate
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
@@ -30,6 +31,9 @@ from app.providers.primary_supply_provider import CachedPrimarySupplyProvider
 from app.providers.token_facts_provider import CachedTokenFactsProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
+from app.services.cross_provider_identity_service import (
+    CrossProviderIdentityService,
+)
 from app.services.crypto_event_service import CryptoEventService
 from app.services.crypto_market_service import acquisition_targets
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
@@ -157,7 +161,7 @@ class MarketAcquisitionService:
         # benchmark is downloaded once for the cycle rather than once per
         # security. The strip's instruments are already deduplicated
         # against the book's by yahoo symbol above.
-        instruments = tuple(instrument for instrument, _ in targets)
+        instruments = tuple(instrument for instrument, _, _ in targets)
 
         try:
             quotes = await self._quotes.quotes(instruments)
@@ -171,8 +175,10 @@ class MarketAcquisitionService:
 
         securities = await asyncio.gather(
             *(
-                asyncio.to_thread(self._company, instrument, asset_class, priced)
-                for instrument, asset_class in targets
+                asyncio.to_thread(
+                    self._company, instrument, asset_class, priced, broker
+                )
+                for instrument, asset_class, broker in targets
                 if asset_class is not None
             )
         )
@@ -264,6 +270,7 @@ class MarketAcquisitionService:
         instrument: YahooInstrument,
         asset_class: AssetClass,
         priced: set[str],
+        broker: ProviderIdentityClaim | None,
     ) -> AcquiredSecurity:
         """
         Everything one security is asked for, in the order it is read.
@@ -279,7 +286,11 @@ class MarketAcquisitionService:
         return AcquiredSecurity(
             symbol=instrument.movrvest_symbol,
             priced=instrument.movrvest_symbol.upper().strip() in priced,
-            fundamentals=self._fundamentals(instrument.yahoo_symbol),
+            fundamentals=self._fundamentals(
+                instrument.yahoo_symbol,
+                broker,
+                subject=instrument.movrvest_symbol,
+            ),
             calendar=(
                 self._calendar(instrument.yahoo_symbol)
                 if asset_class is AssetClass.STOCK
@@ -443,8 +454,37 @@ class MarketAcquisitionService:
 
         return read
 
-    def _fundamentals(self, yahoo_symbol: str) -> bool:
+    def _fundamentals(
+        self,
+        yahoo_symbol: str,
+        broker: ProviderIdentityClaim | None,
+        *,
+        subject: str | None = None,
+    ) -> bool:
+        """One funded fundamentals read, remembered where it can be.
+
+        The observing door needs the broker's claim — the acquisition is
+        the only layer that holds it, because broker claims are never
+        persisted — so a target that arrived from the book or the
+        candidates is read through `snapshot_observing`, and one with no
+        broker account (nothing cross-checks it) through the plain door.
+        """
+
         try:
+            if broker is not None and subject is not None:
+                # The cache stays keyed by the vendor's symbol; the
+                # observation is filed under the security the investor
+                # holds. BTC's fundamentals live under BTC-USD and its
+                # identity history under BTC.
+                return (
+                    self._valuations.snapshot_observing(
+                        yahoo_symbol,
+                        broker,
+                        subject=subject,
+                    ).reading
+                    is not None
+                )
+
             return self._valuations.snapshot(yahoo_symbol).reading is not None
         except Exception:
             return False
@@ -462,7 +502,9 @@ class MarketAcquisitionService:
         portfolio: PortfolioSnapshot,
         candidates: Sequence[ResearchCandidate],
         candidate_budget: int,
-    ) -> tuple[tuple[YahooInstrument, AssetClass | None], ...]:
+    ) -> tuple[
+        tuple[YahooInstrument, AssetClass | None, ProviderIdentityClaim | None], ...
+    ]:
         """
         Everything this cycle will ask a provider about, once each.
 
@@ -477,7 +519,10 @@ class MarketAcquisitionService:
             tuple(holding.instrument_id for holding in portfolio.holdings)
         )
 
-        targets: dict[str, tuple[YahooInstrument, AssetClass | None]] = {}
+        targets: dict[
+            str,
+            tuple[YahooInstrument, AssetClass | None, ProviderIdentityClaim | None],
+        ] = {}
 
         def add(item: WatchlistItem) -> None:
             asset_class = AssetClass.from_etoro(item.asset_type_id)
@@ -488,7 +533,18 @@ class MarketAcquisitionService:
                 asset_class,
             )
 
-            targets.setdefault(instrument.yahoo_symbol, (instrument, asset_class))
+            # The broker's identity claim, carried to the fundamentals
+            # read so the funded acquisition can preserve it — it exists
+            # only in flight, and the observation stream is the first
+            # place it is ever written down (#215).
+            targets.setdefault(
+                instrument.yahoo_symbol,
+                (
+                    instrument,
+                    asset_class,
+                    CrossProviderIdentityService.from_broker(item),
+                ),
+            )
 
         for holding in portfolio.holdings:
             item = items.get(holding.instrument_id)
@@ -511,6 +567,6 @@ class MarketAcquisitionService:
         # The strip last, so a holding that is also an index keeps the
         # asset class the book knows it by rather than the strip's.
         for instrument in YahooMarketProvider.DEFAULT_INSTRUMENTS:
-            targets.setdefault(instrument.yahoo_symbol, (instrument, None))
+            targets.setdefault(instrument.yahoo_symbol, (instrument, None, None))
 
         return tuple(targets.values())
