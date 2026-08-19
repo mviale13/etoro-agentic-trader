@@ -31,6 +31,7 @@ whichever source the code happens to read first.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
@@ -284,15 +285,34 @@ def vendor_claim(symbol: str, info: dict[str, Any]) -> ProviderIdentityClaim:
     )
 
 
+#: The form vocabulary as lexical words. A form is present where the
+#: name prints it as a word of its own — bounded by anything that is
+#: not a letter, so spaces, hyphens, parentheses and full stops all
+#: delimit ("Sea Ltd-ADR" carries ADR) while a longer alphabetic word
+#: never does ("Trustco" is not a trust and "Madrid" holds no ADR).
+#: `[^\W\d_]` is a letter in any script: an accented letter is a letter,
+#: and a token flush against one is part of that word, not a form.
+_FORM_WORDS = re.compile(
+    "|".join(rf"(?<![^\W\d_]){form}(?![^\W\d_])" for form in _INSTRUMENT_FORMS)
+)
+
+
 def _forms(name: str | None) -> frozenset[str]:
-    """Which instrument-form words a provider's name carries."""
+    """Which instrument-form words a provider's name carries.
+
+    Words, never substrings. "Netflix, Inc." contains the letters
+    e-t-f and describes no exchange-traded fund; matched as a
+    substring, both providers' spellings of that name carried the
+    same manufactured form and the join came out CORROBORATED — a
+    false cross-provider agreement built from a coincidence of
+    letters, on the exact rung of the ladder that exists to be
+    stronger than assumption.
+    """
 
     if not name:
         return frozenset()
 
-    lowered = name.casefold()
-
-    return frozenset(form for form in _INSTRUMENT_FORMS if form in lowered)
+    return frozenset(_FORM_WORDS.findall(name.casefold()))
 
 
 def join_identity(
