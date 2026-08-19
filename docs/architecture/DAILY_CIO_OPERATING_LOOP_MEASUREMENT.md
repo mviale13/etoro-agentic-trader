@@ -294,3 +294,59 @@ in any artifact · call counts recorded at the transport boundary for
 httpx, requests and curl_cffi — nothing here is an estimate, and had
 any library hidden its transport that would have been stated rather
 than guessed.
+
+---
+
+## 9. Owner ruling — 2026-08-19
+
+Conclusion B is accepted, and the explicit Daily CIO cycle is
+**approved as the next product slice** — no scheduler, daemon,
+notifications, queue or dashboard button yet.
+
+### The persistence contract, corrected
+
+One final append-only cycle record is **insufficient**: a process
+failure before that single write leaves *never started*
+indistinguishable from *started and interrupted*. The minimum
+lifecycle is two events and a derivation:
+
+- append **STARTED** before the first network or acquisition action;
+- append **one terminal event** after orchestration finishes;
+- derive an **incomplete/interrupted** presentation wherever a STARTED
+  has no terminal event.
+
+**No terminal event is ever manufactured for a hard process kill** —
+the dangling STARTED *is* the record of the interruption, and a reader
+derives that meaning rather than a writer inventing it.
+
+### Execution status and evidence sufficiency are separate dimensions
+
+**COMPLETE means every required cycle stage ran.** It does not mean
+every provider succeeded, every security was fully evidenced, every
+analyst answered, or every security received an investment
+recommendation. Per-security refusals and evidence gaps may exist
+inside a COMPLETE cycle and **must remain visible** — the run-1
+measurement (COMPLETE with two unpriced tokens and two provider 401s)
+is the normal shape of a healthy cycle, not an exception to it.
+
+### Unequal information coverage is an expected operating condition
+
+**Information availability must never become a proxy for company
+quality.** Missing evidence must not be scored as adverse, converted to
+zero, or treated as proof that a business is weak. An evidence gap
+constrains the *claim* and the *permissible action*; it does not
+automatically prevent judgment.
+
+### "Every security gets a course"
+
+Means a useful explicit disposition in the existing product vocabulary
+— never a forced BUY/SELL/HOLD, and never investing capital where
+identity, pricing or risk cannot be bounded.
+
+### Frozen for the next slice
+
+Analyst thresholds, quorum rules, recommendation semantics, position
+sizing and decision policy are all **unchanged** in the coming
+implementation. Any movement there requires a separate measurement —
+run over recorded cycle output, which is exactly what the spine exists
+to produce.
