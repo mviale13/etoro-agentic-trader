@@ -15,22 +15,38 @@ amount appears anywhere.
 
 # B. MECHANISM READY, OWNER RISK POLICY REQUIRED
 
-**The mechanism exists and is computable now.** From held data alone
-the platform can produce, deterministically and monotonically: every
-holding's present weight; funding room above the cash target;
-per-security concentration room against `max_single_position`; crypto
-class room; and a REDUCE envelope equal to the overweight itself. The
-fifteen-scenario matrix passed every required monotonicity property
-using only existing owner-policy parameters, and conviction was not an
-input anywhere.
+**The capacity mechanism exists and is computable now — and capacity
+is not yet position size.** From held data alone the platform can
+produce, deterministically and monotonically, the **PortfolioCapacityCeiling**:
+every holding's present weight; funding room above the cash target;
+per-security concentration room against the single-position cap;
+crypto class room; and, for an overweight holding, the
+compliance-reduction *floor*. The fifteen-scenario matrix passed every
+required monotonicity property, and conviction was not an input
+anywhere.
 
-**What is missing is not engineering — it is five owner decisions**,
-led by one this measurement did not expect to find: **the platform has
-two independent policy sources that disagree, and the live executive
-path reads the weaker one.** Until the owner says which policy governs
-sizing and supplies the named parameters (§6), every bounded envelope
-must remain NONE, and OPEN/ADD stays what #219's ruling made it — a
-course to consider, never a bounded instruction.
+**What the mechanism does not establish is a responsible initial
+position or incremental ADD size.** An unheld equity under a 20%
+single-position cap has up to 20% of concentration *capacity* — and
+nothing measured here says 20% is an appropriate OPEN magnitude. The
+final **CapitalActionEnvelope** is a smaller, owner-policy-bound
+consideration *inside* that capacity:
+
+> final envelope = min( portfolio capacity ceiling · evidence ceiling ·
+> STANDARD_INITIAL_WEIGHT for OPEN · MAX_ADD_WEIGHT_CHANGE for ADD ·
+> any operative drawdown or staleness ceiling )
+
+and the two course-level parameters do not exist, so **broad-evidence
+OPEN and ADD are also unbounded in action terms today** — computable
+capacity, no position-size contract.
+
+**What is missing is not engineering — it is eight owner decisions**
+(§6), led by one this measurement did not expect to find: **the
+platform has two independent policy sources, and the same portfolio is
+non-compliant under one and compliant under the other.** Until the
+owner names the authoritative source and supplies the parameters,
+every final envelope must remain NONE, and OPEN/ADD stays what #219's
+ruling made it — a course to consider, never a bounded instruction.
 
 ---
 
@@ -44,12 +60,19 @@ course to consider, never a bounded instruction.
 | B | `data/investor_strategy.json` via `investment_policy_mapper` | **the entire Brain/executive path** |
 
 Path B's mapper **hardcodes the stock, ETF and crypto allocation
-targets to `0.0`** — only the cash target is real — and it carries the
-two genuinely dangerous defaults: `maximum_single_position_pct`
-missing ⇒ **100.0, silently** (a missing concentration limit becomes
-no limit at all), and `maximum_crypto_pct` missing ⇒ 0.0. Path B has
-no version or hash mechanism; path A has one, on the path that does
-not feed the executive.
+targets to `0.0`** — only the cash target is real — and its *code*
+carries two dangerous defaults: `maximum_single_position_pct` missing
+⇒ **100.0, silently** (a missing concentration limit becomes no limit
+at all), and `maximum_crypto_pct` missing ⇒ 0.0. **The live strategy
+file does not exercise those defaults** — it explicitly sets
+`maximum_crypto_pct: 65`, `maximum_single_position_pct: 20`,
+`target_cash_pct: 5` — so the defaults are latent hazards, never the
+live reading, and must not be substituted into any comparison. Path B
+has no version or hash mechanism; path A has one, on the path that
+does not feed the executive. And **the live strategy file carries
+`status: draft`** — a draft strategy cannot be called approved or
+authoritative without an owner ruling, and a draft cannot authorize a
+capital envelope.
 
 **No sizing contract can be written until the owner names the
 authoritative source.** This measurement used path A's constraint
@@ -121,12 +144,13 @@ evidence (transports patched to raise; zero calls). Normalized only:
 - weights: BTC **0.205**, ETH **0.105**, NOVO-B.CO 0.079, then eleven
   equity/fund positions between 0.001 and 0.005; top-3 0.389;
   HHI 0.059.
-- **The live account is over its own crypto constraint**: BTC+ETH ≈
-  0.31 of the account against `max_crypto` 20 (path A) — and against
-  path B's default the cap could be 0. The crypto ADD envelope is
-  **zero under either reading**, which is the class-room mechanism
-  working; which *number* it is zero against is the two-source
-  question again.
+- **The same portfolio is non-compliant under policy A and compliant
+  under policy B.** BTC+ETH ≈ 0.31 of the account is **over** path A's
+  `max_crypto` 20 and **under** path B's explicitly set
+  `maximum_crypto_pct` 65. Therefore no envelope can claim policy
+  compliance until one source is authoritative — the two-source
+  question in a single measured fact. (Path B's 0% missing-value
+  default is not the live reading and is not substituted here.)
 - Every capital-asking equity (DIS 0.003, BNP.PA 0.002) has essentially
   the full single-position room available; the binding constraint for
   any equity OPEN today would be the concentration cap, not cash.
@@ -154,7 +178,7 @@ exists) → final = min. Results:
 | 4 held below ceiling, ADD | eligible, room = cap − weight |
 | 5 held at ceiling | eligible, **envelope zero** |
 | 6 held above ceiling, course not REDUCE | envelope zero — worded as the owner's oversized sentence: the thesis unchanged, the capacity absent |
-| 7 REDUCE on oversized | envelope = the overweight itself |
+| 7 REDUCE on oversized | **compliance-reduction floor** = the overweight — *at least* this much restores compliance; never a maximum, a target, or an exit judgment |
 | 8 concentrated / 10 cash below reserve | envelope zero, binding constraint = funding room |
 | 9 drawdown breach | **envelope unchanged — the honest gap**: no owner loss budget exists to bind it |
 | 11 small liquid company | same envelope as the large one — size is not an input |
@@ -162,6 +186,25 @@ exists) → final = min. Results:
 | 13 stale price | refused, none |
 | 14 correlated pair | **unsupportable — no sector or correlation data exists**; the two compete only through the shared funding room |
 | 15 crypto | **refused**: the equity contract cannot govern a digital asset honestly — its own gate family, its own cap, and pretending otherwise would blur which rules bound the action |
+
+**Five amendment pins**, added on the owner's correction, all
+asserted (the 3% and 2% figures are scenario fixtures only, never
+owner policy):
+
+- a 20% concentration cap plus a 3% fixture initial-position limit
+  yields a **3% OPEN envelope, not 20%** — capacity is the ceiling's
+  ceiling, never the size;
+- a 4% holding plus a 2% fixture ADD-change limit yields **at most a
+  2% ADD envelope** although concentration room is 16%;
+- a 4% overweight establishes a **4% compliance-reduction floor** —
+  worded *"at least 4% of the portfolio would need to be reduced to
+  restore policy compliance"*, never a maximum reduction, never an
+  order, never a currency amount;
+- the same **31% crypto exposure is over policy A's 20% and under
+  policy B's 65%** — non-compliant and compliant at once, which is why
+  neither can bind an envelope until one is authoritative;
+- a **draft policy refuses the final envelope** while the capacity
+  ceiling stays visible.
 
 **Every required monotonicity property held**: gaps never increase the
 envelope (ruling G, by construction — a gap can only add a ceiling);
@@ -190,7 +233,14 @@ bound and nothing else.
 descriptive envelope backed by a maximum weight-change, each ceiling
 named, the binding constraint named.
 
-The candidate `CapitalActionEnvelope` survives with three amendments:
+**The candidate object splits in two.** `PortfolioCapacityCeiling` —
+the hard maximum room under cash, concentration and class constraints,
+computable today — and `CapitalActionEnvelope` — the smaller,
+owner-policy-bound action consideration inside it, whose final value
+is the minimum of the capacity ceiling, the evidence ceiling, the
+course's own owner parameter (STANDARD_INITIAL_WEIGHT for OPEN,
+MAX_ADD_WEIGHT_CHANGE for ADD) and any operative drawdown or staleness
+ceiling. The envelope object further survives with three amendments:
 `liquidity ceiling` must be carried as **unmeasured** for equities
 rather than a number; `owner-policy version` requires the hash
 mechanism to exist on the *executive* policy path (today it exists only
@@ -202,8 +252,12 @@ version bound it*.
 
 ## 5. The eighteen acceptance questions
 
-1. **Yes** — one contract governed OPEN, ADD and REDUCE in the matrix;
-   REDUCE's envelope is the overweight, the same arithmetic inverted.
+1. **Not as one symmetric contract.** OPEN and ADD need maximum
+   *upward-change* envelopes bounded by owner parameters that do not
+   exist yet; REDUCE computes a *policy-compliance reduction floor* —
+   "at least this much" — and any reduction beyond it needs a separate
+   owner rule or an explicit thesis reason. One capacity arithmetic,
+   two different action semantics.
 2. **Yes** — conviction appears nowhere and nothing missed it.
 3. **Yes, by construction** — a gap can only add a ceiling (ruling G).
 4. The #219 six-family floor, plus a readable broker answer
@@ -215,7 +269,7 @@ version bound it*.
 6. **Yes** — weight is normalized, policy-compatible, and leaks
    nothing; currency requires an executability model that does not
    exist and personal figures this report may not carry.
-7. See §6 — five decisions, led by the two-source reconciliation.
+7. See §6 — eight decisions, led by the two-source reconciliation.
 8. **Only if the owner sets a loss budget.** Scenario 9 measured the
    status quo honestly: a portfolio in drawdown sizes exactly as one
    that is not, because `max_drawdown` is unset on path A and optional
@@ -246,21 +300,38 @@ version bound it*.
 
 ## 6. The owner decisions required — and what stays NONE until then
 
-1. **Which policy governs sizing** — `config/policy.yaml` or the
-   strategy file, and the reconciliation or deletion of the dormant
-   `config.py` risk family. Without this, no envelope may claim a
-   policy basis; the hash/version mechanism must ride on whichever
-   source wins.
-2. **The STARTER weight** — the maximum first-position or
-   under-uncertainty weight-change. Until set, every gap-limited
-   envelope is NONE.
-3. **The missing-limit rule** — a strategy file omitting
-   `maximum_single_position_pct` must *refuse* sizing rather than
-   default to 100.0. (Safety correction awaiting ratification.)
-4. **The staleness limit** — how old a price and a portfolio reading
+1. **The authoritative policy source and its version** —
+   `config/policy.yaml` or the strategy file, the reconciliation or
+   deletion of the dormant `config.py` risk family, and the hash
+   mechanism riding on whichever source wins. A **draft** strategy
+   cannot authorize a capital envelope.
+2. **The STARTER maximum weight** — the under-uncertainty bound.
+3. **STANDARD_INITIAL_WEIGHT** — the maximum weight for a broadly
+   evidenced *new* position. Without it, broad-evidence OPEN has
+   computable capacity and no position-size contract.
+4. **MAX_ADD_WEIGHT_CHANGE** — the maximum additional weight change
+   considered in one cycle. Without it, ADD is likewise unbounded in
+   action terms.
+5. **The missing-limit rule** — an absent `maximum_single_position_pct`
+   must *refuse* sizing rather than default to 100.0. (A latent code
+   hazard today; the live file sets the value explicitly.)
+6. **The staleness limits** — how old a price and a portfolio reading
    may be before the envelope refuses.
-5. **The loss budget** — whether `max_drawdown` binds new capital, and
+7. **The loss budget** — whether `max_drawdown` binds new capital, and
    at what depth; today a breach changes nothing.
+8. **REDUCE_POLICY** — restore-to-policy-cap only, or a thesis-driven
+   target/exit under a separately defined rule. Until selected, the
+   only supportable sentence is: *"At least [normalized overweight]
+   would need to be reduced to restore policy compliance."* — never an
+   order, never a currency amount.
+
+Four standing statements beside the inventory:
+**`max_single_position` is a hard concentration ceiling, not a
+suggested initial position.** **`minimum_cash_pct` and
+`target_cash_pct` need explicit sizing semantics** — the live file
+sets minimum 40 above target 5, and nothing consumes the minimum
+today. **Liquidity remains unmeasured for equities.** **A draft
+strategy cannot authorize a capital envelope.**
 
 Also parked, per the #219 ruling E: DOCUMENT_REFUSED propagation
 (named follow-on, not a sizing prerequisite); and equity liquidity —
