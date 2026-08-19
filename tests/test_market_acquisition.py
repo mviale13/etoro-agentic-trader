@@ -321,10 +321,16 @@ class ValuationStub:
             reading=Provenance(source="Yahoo Finance", observed_at=datetime.now(UTC)),
         )
 
-    def snapshot_observing(self, symbol: str, broker: object) -> ValuationSnapshot:
+    def snapshot_observing(
+        self,
+        symbol: str,
+        broker: object,
+        *,
+        subject: str,
+    ) -> ValuationSnapshot:
         """The observing door: same reading, and the broker claim arrives."""
 
-        self.observed_with.append((symbol, broker))
+        self.observed_with.append((symbol, subject, broker))
 
         return self.snapshot(symbol)
 
@@ -574,13 +580,14 @@ def test_book_and_candidate_fundamentals_go_through_the_observing_door() -> None
 
     assert valuations.observed_with, "no funded read carried a broker claim"
 
-    for _, broker in valuations.observed_with:
+    for _, subject, broker in valuations.observed_with:
         assert broker.provider == "eToro"
         assert broker.symbol
         assert broker.taxonomy is not None, "the raw assetTypeId travels"
+        assert subject == broker.symbol, "filed under the investor's symbol"
 
     # The stub's observing door delegates to its plain one, so `asked`
     # mirrors it; what matters is that every funded read arrived WITH a
     # broker claim — none reached the plain door directly.
-    assert {symbol for symbol, _ in valuations.observed_with} == {"AAPL", "KO"}
+    assert {symbol for symbol, _, _ in valuations.observed_with} == {"AAPL", "KO"}
     assert len(valuations.observed_with) == len(valuations.asked)

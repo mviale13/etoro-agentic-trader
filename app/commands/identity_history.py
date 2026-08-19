@@ -21,9 +21,9 @@ async def run(
 ) -> int:
     key = symbol.upper().strip()
 
-    history = IdentityHistory(
-        symbol=key,
-        observations=(store or IdentityObservationStore()).observations(key),
+    history = IdentityHistory.from_stream(
+        key,
+        (store or IdentityObservationStore()).stream(key),
     )
 
     print(render(history))
@@ -42,12 +42,38 @@ def render(history: IdentityHistory) -> str:
         "",
     ]
 
-    if not history.observations:
-        lines.append(
-            "No identity observations are held for this symbol. The stream "
-            "fills at explicit funded acquisition, and a fresh installation "
-            "has empty history."
+    # Incompleteness is disclosed before anything else is claimed. An
+    # empty stream and an incomplete one are different facts: the first
+    # was read completely and holds nothing, the second holds lines
+    # this platform could not speak for.
+    if not history.is_complete:
+        refused = ", ".join(
+            f"{count} under schema {declared}"
+            for declared, count in history.unsupported_schemas
         )
+        detail = f"{history.unreadable_records} unreadable" + (
+            f"; {refused}" if refused else ""
+        )
+
+        lines.append(
+            f"{history.skipped} stored record(s) could not be read ({detail}). "
+            "The observations below are the readable ones only."
+        )
+        lines.append("")
+
+    if not history.observations:
+        if history.is_complete:
+            lines.append(
+                "No identity observations are held for this symbol. The stream "
+                "fills at explicit funded acquisition, and a fresh installation "
+                "has empty history."
+            )
+
+            return "\n".join(lines)
+
+        lines.append("No stored record could be read.")
+        lines.append("")
+        lines.append(f"Lifecycle: {history.lifecycle_stated}")
 
         return "\n".join(lines)
 

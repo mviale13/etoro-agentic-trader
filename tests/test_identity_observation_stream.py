@@ -132,7 +132,7 @@ def acquire_twice(tmp_path) -> IdentityObservationStore:
         cache=cache,
         observations=store,
     )
-    first.snapshot_observing("SPCX", BROKER)
+    first.snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     clear(cache)
 
@@ -141,7 +141,7 @@ def acquire_twice(tmp_path) -> IdentityObservationStore:
         cache=cache,
         observations=store,
     )
-    second.snapshot_observing("SPCX", BROKER)
+    second.snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     return store
 
@@ -328,8 +328,8 @@ def test_a_cache_served_read_observes_nothing(tmp_path) -> None:
         observations=store,
     )
 
-    provider.snapshot_observing("SPCX", BROKER)
-    provider.snapshot_observing("SPCX", BROKER)
+    provider.snapshot_observing("SPCX", BROKER, subject="SPCX")
+    provider.snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     assert len(store.observations("SPCX")) == 1
 
@@ -360,7 +360,7 @@ def test_the_observation_lands_before_the_cache_replacement(tmp_path) -> None:
         cache=cache,
         observations=OrderSpy(tmp_path / "identity"),
     )
-    first.snapshot_observing("SPCX", BROKER)
+    first.snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     clear(cache)
     cache.write("SPCX", first._encode(snapshot_for(DISPUTED, MONDAY)))  # noqa: SLF001
@@ -380,7 +380,7 @@ def test_the_observation_lands_before_the_cache_replacement(tmp_path) -> None:
         )
     )
 
-    second.snapshot_observing("SPCX", BROKER)
+    second.snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     assert seen_at_append[0] is None, "first acquire: cache empty at append"
     assert seen_at_append[1] == "SPAC and New Issue ETF", (
@@ -434,7 +434,7 @@ def test_the_observing_door_writes_the_same_cache_record_as_the_plain_one(
         provider=ProviderStub(reading),  # type: ignore[arg-type]
         cache=observing_cache,
         observations=IdentityObservationStore(tmp_path / "identity"),
-    ).snapshot_observing("SPCX", BROKER)
+    ).snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     plain = plain_cache.read("SPCX")
     observing = observing_cache.read("SPCX")
@@ -501,7 +501,7 @@ def test_no_observation_is_appended_when_the_vendor_makes_no_claim(tmp_path) -> 
         provider=ProviderStub(silent),  # type: ignore[arg-type]
         cache=JsonCache(tmp_path / "fundamentals", schema=4),
         observations=store,
-    ).snapshot_observing("SPCX", BROKER)
+    ).snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     assert store.observations("SPCX") == ()
 
@@ -513,7 +513,7 @@ def test_a_currently_disputed_history_says_so_without_stronger_words(tmp_path) -
         provider=ProviderStub(observed(DISPUTED, MONDAY)),  # type: ignore[arg-type]
         cache=JsonCache(tmp_path / "fundamentals", schema=4),
         observations=store,
-    ).snapshot_observing("SPCX", BROKER)
+    ).snapshot_observing("SPCX", BROKER, subject="SPCX")
 
     history = IdentityHistory(symbol="SPCX", observations=store.observations("SPCX"))
 
@@ -535,3 +535,345 @@ def test_never_disputed_is_its_own_sentence() -> None:
     history = IdentityHistory(symbol="KO", observations=(steady,))
 
     assert history.lifecycle_stated == "Never disputed across the held captures."
+
+
+# ── the canonical filing symbol (correction 1) ──────────────────────
+
+
+def test_history_is_filed_under_the_investor_symbol_and_cache_under_the_vendors(
+    tmp_path,
+) -> None:
+    """Broker BTC, vendor BTC-USD: two symbols, two jobs.
+
+    The fundamentals cache stays keyed by the vendor's translation and
+    the identity history by the security the investor holds. Neither
+    claim is rewritten to make their symbols agree — the difference is
+    part of what was observed.
+    """
+
+    store = IdentityObservationStore(tmp_path / "identity")
+    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+
+    broker = ProviderIdentityClaim(
+        provider="eToro",
+        symbol="BTC",
+        instrument_id="100000",
+        taxonomy="10",
+        name="Bitcoin",
+    )
+    vendor = ProviderIdentityClaim(
+        provider="Yahoo Finance",
+        symbol="BTC-USD",
+        name="Bitcoin USD",
+        taxonomy="CRYPTOCURRENCY",
+    )
+
+    CachedValueProvider(
+        provider=ProviderStub(observed(vendor, TUESDAY)),  # type: ignore[arg-type]
+        cache=cache,
+        observations=store,
+    ).snapshot_observing("BTC-USD", broker, subject="BTC")
+
+    # The cache holds the reading under the vendor's key.
+    assert cache.read("BTC-USD") is not None
+    assert cache.read("BTC") is None
+
+    # The history is under the investor's symbol, and only there.
+    held = store.observations("BTC")
+
+    assert len(held) == 1
+    assert held[0].symbol == "BTC"
+    assert store.observations("BTC-USD") == ()
+
+    # And each claim keeps its own spelling verbatim.
+    assert held[0].broker.symbol == "BTC"
+    assert held[0].vendor.symbol == "BTC-USD"
+
+
+def test_a_venue_translated_listing_separates_the_same_way(tmp_path) -> None:
+    """Broker NESN.ZU, vendor NESN.SW — the equity translation case."""
+
+    store = IdentityObservationStore(tmp_path / "identity")
+    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+
+    broker = ProviderIdentityClaim(
+        provider="eToro", symbol="NESN.ZU", name="Nestle", taxonomy="5"
+    )
+    vendor = ProviderIdentityClaim(
+        provider="Yahoo Finance",
+        symbol="NESN.SW",
+        name="Nestle S.A.",
+        taxonomy="EQUITY",
+    )
+
+    CachedValueProvider(
+        provider=ProviderStub(observed(vendor, TUESDAY)),  # type: ignore[arg-type]
+        cache=cache,
+        observations=store,
+    ).snapshot_observing("NESN.SW", broker, subject="NESN.ZU")
+
+    assert cache.read("NESN.SW") is not None
+    assert store.observations("NESN.ZU")[0].symbol == "NESN.ZU"
+    assert store.observations("NESN.SW") == ()
+    assert store.observations("NESN.ZU")[0].vendor.symbol == "NESN.SW"
+
+
+def test_the_vendor_key_history_does_not_impersonate_the_investors(tmp_path) -> None:
+    """`identity-history BTC-USD` finds nothing filed as the investor's."""
+
+    store = IdentityObservationStore(tmp_path / "identity")
+
+    rendered = render(IdentityHistory.from_stream("BTC-USD", store.stream("BTC-USD")))
+
+    assert "No identity observations are held" in rendered
+
+
+# ── an incomplete stream never claims a complete lifecycle (correction 2) ──
+
+
+def append_raw(store: IdentityObservationStore, symbol: str, line: str) -> None:
+    path = store.path_for(symbol)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
+
+
+def test_a_skipped_unknown_schema_line_forbids_never_disputed(tmp_path) -> None:
+    """The pin the correction names.
+
+    A readable ASSUMED beside a skipped UNRESOLVED-shaped line under an
+    unknown schema: the readable remainder must not speak for the
+    stream. "Never disputed" is a claim about the complete history, and
+    this reader did not read all of it.
+    """
+
+    store = IdentityObservationStore(tmp_path / "identity")
+
+    CachedValueProvider(
+        provider=ProviderStub(observed(AGREEING, TUESDAY)),  # type: ignore[arg-type]
+        cache=JsonCache(tmp_path / "fundamentals", schema=4),
+        observations=store,
+    ).snapshot_observing("SPCX", BROKER, subject="SPCX")
+
+    append_raw(
+        store,
+        "SPCX",
+        '{"schema": 2, "symbol": "SPCX", "standing": "unresolved"}',
+    )
+
+    reading = store.stream("SPCX")
+
+    assert len(reading.observations) == 1
+    assert reading.unsupported_schemas == (("2", 1),)
+    assert not reading.is_complete
+
+    history = IdentityHistory.from_stream("SPCX", reading)
+
+    assert "incomplete" in history.lifecycle_stated
+    assert "Never disputed" not in history.lifecycle_stated
+    assert "no complete lifecycle is claimed" in history.lifecycle_stated
+
+
+def test_a_corrupt_later_line_forbids_currently_disputed(tmp_path) -> None:
+    """A readable UNRESOLVED with an unreadable line after it.
+
+    The unread line may be the newer capture; claiming "currently
+    disputed" would present a partial read as the current state of the
+    complete stream.
+    """
+
+    store = IdentityObservationStore(tmp_path / "identity")
+
+    CachedValueProvider(
+        provider=ProviderStub(observed(DISPUTED, MONDAY)),  # type: ignore[arg-type]
+        cache=JsonCache(tmp_path / "fundamentals", schema=4),
+        observations=store,
+    ).snapshot_observing("SPCX", BROKER, subject="SPCX")
+
+    append_raw(store, "SPCX", "{not json")
+
+    reading = store.stream("SPCX")
+
+    assert reading.unreadable_records == 1
+    assert len(reading.observations) == 1
+    assert reading.observations[0].standing is IdentityStanding.UNRESOLVED
+
+    history = IdentityHistory.from_stream("SPCX", reading)
+
+    assert "Currently disputed" not in history.lifecycle_stated
+    assert "incomplete" in history.lifecycle_stated
+
+
+def test_empty_and_incomplete_histories_are_distinct(tmp_path) -> None:
+    store = IdentityObservationStore(tmp_path / "identity")
+
+    # Empty: read completely, holds nothing, no lifecycle claimed.
+    empty = render(IdentityHistory.from_stream("KO", store.stream("KO")))
+
+    assert "empty history" in empty
+    assert "incomplete" not in empty
+    assert "Lifecycle:" not in empty
+
+    # Incomplete-and-nothing-readable: a different fact, said differently.
+    append_raw(store, "SE", "corrupt")
+
+    broken = render(IdentityHistory.from_stream("SE", store.stream("SE")))
+
+    assert "could not be read" in broken
+    assert "empty history" not in broken
+    assert "incomplete" in broken
+
+
+def test_the_cli_discloses_the_skipped_counts(tmp_path) -> None:
+    store = acquire_twice(tmp_path)
+
+    append_raw(store, "SPCX", '{"schema": 7, "symbol": "SPCX"}')
+    append_raw(store, "SPCX", "corrupt line")
+
+    history = IdentityHistory.from_stream("SPCX", store.stream("SPCX"))
+    rendered = render(history)
+
+    assert "2 stored record(s) could not be read" in rendered
+    assert "1 unreadable" in rendered
+    assert "1 under schema 7" in rendered
+    assert "readable ones only" in rendered
+    # Both real observations still shown; nothing decision-bearing said.
+    assert "SPAC and New Issue ETF" in rendered
+    assert DISCLOSURE in rendered
+
+
+def test_fully_readable_histories_keep_the_three_complete_sentences(
+    tmp_path,
+) -> None:
+    store = acquire_twice(tmp_path)
+
+    history = IdentityHistory.from_stream("SPCX", store.stream("SPCX"))
+
+    assert history.is_complete
+    assert history.lifecycle_stated == "Previously disputed; current claims agree."
+
+
+def test_the_incomplete_sentence_is_in_the_finite_vocabulary() -> None:
+    assert any("incomplete" in sentence for sentence in LIFECYCLE_SENTENCES)
+    assert len(LIFECYCLE_SENTENCES) == 4
+
+
+# ── the production route, pinned (correction 3) ─────────────────────
+
+
+def test_only_the_acquisition_constructs_an_acquiring_provider() -> None:
+    """AST over the whole app tree: who can fetch, and who cannot.
+
+    Pins the boundary as it is: exactly one production composition
+    builds an acquiring `CachedValueProvider`, and every read surface
+    goes through the `stored()` door, which cannot fetch.
+    """
+
+    import ast
+    import pathlib
+
+    constructs: dict[str, list[str]] = {"acquiring": [], "stored": []}
+
+    for path in pathlib.Path("app").rglob("*.py"):
+        tree = ast.parse(path.read_text())
+
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+
+            if (
+                isinstance(node.func, ast.Name)
+                and node.func.id == "CachedValueProvider"
+            ):
+                constructs["acquiring"].append(path.as_posix())
+
+            if (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr == "stored"
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "CachedValueProvider"
+            ):
+                constructs["stored"].append(path.as_posix())
+
+    assert constructs["acquiring"] == ["app/services/market_acquisition_service.py"], (
+        "a second production composition can fetch"
+    )
+
+    assert sorted(set(constructs["stored"])) == [
+        "app/api/routes/executive.py",
+        "app/services/company_facts_service.py",
+        "app/services/token_facts_service.py",
+    ], "a read surface stopped using the stored door"
+
+
+def test_the_observing_door_has_exactly_one_production_caller() -> None:
+    """`snapshot_observing` is called from the acquisition and nowhere else."""
+
+    import ast
+    import pathlib
+
+    callers = []
+
+    for path in pathlib.Path("app").rglob("*.py"):
+        tree = ast.parse(path.read_text())
+
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "snapshot_observing"
+            ):
+                callers.append(path.as_posix())
+
+    assert callers == ["app/services/market_acquisition_service.py"]
+
+
+def test_the_plain_door_is_reached_only_without_a_broker_claim() -> None:
+    """Inside `_fundamentals`, the observing call sits under the
+    broker-claim guard and the plain call is the brokerless fall-through
+    — a market-strip instrument, which no broker describes."""
+
+    import ast
+    import pathlib
+
+    tree = ast.parse(
+        pathlib.Path("app/services/market_acquisition_service.py").read_text()
+    )
+
+    fundamentals = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == "_fundamentals"
+    )
+
+    guarded = [
+        node
+        for node in ast.walk(fundamentals)
+        if isinstance(node, ast.If)
+        and any(
+            isinstance(name, ast.Name) and name.id == "broker"
+            for name in ast.walk(node.test)
+        )
+    ]
+
+    assert len(guarded) == 1, "one broker-claim guard"
+
+    inside = {
+        call.func.attr
+        for call in ast.walk(guarded[0])
+        if isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+    }
+
+    assert "snapshot_observing" in inside
+    assert "snapshot" not in inside, "the plain door is not under the guard"
+
+    everywhere = [
+        call.func.attr
+        for call in ast.walk(fundamentals)
+        if isinstance(call, ast.Call)
+        and isinstance(call.func, ast.Attribute)
+        and call.func.attr in ("snapshot", "snapshot_observing")
+    ]
+
+    assert sorted(everywhere) == ["snapshot", "snapshot_observing"]

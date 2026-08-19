@@ -286,7 +286,11 @@ class MarketAcquisitionService:
         return AcquiredSecurity(
             symbol=instrument.movrvest_symbol,
             priced=instrument.movrvest_symbol.upper().strip() in priced,
-            fundamentals=self._fundamentals(instrument.yahoo_symbol, broker),
+            fundamentals=self._fundamentals(
+                instrument.yahoo_symbol,
+                broker,
+                subject=instrument.movrvest_symbol,
+            ),
             calendar=(
                 self._calendar(instrument.yahoo_symbol)
                 if asset_class is AssetClass.STOCK
@@ -454,6 +458,8 @@ class MarketAcquisitionService:
         self,
         yahoo_symbol: str,
         broker: ProviderIdentityClaim | None,
+        *,
+        subject: str | None = None,
     ) -> bool:
         """One funded fundamentals read, remembered where it can be.
 
@@ -465,9 +471,17 @@ class MarketAcquisitionService:
         """
 
         try:
-            if broker is not None:
+            if broker is not None and subject is not None:
+                # The cache stays keyed by the vendor's symbol; the
+                # observation is filed under the security the investor
+                # holds. BTC's fundamentals live under BTC-USD and its
+                # identity history under BTC.
                 return (
-                    self._valuations.snapshot_observing(yahoo_symbol, broker).reading
+                    self._valuations.snapshot_observing(
+                        yahoo_symbol,
+                        broker,
+                        subject=subject,
+                    ).reading
                     is not None
                 )
 

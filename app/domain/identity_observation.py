@@ -89,17 +89,59 @@ class ProviderIdentityObservation:
 
 
 #: The finite lifecycle vocabulary. Every sentence a history can produce
-#: is one of these three; a test enumerates them and pins that none says
+#: is one of these four; a test enumerates them and pins that none says
 #: "resolved" or "corrected", because no resolution evidence class is
 #: uniformly available to earn either word.
+#:
+#: The fourth is the honesty case. The three lifecycle claims are
+#: claims about the **complete** stream — and a stream holding lines
+#: this reader could not decode is one whose completeness is exactly
+#: what cannot be claimed: a skipped disputed capture must never let
+#: the readable remainder say "never disputed".
 _CURRENTLY_DISPUTED = (
     "Currently disputed: the latest capture's claims disagree about what "
     "kind of instrument this is."
 )
 _PREVIOUSLY_DISPUTED = "Previously disputed; current claims agree."
 _NEVER_DISPUTED = "Never disputed across the held captures."
+_INCOMPLETE = (
+    "History is incomplete: the stream holds records this platform could "
+    "not read, so no complete lifecycle is claimed."
+)
 
-LIFECYCLE_SENTENCES = (_CURRENTLY_DISPUTED, _PREVIOUSLY_DISPUTED, _NEVER_DISPUTED)
+LIFECYCLE_SENTENCES = (
+    _CURRENTLY_DISPUTED,
+    _PREVIOUSLY_DISPUTED,
+    _NEVER_DISPUTED,
+    _INCOMPLETE,
+)
+
+
+@dataclass(frozen=True, slots=True)
+class IdentityStreamReading:
+    """What one read of the stream found: the decoded, and the counted.
+
+    The store's read contract. Observations are oldest first;
+    `unreadable_records` counts every non-empty stored line that did
+    not decode under this reader's schema; `unsupported_schemas`
+    tallies the refused-not-pooled lines by the schema value each
+    declared. None of it is decision-bearing — the counts exist so a
+    lifecycle sentence can decline to overclaim, not so anything gates.
+    """
+
+    observations: tuple[ProviderIdentityObservation, ...]
+    unreadable_records: int = 0
+    unsupported_schemas: tuple[tuple[str, int], ...] = ()
+
+    @property
+    def is_complete(self) -> bool:
+        return self.unreadable_records == 0 and not self.unsupported_schemas
+
+    @property
+    def skipped(self) -> int:
+        return self.unreadable_records + sum(
+            count for _, count in self.unsupported_schemas
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,6 +158,41 @@ class IdentityHistory:
 
     #: Chronological: the first funded look first.
     observations: tuple[ProviderIdentityObservation, ...]
+
+    #: Non-empty stored lines the reader could not decode, carried from
+    #: the store's read so the lifecycle can refuse to speak for a
+    #: stream it did not fully read. Zero and empty on a fully readable
+    #: stream, which is the ordinary case.
+    unreadable_records: int = 0
+    unsupported_schemas: tuple[tuple[str, int], ...] = ()
+
+    @classmethod
+    def from_stream(
+        cls, symbol: str, reading: IdentityStreamReading
+    ) -> IdentityHistory:
+        return cls(
+            symbol=symbol,
+            observations=reading.observations,
+            unreadable_records=reading.unreadable_records,
+            unsupported_schemas=reading.unsupported_schemas,
+        )
+
+    @property
+    def is_complete(self) -> bool:
+        """Whether every stored line was read.
+
+        Distinct from empty: an empty stream was read completely and
+        holds nothing; an incomplete one holds something this reader
+        could not speak for.
+        """
+
+        return self.unreadable_records == 0 and not self.unsupported_schemas
+
+    @property
+    def skipped(self) -> int:
+        return self.unreadable_records + sum(
+            count for _, count in self.unsupported_schemas
+        )
 
     @property
     def latest(self) -> ProviderIdentityObservation | None:
@@ -143,6 +220,20 @@ class IdentityHistory:
 
     @property
     def lifecycle_stated(self) -> str:
+        """One sentence from the finite vocabulary, and never a stronger one.
+
+        Incompleteness comes first, unconditionally: every one of the
+        three lifecycle claims is a claim about the complete stream,
+        and with a line unread — the newest, an intervening one, this
+        reader cannot tell — none of them is earned. A readable
+        UNRESOLVED beside a corrupt later line is not "currently
+        disputed", and a readable ASSUMED beside a skipped
+        UNRESOLVED-shaped line is very much not "never disputed".
+        """
+
+        if not self.is_complete:
+            return _INCOMPLETE
+
         if self.currently_disputed:
             return _CURRENTLY_DISPUTED
 

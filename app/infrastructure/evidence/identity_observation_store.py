@@ -28,12 +28,14 @@ measurement's citation.
 from __future__ import annotations
 
 import json
-from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from app.domain.identity_observation import ProviderIdentityObservation
+from app.domain.identity_observation import (
+    IdentityStreamReading,
+    ProviderIdentityObservation,
+)
 from app.domain.provider_identity import IdentityStanding, ProviderIdentityClaim
 from app.infrastructure.evidence_root import evidence_path
 
@@ -69,36 +71,72 @@ class IdentityObservationStore:
 
     # ── reading ─────────────────────────────────────────────────────
 
-    def observations(self, symbol: str) -> tuple[ProviderIdentityObservation, ...]:
-        """Every held observation for this symbol, oldest first."""
+    def stream(self, symbol: str) -> IdentityStreamReading:
+        """Everything held for this symbol, and everything that is not.
 
-        held = sorted(self._lines(symbol), key=lambda entry: entry.captured_at)
+        The read contract the lifecycle depends on: decoded
+        observations oldest first, **and a count of every non-empty
+        stored line that did not decode** — unreadable lines and
+        unsupported schemas separately, the latter tallied by the
+        schema value each line declared. A skipped line is a line the
+        lifecycle cannot speak for, and a reader that dropped them
+        silently would turn a stream holding a disputed capture into
+        "never disputed" the moment that capture stopped decoding.
+        """
 
-        return tuple(held)
+        observations: list[ProviderIdentityObservation] = []
+        unreadable = 0
+        unsupported: dict[str, int] = {}
 
-    def _lines(self, symbol: str) -> Iterator[ProviderIdentityObservation]:
         path = self.path_for(symbol)
 
-        if not path.exists():
-            return
+        if path.exists():
+            with path.open(encoding="utf-8") as handle:
+                for line in handle:
+                    line = line.strip()
 
-        with path.open(encoding="utf-8") as handle:
-            for line in handle:
-                line = line.strip()
+                    if not line:
+                        continue
 
-                if not line:
-                    continue
+                    try:
+                        row = json.loads(line)
+                    except json.JSONDecodeError:
+                        unreadable += 1
+                        continue
 
-                try:
-                    row = json.loads(line)
-                except json.JSONDecodeError:
-                    # One unreadable line must not cost the record.
-                    continue
+                    if isinstance(row, dict) and row.get("schema") != SCHEMA:
+                        # Refused, never pooled — and now counted, so
+                        # the surface can say the stream holds records
+                        # this reader does not understand.
+                        declared = str(row.get("schema"))
+                        unsupported[declared] = unsupported.get(declared, 0) + 1
+                        continue
 
-                observation = _decode(row)
+                    observation = _decode(row)
 
-                if observation is not None:
-                    yield observation
+                    if observation is None:
+                        unreadable += 1
+                        continue
+
+                    observations.append(observation)
+
+        observations.sort(key=lambda entry: entry.captured_at)
+
+        return IdentityStreamReading(
+            observations=tuple(observations),
+            unreadable_records=unreadable,
+            unsupported_schemas=tuple(sorted(unsupported.items())),
+        )
+
+    def observations(self, symbol: str) -> tuple[ProviderIdentityObservation, ...]:
+        """The decoded observations alone, oldest first.
+
+        A convenience over `stream` for callers that only need the
+        readable records; anything that words a lifecycle must consume
+        `stream`, because completeness is part of that answer.
+        """
+
+        return self.stream(symbol).observations
 
 
 # ── the line format ─────────────────────────────────────────────────
@@ -133,7 +171,8 @@ def _claim(claim: ProviderIdentityClaim) -> dict[str, Any]:
 def _decode(row: Any) -> ProviderIdentityObservation | None:
     if not isinstance(row, dict) or row.get("schema") != SCHEMA:
         # A schema this reader does not know is not silently pooled
-        # with lines it does. Skipped, and the record keeps reading.
+        # with lines it does — `stream` counts it before ever calling
+        # here; this guard stays so no other caller can pool either.
         return None
 
     try:

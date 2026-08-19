@@ -156,6 +156,8 @@ class CachedValueProvider:
         self,
         symbol: str,
         broker: ProviderIdentityClaim,
+        *,
+        subject: str,
     ) -> ValuationSnapshot:
         """The acquiring read that also remembers what it observed.
 
@@ -167,6 +169,18 @@ class CachedValueProvider:
         standing derived from them at this moment and the raw tenancy
         fields the payload happened to carry.
 
+        **Two symbols, two jobs, never conflated.** `symbol` is the
+        vendor's, and it keys the fundamentals cache exactly as the
+        plain door keys it. `subject` is the canonical MOVRvest symbol
+        the broker and the investor know, and it is what the
+        observation is filed under and what the join is asked about:
+        the broker says BTC and the vendor prices BTC-USD, and an
+        identity history filed under the vendor's translation would be
+        a history of a symbol the investor never held. Neither
+        provider's claim is rewritten to make their symbols agree —
+        each keeps its own spelling verbatim, because the difference is
+        part of what was observed.
+
         **The order is the contract**: observation first, replacement
         second, so the store that forgets can never get ahead of the
         one that remembers. And only this method appends — a read
@@ -177,6 +191,7 @@ class CachedValueProvider:
         """
 
         key = symbol.upper().strip()
+        filed = subject.upper().strip()
         entry = self._cache.read(key)
 
         held = self._restore(entry) if entry is not None else None
@@ -211,7 +226,7 @@ class CachedValueProvider:
 
             self._observations.append(
                 ProviderIdentityObservation(
-                    symbol=key,
+                    symbol=filed,
                     captured_at=(
                         reading.observed_at
                         if reading is not None
@@ -219,7 +234,7 @@ class CachedValueProvider:
                     ),
                     broker=broker,
                     vendor=vendor,
-                    standing=join_identity(key, (broker, vendor)).standing,
+                    standing=join_identity(filed, (broker, vendor)).standing,
                     first_trade_date_ms=observed.first_trade_date_ms,
                     ipo_expected_date=observed.ipo_expected_date,
                 )
