@@ -19,6 +19,7 @@ from app.commands import (
     crypto_market,
     crypto_playbook,
     crypto_quality,
+    cycle,
     daily,
     decide,
     decision,
@@ -582,6 +583,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show the record ids, the cited refs and both change axes",
     )
 
+    cycle_parser = subparsers.add_parser(  # noqa: F841
+        "cycle",
+        help="Run one explicit Daily CIO cycle: acquire, decide, record",
+        description=(
+            "The explicit daily operating loop: one acquisition, one "
+            "canonical decision pass over the active book, and one durable "
+            "cycle record — STARTED before the first network action, one "
+            "terminal event after orchestration finishes, and a started "
+            "cycle with no end rendered as interrupted rather than "
+            "relabeled. COMPLETE means every stage ran, never that every "
+            "provider answered; refusals stay visible inside it. No "
+            "scheduler, no notifications, and it never trades"
+        ),
+    )
+
     identity_history_parser = subparsers.add_parser(
         "identity-history",
         help="Show what each provider has claimed this instrument was, look by look",
@@ -1040,6 +1056,9 @@ async def dispatch(args: argparse.Namespace) -> int:
 
     if args.command == "identity-history":
         return await identity_history.run(args.symbol)
+
+    if args.command == "cycle":
+        return await cycle.run()
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

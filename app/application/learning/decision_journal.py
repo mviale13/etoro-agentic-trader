@@ -46,8 +46,16 @@ class DecisionJournal:
     def __init__(
         self,
         repository: EventRepository,
+        cycle_id: str | None = None,
     ) -> None:
         self._repository = repository
+        # The explicit cycle this journal is writing for, where there is
+        # one. #217 measured decisions entering this journal by page
+        # views, so a cycle report comparing untagged entries would be a
+        # report about page traffic; the stamp is what lets a reader
+        # separate the cycle's own pass from every view around it. None
+        # — the page-view journals — writes exactly what it always wrote.
+        self._cycle_id = cycle_id
 
     def record(
         self,
@@ -73,6 +81,12 @@ class DecisionJournal:
             "conviction": decision.conviction,
             "rationale": decision.rationale,
         }
+
+        # Stamped only where an explicit cycle is writing. An absent key
+        # keeps meaning *a page view or a pre-cycle record*, so nothing
+        # already stored changes meaning.
+        if self._cycle_id is not None:
+            payload["cycle_id"] = self._cycle_id
 
         # The rules this decision was reached under, and the records it
         # rested on. Written only where the decision carries them, so no
