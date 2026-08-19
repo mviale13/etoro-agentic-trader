@@ -22,9 +22,9 @@ parsed and no issuer is ever matched.
 it for three different reasons.** Citigroup's extraction *works* — every
 probed page address opens with the filer's own caption for what the
 index claims lives there — but one working filer is not a contract:
-BCS's printed pages **do not exist in any form in any component of its
-accession**, so its extraction is permanently refusable rather than
-buildable; NWG needs an index parse this platform has not built (the
+BCS's cited print pagination is **structurally unresolvable from the
+components held in this accession**, so its extraction is refusable
+rather than buildable here; NWG needs an index parse this platform has not built (the
 guide is a two-column table whose flat text cannot say which component
 owns a page list) and a semantics ruling on serving one column of two;
 and the index-parse layer itself met three structurally different index
@@ -83,8 +83,10 @@ exactly the check the contract must forbid**).
 BCS was exhausted, not sampled: no page-break CSS, no running
 header/footer pattern (0 hits on four shapes), no page-like anchor among
 39,361 `id`s (they are XBRL facts and contexts), no `title=` or `data-`
-attributes anywhere, and no PDF sibling. **The pages its index cites
-exist only in a print layout that never entered the accession.**
+attributes anywhere, and no PDF sibling. **The print pagination its
+index cites is structurally unresolvable from the components held in
+this accession** — a statement about these components, not about future
+filings or separately authoritative issuer documents.
 
 NWG's `EX-15.2` is the inverse trap: 161 pages exist as ordinals (one
 JPEG per page, breaks between), but no printed number ties ordinal 12 to
@@ -173,8 +175,9 @@ untouched.
    columns are owned by two components: flat text cannot assign a list
    to a component, so the parse must run on the tabular chain (the
    BQ28 machinery), which this slice did not build.
-2. **BCS cannot be extracted, ever, from this accession** — its refusal
-   is the contract's mandatory branch, not an edge case.
+2. **BCS's cited pagination is structurally unresolvable from the
+   components this accession holds** — its refusal is the contract's
+   mandatory branch, not an edge case.
 3. **NWG's whole-item semantics need a ruling**: the filer says Item 4
    is *both* columns; the primary column alone is extractable and the
    exhibit column is not. Serving one column is a partial reading and
@@ -207,3 +210,51 @@ untouched — nothing here removes a refusal until a traversal positively
 establishes a section, which none does yet · `section_locator`,
 statements, Business Quality, committees, CIO and Ticker News untouched
 · nothing persisted to production data.
+
+---
+
+## 9. Owner ruling — 2026-08-19
+
+Conclusion B is approved. Three rulings on the questions §6 raised, and
+the consequences that bind any future build.
+
+### 1. NWG partial extraction is refused under the current contract
+
+Item 4 and Item 5 are defined **by the filer** across both columns —
+the primary document *and* Exhibit 15.2. Extracting only the
+primary-document column must **not** produce established Company
+Knowledge: a reading the filer defines across two components, served
+from one, would present a partial account as the account. The recovered
+primary ranges may be retained only by a future **explicitly typed
+partial-evidence carrier** — a type whose name says the reading is
+partial, not a full reading with a footnote. Until that carrier exists,
+`business_refusal` and `discussion_refusal` remain on NWG.
+
+### 2. Shared-page evidence is semantically permissible, and must be explicit
+
+A page may support multiple semantic sections **when the filer assigns
+it to both** — Citigroup's pages 8–36 are Item 1 and Item 7 because
+Citigroup says they are. Two prohibitions follow. **Do not deduplicate
+or force exclusive ownership**: inventing a single owner would replace
+the filer's assignment with this platform's. And **do not send
+overlapping text into the knowledge stream without typed page-range
+provenance identifying every semantic section that owns it** — the
+overlap is admissible only where a reader of the evidence can see it is
+an overlap.
+
+### 3. The BCS boundary, corrected
+
+The statement that BCS is *permanently unresolvable* claimed more than
+was measured. The correct boundary: **its cited print pagination is
+structurally unresolvable from the components held in this accession.**
+No claim is made about future filings or about separately authoritative
+issuer documents. (Applied above in §§3–4 and 6.)
+
+### Consequences
+
+- **C is technically extractable and not production-ready**: no
+  extraction ships until range-level provenance and overlap marking
+  exist.
+- **BCS remains refused.** **NWG remains refused.**
+- **`DOCUMENT_REFUSED` remains untouched.**
+- **The conclusion stays B.**
