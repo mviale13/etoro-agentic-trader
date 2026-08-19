@@ -14,16 +14,24 @@ refusal?
 
 # B. CORROBORATION ONLY
 
-**What it adds:** the exact effective date a symbol changed hands, and
-detection of changes *inside* the window — two things the two-point
-bracket cannot see. **Why the existing dated-CIK guard remains
-necessary:** the identity fields the comparison would rest on are
-**undocumented** in the events response, the meaning of an event's date
-is only partially established, and the former-entity flow **the docs
-themselves prescribe returned 404** in the one live case it exists for.
-An experimental endpoint whose payload is richer than its own
-documentation is not a foundation for an identity gate; it is a second
-witness.
+**What it adds:** a **provider-reported event date**, and a
+**deterministic trigger**. The date matched the known change for PARA
+and XYZ, but its semantics are not uniformly established — BA carries
+the dataset boundary and BNZI carries an unexplained date — so an event
+reported inside an article window is a trigger for **additional dated
+Ticker Details checks around that date**, and never itself proof that
+the issuer changed inside the window. It may *expose the possibility*
+of an A→B→A round trip that the two-point bracket cannot detect;
+closing that possibility requires additional authoritative resolution.
+**It cannot replace either existing dated-CIK call today.**
+
+**Why the existing dated-CIK guard remains necessary:** the identity
+fields the comparison would rest on are **undocumented** in the events
+response, the meaning of an event's date is only partially established,
+and the former-entity flow **the docs themselves prescribe returned
+404** in the one live case it exists for. An experimental endpoint
+whose payload is richer than its own documentation is not a foundation
+for an identity gate; it is a second witness.
 
 ---
 
@@ -75,7 +83,7 @@ remains unobservable from the provider, as in #204.
 | 4 | events · `BA` (stability control) | 200 | 0.29s |
 | 5 | events · `XYZ` (SQ→XYZ control) | 200 | 0.30s |
 
-### Call 1 — the current entity, with the date it took the symbol
+### Call 1 — the current entity, with a reported date for the symbol
 
 ```json
 {"results": {"name": "Banzai International, Inc. Class A Common Stock",
@@ -86,10 +94,12 @@ remains unobservable from the provider, as in #204.
 ```
 
 Three facts. **The current holder of `PARA` is Banzai International
-(CIK 0001826011)** — agreeing with #204's dated resolution. **It took
-the symbol on 2026-08-07** — an effective date the dated-CIK guard
-cannot produce; the guard proves the endpoints of a window disagree and
-says nothing about *when* the symbol changed hands. And **the live
+(CIK 0001826011)** — agreeing with #204's dated resolution. **The
+provider reports 2026-08-07 as the date it took the symbol** — a kind
+of statement the dated-CIK guard does not make at all (the guard proves
+the endpoints of a window disagree and says nothing about *when*), and
+one whose reliability this measurement cannot certify: the same
+response's `BNZI` date is unexplained (§4, item 10). And **the live
 response carries `cik` and `composite_figi`**, which the documentation's
 response table and sample do not mention at all.
 
@@ -143,9 +153,11 @@ identifier-keyed surface, consistent with #204's ticker-scoped result.
     {"ticker_change": {"ticker": "SQ"}, "type": "ticker_change", "date": "2015-11-18"}]}}
 ```
 
-**SQ → XYZ effective 2025-01-21 — the real change, on its real date**,
-with the 2015 listing-era event beneath it. On a well-behaved current
-entity the endpoint answers the exact question asked, with the date.
+**The reported SQ → XYZ date, 2025-01-21, matches the known change**,
+with the 2015 listing-era event beneath it. A match on this entity and
+on PARA is evidence the reported date *can* be right — it does not
+establish that an event date means the same thing everywhere, which BA's
+boundary date and BNZI's unexplained one show it does not.
 
 ## 4. The ten measurements
 
@@ -156,11 +168,11 @@ entity the endpoint answers the exact question asked, with the date.
    FIGI: **unresolvable** — the one attempt 404'd and the response
    cannot say whether the identifier type or the entity's coverage
    failed. CUSIP: not attempted (nothing in this slice holds one).
-3. **Event representation.** `type` is always `ticker_change`; `date` is
-   the effective date; the event names **only the new ticker** — there
-   is no old/new pair, so a chain is read from consecutive events, and
-   an epoch-dated event (2003-09-10) is a record boundary rather than a
-   change.
+3. **Event representation.** `type` is always `ticker_change`; `date`
+   is a **provider-reported event date** whose semantics vary by entity
+   — a change date for XYZ and PARA, the dataset boundary for BA, and
+   unexplained for BNZI; the event names **only the new ticker** — there
+   is no old/new pair, so a chain is read from consecutive events.
 4. **Reassigned ticker, current-entity behaviour.** As documented: the
    ticker resolves to the current holder (Banzai), never the former, and
    the former is reachable only through its own identifier — which is
@@ -174,18 +186,23 @@ entity the endpoint answers the exact question asked, with the date.
    served in full — the documented limit **did not clip** the events
    timeline. Observed-exceeds-documented is the same shape #204 found on
    news history, and is recorded, not relied on.
-7. **Can it replace either dated reference call?** Structurally it could
-   replace the *oldest-date* call: one events call yields the current
-   CIK **and** the date it took the symbol, and
-   `oldest_article < acquisition_date` reproduces PARA's refusal with a
-   sharper boundary. **It is not ready to**: the `cik` field it would
-   rest on is undocumented, and the date semantics are only partially
-   established (see 10).
-8. **Or merely corroborate?** As corroboration it is genuinely additive:
-   the effective date (2026-08-07) explains *why* the two dated
-   resolutions disagree, and any `ticker_change` event dated **inside**
-   the article window proves the window is not homogeneous — catching an
-   A→B→A round trip that a two-endpoint bracket would read as stable.
+7. **Can it replace either dated reference call? No — not today.** The
+   shape of a replacement is visible: one events call yields the current
+   CIK **and** a reported acquisition date, and comparing the oldest
+   article against that date *would* reproduce PARA's refusal. But the
+   comparison would rest on an undocumented `cik` field and on a date
+   whose meaning is not uniformly established (see 10) — so **neither
+   existing dated-CIK call can be replaced by it**.
+8. **Or merely corroborate? Corroborate — as a trigger, not as proof.**
+   The reported date (2026-08-07) is *consistent with* the two dated
+   resolutions disagreeing, and a `ticker_change` event dated **inside**
+   the article window is a **deterministic trigger for additional dated
+   Ticker Details checks around that date** — it is not itself proof
+   that the issuer changed inside the window, because an event date can
+   also be a dataset boundary (BA) or something unexplained (BNZI). It
+   may *expose the possibility* of an A→B→A round trip the two-point
+   bracket cannot detect; **closing that possibility requires additional
+   authoritative resolution**, which is dated Ticker Details again.
 9. **Article aboutness.** Nothing here bears on it. The endpoint carries
    no article linkage of any kind, and no inference is made. Symbol
    continuity and aboutness remain separate questions (#204's ruling:
@@ -203,16 +220,20 @@ entity the endpoint answers the exact question asked, with the date.
 
 ## 5. Why B and not A
 
-The candidate improvement is real: one call instead of two, an exact
-boundary instead of a bracket, intra-window change detection. Every
-piece of it, however, rests on ground this measurement found unstable —
-an **undocumented** `cik` field on an **experimental** endpoint, a date
-whose meaning is established for two of the three entities measured and
-contradicted by the third, and a former-entity flow that fails exactly
-where the reassignment problem lives. The platform's own standard
-(S5.1): **a gate that cannot be evaluated fails.** The dated-CIK guard
-runs on a documented, stable endpoint and asks a question whose answer
-it can check. It stays.
+The candidate improvement is a *shape*, not an available instrument:
+one call instead of two, a reported date where the bracket has none,
+and a trigger for checks the bracket would never know to make. Every
+piece of it rests on ground this measurement found unstable — an
+**undocumented** `cik` field on an **experimental** endpoint, a
+provider-reported date that matched the known change for two of the
+entities measured, carried the dataset boundary for a third and an
+unexplained value for a fourth, and a former-entity flow that fails
+exactly where the reassignment problem lives. A date whose semantics
+vary by entity cannot serve as a boundary anything is decided against.
+The platform's own standard (S5.1): **a gate that cannot be evaluated
+fails.** The dated-CIK guard runs on a documented, stable endpoint and
+asks a question whose answer it can check. It stays, and every use of
+an event here reduces to *"go ask the guard again, around this date"*.
 
 What would move this to A, named precisely: `cik` and `composite_figi`
 appearing in the endpoint's documented response contract; the event-date
