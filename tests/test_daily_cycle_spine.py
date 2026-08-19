@@ -87,18 +87,32 @@ def decision(
             rationale=rationale,
             conviction=60,
             evidence_as_of=None,
+            missing_evidence=(),
         ),
         action=SimpleNamespace(
             kind=kind,
             statement=statement,
             because=rationale,
         ),
+        quality=None,
+        evidence=None,
     )
 
 
 class BrainStub:
+    """The minimal brain shape the cycle's envelope pass reads."""
+
     async def build(self):
-        return SimpleNamespace()
+        return SimpleNamespace(
+            portfolio=SimpleNamespace(
+                total_value=10_000.0,
+                holdings=(),
+                allocation=SimpleNamespace(cash=58.0),
+                drawdown=SimpleNamespace(current_depth=0.02),
+            ),
+            market=SimpleNamespace(quotes=(), reading=None),
+            asset_class_for=lambda symbol: None,
+        )
 
 
 class BriefingStub:
@@ -803,10 +817,15 @@ def test_no_security_disappears_when_its_pass_is_incomplete(tmp_path, capsys) ->
             rationale="r",
             conviction=50,
             evidence_as_of=None,
+            missing_evidence=(),
         ),
         action=None,
+        quality=None,
+        evidence=None,
     )
-    broken_no_decision = SimpleNamespace(symbol="CYD", decision=None, action=None)
+    broken_no_decision = SimpleNamespace(
+        symbol="CYD", decision=None, action=None, quality=None, evidence=None
+    )
 
     _, store, _ = cycle_run(
         tmp_path,

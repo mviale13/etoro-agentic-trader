@@ -24,9 +24,22 @@ from datetime import UTC, datetime
 from app.application.brain.brain_builder_service import BrainBuilderService
 from app.application.learning.decision_journal import DecisionJournal
 from app.application.workspace.executive_pipeline import ExecutivePipeline
+from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.brain.brain import Brain
+from app.domain.asset_class import AssetClass
+from app.domain.capital_envelope import (
+    CapitalActionEnvelope,
+    EnvelopeKind,
+    QualityAuthority,
+    capacity_for,
+    envelope_for,
+    portfolio_observation_for,
+    price_observation_for,
+)
+from app.domain.capital_policy import CapitalPolicyReading
 from app.domain.daily_cycle import (
     NO_ACTION,
     ComparisonBasis,
@@ -42,8 +55,10 @@ from app.domain.daily_cycle import (
     movement,
     no_action_permitted,
 )
+from app.domain.market_snapshot import MarketQuote
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.repositories.json_event_repository import JsonEventRepository
+from app.services.capital_policy_service import CapitalPolicyService
 from app.services.market_acquisition_service import MarketAcquisitionService
 
 __all__ = ["run"]
@@ -66,6 +81,156 @@ def _failed_stage(name: str, error: Exception) -> CycleStage:
     )
 
 
+def _portfolio_weights(
+    brain: Brain,
+) -> tuple[dict[str, float], float | None, float | None]:
+    """Per-symbol weights (percent), cash percent, and the total.
+
+    Holdings are aggregated by stable instrument identity first — the
+    broker reports one row per *trade*, and a 20.0% + 0.5% split once
+    read as a compliant 20.0% — then keyed by the resolved symbol.
+    An unresolved holding contributes no symbol weight and is refused
+    downstream rather than guessed.
+    """
+
+    portfolio = brain.portfolio
+    total = portfolio.total_value
+
+    if total is None or total <= 0:
+        return ({}, None, total)
+
+    by_instrument: dict[int, float] = {}
+    names: dict[int, str] = {}
+
+    for holding in portfolio.holdings:
+        by_instrument[holding.instrument_id] = by_instrument.get(
+            holding.instrument_id, 0.0
+        ) + (holding.market_value_usd or 0.0)
+
+        if holding.is_resolved:
+            names[holding.instrument_id] = holding.symbol.upper().strip()
+
+    weights: dict[str, float] = {}
+
+    for instrument_id, value in by_instrument.items():
+        symbol = names.get(instrument_id)
+
+        if symbol:
+            weights[symbol] = weights.get(symbol, 0.0) + value / total * 100.0
+
+    return (weights, portfolio.allocation.cash, total)
+
+
+def _envelope(
+    workspace: ExecutiveWorkspace,
+    *,
+    policy_reading: CapitalPolicyReading,
+    brain: Brain,
+    weights: dict[str, float],
+    cash_pct: float | None,
+    total_value: float | None,
+    drawdown_pct: float | None,
+    quotes: dict[str, MarketQuote],
+    evaluated_at: datetime,
+) -> CapitalActionEnvelope | None:
+    """The envelope for one workspace's course, or None for non-capital ones.
+
+    Only the pipeline's own canonical courses open an envelope — the
+    course arrives as `workspace.action.kind`, never derived from a
+    decision-state string. Conviction is not read here and cannot be:
+    `envelope_for` has no parameter it could arrive through.
+
+    Two observation clocks, both the reading's own and neither this
+    process's: the portfolio is aged from the broker snapshot's
+    `last_sync`, and the price from the exact security's own quote —
+    `evaluated_at` is only the moment both ages are measured at.
+    """
+
+    # The caller only reaches here with both halves present; the guard
+    # keeps the type checker honest and the contract explicit.
+    if workspace.action is None or workspace.decision is None:
+        return None
+
+    kind = workspace.action.kind.value
+
+    if kind not in ("open", "add", "reduce"):
+        return None
+
+    symbol = workspace.decision.symbol.upper().strip()
+
+    if policy_reading.policy is None:
+        # A draft, missing or contradictory policy refuses the final
+        # envelope; the raw capacity facts stay visible in the render
+        # through the refusal's wording.
+        return CapitalActionEnvelope(
+            symbol=symbol,
+            course=kind,
+            kind=EnvelopeKind.REFUSED,
+            policy_source="investor_strategy.json",
+            policy_version="unavailable",
+            because=policy_reading.refused_because,
+        )
+
+    policy = policy_reading.policy
+
+    portfolio_observed = portfolio_observation_for(
+        last_sync=getattr(brain.portfolio, "last_sync", None),
+        policy=policy,
+        now=evaluated_at,
+    )
+    price_observed = price_observation_for(
+        symbol=symbol,
+        quote=quotes.get(symbol),
+        policy=policy,
+        now=evaluated_at,
+    )
+
+    # OPEN's zero is licensed by the course, not by absence: the
+    # canonical course says the security is unheld, so a missing broker
+    # row is the stated state. ADD and REDUCE act on a holding, and a
+    # holding whose weight could not be resolved refuses rather than
+    # pretending emptiness.
+    current_weight = weights.get(symbol, 0.0) if kind == "open" else weights.get(symbol)
+
+    capacity = capacity_for(
+        policy=policy,
+        total_value=total_value,
+        cash_pct=cash_pct,
+        current_weight_pct=current_weight,
+        portfolio=portfolio_observed,
+        broker_answered=total_value is not None,
+    )
+
+    # Whose account the quality score rests on — grounded where the
+    # statements governed, provider where the proxy did, unavailable
+    # where nothing scored. Carried apart from the canonical rationale.
+    if workspace.quality is not None:
+        authority = QualityAuthority.GROUNDED
+    elif (
+        workspace.evidence is not None and workspace.evidence.quality_score is not None
+    ):
+        authority = QualityAuthority.PROVIDER
+    else:
+        authority = QualityAuthority.UNAVAILABLE
+
+    return envelope_for(
+        symbol=symbol,
+        course=kind,
+        policy=policy,
+        capacity=capacity,
+        named_gaps=tuple(workspace.decision.missing_evidence),
+        quality_authority=authority,
+        # A pipeline-produced capital-asking course rests on the one
+        # disposition whose gates the #219 measurement showed require
+        # the whole six-family floor; a reduction does not consult it.
+        hard_floor_passes=True,
+        price=price_observed,
+        portfolio_as_of=portfolio_observed.as_of,
+        drawdown_depth_pct=drawdown_pct,
+        is_equity=brain.asset_class_for(symbol) is AssetClass.STOCK,
+    )
+
+
 def new_cycle_id() -> str:
     """Opaque, unique per invocation. Never derived from the clock alone."""
 
@@ -77,6 +242,7 @@ async def run(
     acquisition: MarketAcquisitionService | None = None,
     brains: BrainBuilderService | None = None,
     briefings: PortfolioBriefingService | None = None,
+    capital_policies: CapitalPolicyService | None = None,
 ) -> int:
     store = store or DailyCycleStore()
 
@@ -117,6 +283,11 @@ async def run(
     try:
         brain = await (brains or BrainBuilderService()).build()
 
+        # The moment observation ages are measured at — never any
+        # reading's own observation time, which stays the broker's or
+        # the quote provider's to state.
+        evaluated_at = datetime.now(UTC)
+
         service = briefings or PortfolioBriefingService(
             pipeline=ExecutivePipeline(
                 journal=DecisionJournal(JsonEventRepository(), cycle_id=cycle_id)
@@ -135,6 +306,22 @@ async def run(
         # infers one from a decision state.
         carried: list[DecisionSummary] = []
 
+        # The v1 Capital Action Envelope: an owner-policy-bound,
+        # display-only weight consideration beside a capital-asking
+        # course. Loaded once per cycle; a refused policy still lets
+        # capacity facts render, and produces no final envelope.
+        policy_reading = (capital_policies or CapitalPolicyService()).reading()
+        weights, cash_pct, total_value = _portfolio_weights(brain)
+
+        drawdown = getattr(brain.portfolio, "drawdown", None)
+        drawdown_pct = (
+            round(drawdown.current_depth * 100.0, 4) if drawdown is not None else None
+        )
+
+        # Each envelope resolves the exact security's own quote from
+        # this map; no market-wide reading authorizes any of them.
+        quotes = {quote.symbol.upper().strip(): quote for quote in brain.market.quotes}
+
         for workspace in workspaces:
             if workspace.decision is not None and workspace.action is not None:
                 carried.append(
@@ -152,6 +339,17 @@ async def run(
                         action_statement=workspace.action.statement,
                         action_because=workspace.action.because,
                         asks_for_something=workspace.action.kind.asks_for_something,
+                        envelope=_envelope(
+                            workspace,
+                            policy_reading=policy_reading,
+                            brain=brain,
+                            weights=weights,
+                            cash_pct=cash_pct,
+                            total_value=total_value,
+                            drawdown_pct=drawdown_pct,
+                            quotes=quotes,
+                            evaluated_at=evaluated_at,
+                        ),
                     )
                 )
             elif workspace.decision is None:
@@ -269,6 +467,62 @@ async def run(
     return 0 if status is not CycleStatus.FAILED else 1
 
 
+def _course_lines(entry: DecisionSummary) -> list[str]:
+    """One course, and its capital envelope where one exists."""
+
+    lines = [
+        f"  {entry.symbol}: {entry.state} — {entry.action_statement} "
+        f"({entry.action_kind})"
+    ]
+
+    envelope = entry.envelope
+
+    if envelope is None:
+        return lines
+
+    lines.append(f"      {envelope.stated}")
+    lines.append(
+        "      policy: "
+        f"{envelope.policy_source} @ {envelope.policy_version} · "
+        f"evidence ceiling: {envelope.evidence_ceiling or 'n/a'} · "
+        f"capacity ceiling: "
+        + (
+            f"{envelope.capacity_ceiling_pct:g}%"
+            if envelope.capacity_ceiling_pct is not None
+            else "not computed"
+        )
+        + " · final: "
+        + (f"{envelope.final_pct:g}%" if envelope.final_pct is not None else "none")
+    )
+
+    if envelope.binding_constraint:
+        lines.append(f"      binding constraint: {envelope.binding_constraint}")
+
+    if envelope.named_gaps:
+        lines.append(
+            "      named gaps (they cap the action, not the company): "
+            + "; ".join(envelope.named_gaps)
+        )
+
+    if envelope.quality_authority is not None:
+        lines.append(f"      quality authority: {envelope.quality_authority.value}")
+
+    detail = []
+
+    if envelope.price_as_of:
+        detail.append(f"price as of {envelope.price_as_of}")
+
+    if envelope.portfolio_as_of:
+        detail.append(f"portfolio as of {envelope.portfolio_as_of}")
+
+    if detail:
+        lines.append("      " + " · ".join(detail))
+
+    lines.append(f"      {envelope.liquidity}")
+
+    return lines
+
+
 def render(record: CycleRecord, held_before: CycleLog) -> str:
     """The cycle as the investor reads it. Pure, for the tests.
 
@@ -353,11 +607,8 @@ def render(record: CycleRecord, held_before: CycleLog) -> str:
         lines.append(
             f"Current courses ({len(finished.decisions)} securities considered):"
         )
-        lines.extend(
-            f"  {entry.symbol}: {entry.state} — {entry.action_statement} "
-            f"({entry.action_kind})"
-            for entry in finished.decisions
-        )
+        for entry in finished.decisions:
+            lines.extend(_course_lines(entry))
     elif comparison.outcome is ComparisonOutcome.REFUSED:
         lines.append(
             f"Change comparison refused: {comparison.because}. No changed, "
@@ -367,11 +618,8 @@ def render(record: CycleRecord, held_before: CycleLog) -> str:
         lines.append(
             f"Current courses ({len(finished.decisions)} securities considered):"
         )
-        lines.extend(
-            f"  {entry.symbol}: {entry.state} — {entry.action_statement} "
-            f"({entry.action_kind})"
-            for entry in finished.decisions
-        )
+        for entry in finished.decisions:
+            lines.extend(_course_lines(entry))
     else:
         lines.append(
             f"Decisions (against cycle {comparison.prior_cycle_id}): "
