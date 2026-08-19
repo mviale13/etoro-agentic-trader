@@ -352,3 +352,61 @@ information (ruling A) · no scheduler, UI or surface work · no
 production code · stage 1 offline with transports raising and zero
 calls; production `data/` untouched; the synthetic matrix touched no
 stored evidence.
+
+---
+
+## 8. Owner ruling — 2026-08-19 · the v1 capital policy
+
+The corrected measurement is accepted, and the owner sets the v1
+policy this section records.
+
+### Policy authority
+
+For the executive cycle and the Capital Action Envelope,
+**`data/investor_strategy.json` is the authoritative owner-policy
+source.** It must be explicitly **active** and valid before an
+envelope is produced; its decision-bearing fields are canonically
+hashed, and the policy source, version and hash travel with every
+envelope. `config/policy.yaml` remains a legacy source for the old
+standalone `decide` path and is **not admissible** for the envelope;
+`app/config.py`'s dormant risk fields are inadmissible; policy sources
+are never silently combined. A future cleanup may retire the legacy
+`decide` policy — not in this slice.
+
+### Owner values — capital envelope v1
+
+| parameter | value |
+|---|---|
+| STARTER_MAX_TOTAL_POSITION_PCT | **1.0** |
+| STANDARD_INITIAL_POSITION_PCT | **3.0** |
+| MAX_ADD_WEIGHT_CHANGE_PCT | **2.0** |
+| MAX_SINGLE_POSITION_PCT | **20.0** |
+| MAX_CRYPTO_PCT | **65.0** |
+| CAPITAL_ACTION_CASH_FLOOR_PCT | **max(target_cash_pct, minimum_cash_pct)** — 40.0 under the current declared strategy |
+| PRICE_MAX_AGE_MINUTES | **15** |
+| PORTFOLIO_MAX_AGE_MINUTES | **15** |
+| MAXIMUM_ACCEPTABLE_DRAWDOWN_PCT | **20.0** |
+| REDUCE_POLICY | **restore_to_policy_cap** |
+
+Missing required limits always refuse. Crypto remains outside the
+equity envelope. Human approval remains required. Automatic trading
+remains disabled.
+
+### Semantics
+
+**STARTER is a maximum total position weight under named
+uncertainty**: an unheld security's OPEN may consider up to 1%; a
+holding below 1% may ADD only the room up to 1%; a holding at or above
+1% has **zero** gap-limited ADD capacity.
+**STANDARD_INITIAL_POSITION** is the maximum initial weight for a
+broadly evidenced OPEN — not a target. **MAX_ADD_WEIGHT_CHANGE** is
+the maximum upward weight change considered in one cycle — also not a
+target. **MAX_SINGLE_POSITION** remains a hard concentration ceiling.
+At or beyond the declared 20% portfolio drawdown: OPEN and ADD
+capacity are zero, REDUCE remains available, non-capital courses
+remain available. **REDUCE under v1 reports only the minimum
+normalized reduction needed to restore the policy cap** — anything
+larger requires a later thesis-driven rule and is never inferred.
+
+These are conservative owner-selected product parameters. They are not
+derived from conviction, company fame, coverage count or an optimizer.
