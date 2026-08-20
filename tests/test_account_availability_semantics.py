@@ -1057,3 +1057,182 @@ def test_20_measured_inputs_are_unchanged_but_for_the_new_field() -> None:
     # Computed on the pre-amendment tree (346f182), where the field did
     # not exist — a baseline, not a value copied from this run.
     assert hashlib.sha256(elided.encode()).hexdigest()[:16] == "afe5498223345cc5"
+
+
+# ── amendment 3: the carrier must reach the public serializers ───────
+
+
+def test_21_the_dashboard_serializes_the_abstention_not_a_hold() -> None:
+    """The remaining public hole: `DashboardService._build_today`.
+
+    It built `OpinionResponse` without forwarding the carrier, so the
+    dashboard could still publish an abstaining Cash member as an
+    ordinary zero-confidence HOLD.
+    """
+
+    from app.api.models.today import OpinionResponse
+
+    absent = panel_for(None)[0]
+    voting = panel_for(0.0)[0]
+
+    def serialized(opinion):
+        return OpinionResponse(
+            member=opinion.member,
+            vote=opinion.vote,
+            confidence=opinion.confidence,
+            rationale=opinion.rationale,
+            abstained_because=opinion.abstained_because,
+        ).model_dump()
+
+    abstained_row = serialized(absent)
+
+    assert abstained_row["abstained_because"], "the reason travels"
+    assert "no cash figure" in abstained_row["abstained_because"]
+
+    # Visibly distinguishable from a HOLD without reading confidence.
+    participating_row = serialized(voting)
+
+    assert participating_row["abstained_because"] is None
+    assert abstained_row["abstained_because"] != participating_row["abstained_because"]
+
+    # And a positive-confidence HOLD keeps a null carrier.
+    held = OpinionResponse(
+        member="Risk", vote="HOLD", confidence=55, rationale="r"
+    ).model_dump()
+
+    assert held["vote"] == "HOLD"
+    assert held["abstained_because"] is None
+
+
+def test_22_every_production_opinion_response_forwards_the_carrier() -> None:
+    """A future serializer cannot silently drop it.
+
+    Parses the AST of each production module that constructs the legacy
+    `OpinionResponse` and asserts the keyword is present at every call
+    site — a behavioural test cannot see a site nobody exercises.
+    """
+
+    import ast
+    import pathlib as _pathlib
+
+    sites = 0
+
+    for path in sorted(_pathlib.Path("app").rglob("*.py")):
+        tree = ast.parse(path.read_text())
+
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+
+            name = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
+
+            if name != "OpinionResponse":
+                continue
+
+            sites += 1
+            keywords = {keyword.arg for keyword in node.keywords}
+
+            assert "abstained_because" in keywords, (
+                f"{path} constructs OpinionResponse without forwarding "
+                "abstained_because"
+            )
+
+    assert sites >= 2, f"expected every production site to be found, saw {sites}"
+
+
+def test_23_the_weighted_vote_service_asks_the_carrier() -> None:
+    """Skipped explicitly, and every participating score unchanged."""
+
+    import ast
+    import pathlib as _pathlib
+
+    from app.domain.committee_member_weight import CommitteeMemberWeight
+    from app.services.weighted_vote_service import WeightedVoteService
+
+    source = _pathlib.Path("app/services/weighted_vote_service.py").read_text()
+
+    assert "participates" in source, "it consults the domain contract"
+    assert not any(
+        isinstance(node, ast.Compare)
+        and any(
+            isinstance(item, ast.Constant) and item.value == 0
+            for item in node.comparators
+        )
+        for node in ast.walk(ast.parse(source))
+    ), "participation is not inferred from a confidence comparison"
+
+    weights = [
+        CommitteeMemberWeight(member="Value", weight=1.0, accuracy=0.5),
+        CommitteeMemberWeight(member="Risk", weight=1.0, accuracy=0.5),
+        CommitteeMemberWeight(member="Cash", weight=5.0, accuracy=0.5),
+    ]
+    voting = [opinion("Value", "BUY", 80), opinion("Risk", "SELL", 70)]
+
+    without = WeightedVoteService().score(voting, weights)
+    within = WeightedVoteService().score([*voting, abstention()], weights)
+
+    assert within == without, "participating scores are byte-for-byte equal"
+    assert within["HOLD"] == 0.0
+
+
+def test_24_an_invalid_empty_carrier_never_becomes_a_historical_hold(
+    tmp_path,
+) -> None:
+    """Presence, not truthiness — and null stays participating."""
+
+    from app.domain.event import Event
+    from app.domain.event_type import EventType
+    from app.repositories.json_event_repository import JsonEventRepository
+    from app.services.committee_analytics_service import (
+        CommitteeAnalyticsService,
+    )
+
+    repository = JsonEventRepository(tmp_path / "events")
+
+    repository.save(
+        Event(
+            timestamp=MOMENT,
+            event_type=EventType.RECOMMENDATION_GENERATED,
+            symbol="KO",
+            payload={
+                "recommendation": "BUY",
+                "confidence": 75,
+                "votes": [
+                    # An invalid carrier: empty string. Falsy, but present.
+                    {
+                        "member": "Broken",
+                        "vote": "HOLD",
+                        "confidence": 0,
+                        "rationale": "r",
+                        "abstained_because": "",
+                    },
+                    # Explicit null — a participating row.
+                    {
+                        "member": "Null",
+                        "vote": "HOLD",
+                        "confidence": 60,
+                        "rationale": "r",
+                        "abstained_because": None,
+                    },
+                    # Key absent entirely — an older row.
+                    {
+                        "member": "Older",
+                        "vote": "BUY",
+                        "confidence": 70,
+                        "rationale": "r",
+                    },
+                ],
+            },
+        )
+    )
+
+    statistics = {
+        item.member: item
+        for item in CommitteeAnalyticsService(repository).member_statistics()
+    }
+
+    assert "Broken" not in statistics, (
+        "an empty-string carrier is an invalid abstention, never a HOLD"
+    )
+    assert statistics["Null"].hold == 1, "null remains participating"
+    assert statistics["Older"].buy == 1, "an absent key remains participating"

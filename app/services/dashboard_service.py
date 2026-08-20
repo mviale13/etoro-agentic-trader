@@ -103,6 +103,10 @@ class DashboardService:
                         vote=opinion.vote,
                         confidence=opinion.confidence,
                         rationale=opinion.rationale,
+                        # Forwarded, not defaulted. Dropping it here let
+                        # the dashboard serialize an abstaining member as
+                        # an ordinary zero-confidence HOLD.
+                        abstained_because=opinion.abstained_because,
                     )
                     for opinion in (snapshot.recommendation.decision.opinions)
                 ],
