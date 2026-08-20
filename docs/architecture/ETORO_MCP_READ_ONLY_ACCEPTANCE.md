@@ -478,3 +478,57 @@ and this measurement observed none.
 Neither defect is an MCP question. Both are ours, both are in the path
 the Capital Action Envelope reads, and both can be fixed with no
 integration at all.
+
+---
+
+## 8. Owner ruling — 2026-08-20
+
+1. **Conclusion C is accepted for this session**, because the
+   authenticated tools were unavailable. **This is not a permanent
+   ruling on the MCP.**
+
+2. **The authenticated eight-call acceptance will be rerun** in a new
+   Claude session whose tool registry includes the eToro connector.
+
+3. **Account observation time remains unavailable.** MOVRvest **may**
+   use the time at which it received a successful eToro account
+   response as an operational freshness gate, but **must name it as
+   response receipt time**. It must **never** call that timestamp the
+   broker's observation time, the account `asOf`, the source timestamp
+   or the underlying snapshot time.
+
+4. **The two existing MOVRvest defects are approved for immediate
+   repair**: unavailable cash must remain unavailable end to end, and
+   the capital envelope's portfolio clock must be described according
+   to its actual response-receipt semantics.
+
+5. **`get-instruments-overview` is accepted as the leading MCP adoption
+   candidate for a later slice**, because it supplies quote `asOf` and
+   account-specific executability facts. **It is not yet approved for
+   production integration.**
+
+6. **Spread is not liquidity depth** and must never become a liquidity
+   ceiling.
+
+7. **The full `docs/ETORO_API.md` refresh is parked.** No slice is to be
+   spent regenerating 184 routes when live route discovery exists and
+   only a handful are in scope.
+
+### Consequences
+
+The account-snapshot replacement stays blocked; §3's provenance finding
+stands and is not superseded by ruling 3 — permission to *gate* on a
+receipt clock is not permission to *describe* it as an observation time.
+Ruling 4 opens the next implementation slice (Account Availability
+Semantics), which is a factual-boundary repair carrying no MCP call.
+Rulings 5 and 7 park work rather than refusing it.
+
+### Fact recorded after the ruling, changing nothing in it
+
+The eToro connector's thirteen tools became visible to this session's
+tool registry **after** the ruling was issued and after this measurement
+closed. **No MCP tool was called**: the acceptance rerun is the owner's
+to schedule under ruling 2, and the slice ruling 4 opens forbids MCP
+calls outright. The re-entry conditions in §7 are otherwise unchanged —
+in particular, the question in §7.3 is still the one that decides
+C-versus-B.
