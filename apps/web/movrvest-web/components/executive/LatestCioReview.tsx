@@ -32,13 +32,33 @@ function when(value: string | null): string {
       });
 }
 
-const EXECUTION_HEADLINE: Record<CycleReview["execution"], string> = {
+export const EXECUTION_HEADLINE: Record<CycleReview["execution"], string> = {
   none_recorded: "No review has been run yet",
   interrupted: "The last review started and did not finish",
   failed: "The last review could not complete",
   partial: "The last review completed only in part",
   complete: "The last review completed",
 };
+
+/**
+ * The same five states, worded for an incomplete history.
+ *
+ * When part of the record could not be read, the newest decoded record
+ * is only the newest **readable** record — an unreadable or unsupported
+ * line may be newer still. So nothing here may say "the last review".
+ */
+export const READABLE_HEADLINE: Record<CycleReview["execution"], string> = {
+  none_recorded: "No readable review was found",
+  interrupted: "The latest readable review started and did not finish",
+  failed: "The latest readable review could not complete",
+  partial: "The latest readable review completed only in part",
+  complete: "The latest readable review completed",
+};
+
+export const INCOMPLETE_HISTORY =
+  "Part of the review history could not be read, so this is the latest " +
+  "review MOVRvest can read — not necessarily the latest one attempted. " +
+  "A newer review may exist in the unreadable part of the record.";
 
 const EXECUTION_MEANING: Record<CycleReview["execution"], string> = {
   none_recorded:
@@ -56,8 +76,8 @@ function ComparisonNote({ review }: { review: CycleReview }) {
   if (!review.streamComplete) {
     return (
       <p className="text-sm leading-6 text-slate-700">
-        Part of the review history could not be read, so no comparison with a
-        previous review is claimed here — not even that nothing changed.
+        No comparison with a previous review is claimed here — not even that
+        nothing changed — because the history it would rest on is incomplete.
       </p>
     );
   }
@@ -164,17 +184,28 @@ function Course({ course }: { course: CycleCourse }) {
   );
 }
 
-function LastKnown({ lastKnown }: { lastKnown: LastKnownCycle }) {
+function LastKnown({
+  lastKnown,
+  streamComplete,
+}: {
+  lastKnown: LastKnownCycle;
+  streamComplete: boolean;
+}) {
   return (
     <section className="mt-8 rounded-3xl border border-slate-300 bg-slate-50 p-6">
       <h3 className="text-sm font-semibold text-slate-900">
-        Last completed review — {when(lastKnown.finishedAt)}
+        {streamComplete
+          ? "Last completed review"
+          : "Latest readable completed review"}{" "}
+        — {when(lastKnown.finishedAt)}
       </h3>
 
       <p className="mt-2 text-sm leading-6 text-slate-700">
-        This is what the most recent <em>completed</em> review concluded. It is
-        shown with its date because it is not current: the latest attempt is the
-        one described above.
+        This is what that review concluded. It is shown with its date because it
+        is not current: the attempt described above is the more recent one.
+        {streamComplete
+          ? ""
+          : " Because the history is incomplete, it is the most recent completed review MOVRvest can read, not necessarily the most recent one that ran."}
       </p>
 
       <ul className="mt-4 grid gap-3">
@@ -203,7 +234,9 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
       </p>
 
       <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-        {EXECUTION_HEADLINE[review.execution]}
+        {review.streamComplete
+          ? EXECUTION_HEADLINE[review.execution]
+          : READABLE_HEADLINE[review.execution]}
       </h2>
 
       {ran ? (
@@ -213,6 +246,12 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
       <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-700">
         {EXECUTION_MEANING[review.execution]}
       </p>
+
+      {review.streamComplete ? null : (
+        <p className="mt-3 max-w-3xl rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-800">
+          {INCOMPLETE_HISTORY}
+        </p>
+      )}
 
       {failedStages.length > 0 ? (
         <ul className="mt-4 grid gap-2">
@@ -283,6 +322,14 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
             Every security this review covered
           </h3>
 
+          {review.streamComplete ? null : (
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              These are dated readings from the review named above. With the
+              history incomplete, they are readable evidence rather than
+              necessarily your current position.
+            </p>
+          )}
+
           <ul className="mt-3 grid gap-3">
             {review.courses.map((course) => (
               <Course course={course} key={course.symbol} />
@@ -291,7 +338,12 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
         </div>
       ) : null}
 
-      {review.lastKnown ? <LastKnown lastKnown={review.lastKnown} /> : null}
+      {review.lastKnown ? (
+        <LastKnown
+          lastKnown={review.lastKnown}
+          streamComplete={review.streamComplete}
+        />
+      ) : null}
     </section>
   );
 }

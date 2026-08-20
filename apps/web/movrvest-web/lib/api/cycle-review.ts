@@ -7,23 +7,36 @@
  * decisions, and two visits could disagree for reasons that had nothing
  * to do with the account.
  *
- * This client reads a record instead. Every semantic decision is
- * already made server-side: the states are typed, the sentences are the
- * domain's own, and nothing here composes a claim out of parts.
+ * **This parser fails closed.** It used to coerce: a missing
+ * `stream_complete` became `true`, missing numbers became `0`, missing
+ * arrays became `[]`, and an unrecognised execution string was cast
+ * into the enum. Every one of those turns a broken contract into a
+ * plausible fact — a page that quietly reports a complete, quiet,
+ * empty review because the payload was malformed. A contract-invalid
+ * response now yields **no review at all**, and the caller reports why.
  */
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
 
 /** What happened to the latest recorded attempt. Mirrors the backend enum. */
-export type CycleExecution =
-  | "none_recorded"
-  | "interrupted"
-  | "failed"
-  | "partial"
-  | "complete";
+export const CYCLE_EXECUTIONS = [
+  "none_recorded",
+  "interrupted",
+  "failed",
+  "partial",
+  "complete",
+] as const;
+
+export type CycleExecution = (typeof CYCLE_EXECUTIONS)[number];
 
 /** What the change comparison rested on, or null where none was recorded. */
-export type ComparisonOutcome = "initial_baseline" | "compared" | "refused";
+export const COMPARISON_OUTCOMES = [
+  "initial_baseline",
+  "compared",
+  "refused",
+] as const;
+
+export type ComparisonOutcome = (typeof COMPARISON_OUTCOMES)[number];
 
 export interface CycleStage {
   name: string;
@@ -96,139 +109,273 @@ export interface CycleReview {
   lastKnown: LastKnownCycle | null;
 }
 
+/**
+ * Why no review is being shown. Three different facts, never one word:
+ * the backend could not be reached, it answered with an error, or it
+ * answered with something this client cannot trust.
+ */
+export type CycleReviewFailure =
+  | "unreachable"
+  | "http_error"
+  | "invalid_contract";
+
 export interface CycleReviewResult {
   review: CycleReview | null;
   backendUrl: string;
-  error?: string;
+  failure?: CycleReviewFailure;
+  detail?: string;
 }
 
-function str(value: unknown): string {
-  return typeof value === "string" ? value : "";
+export class CycleContractError extends Error {}
+
+function fail(field: string, saw: unknown): never {
+  throw new CycleContractError(
+    `"${field}" is not valid in the /cycle/latest response (saw ${typeof saw}).`,
+  );
 }
 
-function num(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+function object(value: unknown, field: string): Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    fail(field, value);
+  }
+
+  return value as Record<string, unknown>;
 }
 
-function optionalNum(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+function requiredString(source: Record<string, unknown>, field: string): string {
+  const value = source[field];
+
+  if (typeof value !== "string") {
+    fail(field, value);
+  }
+
+  return value;
 }
 
-function strings(value: unknown): string[] {
-  return Array.isArray(value) ? value.map(str).filter(Boolean) : [];
+function requiredBoolean(
+  source: Record<string, unknown>,
+  field: string,
+): boolean {
+  const value = source[field];
+
+  if (typeof value !== "boolean") {
+    fail(field, value);
+  }
+
+  return value;
 }
 
-function envelopeOf(raw: unknown): CycleEnvelope | null {
-  if (raw === null || typeof raw !== "object") {
+function requiredCount(source: Record<string, unknown>, field: string): number {
+  const value = source[field];
+
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+function nullableNumber(
+  source: Record<string, unknown>,
+  field: string,
+): number | null {
+  const value = source[field];
+
+  if (value === null || value === undefined) {
     return null;
   }
 
-  const item = raw as Record<string, unknown>;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+function nullableString(
+  source: Record<string, unknown>,
+  field: string,
+): string | null {
+  const value = source[field];
+
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+/** A timestamp the backend may omit, but may never send unparseable. */
+function nullableTimestamp(
+  source: Record<string, unknown>,
+  field: string,
+): string | null {
+  const value = nullableString(source, field);
+
+  if (value === null) {
+    return null;
+  }
+
+  if (Number.isNaN(new Date(value).getTime())) {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+function requiredTimestamp(
+  source: Record<string, unknown>,
+  field: string,
+): string {
+  const value = requiredString(source, field);
+
+  if (Number.isNaN(new Date(value).getTime())) {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+function requiredStrings(
+  source: Record<string, unknown>,
+  field: string,
+): string[] {
+  const value = source[field];
+
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+    fail(field, value);
+  }
+
+  return value as string[];
+}
+
+function envelopeOf(raw: unknown, field: string): CycleEnvelope | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+
+  const item = object(raw, field);
 
   return {
-    kind: str(item.kind),
-    stated: str(item.stated),
-    policySource: str(item.policy_source),
-    policyVersion: str(item.policy_version),
-    evidenceCeiling: str(item.evidence_ceiling),
-    capacityCeilingPct: optionalNum(item.capacity_ceiling_pct),
-    finalPct: optionalNum(item.final_pct),
-    bindingConstraint: str(item.binding_constraint),
-    because: str(item.because),
-    namedGaps: strings(item.named_gaps),
-    qualityAuthority:
-      typeof item.quality_authority === "string" ? item.quality_authority : null,
-    starterCapped: item.starter_capped === true,
-    priceAsOf: str(item.price_as_of),
-    portfolioAsOf: str(item.portfolio_as_of),
-    liquidity: str(item.liquidity),
+    kind: requiredString(item, "kind"),
+    stated: requiredString(item, "stated"),
+    policySource: requiredString(item, "policy_source"),
+    policyVersion: requiredString(item, "policy_version"),
+    evidenceCeiling: requiredString(item, "evidence_ceiling"),
+    capacityCeilingPct: nullableNumber(item, "capacity_ceiling_pct"),
+    finalPct: nullableNumber(item, "final_pct"),
+    bindingConstraint: requiredString(item, "binding_constraint"),
+    because: requiredString(item, "because"),
+    namedGaps: requiredStrings(item, "named_gaps"),
+    qualityAuthority: nullableString(item, "quality_authority"),
+    starterCapped: requiredBoolean(item, "starter_capped"),
+    priceAsOf: requiredString(item, "price_as_of"),
+    portfolioAsOf: requiredString(item, "portfolio_as_of"),
+    liquidity: requiredString(item, "liquidity"),
   };
 }
 
-function courseOf(raw: unknown): CycleCourse {
-  const item = (raw ?? {}) as Record<string, unknown>;
+function courseOf(raw: unknown, field: string): CycleCourse {
+  const item = object(raw, field);
 
   return {
-    symbol: str(item.symbol),
-    disposition: str(item.disposition),
-    rationale: str(item.rationale),
-    conviction: optionalNum(item.conviction),
-    evidenceAsOf: str(item.evidence_as_of),
-    actionKind: str(item.action_kind),
-    actionStatement: str(item.action_statement),
-    actionBecause: str(item.action_because),
-    asksForSomething: item.asks_for_something === true,
-    envelope: envelopeOf(item.envelope),
+    symbol: requiredString(item, "symbol"),
+    disposition: requiredString(item, "disposition"),
+    rationale: requiredString(item, "rationale"),
+    conviction: nullableNumber(item, "conviction"),
+    evidenceAsOf: requiredString(item, "evidence_as_of"),
+    actionKind: requiredString(item, "action_kind"),
+    actionStatement: requiredString(item, "action_statement"),
+    actionBecause: requiredString(item, "action_because"),
+    asksForSomething: requiredBoolean(item, "asks_for_something"),
+    envelope: envelopeOf(item.envelope, `${field}.envelope`),
   };
 }
 
-function coursesOf(raw: unknown): CycleCourse[] {
-  return Array.isArray(raw) ? raw.map(courseOf) : [];
+function coursesOf(source: Record<string, unknown>, field: string): CycleCourse[] {
+  const value = source[field];
+
+  if (!Array.isArray(value)) {
+    fail(field, value);
+  }
+
+  return value.map((raw, index) => courseOf(raw, `${field}[${index}]`));
 }
 
 export function parseCycleReview(payload: unknown): CycleReview {
-  if (payload === null || typeof payload !== "object") {
-    throw new Error("The /cycle/latest response is not a JSON object.");
+  const body = object(payload, "response");
+
+  const execution = requiredString(body, "execution");
+
+  if (!(CYCLE_EXECUTIONS as readonly string[]).includes(execution)) {
+    fail("execution", execution);
   }
 
-  const body = payload as Record<string, unknown>;
-  const execution = str(body.execution) as CycleExecution;
+  const comparisonRaw = nullableString(body, "comparison_outcome");
+
+  if (
+    comparisonRaw !== null &&
+    !(COMPARISON_OUTCOMES as readonly string[]).includes(comparisonRaw)
+  ) {
+    fail("comparison_outcome", comparisonRaw);
+  }
 
   const lastKnownRaw = body.last_known;
-  const lastKnown =
-    lastKnownRaw && typeof lastKnownRaw === "object"
-      ? ((): LastKnownCycle => {
-          const item = lastKnownRaw as Record<string, unknown>;
+  let lastKnown: LastKnownCycle | null = null;
 
-          return {
-            cycleId: str(item.cycle_id),
-            finishedAt: str(item.finished_at),
-            status: str(item.status),
-            courses: coursesOf(item.courses),
-          };
-        })()
-      : null;
+  if (lastKnownRaw !== null && lastKnownRaw !== undefined) {
+    const item = object(lastKnownRaw, "last_known");
+
+    lastKnown = {
+      cycleId: requiredString(item, "cycle_id"),
+      finishedAt: requiredTimestamp(item, "finished_at"),
+      status: requiredString(item, "status"),
+      courses: coursesOf(item, "courses"),
+    };
+  }
+
+  const stagesRaw = body.stages;
+
+  if (!Array.isArray(stagesRaw)) {
+    fail("stages", stagesRaw);
+  }
 
   return {
-    execution,
-    cycleId: typeof body.cycle_id === "string" ? body.cycle_id : null,
-    startedAt: typeof body.started_at === "string" ? body.started_at : null,
-    finishedAt: typeof body.finished_at === "string" ? body.finished_at : null,
-    stages: Array.isArray(body.stages)
-      ? body.stages.map((raw) => {
-          const item = (raw ?? {}) as Record<string, unknown>;
+    execution: execution as CycleExecution,
+    cycleId: nullableString(body, "cycle_id"),
+    startedAt: nullableTimestamp(body, "started_at"),
+    finishedAt: nullableTimestamp(body, "finished_at"),
+    stages: stagesRaw.map((raw, index) => {
+      const item = object(raw, `stages[${index}]`);
 
-          return {
-            name: str(item.name),
-            outcome: str(item.outcome),
-            because: str(item.because),
-          };
-        })
-      : [],
-    comparisonOutcome:
-      typeof body.comparison_outcome === "string"
-        ? (body.comparison_outcome as ComparisonOutcome)
-        : null,
-    comparisonPriorCycleId: str(body.comparison_prior_cycle_id),
-    comparisonBecause: str(body.comparison_because),
-    securitiesAsked: num(body.securities_asked),
-    securitiesPriced: num(body.securities_priced),
-    refusals: strings(body.refusals),
-    newlyProduced: strings(body.newly_produced),
-    changed: strings(body.changed),
-    unchanged: strings(body.unchanged),
-    attention: strings(body.attention),
-    courses: coursesOf(body.courses),
-    // Carried, never substituted. A null here means the domain did not
-    // permit the sentence, and no weaker phrase stands in for it.
-    noActionSuggested:
-      typeof body.no_action_suggested === "string"
-        ? body.no_action_suggested
-        : null,
-    streamComplete: body.stream_complete !== false,
-    unreadableRecords: num(body.unreadable_records),
-    unsupportedSchemas: num(body.unsupported_schemas),
-    lifecycleAnomalies: num(body.lifecycle_anomalies),
+      return {
+        name: requiredString(item, "name"),
+        outcome: requiredString(item, "outcome"),
+        because: requiredString(item, "because"),
+      };
+    }),
+    comparisonOutcome: comparisonRaw as ComparisonOutcome | null,
+    comparisonPriorCycleId: requiredString(body, "comparison_prior_cycle_id"),
+    comparisonBecause: requiredString(body, "comparison_because"),
+    securitiesAsked: requiredCount(body, "securities_asked"),
+    securitiesPriced: requiredCount(body, "securities_priced"),
+    refusals: requiredStrings(body, "refusals"),
+    newlyProduced: requiredStrings(body, "newly_produced"),
+    changed: requiredStrings(body, "changed"),
+    unchanged: requiredStrings(body, "unchanged"),
+    attention: requiredStrings(body, "attention"),
+    courses: coursesOf(body, "courses"),
+    // Carried, never substituted. Null means the domain did not permit
+    // the sentence, and no weaker phrase stands in for it.
+    noActionSuggested: nullableString(body, "no_action_suggested"),
+    streamComplete: requiredBoolean(body, "stream_complete"),
+    unreadableRecords: requiredCount(body, "unreadable_records"),
+    unsupportedSchemas: requiredCount(body, "unsupported_schemas"),
+    lifecycleAnomalies: requiredCount(body, "lifecycle_anomalies"),
     lastKnown,
   };
 }
@@ -236,26 +383,42 @@ export function parseCycleReview(payload: unknown): CycleReview {
 export async function getCycleReview(): Promise<CycleReviewResult> {
   const endpoint = `${BACKEND_URL}/cycle/latest`;
 
+  let response: Response;
+
   try {
-    const response = await fetch(endpoint, { cache: "no-store" });
+    response = await fetch(endpoint, { cache: "no-store" });
+  } catch (error) {
+    return {
+      review: null,
+      backendUrl: endpoint,
+      failure: "unreachable",
+      detail: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 
-    if (!response.ok) {
-      return {
-        review: null,
-        backendUrl: endpoint,
-        error: `The backend answered ${response.status}.`,
-      };
-    }
+  if (!response.ok) {
+    return {
+      review: null,
+      backendUrl: endpoint,
+      failure: "http_error",
+      detail: `The backend answered ${response.status}.`,
+    };
+  }
 
+  try {
     return {
       review: parseCycleReview(await response.json()),
       backendUrl: endpoint,
     };
   } catch (error) {
+    // A readable response this client cannot trust is its own fact. It
+    // is not "the backend is unreachable", and it is certainly not an
+    // empty review.
     return {
       review: null,
       backendUrl: endpoint,
-      error: error instanceof Error ? error.message : "Unknown error",
+      failure: "invalid_contract",
+      detail: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

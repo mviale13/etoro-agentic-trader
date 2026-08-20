@@ -528,3 +528,172 @@ def test_19_a_page_visit_writes_nothing_anywhere_under_the_evidence_root(
     assert sorted(path.name for path in root.rglob("*")) == before, (
         "a page view created evidence"
     )
+
+
+# ── the backend must always satisfy the strict frontend contract ────
+
+
+#: Every key the strict TypeScript parser requires, with the JSON types
+#: it accepts. The frontend rejects anything else outright, so a backend
+#: that stopped emitting one of these would blank the homepage — and
+#: only this test, which runs in CI, would catch it. The frontend suite
+#: does not: CI has no node step.
+REQUIRED_CONTRACT: dict[str, tuple[type, ...]] = {
+    "execution": (str,),
+    "stages": (list,),
+    "comparison_prior_cycle_id": (str,),
+    "comparison_because": (str,),
+    "securities_asked": (int,),
+    "securities_priced": (int,),
+    "refusals": (list,),
+    "newly_produced": (list,),
+    "changed": (list,),
+    "unchanged": (list,),
+    "attention": (list,),
+    "courses": (list,),
+    "stream_complete": (bool,),
+    "unreadable_records": (int,),
+    "unsupported_schemas": (int,),
+    "lifecycle_anomalies": (int,),
+}
+
+#: Keys the parser accepts as null, and only these.
+NULLABLE = {
+    "cycle_id",
+    "started_at",
+    "finished_at",
+    "comparison_outcome",
+    "no_action_suggested",
+    "last_known",
+}
+
+COURSE_CONTRACT: dict[str, tuple[type, ...]] = {
+    "symbol": (str,),
+    "disposition": (str,),
+    "rationale": (str,),
+    "evidence_as_of": (str,),
+    "action_kind": (str,),
+    "action_statement": (str,),
+    "action_because": (str,),
+    "asks_for_something": (bool,),
+}
+
+
+def test_20_every_lifecycle_state_satisfies_the_strict_frontend_contract(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    """The two sides cannot drift without this failing.
+
+    The frontend now fails closed on a missing or malformed field, which
+    is right — and it means a backend that quietly drops one blanks the
+    homepage. The frontend suite cannot catch that: CI runs no node
+    step. This does.
+    """
+
+    scenarios = [
+        (CycleStatus.COMPLETE, (summary("KO"),)),
+        (CycleStatus.PARTIAL, (summary("PG", "RECOMMEND"),)),
+        (CycleStatus.FAILED, ()),
+    ]
+
+    for index, (status, decisions) in enumerate(scenarios):
+        cycle_id = f"c{index}"
+        at = MOMENT + timedelta(hours=index)
+
+        store.append_started(CycleStarted(cycle_id=cycle_id, started_at=at))
+        store.append_finished(
+            finished(cycle_id, status=status, at=at, decisions=decisions)
+        )
+
+        body = client.get("/cycle/latest").json()
+
+        for field, types in REQUIRED_CONTRACT.items():
+            assert field in body, f"{status.value}: {field} is absent"
+            assert body[field] is not None, f"{status.value}: {field} is null"
+            assert isinstance(body[field], types), f"{status.value}: {field}"
+
+        for field in NULLABLE:
+            assert field in body, f"{status.value}: {field} is absent entirely"
+
+    # An interrupted record and an empty store must satisfy it too.
+    store.append_started(
+        CycleStarted(cycle_id="c9", started_at=MOMENT + timedelta(hours=9))
+    )
+
+    for body in (client.get("/cycle/latest").json(),):
+        for field, types in REQUIRED_CONTRACT.items():
+            assert field in body and isinstance(body[field], types), field
+
+
+def test_21_a_course_and_its_envelope_satisfy_the_strict_contract(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    from tests.test_capital_action_envelope import envelope as build_envelope
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        finished(
+            "c1",
+            decisions=(
+                summary(
+                    "KO",
+                    "RECOMMEND",
+                    action_kind="open",
+                    envelope=build_envelope("open"),
+                ),
+            ),
+        )
+    )
+
+    course = client.get("/cycle/latest").json()["courses"][0]
+
+    for field, types in COURSE_CONTRACT.items():
+        assert field in course, field
+        assert isinstance(course[field], types), field
+
+    assert "conviction" in course, "nullable, but never absent"
+
+    envelope = course["envelope"]
+
+    for field in (
+        "kind",
+        "stated",
+        "policy_source",
+        "policy_version",
+        "evidence_ceiling",
+        "binding_constraint",
+        "because",
+        "price_as_of",
+        "portfolio_as_of",
+        "liquidity",
+    ):
+        assert isinstance(envelope[field], str), field
+
+    assert isinstance(envelope["named_gaps"], list)
+    assert isinstance(envelope["starter_capped"], bool)
+    assert "capacity_ceiling_pct" in envelope
+    assert "final_pct" in envelope
+    assert "quality_authority" in envelope
+
+
+def test_22_every_timestamp_the_contract_emits_is_parseable(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    """The parser rejects an unparseable date; the backend must not send one."""
+
+    store.append_started(CycleStarted(cycle_id="c0", started_at=MOMENT))
+    store.append_finished(finished("c0", decisions=(summary("KO"),)))
+    store.append_started(
+        CycleStarted(cycle_id="c1", started_at=MOMENT + timedelta(hours=2))
+    )
+
+    body = client.get("/cycle/latest").json()
+
+    for field in ("started_at", "finished_at"):
+        value = body[field]
+
+        if value is not None:
+            datetime.fromisoformat(value)
+
+    assert body["last_known"] is not None
+    datetime.fromisoformat(body["last_known"]["finished_at"])

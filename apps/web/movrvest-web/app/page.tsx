@@ -1,9 +1,27 @@
 import { LatestCioReview } from "@/components/executive/LatestCioReview";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { getCycleReview } from "@/lib/api/cycle-review";
+import type { CycleReviewFailure } from "@/lib/api/cycle-review";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Three different failures, worded as three different facts.
+ *
+ * Calling an unreadable response "backend unreachable" would be a claim
+ * about the network made out of a parsing problem — and it would hide
+ * the one failure a reader can act on, which is that the two sides
+ * disagree about the contract.
+ */
+export const FAILURE_MEANING: Record<CycleReviewFailure, string> = {
+  unreachable:
+    "MOVRvest could not reach its own backend, so it cannot read the review history.",
+  http_error:
+    "MOVRvest reached its backend, but the request for the review history was refused.",
+  invalid_contract:
+    "MOVRvest reached its backend and received a response it could not read as a cycle review. Rather than guess at the missing parts, it shows nothing.",
+};
 
 /**
  * The homepage reads the recorded CIO cycle, and nothing else.
@@ -44,13 +62,13 @@ export default async function HomePage() {
             </p>
 
             <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-amber-950">
-              The backend is unreachable
+              Latest CIO review unavailable
             </h1>
 
             <p className="mt-4 max-w-2xl text-sm leading-6 text-amber-900">
-              MOVRvest cannot currently read its own review history, so nothing
-              is shown. No demo figures stand in for real ones, and no earlier
-              review is presented as though it were the latest.
+              {FAILURE_MEANING[result.failure ?? "unreachable"]} Nothing is
+              shown in its place: no demo figures stand in for real ones, and no
+              earlier review is presented as though it were the latest.
             </p>
 
             <p className="mt-6 text-sm text-amber-900">
@@ -60,14 +78,14 @@ export default async function HomePage() {
               </code>
             </p>
 
-            {result.error ? (
+            {result.detail ? (
               <details className="mt-4 text-sm text-amber-900">
                 <summary className="cursor-pointer font-semibold">
                   Connection details
                 </summary>
 
                 <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs leading-5">
-                  {result.error}
+                  {result.detail}
                 </pre>
               </details>
             ) : null}
