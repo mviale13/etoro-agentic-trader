@@ -34,6 +34,9 @@ from app.domain.daily_cycle import (
     CycleStarted,
     CycleStatus,
     DecisionSummary,
+    RecordedAllocation,
+    RecordedHolding,
+    RecordedPortfolio,
     StageOutcome,
 )
 from app.infrastructure.evidence_root import evidence_path
@@ -89,28 +92,19 @@ class DailyCycleStore:
                     "prior_cycle_id": finished.comparison.prior_cycle_id,
                     "because": finished.comparison.because,
                 },
-                "decisions": [
-                    {
-                        "symbol": entry.symbol,
-                        "state": entry.state,
-                        "rationale": entry.rationale,
-                        "conviction": entry.conviction,
-                        "evidence_as_of": entry.evidence_as_of,
-                        "action_kind": entry.action_kind,
-                        "action_statement": entry.action_statement,
-                        "action_because": entry.action_because,
-                        "asks_for_something": entry.asks_for_something,
-                        # Optional and backward-compatible under the same
-                        # schema: a pre-envelope record simply lacks the
-                        # key and decodes exactly as it always did.
-                        "envelope": _encode_envelope(entry.envelope),
-                    }
-                    for entry in finished.decisions
-                ],
+                "decisions": [_encode_decision(entry) for entry in finished.decisions],
                 "newly_produced": list(finished.newly_produced),
                 "changed": list(finished.changed),
                 "unchanged": list(finished.unchanged),
                 "attention": list(finished.attention),
+                # Optional and backward-compatible under the same
+                # schema, exactly as the envelope was: a record
+                # written before these existed lacks the keys and
+                # decodes as no portfolio and no candidates.
+                "portfolio": _encode_portfolio(finished.portfolio),
+                "candidates": [
+                    _encode_decision(entry) for entry in finished.candidates
+                ],
             }
         )
 
@@ -239,23 +233,7 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
                 refusals=tuple(str(item) for item in row.get("refusals", [])),
                 comparison=_comparison(row.get("comparison")),
                 decisions=tuple(
-                    DecisionSummary(
-                        symbol=str(entry["symbol"]),
-                        state=str(entry["state"]),
-                        rationale=str(entry.get("rationale", "")),
-                        conviction=(
-                            int(entry["conviction"])
-                            if entry.get("conviction") is not None
-                            else None
-                        ),
-                        evidence_as_of=str(entry.get("evidence_as_of", "")),
-                        action_kind=str(entry.get("action_kind", "")),
-                        action_statement=str(entry.get("action_statement", "")),
-                        action_because=str(entry.get("action_because", "")),
-                        asks_for_something=bool(entry.get("asks_for_something", False)),
-                        envelope=_decode_envelope(entry.get("envelope")),
-                    )
-                    for entry in row.get("decisions", [])
+                    _decode_decision(entry) for entry in row.get("decisions", [])
                 ),
                 newly_produced=tuple(
                     str(item) for item in row.get("newly_produced", [])
@@ -263,6 +241,10 @@ def _decode(row: dict[str, Any]) -> CycleStarted | CycleFinished | None:
                 changed=tuple(str(item) for item in row.get("changed", [])),
                 unchanged=tuple(str(item) for item in row.get("unchanged", [])),
                 attention=tuple(str(item) for item in row.get("attention", [])),
+                portfolio=_decode_portfolio(row.get("portfolio")),
+                candidates=tuple(
+                    _decode_decision(entry) for entry in row.get("candidates", [])
+                ),
             )
 
         return None
@@ -291,6 +273,138 @@ def _comparison(raw: Any) -> ComparisonBasis:
         outcome=ComparisonOutcome(raw["outcome"]),
         prior_cycle_id=str(raw.get("prior_cycle_id", "")),
         because=str(raw.get("because", "")),
+    )
+
+
+def _encode_decision(entry: DecisionSummary) -> dict[str, Any]:
+    """One decision's stored shape — shared by holdings and candidates.
+
+    Candidates went through the same pipeline as holdings, so they are
+    stored in the same shape. One encoder means the two can never drift
+    into meaning different things by the same key.
+    """
+
+    return {
+        "symbol": entry.symbol,
+        "state": entry.state,
+        "rationale": entry.rationale,
+        "conviction": entry.conviction,
+        "evidence_as_of": entry.evidence_as_of,
+        "action_kind": entry.action_kind,
+        "action_statement": entry.action_statement,
+        "action_because": entry.action_because,
+        "asks_for_something": entry.asks_for_something,
+        # Optional and backward-compatible under the same schema: a
+        # pre-envelope record simply lacks the key and decodes exactly
+        # as it always did.
+        "envelope": _encode_envelope(entry.envelope),
+    }
+
+
+def _decode_decision(entry: dict[str, Any]) -> DecisionSummary:
+    return DecisionSummary(
+        symbol=str(entry["symbol"]),
+        state=str(entry["state"]),
+        rationale=str(entry.get("rationale", "")),
+        conviction=(
+            int(entry["conviction"]) if entry.get("conviction") is not None else None
+        ),
+        evidence_as_of=str(entry.get("evidence_as_of", "")),
+        action_kind=str(entry.get("action_kind", "")),
+        action_statement=str(entry.get("action_statement", "")),
+        action_because=str(entry.get("action_because", "")),
+        asks_for_something=bool(entry.get("asks_for_something", False)),
+        envelope=_decode_envelope(entry.get("envelope")),
+    )
+
+
+def _encode_portfolio(portfolio: RecordedPortfolio | None) -> dict[str, Any] | None:
+    if portfolio is None:
+        return None
+
+    return {
+        "total_value": portfolio.total_value,
+        "available_cash_usd": portfolio.available_cash_usd,
+        "cash_pct": portfolio.cash_pct,
+        "observed": portfolio.observed,
+        "compliant": portfolio.compliant,
+        "holdings": [
+            {
+                "symbol": holding.symbol,
+                "market_value_usd": holding.market_value_usd,
+                "weight_pct": holding.weight_pct,
+            }
+            for holding in portfolio.holdings
+        ],
+        "allocations": [
+            {
+                "asset": item.asset,
+                "current_pct": item.current_pct,
+                "target_pct": item.target_pct,
+                "difference_pct": item.difference_pct,
+            }
+            for item in portfolio.allocations
+        ],
+    }
+
+
+def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
+    """Absent means a pre-field record; malformed refuses the record.
+
+    Null and absent both decode as "this cycle recorded no portfolio",
+    which is the honest reading of a record written before the field
+    existed. A present-but-unreadable one raises, and the caller counts
+    the whole record unreadable rather than silently dropping an
+    account.
+    """
+
+    if raw is None:
+        return None
+
+    if not isinstance(raw, dict):
+        raise ValueError("a recorded portfolio is a mapping")
+
+    return RecordedPortfolio(
+        total_value=float(raw["total_value"]),
+        available_cash_usd=(
+            float(raw["available_cash_usd"])
+            if raw.get("available_cash_usd") is not None
+            else None
+        ),
+        cash_pct=(float(raw["cash_pct"]) if raw.get("cash_pct") is not None else None),
+        observed=str(raw.get("observed", "")),
+        compliant=(
+            bool(raw["compliant"]) if raw.get("compliant") is not None else None
+        ),
+        holdings=tuple(
+            RecordedHolding(
+                symbol=str(item["symbol"]),
+                market_value_usd=float(item["market_value_usd"]),
+                weight_pct=(
+                    float(item["weight_pct"])
+                    if item.get("weight_pct") is not None
+                    else None
+                ),
+            )
+            for item in raw.get("holdings", [])
+        ),
+        allocations=tuple(
+            RecordedAllocation(
+                asset=str(item["asset"]),
+                current_pct=(
+                    float(item["current_pct"])
+                    if item.get("current_pct") is not None
+                    else None
+                ),
+                target_pct=float(item["target_pct"]),
+                difference_pct=(
+                    float(item["difference_pct"])
+                    if item.get("difference_pct") is not None
+                    else None
+                ),
+            )
+            for item in raw.get("allocations", [])
+        ),
     )
 
 

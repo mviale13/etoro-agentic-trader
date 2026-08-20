@@ -105,6 +105,63 @@ class DecisionSummary:
     envelope: CapitalActionEnvelope | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class RecordedHolding:
+    """One holding as the cycle saw it, with its share of the account."""
+
+    symbol: str
+    market_value_usd: float
+
+    #: None where the account reports no value to take a share of, or
+    #: where the holding could not be resolved to a symbol. Never 0.0
+    #: for either — #223's rule, carried into the record.
+    weight_pct: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class RecordedAllocation:
+    """One asset class against the investor's own target."""
+
+    asset: str
+    current_pct: float | None
+    target_pct: float
+    difference_pct: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class RecordedPortfolio:
+    """The account as the cycle read it, recorded rather than re-fetched.
+
+    The cycle already builds a Brain, so it already holds this. Throwing
+    it away meant a page wanting the portfolio had to acquire it again —
+    which is exactly the spend a page view may not make. Recording it
+    here is what lets the homepage show an account without touching a
+    provider.
+
+    Cash absence survives into the record: `available_cash_usd` and
+    `cash_pct` are None where the broker stated no figure, and a
+    measured zero stays 0.0.
+    """
+
+    total_value: float
+    available_cash_usd: float | None = None
+    cash_pct: float | None = None
+    holdings: tuple[RecordedHolding, ...] = ()
+
+    #: The receipt-time wording from #223 — when eToro's account
+    #: response arrived, never when eToro observed the account.
+    observed: str = ""
+
+    #: The account against the investor's own strategy, compared at
+    #: cycle time by `PolicyAnalyzer` because that is where both halves
+    #: are in hand. A difference of None is unmeasured, never zero.
+    allocations: tuple[RecordedAllocation, ...] = ()
+
+    #: None where any required comparison was unmeasured — an unread
+    #: allocation is never credited as compliant.
+    compliant: bool | None = None
+
+
 class ComparisonOutcome(StrEnum):
     """What the cycle's change comparison rested on. Typed, never guessed.
 
@@ -203,6 +260,22 @@ class CycleFinished:
     #: What deserves the investor's eye: the changed dispositions, with
     #: refusals beside them — visible inside COMPLETE, per the ruling.
     attention: tuple[str, ...] = ()
+
+    #: The account as this cycle read it. None on a cycle that could not
+    #: read one, and on every record written before the field existed.
+    portfolio: RecordedPortfolio | None = None
+
+    #: Watched-but-unheld securities this cycle actually **evaluated**,
+    #: carried in the same shape as a holding's decision because they
+    #: went through the same pipeline.
+    #:
+    #: Empty by default and by design: evidencing a candidate costs a
+    #: fundamentals request and evaluating one costs a pipeline pass, so
+    #: a cycle pays for them only when asked (`--candidates N`). An
+    #: empty tuple therefore means *none were evaluated*, which is not
+    #: the same as *none were worth holding* — and no surface may read
+    #: it as the second.
+    candidates: tuple[DecisionSummary, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

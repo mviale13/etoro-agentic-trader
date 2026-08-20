@@ -598,6 +598,22 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
+    cycle_parser.add_argument(
+        "--candidates",
+        type=int,
+        default=0,
+        metavar="N",
+        help=(
+            "Also evidence and evaluate up to N watched-but-unheld "
+            "securities, recording them ranked by the conviction the "
+            "Artificial CIO assigned. Default 0: each candidate costs a "
+            "fundamentals request against a rate-limited provider and a "
+            "pipeline pass, so a cycle pays for them only when asked. "
+            "Recording none means none were evaluated — never that none "
+            "is worth holding"
+        ),
+    )
+
     identity_history_parser = subparsers.add_parser(
         "identity-history",
         help="Show what each provider has claimed this instrument was, look by look",
@@ -1058,7 +1074,7 @@ async def dispatch(args: argparse.Namespace) -> int:
         return await identity_history.run(args.symbol)
 
     if args.command == "cycle":
-        return await cycle.run()
+        return await cycle.run(candidates=max(0, args.candidates))
 
     if args.command == "playbook-coverage":
         return await playbook_coverage.run()

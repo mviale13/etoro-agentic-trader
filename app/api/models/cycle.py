@@ -38,6 +38,7 @@ from app.domain.daily_cycle import (
     CycleLog,
     CycleRecord,
     DecisionSummary,
+    RecordedPortfolio,
     no_action_permitted,
 )
 
@@ -147,6 +148,68 @@ class CourseResponse(BaseModel):
         )
 
 
+class HoldingResponse(BaseModel):
+    symbol: str
+    market_value_usd: float
+
+    #: Null where the share could not be computed — never 0.0 for it.
+    weight_pct: float | None
+
+
+class AllocationResponse(BaseModel):
+    """One asset class against the investor's own target."""
+
+    asset: str
+    current_pct: float | None
+    target_pct: float
+
+    #: Null where the comparison could not be made. An unmeasured
+    #: difference is not a difference of zero, and is never credited as
+    #: sitting on target.
+    difference_pct: float | None
+
+
+class RecordedPortfolioResponse(BaseModel):
+    """The account as the cycle recorded it — not as a page re-fetched it."""
+
+    total_value: float
+    available_cash_usd: float | None
+    cash_pct: float | None
+    observed: str
+    holdings: list[HoldingResponse]
+    allocations: list[AllocationResponse]
+
+    #: Null where any required comparison was unmeasured.
+    compliant: bool | None
+
+    @classmethod
+    def of(cls, portfolio: RecordedPortfolio) -> RecordedPortfolioResponse:
+        return cls(
+            total_value=portfolio.total_value,
+            available_cash_usd=portfolio.available_cash_usd,
+            cash_pct=portfolio.cash_pct,
+            observed=portfolio.observed,
+            holdings=[
+                HoldingResponse(
+                    symbol=holding.symbol,
+                    market_value_usd=holding.market_value_usd,
+                    weight_pct=holding.weight_pct,
+                )
+                for holding in portfolio.holdings
+            ],
+            allocations=[
+                AllocationResponse(
+                    asset=item.asset,
+                    current_pct=item.current_pct,
+                    target_pct=item.target_pct,
+                    difference_pct=item.difference_pct,
+                )
+                for item in portfolio.allocations
+            ],
+            compliant=portfolio.compliant,
+        )
+
+
 class LastKnownResponse(BaseModel):
     """An older completed cycle, and the date that keeps it from reading as now."""
 
@@ -199,6 +262,19 @@ class CycleReviewResponse(BaseModel):
     #: Present only when the latest attempt did not itself produce
     #: courses and an older completed cycle exists.
     last_known: LastKnownResponse | None = None
+
+    #: The account as this cycle recorded it. Null where the cycle could
+    #: not read one, and on every record written before it was carried —
+    #: a page shows nothing rather than fetching its own.
+    portfolio: RecordedPortfolioResponse | None = None
+
+    #: Watched-but-unheld securities this cycle **evaluated**, ordered by
+    #: the conviction the Artificial CIO assigned, highest first.
+    #:
+    #: Empty means none were evaluated — which a surface must not render
+    #: as "nothing is worth considering". Evaluating candidates costs
+    #: provider and pipeline calls, so a cycle does it only when asked.
+    candidates: list[CourseResponse] = []
 
     @classmethod
     def from_log(cls, log: CycleLog) -> CycleReviewResponse:
@@ -261,6 +337,26 @@ class CycleReviewResponse(BaseModel):
                 if finished.decisions
                 else _last_known(log, exclude=latest.cycle_id)
             ),
+            portfolio=(
+                None
+                if finished.portfolio is None
+                else RecordedPortfolioResponse.of(finished.portfolio)
+            ),
+            # Ranked here, from the conviction the pipeline already
+            # assigned. Ordering is priority, never certainty — and a
+            # candidate with no conviction is never ranked above one
+            # that has it.
+            candidates=[
+                CourseResponse.of(entry)
+                for entry in sorted(
+                    finished.candidates,
+                    key=lambda item: (
+                        item.conviction is not None,
+                        item.conviction or 0,
+                    ),
+                    reverse=True,
+                )
+            ],
             stream_complete=log.is_complete_stream,
             unreadable_records=log.unreadable_records,
             unsupported_schemas=log.unsupported_schemas,

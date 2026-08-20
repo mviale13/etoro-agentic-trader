@@ -100,17 +100,26 @@ def decision(
 
 
 class BrainStub:
-    """The minimal brain shape the cycle's envelope pass reads."""
+    """The brain shape the cycle's envelope and portfolio passes read.
 
-    async def build(self):
+    Carries the real shape rather than the minimum: a stub that lags the
+    contract makes the stage fail for a reason no production run would
+    have, which is how a cycle came out FAILED here once already.
+    """
+
+    async def build(self, candidate_limit: int = 0):
         return SimpleNamespace(
             portfolio=SimpleNamespace(
                 total_value=10_000.0,
                 holdings=(),
                 allocation=SimpleNamespace(cash=58.0),
+                available_cash_usd=5_800.0,
+                last_sync=None,
                 drawdown=SimpleNamespace(current_depth=0.02),
             ),
             market=SimpleNamespace(quotes=(), reading=None),
+            investment_policy=None,
+            candidates=(),
             asset_class_for=lambda symbol: None,
         )
 
@@ -613,20 +622,25 @@ def test_the_production_summary_is_built_from_workspace_action() -> None:
         and node.func.id == "DecisionSummary"
     ]
 
-    assert len(calls) == 1, "one production construction"
+    # Two now: holdings and evaluated candidates. The count is not the
+    # point and never was — the rule is that EVERY construction sources
+    # its course from `workspace.action`, so the check runs over all of
+    # them rather than asserting there is only one to check.
+    assert len(calls) == 2, "holdings and candidates, and nothing else"
 
-    keywords = {kw.arg: ast.dump(kw.value) for kw in calls[0].keywords}
+    for call in calls:
+        keywords = {kw.arg: ast.dump(kw.value) for kw in call.keywords}
 
-    for field in ("action_kind", "action_statement", "action_because"):
-        assert field in keywords
-        assert "attr='action'" in keywords[field], (
-            f"{field} must come from workspace.action"
+        for field in ("action_kind", "action_statement", "action_because"):
+            assert field in keywords
+            assert "attr='action'" in keywords[field], (
+                f"{field} must come from workspace.action"
+            )
+
+        assert "asks_for_something" in keywords
+        assert "attr='asks_for_something'" in keywords["asks_for_something"], (
+            "actionability is the ActionKind's own property, never re-inferred"
         )
-
-    assert "asks_for_something" in keywords
-    assert "attr='asks_for_something'" in keywords["asks_for_something"], (
-        "actionability is the ActionKind's own property, never re-inferred"
-    )
 
     source = pathlib.Path("app/commands/cycle.py").read_text()
 
