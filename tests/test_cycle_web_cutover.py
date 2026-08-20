@@ -697,3 +697,227 @@ def test_22_every_timestamp_the_contract_emits_is_parseable(
 
     assert body["last_known"] is not None
     datetime.fromisoformat(body["last_known"]["finished_at"])
+
+
+# ── the cycle records what it already builds ────────────────────────
+
+
+def portfolio_record(**overrides):
+    from app.domain.daily_cycle import (
+        RecordedAllocation,
+        RecordedHolding,
+        RecordedPortfolio,
+    )
+
+    values = dict(
+        total_value=100_000.0,
+        available_cash_usd=25_000.0,
+        cash_pct=25.0,
+        observed="eToro account response received at 2026-08-20 12:00 UTC",
+        holdings=(
+            RecordedHolding(symbol="KO", market_value_usd=50_000.0, weight_pct=50.0),
+            RecordedHolding(symbol="PG", market_value_usd=25_000.0, weight_pct=25.0),
+        ),
+        allocations=(
+            RecordedAllocation(
+                asset="stocks", current_pct=75.0, target_pct=60.0, difference_pct=15.0
+            ),
+            RecordedAllocation(
+                asset="cash", current_pct=25.0, target_pct=15.0, difference_pct=10.0
+            ),
+        ),
+        compliant=False,
+    )
+    values.update(overrides)
+
+    return RecordedPortfolio(**values)
+
+
+def test_23_the_recorded_portfolio_round_trips_and_reaches_the_endpoint(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        finished("c1", decisions=(summary("KO"),), portfolio=portfolio_record())
+    )
+
+    stored = store.log().records[0].finished
+
+    assert stored is not None
+    assert stored.portfolio == portfolio_record(), "exact round-trip"
+
+    body = client.get("/cycle/latest").json()["portfolio"]
+
+    assert body["total_value"] == 100_000.0
+    assert body["available_cash_usd"] == 25_000.0
+    assert [h["symbol"] for h in body["holdings"]] == ["KO", "PG"]
+    assert body["compliant"] is False
+    assert body["observed"].startswith("eToro account response received at"), (
+        "the receipt-time wording survives into the record and the payload"
+    )
+
+
+def test_24_absent_cash_survives_into_the_record(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    """#223's rule, carried one layer further out."""
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        finished(
+            "c1",
+            decisions=(summary("KO"),),
+            portfolio=portfolio_record(available_cash_usd=None, cash_pct=None),
+        )
+    )
+
+    body = client.get("/cycle/latest").json()["portfolio"]
+
+    assert body["available_cash_usd"] is None
+    assert body["cash_pct"] is None
+
+    # And a measured zero stays a measured zero.
+    store.append_started(
+        CycleStarted(cycle_id="c2", started_at=MOMENT + timedelta(hours=1))
+    )
+    store.append_finished(
+        finished(
+            "c2",
+            at=MOMENT + timedelta(hours=1),
+            decisions=(summary("KO"),),
+            portfolio=portfolio_record(available_cash_usd=0.0, cash_pct=0.0),
+        )
+    )
+
+    measured = client.get("/cycle/latest").json()["portfolio"]
+
+    assert measured["available_cash_usd"] == 0.0
+    assert measured["cash_pct"] == 0.0
+
+
+def test_25_an_unmeasured_allocation_difference_is_never_zero(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    from app.domain.daily_cycle import RecordedAllocation
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        finished(
+            "c1",
+            decisions=(summary("KO"),),
+            portfolio=portfolio_record(
+                allocations=(
+                    RecordedAllocation(
+                        asset="cash",
+                        current_pct=None,
+                        target_pct=15.0,
+                        difference_pct=None,
+                    ),
+                ),
+                compliant=None,
+            ),
+        )
+    )
+
+    body = client.get("/cycle/latest").json()["portfolio"]
+
+    assert body["allocations"][0]["difference_pct"] is None
+    assert body["allocations"][0]["current_pct"] is None
+    assert body["compliant"] is None, "an unread allocation is not compliance"
+
+
+def test_26_candidates_are_ranked_by_conviction_highest_first(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(
+        finished(
+            "c1",
+            decisions=(summary("KO"),),
+            candidates=(
+                summary("AAA", conviction=41),
+                summary("BBB", conviction=88),
+                summary("CCC", conviction=None),
+                summary("DDD", conviction=63),
+            ),
+        )
+    )
+
+    ranked = [c["symbol"] for c in client.get("/cycle/latest").json()["candidates"]]
+
+    assert ranked[:3] == ["BBB", "DDD", "AAA"]
+    assert ranked[-1] == "CCC", (
+        "a candidate with no conviction is never ranked above one that has it"
+    )
+
+
+def test_27_no_candidates_means_none_were_evaluated(
+    client: TestClient, store: DailyCycleStore
+) -> None:
+    """The distinction a surface must not collapse."""
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(finished("c1", decisions=(summary("KO"),)))
+
+    body = client.get("/cycle/latest").json()
+
+    assert body["candidates"] == []
+    # Nothing in the payload claims a judgment about them.
+    assert "no_opportunities" not in body
+    assert "nothing worth" not in client.get("/cycle/latest").text.lower()
+
+
+def test_28_a_record_without_the_new_fields_still_decodes(
+    tmp_path,
+) -> None:
+    """Backward compatible under the same schema, as the envelope was."""
+
+    import json
+
+    store = DailyCycleStore(tmp_path / "cycles")
+
+    store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
+    store.append_finished(finished("c1", decisions=(summary("KO"),)))
+
+    path = store.path
+    lines = []
+
+    for line in path.read_text().splitlines():
+        row = json.loads(line)
+
+        if row.get("kind") == "finished":
+            # A record written before either field existed.
+            row.pop("portfolio", None)
+            row.pop("candidates", None)
+
+        lines.append(json.dumps(row))
+
+    path.write_text("\n".join(lines) + "\n")
+
+    log = store.log()
+
+    assert log.unreadable_records == 0
+    assert log.records[0].finished is not None
+    assert log.records[0].finished.portfolio is None
+    assert log.records[0].finished.candidates == ()
+
+
+def test_29_a_cycle_pays_for_candidates_only_when_asked() -> None:
+    """The budget is explicit, and defaults to none."""
+
+    import inspect
+
+    from app.commands.cycle import run
+
+    signature = inspect.signature(run)
+
+    assert signature.parameters["candidates"].default == 0, (
+        "no existing cycle costs more than it did"
+    )
+
+    source = inspect.getsource(run)
+
+    assert "candidate_limit=candidates" in source, (
+        "the budget reaches the brain builder rather than being ignored"
+    )
+    assert "if candidates > 0:" in source, "and nothing is evaluated without one"

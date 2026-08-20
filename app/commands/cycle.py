@@ -51,6 +51,9 @@ from app.domain.daily_cycle import (
     CycleStarted,
     CycleStatus,
     DecisionSummary,
+    RecordedAllocation,
+    RecordedHolding,
+    RecordedPortfolio,
     StageOutcome,
     movement,
     no_action_permitted,
@@ -60,6 +63,7 @@ from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.capital_policy_service import CapitalPolicyService
 from app.services.market_acquisition_service import MarketAcquisitionService
+from app.services.policy_analyzer import PolicyAnalyzer
 
 __all__ = ["run"]
 
@@ -119,6 +123,85 @@ def _portfolio_weights(
             weights[symbol] = weights.get(symbol, 0.0) + value / total * 100.0
 
     return (weights, portfolio.allocation.cash, total)
+
+
+def _recorded_portfolio(
+    brain: Brain,
+    weights: dict[str, float],
+    cash_pct: float | None,
+    total_value: float | None,
+) -> RecordedPortfolio | None:
+    """The account as this cycle read it, for a page that may not fetch.
+
+    Built from the same reading the envelope pass already uses, so the
+    record and the courses beside it describe one moment rather than
+    two. Absence is preserved throughout: an unresolved holding carries
+    no weight rather than a zero, and unavailable cash stays unavailable
+    (#223).
+    """
+
+    if total_value is None:
+        return None
+
+    portfolio = brain.portfolio
+
+    holdings: list[RecordedHolding] = []
+
+    for holding in portfolio.holdings:
+        if not holding.is_resolved:
+            continue
+
+        symbol = holding.symbol.upper().strip()
+
+        holdings.append(
+            RecordedHolding(
+                symbol=symbol,
+                market_value_usd=round(holding.market_value_usd or 0.0, 2),
+                weight_pct=weights.get(symbol),
+            )
+        )
+
+    allocations: tuple[RecordedAllocation, ...] = ()
+    compliant: bool | None = None
+
+    policy = getattr(brain, "investment_policy", None)
+
+    if policy is not None:
+        # Compared here because this is where both halves are in hand.
+        # The endpoint stays a pure projection, and the page calculates
+        # nothing.
+        analysis = PolicyAnalyzer().analyze(portfolio, policy)
+
+        allocations = tuple(
+            RecordedAllocation(
+                asset=item.asset,
+                current_pct=item.current,
+                target_pct=item.target,
+                difference_pct=item.difference,
+            )
+            for item in analysis.allocations
+        )
+        compliant = analysis.compliant
+
+    return RecordedPortfolio(
+        total_value=round(total_value, 2),
+        available_cash_usd=portfolio.available_cash_usd,
+        cash_pct=cash_pct,
+        holdings=tuple(
+            sorted(holdings, key=lambda item: item.market_value_usd, reverse=True)
+        ),
+        observed=(
+            ""
+            if portfolio.last_sync is None
+            else (
+                "eToro account response received at "
+                f"{portfolio.last_sync.astimezone(UTC):%Y-%m-%d %H:%M} UTC "
+                "(receipt time; eToro states no account observation time)"
+            )
+        ),
+        allocations=allocations,
+        compliant=compliant,
+    )
 
 
 def _envelope(
@@ -246,7 +329,15 @@ async def run(
     brains: BrainBuilderService | None = None,
     briefings: PortfolioBriefingService | None = None,
     capital_policies: CapitalPolicyService | None = None,
+    candidates: int = 0,
 ) -> int:
+    """One cycle. `candidates` is a spend, and it defaults to none.
+
+    Evidencing a watched-but-unheld security costs a fundamentals
+    request against a rate-limited provider, and evaluating one costs a
+    pipeline pass. So a cycle researches candidates only when asked for
+    a budget, and every existing cycle costs exactly what it did before.
+    """
     store = store or DailyCycleStore()
 
     # Yesterday's honesty before today's work: a cycle that started and
@@ -282,9 +373,13 @@ async def run(
 
     # ── stage 2: the canonical decision pass over the active book ───
     decisions: tuple[DecisionSummary, ...] = ()
+    recorded_portfolio: RecordedPortfolio | None = None
+    evaluated_candidates: tuple[DecisionSummary, ...] = ()
 
     try:
-        brain = await (brains or BrainBuilderService()).build()
+        brain = await (brains or BrainBuilderService()).build(
+            candidate_limit=candidates
+        )
 
         # The moment observation ages are measured at — never any
         # reading's own observation time, which stays the broker's or
@@ -369,6 +464,50 @@ async def run(
                 )
 
         decisions = tuple(carried)
+
+        recorded_portfolio = _recorded_portfolio(brain, weights, cash_pct, total_value)
+
+        # Watched-but-unheld securities, evaluated through the very same
+        # pipeline as a holding — so their conviction means what a
+        # holding's conviction means, and is comparable with it.
+        #
+        # Only those actually evaluated are recorded. A cycle run
+        # without a candidate budget records none, and an empty tuple
+        # says "none were evaluated", never "none were worth holding".
+        if candidates > 0:
+            held_symbols = {entry.symbol.upper().strip() for entry in decisions}
+
+            wanted = tuple(
+                dict.fromkeys(
+                    candidate.symbol.upper().strip()
+                    for candidate in brain.candidates
+                    if candidate.symbol.strip()
+                    and candidate.symbol.upper().strip() not in held_symbols
+                )
+            )[:candidates]
+
+            evaluated_candidates = tuple(
+                DecisionSummary(
+                    symbol=workspace.decision.symbol,
+                    state=workspace.decision.state.value,
+                    rationale=workspace.decision.rationale,
+                    conviction=workspace.decision.conviction,
+                    evidence_as_of=(
+                        workspace.decision.evidence_as_of.stated()
+                        if workspace.decision.evidence_as_of is not None
+                        else ""
+                    ),
+                    action_kind=workspace.action.kind.value,
+                    action_statement=workspace.action.statement,
+                    action_because=workspace.action.because,
+                    asks_for_something=workspace.action.kind.asks_for_something,
+                )
+                for workspace in service.pipeline.execute_all(
+                    symbols=wanted, brain=brain
+                )
+                if workspace.decision is not None and workspace.action is not None
+            )
+
         stages.append(CycleStage(name="decisions", outcome=StageOutcome.RAN))
     except Exception as error:
         stages.append(_failed_stage("decisions", error))
@@ -461,6 +600,8 @@ async def run(
         changed=changed,
         unchanged=unchanged,
         attention=attention,
+        portfolio=recorded_portfolio,
+        candidates=evaluated_candidates,
     )
 
     store.append_finished(finished)
