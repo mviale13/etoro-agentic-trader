@@ -1,3 +1,10 @@
+import {
+  ExecutiveActions,
+  HoldingsTable,
+  Opportunities,
+  PortfolioSnapshot,
+  StrategyCard,
+} from "@/components/executive/HomeSections";
 import type {
   CycleCourse,
   CycleReview,
@@ -221,122 +228,94 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
   const ran =
     review.execution === "none_recorded"
       ? null
-      : review.finishedAt ?? review.startedAt;
+      : (review.finishedAt ?? review.startedAt);
 
-  const failedStages = review.stages.filter(
-    (stage) => stage.outcome !== "ran",
-  );
+  const failedStages = review.stages.filter((stage) => stage.outcome !== "ran");
+
+  const headline = review.streamComplete
+    ? EXECUTION_HEADLINE[review.execution]
+    : READABLE_HEADLINE[review.execution];
 
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white p-6 sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-        Latest CIO review
-      </p>
+    <div className="grid gap-6">
+      {/*
+        The review's own status, as a compact strip rather than a hero.
+        It cannot be dropped — a failed or interrupted review must never
+        read as a quiet one — but it is no longer the biggest thing on
+        the page.
+      */}
+      <section className="rounded-3xl border border-slate-200 bg-white px-6 py-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <p className="text-sm font-semibold text-slate-900">{headline}</p>
 
-      <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-        {review.streamComplete
-          ? EXECUTION_HEADLINE[review.execution]
-          : READABLE_HEADLINE[review.execution]}
-      </h2>
-
-      {ran ? (
-        <p className="mt-2 text-sm text-slate-600">{when(ran)}</p>
-      ) : null}
-
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-700">
-        {EXECUTION_MEANING[review.execution]}
-      </p>
-
-      {review.streamComplete ? null : (
-        <p className="mt-3 max-w-3xl rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-800">
-          {INCOMPLETE_HISTORY}
-        </p>
-      )}
-
-      {failedStages.length > 0 ? (
-        <ul className="mt-4 grid gap-2">
-          {failedStages.map((stage) => (
-            <li
-              className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900"
-              key={stage.name}
-            >
-              {stage.because || `The ${stage.name} step did not run.`}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      {review.execution === "none_recorded" ? null : (
-        <div className="mt-6 space-y-4">
-          <ComparisonNote review={review} />
-
-          {review.noActionSuggested ? (
-            <p className="text-sm leading-6 text-slate-800">
-              {review.noActionSuggested} This describes what the review found,
-              and is not an assessment that your portfolio is safe.
-            </p>
-          ) : null}
-
-          {review.attention.length > 0 ? (
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">
-                What deserves your attention
-              </h3>
-
-              <ul className="mt-2 grid gap-2">
-                {review.attention.map((item) => (
-                  <li className="text-sm leading-6 text-slate-700" key={item}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          {review.refusals.length > 0 ? (
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">
-                What could not be read
-              </h3>
-
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                Each of these limits what this review could say. None of them is
-                a finding about the company.
-              </p>
-
-              <ul className="mt-2 grid gap-2">
-                {review.refusals.map((item) => (
-                  <li className="text-sm leading-6 text-slate-700" key={item}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+          {ran ? <p className="text-xs text-slate-500">{when(ran)}</p> : null}
         </div>
-      )}
 
-      {review.courses.length > 0 ? (
-        <div className="mt-8">
-          <h3 className="text-sm font-semibold text-slate-900">
-            Every security this review covered
-          </h3>
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          {EXECUTION_MEANING[review.execution]}
+        </p>
 
-          {review.streamComplete ? null : (
-            <p className="mt-1 text-sm leading-6 text-slate-600">
-              These are dated readings from the review named above. With the
-              history incomplete, they are readable evidence rather than
-              necessarily your current position.
-            </p>
-          )}
+        {review.streamComplete ? null : (
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            {INCOMPLETE_HISTORY}
+          </p>
+        )}
 
-          <ul className="mt-3 grid gap-3">
-            {review.courses.map((course) => (
-              <Course course={course} key={course.symbol} />
+        <div className="mt-2 text-sm leading-6 text-slate-600">
+          <ComparisonNote review={review} />
+        </div>
+
+        {review.noActionSuggested ? (
+          <p className="mt-2 text-sm leading-6 text-slate-800">
+            {review.noActionSuggested} This describes what the review found, and
+            is not an assessment that your portfolio is safe.
+          </p>
+        ) : null}
+
+        {failedStages.length > 0 ? (
+          <ul className="mt-3 grid gap-2">
+            {failedStages.map((stage) => (
+              <li
+                className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm leading-6 text-amber-900"
+                key={stage.name}
+              >
+                {stage.because || `The ${stage.name} step did not run.`}
+              </li>
             ))}
           </ul>
-        </div>
-      ) : null}
+        ) : null}
+
+        {review.refusals.length > 0 ? (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+              What could not be read
+            </p>
+
+            <ul className="mt-1 grid gap-1">
+              {review.refusals.map((item) => (
+                <li className="text-sm leading-6 text-slate-700" key={item}>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Each limits what this review could say. None is a finding about
+              the company.
+            </p>
+          </div>
+        ) : null}
+      </section>
+
+      <PortfolioSnapshot portfolio={review.portfolio} />
+
+      <ExecutiveActions review={review} />
+
+      <HoldingsTable review={review} />
+
+      <Opportunities candidates={review.candidates} />
+
+      <StrategyCard portfolio={review.portfolio} />
 
       {review.lastKnown ? (
         <LastKnown
@@ -344,6 +323,6 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
           streamComplete={review.streamComplete}
         />
       ) : null}
-    </section>
+    </div>
   );
 }

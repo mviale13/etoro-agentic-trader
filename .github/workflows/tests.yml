@@ -5,9 +5,13 @@ on:
     branches:
       - main
       - "agent/**"
+  # Every pull request, not only those targeting main. A stacked PR —
+  # one whose base is another feature branch — matched no trigger here,
+  # so it ran neither the backend suite nor the frontend job. The
+  # frontend-only half of a stacked pair therefore got no frontend CI at
+  # all, which is exactly the gap the web job was added to close.
+  # ci.yml already triggers on every pull request; this now matches it.
   pull_request:
-    branches:
-      - main
 
 jobs:
   test:

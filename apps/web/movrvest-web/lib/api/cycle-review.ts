@@ -76,6 +76,33 @@ export interface CycleCourse {
   envelope: CycleEnvelope | null;
 }
 
+export interface RecordedHolding {
+  symbol: string;
+  marketValueUsd: number;
+  /** Null where the share could not be computed — never 0.0 for it. */
+  weightPct: number | null;
+}
+
+export interface RecordedAllocation {
+  asset: string;
+  currentPct: number | null;
+  targetPct: number;
+  /** Null where the comparison could not be made. Not a difference of zero. */
+  differencePct: number | null;
+}
+
+export interface RecordedPortfolio {
+  totalValue: number;
+  availableCashUsd: number | null;
+  cashPct: number | null;
+  /** Receipt-time wording. Never an account observation time. */
+  observed: string;
+  holdings: RecordedHolding[];
+  allocations: RecordedAllocation[];
+  /** Null where any required comparison was unmeasured. */
+  compliant: boolean | null;
+}
+
 export interface LastKnownCycle {
   cycleId: string;
   finishedAt: string;
@@ -107,6 +134,14 @@ export interface CycleReview {
   unsupportedSchemas: number;
   lifecycleAnomalies: number;
   lastKnown: LastKnownCycle | null;
+  /** The account as the cycle recorded it. Null where it recorded none. */
+  portfolio: RecordedPortfolio | null;
+  /**
+   * Watched-but-unheld securities the CIO evaluated, already ranked by
+   * the conviction it assigned. Empty means none were evaluated — which
+   * is not the same as none being worth considering.
+   */
+  candidates: CycleCourse[];
 }
 
 /**
@@ -169,6 +204,33 @@ function requiredCount(source: Record<string, unknown>, field: string): number {
   const value = source[field];
 
   if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+function requiredFinite(source: Record<string, unknown>, field: string): number {
+  const value = source[field];
+
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    fail(field, value);
+  }
+
+  return value;
+}
+
+function nullableBoolean(
+  source: Record<string, unknown>,
+  field: string,
+): boolean | null {
+  const value = source[field];
+
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== "boolean") {
     fail(field, value);
   }
 
@@ -306,6 +368,52 @@ function coursesOf(source: Record<string, unknown>, field: string): CycleCourse[
   return value.map((raw, index) => courseOf(raw, `${field}[${index}]`));
 }
 
+function portfolioOf(raw: unknown): RecordedPortfolio | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+
+  const item = object(raw, "portfolio");
+
+  const holdingsRaw = item.holdings;
+  const allocationsRaw = item.allocations;
+
+  if (!Array.isArray(holdingsRaw)) {
+    fail("portfolio.holdings", holdingsRaw);
+  }
+
+  if (!Array.isArray(allocationsRaw)) {
+    fail("portfolio.allocations", allocationsRaw);
+  }
+
+  return {
+    totalValue: requiredFinite(item, "total_value"),
+    availableCashUsd: nullableNumber(item, "available_cash_usd"),
+    cashPct: nullableNumber(item, "cash_pct"),
+    observed: requiredString(item, "observed"),
+    compliant: nullableBoolean(item, "compliant"),
+    holdings: holdingsRaw.map((entry, index) => {
+      const holding = object(entry, `portfolio.holdings[${index}]`);
+
+      return {
+        symbol: requiredString(holding, "symbol"),
+        marketValueUsd: requiredFinite(holding, "market_value_usd"),
+        weightPct: nullableNumber(holding, "weight_pct"),
+      };
+    }),
+    allocations: allocationsRaw.map((entry, index) => {
+      const allocation = object(entry, `portfolio.allocations[${index}]`);
+
+      return {
+        asset: requiredString(allocation, "asset"),
+        currentPct: nullableNumber(allocation, "current_pct"),
+        targetPct: requiredFinite(allocation, "target_pct"),
+        differencePct: nullableNumber(allocation, "difference_pct"),
+      };
+    }),
+  };
+}
+
 export function parseCycleReview(payload: unknown): CycleReview {
   const body = object(payload, "response");
 
@@ -377,6 +485,11 @@ export function parseCycleReview(payload: unknown): CycleReview {
     unsupportedSchemas: requiredCount(body, "unsupported_schemas"),
     lifecycleAnomalies: requiredCount(body, "lifecycle_anomalies"),
     lastKnown,
+    portfolio: portfolioOf(body.portfolio),
+    // Already ranked server-side. The page never reorders them: the
+    // ordering is the CIO's conviction, and re-sorting here would be
+    // this surface inventing a priority.
+    candidates: coursesOf(body, "candidates"),
   };
 }
 
