@@ -26,7 +26,8 @@ permissible action, not the company's standing.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Iterable
+from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import StrEnum
 
@@ -107,7 +108,23 @@ class DecisionSummary:
 
 @dataclass(frozen=True, slots=True)
 class RecordedHolding:
-    """One holding as the cycle saw it, with its share of the account."""
+    """One **security** as the cycle saw it, with its share of the account.
+
+    A security, not a trade. eToro reports a position per *trade*, so an
+    account holding one security bought twice arrives from the broker as
+    two rows — and `weight_pct` is the security's share of the account,
+    computed once over the summed value. Recording the broker's rows
+    unfolded therefore printed the whole share twice beside two partial
+    values — a Weight column that counts a security once per trade and
+    stops adding up to the account. Fold with `holdings_by_security`
+    before constructing a `RecordedPortfolio`; the aggregate refuses a
+    repeated symbol outright.
+
+    The per-*position* view is a different fact with its own surface —
+    `PortfolioSnapshot.holdings`, served by `/portfolio` and labelled
+    "positions" there. This record is the per-security one, which is
+    what makes it joinable with the cycle's own per-security decisions.
+    """
 
     symbol: str
     market_value_usd: float
@@ -116,6 +133,66 @@ class RecordedHolding:
     #: where the holding could not be resolved to a symbol. Never 0.0
     #: for either — #223's rule, carried into the record.
     weight_pct: float | None = None
+
+
+def holdings_by_security(
+    rows: Iterable[RecordedHolding],
+) -> tuple[RecordedHolding, ...]:
+    """One entry per security, largest first, from the broker's rows.
+
+    The single implementation of "which securities does this account
+    hold, and how much of each" for the cycle record — used when the
+    record is *written* from the broker's positions and when a record
+    written before the fold existed is *read*. Two implementations is
+    how the name and the percentage came to describe different holdings
+    in `PortfolioService._largest_position`, and this is the same
+    question one layer out.
+
+    **The share is carried, never recomputed.** It is already the
+    security's share of the account, derived where the account total was
+    in hand; deriving it again here would need a total this function is
+    deliberately not given. So two rows of one security that state
+    *different* shares are a contradiction rather than an aggregation —
+    the fold raises, and a stored record carrying one is unreadable
+    rather than quietly reinterpreted.
+
+    Ranked here as well as folded here, because a fold changes the
+    ranking: two small positions can outweigh a larger single one, and a
+    record whose order no longer matched its values would be a table the
+    page could only fix by sorting — which is analysis the page may not
+    do.
+    """
+
+    folded: dict[str, RecordedHolding] = {}
+
+    for row in rows:
+        held = folded.get(row.symbol)
+
+        if held is None:
+            folded[row.symbol] = row
+            continue
+
+        if held.weight_pct != row.weight_pct:
+            raise ValueError(
+                f"two {row.symbol} rows state different shares of the "
+                f"account ({held.weight_pct} and {row.weight_pct})"
+            )
+
+        folded[row.symbol] = replace(
+            held,
+            market_value_usd=held.market_value_usd + row.market_value_usd,
+        )
+
+    return tuple(
+        sorted(
+            (
+                replace(row, market_value_usd=round(row.market_value_usd, 2))
+                for row in folded.values()
+            ),
+            key=lambda row: row.market_value_usd,
+            reverse=True,
+        )
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,6 +223,12 @@ class RecordedPortfolio:
     total_value: float
     available_cash_usd: float | None = None
     cash_pct: float | None = None
+
+    #: One entry per security, largest first — never one per broker
+    #: position. Enforced at construction rather than described, the way
+    #: `ComparisonBasis` enforces its own shape: a caller holding the
+    #: broker's rows folds them with `holdings_by_security` first, and
+    #: one that does not cannot build this object at all.
     holdings: tuple[RecordedHolding, ...] = ()
 
     #: The receipt-time wording from #223 — when eToro's account
@@ -160,6 +243,17 @@ class RecordedPortfolio:
     #: None where any required comparison was unmeasured — an unread
     #: allocation is never credited as compliant.
     compliant: bool | None = None
+
+    def __post_init__(self) -> None:
+        symbols = [holding.symbol for holding in self.holdings]
+
+        if len(symbols) != len(set(symbols)):
+            repeated = sorted({s for s in symbols if symbols.count(s) > 1})
+
+            raise ValueError(
+                "a recorded portfolio holds one entry per security; "
+                f"{', '.join(repeated)} appears more than once"
+            )
 
 
 class ComparisonOutcome(StrEnum):
