@@ -37,7 +37,13 @@ class PolicyAnalyzer:
 
         threshold = policy.constraints.rebalance_threshold
 
-        compliant = all(abs(item.difference) <= threshold for item in differences)
+        # An unmeasured difference cannot pass a threshold. Treating None
+        # as compliant would report a policy-compliant account on the
+        # strength of a figure nobody could read.
+        compliant = all(
+            item.difference is not None and abs(item.difference) <= threshold
+            for item in differences
+        )
 
         return PolicyAnalysis(
             allocations=differences,
@@ -47,9 +53,25 @@ class PolicyAnalyzer:
     @staticmethod
     def _compare(
         asset: str,
-        current: float,
+        current: float | None,
         target: float,
     ) -> AllocationDifference:
+        """One allocation against its target, or an unmeasured difference.
+
+        A None current reading yields a None difference rather than a
+        zero one: an allocation nobody could read is not an allocation
+        sitting exactly on its target, and compliance must not be
+        credited to it.
+        """
+
+        if current is None:
+            return AllocationDifference(
+                asset=asset,
+                current=None,
+                target=round(target, 2),
+                difference=None,
+            )
+
         return AllocationDifference(
             asset=asset,
             current=round(current, 2),

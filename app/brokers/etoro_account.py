@@ -214,6 +214,10 @@ class EtoroAccountBroker:
             pending_orders=len(orders_for_open) + len(orders),
             copy_portfolios=len(mirrors),
             latency_ms=round(latency_ms, 1),
+            # Receipt, not observation: this clock starts when the
+            # response lands here. eToro supplies no account observation
+            # time to use instead, and inventing one would be worse than
+            # naming this one honestly.
             timestamp=datetime.now(UTC),
             cash_usd=cash,
             invested_usd=invested,

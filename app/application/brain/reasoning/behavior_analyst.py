@@ -36,7 +36,7 @@ class BehaviorAnalyst:
             evidence,
         )
 
-        if portfolio.allocation.cash > 40:
+        if portfolio.allocation.cash is not None and portfolio.allocation.cash > 40:
             biases.append("Possible hesitation to deploy capital")
             evidence.append(
                 Evidence(
@@ -226,8 +226,19 @@ class BehaviorAnalyst:
     ) -> float:
         target = policy.target.cash
         threshold = policy.constraints.rebalance_threshold
+        cash = portfolio.allocation.cash
 
-        drift = abs(portfolio.allocation.cash - target)
+        if cash is None:
+            # No drift claim either way. Silence here would read as "within
+            # the band", which is a finding about an allocation nobody read.
+            biases.append(
+                "Cash allocation could not be read, so drift against the "
+                "policy band is unmeasured"
+            )
+
+            return 0.0
+
+        drift = abs(cash - target)
 
         if threshold <= 0 or drift <= threshold:
             positives.append("Cash allocation is within its rebalance band")
@@ -237,7 +248,7 @@ class BehaviorAnalyst:
         evidence.append(
             Evidence(
                 description=(
-                    f"Cash is {portfolio.allocation.cash:.1f}% against a "
+                    f"Cash is {cash:.1f}% against a "
                     f"{target:.1f}% target, a drift of {drift:.1f} "
                     f"percentage points beyond the {threshold:.1f} point band."
                 ),
@@ -263,8 +274,15 @@ class BehaviorAnalyst:
         self,
         portfolio: PortfolioSnapshot,
     ) -> float:
-        if portfolio.allocation.cash > 40:
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            # The midpoint of the band this factor can express, and the
+            # only value that adds no cash-derived signal in either
+            # direction. Named in `_cash_penalty` rather than hidden.
+            return 0.50
+        if cash > 40:
             return 0.70
-        if portfolio.allocation.cash > 20:
+        if cash > 20:
             return 0.50
         return 0.20

@@ -172,8 +172,16 @@ function PortfolioSnapshot({
           <div className="bg-white p-6">
             <SnapshotMetric
               label="Available cash"
-              value={currencyFormatter.format(portfolio.availableCash)}
-              detail={`${Math.round(portfolio.liquidityPct)}% of portfolio`}
+              value={
+                portfolio.availableCash === null
+                  ? "Unavailable"
+                  : currencyFormatter.format(portfolio.availableCash)
+              }
+              detail={
+                portfolio.liquidityPct === null
+                  ? "Cash share unavailable"
+                  : `${Math.round(portfolio.liquidityPct)}% of portfolio`
+              }
             />
           </div>
 
@@ -207,7 +215,9 @@ function PortfolioSnapshot({
             <WalletCards aria-hidden="true" className="size-4 text-slate-400" />
             <span className="text-slate-500">Liquidity</span>
             <span className="ml-auto font-semibold text-slate-950">
-              {currencyFormatter.format(portfolio.availableCash)}
+              {portfolio.availableCash === null
+                ? "Unavailable"
+                : currencyFormatter.format(portfolio.availableCash)}
             </span>
           </div>
 

@@ -49,7 +49,7 @@ class DashboardViewModel:
     headline: str
     summary: str
     confidence: float | None
-    portfolio_health: float
+    portfolio_health: float | None
     priorities: tuple[DashboardPriority, ...]
     investment_cases: tuple[DashboardInvestmentCase, ...]
     changes: tuple[DashboardChange, ...] = ()

@@ -37,9 +37,11 @@ export interface ExecutiveWorkspaceResult {
  */
 interface BrainPortfolioPayload {
   total_value: number;
-  available_cash_usd: number;
+  /** Null where the broker stated no cash figure. */
+  available_cash_usd: number | null;
   invested_usd: number;
-  liquidity_pct: number;
+  /** Null for the same reason as `available_cash_usd`. */
+  liquidity_pct: number | null;
   positions: number;
   pending_orders: number;
   unrealized_pnl_usd: number;
@@ -189,18 +191,15 @@ function parseBrain(payload: unknown): BrainPayload {
     risk,
     portfolio: {
       total_value: requireNumber(portfolio.total_value, "portfolio.total_value"),
-      available_cash_usd: requireNumber(
-        portfolio.available_cash_usd,
-        "portfolio.available_cash_usd",
-      ),
+      // Optional, not required: an account whose cash the broker
+      // did not state is a real state the backend now reports as
+      // null, and the page must render it rather than fail to load.
+      available_cash_usd: optionalNumber(portfolio.available_cash_usd),
       invested_usd: requireNumber(
         portfolio.invested_usd,
         "portfolio.invested_usd",
       ),
-      liquidity_pct: requireNumber(
-        portfolio.liquidity_pct,
-        "portfolio.liquidity_pct",
-      ),
+      liquidity_pct: optionalNumber(portfolio.liquidity_pct),
       positions: requireNumber(portfolio.positions, "portfolio.positions"),
       pending_orders: requireNumber(
         portfolio.pending_orders,

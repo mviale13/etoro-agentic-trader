@@ -81,11 +81,11 @@ export interface PortfolioOverview {
   totalValueUsd: number;
   /** Absent where no rate has been read. Never a zero. */
   totalValueEur: number | null;
-  availableCashUsd: number;
+  availableCashUsd: number | null;
   availableCashEur: number | null;
   investedUsd: number;
   investedEur: number | null;
-  liquidityPct: number;
+  liquidityPct: number | null;
   positions: number;
   lastSync: string | null;
   observationTitle: string;
@@ -329,11 +329,14 @@ export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
       portfolio: {
         totalValueUsd: numberValue(portfolio, "total_value"),
         totalValueEur: optionalNumberValue(portfolio, "total_value_eur"),
-        availableCashUsd: numberValue(portfolio, "available_cash_usd"),
+        availableCashUsd: optionalNumberValue(
+          portfolio,
+          "available_cash_usd",
+        ),
         availableCashEur: optionalNumberValue(portfolio, "available_cash_eur"),
         investedUsd: numberValue(portfolio, "invested_usd"),
         investedEur: optionalNumberValue(portfolio, "invested_eur"),
-        liquidityPct: numberValue(portfolio, "liquidity_pct"),
+        liquidityPct: optionalNumberValue(portfolio, "liquidity_pct"),
         positions: numberValue(portfolio, "positions"),
         lastSync: stringValue(portfolio, "last_sync") || null,
         observationTitle: stringValue(

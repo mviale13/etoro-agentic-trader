@@ -4,7 +4,21 @@ from app.domain.portfolio_snapshot import PortfolioSnapshot
 
 class MorningBriefService:
     def build(self, portfolio: PortfolioSnapshot) -> MorningBrief:
-        if portfolio.allocation.cash >= 80:
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            # Neither branch below is available: "mostly cash" and "contains
+            # invested assets" are both claims about a figure nobody read.
+            recommendation = "REVIEW"
+            confidence = 50
+            health = "Unavailable"
+
+            summary = (
+                "Your available cash could not be read, so this brief cannot "
+                "describe your allocation. Nothing here says what your cash "
+                "position is."
+            )
+        elif cash >= 80:
             recommendation = "WAIT"
             confidence = 95
             health = "Healthy"

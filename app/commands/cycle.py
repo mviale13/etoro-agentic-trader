@@ -140,9 +140,12 @@ def _envelope(
     decision-state string. Conviction is not read here and cannot be:
     `envelope_for` has no parameter it could arrive through.
 
-    Two observation clocks, both the reading's own and neither this
-    process's: the portfolio is aged from the broker snapshot's
-    `last_sync`, and the price from the exact security's own quote —
+    Two clocks, and they are different kinds of fact. The price is aged
+    from the exact security's own quote, which carries a provider
+    observation time. The portfolio is aged from `last_sync`, which is
+    **when eToro's account response was received here** — eToro states
+    no account observation time, so this gate answers how recently the
+    broker answered and never how old the account state is.
     `evaluated_at` is only the moment both ages are measured at.
     """
 

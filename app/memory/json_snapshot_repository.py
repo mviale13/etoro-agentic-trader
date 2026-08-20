@@ -66,7 +66,13 @@ class JsonSnapshotRepository(SnapshotRepository):
     def _load(self, path: Path) -> DailySnapshot:
         data = json.loads(path.read_text(encoding="utf-8"))
 
-        allocation = Allocation(**data["portfolio"]["allocation"])
+        # Backward-readable: a record written before cash could be absent
+        # carries a float and keeps it. A record written since may carry
+        # null, which decodes as the absence it recorded — never as zero.
+        stored = dict(data["portfolio"]["allocation"])
+        stored.setdefault("cash", None)
+
+        allocation = Allocation(**stored)
 
         portfolio = PortfolioSnapshot(
             allocation=allocation,

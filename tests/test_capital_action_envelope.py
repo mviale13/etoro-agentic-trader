@@ -181,7 +181,7 @@ def envelope(
         quality_authority=authority,
         hard_floor_passes=floor,
         price=observed_price(fresh=price_fresh),
-        portfolio_as_of="broker snapshot, 2026-08-19 14:58 UTC",
+        portfolio_as_of=("eToro account response received at 2026-08-19 14:58 UTC"),
         drawdown_depth_pct=drawdown,
         is_equity=equity,
     )
@@ -444,7 +444,7 @@ def test_17_a_stale_portfolio_is_none() -> None:
     result = envelope("open", cap=capacity(fresh=False))
 
     assert result.kind is EnvelopeKind.REFUSED
-    assert "older than the policy's 15-minute limit" in result.because
+    assert "longer ago than the policy's 15-minute limit" in result.because
 
 
 def test_18_missing_drawdown_refuses_open_and_add() -> None:
@@ -736,7 +736,7 @@ def test_33_the_policy_source_is_tracked_configuration_not_evidence(
 # ── 34–37: the portfolio observation clock is the broker's ──────────
 
 
-def test_34_a_timezone_aware_recent_broker_time_passes_and_is_stated() -> None:
+def test_34_a_recent_response_receipt_passes_and_is_named_as_receipt() -> None:
     observed = portfolio_observation_for(
         last_sync=MOMENT - timedelta(minutes=2),
         policy=policy(),
@@ -744,11 +744,19 @@ def test_34_a_timezone_aware_recent_broker_time_passes_and_is_stated() -> None:
     )
 
     assert observed.fresh
-    assert observed.as_of == "broker snapshot, 2026-08-19 14:58 UTC"
+    assert observed.as_of == (
+        "eToro account response received at 2026-08-19 14:58 UTC "
+        "(receipt time; eToro states no account observation time)"
+    )
     assert observed.refused_because == ""
 
+    # The ruled boundary: this clock may gate, and may never be
+    # dressed up as something eToro said about the account.
+    for forbidden in ("observed at", "as of", "asof", "snapshot time"):
+        assert forbidden not in observed.as_of.casefold(), forbidden
 
-def test_35_a_broker_time_older_than_the_limit_refuses_and_still_dates() -> None:
+
+def test_35_an_older_receipt_refuses_and_still_says_when_it_arrived() -> None:
     observed = portfolio_observation_for(
         last_sync=MOMENT - timedelta(minutes=20),
         policy=policy(),
@@ -756,13 +764,14 @@ def test_35_a_broker_time_older_than_the_limit_refuses_and_still_dates() -> None
     )
 
     assert not observed.fresh
-    assert "older than the policy's 15-minute limit" in observed.refused_because
-    assert observed.as_of == "broker snapshot, 2026-08-19 14:40 UTC", (
-        "a stale refusal still says when the snapshot was taken"
-    )
+    assert "longer ago than the policy's 15-minute limit" in observed.refused_because
+    assert observed.as_of == (
+        "eToro account response received at 2026-08-19 14:40 UTC "
+        "(receipt time; eToro states no account observation time)"
+    ), "a stale refusal still says when the broker last answered"
 
 
-def test_36_absent_naive_and_future_broker_times_refuse_distinctly() -> None:
+def test_36_absent_naive_and_future_receipt_times_refuse_distinctly() -> None:
     absent = portfolio_observation_for(last_sync=None, policy=policy(), now=MOMENT)
     naive = portfolio_observation_for(
         last_sync=datetime(2026, 8, 19, 14, 58),
@@ -775,14 +784,14 @@ def test_36_absent_naive_and_future_broker_times_refuse_distinctly() -> None:
         now=MOMENT,
     )
 
-    assert "carries no observation time" in absent.refused_because
+    assert "no eToro account response has been recorded" in absent.refused_because
     assert "carries no timezone" in naive.refused_because
     assert "in the future" in future.refused_because
 
     for observed in (absent, naive, future):
         assert not observed.fresh
         assert observed.as_of == "", (
-            "an unusable broker time is never replaced by the evaluation clock"
+            "an unusable receipt time is never replaced by the evaluation clock"
         )
 
     reasons = {
@@ -794,7 +803,7 @@ def test_36_absent_naive_and_future_broker_times_refuse_distinctly() -> None:
     assert len(reasons) == 3
 
 
-def test_37_a_fresh_brain_with_an_old_broker_sync_refuses_in_production_shape(
+def test_37_a_fresh_brain_with_an_old_response_receipt_refuses_in_production(
     tmp_path,
 ) -> None:
     """The Brain is assembled now; the broker reading inside it is old.
@@ -837,9 +846,9 @@ def test_37_a_fresh_brain_with_an_old_broker_sync_refuses_in_production_shape(
 
     assert result is not None
     assert result.kind is EnvelopeKind.REFUSED
-    assert "older than the policy's 15-minute limit" in result.because
-    assert result.portfolio_as_of.startswith("broker snapshot,"), (
-        "portfolio_as_of describes the broker timestamp, not Brain assembly"
+    assert "longer ago than the policy's 15-minute limit" in result.because
+    assert result.portfolio_as_of.startswith("eToro account response received at"), (
+        "portfolio_as_of describes the response receipt, not Brain assembly"
     )
 
 

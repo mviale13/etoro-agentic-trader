@@ -12,7 +12,11 @@ class SignalService:
     ) -> list[Signal]:
         signals: list[Signal] = []
 
-        if current.allocation.cash >= 40:
+        cash = current.allocation.cash
+
+        # An unreadable cash allocation raises no cash signal at all —
+        # neither "high cash" nor its absence is established by it.
+        if cash is not None and cash >= 40:
             signals.append(
                 Signal(
                     type="cash",
@@ -48,8 +52,12 @@ class SignalService:
                 )
             )
 
-        if previous is not None:
-            cash_delta = current.allocation.cash - previous.allocation.cash
+        previous_cash = None if previous is None else previous.allocation.cash
+
+        # A delta needs BOTH readings. One absent end means no movement
+        # can be stated — not that the allocation held steady.
+        if cash is not None and previous_cash is not None:
+            cash_delta = cash - previous_cash
 
             if cash_delta >= CASH_CHANGE_THRESHOLD:
                 signals.append(

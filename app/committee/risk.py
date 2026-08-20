@@ -15,7 +15,11 @@ class RiskCommittee(CommitteeMember):
         evidence = (
             CommitteeEvidence(
                 title="Cash allocation",
-                value=f"{context.portfolio.allocation.cash:.1f}%",
+                value=(
+                    "unavailable"
+                    if context.portfolio.allocation.cash is None
+                    else f"{context.portfolio.allocation.cash:.1f}%"
+                ),
             ),
             CommitteeEvidence(
                 title="Risk flags",

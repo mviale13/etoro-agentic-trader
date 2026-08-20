@@ -82,6 +82,16 @@ class BrainSnapshotService:
             else f"{portfolio.positions} positions"
         )
 
+        # The cash half of this sentence is dropped entirely rather than
+        # printed as $0 — a sentence saying an account holds no cash is a
+        # claim, and this one would be made out of an absent reading.
+        if portfolio.available_cash_usd is None or portfolio.liquidity_pct is None:
+            return (
+                f"{positions} worth "
+                f"${portfolio.invested_usd:,.0f}. "
+                "Available cash could not be read."
+            )
+
         return (
             f"{positions} worth "
             f"${portfolio.invested_usd:,.0f}, "

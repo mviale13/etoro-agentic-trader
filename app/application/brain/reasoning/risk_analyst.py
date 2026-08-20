@@ -79,7 +79,7 @@ class RiskAnalyst:
         if drawdown is not None and drawdown >= 1.0:
             risk_factors.append(self._breach(tolerance))
 
-        if portfolio.allocation.cash < 10:
+        if portfolio.allocation.cash is not None and portfolio.allocation.cash < 10:
             risk_factors.append("Low cash buffer")
 
             evidence.append(
@@ -280,11 +280,19 @@ class RiskAnalyst:
     def _liquidity_risk(
         self,
         portfolio: PortfolioSnapshot,
-    ) -> float:
+    ) -> float | None:
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            # None, not 0.0: a zero here would say this account carries
+            # no liquidity risk, and `_overall` would then average a
+            # flattering number into a score the CIO reads.
+            return None
+
         return max(
             0.0,
             min(
-                (10.0 - portfolio.allocation.cash) / 10.0,
+                (10.0 - cash) / 10.0,
                 1.0,
             ),
         )

@@ -47,7 +47,11 @@ class ExecutiveBriefConsoleRenderer:
         )
         console.print(
             "Portfolio health: "
-            f"{ExecutiveBriefConsoleRenderer._percent(brief.portfolio_health)}"
+            + (
+                "not measured"
+                if brief.portfolio_health is None
+                else ExecutiveBriefConsoleRenderer._percent(brief.portfolio_health)
+            )
         )
         console.print()
 

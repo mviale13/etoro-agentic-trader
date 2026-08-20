@@ -21,7 +21,10 @@ class DailyRenderer:
         print("────────────────────────────────────")
 
         print(f"Portfolio Value : ${portfolio.total_value:,.2f}")
-        print(f"Cash            : {portfolio.allocation.cash:.1f}%")
+        cash = portfolio.allocation.cash
+        print(
+            "Cash            : " + ("unavailable" if cash is None else f"{cash:.1f}%")
+        )
         print(f"Positions       : {portfolio.positions}")
 
         print()

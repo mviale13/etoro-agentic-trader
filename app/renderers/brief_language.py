@@ -12,8 +12,16 @@ any future surface describe the same number with the same word.
 from __future__ import annotations
 
 
-def health_label(score: float) -> str:
-    """Put a word to a portfolio health score in [0, 1]."""
+def health_label(score: float | None) -> str:
+    """Put a word to a portfolio health score in [0, 1].
+
+    An unmeasured score gets a word that is not a band. "At risk" and
+    "Healthy" are both findings; a score nobody could compute is
+    neither, and must not fall through to the bottom band.
+    """
+
+    if score is None:
+        return "Not measured"
 
     if score >= 0.85:
         return "Healthy"
