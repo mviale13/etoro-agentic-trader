@@ -55,6 +55,7 @@ from app.domain.daily_cycle import (
     RecordedHolding,
     RecordedPortfolio,
     StageOutcome,
+    holdings_by_security,
     movement,
     no_action_permitted,
 )
@@ -138,6 +139,17 @@ def _recorded_portfolio(
     two. Absence is preserved throughout: an unresolved holding carries
     no weight rather than a zero, and unavailable cash stays unavailable
     (#223).
+
+    **Recorded per security, because that is what the weight measures.**
+    The broker reports a position per trade, and `_portfolio_weights`
+    already sums those into one share per security — so writing the rows
+    unfolded printed the security's whole share beside each partial
+    value. On the live account that put BTC on the page twice at 21.9%
+    each and read the invested book as 79.3% of an account holding
+    44.7%, against 55.3% cash. The fold is `holdings_by_security`, the
+    same one the store reads through, and it is also what makes these
+    holdings joinable with the per-security courses recorded beside
+    them — 17 rows sat next to 14 courses drawn from the same account.
     """
 
     if total_value is None:
@@ -156,7 +168,9 @@ def _recorded_portfolio(
         holdings.append(
             RecordedHolding(
                 symbol=symbol,
-                market_value_usd=round(holding.market_value_usd or 0.0, 2),
+                # Unrounded: the fold rounds the security's total once,
+                # so a security is not the sum of its rounded trades.
+                market_value_usd=holding.market_value_usd or 0.0,
                 weight_pct=weights.get(symbol),
             )
         )
@@ -187,9 +201,7 @@ def _recorded_portfolio(
         total_value=round(total_value, 2),
         available_cash_usd=portfolio.available_cash_usd,
         cash_pct=cash_pct,
-        holdings=tuple(
-            sorted(holdings, key=lambda item: item.market_value_usd, reverse=True)
-        ),
+        holdings=holdings_by_security(holdings),
         observed=(
             ""
             if portfolio.last_sync is None

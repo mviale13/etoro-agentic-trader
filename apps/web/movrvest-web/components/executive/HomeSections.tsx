@@ -209,6 +209,17 @@ export function topOpportunities(candidates: CycleCourse[]): CycleCourse[] {
   return candidates.slice(0, 5);
 }
 
+/**
+ * One row per security, and the symbol is the row's identity.
+ *
+ * The record carries one holding per security — the cycle folds the
+ * broker's per-trade positions before writing it, and the store folds
+ * again on read — so `row.symbol` is a unique key rather than a
+ * coincidentally-unique one. It is deliberately not made unique here
+ * with an index: a duplicate would mean the record broke its own
+ * contract, and React saying so is better than this table hiding it.
+ * Nothing is deduplicated, summed or sorted in this component.
+ */
 export function HoldingsTable({ review }: { review: CycleReview }) {
   const portfolio = review.portfolio;
 

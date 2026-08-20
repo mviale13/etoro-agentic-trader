@@ -38,6 +38,7 @@ from app.domain.daily_cycle import (
     RecordedHolding,
     RecordedPortfolio,
     StageOutcome,
+    holdings_by_security,
 )
 from app.infrastructure.evidence_root import evidence_path
 
@@ -356,6 +357,18 @@ def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
     existed. A present-but-unreadable one raises, and the caller counts
     the whole record unreadable rather than silently dropping an
     account.
+
+    **Holdings are folded on read, through the same function that folds
+    them on write.** A line written before the composition folded
+    carries the broker's *position* rows — two BTC trades as two
+    entries, each stating the security's whole share of the account.
+    Every figure on such a line is true; what was wrong is the reading
+    that one row is one security. Summing the values of rows that state
+    the same share is arithmetic over the line's own numbers, and the
+    precondition is checked rather than assumed: rows of one security
+    that disagree about the share raise, and the record is counted
+    unreadable. This is not a schema change — the line format is
+    unchanged, and no stored line is rewritten.
     """
 
     if raw is None:
@@ -376,7 +389,7 @@ def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
         compliant=(
             bool(raw["compliant"]) if raw.get("compliant") is not None else None
         ),
-        holdings=tuple(
+        holdings=holdings_by_security(
             RecordedHolding(
                 symbol=str(item["symbol"]),
                 market_value_usd=float(item["market_value_usd"]),
