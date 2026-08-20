@@ -2,10 +2,10 @@
 
 Status: **research**. Two conclusions, reached separately:
 
-| Question | Conclusion |
-|---|---|
-| Portfolio / account **replacement** | **NOT READY** |
-| Quote and executability **enrichment** | **READY** |
+| Question | Conclusion | Owner ruling (§9) |
+|---|---|---|
+| Portfolio / account **replacement** | **NOT READY** | **rejected** |
+| Quote and executability **enrichment** | **READY** | **approved as a capability**, production blocked on credential scope |
 
 No production implementation. No trade tool called, prepared, or loaded
 into this session. Measured 2026-08-20 against the connector's
@@ -376,3 +376,57 @@ supports it — **not** proposed for implementation here, and not approved.
 - No ISIN, CIK or FIGI anywhere; temporal issuer identity is untouched.
 - Row order is value-sorted and unstable between calls.
 - Latency is not measurable from this side.
+
+---
+
+## 9. Owner ruling — 2026-08-20
+
+1. **Portfolio / account replacement is REJECTED.** The existing
+   MOVRvest account reader stays, together with its explicitly labelled
+   receipt-time semantics (#223).
+
+2. **Quote and executability enrichment is APPROVED as a capability** —
+   exact-symbol timezone-aware `asOf`; `bid`, `ask` and `spread`; typed
+   `notFoundSymbols`; account-specific eligibility and minimum-position
+   constraints.
+
+3. **Production integration is NOT yet authorized**, because the
+   measured MCP credential carries real-money write scopes.
+   **Self-imposed avoidance of write tools is defence in depth, not
+   least privilege.**
+
+4. **Re-entry requires a credential limited to the minimum read
+   scopes.** If the MCP connection cannot be restricted, the production
+   path must use a **separate read-only eToro API credential**.
+
+5. **Any future adapter imports facts only**:
+   - never trade preparation or execution workflows;
+   - key results by `instrumentId`, **never** row position;
+   - preserve **each security's own `asOf`**;
+   - treat `allowOpenPosition` and `minPositionExposure` as **broker
+     constraints**, never investment judgments or sizing
+     recommendations;
+   - **never let eligibility affect company quality**;
+   - keep `LIQUIDITY_UNMEASURED`, because **spread is not market depth
+     or volume**.
+
+6. **Do not adopt MCP portfolio timestamps, balances or account
+   aggregation.**
+
+7. **No further authenticated calls are needed for this ruling.**
+
+### Consequences
+
+§2's composition-clock finding and §5's provider-side aggregation are
+both **recorded and not consumed**: the aggregation works and is
+deliberately not adopted, because adopting it would mean trusting a
+boundary this measurement observed only once. The enrichment capability
+of §4 is approved in principle and **blocked on credential scope**, not
+on evidence — the measurement that would unblock it is an administrative
+one, not another call against this API.
+
+Ruling 5 is the standing contract for whichever slice eventually builds
+the adapter. Three of its clauses restate rules this repository already
+holds — instrument-keyed identity, per-security provenance, and the
+depth-versus-spread boundary — and the two that are new say that a
+broker's permission is not an opinion about a business.
