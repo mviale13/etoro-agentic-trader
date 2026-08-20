@@ -56,6 +56,8 @@ function valid(): Record<string, unknown> {
     unsupported_schemas: 0,
     lifecycle_anomalies: 0,
     last_known: null,
+    portfolio: null,
+    candidates: [],
   };
 }
 
@@ -234,5 +236,70 @@ describe("a contract-invalid response yields no review", () => {
     for (const payload of [null, 7, "ok", []]) {
       expect(() => parseCycleReview(payload)).toThrow(CycleContractError);
     }
+  });
+});
+
+describe("the recorded portfolio and candidates", () => {
+  it("parses a whole portfolio, preserving absence", () => {
+    const review = parseCycleReview({
+      ...valid(),
+      portfolio: {
+        total_value: 100000,
+        available_cash_usd: null,
+        cash_pct: null,
+        observed: "eToro account response received at 2026-08-20 12:00 UTC",
+        compliant: null,
+        holdings: [
+          { symbol: "KO", market_value_usd: 50000, weight_pct: 50 },
+          { symbol: "PG", market_value_usd: 25000, weight_pct: null },
+        ],
+        allocations: [
+          {
+            asset: "cash",
+            current_pct: null,
+            target_pct: 15,
+            difference_pct: null,
+          },
+        ],
+      },
+    });
+
+    expect(review.portfolio).not.toBeNull();
+    expect(review.portfolio?.availableCashUsd).toBeNull();
+    expect(review.portfolio?.holdings[1].weightPct).toBeNull();
+    expect(review.portfolio?.allocations[0].differencePct).toBeNull();
+    expect(review.portfolio?.compliant).toBeNull();
+  });
+
+  it("rejects a malformed portfolio rather than dropping the account", () => {
+    expect(() =>
+      parseCycleReview(withField("portfolio", { total_value: 1 })),
+    ).toThrow(CycleContractError);
+
+    expect(() => parseCycleReview(withField("portfolio", 7))).toThrow(
+      CycleContractError,
+    );
+  });
+
+  it("rejects a missing or malformed candidates list", () => {
+    expect(() => parseCycleReview(without("candidates"))).toThrow(
+      CycleContractError,
+    );
+    expect(() => parseCycleReview(withField("candidates", "none"))).toThrow(
+      CycleContractError,
+    );
+  });
+
+  it("keeps the server's ranking rather than reordering it", () => {
+    const course = (valid().courses as Record<string, unknown>[])[0];
+
+    const review = parseCycleReview(
+      withField("candidates", [
+        { ...course, symbol: "BBB", conviction: 88 },
+        { ...course, symbol: "AAA", conviction: 41 },
+      ]),
+    );
+
+    expect(review.candidates.map((c) => c.symbol)).toEqual(["BBB", "AAA"]);
   });
 });
