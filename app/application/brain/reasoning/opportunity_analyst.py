@@ -43,11 +43,22 @@ class OpportunityAnalyst:
         # Averages the terms that were measured. When risk could not be
         # measured its term is left out rather than assumed benign, which
         # averaging in a zero would quietly do.
-        readiness_terms = [
-            portfolio.diversification_score,
-            behavior.policy_alignment_score,
-        ]
+        readiness_terms = [portfolio.diversification_score]
 
+        # Left out rather than substituted, on the same rule the risk
+        # term below already follows: neither zero, one nor a midpoint
+        # stands in for a score that was never computed.
+        readiness_missing: list[str] = []
+
+        if behavior.policy_alignment_score is not None:
+            readiness_terms.append(behavior.policy_alignment_score)
+        else:
+            readiness_missing.append("policy alignment")
+
+        # The risk term keeps its existing behaviour exactly: left out
+        # when unmeasured, and already disclosed by its own evidence
+        # line below. Naming it here too would reword every measured
+        # account's readiness sentence, which is not this slice's to do.
         if risk.overall_risk_score is not None:
             readiness_terms.append(1.0 - risk.overall_risk_score)
 
@@ -77,7 +88,10 @@ class OpportunityAnalyst:
         if portfolio.diversification_score > 0.80:
             opportunities.append("Well diversified portfolio")
 
-        if behavior.policy_alignment_score > 0.80:
+        if (
+            behavior.policy_alignment_score is not None
+            and behavior.policy_alignment_score > 0.80
+        ):
             opportunities.append("Portfolio aligns with investment policy")
 
         if risk.overall_risk_score is not None and risk.overall_risk_score > 0.60:
@@ -108,7 +122,14 @@ class OpportunityAnalyst:
 
         evidence.append(
             Evidence(
-                description=(f"Portfolio readiness score is {readiness:.2f}."),
+                description=(
+                    f"Portfolio readiness score is {readiness:.2f}."
+                    if not readiness_missing
+                    else f"Portfolio readiness score is {readiness:.2f}, "
+                    "measured without "
+                    f"{' and '.join(readiness_missing)}, which could not "
+                    "be scored."
+                ),
                 source="PortfolioAssessment",
                 strength=portfolio.confidence,
             )

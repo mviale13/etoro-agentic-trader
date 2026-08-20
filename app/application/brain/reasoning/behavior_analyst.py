@@ -36,13 +36,20 @@ class BehaviorAnalyst:
             evidence,
         )
 
-        if portfolio.allocation.cash is not None and portfolio.allocation.cash > 40:
+        # Three states, because a guarded two-way branch sends the
+        # absent case down the `else` and turns "nobody could read the
+        # cash" into the positive finding "Capital is largely invested".
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            biases.append(
+                "Cash deployment cannot be assessed: the broker stated no cash figure"
+            )
+        elif cash > 40:
             biases.append("Possible hesitation to deploy capital")
             evidence.append(
                 Evidence(
-                    description=(
-                        f"Cash allocation is {portfolio.allocation.cash:.1f}%."
-                    ),
+                    description=f"Cash allocation is {cash:.1f}%.",
                     source="PortfolioSnapshot",
                     strength=0.90,
                 )
@@ -90,7 +97,7 @@ class BehaviorAnalyst:
         biases: list[str],
         positives: list[str],
         evidence: list[Evidence],
-    ) -> float:
+    ) -> float | None:
         """
         Score how far the portfolio sits from its own Investment Policy.
 
@@ -116,7 +123,7 @@ class BehaviorAnalyst:
             evidence,
         )
 
-        alignment -= self._cash_penalty(
+        cash_penalty = self._cash_penalty(
             portfolio,
             policy,
             biases,
@@ -124,13 +131,27 @@ class BehaviorAnalyst:
             evidence,
         )
 
-        alignment -= self._crypto_penalty(
+        crypto_penalty = self._crypto_penalty(
             portfolio,
             policy,
             biases,
             positives,
             evidence,
         )
+
+        # Every other term still runs and still reports, because those
+        # findings are real. The score itself is withheld: alignment is
+        # a claim about the whole policy, and one of its comparisons
+        # could not be made.
+        if cash_penalty is None:
+            return None
+
+        # Subtracted in the original order. Floating-point subtraction is
+        # not associative, so reordering these two moved the last bits of
+        # every measured score — which a digest over measured inputs
+        # caught, and which no assertion would have.
+        alignment -= cash_penalty
+        alignment -= crypto_penalty
 
         return max(0.0, min(1.0, alignment))
 
@@ -223,20 +244,21 @@ class BehaviorAnalyst:
         biases: list[str],
         positives: list[str],
         evidence: list[Evidence],
-    ) -> float:
+    ) -> float | None:
         target = policy.target.cash
         threshold = policy.constraints.rebalance_threshold
         cash = portfolio.allocation.cash
 
         if cash is None:
-            # No drift claim either way. Silence here would read as "within
-            # the band", which is a finding about an allocation nobody read.
+            # None, not 0.0. A zero penalty is the score for "measured,
+            # and within its band" — returning it here would leave
+            # alignment at a perfect 1.0 out of an absence.
             biases.append(
                 "Cash allocation could not be read, so drift against the "
                 "policy band is unmeasured"
             )
 
-            return 0.0
+            return None
 
         drift = abs(cash - target)
 
@@ -273,14 +295,14 @@ class BehaviorAnalyst:
     def _emotional_risk(
         self,
         portfolio: PortfolioSnapshot,
-    ) -> float:
+    ) -> float | None:
         cash = portfolio.allocation.cash
 
         if cash is None:
-            # The midpoint of the band this factor can express, and the
-            # only value that adds no cash-derived signal in either
-            # direction. Named in `_cash_penalty` rather than hidden.
-            return 0.50
+            # Absent, not a midpoint. 0.50 is a real reading of this band
+            # — the score of an account measured between 20% and 40% cash
+            # — and handing it to an unread account states that finding.
+            return None
         if cash > 40:
             return 0.70
         if cash > 20:

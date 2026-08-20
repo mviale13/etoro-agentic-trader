@@ -458,3 +458,267 @@ def test_8b_a_measured_snapshot_produces_the_same_allocation_as_before() -> None
     )
     assert snapshot.liquidity_pct == 30.0
     assert snapshot.available_cash_usd == 30_000.0
+
+
+# ── amendment: absence must not vote, and must not become a positive ──
+
+
+def opinion(member: str, vote: str, confidence: int):
+    from app.domain.committee_opinion import CommitteeOpinion
+
+    return CommitteeOpinion(
+        member=member,
+        vote=vote,
+        confidence=confidence,
+        rationale=f"{member} says {vote}.",
+    )
+
+
+def test_9_a_zero_confidence_opinion_does_not_vote() -> None:
+    """The discriminating panel: BUY 80, SELL 70, Cash HOLD 0.
+
+    Adding or removing the abstaining Cash opinion must change nothing —
+    not the recommendation, not the counts, not the mean confidence.
+    Before this repair it changed all three: the Counter took every
+    opinion, so an abstention was recorded as a HOLD vote and divided
+    into the panel's stated confidence.
+    """
+
+    from app.committee.chairman import CommitteeChairman
+
+    voting = [opinion("Value", "BUY", 80), opinion("Risk", "SELL", 70)]
+    with_abstention = [*voting, opinion("Cash", "HOLD", 0)]
+
+    without = CommitteeChairman().decide(voting)
+    within = CommitteeChairman().decide(with_abstention)
+
+    assert within.recommendation == without.recommendation
+    assert within.buy_votes == without.buy_votes == 1
+    assert within.sell_votes == without.sell_votes == 1
+    assert within.hold_votes == without.hold_votes == 0, (
+        "the abstention is not a HOLD vote"
+    )
+    assert within.confidence == without.confidence == 75, (
+        "75 is the mean of the members that actually voted, not 50"
+    )
+
+    # Its wording is still carried — it spoke, and the reader sees why.
+    assert len(within.opinions) == 3
+    assert any(item.member == "Cash" for item in within.opinions)
+
+
+def test_9b_the_weighted_production_path_is_where_the_defect_bit_hardest() -> None:
+    """`weighted_decide` is what CommitteeService runs.
+
+    A heavily weighted abstainer used to carry its whole regime weight
+    into HOLD and win the vote outright.
+    """
+
+    from app.committee.chairman import CommitteeChairman
+
+    weights = {"Value": 1.0, "Risk": 1.0, "Cash": 5.0}
+
+    voting = [opinion("Value", "BUY", 80), opinion("Risk", "SELL", 70)]
+    with_abstention = [*voting, opinion("Cash", "HOLD", 0)]
+
+    without = CommitteeChairman().weighted_decide(voting, weights)
+    within = CommitteeChairman().weighted_decide(with_abstention, weights)
+
+    assert within.recommendation == without.recommendation
+    assert within.recommendation != "HOLD", (
+        "a 5.0-weighted abstention used to decide the whole committee"
+    )
+    assert within.hold_votes == 0
+    assert within.confidence == without.confidence == 75
+
+
+def test_9c_a_positive_confidence_hold_still_votes_exactly_as_before() -> None:
+    """Abstention is never inferred from the word HOLD."""
+
+    from app.committee.chairman import CommitteeChairman
+
+    panel = [
+        opinion("Value", "BUY", 80),
+        opinion("Cash", "HOLD", 55),
+        opinion("Risk", "HOLD", 60),
+    ]
+
+    decision = CommitteeChairman().decide(panel)
+
+    assert decision.hold_votes == 2
+    assert decision.recommendation == "HOLD"
+    assert decision.confidence == 65
+
+
+def test_9d_an_all_abstained_panel_is_reported_not_manufactured() -> None:
+    """No HOLD is invented for a panel that reached no position.
+
+    Unreachable from the live committee — only Cash can abstain — and
+    `CommitteeDecision.recommendation` is a required string with no way
+    to say "no position", so this raises rather than choosing a verdict
+    nobody reached.
+    """
+
+    from app.committee.chairman import CommitteeChairman
+
+    with pytest.raises(ValueError, match="every committee member abstained"):
+        CommitteeChairman().decide([opinion("Cash", "HOLD", 0)])
+
+
+def test_10_the_cash_committee_abstains_and_a_measured_zero_still_votes() -> None:
+    from app.committee.cash import CashCommittee
+    from app.committee.chairman import abstained
+    from app.domain.committee_context import CommitteeContext
+    from tests.test_brain_context import make_market, make_policy
+
+    def evaluated(cash: float | None):
+        return CashCommittee().evaluate(
+            CommitteeContext(
+                portfolio=analyzed(cash),
+                policy=make_policy(),
+                intelligence=_intelligence(make_market()),
+            )
+        )
+
+    absent = evaluated(None)
+
+    assert abstained(absent)
+    assert "could not be read" in absent.rationale
+
+    # Control B: a measured zero keeps its real, counted vote.
+    measured_zero = evaluated(0.0)
+
+    assert not abstained(measured_zero)
+    assert measured_zero.confidence > 0
+    assert "0.0%" in measured_zero.rationale
+
+
+def reasoned(cash: float | None):
+    """The whole reasoning surface for one cash state."""
+
+    from app.application.brain.reasoning.reasoning_service import ReasoningService
+    from app.brain import BrainBuilder
+    from tests.test_brain_context import make_market, make_policy
+
+    brain = BrainBuilder(
+        portfolio=analyzed(cash),
+        market=make_market(),
+        investment_policy=make_policy(),
+    ).build()
+
+    return ReasoningService().reason(brain)
+
+
+def spoken(snapshot) -> list[str]:
+    """Every sentence the reasoning pass produced."""
+
+    said: list[str] = []
+
+    for part in (
+        snapshot.portfolio,
+        snapshot.risk,
+        snapshot.behavior,
+        snapshot.opportunity,
+    ):
+        for attribute in (
+            "strengths",
+            "weaknesses",
+            "risk_factors",
+            "mitigants",
+            "unmeasured",
+            "observed_biases",
+            "positive_behaviors",
+            "opportunities",
+            "constraints",
+        ):
+            said.extend(getattr(part, attribute, ()) or ())
+
+        for item in getattr(part, "evidence", ()) or ():
+            said.append(item.description)
+
+    return said
+
+
+def test_11_absence_is_never_a_positive_finding() -> None:
+    """Control A and D: the two-way branches used to reward an absence."""
+
+    snapshot = reasoned(None)
+    said = spoken(snapshot)
+    blob = " | ".join(said)
+
+    for forbidden in (
+        "Capital is largely invested",
+        "Healthy cash allocation",
+        "Portfolio aligns with investment policy",
+        "within its rebalance band",
+        "Low cash buffer",
+    ):
+        assert forbidden not in blob, forbidden
+
+    # And the absence is stated rather than merely omitted.
+    assert any("no cash figure" in line for line in said)
+    assert any("could not be read" in line for line in said)
+
+
+def test_11b_the_unmeasured_ledger_names_cash_and_liquidity() -> None:
+    snapshot = reasoned(None)
+
+    assert any(
+        "Cash and liquidity risk are not measured" in line
+        for line in snapshot.risk.unmeasured
+    )
+    assert snapshot.risk.liquidity_risk_score is None
+
+
+def test_11c_policy_alignment_and_emotional_risk_are_unavailable() -> None:
+    """An absent penalty term used to leave alignment at a perfect 1.0."""
+
+    snapshot = reasoned(None)
+
+    assert snapshot.behavior.policy_alignment_score is None
+    assert snapshot.behavior.emotional_risk_score is None
+
+    # Not substituted anywhere downstream either.
+    readiness_sentences = [
+        item.description
+        for item in snapshot.opportunity.evidence
+        if "readiness" in item.description
+    ]
+
+    assert readiness_sentences
+    assert any("policy alignment" in line for line in readiness_sentences), (
+        "the missing readiness component is named, not silently dropped"
+    )
+
+
+def test_11d_the_measured_zero_control_keeps_its_findings() -> None:
+    """Control B: nothing becomes unavailable merely because it is zero."""
+
+    snapshot = reasoned(0.0)
+    blob = " | ".join(spoken(snapshot))
+
+    assert "Low cash buffer" in blob, "a measured zero is a real low-cash finding"
+
+    assert snapshot.behavior.policy_alignment_score is not None
+    assert snapshot.behavior.emotional_risk_score is not None
+    assert snapshot.risk.liquidity_risk_score is not None
+    assert snapshot.portfolio.liquidity_score is not None
+    assert snapshot.portfolio.health_score is not None
+
+
+def test_11e_the_cycle_still_completes_and_only_the_envelope_refuses() -> None:
+    """Control A's last two clauses, together."""
+
+    snapshot = reasoned(None)
+
+    # The pass produced every assessment.
+    assert snapshot.portfolio is not None
+    assert snapshot.market is not None
+    assert snapshot.risk is not None
+    assert snapshot.behavior is not None
+    assert snapshot.opportunity is not None
+
+    # Non-cash reasoning is untouched.
+    assert snapshot.market.momentum_score is not None
+    assert snapshot.opportunity.opportunity_score is not None
+    assert snapshot.portfolio.diversification_score is not None
