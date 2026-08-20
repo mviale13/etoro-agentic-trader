@@ -8,6 +8,7 @@ from app.api.routes.committee_weights import (
     router as committee_weights_router,
 )
 from app.api.routes.crypto_dossier import router as crypto_dossier_router
+from app.api.routes.cycle import router as cycle_router
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.doctor import router as doctor_router
 from app.api.routes.executive import router as executive_router
@@ -68,6 +69,7 @@ app.include_router(committee_router)
 app.include_router(committee_matrix_router)
 app.include_router(crypto_dossier_router)
 app.include_router(personal_news_router)
+app.include_router(cycle_router)
 app.include_router(dashboard_router)
 app.include_router(executive_dashboard_router)
 app.include_router(executive_router)

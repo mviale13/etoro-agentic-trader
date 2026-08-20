@@ -16,6 +16,7 @@ from app.application.brain.brain_snapshot_service import BrainSnapshotService
 from app.application.brain.perception.market_perception import MarketPerception
 from app.brokers.etoro_account import EtoroAccountBroker
 from app.config import Settings
+from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.providers.issuance_rule_provider import IssuanceRuleProvider
 from app.services.account_service import AccountService
 from app.services.brief_service import BriefService
@@ -81,3 +82,13 @@ def get_dashboard_service() -> DashboardService:
     """The composite the dashboard route passes through."""
 
     return DashboardService()
+
+
+def get_daily_cycle_store() -> DailyCycleStore:
+    """The append-only cycle log, read-only at every web call site.
+
+    Injectable so a test can point it at an isolated root; the default
+    resolves from the evidence root at construction (#118).
+    """
+
+    return DailyCycleStore()

@@ -30,3 +30,31 @@ jobs:
       - name: Run tests
         run: |
           pytest
+  web:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/web/movrvest-web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/movrvest-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The parser fails closed, so a backend field rename would blank
+      # the homepage. Until this job existed, no CI step could see it:
+      # the frontend suite and build were local gates only.
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
