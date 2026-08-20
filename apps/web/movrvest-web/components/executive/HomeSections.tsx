@@ -7,11 +7,16 @@ import type {
 } from "@/lib/api/cycle-review";
 
 /**
- * The homepage's five sections, in the owner's order.
+ * The homepage's four sections, in the owner's order.
  *
  * Each is its own section rather than one merged block — the only
  * merging asked for is *within* the holdings table, which carries what
  * changed as a column instead of as a separate list.
+ *
+ * There is no separate list of courses to consider: the owner removed
+ * it. Each holding's course is the table's own column, and the review's
+ * "this asked for nothing" sentence stays on the status strip, where it
+ * is the backend's wording rather than this page's.
  *
  * Every value here is carried from the recorded cycle. This file
  * chooses layout and plain wording and computes no analytics: no score,
@@ -109,76 +114,7 @@ export function PortfolioSnapshot({
   );
 }
 
-// ── 2. executive actions ────────────────────────────────────────────
-
-export function ExecutiveActions({ review }: { review: CycleReview }) {
-  const asking = review.courses.filter((course) => course.asksForSomething);
-
-  return (
-    <section className={CARD}>
-      <h2 className={HEAD}>What the Artificial CIO suggests you consider</h2>
-
-      {asking.length === 0 ? (
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          This review asked for nothing. That describes what it found, and is
-          not an assessment that your portfolio is safe.
-        </p>
-      ) : (
-        <ul className="mt-4 grid gap-3">
-          {asking.map((course) => (
-            <li
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-              key={course.symbol}
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <Link
-                  className="text-base font-semibold text-slate-950 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
-                  href={`/dossiers/${encodeURIComponent(course.symbol)}`}
-                >
-                  {course.symbol}
-                </Link>
-
-                <span className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                  {course.disposition}
-                </span>
-              </div>
-
-              <p className="mt-2 text-sm leading-6 text-slate-800">
-                {course.actionStatement}
-              </p>
-
-              {course.actionBecause ? (
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  {course.actionBecause}
-                </p>
-              ) : null}
-
-              {course.envelope ? (
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  {course.envelope.stated}
-                </p>
-              ) : null}
-
-              {course.envelope && course.envelope.namedGaps.length > 0 ? (
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Limits the action, not the company:{" "}
-                  {course.envelope.namedGaps.join("; ")}
-                </p>
-              ) : null}
-
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                A course to consider, not an instruction. Nothing is placed for
-                you.
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-// ── 3. holdings, ranked, with what changed as a column ──────────────
+// ── 2. holdings, ranked, with what changed as a column ──────────────
 
 /**
  * Whether this review may claim any movement at all.
@@ -305,7 +241,7 @@ export function HoldingsTable({ review }: { review: CycleReview }) {
   );
 }
 
-// ── 4. top five opportunities ───────────────────────────────────────
+// ── 3. top five opportunities ───────────────────────────────────────
 
 export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
   const top = topOpportunities(candidates);
@@ -377,7 +313,7 @@ export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
   );
 }
 
-// ── 5. portfolio against the investor's strategy ────────────────────
+// ── 4. portfolio against the investor's strategy ────────────────────
 
 export function StrategyCard({
   portfolio,
