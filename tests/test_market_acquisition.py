@@ -16,6 +16,7 @@ import json
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
@@ -24,6 +25,7 @@ import pytest
 from app.domain.asset_class import AssetClass
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
+from app.domain.provider_identity import ProviderIdentityClaim
 from app.domain.research_candidate import ResearchCandidate
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
@@ -425,6 +427,120 @@ def make_cycle(
     )
 
     return service, provider
+
+
+class VendorNamingValuationStub(ValuationStub):
+    """The same reading, carrying the vendor's own name for the ticker.
+
+    That name is the whole of the identity evidence on this path: the
+    vendor answers about `HYPE-USD` and calls it *Supreme Finance USD*,
+    and nothing else in the payload says the ticker is not Hyperliquid.
+    """
+
+    def __init__(self, vendor_names: dict[str, str]) -> None:
+        super().__init__()
+        self._vendor_names = vendor_names
+
+    def snapshot(self, symbol: str) -> ValuationSnapshot:
+        snapshot = super().snapshot(symbol)
+
+        name = self._vendor_names.get(symbol)
+
+        if name is None:
+            return snapshot
+
+        return replace(
+            snapshot,
+            vendor_identity=ProviderIdentityClaim(
+                provider="Yahoo Finance",
+                symbol=symbol,
+                name=name,
+                taxonomy="CRYPTOCURRENCY",
+            ),
+        )
+
+
+class SilentCryptoProvider:
+    """Every crypto-only door, answering nothing and reaching nowhere.
+
+    A token's acquisition touches seven of them. None is the subject
+    here, and a test that let one through would be a test that fetches.
+    """
+
+    def rating(self, symbol: str) -> None:
+        return None
+
+    def claims(self, *args: object, **kwargs: object) -> None:
+        return None
+
+    def facts(self, symbol: str) -> tuple[()]:
+        return ()
+
+    def flows(self, symbol: str) -> None:
+        return None
+
+    def treasuries(self, symbol: str) -> None:
+        return None
+
+    def acquire(self, symbol: str) -> Any:
+        return SimpleNamespace(is_read=False)
+
+
+def make_crypto_cycle(
+    pool: dict[str, Any],
+    vendor_names: dict[str, str],
+    names: dict[str, str] | None = None,
+) -> tuple[MarketAcquisitionService, Any]:
+    """A cycle over crypto holdings, with every provider door stubbed.
+
+    The quote provider prices none of them, which is exactly what Yahoo
+    did for `HYPE-USD` and `TAO-USD` on the recorded cycle.
+    """
+
+    from tests.test_crypto_price_routing import JudgedTokensStub
+
+    display = names or {
+        "HYPE": "Hyperliquid",
+        "TAO": "Bittensor",
+        "BTC": "Bitcoin",
+    }
+
+    holdings = tuple(
+        HoldingStub(index, symbol) for index, symbol in enumerate(pool, start=1)
+    )
+
+    items = {
+        holding.instrument_id: replace(
+            watched(holding.instrument_id, holding.symbol),
+            name=display.get(holding.symbol, holding.symbol),
+            asset_type_id=10,
+        )
+        for holding in holdings
+    }
+
+    judged = JudgedTokensStub(pool)
+
+    silent = SilentCryptoProvider()
+
+    service = MarketAcquisitionService(
+        portfolio=PortfolioStub(holdings),
+        opportunities=OpportunityStub(()),
+        resolver=ResolverStub(items),
+        quotes=BatchCountingProvider(unpriceable=tuple(pool)),
+        valuations=VendorNamingValuationStub(vendor_names),
+        calendars=CalendarStub(),
+        crypto_market=MarketCycleStub(),
+        ratings=silent,
+        token_facts=silent,
+        coingecko_facts=silent,
+        protocol_facts=silent,
+        primary_supply=silent,
+        capital_flows=silent,
+        events=silent,
+        judged_tokens=judged,
+    )
+
+    return service, judged
 
 
 class MarketCycleStub:

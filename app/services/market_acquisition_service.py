@@ -16,8 +16,10 @@ from app.domain.market_acquisition import (
 from app.domain.monetary_translation import TRANSLATABLE_TO_USD
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.protocol_entities import entities_for
-from app.domain.provider_identity import ProviderIdentityClaim
+from app.domain.provider_identity import ProviderIdentityClaim, crypto_listing
 from app.domain.research_candidate import ResearchCandidate
+from app.domain.token_facts import TokenMarketFacts
+from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
 from app.providers.cached_value_provider import CachedValueProvider
@@ -37,6 +39,7 @@ from app.services.cross_provider_identity_service import (
 from app.services.crypto_event_service import CryptoEventService
 from app.services.crypto_market_service import acquisition_targets
 from app.services.instrument_symbol_resolver import InstrumentSymbolResolver
+from app.services.token_facts_service import TokenFactsService
 
 #: How many watched-but-unheld securities one cycle prices.
 #:
@@ -76,6 +79,7 @@ class MarketAcquisitionService:
         ratings: Any | None = None,
         token_facts: Any | None = None,
         coingecko_facts: Any | None = None,
+        judged_tokens: Any | None = None,
         protocol_facts: Any | None = None,
         crypto_market: Any | None = None,
         primary_supply: Any | None = None,
@@ -123,6 +127,12 @@ class MarketAcquisitionService:
         # fetches any of them.
         self._token_facts = token_facts or CachedTokenFactsProvider()
         self._coingecko_facts = coingecko_facts or CachedCoinGeckoFactsProvider()
+
+        # The judged pool over those same claims — the consumption seam,
+        # not a claimant. Read here through its stored doors right after
+        # the two reads above have filled them, because a token's price
+        # comes from what the gate established and from nothing else.
+        self._tokens_judged = judged_tokens or TokenFactsService()
 
         # The economics of the systems behind the tokens — a separate
         # evidence family, read per mapped entity rather than per
@@ -281,52 +291,92 @@ class MarketAcquisitionService:
         reads from. The calendar used the broker's symbol until the
         readers moved to the provider's, which left Nestlé's cycle
         warming a key no page would ever look at.
+
+        The order is written out rather than left to the order of the
+        constructor's arguments, because one of them now depends on
+        another: a token is priced from the crypto-native pool, and the
+        pool is filled by the token-facts read below. Asking whether it
+        holds a price before that read would answer about last cycle.
         """
 
+        symbol = instrument.movrvest_symbol
+
+        crypto = asset_class is AssetClass.CRYPTO
+
+        valuation = self._fundamentals(
+            instrument.yahoo_symbol,
+            broker,
+            subject=symbol,
+        )
+
+        token_facts = self._facts(symbol) if crypto else None
+
+        # The judged pool, read through its stored door immediately
+        # after the read that filled it. No call is added: this is the
+        # same evidence the dossier will serve, asked one layer earlier.
+        tokens = self._tokens(symbol, instrument.name) if crypto else None
+
+        listing = (
+            crypto_listing(
+                symbol=symbol,
+                vendor_symbol=instrument.yahoo_symbol,
+                vendor_name=(
+                    valuation.vendor_identity.name
+                    if valuation is not None and valuation.vendor_identity is not None
+                    else None
+                ),
+                token_names=(
+                    instrument.name,
+                    tokens.provider_id if tokens is not None else None,
+                ),
+            )
+            if crypto
+            else None
+        )
+
         return AcquiredSecurity(
-            symbol=instrument.movrvest_symbol,
-            priced=instrument.movrvest_symbol.upper().strip() in priced,
-            fundamentals=self._fundamentals(
-                instrument.yahoo_symbol,
-                broker,
-                subject=instrument.movrvest_symbol,
+            symbol=symbol,
+            # A cryptocurrency is priced from the crypto-native pool and
+            # never from the vendor's pair listing. HYPE and TAO were
+            # reported as securities no price came back for, in a cycle
+            # that had stored an established, corroborated price for
+            # each of them — because the vendor lists another token
+            # under both tickers and answered nothing for either.
+            priced=(
+                (tokens is not None and tokens.established_value("price") is not None)
+                if crypto
+                else symbol.upper().strip() in priced
             ),
+            fundamentals=valuation is not None and valuation.reading is not None,
             calendar=(
                 self._calendar(instrument.yahoo_symbol)
                 if asset_class is AssetClass.STOCK
                 else None
             ),
-            rating=(
-                self._rating(instrument.movrvest_symbol)
-                if asset_class is AssetClass.CRYPTO
-                else None
-            ),
-            token_facts=(
-                self._facts(instrument.movrvest_symbol)
-                if asset_class is AssetClass.CRYPTO
-                else None
-            ),
-            primary_supply=(
-                self._supply(instrument.movrvest_symbol)
-                if asset_class is AssetClass.CRYPTO
-                else None
-            ),
-            protocol_facts=(
-                self._protocols(instrument.movrvest_symbol)
-                if asset_class is AssetClass.CRYPTO
-                else None
-            ),
-            capital_flows=(
-                self._flows(instrument.movrvest_symbol)
-                if asset_class is AssetClass.CRYPTO
-                else None
-            ),
-            events=(
-                self._developments(instrument.movrvest_symbol)
-                if asset_class is AssetClass.CRYPTO
-                else None
+            rating=(self._rating(symbol) if crypto else None),
+            token_facts=token_facts,
+            primary_supply=(self._supply(symbol) if crypto else None),
+            protocol_facts=(self._protocols(symbol) if crypto else None),
+            capital_flows=(self._flows(symbol) if crypto else None),
+            events=(self._developments(symbol) if crypto else None),
+            listing_refused=(
+                listing.because if listing is not None and not listing.agrees else ""
             ),
         )
+
+    def _tokens(self, symbol: str, name: str) -> TokenMarketFacts | None:
+        """The judged crypto-native facts for this token, or nothing."""
+
+        try:
+            facts: TokenMarketFacts | None = self._tokens_judged.established(
+                symbol,
+                name,
+                AssetClass.CRYPTO,
+            )
+        except Exception:
+            return None
+
+        return facts
 
     def _rating(self, symbol: str) -> bool:
         """Whether the store now holds a published rating for this token."""
@@ -460,7 +510,7 @@ class MarketAcquisitionService:
         broker: ProviderIdentityClaim | None,
         *,
         subject: str | None = None,
-    ) -> bool:
+    ) -> ValuationSnapshot | None:
         """One funded fundamentals read, remembered where it can be.
 
         The observing door needs the broker's claim — the acquisition is
@@ -468,6 +518,12 @@ class MarketAcquisitionService:
         persisted — so a target that arrived from the book or the
         candidates is read through `snapshot_observing`, and one with no
         broker account (nothing cross-checks it) through the plain door.
+
+        The snapshot itself is returned rather than the bit that says it
+        came back: the caller reads the vendor's own name for the ticker
+        out of it, which is the evidence that decides whether the
+        vendor's listing is this security at all. Nothing is re-fetched
+        to ask that question.
         """
 
         try:
@@ -476,18 +532,15 @@ class MarketAcquisitionService:
                 # observation is filed under the security the investor
                 # holds. BTC's fundamentals live under BTC-USD and its
                 # identity history under BTC.
-                return (
-                    self._valuations.snapshot_observing(
-                        yahoo_symbol,
-                        broker,
-                        subject=subject,
-                    ).reading
-                    is not None
+                return self._valuations.snapshot_observing(
+                    yahoo_symbol,
+                    broker,
+                    subject=subject,
                 )
 
-            return self._valuations.snapshot(yahoo_symbol).reading is not None
+            return self._valuations.snapshot(yahoo_symbol)
         except Exception:
-            return False
+            return None
 
     def _calendar(self, symbol: str) -> bool:
         try:

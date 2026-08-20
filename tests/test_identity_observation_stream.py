@@ -802,6 +802,11 @@ def test_only_the_acquisition_constructs_an_acquiring_provider() -> None:
 
     assert sorted(set(constructs["stored"])) == [
         "app/api/routes/executive.py",
+        # The price-history provider asks it one question and never
+        # about a figure: whether the vendor's own name for a crypto
+        # pair listing is this token. It is the one thing here that
+        # does reach the network, so its identity check must not.
+        "app/providers/yahoo_price_history.py",
         "app/services/company_facts_service.py",
         "app/services/token_facts_service.py",
     ], "a read surface stopped using the stored door"

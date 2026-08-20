@@ -63,6 +63,17 @@ class AcquiredSecurity:
     #: as one that was asked and answered nothing.
     events: bool | None = None
 
+    #: Why the quote vendor's own listing was not read as this security,
+    #: where it was not. Empty where it was, and for everything that is
+    #: not a cryptocurrency — an equity is quoted under its own ticker
+    #: and this question does not arise for it.
+    #:
+    #: Kept apart from `priced`, because they are different facts and
+    #: this slice exists because they were being reported as one. A
+    #: refused listing costs the vendor's price *history*; the price
+    #: itself comes from the crypto-native pool and is unaffected by it.
+    listing_refused: str = ""
+
     @property
     def complete(self) -> bool:
         """True when everything this security was asked for came back."""
@@ -146,3 +157,18 @@ class MarketAcquisition:
         """
 
         return tuple(security for security in self.securities if not security.priced)
+
+    @property
+    def refused_listings(self) -> tuple[AcquiredSecurity, ...]:
+        """
+        Asked for, and the vendor answered about a different security.
+
+        A separate list from `unpriced` because it is a separate fact,
+        and the two were being reported as one sentence. HYPE and TAO
+        appear here and not there: each has an established crypto-native
+        price, and neither has a vendor price history that is its own.
+        """
+
+        return tuple(
+            security for security in self.securities if security.listing_refused
+        )

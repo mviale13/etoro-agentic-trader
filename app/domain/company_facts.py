@@ -51,6 +51,23 @@ class CompanyFacts:
 
     # Market
     current_price: float | None = None
+
+    #: Whose price this is, as the source that established it names the
+    #: subject: `bitcoin`, `hyperliquid`, `bittensor`. Only a token
+    #: carries one — an equity's price is identified by its ticker at a
+    #: venue, and this is the crypto-native identifier a pair listing
+    #: cannot supply. None everywhere else, and never a display name.
+    price_identity: str | None = None
+
+    #: Why the data vendor's own listing for this symbol was not read as
+    #: this security, where it was not.
+    #:
+    #: A refusal about the *vendor*, never a finding about the security:
+    #: Yahoo's `HYPE-USD` is Supreme Finance, which says nothing about
+    #: Hyperliquid. Carried so the refusal is observable rather than
+    #: showing up only as three absent risk measurements.
+    price_listing_refused: str | None = None
+
     daily_change_pct: float | None = None
 
     #: The same move, carrying what is established about it: whether it

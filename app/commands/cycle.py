@@ -376,10 +376,20 @@ async def run(
     else:
         asked = len(acquired.securities)
         priced = len(acquired.priced)
-        refusals = tuple(
-            f"{security.symbol}: no price came back"
-            for security in acquired.securities
-            if not security.priced
+        # Two refusals, never one sentence for both. A security nothing
+        # priced is unpriced; a security the quote vendor answered about
+        # under another instrument's name has a price and no vendor
+        # history, and saying "no price came back" about it was false in
+        # the cycle that stored an established price for it.
+        refusals = (
+            *(
+                f"{security.symbol}: no price came back"
+                for security in acquired.unpriced
+            ),
+            *(
+                f"{security.symbol}: {security.listing_refused}"
+                for security in acquired.refused_listings
+            ),
         )
         stages.append(CycleStage(name="acquisition", outcome=StageOutcome.RAN))
 

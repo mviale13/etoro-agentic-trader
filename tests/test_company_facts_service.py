@@ -9,6 +9,7 @@ from app.domain.company_facts import CompanyFacts
 from app.domain.finding import statements
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
+from app.domain.provider_identity import ProviderIdentityClaim
 from app.domain.token_fact_validation import TokenClaimSet
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
@@ -573,8 +574,9 @@ class RecordingMarketProvider:
 
 
 class RecordingValuationProvider:
-    def __init__(self) -> None:
+    def __init__(self, vendor_name: str | None = "Bitcoin USD") -> None:
         self.requested: list[str] = []
+        self._vendor_name = vendor_name
 
     def snapshot(self, symbol: str) -> ValuationSnapshot:
         self.requested.append(symbol)
@@ -591,6 +593,19 @@ class RecordingValuationProvider:
             max_supply=21_000_000.0,
             volume_24h=19_753_431_040.0,
             inception=datetime(2010, 7, 13, tzinfo=UTC),
+            # The vendor's own name for the pair, exactly as the live
+            # payload carries it. It is the evidence that decides
+            # whether the vendor's series is this token's at all.
+            vendor_identity=(
+                ProviderIdentityClaim(
+                    provider="Yahoo Finance",
+                    symbol=f"{symbol}",
+                    name=self._vendor_name,
+                    taxonomy="CRYPTOCURRENCY",
+                )
+                if self._vendor_name is not None
+                else None
+            ),
         )
 
 
@@ -683,6 +698,7 @@ def bitcoin_pool() -> tuple[StubClaimSource, ...]:
 def build_crypto_facts(
     earnings: StubEarningsProvider | None = None,
     sources: tuple[StubClaimSource, ...] | None = None,
+    vendor_name: str | None = "Bitcoin USD",
 ) -> tuple[
     CompanyFacts,
     RecordingMarketProvider,
@@ -699,7 +715,7 @@ def build_crypto_facts(
         )
     )
 
-    valuation = RecordingValuationProvider()
+    valuation = RecordingValuationProvider(vendor_name)
 
     service = CompanyFactsService(
         market_provider=market,  # type: ignore[arg-type]
@@ -728,12 +744,77 @@ def test_crypto_is_priced_under_the_ticker_that_resolves() -> None:
 
 
 def test_crypto_evidence_comes_back_under_its_own_symbol() -> None:
+    """Each half comes from the only source that can speak for it.
+
+    The price is the pool's judged figure — never the pair listing's,
+    which is one more provider's claim about a ticker — while
+    volatility and drawdown stay the vendor's, because the vendor is
+    the only source of a year of closes and its `BTC-USD` listing is
+    Bitcoin.
+    """
+
     facts, _, _ = build_crypto_facts()
 
     assert facts.symbol == "BTC"
-    assert facts.current_price == 62_537.75
+    assert facts.current_price == BTC_PRICE
+    assert facts.price_identity == "bitcoin"
+    assert facts.price_listing_refused is None
+    assert facts.price_reading is not None
+    assert facts.price_reading.source == "TokenInsight"
     assert facts.realized_volatility == 0.47
     assert facts.max_drawdown == 0.31
+
+
+def test_a_vendor_listing_of_another_token_prices_nothing_here() -> None:
+    """The live defect: Yahoo's `HYPE-USD` is Supreme Finance USD.
+
+    The token keeps the price its own pool established, and loses the
+    vendor's *series* — the day's move, the volatility, the drawdown.
+    Nothing substitutes for them, and the refusal is carried in words,
+    because three absent measurements and a refused listing look
+    identical to a reader who is only shown the absences.
+    """
+
+    facts, _, _ = build_crypto_facts(vendor_name="Supreme Finance USD")
+
+    assert facts.current_price == BTC_PRICE
+    assert facts.price_identity == "bitcoin"
+    assert facts.realized_volatility is None
+    assert facts.max_drawdown is None
+    assert facts.daily_change_pct is None
+    assert facts.price_listing_refused is not None
+    assert "Supreme Finance USD" in facts.price_listing_refused
+
+
+def test_an_uncheckable_vendor_listing_does_not_pass() -> None:
+    """S5.1's rule, on this gate: a gate that cannot be evaluated fails.
+
+    Holding no vendor name is exactly the state the platform was in
+    about `HYPE-USD` before it looked. The cost of refusing is the
+    vendor's series; the cost of passing is another token's chart.
+    """
+
+    facts, _, _ = build_crypto_facts(vendor_name=None)
+
+    assert facts.current_price == BTC_PRICE
+    assert facts.realized_volatility is None
+    assert facts.price_listing_refused is not None
+
+
+def test_an_unestablished_crypto_price_is_absent_not_the_vendors() -> None:
+    """A token the pool could not settle is unpriced, and stays unpriced.
+
+    One claimant is not corroboration, so nothing is established — and
+    the pair listing sitting beside it, with a price of its own, is not
+    promoted into the gap.
+    """
+
+    single = (StubClaimSource(bitcoin_claims("TokenInsight", provider_id="bitcoin")),)
+
+    facts, _, _ = build_crypto_facts(sources=single)
+
+    assert facts.current_price is None
+    assert facts.price_reading is None
 
 
 def test_a_tokens_market_cap_is_never_read_as_company_quality() -> None:

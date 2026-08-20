@@ -125,6 +125,13 @@ def _render(acquired: MarketAcquisition) -> None:
         for security in acquired.unpriced:
             print(f"    {security.symbol}")
 
+    if acquired.refused_listings:
+        print()
+        print("  Priced, and the quote vendor's own listing was refused:")
+
+        for security in acquired.refused_listings:
+            print(f"    {security.symbol:<12} {security.listing_refused}")
+
     print()
 
 
