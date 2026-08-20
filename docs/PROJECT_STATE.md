@@ -83,6 +83,12 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
   report, with the table, row and column behind every measured size so the
   evidence can be checked against the filing by hand. Developer-level
   inspection, deliberately: it presents the evidence and decides nothing
+- `movrvest acquire-leadership SYMBOL` and
+  `movrvest leadership SYMBOL --evidence` — the explicit SEC Item 5.02 read
+  and its stored, read-only
+  evidence surface. CEO, CFO, COO and President transitions require a named
+  office, action and person; compensation and director-shaped reports are
+  declined. Events only: no management-quality or investment conclusion
 - `movrvest writer-compare SYMBOL` — the identical investment case worded
   by every configured writing provider, with measured latency, reported
   token usage and cost at stated prices beside each narrative
@@ -126,6 +132,17 @@ git archive HEAD | tar -x -C /tmp/headcheck && cd /tmp/headcheck \
 - The research page runs the CIO over the investor's own watchlists
 
 ## Recently completed
+
+- **Regulator-filed equity leadership events** (2026-08-18,
+  [`architecture/EQUITY_LEADERSHIP_EVENTS.md`](architecture/EQUITY_LEADERSHIP_EVENTS.md)).
+  Adobe is the acceptance case, not a ticker rule: one live SEC acquisition
+  read six Item 5.02 reports, retained the CEO succession search, CFO
+  departure and interim CFO appointment as three separate identities, and
+  declined four reports that named no covered transition. Occurrence,
+  effective and filing dates remain separate; exact filed sentences and the
+  immutable accession travel with every event. Explicit acquisition and a
+  stored CLI read; no model, analyst, committee, score or decision can reach
+  the slice.
 
 - **The investor can see why a recommendation changed** (2026-08-13,
   F3 — Recorded Decision Course,
