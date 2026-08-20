@@ -11,7 +11,8 @@ class PortfolioFacts:
     invested_usd: float
     unrealized_pnl_usd: float
 
-    cash_allocation: float
+    #: None where the broker stated no cash figure.
+    cash_allocation: float | None
     positions: int
     pending_orders: int
     copy_portfolios: int

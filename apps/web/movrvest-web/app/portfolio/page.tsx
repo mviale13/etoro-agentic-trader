@@ -179,10 +179,12 @@ function DrawdownCard({ drawdown }: { drawdown: PortfolioDrawdown | null }) {
 }
 
 function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
-  const investedWidth = Math.max(
-    0,
-    Math.min(100, 100 - portfolio.liquidityPct),
-  );
+  // Null cash means the split itself is unknown. The bar is not
+  // drawn at all rather than drawn as 100% invested, which is what
+  // a substituted zero would have shown.
+  const cashPct = portfolio.liquidityPct;
+  const investedWidth =
+    cashPct === null ? null : Math.max(0, Math.min(100, 100 - cashPct));
 
   return (
     <>
@@ -196,8 +198,16 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
 
         <MetricCard
           label="Available cash"
-          value={usdFormatter.format(portfolio.availableCashUsd)}
-          secondary={inEuros(portfolio.availableCashEur)}
+          value={
+            portfolio.availableCashUsd === null
+              ? "Unavailable"
+              : usdFormatter.format(portfolio.availableCashUsd)
+          }
+          secondary={
+            portfolio.availableCashUsd === null
+              ? "eToro stated no cash figure"
+              : inEuros(portfolio.availableCashEur)
+          }
           icon={WalletCards}
         />
 
@@ -230,7 +240,9 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
                 </p>
 
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                  {portfolio.liquidityPct.toFixed(2)}% currently held in cash
+                  {cashPct === null
+                    ? "Cash share unavailable"
+                    : `${cashPct.toFixed(2)}% currently held in cash`}
                 </h2>
               </div>
 
@@ -240,9 +252,16 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
               </span>
             </div>
 
+            {cashPct === null || investedWidth === null ? (
+              <p className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
+                The cash and invested split cannot be shown: eToro stated no
+                cash figure for this account. Nothing here says the account
+                is fully invested.
+              </p>
+            ) : (
             <div className="mt-8">
               <div
-                aria-label={`${portfolio.liquidityPct.toFixed(
+                aria-label={`${cashPct.toFixed(
                   2,
                 )}% cash and ${investedWidth.toFixed(2)}% invested`}
                 className="flex h-4 overflow-hidden rounded-full bg-slate-200"
@@ -255,7 +274,7 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
 
                 <div
                   className="bg-emerald-400"
-                  style={{ width: `${portfolio.liquidityPct}%` }}
+                  style={{ width: `${cashPct}%` }}
                 />
               </div>
 
@@ -267,10 +286,11 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
 
                 <div className="flex items-center gap-2 text-slate-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                  Cash {portfolio.liquidityPct.toFixed(2)}%
+                  Cash {cashPct.toFixed(2)}%
                 </div>
               </div>
             </div>
+            )}
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
               <div className="flex gap-3">

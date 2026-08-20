@@ -29,8 +29,15 @@ class PortfolioAnalyst(Analyst[PortfolioAssessment]):
         concentration = self._concentration_risk(portfolio)
         liquidity = self._liquidity_score(portfolio)
 
+        # Absent while any weighted term is absent. Renormalising the
+        # remaining weights would answer a different question under the
+        # same name, and a health score is read as complete.
         health = (
-            diversification * 0.40 + (1.0 - concentration) * 0.35 + liquidity * 0.25
+            None
+            if liquidity is None
+            else diversification * 0.40
+            + (1.0 - concentration) * 0.35
+            + liquidity * 0.25
         )
 
         confidence = max(self.CONFIDENCE_FLOOR, 1.0 - concentration)
@@ -67,7 +74,7 @@ class PortfolioAnalyst(Analyst[PortfolioAssessment]):
                 )
             )
 
-        if liquidity >= 0.20:
+        if liquidity is not None and liquidity >= 0.20:
             strengths.append("Healthy liquidity")
 
         weaknesses.extend(portfolio.risk_flags)
@@ -98,5 +105,13 @@ class PortfolioAnalyst(Analyst[PortfolioAssessment]):
     def _liquidity_score(
         self,
         portfolio: PortfolioSnapshot,
-    ) -> float:
-        return float(min(portfolio.allocation.cash / 100.0, 1.0))
+    ) -> float | None:
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            # Unreadable cash is not zero liquidity. Scoring it would
+            # report the least liquid possible account for one nobody
+            # measured.
+            return None
+
+        return float(min(cash / 100.0, 1.0))

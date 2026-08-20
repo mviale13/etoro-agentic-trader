@@ -47,6 +47,19 @@ class DoctorService:
                 message="Cash assessment unavailable.",
             )
 
+        # Before every other branch, including the rationale scan below:
+        # an abstention's own wording contains the word "below", and
+        # reading it would grade an account nobody could measure.
+        if not opinion.participates:
+            return HealthCheck(
+                name="Cash",
+                score=50,
+                status="UNKNOWN",
+                message=(
+                    f"The Cash committee took no position: {opinion.abstained_because}."
+                ),
+            )
+
         if "below" in opinion.rationale.lower():
             return HealthCheck(
                 name="Cash",
@@ -75,6 +88,9 @@ class DoctorService:
         opinions: dict[str, CommitteeOpinion],
     ) -> HealthCheck:
         opinion = opinions.get("Diversification")
+
+        if opinion is not None and not opinion.participates:
+            opinion = None
 
         if opinion is None:
             return HealthCheck(

@@ -22,7 +22,10 @@ class ExecutiveBrief:
 
     confidence: float | None
 
-    portfolio_health: float
+    #: None where the portfolio health score is unmeasured — see
+    #: `PortfolioAssessment.health_score`. A brief may not invent a
+    #: figure for a score its analyst refused.
+    portfolio_health: float | None
 
     priorities: tuple[ExecutivePriority, ...]
 

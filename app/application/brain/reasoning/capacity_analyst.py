@@ -91,7 +91,16 @@ class CapacityAnalyst:
 
             return None, None, None
 
-        spare = max(0.0, portfolio.allocation.cash - target)
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            unmeasured.append(
+                "The broker stated no cash figure, so funding room cannot be measured."
+            )
+
+            return None, None, None
+
+        spare = max(0.0, cash - target)
 
         if portfolio.total_value <= 0.0:
             unmeasured.append(

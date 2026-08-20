@@ -118,6 +118,15 @@ class PortfolioFit:
 
         cash = portfolio.allocation.cash
 
+        if cash is None:
+            return FitTerm(
+                room=None,
+                stated=(
+                    "Funding room is not measured: the broker stated no "
+                    "cash figure to deploy against."
+                ),
+            )
+
         room = max(0.0, min((cash - target) / (100.0 - target), 1.0))
 
         return FitTerm(

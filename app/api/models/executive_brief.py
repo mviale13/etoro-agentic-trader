@@ -44,7 +44,7 @@ class ExecutiveBriefResponse(BaseModel):
     headline: str
     summary: str
     confidence: float | None = None
-    portfolio_health: float
+    portfolio_health: float | None
 
     #: The health score put into words, e.g. "Healthy". Worded by the
     #: backend so no surface invents its own thresholds.

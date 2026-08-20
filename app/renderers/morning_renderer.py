@@ -16,7 +16,10 @@ class MorningRenderer:
         print()
         print(f"Portfolio health: {brief.portfolio_health}")
         print(f"Portfolio value:  {cls._money(brief.portfolio_value)}")
-        print(f"Cash allocation:  {brief.cash_allocation:.1f}%")
+        cash = brief.cash_allocation
+        print(
+            "Cash allocation:  " + ("unavailable" if cash is None else f"{cash:.1f}%")
+        )
         print(f"Open positions:   {brief.open_positions}")
         print()
         print(f"Recommendation:   {brief.recommendation}")

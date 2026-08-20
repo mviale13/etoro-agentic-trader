@@ -17,6 +17,14 @@ class WeightedVoteService:
         }
 
         for opinion in opinions:
+            if not opinion.participates:
+                # Skipped explicitly. Multiplying by a zero confidence
+                # already contributed nothing, but arriving at that by
+                # arithmetic infers participation from a number — and the
+                # domain now states the fact, so this asks it. Every
+                # participating score is unchanged.
+                continue
+
             scores[opinion.vote] += opinion.confidence * weight_map.get(
                 opinion.member, 1.0
             )

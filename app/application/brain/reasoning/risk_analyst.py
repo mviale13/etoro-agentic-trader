@@ -79,14 +79,19 @@ class RiskAnalyst:
         if drawdown is not None and drawdown >= 1.0:
             risk_factors.append(self._breach(tolerance))
 
-        if portfolio.allocation.cash < 10:
+        # Three states. A guarded two-way branch would send the absent
+        # case to the `else` and record "Healthy cash allocation" as a
+        # mitigant — an unread figure arguing that the account is safe.
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            pass
+        elif cash < 10:
             risk_factors.append("Low cash buffer")
 
             evidence.append(
                 Evidence(
-                    description=(
-                        f"Cash allocation is only {portfolio.allocation.cash:.1f}%."
-                    ),
+                    description=f"Cash allocation is only {cash:.1f}%.",
                     source="PortfolioSnapshot",
                     strength=0.95,
                 )
@@ -110,6 +115,12 @@ class RiskAnalyst:
             )
 
         unmeasured: list[str] = []
+
+        if cash is None:
+            unmeasured.append(
+                "Cash and liquidity risk are not measured: the broker "
+                "stated no cash figure."
+            )
 
         if market is None:
             unmeasured.append("Market risk is not measured.")
@@ -280,11 +291,19 @@ class RiskAnalyst:
     def _liquidity_risk(
         self,
         portfolio: PortfolioSnapshot,
-    ) -> float:
+    ) -> float | None:
+        cash = portfolio.allocation.cash
+
+        if cash is None:
+            # None, not 0.0: a zero here would say this account carries
+            # no liquidity risk, and `_overall` would then average a
+            # flattering number into a score the CIO reads.
+            return None
+
         return max(
             0.0,
             min(
-                (10.0 - portfolio.allocation.cash) / 10.0,
+                (10.0 - cash) / 10.0,
                 1.0,
             ),
         )

@@ -48,13 +48,23 @@ class QualityAuthority(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PortfolioObservation:
-    """The broker snapshot's own timestamp, aged — or why it cannot be.
+    """How recently eToro answered — or why that cannot be established.
 
-    The portfolio observation clock is the broker's `last_sync`, never
-    the moment this platform assembled its Brain: stamping assembly
-    time would make the freshness gate vacuous, because a Brain is
-    always assembled just before it is read, however old the broker
-    reading beneath it is.
+    **This is a response-receipt clock, and it is named as one.** The
+    reading aged here is `last_sync`, the moment MOVRvest received a
+    successful account response. It is not the moment eToro observed
+    the account: no eToro route states one (the read-only MCP
+    acceptance measured this on 2026-08-20 — `ClientPortfolio` carries
+    thirteen top-level properties and none is temporal).
+
+    So this gate answers *how long since the broker last answered us*,
+    which is an operational availability question and a useful one. It
+    does **not** answer how old eToro's underlying account state is,
+    and no sentence built from it may imply that it does.
+
+    Ageing `last_sync` rather than the Brain-assembly moment still
+    matters: assembly happens immediately before every read, so gating
+    on it was vacuous by construction.
     """
 
     fresh: bool = False
@@ -68,7 +78,9 @@ class PortfolioObservation:
             )
 
         if self.fresh and not self.as_of.strip():
-            raise ValueError("a fresh portfolio observation names its broker timestamp")
+            raise ValueError(
+                "a fresh portfolio observation names its response receipt time"
+            )
 
 
 def portfolio_observation_for(
@@ -77,28 +89,29 @@ def portfolio_observation_for(
     policy: CapitalPolicy,
     now: datetime,
 ) -> PortfolioObservation:
-    """Age the broker's own snapshot time against the policy limit.
+    """Age the account-response receipt time against the policy limit.
 
     An absent, naive or future timestamp refuses rather than being
     replaced by the evaluation clock — substituting `now` for a missing
-    broker time is exactly the vacuous gate this function exists to
+    receipt time is exactly the vacuous gate this function exists to
     prevent. A refused observation may still carry `as_of` where the
-    broker time itself was readable (the stale case), so the render can
-    say *when* the snapshot was taken while refusing to build on it.
+    receipt time itself was readable (the stale case), so the render can
+    say *when eToro last answered* while refusing to build on it.
     """
 
     if last_sync is None:
         return PortfolioObservation(
             refused_because=(
-                "the broker snapshot carries no observation time, and an "
-                "undated portfolio cannot pass a freshness gate"
+                "no eToro account response has been recorded with a receipt "
+                "time, so how recently the broker answered cannot be "
+                "established"
             )
         )
 
     if last_sync.tzinfo is None or last_sync.utcoffset() is None:
         return PortfolioObservation(
             refused_because=(
-                "the broker snapshot's observation time carries no "
+                "the eToro account response's receipt time carries no "
                 "timezone, so its age cannot be established"
             )
         )
@@ -106,20 +119,25 @@ def portfolio_observation_for(
     if last_sync > now:
         return PortfolioObservation(
             refused_because=(
-                "the broker snapshot's observation time is in the future, "
-                "which is a clock fault rather than a fresh reading"
+                "the eToro account response's receipt time is in the "
+                "future, which is a clock fault rather than a fresh reading"
             )
         )
 
-    stated = f"broker snapshot, {last_sync.astimezone(UTC):%Y-%m-%d %H:%M} UTC"
+    stated = (
+        "eToro account response received at "
+        f"{last_sync.astimezone(UTC):%Y-%m-%d %H:%M} UTC "
+        "(receipt time; eToro states no account observation time)"
+    )
     age_minutes = (now - last_sync).total_seconds() / 60.0
 
     if age_minutes > policy.portfolio_max_age_minutes:
         return PortfolioObservation(
             as_of=stated,
             refused_because=(
-                "the portfolio snapshot is older than the policy's "
-                f"{policy.portfolio_max_age_minutes:g}-minute limit"
+                "the last eToro account response was received longer ago "
+                f"than the policy's {policy.portfolio_max_age_minutes:g}-minute "
+                "limit"
             ),
         )
 

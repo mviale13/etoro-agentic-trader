@@ -20,8 +20,10 @@ class CapacityAssessment:
     error to clamp away.
     """
 
-    #: Cash as the broker reports it, and as the policy wants it.
-    cash_actual_pct: float
+    #: Cash as the broker reports it, and as the policy wants it. The
+    #: actual share is None where the broker stated no cash figure, and
+    #: the reason is named in `unmeasured`.
+    cash_actual_pct: float | None
     cash_target_pct: float | None
 
     #: The share of the account that is cash the policy does not want held

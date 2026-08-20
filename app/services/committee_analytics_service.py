@@ -73,6 +73,14 @@ class CommitteeAnalyticsService:
 
         for event in self._recommendation_events():
             for vote in self._votes(event):
+                if vote.get("abstained_because") is not None:
+                    # Presence, not truthiness. An empty-string carrier is
+                    # an invalid abstention, and reading it as falsy would
+                    # silently promote it back into a historical HOLD.
+                    # Absent and null both remain participating, which is
+                    # what every row written before this key existed is.
+                    continue
+
                 member = str(vote.get("member", "Unknown"))
                 members.setdefault(member, []).append(vote)
 
@@ -151,6 +159,13 @@ class CommitteeAnalyticsService:
                 continue
 
             for vote in self._votes(recommendation):
+                if vote.get("abstained_because") is not None:
+                    # Presence, not truthiness — see `member_statistics`.
+                    # A member that took no position cannot have been
+                    # right or wrong about the outcome, so it enters
+                    # neither the numerator nor the denominator.
+                    continue
+
                 member = str(vote.get("member", "Unknown"))
                 member_vote = vote.get("vote")
 

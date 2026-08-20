@@ -18,25 +18,49 @@ class PortfolioService:
 
     def analyze(self, account: AccountSnapshot) -> PortfolioSnapshot:
         equity_usd = self._non_negative(account.equity_usd)
-        cash_usd = self._non_negative(account.cash_usd)
+
+        # An unreadable cash figure stays unreadable. Clamping applies to
+        # a value that exists; it is not a way of inventing one.
+        cash_usd = self._present(account.cash_usd)
 
         # Prefer the amount supplied by the broker because it is direct
-        # evidence. Derive it only when the broker does not provide it.
-        if account.invested_usd is None:
+        # evidence. Derive it only when the broker does not provide it —
+        # and the derivation needs cash, so it is unavailable exactly
+        # when cash is. (The eToro broker always sums an invested
+        # figure, so the last branch is unreachable from it.)
+        if account.invested_usd is not None:
+            invested_usd = self._non_negative(account.invested_usd)
+        elif cash_usd is not None:
             invested_usd = max(equity_usd - cash_usd, 0.0)
         else:
-            invested_usd = self._non_negative(account.invested_usd)
+            invested_usd = 0.0
 
-        if equity_usd <= 0:
-            cash_pct = 0.0
-            invested_pct = 0.0
+        invested_pct = (
+            0.0 if equity_usd <= 0 else self._percentage(invested_usd, equity_usd)
+        )
+
+        # A share of nothing is not zero cash, and neither is an
+        # unreadable amount: both leave the percentage absent.
+        if cash_usd is None or equity_usd <= 0:
+            cash_pct = None
         else:
             cash_pct = self._percentage(cash_usd, equity_usd)
-            invested_pct = self._percentage(invested_usd, equity_usd)
 
         risk_flags: list[str] = []
 
-        if cash_pct >= self.CASH_CONCENTRATION_THRESHOLD:
+        if cash_usd is None:
+            # Keyed on the missing AMOUNT, not on the missing percentage:
+            # a zero-equity account has a readable cash figure and an
+            # undefined share, and saying "could not be read" there would
+            # be the same conflation this slice exists to remove.
+            #
+            # Said rather than left silent, and worded as this platform's
+            # limit: it is not a claim that cash is high, low or absent.
+            risk_flags.append(
+                "Available cash could not be read; cash-dependent measures "
+                "are unavailable"
+            )
+        elif cash_pct is not None and cash_pct >= self.CASH_CONCENTRATION_THRESHOLD:
             risk_flags.append("Cash concentration")
 
         # True of a snapshot the broker has just been read into: nothing
@@ -52,7 +76,11 @@ class PortfolioService:
         rate = self._exchange_rate_service.rate()
 
         total_value_eur = self._exchange_rate_service.usd_to_eur(equity_usd, rate)
-        available_cash_eur = self._exchange_rate_service.usd_to_eur(cash_usd, rate)
+        available_cash_eur = (
+            None
+            if cash_usd is None
+            else self._exchange_rate_service.usd_to_eur(cash_usd, rate)
+        )
         invested_eur = self._exchange_rate_service.usd_to_eur(invested_usd, rate)
 
         largest_position, largest_position_pct = self._largest_position(
@@ -70,7 +98,7 @@ class PortfolioService:
             ),
             total_value=round(equity_usd, 2),
             total_value_eur=total_value_eur,
-            available_cash_usd=round(cash_usd, 2),
+            available_cash_usd=None if cash_usd is None else round(cash_usd, 2),
             available_cash_eur=available_cash_eur,
             invested_usd=round(invested_usd, 2),
             invested_eur=invested_eur,
@@ -224,6 +252,21 @@ class PortfolioService:
     def _non_negative(value: float | None) -> float:
         if value is None:
             return 0.0
+
+        return max(float(value), 0.0)
+
+    @staticmethod
+    def _present(value: float | None) -> float | None:
+        """Clamp a reading that exists; never manufacture one that does not.
+
+        `_non_negative` answers 0.0 for an absent figure, which is right
+        for a total the account genuinely has none of and wrong for cash,
+        where "the broker did not say" and "the account holds nothing"
+        are different statements the investor must be able to tell apart.
+        """
+
+        if value is None:
+            return None
 
         return max(float(value), 0.0)
 

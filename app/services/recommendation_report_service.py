@@ -22,6 +22,12 @@ class RecommendationReportService:
         ]
 
         for opinion in decision.opinions:
+            if not opinion.participates:
+                lines.append(
+                    f"{opinion.member}: ABSTAINED — {opinion.abstained_because}"
+                )
+                continue
+
             lines.append(f"{opinion.member}: {opinion.vote} ({opinion.confidence}%)")
 
         renderer = EvidenceRenderer()

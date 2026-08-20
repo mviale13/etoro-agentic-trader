@@ -2,7 +2,7 @@ export type ChangeSeverity = "information" | "attention" | "important";
 
 export interface PortfolioSnapshotViewModel {
   totalEquity: number;
-  availableCash: number;
+  availableCash: number | null;
   invested: number;
   /** Null when the backend does not publish a P&L figure. */
   unrealizedProfitLoss: number | null;
@@ -10,7 +10,7 @@ export interface PortfolioSnapshotViewModel {
   /** Null when the backend does not publish an order count. */
   pendingOrders: number | null;
   /** Cash as a share of the account, measured by the backend. */
-  liquidityPct: number;
+  liquidityPct: number | null;
   healthScore: number;
   /** The backend's word for the health score, e.g. "Healthy". */
   healthLabel: string;

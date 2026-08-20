@@ -30,6 +30,20 @@ def build_account(
     )
 
 
+def test_zero_equity_leaves_the_cash_share_undefined_without_claiming_absence():
+    """A measured zero cash on a zero account: the amount is 0, the share is not.
+
+    0/0 is not 0%. The amount stays the measured zero it is, the share
+    is absent, and no "could not be read" flag fires — cash WAS read.
+    """
+
+    portfolio = PortfolioService().analyze(build_account(equity=0, cash=0, invested=0))
+
+    assert portfolio.available_cash_usd == 0.0, "the amount was measured"
+    assert portfolio.allocation.cash is None, "the share of nothing is undefined"
+    assert portfolio.risk_flags == (), "nothing failed to be read here"
+
+
 def test_zero_equity_returns_zero_allocations():
     portfolio = PortfolioService().analyze(
         build_account(
@@ -40,12 +54,14 @@ def test_zero_equity_returns_zero_allocations():
     )
 
     assert portfolio.total_value == 0
-    assert portfolio.allocation.cash == 0
+    assert portfolio.allocation.cash is None
     assert portfolio.allocation.unclassified == 0
     assert portfolio.risk_flags == ()
 
 
-def test_missing_values_are_treated_as_zero():
+def test_missing_cash_stays_missing_and_is_never_reported_as_zero():
+    """The repaired defect: absence survives instead of becoming 0.0."""
+
     portfolio = PortfolioService().analyze(
         build_account(
             equity=None,
@@ -55,8 +71,12 @@ def test_missing_values_are_treated_as_zero():
     )
 
     assert portfolio.total_value == 0
-    assert portfolio.allocation.cash == 0
+    assert portfolio.available_cash_usd is None
+    assert portfolio.available_cash_eur is None
+    assert portfolio.allocation.cash is None
+    assert portfolio.liquidity_pct is None
     assert portfolio.allocation.unclassified == 0
+    assert any("could not be read" in flag for flag in portfolio.risk_flags)
 
 
 def test_high_cash_allocation_sets_cash_concentration_flag():

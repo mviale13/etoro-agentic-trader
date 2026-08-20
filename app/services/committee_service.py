@@ -146,6 +146,10 @@ class CommitteeService:
                             "vote": opinion.vote,
                             "confidence": opinion.confidence,
                             "rationale": opinion.rationale,
+                            # Explicit on the record. A stored row without
+                            # this key is an older event, and reads as a
+                            # participating vote exactly as it always did.
+                            "abstained_because": opinion.abstained_because,
                             "evidence": [
                                 {
                                     "title": item.title,

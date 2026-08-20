@@ -21,7 +21,10 @@ class DailyRenderer:
         print("────────────────────────────────────")
 
         print(f"Portfolio Value : ${portfolio.total_value:,.2f}")
-        print(f"Cash            : {portfolio.allocation.cash:.1f}%")
+        cash = portfolio.allocation.cash
+        print(
+            "Cash            : " + ("unavailable" if cash is None else f"{cash:.1f}%")
+        )
         print(f"Positions       : {portfolio.positions}")
 
         print()
@@ -65,6 +68,10 @@ class DailyRenderer:
         print("────────────────────────────────────")
 
         for opinion in committee.opinions:
+            if not opinion.participates:
+                print(f"{opinion.member:<18}{'ABSTAIN':<6}  —")
+                continue
+
             print(f"{opinion.member:<18}{opinion.vote:<6}{opinion.confidence:>3}%")
 
         print()

@@ -536,9 +536,10 @@ def test_portfolio_route_serves_the_analysed_account(client: TestClient) -> None
 def test_portfolio_route_reports_a_missing_value_honestly(client: TestClient) -> None:
     """A blank account is not a full one — cash absent is reported as absent.
 
-    `PortfolioService` treats a missing figure as zero for the allocation
-    maths, but the account view still reflects what the broker returned
-    rather than inventing a balance.
+    The docstring said this before the wire did: the allocation maths
+    used to substitute zero, so the route served `cash: 0` for an
+    account whose cash nobody could read. It now serves null, and an
+    investor surface can tell the two apart.
     """
 
     app.dependency_overrides[get_account_service] = lambda: StubAccountService(
@@ -548,7 +549,9 @@ def test_portfolio_route_reports_a_missing_value_honestly(client: TestClient) ->
     body = client.get("/portfolio/").json()
 
     assert body["total_value"] == 0
-    assert body["allocation"]["cash"] == 0
+    assert body["allocation"]["cash"] is None
+    assert body["available_cash_usd"] is None
+    assert body["liquidity_pct"] is None
     assert body["allocation"]["unclassified"] == 0
 
 

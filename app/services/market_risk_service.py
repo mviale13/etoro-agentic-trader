@@ -60,9 +60,13 @@ class MarketRiskService:
         exposures: list[ExposureVolatility] = []
         readings: list[Provenance | None] = []
 
-        cash_share = allocation.cash / 100.0
+        # An unreadable cash allocation contributes no cash exposure —
+        # which is not the same as contributing a zero-volatility one,
+        # and the difference shows up in the coverage this measure
+        # reports against.
+        cash_share = None if allocation.cash is None else allocation.cash / 100.0
 
-        if cash_share > 0:
+        if cash_share is not None and cash_share > 0:
             exposures.append(
                 ExposureVolatility(
                     exposure="cash",
