@@ -72,6 +72,7 @@ from typing import Any
 
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import ExecutiveDecision
+from app.domain.decision_blocker import BlockerKind, DecisionBlocker
 from app.domain.decision_rules import DIGITAL_ASSET_GATES, DecisionRule
 from app.domain.investment_consideration import (
     AssetConsiderations,
@@ -457,7 +458,19 @@ def as_executive_decision(decision: DigitalAssetDecision) -> ExecutiveDecision:
         symbol=decision.symbol,
         state=decision.state,
         conviction=None,
+        conviction_basis=decision.conviction_withheld_because,
         rationale=decision.rationale,
+        # What stops it, in the words the ceiling is already written in.
+        # A digital asset is not blocked by an unread measurement or by
+        # a gate it failed: this platform has nowhere to take it. So the
+        # kind names a limit of MOVRvest, the sentence is quoted rather
+        # than composed, and `despite` stays empty for the same reason
+        # `key_strengths` does — a structural conclusion is not a
+        # strength, and nothing here licenses reading one as favourable.
+        blocker=DecisionBlocker(
+            kind=BlockerKind.PLATFORM_LIMIT,
+            stated=decision.ceiling,
+        ),
         # Conclusions and applicability findings, quoted. Neither is a
         # grade, and this is the one field that says so by not saying
         # otherwise.

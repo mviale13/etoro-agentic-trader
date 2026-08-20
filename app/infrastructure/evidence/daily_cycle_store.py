@@ -40,6 +40,7 @@ from app.domain.daily_cycle import (
     StageOutcome,
     holdings_by_security,
 )
+from app.domain.decision_blocker import BlockerKind, DecisionBlocker
 from app.infrastructure.evidence_root import evidence_path
 
 #: The line format's own version, written on every line.
@@ -295,10 +296,17 @@ def _encode_decision(entry: DecisionSummary) -> dict[str, Any]:
         "action_statement": entry.action_statement,
         "action_because": entry.action_because,
         "asks_for_something": entry.asks_for_something,
+        "conviction_basis": entry.conviction_basis,
         # Optional and backward-compatible under the same schema: a
         # pre-envelope record simply lacks the key and decodes exactly
         # as it always did.
         "envelope": _encode_envelope(entry.envelope),
+        # The same treatment, for the same reason: a pre-blocker record
+        # lacks the key and decodes as a decision that named no cause,
+        # which is what it was. Nothing is inferred for it — a stored
+        # state is not a stored cause, and reading one back out of the
+        # other is precisely what this field exists to stop.
+        "blocker": _encode_blocker(entry.blocker),
     }
 
 
@@ -310,12 +318,54 @@ def _decode_decision(entry: dict[str, Any]) -> DecisionSummary:
         conviction=(
             int(entry["conviction"]) if entry.get("conviction") is not None else None
         ),
+        conviction_basis=str(entry.get("conviction_basis", "")),
         evidence_as_of=str(entry.get("evidence_as_of", "")),
         action_kind=str(entry.get("action_kind", "")),
         action_statement=str(entry.get("action_statement", "")),
         action_because=str(entry.get("action_because", "")),
         asks_for_something=bool(entry.get("asks_for_something", False)),
         envelope=_decode_envelope(entry.get("envelope")),
+        blocker=_decode_blocker(entry.get("blocker")),
+    )
+
+
+def _encode_blocker(blocker: DecisionBlocker | None) -> dict[str, Any] | None:
+    if blocker is None:
+        return None
+
+    return {
+        "kind": blocker.kind.value,
+        "stated": blocker.stated,
+        "despite": list(blocker.despite),
+        "does_not_say": blocker.does_not_say,
+    }
+
+
+def _decode_blocker(raw: Any) -> DecisionBlocker | None:
+    """One stored blocker, or nothing at all.
+
+    A kind this reader does not know decodes to nothing rather than to
+    a guess: an unrecognised cause is not `none`, and rendering it as
+    *nothing blocks progress* would invert it.
+    """
+
+    if not isinstance(raw, dict):
+        return None
+
+    try:
+        kind = BlockerKind(str(raw.get("kind", "")))
+    except ValueError:
+        return None
+
+    despite = raw.get("despite")
+
+    return DecisionBlocker(
+        kind=kind,
+        stated=str(raw.get("stated", "")),
+        despite=(
+            tuple(str(item) for item in despite) if isinstance(despite, list) else ()
+        ),
+        does_not_say=str(raw.get("does_not_say", "")),
     )
 
 

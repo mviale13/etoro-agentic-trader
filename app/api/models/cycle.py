@@ -41,6 +41,7 @@ from app.domain.daily_cycle import (
     RecordedPortfolio,
     no_action_permitted,
 )
+from app.domain.decision_blocker import DecisionBlocker
 
 
 class CycleExecution(StrEnum):
@@ -114,6 +115,35 @@ class EnvelopeResponse(BaseModel):
         )
 
 
+class BlockerResponse(BaseModel):
+    """What stands in the way, as the gate that stopped it named it.
+
+    Every field is carried. The page renders `stated` and never
+    composes a sentence from `kind`: the kind is for grouping, and an
+    investor-facing cause is worded where the decision is made.
+    """
+
+    kind: str
+    stated: str
+
+    #: The analysts' favourable verdicts that survive this blocker,
+    #: quoted. Empty where the gate is itself about the business.
+    despite: list[str]
+
+    #: What this ruling does not claim. Empty where the claim would be
+    #: false — a quality gate *is* a statement about the business.
+    does_not_say: str
+
+    @classmethod
+    def of(cls, blocker: DecisionBlocker) -> BlockerResponse:
+        return cls(
+            kind=blocker.kind.value,
+            stated=blocker.stated,
+            despite=list(blocker.despite),
+            does_not_say=blocker.does_not_say,
+        )
+
+
 class CourseResponse(BaseModel):
     """One security's disposition and course, carried verbatim."""
 
@@ -121,6 +151,12 @@ class CourseResponse(BaseModel):
     disposition: str
     rationale: str
     conviction: int | None
+
+    #: What the conviction is. Empty on a record written before the
+    #: decision carried one — and a surface shows the number only where
+    #: this is present, because a bare figure reads as enthusiasm.
+    conviction_basis: str
+
     evidence_as_of: str
 
     action_kind: str
@@ -130,6 +166,10 @@ class CourseResponse(BaseModel):
 
     envelope: EnvelopeResponse | None
 
+    #: Null on a record written before blockers existed. Never
+    #: substituted: an unknown cause is not "nothing blocks progress".
+    blocker: BlockerResponse | None
+
     @classmethod
     def of(cls, entry: DecisionSummary) -> CourseResponse:
         return cls(
@@ -137,6 +177,7 @@ class CourseResponse(BaseModel):
             disposition=entry.state,
             rationale=entry.rationale,
             conviction=entry.conviction,
+            conviction_basis=entry.conviction_basis,
             evidence_as_of=entry.evidence_as_of,
             action_kind=entry.action_kind,
             action_statement=entry.action_statement,
@@ -144,6 +185,9 @@ class CourseResponse(BaseModel):
             asks_for_something=entry.asks_for_something,
             envelope=(
                 None if entry.envelope is None else EnvelopeResponse.of(entry.envelope)
+            ),
+            blocker=(
+                None if entry.blocker is None else BlockerResponse.of(entry.blocker)
             ),
         )
 

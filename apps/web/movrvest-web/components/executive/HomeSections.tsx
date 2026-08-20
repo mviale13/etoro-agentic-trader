@@ -7,11 +7,21 @@ import type {
 } from "@/lib/api/cycle-review";
 
 /**
- * The homepage's five sections, in the owner's order.
+ * The homepage's sections, in the owner's order.
  *
  * Each is its own section rather than one merged block — the only
  * merging asked for is *within* the holdings table, which carries what
  * changed as a column instead of as a separate list.
+ *
+ * There is no separate list of courses for *holdings*: the owner
+ * removed it. Each holding's course is the table's own column, and the
+ * review's "this asked for nothing" sentence stays on the status strip,
+ * where it is the backend's wording rather than this page's.
+ *
+ * What the CIO evaluated *beyond* the holdings is two sections rather
+ * than one ranked table. One table listing a waiting case, a research
+ * case and two rejections under *"top opportunities"* presented four
+ * different answers as four degrees of one answer.
  *
  * Every value here is carried from the recorded cycle. This file
  * chooses layout and plain wording and computes no analytics: no score,
@@ -109,76 +119,7 @@ export function PortfolioSnapshot({
   );
 }
 
-// ── 2. executive actions ────────────────────────────────────────────
-
-export function ExecutiveActions({ review }: { review: CycleReview }) {
-  const asking = review.courses.filter((course) => course.asksForSomething);
-
-  return (
-    <section className={CARD}>
-      <h2 className={HEAD}>What the Artificial CIO suggests you consider</h2>
-
-      {asking.length === 0 ? (
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          This review asked for nothing. That describes what it found, and is
-          not an assessment that your portfolio is safe.
-        </p>
-      ) : (
-        <ul className="mt-4 grid gap-3">
-          {asking.map((course) => (
-            <li
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-              key={course.symbol}
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <Link
-                  className="text-base font-semibold text-slate-950 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
-                  href={`/dossiers/${encodeURIComponent(course.symbol)}`}
-                >
-                  {course.symbol}
-                </Link>
-
-                <span className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                  {course.disposition}
-                </span>
-              </div>
-
-              <p className="mt-2 text-sm leading-6 text-slate-800">
-                {course.actionStatement}
-              </p>
-
-              {course.actionBecause ? (
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  {course.actionBecause}
-                </p>
-              ) : null}
-
-              {course.envelope ? (
-                <p className="mt-2 text-sm leading-6 text-slate-700">
-                  {course.envelope.stated}
-                </p>
-              ) : null}
-
-              {course.envelope && course.envelope.namedGaps.length > 0 ? (
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Limits the action, not the company:{" "}
-                  {course.envelope.namedGaps.join("; ")}
-                </p>
-              ) : null}
-
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                A course to consider, not an instruction. Nothing is placed for
-                you.
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-// ── 3. holdings, ranked, with what changed as a column ──────────────
+// ── 2. holdings, ranked, with what changed as a column ──────────────
 
 /**
  * Whether this review may claim any movement at all.
@@ -202,11 +143,6 @@ export function movementLabel(review: CycleReview, symbol: string): string {
   if (review.unchanged.includes(symbol)) return "Unchanged";
 
   return "—";
-}
-
-/** The five the CIO ranked highest. The order is the server's, not ours. */
-export function topOpportunities(candidates: CycleCourse[]): CycleCourse[] {
-  return candidates.slice(0, 5);
 }
 
 /**
@@ -316,79 +252,216 @@ export function HoldingsTable({ review }: { review: CycleReview }) {
   );
 }
 
-// ── 4. top five opportunities ───────────────────────────────────────
+// ── 3. what the CIO evaluated, in two groups ────────────────────────
 
-export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
-  const top = topOpportunities(candidates);
+/**
+ * How many rows of each group the page shows.
+ *
+ * The owner's number. What is dropped is named beneath the group
+ * rather than silently truncated — a table that stops at three and
+ * says nothing reads like a complete list of three.
+ */
+export const GROUP_ROWS = 3;
 
+/**
+ * The two groups, split on the platform's own bit.
+ *
+ * `asksForSomething` comes from the pipeline's `ActionKind` and is the
+ * canonical answer to *does this ask the investor for anything*. It is
+ * not re-derived from the decision state here, and it must not be: the
+ * same state asks for different things depending on whether the
+ * security is held, and three of the five rows on the live page are
+ * REJECT or PREPARE cases whose courses differ.
+ */
+export function askingCourses(candidates: CycleCourse[]): CycleCourse[] {
+  return candidates.filter((candidate) => candidate.asksForSomething);
+}
+
+export function blockedCases(candidates: CycleCourse[]): CycleCourse[] {
+  return candidates.filter((candidate) => !candidate.asksForSomething);
+}
+
+/** The conviction, or the honest reason there is no figure to show. */
+export function convictionCell(candidate: CycleCourse): string {
+  if (candidate.conviction === null) {
+    return candidate.convictionBasis || "Not stated";
+  }
+
+  // A number with no account of itself is not shown as a number. 40
+  // beside nothing reads as enthusiasm, and it is a state-capped
+  // decision score.
+  if (!candidate.convictionBasis) {
+    return "Not stated";
+  }
+
+  return `${candidate.conviction} (${candidate.disposition})`;
+}
+
+/**
+ * What blocks progress, in the deciding layer's own words.
+ *
+ * Never an em dash where a case is blocked, and never a sentence this
+ * page composed. A record written before blockers existed says so
+ * instead of claiming there is nothing in the way.
+ */
+export function blockerCell(candidate: CycleCourse): string {
+  if (candidate.blocker === null) {
+    return "Not recorded for this review";
+  }
+
+  return candidate.blocker.stated;
+}
+
+function CaseRows({ cases }: { cases: CycleCourse[] }) {
   return (
-    <section className={CARD}>
-      <h2 className={HEAD}>Top opportunities the CIO evaluated</h2>
+    <div className="mt-4 grid gap-3">
+      {cases.map((candidate) => (
+        <article
+          className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          key={candidate.symbol}
+        >
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <Link
+              className="text-base font-semibold text-slate-950 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
+              href={`/dossiers/${encodeURIComponent(candidate.symbol)}`}
+            >
+              {candidate.symbol}
+            </Link>
 
-      {top.length === 0 ? (
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          This review evaluated no securities outside your portfolio, so there
-          is nothing to rank. That is a statement about what was reviewed — not
-          a finding that nothing is worth considering. Run a cycle with a
-          candidate budget to have them evaluated.
-        </p>
-      ) : (
-        <>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className={TH}>Security</th>
-                  <th className={TH}>Conviction</th>
-                  <th className={TH}>Course</th>
-                  <th className={TH}>What is missing</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {top.map((candidate) => (
-                  <tr className="border-b border-slate-100" key={candidate.symbol}>
-                    <td className={`${CELL} font-semibold text-slate-950`}>
-                      <Link
-                        className="underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
-                        href={`/dossiers/${encodeURIComponent(candidate.symbol)}`}
-                      >
-                        {candidate.symbol}
-                      </Link>
-                    </td>
-                    <td className={CELL}>
-                      {candidate.conviction === null
-                        ? "Not stated"
-                        : candidate.conviction}
-                    </td>
-                    <td className={CELL}>
-                      {candidate.actionStatement || "No course recorded"}
-                    </td>
-                    <td className={CELL}>
-                      {candidate.envelope &&
-                      candidate.envelope.namedGaps.length > 0
-                        ? candidate.envelope.namedGaps.join("; ")
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <span className="text-xs uppercase tracking-[0.16em] text-slate-500">
+              {candidate.disposition}
+            </span>
           </div>
 
-          <p className="mt-3 text-xs leading-5 text-slate-500">
-            Ordered by the conviction the Artificial CIO assigned. Conviction
-            expresses priority, not certainty — it can be higher on a security
-            less evidence was found for, which is why what is missing is shown
-            beside it.
+          <p className="mt-2 text-sm leading-6 text-slate-800">
+            {candidate.actionStatement || "No course recorded"}
           </p>
-        </>
-      )}
-    </section>
+
+          {candidate.actionBecause ? (
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {candidate.actionBecause}
+            </p>
+          ) : null}
+
+          <dl className="mt-3 grid gap-2 text-sm leading-6">
+            <div>
+              <dt className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                What blocks progress
+              </dt>
+              <dd className="text-slate-800">{blockerCell(candidate)}</dd>
+            </div>
+
+            <div>
+              <dt className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                Conviction
+              </dt>
+              <dd className="text-slate-800">{convictionCell(candidate)}</dd>
+              {candidate.convictionBasis ? (
+                <dd className="text-xs leading-5 text-slate-500">
+                  {candidate.convictionBasis}
+                </dd>
+              ) : null}
+            </div>
+          </dl>
+
+          {/* What the ruling does not claim, and the analyst verdicts
+              that survive it. Both are the backend's sentences. */}
+          {candidate.blocker && candidate.blocker.doesNotSay ? (
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              {candidate.blocker.doesNotSay}
+            </p>
+          ) : null}
+
+          {candidate.blocker && candidate.blocker.despite.length > 0 ? (
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Still visible: {candidate.blocker.despite.join(" · ")}
+            </p>
+          ) : null}
+        </article>
+      ))}
+    </div>
   );
 }
 
-// ── 5. portfolio against the investor's strategy ────────────────────
+function Dropped({ total }: { total: number }) {
+  if (total <= GROUP_ROWS) {
+    return null;
+  }
+
+  return (
+    <p className="mt-3 text-xs leading-5 text-slate-500">
+      {total - GROUP_ROWS} more not shown here. A list that stopped at{" "}
+      {GROUP_ROWS} without saying so would read as the whole of what the
+      review found.
+    </p>
+  );
+}
+
+export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
+  const asking = askingCourses(candidates);
+  const blocked = blockedCases(candidates);
+
+  if (candidates.length === 0) {
+    return (
+      <section className={CARD}>
+        <h2 className={HEAD}>What the CIO evaluated beyond your holdings</h2>
+
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          This review evaluated no securities outside your portfolio. That is a
+          statement about what was reviewed — not a finding that nothing is
+          worth considering. Run a cycle with a candidate budget to have them
+          evaluated.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <div className="grid gap-6">
+      <section className={CARD}>
+        <h2 className={HEAD}>Courses to consider</h2>
+
+        {asking.length === 0 ? (
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            None of the securities reviewed beyond your holdings asks anything
+            of you. That describes what this review found.
+          </p>
+        ) : (
+          <>
+            <CaseRows cases={asking.slice(0, GROUP_ROWS)} />
+            <Dropped total={asking.length} />
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              A course to consider, not an instruction. Nothing is placed for
+              you.
+            </p>
+          </>
+        )}
+      </section>
+
+      <section className={CARD}>
+        <h2 className={HEAD}>Cases blocked or refused</h2>
+
+        {blocked.length === 0 ? (
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Nothing the review evaluated beyond your holdings was blocked.
+          </p>
+        ) : (
+          <>
+            <CaseRows cases={blocked.slice(0, GROUP_ROWS)} />
+            <Dropped total={blocked.length} />
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              A blocked case is not a bad business. Each blocker names the gate
+              that stopped it, and a gate about price behaviour, cost or fit
+              says nothing about the company.
+            </p>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
+// ── 4. portfolio against the investor's strategy ────────────────────
 
 export function StrategyCard({
   portfolio,

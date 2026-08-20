@@ -6,9 +6,11 @@ from app.cio.decision_state import DecisionState
 from app.domain.asset_class import AssetClass
 from app.domain.business_quality import BusinessQuality
 from app.domain.committee.opinion import CommitteeOpinion
+from app.domain.decision_blocker import DecisionBlocker
 from app.domain.decision_rules import DecisionRule
 from app.domain.finding import FindingLedger
 from app.domain.provenance import Provenance
+from app.domain.risk_signal import RiskSignal
 from app.domain.score_basis import ScoreBases
 
 
@@ -121,6 +123,19 @@ class DecisionEvidence(BaseModel):
     #: apply: a token has no business quality, and never will.
     asset_class: AssetClass | None = None
 
+    #: The security's own risk reading, carried whole rather than as the
+    #: score derived from it.
+    #:
+    #: `risk_score` is a band's severity turned into a number, and the
+    #: number alone cannot say what was measured: 85 is the SEVERE band,
+    #: and *why* AMD sits in it — 71.8% annualised volatility over the
+    #: past year — lives here. The gate still reads the score and only
+    #: the score, so nothing about the decision moves; this is what lets
+    #: the refusal name the reading instead of a surface guessing at it
+    #: or a sentence being reassembled by parsing prose. None where
+    #: nothing measured it.
+    risk_reading: RiskSignal | None = None
+
     actionable_now: bool = False
     hard_reject: bool = False
     analyst_veto: bool = False
@@ -199,7 +214,25 @@ class ExecutiveDecision(BaseModel):
     #: as every score on `DecisionEvidence`, for the same reason.
     conviction: int | None = Field(default=None, ge=0, le=100)
 
+    #: What the number above is, in words: how it was computed, which
+    #: state capped it, and under which rule.
+    #:
+    #: A conviction printed alone reads as enthusiasm. AMD's is 40 — the
+    #: REJECT cap of `conviction-mean@1`, not a measurement that came out
+    #: at 40 — and the two are indistinguishable without this. Empty only
+    #: where a caller built a decision without stating one.
+    conviction_basis: str = ""
+
     rationale: str
+
+    #: What stands between this case and its next state, named by the
+    #: gate that stopped it rather than inferred from the state.
+    #:
+    #: None where a caller built a decision without one; a decision that
+    #: cleared every gate carries `DecisionBlocker.none()`, which is a
+    #: sentence rather than an absence.
+    blocker: DecisionBlocker | None = None
+
     evidence_as_of: Provenance | None = None
     evidence_weighed: tuple[str, ...] = ()
     key_strengths: tuple[str, ...] = ()

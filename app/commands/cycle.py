@@ -450,6 +450,8 @@ async def run(
                         state=workspace.decision.state.value,
                         rationale=workspace.decision.rationale,
                         conviction=workspace.decision.conviction,
+                        conviction_basis=workspace.decision.conviction_basis,
+                        blocker=workspace.decision.blocker,
                         evidence_as_of=(
                             workspace.decision.evidence_as_of.stated()
                             if workspace.decision.evidence_as_of is not None
@@ -514,6 +516,8 @@ async def run(
                     state=workspace.decision.state.value,
                     rationale=workspace.decision.rationale,
                     conviction=workspace.decision.conviction,
+                    conviction_basis=workspace.decision.conviction_basis,
+                    blocker=workspace.decision.blocker,
                     evidence_as_of=(
                         workspace.decision.evidence_as_of.stated()
                         if workspace.decision.evidence_as_of is not None

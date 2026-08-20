@@ -32,6 +32,7 @@ from app.domain.daily_cycle import (
     movement,
     no_action_permitted,
 )
+from app.domain.decision_blocker import DecisionBlocker
 from app.domain.executive.executive_action import ActionKind
 from app.domain.market_acquisition import AcquiredSecurity, MarketAcquisition
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
@@ -96,6 +97,12 @@ def decision(
             state=SimpleNamespace(value=state),
             rationale=rationale,
             conviction=60,
+            # A conviction travels with what it is, and a blocker with
+            # the decision that named it. Both are carried here because
+            # both are carried in production — a stub that lags the
+            # contract fails the stage for a reason no real run has.
+            conviction_basis="the mean of the 4 scores measured",
+            blocker=DecisionBlocker.none(),
             evidence_as_of=None,
             missing_evidence=(),
         ),
