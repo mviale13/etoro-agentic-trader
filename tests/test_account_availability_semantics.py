@@ -463,7 +463,7 @@ def test_8b_a_measured_snapshot_produces_the_same_allocation_as_before() -> None
 # ── amendment: absence must not vote, and must not become a positive ──
 
 
-def opinion(member: str, vote: str, confidence: int):
+def opinion(member: str, vote: str, confidence: int, because: str | None = None):
     from app.domain.committee_opinion import CommitteeOpinion
 
     return CommitteeOpinion(
@@ -471,7 +471,14 @@ def opinion(member: str, vote: str, confidence: int):
         vote=vote,
         confidence=confidence,
         rationale=f"{member} says {vote}.",
+        abstained_because=because,
     )
+
+
+def abstention(member: str = "Cash"):
+    """A typed abstention — note it still carries a `vote` string."""
+
+    return opinion(member, "HOLD", 0, because="nothing to compare")
 
 
 def test_9_a_zero_confidence_opinion_does_not_vote() -> None:
@@ -487,7 +494,7 @@ def test_9_a_zero_confidence_opinion_does_not_vote() -> None:
     from app.committee.chairman import CommitteeChairman
 
     voting = [opinion("Value", "BUY", 80), opinion("Risk", "SELL", 70)]
-    with_abstention = [*voting, opinion("Cash", "HOLD", 0)]
+    with_abstention = [*voting, abstention()]
 
     without = CommitteeChairman().decide(voting)
     within = CommitteeChairman().decide(with_abstention)
@@ -519,7 +526,7 @@ def test_9b_the_weighted_production_path_is_where_the_defect_bit_hardest() -> No
     weights = {"Value": 1.0, "Risk": 1.0, "Cash": 5.0}
 
     voting = [opinion("Value", "BUY", 80), opinion("Risk", "SELL", 70)]
-    with_abstention = [*voting, opinion("Cash", "HOLD", 0)]
+    with_abstention = [*voting, abstention()]
 
     without = CommitteeChairman().weighted_decide(voting, weights)
     within = CommitteeChairman().weighted_decide(with_abstention, weights)
@@ -562,12 +569,11 @@ def test_9d_an_all_abstained_panel_is_reported_not_manufactured() -> None:
     from app.committee.chairman import CommitteeChairman
 
     with pytest.raises(ValueError, match="every committee member abstained"):
-        CommitteeChairman().decide([opinion("Cash", "HOLD", 0)])
+        CommitteeChairman().decide([abstention()])
 
 
 def test_10_the_cash_committee_abstains_and_a_measured_zero_still_votes() -> None:
     from app.committee.cash import CashCommittee
-    from app.committee.chairman import abstained
     from app.domain.committee_context import CommitteeContext
     from tests.test_brain_context import make_market, make_policy
 
@@ -582,13 +588,16 @@ def test_10_the_cash_committee_abstains_and_a_measured_zero_still_votes() -> Non
 
     absent = evaluated(None)
 
-    assert abstained(absent)
+    assert not absent.participates
+    assert absent.abstained_because
+    assert "no cash figure" in absent.abstained_because
     assert "could not be read" in absent.rationale
 
     # Control B: a measured zero keeps its real, counted vote.
     measured_zero = evaluated(0.0)
 
-    assert not abstained(measured_zero)
+    assert measured_zero.participates
+    assert measured_zero.abstained_because is None
     assert measured_zero.confidence > 0
     assert "0.0%" in measured_zero.rationale
 
@@ -722,3 +731,329 @@ def test_11e_the_cycle_still_completes_and_only_the_envelope_refuses() -> None:
     assert snapshot.market.momentum_score is not None
     assert snapshot.opportunity.opportunity_score is not None
     assert snapshot.portfolio.diversification_score is not None
+
+
+# ── amendment 2: the abstention must travel past the chairman ────────
+
+
+def panel_for(cash: float | None):
+    """The legacy committee panel, Cash evaluated against a cash state."""
+
+    from app.committee.cash import CashCommittee
+    from app.domain.committee_context import CommitteeContext
+    from tests.test_brain_context import make_market, make_policy
+
+    context = CommitteeContext(
+        portfolio=analyzed(cash),
+        policy=make_policy(),
+        intelligence=_intelligence(make_market()),
+    )
+
+    return [
+        CashCommittee().evaluate(context),
+        opinion("Diversification", "BUY", 80),
+        opinion("Risk", "SELL", 70),
+    ]
+
+
+def recommendation_for(cash: float | None):
+    """A whole legacy Recommendation, as CommitteeService would compose it."""
+
+    from app.committee.chairman import CommitteeChairman
+    from app.domain.recommendation import Recommendation
+    from tests.test_brain_context import make_market
+
+    opinions = panel_for(cash)
+    decision = CommitteeChairman().weighted_decide(
+        opinions, {"Cash": 5.0, "Diversification": 1.0, "Risk": 1.0}
+    )
+
+    return Recommendation(
+        symbol="KO",
+        portfolio=analyzed(cash),
+        intelligence=_intelligence(make_market()),
+        decision=decision,
+    )
+
+
+def test_12_the_opinion_itself_carries_the_abstention() -> None:
+    """The fact lives on the domain object, not in each consumer's head."""
+
+    from app.domain.committee_opinion import CommitteeOpinion
+
+    absent = panel_for(None)[0]
+
+    assert absent.abstained_because
+    assert not absent.participates
+
+    # And the invariants hold in both directions.
+    with pytest.raises(ValueError, match="carries its reason"):
+        CommitteeOpinion(
+            member="X",
+            vote="HOLD",
+            confidence=0,
+            rationale="r",
+            abstained_because="   ",
+        )
+
+    with pytest.raises(ValueError, match="carries no confidence"):
+        CommitteeOpinion(
+            member="X",
+            vote="HOLD",
+            confidence=40,
+            rationale="r",
+            abstained_because="because",
+        )
+
+    with pytest.raises(ValueError, match="positive confidence"):
+        CommitteeOpinion(member="X", vote="HOLD", confidence=0, rationale="r")
+
+    # A participating HOLD is untouched.
+    held = CommitteeOpinion(member="X", vote="HOLD", confidence=55, rationale="r")
+
+    assert held.participates
+    assert held.abstained_because is None
+
+
+def test_13_the_chairman_has_no_private_definition_of_abstention() -> None:
+    """It asks the carrier; it does not re-derive `confidence == 0`."""
+
+    import ast
+    import pathlib as _pathlib
+
+    source = _pathlib.Path("app/committee/chairman.py").read_text()
+    tree = ast.parse(source)
+
+    docstrings = {
+        doc
+        for node in ast.walk(tree)
+        if isinstance(
+            node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+        )
+        for doc in (ast.get_docstring(node, clean=False),)
+        if doc is not None
+    }
+    executed = "\n".join(
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and node.value not in docstrings
+    )
+
+    assert "participates" in source
+    assert "confidence == 0" not in executed
+    assert not any(
+        isinstance(node, ast.FunctionDef) and node.name == "abstained"
+        for node in ast.walk(tree)
+    ), "the private helper is gone; the domain owns the definition"
+
+
+def test_14_the_doctor_reports_cash_unknown_never_healthy() -> None:
+    """The measured consequence the owner named: HEALTHY at score 90."""
+
+    from app.services.doctor_service import DoctorService
+
+    health = DoctorService().evaluate(recommendation_for(None))
+    cash = next(check for check in health.checks if check.name == "Cash")
+
+    assert cash.status == "UNKNOWN"
+    assert cash.status not in ("HEALTHY", "WARNING", "ACTION")
+    assert cash.score != 90
+    assert "no cash figure" in cash.message
+
+    # Control B: a measured zero is graded, not abstained.
+    measured = DoctorService().evaluate(recommendation_for(0.0))
+    measured_cash = next(check for check in measured.checks if check.name == "Cash")
+
+    assert measured_cash.status != "UNKNOWN"
+
+
+def test_15_no_investor_surface_prints_the_abstention_as_hold() -> None:
+    from app.services.evidence_renderer import EvidenceRenderer
+    from app.services.recommendation_report_service import (
+        RecommendationReportService,
+    )
+
+    recommendation = recommendation_for(None)
+    absent = recommendation.decision.opinions[0]
+
+    report = RecommendationReportService().render("KO", recommendation.decision)
+
+    assert "Cash: HOLD" not in report, "the observed defect"
+    assert "Cash: ABSTAINED" in report
+    assert absent.abstained_because in report
+
+    rendered = str(EvidenceRenderer().render(absent))
+
+    assert "Vote: HOLD" not in rendered
+    assert "ABSTAINED" in rendered
+
+    # Control B: a measured zero still renders its real vote.
+    measured_decision = recommendation_for(0.0).decision
+    measured = RecommendationReportService().render("KO", measured_decision)
+
+    assert "Cash: ABSTAINED" not in measured
+    assert "Cash: " in measured
+
+
+def test_16_the_remaining_members_alone_decide() -> None:
+    from app.committee.chairman import CommitteeChairman
+
+    weights = {"Cash": 5.0, "Diversification": 1.0, "Risk": 1.0}
+
+    with_cash = CommitteeChairman().weighted_decide(panel_for(None), weights)
+    without_cash = CommitteeChairman().weighted_decide(panel_for(None)[1:], weights)
+
+    assert with_cash.recommendation == without_cash.recommendation
+    assert with_cash.confidence == without_cash.confidence == 75
+    assert with_cash.hold_votes == 0
+    assert with_cash.recommendation != "HOLD"
+
+
+def test_17_the_stored_event_preserves_the_abstention(tmp_path) -> None:
+    """Persistence carries the fact; analytics refuse to count it."""
+
+    import json
+
+    from app.services.committee_analytics_service import (
+        CommitteeAnalyticsService,
+    )
+
+    absent = panel_for(None)[0]
+
+    stored = {
+        "member": absent.member,
+        "vote": absent.vote,
+        "confidence": absent.confidence,
+        "rationale": absent.rationale,
+        "abstained_because": absent.abstained_because,
+    }
+
+    assert stored["abstained_because"], "the fact is on the row"
+
+    # Round-trips as JSON, which is how the event store holds it.
+    assert json.loads(json.dumps(stored))["abstained_because"]
+
+    assert CommitteeAnalyticsService is not None
+
+
+def test_18_analytics_count_neither_the_vote_nor_the_denominator(
+    tmp_path,
+) -> None:
+    from app.domain.event import Event
+    from app.domain.event_type import EventType
+    from app.repositories.json_event_repository import JsonEventRepository
+    from app.services.committee_analytics_service import (
+        CommitteeAnalyticsService,
+    )
+
+    repository = JsonEventRepository(tmp_path / "events")
+
+    def row(member: str, vote: str, confidence: int, because=None):
+        return {
+            "member": member,
+            "vote": vote,
+            "confidence": confidence,
+            "rationale": "r",
+            "abstained_because": because,
+        }
+
+    repository.save(
+        Event(
+            timestamp=MOMENT,
+            event_type=EventType.RECOMMENDATION_GENERATED,
+            symbol="KO",
+            payload={
+                "recommendation": "BUY",
+                "confidence": 75,
+                "votes": [
+                    row("Value", "BUY", 80),
+                    row("Cash", "HOLD", 0, "the broker stated no cash figure"),
+                    # An older row, written before the key existed.
+                    {
+                        "member": "Legacy",
+                        "vote": "HOLD",
+                        "confidence": 60,
+                        "rationale": "r",
+                    },
+                ],
+            },
+        )
+    )
+
+    statistics = {
+        item.member: item
+        for item in CommitteeAnalyticsService(repository).member_statistics()
+    }
+
+    assert "Cash" not in statistics, "an abstention is not a vote"
+    assert statistics["Value"].buy == 1
+
+    # Historical rows stay readable and keep counting exactly as before.
+    assert statistics["Legacy"].hold == 1
+    assert statistics["Legacy"].average_confidence == 60
+
+
+def test_19_the_api_carries_the_typed_fact() -> None:
+    """No client infers the abstention from confidence or prose."""
+
+    from app.api.models.today import OpinionResponse
+
+    absent = panel_for(None)[0]
+
+    response = OpinionResponse(
+        member=absent.member,
+        vote=absent.vote,
+        confidence=absent.confidence,
+        rationale=absent.rationale,
+        abstained_because=absent.abstained_because,
+    )
+
+    assert response.abstained_because
+    assert response.model_dump()["abstained_because"]
+
+    # And it defaults to null for a participating member.
+    voting = OpinionResponse(member="Risk", vote="SELL", confidence=70, rationale="r")
+
+    assert voting.abstained_because is None
+
+
+def test_20_measured_inputs_are_unchanged_but_for_the_new_field() -> None:
+    """The digest constant moved; the behaviour did not.
+
+    `CommitteeOpinion` gained `abstained_because`, which appears in every
+    participating opinion's `repr` as `None`. That changes a digest taken
+    over reprs and nothing else — so the check elides the new field and
+    pins the original constant, rather than asserting the equivalence in
+    prose.
+    """
+
+    import hashlib
+
+    from app.committee.chairman import CommitteeChairman
+    from app.domain.committee_opinion import CommitteeOpinion
+
+    panel = [
+        CommitteeOpinion(member="Value", vote="BUY", confidence=80, rationale="v"),
+        CommitteeOpinion(member="Risk", vote="SELL", confidence=70, rationale="r"),
+        CommitteeOpinion(member="Cash", vote="HOLD", confidence=55, rationale="c"),
+    ]
+    weights = {"Value": 1.0, "Risk": 1.0, "Cash": 5.0}
+
+    rendered = "\n".join(
+        (
+            f"committee={CommitteeChairman().decide(panel)!r}",
+            f"weighted={CommitteeChairman().weighted_decide(panel, weights)!r}",
+        )
+    )
+
+    # Every member participated, so the new field is uniformly absent.
+    assert rendered.count("abstained_because=None") == 6
+    assert "abstained_because='" not in rendered
+
+    elided = rendered.replace(", abstained_because=None", "")
+
+    # Computed on the pre-amendment tree (346f182), where the field did
+    # not exist — a baseline, not a value copied from this run.
+    assert hashlib.sha256(elided.encode()).hexdigest()[:16] == "afe5498223345cc5"

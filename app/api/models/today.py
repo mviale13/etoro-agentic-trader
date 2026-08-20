@@ -19,6 +19,11 @@ class OpinionResponse(BaseModel):
     confidence: int
     rationale: str
 
+    #: Why this member took no position, or null where it took
+    #: one. Carried explicitly so a client never has to read it
+    #: out of the confidence or the rationale text.
+    abstained_because: str | None = None
+
 
 class RecommendationResponse(BaseModel):
     symbol: str

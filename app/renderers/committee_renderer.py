@@ -22,6 +22,10 @@ class CommitteeRenderer:
         print()
 
         for opinion in decision.opinions:
+            if not opinion.participates:
+                print(f"{opinion.member:<12}{'ABSTAIN':<6}  —")
+                continue
+
             print(f"{opinion.member:<12}{opinion.vote:<6}{opinion.confidence:>3}%")
 
         print()

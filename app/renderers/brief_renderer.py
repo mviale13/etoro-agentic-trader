@@ -60,7 +60,8 @@ class BriefRenderer:
         console.print("[bold]Why?[/bold]")
 
         for opinion in decision.opinions:
-            console.print(f"• {opinion.member}: {opinion.vote} — {opinion.rationale}")
+            position = opinion.vote if opinion.participates else "NO VIEW"
+            console.print(f"• {opinion.member}: {position} — {opinion.rationale}")
 
         console.print()
         console.print("──────────────────────────────────────")

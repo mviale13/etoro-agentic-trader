@@ -52,6 +52,7 @@ async def get_today(
                     vote=opinion.vote,
                     confidence=opinion.confidence,
                     rationale=opinion.rationale,
+                    abstained_because=opinion.abstained_because,
                 )
                 for opinion in snapshot.recommendation.decision.opinions
             ],

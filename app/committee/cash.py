@@ -26,6 +26,10 @@ class CashCommittee(CommitteeMember):
                     "has no view; nothing here says the allocation is at, "
                     "above or below its target."
                 ),
+                abstained_because=(
+                    "the broker stated no cash figure, so there is nothing "
+                    "to compare against the target"
+                ),
             )
 
         difference = current_cash - target_cash

@@ -68,6 +68,10 @@ class DailyRenderer:
         print("────────────────────────────────────")
 
         for opinion in committee.opinions:
+            if not opinion.participates:
+                print(f"{opinion.member:<18}{'ABSTAIN':<6}  —")
+                continue
+
             print(f"{opinion.member:<18}{opinion.vote:<6}{opinion.confidence:>3}%")
 
         print()

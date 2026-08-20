@@ -20,6 +20,16 @@ class ExplainRenderer:
         console.print()
 
         for opinion in decision.opinions:
+            if not opinion.participates:
+                # No colour band either: the three colours are verdicts,
+                # and this member reached none of them.
+                console.print(
+                    f"{opinion.member:<18}[white]{'ABSTAIN':<6}[/white]{'—':>4}"
+                )
+                console.print(f"  {opinion.abstained_because}")
+                console.print()
+                continue
+
             color = {
                 "BUY": "green",
                 "HOLD": "yellow",

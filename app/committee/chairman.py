@@ -4,21 +4,6 @@ from app.domain.committee_decision import CommitteeDecision
 from app.domain.committee_opinion import CommitteeOpinion
 
 
-def abstained(opinion: CommitteeOpinion) -> bool:
-    """Whether this member declined to take a position at all.
-
-    **The legacy committee's abstention contract, stated in one place.**
-    A member that could not reach its question expresses that as
-    `confidence=0`; everything else is a vote, however cautious.
-
-    Abstention is never inferred from the word HOLD. HOLD is a real
-    position — "I looked, and the answer is do nothing" — and reading it
-    as silence would delete the most common genuine verdict on the panel.
-    """
-
-    return opinion.confidence == 0
-
-
 class CommitteeChairman:
     def decide(
         self,
@@ -39,7 +24,11 @@ class CommitteeChairman:
         no longer counts as a position.
         """
 
-        voting = [opinion for opinion in opinions if not abstained(opinion)]
+        # The carrier is `CommitteeOpinion.participates`. This class
+        # asks it rather than defining abstention a second time —
+        # a private definition here is exactly how the fact failed
+        # to reach the doctor, the renderers and the event store.
+        voting = [opinion for opinion in opinions if opinion.participates]
 
         if not voting:
             # Never a manufactured HOLD. With every member abstaining
