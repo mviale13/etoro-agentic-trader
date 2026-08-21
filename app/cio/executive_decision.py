@@ -223,6 +223,21 @@ class ExecutiveDecision(BaseModel):
     #: where a caller built a decision without stating one.
     conviction_basis: str = ""
 
+    #: How many score families produced a score for this decision, and
+    #: how many `conviction-mean@1` expects. Carried on the decision
+    #: rather than left to be re-derived elsewhere, so the count the
+    #: sentence above states is checkable against the decision that
+    #: stated it. None where a caller built a decision without a
+    #: conviction reading at all.
+    conviction_participating: int | None = None
+    conviction_expected: int | None = None
+
+    #: The score families that produced nothing here, named. An absent
+    #: score is missing evidence and never a low score: this bounds what
+    #: the conviction covers, and no consumer may read it as an adverse
+    #: finding about the security.
+    conviction_absent_families: tuple[str, ...] = ()
+
     rationale: str
 
     #: What stands between this case and its next state, named by the

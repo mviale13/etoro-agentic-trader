@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from app.cio.decision_policy import DecisionPolicy
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import (
@@ -12,6 +14,46 @@ from app.cio.timeline import (
 from app.domain.decision_blocker import BlockerKind, DecisionBlocker
 from app.domain.decision_rules import CONVICTION_MEAN, DECISION_GATES
 from app.domain.finding import Dimension, Sense
+
+#: The score families `conviction-mean@1` averages, in the order it
+#: reads them, each named as the investor would recognise it.
+#:
+#: Named because a count is only checkable against an expectation: *the
+#: mean of the 5 scores measured* is a claim that five families spoke,
+#: and where four did it was false. The tuple is the expectation, its
+#: length is the denominator, and a family absent from a decision is
+#: named rather than quietly dropped out of the numerator.
+SCORE_FAMILIES = (
+    "business quality",
+    "evidence",
+    "valuation",
+    "portfolio fit",
+    "safety",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class ScoreParticipation:
+    """Which score families spoke for one decision, and which did not.
+
+    Derived from the decision's own evidence, never supplied beside it:
+    the scores, how many families were expected, and the names of the
+    ones that produced nothing. The conviction sentence is worded from
+    this and from nothing else, so it cannot state a count the evidence
+    does not support.
+    """
+
+    scores: tuple[int, ...]
+    expected: int
+    absent: tuple[str, ...]
+
+    @property
+    def participating(self) -> int:
+        return len(self.scores)
+
+    @property
+    def complete(self) -> bool:
+        return self.participating == self.expected
 
 
 class ArtificialCIO:
@@ -74,11 +116,19 @@ class ArtificialCIO:
 
         conviction = self._calculate_conviction(evidence, state)
 
+        # One reading of the evidence, worded and carried. A sentence
+        # that states a count and a decision that carries a different
+        # one would be two answers to one question.
+        participation = self._participation(evidence)
+
         return ExecutiveDecision(
             symbol=evidence.symbol,
             state=state,
             conviction=conviction,
             conviction_basis=self._conviction_basis(evidence, state, conviction),
+            conviction_participating=participation.participating,
+            conviction_expected=participation.expected,
+            conviction_absent_families=participation.absent,
             rationale=rationale,
             # What stopped it, from the branch that stopped it. Nothing
             # re-reads the state to work this out: the cascade already
@@ -497,6 +547,16 @@ class ArtificialCIO:
         AMD's 40 is the REJECT cap of `conviction-mean@1` and not a mean
         that happened to land on 40. Printed alone the two are the same
         digits, and only one of them is a measurement of anything.
+
+        **A count is stated against its expectation, never alone.** *The
+        mean of the 5 scores measured* was five families' verdict where
+        five spoke and a false claim where four did — the reader has no
+        way to tell which, because the sentence never said how many were
+        asked. Every count here is `n of m` from one reading of the
+        evidence, and the families that produced nothing are named:
+        their absence is a limit on what the number covers, and it is
+        not a low score for them. The arithmetic is untouched by this
+        wording — #232's ruling reserves that for its own slice.
         """
 
         cap = cls.CONVICTION_LIMITS[state]
@@ -508,20 +568,45 @@ class ArtificialCIO:
                 "not confidence in a security."
             )
 
-        measured = len(cls._measured_scores(evidence))
+        participation = cls._participation(evidence)
 
-        if conviction == cap:
-            return (
-                f"A decision score, not enthusiasm: the mean of the "
-                f"{measured} scores measured, capped at {cap} by the "
-                f"{state.value} state under conviction-mean@1."
+        capped = (
+            f"capped at {cap} by the {state.value} state"
+            if conviction == cap
+            else f"where the {state.value} state caps it at {cap}"
+        )
+
+        coverage = (
+            ""
+            if participation.complete
+            else (
+                " No "
+                f"{cls._and(participation.absent)} score participated, so it "
+                "covers less than a complete reading — an absent score is "
+                "missing, not poor."
             )
+        )
 
         return (
-            f"A decision score, not enthusiasm: the mean of the {measured} "
-            f"scores measured, under conviction-mean@1, where the "
-            f"{state.value} state caps it at {cap}."
+            "A decision score, not enthusiasm: computed from "
+            f"{participation.participating} of {participation.expected} score "
+            f"families under conviction-mean@1, {capped}.{coverage}"
         )
+
+    @staticmethod
+    def _and(names: tuple[str, ...]) -> str:
+        """Name every absent family, joined as a reader would say them.
+
+        Written as a slice rather than a length comparison on purpose:
+        this module is governed by the anonymous-threshold guard, and a
+        bare number in a comparison here is indistinguishable from a
+        threshold whether or not it is one.
+        """
+
+        if not names[1:]:
+            return names[0]
+
+        return f"{', '.join(names[:-1])} or {names[-1]}"
 
     @staticmethod
     def _unassessable_quality(
@@ -643,21 +728,42 @@ class ArtificialCIO:
     def _measured_scores(evidence: DecisionEvidence) -> tuple[int, ...]:
         """The scores that exist, all running the same way.
 
-        Named because two callers need the same list and one of them
-        states how many there were: *the mean of the four scores
-        measured* is checkable, and *the mean of the scores* is not.
+        Kept as the arithmetic's own door — `conviction-mean@1` averages
+        exactly these — while `_participation` answers the separate
+        question of what was expected and what did not arrive. The
+        arithmetic is untouched by this slice; only what may be said
+        about it is.
         """
 
-        return tuple(
-            score
-            for score in (
-                evidence.quality_score,
-                evidence.evidence_score,
-                evidence.valuation_score,
-                evidence.portfolio_fit_score,
-                evidence.safety_score,
-            )
-            if score is not None
+        return ArtificialCIO._participation(evidence).scores
+
+    @staticmethod
+    def _participation(evidence: DecisionEvidence) -> ScoreParticipation:
+        """Which families spoke, how many were expected, which are absent.
+
+        One reading of the evidence produces all three, so a sentence
+        can never state a count the same evidence would not produce.
+        The pairing is positional against `SCORE_FAMILIES` and the test
+        pins the order — a family renamed without its score moving
+        would otherwise attribute an absence to the wrong one.
+        """
+
+        readings = (
+            evidence.quality_score,
+            evidence.evidence_score,
+            evidence.valuation_score,
+            evidence.portfolio_fit_score,
+            evidence.safety_score,
+        )
+
+        return ScoreParticipation(
+            scores=tuple(score for score in readings if score is not None),
+            expected=len(SCORE_FAMILIES),
+            absent=tuple(
+                family
+                for family, score in zip(SCORE_FAMILIES, readings, strict=True)
+                if score is None
+            ),
         )
 
 

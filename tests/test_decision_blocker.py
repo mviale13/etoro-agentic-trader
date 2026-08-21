@@ -285,9 +285,15 @@ def test_a_capped_conviction_says_it_was_capped() -> None:
 
     assert decision.conviction == 40
     assert decision.conviction_basis == (
-        "A decision score, not enthusiasm: the mean of the 5 scores "
-        "measured, capped at 40 by the REJECT state under conviction-mean@1."
+        "A decision score, not enthusiasm: computed from 5 of 5 score "
+        "families under conviction-mean@1, capped at 40 by the REJECT state."
     )
+
+    # And the count is carried, not only worded: the sentence states 5
+    # of 5 because the decision itself does.
+    assert decision.conviction_participating == 5
+    assert decision.conviction_expected == 5
+    assert decision.conviction_absent_families == ()
 
 
 def test_an_uncapped_conviction_names_the_cap_it_did_not_reach() -> None:

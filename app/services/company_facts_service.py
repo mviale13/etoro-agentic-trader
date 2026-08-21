@@ -19,7 +19,7 @@ from app.domain.provider_identity import (
 )
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
-from app.domain.token_facts import TokenMarketFacts
+from app.domain.token_facts import TokenFact, TokenMarketFacts
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
@@ -235,6 +235,13 @@ class CompanyFactsService:
             #: identifies it — `hyperliquid`, `bittensor`. None for
             #: anything not priced from that pool.
             price_identity=(tokens.provider_id or None) if tokens is not None else None,
+            #: Who established it and under which rule. The owner's #231
+            #: ruling keeps the judged pool's price rather than one
+            #: vendor's record, and requires the figure to name the
+            #: claimants whose agreement admitted it — carried from the
+            #: judged fact itself, never re-derived here.
+            price_claimants=self._price_claimants(tokens),
+            price_rule=self._price_rule(tokens),
             #: Why the vendor's own listing was not read as this token,
             #: where it was not. Absent where it was, and for everything
             #: that is not a cryptocurrency.
@@ -357,6 +364,36 @@ class CompanyFactsService:
         """
 
         return tokens.established_value("price")
+
+    @staticmethod
+    def _established_price(tokens: TokenMarketFacts | None) -> TokenFact | None:
+        """The judged price fact, only where the gate established it.
+
+        One place answers *did the gate admit a price* for the value,
+        its claimants and its rule alike, so the three cannot come from
+        three different readings of the same pool.
+        """
+
+        if tokens is None:
+            return None
+
+        price = tokens.fact("price")
+
+        return (
+            price if price is not None and price.established_value is not None else None
+        )
+
+    @classmethod
+    def _price_claimants(cls, tokens: TokenMarketFacts | None) -> tuple[str, ...]:
+        price = cls._established_price(tokens)
+
+        return price.claimants if price is not None else ()
+
+    @classmethod
+    def _price_rule(cls, tokens: TokenMarketFacts | None) -> str | None:
+        price = cls._established_price(tokens)
+
+        return price.rule if price is not None else None
 
     @staticmethod
     def _price_reading(

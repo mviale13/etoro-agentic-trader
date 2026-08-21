@@ -552,6 +552,7 @@ def envelope_for(
     portfolio_as_of: str,
     drawdown_depth_pct: float | None,
     is_equity: bool,
+    crypto_price_established: bool = False,
 ) -> CapitalActionEnvelope:
     """The v1 envelope for one OPEN, ADD or REDUCE course.
 
@@ -561,6 +562,13 @@ def envelope_for(
     the result — the ruling's monotonicity, by construction. The price
     input is the exact security's own quote verdict, so a refusal here
     keeps that quote's words and a market-wide reading has no way in.
+
+    `crypto_price_established` says only whether the crypto-native gate
+    admitted a spot price for this token. It words the crypto refusal
+    and reaches nothing else — **it is not an admission into sizing**,
+    it produces no ceiling, no magnitude and no volatility, liquidity
+    or executability reading, and every final figure below is computed
+    without it.
     """
 
     def refused(because: str) -> CapitalActionEnvelope:
@@ -582,6 +590,29 @@ def envelope_for(
         # Crypto remains outside the equity envelope: its own gate
         # family, its own policy cap, and pretending one contract
         # covers both would blur which rules bound the action.
+        #
+        # **This branch stays first, and the ruling is why.** The price
+        # gate below reads the quote vendor's series, and for a token
+        # that vendor may hold nothing — Yahoo's `HYPE-USD` is another
+        # token entirely, so its listing is refused and no series
+        # exists. Reaching the price gate would word this refusal as
+        # *"no market quote for HYPE was acquired this cycle"*, which
+        # became false the moment a token was priced from the
+        # crypto-native pool: the absence of an admissible vendor
+        # series must never overwrite the presence of an established
+        # spot price.
+        #
+        # So availability and sizing support are stated as two facts.
+        # v1 does not size cryptocurrencies either way, and no magnitude
+        # is produced either way — what changes is whether this platform
+        # tells the investor it has a price.
+        if crypto_price_established:
+            return refused(
+                "Capital Action Envelope v1 does not size cryptocurrencies — "
+                "an established crypto-native price is available, and price "
+                "availability is not sizing support"
+            )
+
         return refused("crypto remains outside the equity capital envelope")
 
     if course == "reduce":

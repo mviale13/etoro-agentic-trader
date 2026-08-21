@@ -101,7 +101,7 @@ def decision(
             # the decision that named it. Both are carried here because
             # both are carried in production — a stub that lags the
             # contract fails the stage for a reason no real run has.
-            conviction_basis="the mean of the 4 scores measured",
+            conviction_basis="computed from 4 of 5 score families",
             blocker=DecisionBlocker.none(),
             evidence_as_of=None,
             missing_evidence=(),

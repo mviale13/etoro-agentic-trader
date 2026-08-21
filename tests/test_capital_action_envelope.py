@@ -841,6 +841,7 @@ def test_37_a_fresh_brain_with_an_old_response_receipt_refuses_in_production(
         total_value=10_000.0,
         drawdown_pct=2.0,
         quotes={"KO": quote_for("KO", minutes_old=2.0)},
+        established_prices=frozenset({"KO"}),
         evaluated_at=MOMENT,
     )
 
@@ -1007,6 +1008,7 @@ def test_43_a_fresh_neighbour_cannot_authorize_this_symbol_in_production_shape(
             total_value=10_000.0,
             drawdown_pct=2.0,
             quotes=quotes,
+            established_prices=frozenset(),
             evaluated_at=MOMENT,
         )
 
@@ -1120,6 +1122,7 @@ def test_45_open_uses_zero_only_because_the_course_says_unheld(tmp_path) -> None
             total_value=total_value,
             drawdown_pct=2.0,
             quotes=quotes,
+            established_prices=frozenset(),
             evaluated_at=MOMENT,
         )
 
