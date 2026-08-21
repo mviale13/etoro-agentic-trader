@@ -16,7 +16,12 @@
  * response now yields **no review at all**, and the caller reports why.
  */
 
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
+// The canonical backend contract, exactly as every sibling module
+// reads it. This file read `BACKEND_URL` while ten others read
+// `MOVRVEST_API_URL`, so pointing the app at a new backend moved every
+// page except the homepage — the split cost real time during #230.
+const BACKEND_URL =
+  process.env.MOVRVEST_API_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
 
 /** What happened to the latest recorded attempt. Mirrors the backend enum. */
 export const CYCLE_EXECUTIONS = [
