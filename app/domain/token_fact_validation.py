@@ -69,6 +69,22 @@ INTERNAL_TOLERANCE = 0.05
 
 #: How far two providers may disagree about the same *value* and still
 #: corroborate each other — observation timing, never methodology.
+#:
+#: Recorded and deliberately not acted on: the two price claimants do
+#: not run the same kind of clock. CoinGecko states an observation time
+#: that advances; TokenInsight states none, so its claim carries a
+#: receipt time. This tolerance therefore cannot be checked against the
+#: interval between two *stated* observations, because only one side
+#: states one.
+#:
+#: What the corpus says about that gap is reassuring and is not a rule.
+#: On 2026-08-21 the eight tokens' two claimants agreed to between
+#: 0.004% and 0.32% — while the clocks they carried stood up to 16.47
+#: hours apart. Pro-rated from each asset's own 24-hour move, a genuine
+#: 16-hour separation implies a gap 6x to 53x larger than the one
+#: measured. The figures are contemporaneous; it was the timestamp that
+#: was wrong, which is why the repair was to the clock and not to this
+#: number.
 CROSS_TOLERANCE = 0.10
 
 #: How far two providers may disagree about a supply *count*. Counts
@@ -460,6 +476,7 @@ class _Judgment:
                 value=value,
                 source=judged.claims.source,
                 observed_at=judged.claims.read.observed_at,
+                observation_stated=judged.claims.read.observation_stated,
                 because=(
                     f"{judged.claims.source} reports it"
                     + (", coherently with its own figures" if vouched else "")
@@ -550,6 +567,13 @@ class _Judgment:
             value=served[1],
             source=served[0].claims.source,
             observed_at=served[0].claims.read.observed_at,
+            # The served claimant's own clock, never a corroborator's.
+            # Where one source states an observation time and the other
+            # does not, agreement on the *value* is not permission to
+            # date one source's figure by the other's reading — that
+            # would let a claim borrow an authority it does not have,
+            # which is the failure the whole gate exists to prevent.
+            observation_stated=served[0].claims.read.observation_stated,
             because=(
                 f"{vouched_note}independently corroborated by "
                 f"{_and(others)} within observation-timing tolerance."
@@ -654,6 +678,7 @@ class _Judgment:
                 value=value,
                 source=judged.claims.source,
                 observed_at=judged.claims.read.observed_at,
+                observation_stated=judged.claims.read.observation_stated,
                 because=(
                     f"{judged.claims.source} reports it; {_SCOPED_MEANINGS[fact]}."
                 ),

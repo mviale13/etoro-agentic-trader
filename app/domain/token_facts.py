@@ -65,6 +65,17 @@ class TokenFact:
     observed_at: datetime | None = None
     because: str | None = None
 
+    #: False where `observed_at` is when MOVRvest received the figure
+    #: rather than a moment its source states it was observed — the
+    #: `Provenance` qualifier of the claim this fact was served from,
+    #: carried across the gate rather than dropped at it.
+    #:
+    #: Without it the gate would launder the distinction: a claim that
+    #: honestly said "received at" would arrive downstream as a bare
+    #: datetime indistinguishable from an observation time, and every
+    #: consumer would read it as one.
+    observation_stated: bool = True
+
     #: Every source whose independent agreement established this value —
     #: the served claimant first, then the corroborators. Empty for any
     #: standing but ESTABLISHED, because nothing agreed.

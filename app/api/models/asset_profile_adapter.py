@@ -9,8 +9,6 @@ rather than dressed as provider observations.
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from app.api.models.dossier import (
     AssetProfileResponse,
     RejectedReadingResponse,
@@ -102,7 +100,7 @@ def _row(outcome: TokenMarketFacts, name: str) -> TokenFactRowResponse:
         standing=fact.standing.value,
         standing_stated=fact.standing.stated,
         source=fact.source,
-        age=_age(fact.source, fact.observed_at),
+        age=_age(fact),
         because=fact.because,
     )
 
@@ -124,7 +122,7 @@ def _rank_row(outcome: TokenMarketFacts) -> TokenFactRowResponse:
         standing=fact.standing.value,
         standing_stated=fact.standing.stated,
         source=fact.source,
-        age=_age(fact.source, fact.observed_at),
+        age=_age(fact),
         because=fact.because,
     )
 
@@ -221,10 +219,23 @@ def _money(value: float) -> str:
     return f"${value:,.0f}"
 
 
-def _age(source: str | None, observed_at: datetime | None) -> str | None:
-    """The observation's age, worded the way every reading on the page is."""
+def _age(fact: TokenFact) -> str | None:
+    """The reading's age, worded the way every reading on the page is.
 
-    if source is None or observed_at is None:
+    It takes the whole fact rather than a source and a moment because
+    the pair is not the whole reading: a `TokenFact` also knows whether
+    its moment is an observation time or MOVRvest's receipt time, and
+    rebuilding a `Provenance` from two of the three fields silently
+    restored the default — printing a receipt clock as though the
+    source had stated it, which is the laundering the flag exists to
+    prevent.
+    """
+
+    if fact.source is None or fact.observed_at is None:
         return None
 
-    return Provenance(source=source, observed_at=observed_at).stated()
+    return Provenance(
+        source=fact.source,
+        observed_at=fact.observed_at,
+        observation_stated=fact.observation_stated,
+    ).stated()

@@ -491,3 +491,103 @@ def test_no_sources_at_all_is_all_absences_with_reasons() -> None:
 
     assert outcome.rejected == ()
     assert outcome.yahoo_market_cap_corroborated is False
+
+
+# ── whose clock dates the fact ──────────────────────────────────────
+
+
+def test_a_corroborator_s_observation_time_is_never_borrowed() -> None:
+    """Agreement on a value is not permission to borrow a clock.
+
+    Measured live on 2026-08-21: TokenInsight and CoinGecko agreed on
+    every one of the book's eight prices to between 0.004% and 0.32%,
+    while the timestamps they carried stood up to 16.47 hours apart —
+    because only one of them states an observation time at all.
+
+    The temptation is to let the corroborator's real clock date the
+    served figure, since it is the better timestamp. That would let a
+    claim wear an authority it does not have: TokenInsight did not
+    observe anything at CoinGecko's moment. The served claimant's own
+    clock dates the fact, and where that clock is a receipt clock the
+    fact says so.
+    """
+
+    received = datetime(2026, 8, 21, 6, 59, 42, tzinfo=UTC)
+    observed = datetime(2026, 8, 21, 6, 56, 40, tzinfo=UTC)
+
+    # The fixtures' own prices (54.23 and 54.63) already agree inside
+    # the cross-source tolerance, so only the clocks vary here — the
+    # triad arithmetic each source must satisfy is left untouched.
+    outcome = judge(
+        "HYPE",
+        [
+            tokeninsight(
+                read=Provenance(
+                    source="TokenInsight",
+                    observed_at=received,
+                    observation_stated=False,
+                ),
+            ),
+            coingecko(
+                read=Provenance(source="CoinGecko", observed_at=observed),
+            ),
+        ],
+    )
+
+    price = outcome.fact("price")
+
+    assert price is not None
+    assert price.standing is TokenFactStanding.ESTABLISHED
+    assert price.claimants == ("TokenInsight", "CoinGecko")
+
+    # The served claimant is TokenInsight, so its clock dates the fact —
+    # and its clock is a receipt clock.
+    assert price.observed_at == received
+    assert price.observation_stated is False
+
+    # CoinGecko's genuine observation time corroborates the value and
+    # dates nothing.
+    assert price.observed_at != observed
+
+
+def test_a_scoped_claim_carries_the_clock_its_source_runs() -> None:
+    """The qualifier is a property of the claim, not of the standing.
+
+    A CLAIMED fact and an ESTABLISHED one both name a source and a
+    moment, so both must say which kind of moment it is. Dropping the
+    flag on the scoped path would leave rank and volume dated as
+    observations while the price beside them said "received".
+    """
+
+    received = datetime(2026, 8, 21, 6, 59, 42, tzinfo=UTC)
+
+    outcome = judge(
+        "HYPE",
+        [
+            tokeninsight(
+                read=Provenance(
+                    source="TokenInsight",
+                    observed_at=received,
+                    observation_stated=False,
+                )
+            )
+        ],
+    )
+
+    rank = outcome.fact("rank")
+    volume = outcome.fact("spot_volume_24h")
+
+    for fact in (rank, volume):
+        assert fact is not None
+        assert fact.standing is TokenFactStanding.CLAIMED
+        assert fact.source == "TokenInsight"
+        assert fact.observation_stated is False
+
+    # And CoinGecko's own scoped claim is untouched: this is a
+    # difference between sources, not a blanket hedge.
+    both = judge("HYPE", [tokeninsight(), coingecko()])
+    gecko_volume = both.fact("market_volume_24h")
+
+    assert gecko_volume is not None
+    assert gecko_volume.source == "CoinGecko"
+    assert gecko_volume.observation_stated is True
