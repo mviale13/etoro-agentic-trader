@@ -817,3 +817,79 @@ class _NoKnowledge:
         )
 
         return KnowledgeOutcome(state=KnowledgeState.UNAVAILABLE)
+
+
+# ── One evaluation per security, whatever the broker's row count ─────
+
+
+@pytest.mark.anyio
+async def test_a_security_held_across_trades_is_evaluated_once() -> None:
+    """eToro reports a position per trade; the spend is per security.
+
+    #230 taught the record half of this rule — a recorded holding is a
+    security, never a broker position. This is the spend half: on the
+    live account, three duplicate trade rows cost three full signal
+    builds and committee runs per cycle whose results the evidence dict
+    then discarded, because the rows share a symbol.
+    """
+
+    from dataclasses import replace
+
+    class ResolverStub:
+        async def items_for(self, instrument_ids) -> dict[int, WatchlistItem]:
+            def item(instrument_id: int, symbol: str, name: str) -> WatchlistItem:
+                return WatchlistItem(
+                    instrument_id=instrument_id,
+                    symbol=symbol,
+                    name=name,
+                    asset_type_id=5,
+                    asset_type_subcategory_id=0,
+                    exchange_id=0,
+                    rank=1,
+                    avatar_url=None,
+                )
+
+            return {
+                7001: item(7001, "BTC", "Bitcoin"),
+                7002: item(7002, "KO", "Coca-Cola"),
+            }
+
+    evaluated: list[str] = []
+
+    class SignalStub:
+        async def build(self, item):
+            evaluated.append(item.symbol)
+
+            raise LookupError("no facts in this stub — the count is the test")
+
+    def duplicate(symbol: str, instrument_id: int) -> PortfolioPosition:
+        return PortfolioPosition(
+            symbol=symbol,
+            quantity=1.0,
+            invested_usd=10.0,
+            market_value_usd=10.0,
+            unrealized_pnl_usd=0.0,
+            instrument_id=instrument_id,
+        )
+
+    portfolio = replace(
+        make_portfolio(),
+        holdings=(
+            # BTC held across three trades — the live account's shape.
+            duplicate("BTC", 7001),
+            duplicate("BTC", 7001),
+            duplicate("BTC", 7001),
+            duplicate("KO", 7002),
+        ),
+    )
+
+    perception = SecurityPerception(
+        symbol_resolver=ResolverStub(),  # type: ignore[arg-type]
+        signal_service=SignalStub(),  # type: ignore[arg-type]
+    )
+
+    await perception.execute(portfolio)
+
+    assert sorted(evaluated) == ["BTC", "KO"], (
+        "each security is evaluated exactly once, not once per trade row"
+    )
