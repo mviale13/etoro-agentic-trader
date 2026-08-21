@@ -102,11 +102,26 @@ class SecurityPerception:
             tuple(holding.instrument_id for holding in portfolio.holdings)
         )
 
-        targets = [
-            (holding.symbol, instruments[holding.instrument_id])
-            for holding in portfolio.holdings
-            if holding.is_resolved and holding.instrument_id in instruments
-        ]
+        # One evaluation per security, whatever the broker's row count.
+        # eToro reports a position per *trade*, so a security held
+        # across several trades arrives as several holdings — and each
+        # extra row used to cost a full signal build and committee run
+        # whose result the evidence dict then discarded, because the
+        # rows share a symbol (#230's rule, applied to the spend).
+        seen: set[str] = set()
+        targets: list[tuple[str, WatchlistItem]] = []
+
+        for holding in portfolio.holdings:
+            if not holding.is_resolved or holding.instrument_id not in instruments:
+                continue
+
+            normalized = holding.symbol.upper().strip()
+
+            if normalized in seen:
+                continue
+
+            seen.add(normalized)
+            targets.append((holding.symbol, instruments[holding.instrument_id]))
 
         candidate_targets = self._candidate_targets(
             candidates,
