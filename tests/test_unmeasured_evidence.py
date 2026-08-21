@@ -131,14 +131,24 @@ def test_an_unmeasured_score_is_not_a_reason_to_reject() -> None:
     assert decision.state is not DecisionState.REJECT
 
 
-def test_a_measured_breach_still_rejects() -> None:
+def test_a_measured_breach_no_longer_rejects() -> None:
+    """The 2026-08-21 cutover, at this file's own boundary.
+
+    This test asserted the opposite until the owner's ruling removed
+    `risk_score > maximum_acceptable_risk → REJECT`. The surrounding
+    principle is untouched and is what this file is about: an
+    *unmeasured* risk still refuses to progress to a recommendation.
+    What changed is that a *measured* violent one no longer refuses the
+    thesis — it bounds the position's size instead.
+    """
+
     policy = DecisionPolicy()
 
-    rejected = ArtificialCIO().decide(
+    decided = ArtificialCIO().decide(
         evidence(risk_score=policy.maximum_acceptable_risk + 1),
     )
 
-    assert rejected.state is DecisionState.REJECT
+    assert decided.state is not DecisionState.REJECT
 
 
 def test_conviction_averages_only_what_was_measured() -> None:

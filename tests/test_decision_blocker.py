@@ -97,67 +97,55 @@ def test_a_clean_case_states_that_nothing_blocks_it() -> None:
     assert decision.blocker.stated
 
 
-def test_amds_risk_refusal_names_the_reading_beneath_the_score() -> None:
-    """The sentence an investor is owed, with its figures.
+def test_amds_volatility_no_longer_refuses_its_thesis() -> None:
+    """The cutover, at the exact case that motivated it.
 
-    *Risk 85* is unreadable on its own: it is a band's severity turned
-    into a number. What was measured is the volatility, and the band is
-    this platform's policy over it — so both travel with the refusal.
+    These three assertions replace three that pinned the sentence
+    *"Blocked by the current risk policy: annualised volatility was
+    71.8%…"*. Under the owner's ruling of 2026-08-21 that sentence is
+    unproducible: historical volatility is a measurement of how
+    violently a security has moved, not a verdict on its thesis, and it
+    now bounds position size through the security-risk envelope
+    instead.
+
+    The reading itself is untouched — `risk_score` 85 and the severe
+    band still travel on the evidence and still score as safety.
     """
 
     decision = ArtificialCIO().decide(
         evidence(risk_score=85, risk_reading=AMD_RISK),
     )
 
-    assert decision.state is DecisionState.REJECT
+    # No longer rejected, and not automatically actionable either — the
+    # remaining gates decide, and here every one of them is clear.
+    assert decision.state is not DecisionState.REJECT
 
     blocker = decision.blocker
 
     assert blocker is not None
-    assert blocker.kind is BlockerKind.RISK_GATE
-    assert blocker.stated == (
-        "Blocked by the current risk policy: annualised volatility was "
-        "71.8%, placing AMD in this platform's severe-risk band and "
-        "producing risk 85 against a maximum of 70."
-    )
+    assert blocker.kind is not BlockerKind.RISK_GATE
+
+    # The obsolete sentence is gone from what this platform can say.
+    assert "risk policy" not in blocker.stated
+    assert "71.8%" not in blocker.stated
 
 
-def test_a_risk_refusal_is_not_a_verdict_on_the_business() -> None:
-    """Invariant 10 on a gate: the measurement travels, the meaning does not.
+def test_a_severe_reading_still_reaches_the_decision_as_evidence() -> None:
+    """Removed as a gate, preserved as a measurement.
 
-    A risk ruling establishes that the price record is violent. It
-    establishes nothing about the company, and the analysts reading the
-    same cycle's evidence said growth and profitability are strong.
+    The ruling preserves volatility, drawdown, band, severity, safety
+    and findings. The proof that the reading was not merely deleted is
+    that it still moves conviction: a severe case scores lower than an
+    otherwise identical calm one.
     """
 
-    decision = ArtificialCIO().decide(
+    violent = ArtificialCIO().decide(
         evidence(risk_score=85, risk_reading=AMD_RISK),
     )
+    calm = ArtificialCIO().decide(evidence(risk_score=20))
 
-    blocker = decision.blocker
-
-    assert blocker is not None
-    assert blocker.does_not_say == (
-        "This is a risk ruling. It does not say AMD is a weak business."
-    )
-    assert blocker.despite == (
-        "Growth is strong — Revenue growth is 50.1%. Earnings growth is 159.5%.",
-        "Profitability is strong — Gross margin is 55.7%.",
-    )
-
-
-def test_the_refusal_claims_only_what_it_can_prove() -> None:
-    """No reading, no volatility sentence — and no invented one."""
-
-    decision = ArtificialCIO().decide(evidence(risk_score=85))
-
-    blocker = decision.blocker
-
-    assert blocker is not None
-    assert blocker.stated == (
-        "Blocked by the current risk policy: risk scores 85 against a maximum of 70."
-    )
-    assert "volatility" not in blocker.stated
+    assert violent.conviction is not None and calm.conviction is not None
+    assert violent.conviction < calm.conviction
 
 
 def test_an_analyst_veto_claims_nothing_about_what_it_does_not_say() -> None:
@@ -203,7 +191,6 @@ def test_a_quality_gate_carries_no_counterweight_and_no_disclaimer() -> None:
         ({"hard_reject": True}, BlockerKind.POLICY_GATE),
         ({"analyst_veto": True}, BlockerKind.ANALYST_VETO),
         ({"security_evidenced": False}, BlockerKind.MISSING_EVIDENCE),
-        ({"risk_score": 85}, BlockerKind.RISK_GATE),
         ({"quality_score": 20}, BlockerKind.QUALITY_GATE),
         ({"evidence_score": 10}, BlockerKind.MISSING_EVIDENCE),
         ({"quality_score": None}, BlockerKind.QUALITY_GATE),
@@ -225,9 +212,10 @@ def test_every_branch_names_its_own_gate(
 ) -> None:
     """One case, one gate moved at a time, across the whole cascade.
 
-    REJECT is reached three ways here — a policy gate, an analyst veto
-    and the risk ceiling — and a surface reading the state back into a
-    cause could not tell them apart.
+    REJECT is reached two ways here — a policy gate and an analyst veto
+    — and a surface reading the state back into a cause could not tell
+    them apart. It was three until the 2026-08-21 cutover removed the
+    severity rejection.
     """
 
     decision = ArtificialCIO().decide(evidence(**overrides))
@@ -254,7 +242,10 @@ def test_the_cascade_produces_every_declared_kind_but_the_platform_limit() -> No
             {"hard_reject": True},
             {"analyst_veto": True},
             {"security_evidenced": False},
-            {"risk_score": 85},
+            # RISK_GATE is now produced by the *unmeasured* route alone:
+            # the severity rejection left the cascade in the 2026-08-21
+            # cutover, and no recommendation rests on a risk never read.
+            {"risk_score": None},
             {"quality_score": 20},
             {"evidence_score": 10},
             {"valuation_score": 40},
@@ -270,7 +261,13 @@ def test_the_cascade_produces_every_declared_kind_but_the_platform_limit() -> No
 
 
 def test_a_capped_conviction_says_it_was_capped() -> None:
-    """AMD's 40 is `conviction-mean@1`'s REJECT cap, not a mean of 40."""
+    """AMD's 40 is `conviction-mean@1`'s REJECT cap, not a mean of 40.
+
+    Reached through the analyst veto since the 2026-08-21 cutover: the
+    severity rejection that used to bring this case here is gone, and
+    the cap is a property of the REJECT *state* rather than of any one
+    route to it.
+    """
 
     decision = ArtificialCIO().decide(
         evidence(
@@ -280,6 +277,7 @@ def test_a_capped_conviction_says_it_was_capped() -> None:
             risk_score=85,
             portfolio_fit_score=60,
             risk_reading=AMD_RISK,
+            analyst_veto=True,
         ),
     )
 
