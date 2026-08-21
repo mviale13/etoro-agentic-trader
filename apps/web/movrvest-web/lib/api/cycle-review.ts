@@ -160,11 +160,21 @@ export interface CycleReview {
   /** The account as the cycle recorded it. Null where it recorded none. */
   portfolio: RecordedPortfolio | null;
   /**
-   * Watched-but-unheld securities the CIO evaluated, already ranked by
-   * the conviction it assigned. Empty means none were evaluated — which
-   * is not the same as none being worth considering.
+   * Watched-but-unheld securities the CIO evaluated, already ordered
+   * server-side. Empty means none were evaluated — which is not the
+   * same as none being worth considering.
    */
   candidates: CycleCourse[];
+
+  /**
+   * Whether that order is a ranking.
+   *
+   * False where the recorded convictions were computed over different
+   * score families, or where the record does not say which — the
+   * numbers are then not on one scale, the list is by symbol, and this
+   * page must not present it as an order of merit.
+   */
+  candidatesRanked: boolean;
 }
 
 /**
@@ -528,10 +538,13 @@ export function parseCycleReview(payload: unknown): CycleReview {
     lifecycleAnomalies: requiredCount(body, "lifecycle_anomalies"),
     lastKnown,
     portfolio: portfolioOf(body.portfolio),
-    // Already ranked server-side. The page never reorders them: the
+    // Already ordered server-side. The page never reorders them: the
     // ordering is the CIO's conviction, and re-sorting here would be
-    // this surface inventing a priority.
+    // this surface inventing a priority. Whether that order is a
+    // *ranking* is the backend's answer too, never inferred here from
+    // the numbers being present.
     candidates: coursesOf(body, "candidates"),
+    candidatesRanked: requiredBoolean(body, "candidates_ranked"),
   };
 }
 

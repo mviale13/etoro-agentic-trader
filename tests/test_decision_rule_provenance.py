@@ -89,6 +89,7 @@ GOVERNED: dict[str, object] = {
     "pe-bands": (
         ValueSignalService.PE_CHEAP_BELOW,
         ValueSignalService.PE_FAIR_BELOW,
+        ValueSignalService.PE_MEASURABLE_ABOVE,
     ),
     "valuation-scores": tuple(sorted(DecisionEvidenceBuilder.VALUATION_SCORES.items())),
     "provider-quality": (
@@ -218,7 +219,12 @@ GOVERNED: dict[str, object] = {
 PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     "risk-bands": (1, RuleStatus.UNSOURCED, "6623b9c87a91"),
     "risk-severity": (1, RuleStatus.ARGUED, "9ec65a79b41c"),
-    "pe-bands": (1, RuleStatus.UNSOURCED, "891ea597c522"),
+    # Version 2 under the owner's ruling of 2026-08-21: a non-positive
+    # multiple is refused rather than banded. The bands themselves are
+    # unmoved — 18 and 28 are still the same unsourced constants — and
+    # `PE_MEASURABLE_ABOVE` joins the fingerprint because it decides
+    # which readings the rule claims to interpret at all.
+    "pe-bands": (2, RuleStatus.UNSOURCED, "a233f6d571ea"),
     "valuation-scores": (1, RuleStatus.UNSOURCED, "297b17fef407"),
     "provider-quality": (1, RuleStatus.UNSOURCED, "3adc0fd3fd9f"),
     "quality-grounded": (1, RuleStatus.LICENSED, "02dffb0feb63"),

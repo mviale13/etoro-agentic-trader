@@ -60,6 +60,7 @@ function valid(): Record<string, unknown> {
     last_known: null,
     portfolio: null,
     candidates: [],
+    candidates_ranked: true,
   };
 }
 
@@ -102,6 +103,15 @@ describe("a well-formed response", () => {
 });
 
 describe("a contract-invalid response yields no review", () => {
+  it("rejects an omitted candidates_ranked rather than assuming ranked", () => {
+    // Assuming `true` would let a page present an order of merit the
+    // backend never claimed — prerequisite 2 of the owner's ruling of
+    // 2026-08-21, failing closed like every other field here.
+    expect(() => parseCycleReview(without("candidates_ranked"))).toThrow(
+      CycleContractError,
+    );
+  });
+
   it("rejects an omitted stream_complete rather than assuming true", () => {
     // The permissive parser answered `true` here — a page reporting a
     // complete history because the field was missing.

@@ -64,6 +64,7 @@ from app.application.workspace.executive_workspace import ExecutiveWorkspace
 from app.application.workspace.portfolio_briefing_service import (
     PortfolioBriefingService,
 )
+from app.application.workspace.ranking import comparable as ranking_comparable
 from app.brain import Brain
 from app.domain.asset_class import AssetClass
 from app.domain.committee.panel import Panel
@@ -176,6 +177,15 @@ async def portfolio_briefing(
     # investor reading "10th of 14" has been told something nobody
     # measured. The tail is still listed and still explained; it is not
     # numbered.
+    #
+    # And a rank belongs only to a *group* whose convictions were
+    # computed over the same score families. Where they were not, the
+    # numbers are not on one scale and no case is numbered at all —
+    # prerequisite 2 of the owner's ruling of 2026-08-21. Every case is
+    # still listed, still explained, and still carries its own
+    # conviction beside its own coverage.
+    ranked = ranking_comparable(briefing.workspaces)
+
     position = 0
 
     for workspace in briefing.workspaces:
@@ -187,12 +197,12 @@ async def portfolio_briefing(
         if decision is None or thesis is None or reasoning is None:
             continue
 
-        if decision.conviction is not None:
+        if ranked and decision.conviction is not None:
             position += 1
 
         cases.append(
             RankedInvestmentCaseResponse(
-                rank=position if decision.conviction is not None else None,
+                rank=(position if ranked and decision.conviction is not None else None),
                 symbol=workspace.symbol,
                 recommendation=decision.state.value,
                 conviction=decision.conviction,

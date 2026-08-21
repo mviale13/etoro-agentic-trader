@@ -101,6 +101,20 @@ class DecisionSummary:
     #: the decision carried one.
     conviction_basis: str = ""
 
+    #: How many score families that conviction was computed over, and
+    #: how many were expected. `None` on a record written before the
+    #: counts existed — and **an unknown coverage is never read as a
+    #: matching one**: a projection that cannot tell whether two
+    #: convictions share a denominator withholds the ranking rather than
+    #: assuming they do (the owner's ruling of 2026-08-21,
+    #: prerequisite 2).
+    conviction_participating: int | None = None
+    conviction_expected: int | None = None
+
+    #: The families that produced no score here, named. Missing
+    #: evidence, and never a low score for them.
+    conviction_absent_families: tuple[str, ...] = ()
+
     evidence_as_of: str = ""
 
     #: What stands between this case and its next state, named by the

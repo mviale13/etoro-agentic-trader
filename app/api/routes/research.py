@@ -14,6 +14,7 @@ from app.application.workspace.candidate_research_service import (
     CandidateResearchService,
 )
 from app.application.workspace.executive_pipeline import ExecutivePipeline
+from app.application.workspace.ranking import comparable as ranking_comparable
 from app.renderers.brief_language import conviction_label  # noqa: I001
 from app.repositories.json_event_repository import JsonEventRepository
 
@@ -62,6 +63,13 @@ async def research_candidates(
     # A rank is a place in the conviction order, so only a case carrying
     # a conviction takes one. The unranked are still researched and still
     # explained; they are not numbered against each other on nothing.
+    #
+    # And no case is numbered where the group's convictions were
+    # computed over different score families: the numbers are not on one
+    # scale, so the order is not a ranking — prerequisite 2 of the
+    # owner's ruling of 2026-08-21.
+    ranked = ranking_comparable(research.workspaces)
+
     position = 0
 
     for workspace in research.workspaces:
@@ -79,12 +87,12 @@ async def research_candidates(
 
         candidate = research.candidates.get(workspace.symbol)
 
-        if decision.conviction is not None:
+        if ranked and decision.conviction is not None:
             position += 1
 
         candidates.append(
             ResearchCandidateResponse(
-                rank=position if decision.conviction is not None else None,
+                rank=(position if ranked and decision.conviction is not None else None),
                 symbol=workspace.symbol,
                 name=candidate.name if candidate else workspace.symbol,
                 source=candidate.source if candidate else "",

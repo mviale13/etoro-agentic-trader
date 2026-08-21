@@ -466,6 +466,16 @@ async def run(
                         rationale=workspace.decision.rationale,
                         conviction=workspace.decision.conviction,
                         conviction_basis=workspace.decision.conviction_basis,
+                        # The coverage that conviction was computed
+                        # over, carried so a projection can tell whether
+                        # two of them share a denominator.
+                        conviction_participating=(
+                            workspace.decision.conviction_participating
+                        ),
+                        conviction_expected=workspace.decision.conviction_expected,
+                        conviction_absent_families=(
+                            workspace.decision.conviction_absent_families
+                        ),
                         blocker=workspace.decision.blocker,
                         evidence_as_of=(
                             workspace.decision.evidence_as_of.stated()
@@ -533,6 +543,13 @@ async def run(
                     rationale=workspace.decision.rationale,
                     conviction=workspace.decision.conviction,
                     conviction_basis=workspace.decision.conviction_basis,
+                    conviction_participating=(
+                        workspace.decision.conviction_participating
+                    ),
+                    conviction_expected=workspace.decision.conviction_expected,
+                    conviction_absent_families=(
+                        workspace.decision.conviction_absent_families
+                    ),
                     blocker=workspace.decision.blocker,
                     evidence_as_of=(
                         workspace.decision.evidence_as_of.stated()

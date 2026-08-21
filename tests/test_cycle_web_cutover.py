@@ -826,25 +826,41 @@ def test_25_an_unmeasured_allocation_difference_is_never_zero(
     assert body["compliant"] is None, "an unread allocation is not compliance"
 
 
+def covered(symbol: str, conviction: int | None, absent: tuple[str, ...] = ()):
+    """A candidate whose conviction states the families it was computed over."""
+
+    return summary(
+        symbol,
+        conviction=conviction,
+        conviction_participating=(None if conviction is None else 5 - len(absent)),
+        conviction_expected=(None if conviction is None else 5),
+        conviction_absent_families=absent,
+    )
+
+
 def test_26_candidates_are_ranked_by_conviction_highest_first(
     client: TestClient, store: DailyCycleStore
 ) -> None:
+    """Ranked — because every conviction here covers the same families."""
+
     store.append_started(CycleStarted(cycle_id="c1", started_at=MOMENT))
     store.append_finished(
         finished(
             "c1",
             decisions=(summary("KO"),),
             candidates=(
-                summary("AAA", conviction=41),
-                summary("BBB", conviction=88),
-                summary("CCC", conviction=None),
-                summary("DDD", conviction=63),
+                covered("AAA", 41),
+                covered("BBB", 88),
+                covered("CCC", None),
+                covered("DDD", 63),
             ),
         )
     )
 
-    ranked = [c["symbol"] for c in client.get("/cycle/latest").json()["candidates"]]
+    body = client.get("/cycle/latest").json()
+    ranked = [c["symbol"] for c in body["candidates"]]
 
+    assert body["candidates_ranked"] is True
     assert ranked[:3] == ["BBB", "DDD", "AAA"]
     assert ranked[-1] == "CCC", (
         "a candidate with no conviction is never ranked above one that has it"

@@ -383,21 +383,46 @@ function CaseRows({ cases }: { cases: CycleCourse[] }) {
   );
 }
 
-function Dropped({ total }: { total: number }) {
-  if (total <= GROUP_ROWS) {
+/**
+ * What was left out, and whether the ones shown were chosen or merely first.
+ *
+ * A truncated list makes its order decision-bearing: which three of five
+ * an investor sees is a claim about which three matter. Where the
+ * review's convictions were computed over different score families that
+ * claim has no basis — the numbers are not on one scale — so the page
+ * says the order is not a ranking rather than letting the cut imply one.
+ */
+function Dropped({ total, ranked }: { total: number; ranked: boolean }) {
+  const truncated = total > GROUP_ROWS;
+
+  if (!truncated && ranked) {
     return null;
   }
 
   return (
     <p className="mt-3 text-xs leading-5 text-slate-500">
-      {total - GROUP_ROWS} more not shown here. A list that stopped at{" "}
-      {GROUP_ROWS} without saying so would read as the whole of what the
-      review found.
+      {truncated
+        ? `${total - GROUP_ROWS} more not shown here. A list that stopped at ` +
+          `${GROUP_ROWS} without saying so would read as the whole of what ` +
+          "the review found."
+        : null}
+      {truncated && !ranked ? " " : null}
+      {ranked
+        ? null
+        : "These are listed by symbol, not ranked: their convictions were " +
+          "measured over different score families, so the numbers are not " +
+          "on one scale and no order of merit is claimed."}
     </p>
   );
 }
 
-export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
+export function Opportunities({
+  candidates,
+  ranked,
+}: {
+  candidates: CycleCourse[];
+  ranked: boolean;
+}) {
   const asking = askingCourses(candidates);
   const blocked = blockedCases(candidates);
 
@@ -429,7 +454,7 @@ export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
         ) : (
           <>
             <CaseRows cases={asking.slice(0, GROUP_ROWS)} />
-            <Dropped total={asking.length} />
+            <Dropped total={asking.length} ranked={ranked} />
             <p className="mt-3 text-xs leading-5 text-slate-500">
               A course to consider, not an instruction. Nothing is placed for
               you.
@@ -448,7 +473,7 @@ export function Opportunities({ candidates }: { candidates: CycleCourse[] }) {
         ) : (
           <>
             <CaseRows cases={blocked.slice(0, GROUP_ROWS)} />
-            <Dropped total={blocked.length} />
+            <Dropped total={blocked.length} ranked={ranked} />
             <p className="mt-3 text-xs leading-5 text-slate-500">
               A blocked case is not a bad business. Each blocker names the gate
               that stopped it, and a gate about price behaviour, cost or fit

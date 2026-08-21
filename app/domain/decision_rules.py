@@ -161,8 +161,19 @@ RISK_SEVERITY = _interprets(
     "that hard is rejected on its own record",
 )
 
-#: Forward P/E → CHEAP/FAIR/EXPENSIVE.
-PE_BANDS = _interprets("pe-bands", RuleStatus.UNSOURCED, _AUDIT)
+#: Forward P/E → CHEAP/FAIR/EXPENSIVE, and at or below zero → no band
+#: at all. **Version 2**: a non-positive multiple measures nothing, so
+#: it is refused rather than banded, under the owner's ruling of
+#: 2026-08-21 (`SECURITY_VOLATILITY_DECISION_ROLE.md`). The bands
+#: themselves are unmoved and still unsourced; what changed is the
+#: domain the rule claims to interpret.
+PE_BANDS = DecisionRule(
+    key="pe-bands",
+    version=2,
+    status=RuleStatus.UNSOURCED,
+    kind=RuleKind.INTERPRETS_EVIDENCE,
+    because=_AUDIT,
+)
 
 #: CHEAP/FAIR/EXPENSIVE → 80/55/25. Jointly with the decision gates,
 #: this is the FAIR wall: FAIR scores below the recommendation gate.
