@@ -220,26 +220,28 @@ class ArtificialCIO:
                 ),
             )
 
-        # An unmeasured score is never a reason to reject: not knowing
-        # something is not the same as knowing it is bad. It is, further
-        # down, a reason not to progress.
-        if (
-            evidence.risk_score is not None
-            and evidence.risk_score > policy.maximum_acceptable_risk
-        ):
-            return (
-                DecisionState.REJECT,
-                "Risk exceeds the maximum permitted by policy.",
-                self._blocked(
-                    evidence,
-                    BlockerKind.RISK_GATE,
-                    self._risk_refusal(
-                        evidence,
-                        evidence.risk_score,
-                        policy.maximum_acceptable_risk,
-                    ),
-                ),
-            )
+        # **Historical volatility no longer rejects a thesis.** The owner's
+        # ruling of 2026-08-21 removed the one transition that lived here —
+        # `risk_score > policy.maximum_acceptable_risk → REJECT` — because
+        # a security's own price record is a statement about how violently
+        # it has moved, not about whether the investment case is sound.
+        # AMD was REJECTed on 71.8% annualised volatility while its own
+        # analysts read growth, profitability, balance sheet and cash flow
+        # as strong or better.
+        #
+        # Nothing about risk was weakened. Volatility, drawdown, the band,
+        # the severity and the findings are all still measured, still
+        # displayed, and still scored as safety into conviction — and the
+        # constraint volatility now carries is the Capital Action
+        # Envelope's security-risk ceiling (#236), which bounds how much
+        # of the portfolio a violent security may occupy rather than
+        # whether it may be considered at all. A cap on size is the honest
+        # form of that measurement; a veto on the thesis was not.
+        #
+        # What remains here is the *unmeasured* risk gate, further down:
+        # no recommendation rests on a risk that was never read. Not
+        # knowing something is not the same as knowing it is bad, and it
+        # is still a reason not to progress.
 
         if (
             evidence.quality_score is not None
@@ -503,36 +505,6 @@ class ArtificialCIO:
                 if finding.sense is Sense.FAVOURABLE
                 and finding.dimension is Dimension.RESEARCH
             ),
-        )
-
-    @staticmethod
-    def _risk_refusal(
-        evidence: DecisionEvidence,
-        score: int,
-        maximum: int,
-    ) -> str:
-        """The risk refusal in the investor's language, with its reading.
-
-        The number alone is unreadable — *risk 85* says nothing about
-        what was measured — so the band and the volatility beneath it
-        are named from the reading the score was derived from. Where no
-        reading travelled with the evidence the sentence states the
-        comparison it can prove and claims nothing more.
-        """
-
-        reading = evidence.risk_reading
-
-        if reading is None or reading.volatility is None:
-            return (
-                f"Blocked by the current risk policy: risk scores {score} "
-                f"against a maximum of {maximum}."
-            )
-
-        return (
-            f"Blocked by the current risk policy: annualised volatility was "
-            f"{reading.volatility * 100:.1f}%, placing {evidence.symbol} in "
-            f"this platform's {reading.level.lower()}-risk band and producing "
-            f"risk {score} against a maximum of {maximum}."
         )
 
     @classmethod

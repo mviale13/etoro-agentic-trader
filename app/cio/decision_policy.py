@@ -33,6 +33,18 @@ class DecisionPolicy(BaseModel):
         le=100,
     )
 
+    #: The risk score above which a security's own price record is
+    #: judged severe.
+    #:
+    #: **It no longer gates a decision.** The owner's ruling of
+    #: 2026-08-21 removed `risk_score > maximum_acceptable_risk →
+    #: REJECT` from the Artificial CIO's cascade, so nothing here
+    #: refuses a thesis. What the constant still anchors is the
+    #: `risk-severity` rule's argument: `RiskSignal.SEVERITIES` places
+    #: SEVERE *above* this number deliberately, and that placement is
+    #: what the Capital Action Envelope's tightest security-risk
+    #: ceiling keys on. Deleting it would silently unmoor that
+    #: argument, so it is kept and its remaining referent is named.
     maximum_acceptable_risk: int = Field(
         default=70,
         ge=0,

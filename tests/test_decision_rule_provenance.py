@@ -184,6 +184,14 @@ GOVERNED: dict[str, object] = {
         # gate has none — but decision-bearing all the same: it selects
         # INVESTIGATE outright, ahead of every score.
         "security-evidence: provider-analysis-or-quorate-grounded-quality",
+        # **Which gates exist.** `maximum_acceptable_risk` still sits in
+        # the policy dump above — it anchors `risk-severity`'s argument
+        # and the envelope's tightest ceiling — so the cascade could
+        # lose a gate without a single fingerprinted constant moving.
+        # The membership is therefore hashed in its own right: the
+        # 2026-08-21 cutover removed the severity rejection, and a
+        # future one cannot happen silently either.
+        "gates: no-security-risk-rejection",
     ),
     "conviction-mean": (
         "unweighted-mean-of-present-scores",
@@ -245,7 +253,7 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     # evidence); the mean is unchanged and may now decline to speak. No
     # threshold in either was edited, and the version says so anyway —
     # what a rule *reads* is as decision-bearing as where it cuts.
-    "decision-gates": (2, RuleStatus.UNSOURCED, "afc1c3f4915d"),
+    "decision-gates": (3, RuleStatus.UNSOURCED, "a1d02248cd46"),
     "conviction-mean": (2, RuleStatus.UNSOURCED, "b8cd60d55c95"),
     "actionable-buy": (1, RuleStatus.UNSOURCED, "87618568469b"),
     "veto-sell": (1, RuleStatus.UNSOURCED, "7734b674289c"),

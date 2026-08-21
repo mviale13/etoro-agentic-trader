@@ -462,9 +462,15 @@ def test_the_arithmetic_is_untouched_by_the_wording() -> None:
 
 
 def test_the_state_cap_is_never_reported_as_a_participation_count() -> None:
-    """AMD's 40 is the REJECT cap; five families still spoke for it."""
+    """AMD's 40 is the REJECT cap; five families still spoke for it.
 
-    decision = ArtificialCIO().decide(scored())
+    The veto is what brings this case to REJECT since the 2026-08-21
+    cutover removed the severity rejection. #231's amendment is
+    unaffected: it is about never printing a count without its
+    expectation, whichever gate produced the state.
+    """
+
+    decision = ArtificialCIO().decide(scored(analyst_veto=True))
 
     assert decision.state is DecisionState.REJECT
     assert decision.conviction == ArtificialCIO.CONVICTION_LIMITS[DecisionState.REJECT]
