@@ -77,6 +77,7 @@ def test_1c_the_capital_envelope_refuses_rather_than_reporting_zero_capacity(
         capacity_for,
         envelope_for,
         price_observation_for,
+        security_risk_ceiling_for,
     )
     from tests.test_capital_action_envelope import policy, quote_for
 
@@ -108,6 +109,9 @@ def test_1c_the_capital_envelope_refuses_rather_than_reporting_zero_capacity(
         portfolio_as_of="eToro account response received at 2026-08-20 11:58 UTC",
         drawdown_depth_pct=2.0,
         is_equity=True,
+        security_risk=security_risk_ceiling_for(
+            policy=policy(), volatility_band="LOW", drawdown_band="LOW"
+        ),
     )
 
     assert envelope.kind is EnvelopeKind.REFUSED

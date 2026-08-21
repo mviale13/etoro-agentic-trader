@@ -38,6 +38,9 @@ _REQUIRED = {
     "price_max_age_minutes": "capital_envelope",
     "portfolio_max_age_minutes": "capital_envelope",
     "reduce_policy": "capital_envelope",
+    "security_risk_high_max_total_pct": "capital_envelope",
+    "security_risk_severe_max_total_pct": "capital_envelope",
+    "security_risk_unmeasured_max_total_pct": "capital_envelope",
     "maximum_single_position_pct": "portfolio_policy",
     "maximum_crypto_pct": "portfolio_policy",
     "target_cash_pct": "portfolio_policy",
@@ -144,6 +147,15 @@ class CapitalPolicyService:
                 "maximum_acceptable_drawdown_pct"
             ],
             "reduce_policy": reduce_policy.value,
+            "security_risk_high_max_total_pct": values[
+                "security_risk_high_max_total_pct"
+            ],
+            "security_risk_severe_max_total_pct": values[
+                "security_risk_severe_max_total_pct"
+            ],
+            "security_risk_unmeasured_max_total_pct": values[
+                "security_risk_unmeasured_max_total_pct"
+            ],
         }
 
         try:
@@ -173,6 +185,15 @@ class CapitalPolicyService:
                     values["maximum_acceptable_drawdown_pct"]  # type: ignore[arg-type]
                 ),
                 reduce_policy=reduce_policy,
+                security_risk_high_max_total_pct=float(
+                    values["security_risk_high_max_total_pct"]  # type: ignore[arg-type]
+                ),
+                security_risk_severe_max_total_pct=float(
+                    values["security_risk_severe_max_total_pct"]  # type: ignore[arg-type]
+                ),
+                security_risk_unmeasured_max_total_pct=float(
+                    values["security_risk_unmeasured_max_total_pct"]  # type: ignore[arg-type]
+                ),
                 source=SOURCE,
                 version=policy_version(hashed),
             )

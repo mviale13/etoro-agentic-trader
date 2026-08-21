@@ -515,6 +515,9 @@ def _encode_envelope(
             else None
         ),
         "starter_capped": envelope.starter_capped,
+        "security_risk_ceiling_pct": envelope.security_risk_ceiling_pct,
+        "security_risk_because": envelope.security_risk_because,
+        "security_risk_capped": envelope.security_risk_capped,
         "price_as_of": envelope.price_as_of,
         "portfolio_as_of": envelope.portfolio_as_of,
         "liquidity": envelope.liquidity,
@@ -560,6 +563,16 @@ def _decode_envelope(raw: Any) -> CapitalActionEnvelope | None:
             else None
         ),
         starter_capped=bool(raw.get("starter_capped", False)),
+        # #234's fields are optional under the same schema — the
+        # envelope's own precedent. A pre-ruling record decodes as
+        # carrying no security-risk ceiling, never as one of zero.
+        security_risk_ceiling_pct=(
+            float(raw["security_risk_ceiling_pct"])
+            if raw.get("security_risk_ceiling_pct") is not None
+            else None
+        ),
+        security_risk_because=str(raw.get("security_risk_because", "")),
+        security_risk_capped=bool(raw.get("security_risk_capped", False)),
         price_as_of=str(raw.get("price_as_of", "")),
         portfolio_as_of=str(raw.get("portfolio_as_of", "")),
         liquidity=str(raw.get("liquidity", "")),

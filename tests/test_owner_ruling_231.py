@@ -35,6 +35,7 @@ from app.domain.capital_envelope import (
     PriceObservation,
     envelope_for,
     price_observation_for,
+    security_risk_ceiling_for,
 )
 from app.domain.capital_policy import CapitalPolicy, ReducePolicy
 from app.domain.company_facts import CompanyFacts
@@ -199,6 +200,9 @@ def policy() -> CapitalPolicy:
         portfolio_max_age_minutes=15.0,
         maximum_acceptable_drawdown_pct=20.0,
         reduce_policy=ReducePolicy.RESTORE_TO_POLICY_CAP,
+        security_risk_high_max_total_pct=2.0,
+        security_risk_severe_max_total_pct=1.0,
+        security_risk_unmeasured_max_total_pct=1.0,
         source="investor_strategy.json",
         version="testversion1",
     )
@@ -222,6 +226,11 @@ def crypto_envelope(*, established: bool, price: PriceObservation):
         portfolio_as_of="received at 2026-08-20 14:00 UTC",
         drawdown_depth_pct=None,
         is_equity=False,
+        security_risk=security_risk_ceiling_for(
+            policy=policy(),
+            volatility_band=None,
+            drawdown_band=None,
+        ),
         crypto_price_established=established,
     )
 

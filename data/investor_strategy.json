@@ -44,6 +44,9 @@
     "max_add_weight_change_pct": 2.0,
     "price_max_age_minutes": 15,
     "portfolio_max_age_minutes": 15,
-    "reduce_policy": "restore_to_policy_cap"
+    "reduce_policy": "restore_to_policy_cap",
+    "security_risk_high_max_total_pct": 2.0,
+    "security_risk_severe_max_total_pct": 1.0,
+    "security_risk_unmeasured_max_total_pct": 1.0
   }
 }

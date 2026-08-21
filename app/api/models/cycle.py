@@ -87,6 +87,13 @@ class EnvelopeResponse(BaseModel):
     named_gaps: list[str]
     quality_authority: str | None
     starter_capped: bool
+
+    #: #234's security-risk maximum total position, with the policy's
+    #: own account of it — carried, never recomposed by a surface.
+    security_risk_ceiling_pct: float | None
+    security_risk_because: str
+    security_risk_capped: bool
+
     price_as_of: str
     portfolio_as_of: str
     liquidity: str
@@ -110,6 +117,9 @@ class EnvelopeResponse(BaseModel):
                 else envelope.quality_authority.value
             ),
             starter_capped=envelope.starter_capped,
+            security_risk_ceiling_pct=envelope.security_risk_ceiling_pct,
+            security_risk_because=envelope.security_risk_because,
+            security_risk_capped=envelope.security_risk_capped,
             price_as_of=envelope.price_as_of,
             portfolio_as_of=envelope.portfolio_as_of,
             liquidity=envelope.liquidity,

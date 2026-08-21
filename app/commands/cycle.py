@@ -38,6 +38,7 @@ from app.domain.capital_envelope import (
     envelope_for,
     portfolio_observation_for,
     price_observation_for,
+    security_risk_ceiling_for,
 )
 from app.domain.capital_policy import CapitalPolicyReading
 from app.domain.daily_cycle import (
@@ -65,6 +66,7 @@ from app.repositories.json_event_repository import JsonEventRepository
 from app.services.capital_policy_service import CapitalPolicyService
 from app.services.market_acquisition_service import MarketAcquisitionService
 from app.services.policy_analyzer import PolicyAnalyzer
+from app.services.risk_signal_service import RiskSignalService
 
 __all__ = ["run"]
 
@@ -312,6 +314,26 @@ def _envelope(
     else:
         authority = QualityAuthority.UNAVAILABLE
 
+    # #234: the security's own banded volatility and drawdown, priced
+    # under the owner's security-risk policy. The bands are the risk
+    # signal's own (`risk-bands@1`), read from the same reading the
+    # decision already carries — the envelope bands nothing itself, and
+    # a security with no reading is priced as unmeasured rather than
+    # passed as calm.
+    risk_reading = (
+        workspace.evidence.risk_reading if workspace.evidence is not None else None
+    )
+    bands = RiskSignalService()
+    security_risk = security_risk_ceiling_for(
+        policy=policy,
+        volatility_band=bands.volatility_level(
+            risk_reading.volatility if risk_reading is not None else None
+        ),
+        drawdown_band=bands.drawdown_level(
+            risk_reading.max_drawdown if risk_reading is not None else None
+        ),
+    )
+
     return envelope_for(
         symbol=symbol,
         course=kind,
@@ -319,6 +341,7 @@ def _envelope(
         capacity=capacity,
         named_gaps=tuple(workspace.decision.missing_evidence),
         quality_authority=authority,
+        security_risk=security_risk,
         # A pipeline-produced capital-asking course rests on the one
         # disposition whose gates the #219 measurement showed require
         # the whole six-family floor; a reduction does not consult it.
