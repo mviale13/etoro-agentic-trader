@@ -266,3 +266,73 @@ Recorded because each is a defect waiting if it is skipped.
   doubles its reach without establishing it.
 - **The corpus is one account.** 65 equities the investor holds or
   watches, which is not a sample of anything.
+
+---
+
+## Owner ruling — 2026-08-21
+
+**Conclusion B accepted; owner values selected.** The mechanism is
+**band-to-total-position ceilings**, with volatility and security
+drawdown evaluated **independently** — never substituting one
+measurement for the other. Where the two produce different ceilings,
+both apply, and the existing minimum composition selects the smaller.
+
+### Policy values
+
+Three explicit, separately named values join the active
+`capital_envelope` policy:
+
+| field | value |
+|---|---|
+| `security_risk_high_max_total_pct` | 2.0 |
+| `security_risk_severe_max_total_pct` | 1.0 |
+| `security_risk_unmeasured_max_total_pct` | 1.0 |
+
+These are explicit policy fields even where their numbers equal an
+existing course limit. **No field secretly serves two meanings.**
+
+### Interpretation
+
+Volatility: LOW and MODERATE add no security-risk ceiling; HIGH caps
+the total position at 2%; SEVERE at 1%; UNMEASURED at 1% **with the
+missing reading named**.
+
+Security drawdown: LOW and MODERATE add no ceiling; HIGH caps the
+total position at 2%; UNMEASURED at 1% with the missing reading named.
+**No SEVERE drawdown band is invented in this slice.**
+
+### Semantics
+
+- A **maximum total position**, not an incremental allowance. It
+  applies to OPEN and ADD; a position already at or above the ceiling
+  has zero additional room.
+- It is not a target, it does not automatically request REDUCE, and it
+  does not say the company is weak. REDUCE semantics are unchanged.
+- A missing volatility or drawdown reading does not cancel the course;
+  it constrains the maximum to 1%.
+- Crypto remains outside Capital Action Envelope v1.
+- The wording must say **"under your security-risk policy"** — never
+  present the ceiling as a scientific fact about the security.
+
+### Implementation order
+
+**Slice 1 — the security-risk envelope.** The three policy fields with
+validation: no numeric defaults, active policy required, included in
+the canonical policy hash, severe ≤ high and unmeasured ≤ high, and
+draft, missing or contradictory values refuse the final envelope while
+capacity remains visible. Composed through the existing minimum
+operation; conviction is not an input; no decision state, course or
+canonical rationale changes; **the absolute volatility veto remains in
+place during this PR** — the term goes in before the veto comes out,
+exactly as §"What must be true" ordered.
+
+**Slice 2 — remove volatility from thesis rejection.** Not started
+until Slice 1 merges. Removes the automatic Artificial CIO rejection
+caused solely by the security-risk score exceeding 70, preserving the
+RiskSignal, safety arithmetic and presentation, with a required
+before/after corpus diff over every previously volatility-rejected
+security and named controls (AMD, PLTR, RIVN, SPCX, UUUU, CLNE, LUNR
+after the negative-P/E repair, NESN and UDMY with missing volatility).
+No replacement hybrid veto, no positive volatility signal, no momentum
+change — and no security receives a larger envelope because evidence
+is missing.
