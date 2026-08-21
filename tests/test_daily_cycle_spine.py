@@ -32,7 +32,9 @@ from app.domain.daily_cycle import (
     movement,
     no_action_permitted,
 )
+from app.domain.decision_blocker import DecisionBlocker
 from app.domain.executive.executive_action import ActionKind
+from app.domain.market_acquisition import AcquiredSecurity, MarketAcquisition
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 
 MOMENT = datetime(2026, 8, 19, 12, 0, tzinfo=UTC)
@@ -62,12 +64,21 @@ class AcquisitionStub:
                 "GET https://broker.invalid/pnl?account=ACCT-99&key=sk-FAKE-123"
             )
 
-        return SimpleNamespace(
+        # The real aggregate rather than a namespace shaped like it: the
+        # cycle reads `unpriced` and `refused_listings` off it, and a
+        # stub carrying only the fields today's code happens to touch is
+        # how a spine test stops testing the spine.
+        return MarketAcquisition(
             securities=(
-                SimpleNamespace(symbol="KO", priced=True),
-                SimpleNamespace(symbol="HYPE", priced=False),
+                AcquiredSecurity(
+                    symbol="KO", priced=True, fundamentals=True, calendar=True
+                ),
+                AcquiredSecurity(
+                    symbol="HYPE", priced=False, fundamentals=False, calendar=None
+                ),
             ),
-            priced=("KO",),
+            instruments=(),
+            vix=None,
         )
 
 
@@ -86,6 +97,12 @@ def decision(
             state=SimpleNamespace(value=state),
             rationale=rationale,
             conviction=60,
+            # A conviction travels with what it is, and a blocker with
+            # the decision that named it. Both are carried here because
+            # both are carried in production — a stub that lags the
+            # contract fails the stage for a reason no real run has.
+            conviction_basis="computed from 4 of 5 score families",
+            blocker=DecisionBlocker.none(),
             evidence_as_of=None,
             missing_evidence=(),
         ),
@@ -397,9 +414,14 @@ def test_no_action_is_said_exactly_and_only_in_the_one_permitted_shape(
 
     class CleanAcquisition:
         async def acquire(self):
-            return SimpleNamespace(
-                securities=(SimpleNamespace(symbol="KO", priced=True),),
-                priced=("KO",),
+            return MarketAcquisition(
+                securities=(
+                    AcquiredSecurity(
+                        symbol="KO", priced=True, fundamentals=True, calendar=True
+                    ),
+                ),
+                instruments=(),
+                vix=None,
             )
 
     for _ in range(2):

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from app.cio.decision_policy import DecisionPolicy
 from app.cio.decision_state import DecisionState
 from app.cio.executive_decision import (
@@ -9,7 +11,49 @@ from app.cio.timeline import (
     InvestmentCaseEvent,
     InvestmentCaseEventType,
 )
+from app.domain.decision_blocker import BlockerKind, DecisionBlocker
 from app.domain.decision_rules import CONVICTION_MEAN, DECISION_GATES
+from app.domain.finding import Dimension, Sense
+
+#: The score families `conviction-mean@1` averages, in the order it
+#: reads them, each named as the investor would recognise it.
+#:
+#: Named because a count is only checkable against an expectation: *the
+#: mean of the 5 scores measured* is a claim that five families spoke,
+#: and where four did it was false. The tuple is the expectation, its
+#: length is the denominator, and a family absent from a decision is
+#: named rather than quietly dropped out of the numerator.
+SCORE_FAMILIES = (
+    "business quality",
+    "evidence",
+    "valuation",
+    "portfolio fit",
+    "safety",
+)
+
+
+@dataclass(frozen=True, slots=True)
+class ScoreParticipation:
+    """Which score families spoke for one decision, and which did not.
+
+    Derived from the decision's own evidence, never supplied beside it:
+    the scores, how many families were expected, and the names of the
+    ones that produced nothing. The conviction sentence is worded from
+    this and from nothing else, so it cannot state a count the evidence
+    does not support.
+    """
+
+    scores: tuple[int, ...]
+    expected: int
+    absent: tuple[str, ...]
+
+    @property
+    def participating(self) -> int:
+        return len(self.scores)
+
+    @property
+    def complete(self) -> bool:
+        return self.participating == self.expected
 
 
 class ArtificialCIO:
@@ -68,16 +112,29 @@ class ArtificialCIO:
         self,
         evidence: DecisionEvidence,
     ) -> ExecutiveDecision:
-        state, rationale = self._determine_state(evidence)
+        state, rationale, blocker = self._determine_state(evidence)
+
+        conviction = self._calculate_conviction(evidence, state)
+
+        # One reading of the evidence, worded and carried. A sentence
+        # that states a count and a decision that carries a different
+        # one would be two answers to one question.
+        participation = self._participation(evidence)
 
         return ExecutiveDecision(
             symbol=evidence.symbol,
             state=state,
-            conviction=self._calculate_conviction(
-                evidence,
-                state,
-            ),
+            conviction=conviction,
+            conviction_basis=self._conviction_basis(evidence, state, conviction),
+            conviction_participating=participation.participating,
+            conviction_expected=participation.expected,
+            conviction_absent_families=participation.absent,
             rationale=rationale,
+            # What stopped it, from the branch that stopped it. Nothing
+            # re-reads the state to work this out: the cascade already
+            # knows, and this is that knowledge kept rather than thrown
+            # away and guessed at by a surface.
+            blocker=blocker,
             evidence_as_of=evidence.evidence_as_of,
             evidence_weighed=evidence.evidence_weighed,
             key_strengths=evidence.strengths,
@@ -101,19 +158,42 @@ class ArtificialCIO:
     def _determine_state(
         self,
         evidence: DecisionEvidence,
-    ) -> tuple[DecisionState, str]:
+    ) -> tuple[DecisionState, str, DecisionBlocker]:
+        """The gate that decides, and the same gate's account of itself.
+
+        Every rationale below is unchanged, to the byte. What is added
+        is the third member: the branch names the blocker it *is*,
+        because it is the only place that knows. A surface reading a
+        state string back into a cause would be guessing — REJECT is
+        reached three different ways here, and two of them say nothing
+        about the business.
+        """
+
         policy = self._policy
 
         if evidence.hard_reject:
             return (
                 DecisionState.REJECT,
                 "The investment case violates a hard policy gate.",
+                self._blocked(
+                    evidence,
+                    BlockerKind.POLICY_GATE,
+                    "Refused outright by a hard policy gate.",
+                ),
             )
 
         if evidence.analyst_veto:
             return (
                 DecisionState.REJECT,
                 "A specialist analyst identified a veto-level risk.",
+                self._blocked(
+                    evidence,
+                    BlockerKind.ANALYST_VETO,
+                    (
+                        "Blocked by a specialist analyst's veto: it read a "
+                        "risk at the level that stops a case outright."
+                    ),
+                ),
             )
 
         # Nothing about the security itself was gathered — the symbol names
@@ -130,6 +210,14 @@ class ArtificialCIO:
                     f"{evidence.symbol}, so there is nothing to base a "
                     "decision on."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.MISSING_EVIDENCE,
+                    (
+                        f"Nothing about {evidence.symbol} itself has been "
+                        "read, so there is nothing yet to judge."
+                    ),
+                ),
             )
 
         # An unmeasured score is never a reason to reject: not knowing
@@ -142,6 +230,15 @@ class ArtificialCIO:
             return (
                 DecisionState.REJECT,
                 "Risk exceeds the maximum permitted by policy.",
+                self._blocked(
+                    evidence,
+                    BlockerKind.RISK_GATE,
+                    self._risk_refusal(
+                        evidence,
+                        evidence.risk_score,
+                        policy.maximum_acceptable_risk,
+                    ),
+                ),
             )
 
         if (
@@ -151,6 +248,15 @@ class ArtificialCIO:
             return (
                 DecisionState.REJECT,
                 ("Business quality is insufficient to justify continued monitoring."),
+                self._blocked(
+                    evidence,
+                    BlockerKind.QUALITY_GATE,
+                    (
+                        f"Blocked by the quality floor: business quality "
+                        f"scores {evidence.quality_score} against a minimum "
+                        f"of {policy.minimum_watchlist_quality}."
+                    ),
+                ),
             )
 
         if evidence.evidence_score < policy.minimum_investigation_evidence:
@@ -160,23 +266,68 @@ class ArtificialCIO:
                     "The opportunity is relevant, but available "
                     "evidence is still limited."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.MISSING_EVIDENCE,
+                    (
+                        f"Blocked by how little has been read: evidence "
+                        f"scores {evidence.evidence_score} against the "
+                        f"{policy.minimum_investigation_evidence} research "
+                        "needs."
+                    ),
+                ),
             )
 
         if evidence.quality_score is None:
             return (
                 DecisionState.INVESTIGATE,
                 self._unassessable_quality(evidence),
+                self._blocked(
+                    evidence,
+                    BlockerKind.QUALITY_GATE,
+                    self._unassessable_quality(evidence),
+                ),
             )
 
         if (
             evidence.quality_score < policy.minimum_prepare_quality
             or evidence.evidence_score < policy.minimum_prepare_evidence
         ):
+            # A disjunction, and the blocker names the side that fired.
+            # Both can be true at once; quality is named first because
+            # it is the one that is a statement about the company, and
+            # a reader shown only "not enough read" would be told the
+            # smaller half of the truth.
+            quality_short = evidence.quality_score < policy.minimum_prepare_quality
+
             return (
                 DecisionState.INVESTIGATE,
                 (
                     "The opportunity merits deeper research before "
                     "a thesis can be prepared."
+                ),
+                self._blocked(
+                    evidence,
+                    (
+                        BlockerKind.QUALITY_GATE
+                        if quality_short
+                        else BlockerKind.MISSING_EVIDENCE
+                    ),
+                    (
+                        (
+                            f"Blocked short of a thesis: business quality "
+                            f"scores {evidence.quality_score} against the "
+                            f"{policy.minimum_prepare_quality} preparing one "
+                            "needs."
+                        )
+                        if quality_short
+                        else (
+                            f"Blocked short of a thesis: evidence scores "
+                            f"{evidence.evidence_score} against the "
+                            f"{policy.minimum_prepare_evidence} preparing one "
+                            "needs."
+                        )
+                    ),
                 ),
             )
 
@@ -187,6 +338,15 @@ class ArtificialCIO:
                     "The investment case is credible, but quality "
                     "conviction is not yet sufficient."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.QUALITY_GATE,
+                    (
+                        f"Blocked short of a recommendation: business quality "
+                        f"scores {evidence.quality_score} against the "
+                        f"{policy.minimum_recommendation_quality} one needs."
+                    ),
+                ),
             )
 
         if evidence.evidence_score < policy.minimum_recommendation_evidence:
@@ -196,12 +356,26 @@ class ArtificialCIO:
                     "The thesis is promising, but recommendation-level "
                     "evidence is incomplete."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.MISSING_EVIDENCE,
+                    (
+                        f"Blocked short of a recommendation: evidence scores "
+                        f"{evidence.evidence_score} against the "
+                        f"{policy.minimum_recommendation_evidence} one needs."
+                    ),
+                ),
             )
 
         if evidence.valuation_score is None:
             return (
                 DecisionState.PREPARE,
                 self._unassessable_valuation(evidence),
+                self._blocked(
+                    evidence,
+                    BlockerKind.VALUATION_GATE,
+                    self._unassessable_valuation(evidence),
+                ),
             )
 
         if evidence.risk_score is None:
@@ -210,6 +384,15 @@ class ArtificialCIO:
                 (
                     "The case is credible, but risk has not been measured, "
                     "and no recommendation is made without it."
+                ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.RISK_GATE,
+                    (
+                        "Blocked by an unmeasured risk: this security's own "
+                        "price record was not read, and no recommendation "
+                        "rests on an unmeasured risk."
+                    ),
                 ),
             )
 
@@ -220,6 +403,16 @@ class ArtificialCIO:
                     "The company is attractive, but valuation does not "
                     "currently support action."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.VALUATION_GATE,
+                    (
+                        f"Blocked by what it costs: valuation scores "
+                        f"{evidence.valuation_score} against the "
+                        f"{policy.minimum_recommendation_valuation} a "
+                        "recommendation needs."
+                    ),
+                ),
             )
 
         if evidence.portfolio_fit_score is None:
@@ -228,6 +421,14 @@ class ArtificialCIO:
                 (
                     "The case is credible, but how it would fit the "
                     "portfolio has not been measured."
+                ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.PORTFOLIO_FIT_GATE,
+                    (
+                        "Blocked by an unmeasured fit: how this security "
+                        "would sit in this account was not measured."
+                    ),
                 ),
             )
 
@@ -238,6 +439,15 @@ class ArtificialCIO:
                     "The thesis is actionable in isolation, but "
                     "portfolio fit is insufficient."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.PORTFOLIO_FIT_GATE,
+                    (
+                        f"Blocked by how it would sit in this account: "
+                        f"portfolio fit scores {evidence.portfolio_fit_score} "
+                        f"against a minimum of {policy.minimum_portfolio_fit}."
+                    ),
+                ),
             )
 
         if not evidence.actionable_now:
@@ -247,6 +457,14 @@ class ArtificialCIO:
                     "The investment case is ready, but its execution "
                     "trigger has not occurred."
                 ),
+                self._blocked(
+                    evidence,
+                    BlockerKind.EXECUTION_TRIGGER,
+                    (
+                        "Blocked on timing alone: the case is ready and its "
+                        "execution trigger has not occurred."
+                    ),
+                ),
             )
 
         return (
@@ -255,7 +473,140 @@ class ArtificialCIO:
                 "The investment case satisfies quality, evidence, "
                 "valuation, risk, and portfolio gates."
             ),
+            DecisionBlocker.none(),
         )
+
+    @staticmethod
+    def _blocked(
+        evidence: DecisionEvidence,
+        kind: BlockerKind,
+        stated: str,
+    ) -> DecisionBlocker:
+        """One blocker, carrying what survives it.
+
+        `despite` is the fundamental analysts' own favourable verdicts,
+        selected by *kind of finding* and never by strength — the ledger
+        states outright that its order is not a ranking, so picking "the
+        strongest" would publish an ordering nobody measured. Where the
+        gate is itself about the business the blocker drops them, since
+        quoting an analyst against a quality ruling would argue with the
+        decision rather than qualify it.
+        """
+
+        return DecisionBlocker.of(
+            kind,
+            stated,
+            evidence.symbol,
+            despite=tuple(
+                finding.statement
+                for finding in evidence.findings
+                if finding.sense is Sense.FAVOURABLE
+                and finding.dimension is Dimension.RESEARCH
+            ),
+        )
+
+    @staticmethod
+    def _risk_refusal(
+        evidence: DecisionEvidence,
+        score: int,
+        maximum: int,
+    ) -> str:
+        """The risk refusal in the investor's language, with its reading.
+
+        The number alone is unreadable — *risk 85* says nothing about
+        what was measured — so the band and the volatility beneath it
+        are named from the reading the score was derived from. Where no
+        reading travelled with the evidence the sentence states the
+        comparison it can prove and claims nothing more.
+        """
+
+        reading = evidence.risk_reading
+
+        if reading is None or reading.volatility is None:
+            return (
+                f"Blocked by the current risk policy: risk scores {score} "
+                f"against a maximum of {maximum}."
+            )
+
+        return (
+            f"Blocked by the current risk policy: annualised volatility was "
+            f"{reading.volatility * 100:.1f}%, placing {evidence.symbol} in "
+            f"this platform's {reading.level.lower()}-risk band and producing "
+            f"risk {score} against a maximum of {maximum}."
+        )
+
+    @classmethod
+    def _conviction_basis(
+        cls,
+        evidence: DecisionEvidence,
+        state: DecisionState,
+        conviction: int | None,
+    ) -> str:
+        """What the number is, so it cannot be read as enthusiasm.
+
+        AMD's 40 is the REJECT cap of `conviction-mean@1` and not a mean
+        that happened to land on 40. Printed alone the two are the same
+        digits, and only one of them is a measurement of anything.
+
+        **A count is stated against its expectation, never alone.** *The
+        mean of the 5 scores measured* was five families' verdict where
+        five spoke and a false claim where four did — the reader has no
+        way to tell which, because the sentence never said how many were
+        asked. Every count here is `n of m` from one reading of the
+        evidence, and the families that produced nothing are named:
+        their absence is a limit on what the number covers, and it is
+        not a low score for them. The arithmetic is untouched by this
+        wording — #232's ruling reserves that for its own slice.
+        """
+
+        cap = cls.CONVICTION_LIMITS[state]
+
+        if conviction is None:
+            return (
+                "No conviction is stated: this case cites no supporting "
+                "reason, and an average over the account's own numbers is "
+                "not confidence in a security."
+            )
+
+        participation = cls._participation(evidence)
+
+        capped = (
+            f"capped at {cap} by the {state.value} state"
+            if conviction == cap
+            else f"where the {state.value} state caps it at {cap}"
+        )
+
+        coverage = (
+            ""
+            if participation.complete
+            else (
+                " No "
+                f"{cls._and(participation.absent)} score participated, so it "
+                "covers less than a complete reading — an absent score is "
+                "missing, not poor."
+            )
+        )
+
+        return (
+            "A decision score, not enthusiasm: computed from "
+            f"{participation.participating} of {participation.expected} score "
+            f"families under conviction-mean@1, {capped}.{coverage}"
+        )
+
+    @staticmethod
+    def _and(names: tuple[str, ...]) -> str:
+        """Name every absent family, joined as a reader would say them.
+
+        Written as a slice rather than a length comparison on purpose:
+        this module is governed by the anonymous-threshold guard, and a
+        bare number in a comparison here is indistinguishable from a
+        threshold whether or not it is one.
+        """
+
+        if not names[1:]:
+            return names[0]
+
+        return f"{', '.join(names[:-1])} or {names[-1]}"
 
     @staticmethod
     def _unassessable_quality(
@@ -364,17 +715,7 @@ class ArtificialCIO:
         if not evidence.strengths:
             return None
 
-        measured = [
-            score
-            for score in (
-                evidence.quality_score,
-                evidence.evidence_score,
-                evidence.valuation_score,
-                evidence.portfolio_fit_score,
-                evidence.safety_score,
-            )
-            if score is not None
-        ]
+        measured = ArtificialCIO._measured_scores(evidence)
 
         if not measured:
             return None
@@ -382,6 +723,48 @@ class ArtificialCIO:
         conviction = round(sum(measured) / len(measured))
 
         return min(conviction, ArtificialCIO.CONVICTION_LIMITS[state])
+
+    @staticmethod
+    def _measured_scores(evidence: DecisionEvidence) -> tuple[int, ...]:
+        """The scores that exist, all running the same way.
+
+        Kept as the arithmetic's own door — `conviction-mean@1` averages
+        exactly these — while `_participation` answers the separate
+        question of what was expected and what did not arrive. The
+        arithmetic is untouched by this slice; only what may be said
+        about it is.
+        """
+
+        return ArtificialCIO._participation(evidence).scores
+
+    @staticmethod
+    def _participation(evidence: DecisionEvidence) -> ScoreParticipation:
+        """Which families spoke, how many were expected, which are absent.
+
+        One reading of the evidence produces all three, so a sentence
+        can never state a count the same evidence would not produce.
+        The pairing is positional against `SCORE_FAMILIES` and the test
+        pins the order — a family renamed without its score moving
+        would otherwise attribute an absence to the wrong one.
+        """
+
+        readings = (
+            evidence.quality_score,
+            evidence.evidence_score,
+            evidence.valuation_score,
+            evidence.portfolio_fit_score,
+            evidence.safety_score,
+        )
+
+        return ScoreParticipation(
+            scores=tuple(score for score in readings if score is not None),
+            expected=len(SCORE_FAMILIES),
+            absent=tuple(
+                family
+                for family, score in zip(SCORE_FAMILIES, readings, strict=True)
+                if score is None
+            ),
+        )
 
 
 ExecutiveDecisionEngine = ArtificialCIO

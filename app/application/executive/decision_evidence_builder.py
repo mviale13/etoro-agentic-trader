@@ -227,6 +227,11 @@ class DecisionEvidenceBuilder:
             evidence_score=evidence_score,
             valuation_score=valuation,
             risk_score=self._risk_score(company),
+            # The reading the score above was banded from, carried whole.
+            # The gate reads the score and only the score; the refusal
+            # names the volatility, and neither can drift from the other
+            # because both come off this one object.
+            risk_reading=company.signals.risk if company is not None else None,
             portfolio_fit_score=portfolio_fit.score,
             # Each score's own reasoning, worded where the score is
             # computed. A band is this platform's policy, not a

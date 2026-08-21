@@ -9,6 +9,7 @@ from typing import Any, Protocol
 import yfinance as yf
 
 from app.domain.asset_class import AssetClass
+from app.domain.provider_identity import crypto_listing
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.yahoo_market_provider import YahooInstrument, YahooMarketProvider
 
@@ -86,6 +87,15 @@ class YahooPriceHistory:
         A placeholder symbol — the `#1238` the platform prints for a
         holding no watchlist describes — is not a ticker and is not
         offered to the provider as one.
+
+        Nor is a cryptocurrency pair the vendor lists a different token
+        under. `HYPE-USD` returns Supreme Finance and `TAO-USD` returns
+        Together As One: charted here, one token's decision would be
+        scored against another token's move, and the outcome would look
+        exactly like a measurement. The crypto-native pool publishes a
+        price and not a year of closes, so this refuses rather than
+        substitutes, and the caller reports the outcome as unmeasured —
+        which is what it is.
         """
 
         if symbol.startswith("#"):
@@ -99,11 +109,40 @@ class YahooPriceHistory:
         if item is None:
             return None
 
-        return YahooInstrument.for_security(
+        asset_class = AssetClass.from_etoro(item.asset_type_id)
+
+        ticker = YahooInstrument.for_security(
             item.symbol,
             item.name,
-            AssetClass.from_etoro(item.asset_type_id),
+            asset_class,
         ).yahoo_symbol
+
+        if asset_class is not AssetClass.CRYPTO:
+            return ticker
+
+        return ticker if self._listing_agrees(item, ticker) else None
+
+    def _listing_agrees(self, item: WatchlistItem, ticker: str) -> bool:
+        """Whether the vendor's pair listing names this token.
+
+        Read from the fundamentals this platform already stored for the
+        ticker — the read-only door, so asking costs nothing and this
+        provider stays the only thing here that reaches the network.
+        """
+
+        from app.providers.cached_value_provider import CachedValueProvider
+
+        try:
+            vendor = CachedValueProvider.stored().snapshot(ticker).vendor_identity
+        except Exception:
+            vendor = None
+
+        return crypto_listing(
+            symbol=item.symbol,
+            vendor_symbol=ticker,
+            vendor_name=vendor.name if vendor is not None else None,
+            token_names=(item.name,),
+        ).agrees
 
     def _download(self, ticker: str) -> dict[date, float] | None:
         history: Any = yf.download(

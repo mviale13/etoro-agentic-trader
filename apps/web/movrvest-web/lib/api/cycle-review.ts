@@ -63,17 +63,40 @@ export interface CycleEnvelope {
   liquidity: string;
 }
 
+/**
+ * What stands between one case and its next state.
+ *
+ * `kind` groups; `stated` is the sentence. The page never builds a
+ * sentence out of the kind — the cause is worded where the decision is
+ * made, and a page that phrased one would be authoring a decision.
+ */
+export interface CycleBlocker {
+  kind: string;
+  stated: string;
+  /** The analysts' favourable verdicts that survive it, quoted. */
+  despite: string[];
+  /** What this ruling does not claim. Empty where it would be false. */
+  doesNotSay: string;
+}
+
 export interface CycleCourse {
   symbol: string;
   disposition: string;
   rationale: string;
   conviction: number | null;
+  /**
+   * What the conviction is. The number is shown only with this beside
+   * it: 40 alone reads as enthusiasm, and it is a state-capped score.
+   */
+  convictionBasis: string;
   evidenceAsOf: string;
   actionKind: string;
   actionStatement: string;
   actionBecause: string;
   asksForSomething: boolean;
   envelope: CycleEnvelope | null;
+  /** Null on a record written before blockers existed. Never a default. */
+  blocker: CycleBlocker | null;
 }
 
 export interface RecordedHolding {
@@ -349,12 +372,31 @@ function courseOf(raw: unknown, field: string): CycleCourse {
     disposition: requiredString(item, "disposition"),
     rationale: requiredString(item, "rationale"),
     conviction: nullableNumber(item, "conviction"),
+    convictionBasis: requiredString(item, "conviction_basis"),
     evidenceAsOf: requiredString(item, "evidence_as_of"),
     actionKind: requiredString(item, "action_kind"),
     actionStatement: requiredString(item, "action_statement"),
     actionBecause: requiredString(item, "action_because"),
     asksForSomething: requiredBoolean(item, "asks_for_something"),
     envelope: envelopeOf(item.envelope, `${field}.envelope`),
+    blocker: blockerOf(item.blocker, `${field}.blocker`),
+  };
+}
+
+function blockerOf(raw: unknown, field: string): CycleBlocker | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+
+  const item = object(raw, field);
+
+  return {
+    kind: requiredString(item, "kind"),
+    // Required, not optional. A blocker with no sentence would be a
+    // cause this page had to word for itself, which it may not do.
+    stated: requiredString(item, "stated"),
+    despite: requiredStrings(item, "despite"),
+    doesNotSay: requiredString(item, "does_not_say"),
   };
 }
 

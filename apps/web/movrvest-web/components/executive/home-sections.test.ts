@@ -1,18 +1,21 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  GROUP_ROWS,
+  askingCourses,
+  blockedCases,
+  blockerCell,
+  convictionCell,
   isComparable,
   movementLabel,
-  topOpportunities,
 } from "./HomeSections";
 import type { CycleCourse, CycleReview } from "@/lib/api/cycle-review";
 
 /**
- * The two rules the homepage's tables encode.
- *
- * Both are places a page could quietly invent a finding: calling an
- * uncompared security "Unchanged", or reordering a ranking the CIO
- * produced. Neither is allowed.
+ * The rules the homepage encodes, each one a place it could invent a
+ * finding: calling an uncompared security "Unchanged", reordering a
+ * ranking the CIO produced, printing an em dash over a live blocker,
+ * or printing a conviction with nothing to say what it is.
  */
 
 function review(overrides: Partial<CycleReview> = {}): CycleReview {
@@ -45,18 +48,24 @@ function review(overrides: Partial<CycleReview> = {}): CycleReview {
   };
 }
 
-function course(symbol: string): CycleCourse {
+function course(
+  symbol: string,
+  overrides: Partial<CycleCourse> = {},
+): CycleCourse {
   return {
     symbol,
     disposition: "PREPARE",
     rationale: "",
     conviction: null,
+    convictionBasis: "",
     evidenceAsOf: "",
     actionKind: "wait",
     actionStatement: "Wait.",
     actionBecause: "",
     asksForSomething: false,
     envelope: null,
+    blocker: null,
+    ...overrides,
   };
 }
 
@@ -95,18 +104,110 @@ describe("movement is only claimed where it was measured", () => {
   });
 });
 
-describe("the opportunities table", () => {
-  it("shows five and keeps the CIO's order", () => {
-    const ranked = ["A", "B", "C", "D", "E", "F", "G"].map(course);
+describe("what the CIO evaluated is two groups, not one ranking", () => {
+  /** The live five, as the recorded cycle produced them. */
+  const evaluated = [
+    course("GRE.MC", {
+      disposition: "INVESTIGATE",
+      asksForSomething: true,
+      actionStatement: "Research GRE.MC before the thesis can progress.",
+      conviction: 61,
+      convictionBasis: "the mean of the 5 scores measured",
+    }),
+    course("AMD", {
+      disposition: "REJECT",
+      actionKind: "none",
+      actionStatement: "No action on AMD.",
+      conviction: 40,
+      convictionBasis: "capped at 40 by the REJECT state",
+      blocker: {
+        kind: "risk_gate",
+        stated: "Blocked by the current risk policy: risk 85 against 70.",
+        despite: ["Growth is strong."],
+        doesNotSay: "This is a risk ruling.",
+      },
+    }),
+    course("UUUU", { disposition: "REJECT", actionKind: "none" }),
+    course("MSFT", { disposition: "PREPARE" }),
+    course("HYPE", { disposition: "INVESTIGATE", asksForSomething: true }),
+  ];
 
-    const top = topOpportunities(ranked);
+  it("splits on the platform's own bit, never on the state string", () => {
+    expect(askingCourses(evaluated).map((c) => c.symbol)).toEqual([
+      "GRE.MC",
+      "HYPE",
+    ]);
 
-    expect(top).toHaveLength(5);
-    expect(top.map((c) => c.symbol)).toEqual(["A", "B", "C", "D", "E"]);
+    expect(blockedCases(evaluated).map((c) => c.symbol)).toEqual([
+      "AMD",
+      "UUUU",
+      "MSFT",
+    ]);
   });
 
-  it("shows fewer without padding when fewer were evaluated", () => {
-    expect(topOpportunities([course("A")])).toHaveLength(1);
-    expect(topOpportunities([])).toHaveLength(0);
+  it("keeps the server's order inside each group", () => {
+    const many = ["A", "B", "C", "D"].map((symbol) =>
+      course(symbol, { asksForSomething: true }),
+    );
+
+    expect(
+      askingCourses(many)
+        .slice(0, GROUP_ROWS)
+        .map((c) => c.symbol),
+    ).toEqual(["A", "B", "C"]);
+  });
+});
+
+describe("a blocked case never renders an em dash", () => {
+  it("prints the deciding layer's own sentence", () => {
+    const amd = course("AMD", {
+      blocker: {
+        kind: "risk_gate",
+        stated:
+          "Blocked by the current risk policy: annualised volatility was " +
+          "71.8%, placing AMD in this platform's severe-risk band and " +
+          "producing risk 85 against a maximum of 70.",
+        despite: ["Growth is strong — Revenue growth is 50.1%."],
+        doesNotSay: "This is a risk ruling. It does not say AMD is a weak business.",
+      },
+    });
+
+    const cell = blockerCell(amd);
+
+    expect(cell).toContain("71.8%");
+    expect(cell).toContain("85");
+    expect(cell).not.toBe("—");
+  });
+
+  it("says a record carries no blocker rather than that nothing blocks", () => {
+    expect(blockerCell(course("OLD"))).toBe("Not recorded for this review");
+  });
+});
+
+describe("a conviction is never shown alone", () => {
+  it("shows the number with its state once a basis exists", () => {
+    expect(
+      convictionCell(
+        course("AMD", {
+          disposition: "REJECT",
+          conviction: 40,
+          convictionBasis: "capped at 40 by the REJECT state",
+        }),
+      ),
+    ).toBe("40 (REJECT)");
+  });
+
+  it("withholds the number where nothing says what it is", () => {
+    expect(convictionCell(course("AMD", { conviction: 40 }))).toBe("Not stated");
+  });
+
+  it("carries the withholding reason where the CIO stated none", () => {
+    expect(
+      convictionCell(
+        course("BTC", {
+          convictionBasis: "No conviction is stated: this case cites no support.",
+        }),
+      ),
+    ).toBe("No conviction is stated: this case cites no support.");
   });
 });

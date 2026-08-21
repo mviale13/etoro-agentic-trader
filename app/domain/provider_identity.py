@@ -254,6 +254,150 @@ class CrossProviderIdentity:
         )
 
 
+#: The currency word a vendor appends when it lists a token as a pair.
+#:
+#: Yahoo quotes every cryptocurrency against a currency — this platform
+#: only ever builds `{SYMBOL}-USD` — and names the listing after the
+#: pair: *"Bitcoin USD"*. The currency belongs to the *listing*, not to
+#: the token, so it is removed before two providers' names are compared.
+_QUOTE_CURRENCIES = ("usd",)
+
+
+def _token_word(name: str | None) -> str:
+    """A token's name reduced to its letters and digits, currency dropped.
+
+    Punctuation and spacing differ between vendors for reasons that
+    have nothing to do with identity — *"1inch Network"* and
+    *"1INCH"* — so they are removed. Nothing else is: this is a
+    comparison, never a classification.
+    """
+
+    if not name:
+        return ""
+
+    words = name.casefold().split()
+
+    while words and words[-1] in _QUOTE_CURRENCIES:
+        words.pop()
+
+    return re.sub(r"[^0-9a-z]", "", "".join(words))
+
+
+@dataclass(frozen=True, slots=True)
+class VendorListing:
+    """Whether a vendor's crypto listing is this token, or another one.
+
+    The quote path's version of Invariant 2, and it is a separate
+    question from `join_identity`'s. That ladder compares instrument
+    *form* — ETF, trust, ADR — which is the axis an equity ticker
+    collision runs along. A cryptocurrency collision runs along the
+    other axis entirely: both providers agree it is a cryptocurrency
+    and name two different ones.
+
+    Measured on the live book before it was written. eToro's `HYPE` is
+    *Hyperliquid* and Yahoo's `HYPE-USD` is *Supreme Finance USD*;
+    eToro's `TAO` is *Bittensor* and Yahoo's `TAO-USD` is *Together As
+    One USD*. Both pairs came out ASSUMED from `join_identity` — no
+    form word appears in any of the four names, so the ladder had
+    nothing to compare and fell through to symbol equality, which is
+    exactly what a `-USD` suffix manufactures.
+
+    Names are compared for **equality** after normalisation, never by
+    containment. `_forms` already learned that lesson the expensive
+    way: matched as a substring, the letters e-t-f inside *Netflix*
+    manufactured a cross-provider agreement.
+    """
+
+    symbol: str
+
+    #: The ticker the vendor was asked under — `HYPE-USD`.
+    vendor_symbol: str
+
+    #: The vendor's own name for that listing, where one is held.
+    vendor_name: str | None
+
+    #: Whether the vendor's listing may be read as this token at all.
+    agrees: bool
+
+    #: Why, in this platform's own words, in both directions.
+    because: str
+
+
+def crypto_listing(
+    *,
+    symbol: str,
+    vendor_symbol: str,
+    vendor_name: str | None,
+    token_names: tuple[str | None, ...],
+) -> VendorListing:
+    """Whether the vendor's `{SYMBOL}-USD` listing names this token.
+
+    `token_names` is every name this platform holds for the token from
+    a source that is not the vendor being checked — the broker's own
+    name for the instrument, and the crypto-native provider's
+    identifier. Either one matching is enough; both matching is the
+    ordinary case for a major.
+
+    **A listing that cannot be checked does not pass.** Where no vendor
+    name is held, nothing establishes that the ticker is this token,
+    and S5.1's rule applies unchanged: a gate that cannot be evaluated
+    fails. The cost of failing is small and named — the vendor's price
+    *history* is not read — while the cost of passing is another
+    token's chart under this one's symbol.
+    """
+
+    wanted = tuple(word for name in token_names if (word := _token_word(name)))
+
+    listed = _token_word(vendor_name)
+
+    if not listed:
+        return VendorListing(
+            symbol=symbol,
+            vendor_symbol=vendor_symbol,
+            vendor_name=vendor_name,
+            agrees=False,
+            because=(
+                f"this platform holds no vendor name for {vendor_symbol}, so "
+                f"nothing checks that the listing is {symbol}"
+            ),
+        )
+
+    if not wanted:
+        return VendorListing(
+            symbol=symbol,
+            vendor_symbol=vendor_symbol,
+            vendor_name=vendor_name,
+            agrees=False,
+            because=(
+                f"this platform holds no independent name for {symbol}, so "
+                f"the {vendor_symbol} listing cannot be checked against one"
+            ),
+        )
+
+    if listed in wanted:
+        return VendorListing(
+            symbol=symbol,
+            vendor_symbol=vendor_symbol,
+            vendor_name=vendor_name,
+            agrees=True,
+            because=(
+                f"the vendor lists {vendor_symbol} as {vendor_name}, which "
+                f"names the same token this platform holds {symbol} to be"
+            ),
+        )
+
+    return VendorListing(
+        symbol=symbol,
+        vendor_symbol=vendor_symbol,
+        vendor_name=vendor_name,
+        agrees=False,
+        because=(
+            f"the vendor lists {vendor_symbol} as {vendor_name}, which is a "
+            f"different token from {symbol}"
+        ),
+    )
+
+
 def vendor_claim(symbol: str, info: dict[str, Any]) -> ProviderIdentityClaim:
     """The data vendor's account of a symbol, read from its own payload.
 

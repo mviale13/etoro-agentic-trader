@@ -10,13 +10,16 @@ from app.domain.market_magnitude import MarketCapMagnitude
 from app.domain.market_snapshot import MarketQuote
 from app.domain.monetary import MarketCapDenomination, MonetaryAmount
 from app.domain.monetary_translation import MonetaryTranslation
+from app.domain.provenance import Provenance
 from app.domain.provider_identity import (
     CrossProviderIdentity,
     IdentityStanding,
+    crypto_listing,
     join_identity,
 )
 from app.domain.provider_translation import TranslationWarrant
 from app.domain.provider_translations import governed
+from app.domain.token_facts import TokenFact, TokenMarketFacts
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.domain.watchlist_item import WatchlistItem
 from app.providers.cached_market_provider import CachedMarketProvider
@@ -144,6 +147,36 @@ class CompanyFactsService:
             else None
         )
 
+        # Whether the vendor's `{SYMBOL}-USD` listing is this token at
+        # all. None for anything that is not a cryptocurrency: an equity
+        # or a fund is quoted under its own ticker and this question does
+        # not arise for it.
+        listing = (
+            crypto_listing(
+                symbol=item.symbol,
+                vendor_symbol=instrument.yahoo_symbol,
+                vendor_name=(
+                    valuation.vendor_identity.name
+                    if valuation.vendor_identity is not None
+                    else None
+                ),
+                token_names=(
+                    item.name,
+                    tokens.provider_id if tokens is not None else None,
+                ),
+            )
+            if asset_class is AssetClass.CRYPTO
+            else None
+        )
+
+        # The vendor's daily series — the day's move, volatility,
+        # drawdown, market sensitivity — is this token's only where the
+        # vendor's own listing names this token. Yahoo's `HYPE-USD` is
+        # Supreme Finance and its `TAO-USD` is Together As One: read
+        # unchecked, another token's chart becomes this one's risk band,
+        # and under `risk-bands@1` a band is a decision.
+        history = quote if listing is None or listing.agrees else None
+
         market_cap = (
             tokens.established_value("market_cap")
             if tokens is not None
@@ -172,7 +205,7 @@ class CompanyFactsService:
             # Each half dated by the call that produced it. These are two
             # requests to one provider and they age separately: a quote is
             # good for fifteen minutes, fundamentals for a day.
-            price_reading=quote.reading if quote is not None else None,
+            price_reading=self._price_reading(tokens, quote),
             # For a token, the fundamentals are the judged token facts,
             # and they are dated by that reading — never by a generalist
             # response the gate may have rejected.
@@ -184,14 +217,44 @@ class CompanyFactsService:
             # from the quote and the fundamentals beside it.
             identity_reading=item.reading,
             # Market
-            current_price=quote.price if quote is not None else None,
-            daily_change_pct=(quote.change_percent if quote is not None else None),
+            #
+            # A cryptocurrency is priced from the crypto-native evidence
+            # pool and never from the vendor's pair listing — the same
+            # rule its market value already followed, applied to the one
+            # figure that had stayed on the generalist. What the gate did
+            # not establish is absent, which is what "unpriced" means
+            # here: HYPE and TAO were reported as securities no price
+            # came back for while an established, corroborated price for
+            # each sat in the store.
+            current_price=(
+                self._token_price(tokens)
+                if tokens is not None
+                else (quote.price if quote is not None else None)
+            ),
+            #: Whose figure this price is, as the crypto-native provider
+            #: identifies it — `hyperliquid`, `bittensor`. None for
+            #: anything not priced from that pool.
+            price_identity=(tokens.provider_id or None) if tokens is not None else None,
+            #: Who established it and under which rule. The owner's #231
+            #: ruling keeps the judged pool's price rather than one
+            #: vendor's record, and requires the figure to name the
+            #: claimants whose agreement admitted it — carried from the
+            #: judged fact itself, never re-derived here.
+            price_claimants=self._price_claimants(tokens),
+            price_rule=self._price_rule(tokens),
+            #: Why the vendor's own listing was not read as this token,
+            #: where it was not. Absent where it was, and for everything
+            #: that is not a cryptocurrency.
+            price_listing_refused=(
+                listing.because if listing is not None and not listing.agrees else None
+            ),
+            daily_change_pct=(history.change_percent if history is not None else None),
             # The same move, carrying whether it was measured, under
             # which warrant, and over which session. Momentum reads
             # this; `daily_change_pct` above stays for every other
             # caller and is filled from the same quote, so the two
             # cannot disagree.
-            daily_change=self._daily_change(quote),
+            daily_change=self._daily_change(history),
             market_cap=market_cap,
             # The same figure, carrying whether it may be placed against
             # an absolute threshold — its identity, its established
@@ -204,11 +267,11 @@ class CompanyFactsService:
                 self._translation(market_cap, denomination, identity, valuation),
             ),
             realized_volatility=(
-                quote.realized_volatility if quote is not None else None
+                history.realized_volatility if history is not None else None
             ),
-            max_drawdown=(quote.max_drawdown if quote is not None else None),
+            max_drawdown=(history.max_drawdown if history is not None else None),
             market_sensitivity=(
-                quote.market_sensitivity if quote is not None else None
+                history.market_sensitivity if history is not None else None
             ),
             # When this company next reports. Absent entirely for anything
             # that does not report, because it was never asked.
@@ -287,6 +350,80 @@ class CompanyFactsService:
             sector=valuation.sector if has_company else None,
             industry=valuation.industry if has_company else None,
         )
+
+    @staticmethod
+    def _token_price(tokens: TokenMarketFacts) -> float | None:
+        """A token's price, from the gate that judged it, or nothing.
+
+        `established_value` is the consumption door for every other
+        token fact on this object, and the price now goes through it
+        for the same reason: a value a provider returned is a claim
+        until something corroborates it. A price the gate did not
+        establish reads as absent, and absent is what this platform
+        says rather than reaching for the pair listing beside it.
+        """
+
+        return tokens.established_value("price")
+
+    @staticmethod
+    def _established_price(tokens: TokenMarketFacts | None) -> TokenFact | None:
+        """The judged price fact, only where the gate established it.
+
+        One place answers *did the gate admit a price* for the value,
+        its claimants and its rule alike, so the three cannot come from
+        three different readings of the same pool.
+        """
+
+        if tokens is None:
+            return None
+
+        price = tokens.fact("price")
+
+        return (
+            price if price is not None and price.established_value is not None else None
+        )
+
+    @classmethod
+    def _price_claimants(cls, tokens: TokenMarketFacts | None) -> tuple[str, ...]:
+        price = cls._established_price(tokens)
+
+        return price.claimants if price is not None else ()
+
+    @classmethod
+    def _price_rule(cls, tokens: TokenMarketFacts | None) -> str | None:
+        price = cls._established_price(tokens)
+
+        return price.rule if price is not None else None
+
+    @staticmethod
+    def _price_reading(
+        tokens: TokenMarketFacts | None,
+        quote: MarketQuote | None,
+    ) -> Provenance | None:
+        """When this price was read, and by whom.
+
+        For a token that is the judged price fact's own reading — the
+        claimant whose figure the gate established, at the moment that
+        claimant published it. Carrying the quote's reading instead
+        would date one provider's figure by another provider's call,
+        and where the listing was refused there is no call to date it
+        by at all.
+        """
+
+        if tokens is not None:
+            price = tokens.fact("price")
+
+            if (
+                price is not None
+                and price.established_value is not None
+                and price.source
+                and price.observed_at is not None
+            ):
+                return Provenance(source=price.source, observed_at=price.observed_at)
+
+            return None
+
+        return quote.reading if quote is not None else None
 
     @staticmethod
     def _identity(

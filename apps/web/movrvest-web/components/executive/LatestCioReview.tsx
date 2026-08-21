@@ -1,5 +1,4 @@
 import {
-  ExecutiveActions,
   HoldingsTable,
   Opportunities,
   PortfolioSnapshot,
@@ -308,8 +307,6 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
       </section>
 
       <PortfolioSnapshot portfolio={review.portfolio} />
-
-      <ExecutiveActions review={review} />
 
       <HoldingsTable review={review} />
 

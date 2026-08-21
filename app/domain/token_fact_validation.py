@@ -49,6 +49,18 @@ from app.domain.token_facts import (
     TokenMarketFacts,
 )
 
+#: The rule under which a pooled claim becomes an established fact,
+#: versioned so a figure travelling upward can name what admitted it.
+#:
+#: One name for one rule: independent cross-source agreement inside the
+#: tolerances below, over claim sets that already passed identity,
+#: semantic and internal-coherence validation. A layer receiving a
+#: number is entitled to say *which* gate let it through, and "the
+#: crypto gate" is not checkable while `token-fact-establishment@1` is.
+#: Change the rule, change the version — the tolerances below are part
+#: of it.
+ESTABLISHMENT_RULE = "token-fact-establishment@1"
+
 #: How far one source's own figures may disagree with each other.
 #: price × circulating supply and the reported market value come from
 #: the same snapshot, so 5% covers rounding and update lag while an
@@ -542,6 +554,12 @@ class _Judgment:
                 f"{vouched_note}independently corroborated by "
                 f"{_and(others)} within observation-timing tolerance."
             ),
+            # The same claimants the sentence names, carried as a list:
+            # the served figure's source first, then the corroborators
+            # in the order the sentence states them. A consumer that
+            # must attribute the value reads this and never the prose.
+            claimants=(served[0].claims.source, *others),
+            rule=ESTABLISHMENT_RULE,
         )
 
     def _served(

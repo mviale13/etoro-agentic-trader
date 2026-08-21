@@ -226,6 +226,7 @@ def _envelope(
     total_value: float | None,
     drawdown_pct: float | None,
     quotes: dict[str, MarketQuote],
+    established_prices: frozenset[str],
     evaluated_at: datetime,
 ) -> CapitalActionEnvelope | None:
     """The envelope for one workspace's course, or None for non-capital ones.
@@ -326,6 +327,12 @@ def _envelope(
         portfolio_as_of=portfolio_observed.as_of,
         drawdown_depth_pct=drawdown_pct,
         is_equity=brain.asset_class_for(symbol) is AssetClass.STOCK,
+        # Whether the crypto-native gate admitted a spot price for this
+        # token, read from the acquisition's own record of what the
+        # store now holds — never from `quotes`, which is the vendor's
+        # and holds nothing for a token whose listing was refused.
+        # It words the crypto refusal and sizes nothing.
+        crypto_price_established=symbol in established_prices,
     )
 
 
@@ -368,6 +375,11 @@ async def run(
     asked = priced = 0
     refusals: tuple[str, ...] = ()
 
+    # Which securities the store now holds a price for. Empty until the
+    # acquisition says otherwise — a failed acquisition establishes no
+    # price, and an envelope must not word one it never read.
+    established_prices: frozenset[str] = frozenset()
+
     # ── stage 1: the explicit acquisition, once ─────────────────────
     try:
         acquired = await (acquisition or MarketAcquisitionService()).acquire()
@@ -376,10 +388,23 @@ async def run(
     else:
         asked = len(acquired.securities)
         priced = len(acquired.priced)
-        refusals = tuple(
-            f"{security.symbol}: no price came back"
-            for security in acquired.securities
-            if not security.priced
+        # Two refusals, never one sentence for both. A security nothing
+        # priced is unpriced; a security the quote vendor answered about
+        # under another instrument's name has a price and no vendor
+        # history, and saying "no price came back" about it was false in
+        # the cycle that stored an established price for it.
+        refusals = (
+            *(
+                f"{security.symbol}: no price came back"
+                for security in acquired.unpriced
+            ),
+            *(
+                f"{security.symbol}: {security.listing_refused}"
+                for security in acquired.refused_listings
+            ),
+        )
+        established_prices = frozenset(
+            security.symbol.upper().strip() for security in acquired.priced
         )
         stages.append(CycleStage(name="acquisition", outcome=StageOutcome.RAN))
 
@@ -440,6 +465,8 @@ async def run(
                         state=workspace.decision.state.value,
                         rationale=workspace.decision.rationale,
                         conviction=workspace.decision.conviction,
+                        conviction_basis=workspace.decision.conviction_basis,
+                        blocker=workspace.decision.blocker,
                         evidence_as_of=(
                             workspace.decision.evidence_as_of.stated()
                             if workspace.decision.evidence_as_of is not None
@@ -458,6 +485,7 @@ async def run(
                             total_value=total_value,
                             drawdown_pct=drawdown_pct,
                             quotes=quotes,
+                            established_prices=established_prices,
                             evaluated_at=evaluated_at,
                         ),
                     )
@@ -504,6 +532,8 @@ async def run(
                     state=workspace.decision.state.value,
                     rationale=workspace.decision.rationale,
                     conviction=workspace.decision.conviction,
+                    conviction_basis=workspace.decision.conviction_basis,
+                    blocker=workspace.decision.blocker,
                     evidence_as_of=(
                         workspace.decision.evidence_as_of.stated()
                         if workspace.decision.evidence_as_of is not None

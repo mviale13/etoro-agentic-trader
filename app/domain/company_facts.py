@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.domain.daily_change import DailyChange
 from app.domain.earnings_schedule import EarningsSchedule
@@ -51,6 +51,38 @@ class CompanyFacts:
 
     # Market
     current_price: float | None = None
+
+    #: Whose price this is, as the source that established it names the
+    #: subject: `bitcoin`, `hyperliquid`, `bittensor`. Only a token
+    #: carries one — an equity's price is identified by its ticker at a
+    #: venue, and this is the crypto-native identifier a pair listing
+    #: cannot supply. None everywhere else, and never a display name.
+    price_identity: str | None = None
+
+    #: Every source whose independent agreement established this price —
+    #: the served claimant first, then the corroborators. Empty for a
+    #: price that did not come from the crypto-native gate.
+    #:
+    #: A price served from a judged pool is not one provider's number,
+    #: and naming only the served claimant would report it as one. The
+    #: owner's ruling on #231 keeps the judged price *and* requires it
+    #: to say who established it.
+    price_claimants: tuple[str, ...] = ()
+
+    #: The versioned rule that admitted this price. Empty where no rule
+    #: did — a vendor quote read under its own ticker is not admitted by
+    #: a gate, it is simply the vendor's figure.
+    price_rule: str | None = None
+
+    #: Why the data vendor's own listing for this symbol was not read as
+    #: this security, where it was not.
+    #:
+    #: A refusal about the *vendor*, never a finding about the security:
+    #: Yahoo's `HYPE-USD` is Supreme Finance, which says nothing about
+    #: Hyperliquid. Carried so the refusal is observable rather than
+    #: showing up only as three absent risk measurements.
+    price_listing_refused: str | None = None
+
     daily_change_pct: float | None = None
 
     #: The same move, carrying what is established about it: whether it
@@ -135,6 +167,54 @@ class CompanyFacts:
     # Company classification
     sector: str | None = None
     industry: str | None = None
+
+    @property
+    def price_provenance(self) -> str | None:
+        """Who established this price, for what, when, and under which rule.
+
+        The five things the owner's #231 ruling requires a judged crypto
+        price to identify, in one sentence composed here so no surface
+        assembles it differently: the token, the crypto-native provider's
+        own identifier for it, the claimants whose independent agreement
+        established the figure, the observation time, and the versioned
+        rule that admitted it.
+
+        None where the price was not admitted by a rule — an equity's
+        quote is the vendor's own figure under the vendor's own ticker,
+        and dressing it in this sentence would claim a corroboration
+        nobody performed.
+        """
+
+        if self.price_rule is None or not self.price_claimants:
+            return None
+
+        established = (
+            self.price_claimants[0]
+            if len(self.price_claimants) == 1
+            else (
+                f"{', '.join(self.price_claimants[:-1])} and {self.price_claimants[-1]}"
+            )
+        )
+
+        subject = (
+            f"{self.symbol} ({self.price_identity})"
+            if self.price_identity
+            else self.symbol
+        )
+
+        observed = (
+            "at an observation time the source did not state"
+            if self.price_reading is None
+            else (
+                "observed "
+                f"{self.price_reading.observed_at.astimezone(UTC):%Y-%m-%d %H:%M} UTC"
+            )
+        )
+
+        return (
+            f"The price for {subject} was established by {established}, "
+            f"{observed}, under {self.price_rule}."
+        )
 
     @property
     def observed_at(self) -> datetime | None:

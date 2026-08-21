@@ -32,6 +32,7 @@ from datetime import datetime
 from enum import StrEnum
 
 from app.domain.capital_envelope import CapitalActionEnvelope
+from app.domain.decision_blocker import DecisionBlocker
 
 
 class CycleStatus(StrEnum):
@@ -89,7 +90,26 @@ class DecisionSummary:
     state: str
     rationale: str
     conviction: int | None = None
+
+    #: What the conviction is, in the deciding layer's own words: how it
+    #: was computed, which state capped it, under which rule.
+    #:
+    #: Carried beside the number because a number alone reads as
+    #: enthusiasm — AMD's 40 is `conviction-mean@1`'s REJECT cap, not a
+    #: mean that happened to land on 40 — and a surface may print the
+    #: figure only with this beside it. Empty on a record written before
+    #: the decision carried one.
+    conviction_basis: str = ""
+
     evidence_as_of: str = ""
+
+    #: What stands between this case and its next state, named by the
+    #: gate that stopped it rather than inferred from the state.
+    #:
+    #: None on a record written before blockers existed, which decodes
+    #: exactly as it always did. A case that cleared every gate carries
+    #: a blocker of kind `none` — a sentence, never an empty cell.
+    blocker: DecisionBlocker | None = None
 
     #: The course, from the pipeline's own `ExecutiveAction` — carried,
     #: never reinterpreted.

@@ -65,6 +65,20 @@ class TokenFact:
     observed_at: datetime | None = None
     because: str | None = None
 
+    #: Every source whose independent agreement established this value —
+    #: the served claimant first, then the corroborators. Empty for any
+    #: standing but ESTABLISHED, because nothing agreed.
+    #:
+    #: Carried structurally as well as worded into `because`: a layer
+    #: that must name the claimants may not parse a sentence to find
+    #: them, and a sentence is not a list.
+    claimants: tuple[str, ...] = ()
+
+    #: The versioned rule under which this standing was reached, so a
+    #: figure travelling upward names what admitted it instead of
+    #: arriving as a bare number. None where no rule admitted it.
+    rule: str | None = None
+
     @property
     def established_value(self) -> float | None:
         """The value if established, and nothing otherwise.
