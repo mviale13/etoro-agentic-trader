@@ -62,7 +62,7 @@ class RiskSignalService:
                 self._finding(
                     f"Annualised volatility is {volatility * 100:.1f}% "
                     "over the past year.",
-                    self._volatility_level(volatility),
+                    self.volatility_level(volatility),
                 )
             )
 
@@ -70,7 +70,7 @@ class RiskSignalService:
             evidence.append(
                 self._finding(
                     f"Deepest fall over the past year was {drawdown * 100:.1f}%.",
-                    self._drawdown_level(drawdown),
+                    self.drawdown_level(drawdown),
                 )
             )
 
@@ -129,8 +129,8 @@ class RiskSignalService:
         levels = [
             level
             for level in (
-                self._volatility_level(volatility),
-                self._drawdown_level(drawdown),
+                self.volatility_level(volatility),
+                self.drawdown_level(drawdown),
             )
             if level is not None
         ]
@@ -139,10 +139,18 @@ class RiskSignalService:
 
         return max(levels, key=order.index) if levels else "UNKNOWN"
 
-    def _volatility_level(
+    def volatility_level(
         self,
         volatility: float | None,
     ) -> str | None:
+        """The band a volatility reading lands in, or None unmeasured.
+
+        Public because the capital envelope's security-risk ceiling
+        (#234) prices exactly these bands — one banding, two consumers,
+        so the envelope and the signal cannot drift apart on where HIGH
+        begins.
+        """
+
         if volatility is None:
             return None
 
@@ -157,10 +165,12 @@ class RiskSignalService:
 
         return "SEVERE"
 
-    def _drawdown_level(
+    def drawdown_level(
         self,
         drawdown: float | None,
     ) -> str | None:
+        """The band a drawdown reading lands in, or None unmeasured."""
+
         if drawdown is None:
             return None
 

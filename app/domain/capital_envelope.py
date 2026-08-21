@@ -385,6 +385,172 @@ def capacity_for(
     )
 
 
+#: The volatility bands the security-risk policy prices, and the
+#: drawdown bands. Stated here so the ceiling factory can refuse a band
+#: outside the vocabulary instead of silently treating it as calm. The
+#: bands themselves are assigned by the risk signal under `risk-bands@1`
+#: — this module bands nothing.
+_VOLATILITY_BANDS = ("LOW", "MODERATE", "HIGH", "SEVERE")
+_DRAWDOWN_BANDS = ("LOW", "MODERATE", "HIGH")
+
+
+@dataclass(frozen=True, slots=True)
+class SecurityRiskCeiling:
+    """The security-risk maximum total position, or no additional one.
+
+    #234's owner ruling: band-to-total-position ceilings, with
+    volatility and the security's own drawdown evaluated
+    **independently** — never substituted for each other — and the
+    existing minimum composition selecting the smaller. A ceiling here
+    is the owner's policy applied to this platform's banded readings.
+    It is a maximum total position, not an incremental allowance; it is
+    not a target; and it says nothing about the company's quality.
+    """
+
+    #: The binding maximum total position in portfolio-weight percent,
+    #: or None where neither measurement adds one (LOW and MODERATE add
+    #: no security-risk ceiling).
+    ceiling_pct: float | None
+
+    #: The two per-measurement ceilings, carried apart because the
+    #: ruling forbids substituting one measurement for the other.
+    volatility_ceiling_pct: float | None
+    drawdown_ceiling_pct: float | None
+
+    #: The worded account — which band produced which ceiling, or which
+    #: reading is missing — always under the policy's name, never as a
+    #: fact about the security.
+    because: str
+
+    #: The missing readings, each named. An unmeasured reading does not
+    #: cancel the course; it constrains the maximum, and the gap is
+    #: named rather than silently absorbed.
+    missing: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        for label, value in (
+            ("volatility ceiling", self.volatility_ceiling_pct),
+            ("drawdown ceiling", self.drawdown_ceiling_pct),
+            ("ceiling", self.ceiling_pct),
+        ):
+            if value is not None and (not math.isfinite(value) or value < 0):
+                raise ValueError(
+                    f"a security-risk {label} must be finite and non-negative"
+                )
+
+        if not self.because.strip():
+            raise ValueError("a security-risk ceiling carries its account in words")
+
+
+def security_risk_ceiling_for(
+    *,
+    policy: CapitalPolicy,
+    volatility_band: str | None,
+    drawdown_band: str | None,
+) -> SecurityRiskCeiling:
+    """The owner's security-risk ceiling for one security's banded readings.
+
+    The bands arrive from the risk signal's own banding (`risk-bands@1`)
+    — this function prices them under the policy and bands nothing
+    itself, so the envelope and the signal cannot drift apart on where
+    HIGH begins.
+
+    LOW and MODERATE add no ceiling. HIGH caps the total position at
+    the policy's high value, SEVERE volatility at its severe value, and
+    an unmeasured reading at its unmeasured value **with the missing
+    reading named** — missing evidence never buys a larger envelope
+    than measured evidence, which the policy's own validation orders
+    (unmeasured <= high). No SEVERE drawdown band exists in this slice,
+    and one is not invented here: a drawdown band outside the
+    vocabulary is refused loudly.
+    """
+
+    clauses: list[str] = []
+    missing: list[str] = []
+
+    def volatility() -> float | None:
+        if volatility_band is None:
+            named = "the security's annualised volatility is unmeasured"
+            missing.append(named)
+            clauses.append(
+                f"{named}, which caps the total position at "
+                f"{policy.security_risk_unmeasured_max_total_pct:g}%"
+            )
+
+            return policy.security_risk_unmeasured_max_total_pct
+
+        if volatility_band not in _VOLATILITY_BANDS:
+            raise ValueError(
+                f"{volatility_band!r} is not a volatility band this policy prices"
+            )
+
+        if volatility_band == "SEVERE":
+            clauses.append(
+                "SEVERE volatility caps the total position at "
+                f"{policy.security_risk_severe_max_total_pct:g}%"
+            )
+
+            return policy.security_risk_severe_max_total_pct
+
+        if volatility_band == "HIGH":
+            clauses.append(
+                "HIGH volatility caps the total position at "
+                f"{policy.security_risk_high_max_total_pct:g}%"
+            )
+
+            return policy.security_risk_high_max_total_pct
+
+        clauses.append(f"{volatility_band} volatility adds no security-risk ceiling")
+
+        return None
+
+    def drawdown() -> float | None:
+        if drawdown_band is None:
+            named = "the security's own maximum drawdown is unmeasured"
+            missing.append(named)
+            clauses.append(
+                f"{named}, which caps the total position at "
+                f"{policy.security_risk_unmeasured_max_total_pct:g}%"
+            )
+
+            return policy.security_risk_unmeasured_max_total_pct
+
+        if drawdown_band not in _DRAWDOWN_BANDS:
+            # SEVERE included: the ruling forbids inventing a SEVERE
+            # drawdown band in this slice, so one arriving here is a
+            # defect to surface rather than a case to price.
+            raise ValueError(
+                f"{drawdown_band!r} is not a drawdown band this policy prices"
+            )
+
+        if drawdown_band == "HIGH":
+            clauses.append(
+                "HIGH drawdown caps the total position at "
+                f"{policy.security_risk_high_max_total_pct:g}%"
+            )
+
+            return policy.security_risk_high_max_total_pct
+
+        clauses.append(f"{drawdown_band} drawdown adds no security-risk ceiling")
+
+        return None
+
+    volatility_ceiling = volatility()
+    drawdown_ceiling = drawdown()
+
+    ceilings = [
+        value for value in (volatility_ceiling, drawdown_ceiling) if value is not None
+    ]
+
+    return SecurityRiskCeiling(
+        ceiling_pct=min(ceilings) if ceilings else None,
+        volatility_ceiling_pct=volatility_ceiling,
+        drawdown_ceiling_pct=drawdown_ceiling,
+        because=f"Under your security-risk policy, {'; '.join(clauses)}.",
+        missing=tuple(missing),
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class CapitalActionEnvelope:
     """One course's envelope, with everything the ruling says it must name."""
@@ -418,6 +584,14 @@ class CapitalActionEnvelope:
     quality_authority: QualityAuthority | None = None
     starter_capped: bool = False
 
+    #: The security-risk maximum total position that applied to this
+    #: course, where one did — #234's ruling. Carried with the policy's
+    #: own account so the render never rewrites it, and with a flag
+    #: saying whether it was the term that actually bound the figure.
+    security_risk_ceiling_pct: float | None = None
+    security_risk_because: str = ""
+    security_risk_capped: bool = False
+
     price_as_of: str = ""
     portfolio_as_of: str = ""
 
@@ -435,6 +609,7 @@ class CapitalActionEnvelope:
         for label, value in (
             ("capacity ceiling", self.capacity_ceiling_pct),
             ("final figure", self.final_pct),
+            ("security-risk ceiling", self.security_risk_ceiling_pct),
         ):
             if value is not None and (not math.isfinite(value) or value < 0):
                 raise ValueError(
@@ -444,6 +619,11 @@ class CapitalActionEnvelope:
         if self.starter_capped and self.evidence_ceiling != "starter":
             raise ValueError(
                 "starter_capped is compatible only with the starter evidence ceiling"
+            )
+
+        if self.security_risk_capped and self.security_risk_ceiling_pct is None:
+            raise ValueError(
+                "security_risk_capped requires the ceiling that did the capping"
             )
 
         upward = self.course in ("open", "add")
@@ -523,6 +703,16 @@ class CapitalActionEnvelope:
                 "cap."
             )
 
+        if self.security_risk_capped:
+            return (
+                f"MOVRvest's course is {self.course.upper()}. Under your "
+                "security-risk policy, the maximum total position for this "
+                f"security is {self.security_risk_ceiling_pct:g}%, leaving "
+                f"room for at most a {self.final_pct:g}% weight change. The "
+                "ceiling constrains the action under your policy, not the "
+                "company's quality."
+            )
+
         if self.starter_capped:
             return (
                 f"MOVRvest's course is {self.course.upper()}. Named "
@@ -552,6 +742,7 @@ def envelope_for(
     portfolio_as_of: str,
     drawdown_depth_pct: float | None,
     is_equity: bool,
+    security_risk: SecurityRiskCeiling,
     crypto_price_established: bool = False,
 ) -> CapitalActionEnvelope:
     """The v1 envelope for one OPEN, ADD or REDUCE course.
@@ -562,6 +753,15 @@ def envelope_for(
     the result — the ruling's monotonicity, by construction. The price
     input is the exact security's own quote verdict, so a refusal here
     keeps that quote's words and a market-wide reading has no way in.
+
+    `security_risk` is #234's maximum total position for this
+    security's own banded volatility and drawdown. It applies to OPEN
+    and ADD only — REDUCE semantics are unchanged — and it joins the
+    same minimum as every other ceiling: a position at or above it has
+    zero additional room, and nothing here requests a reduction.
+    `drawdown_depth_pct` remains the *portfolio's* drawdown, a separate
+    account-level gate; the security's own drawdown reaches this
+    function only through `security_risk`.
 
     `crypto_price_established` says only whether the crypto-native gate
     admitted a spot price for this token. It words the crypto refusal
@@ -706,17 +906,35 @@ def envelope_for(
         ceiling_name = "max_add_change"
         room = policy.max_add_weight_change_pct
 
+    # ── the security-risk ceiling: a maximum TOTAL position ─────────
+    # Room up to the ceiling, never an increment on top of it, so a
+    # position already at or above it has zero additional room. The
+    # term binds only where it is *strictly* the smallest — an equal
+    # ceiling changes no figure, and the existing constraint keeps its
+    # name so nothing already worded moves without a reason.
+    risk_room: float | None = None
+
+    if security_risk.ceiling_pct is not None:
+        risk_room = max(0.0, security_risk.ceiling_pct - current)
+
+    unrisked = min(room, capacity.capacity_pct)
+    security_risk_binds = risk_room is not None and risk_room < unrisked
+
     # Branch on the figure the envelope will carry — the constructor
     # requires an upward bound to be positive, so the rounded value
     # decides which shape exists.
-    final = round(min(room, capacity.capacity_pct), 4)
+    final = round(min(unrisked, risk_room) if risk_room is not None else unrisked, 4)
 
     if final <= 0:
-        binding = (
-            "the STARTER total-position ceiling"
-            if limited and room <= capacity.capacity_pct
-            else capacity.binding
-        )
+        if security_risk_binds:
+            binding = (
+                f"the {security_risk.ceiling_pct:g}% security-risk maximum "
+                "total position (under your security-risk policy)"
+            )
+        elif limited and room <= capacity.capacity_pct:
+            binding = "the STARTER total-position ceiling"
+        else:
+            binding = capacity.binding
 
         return CapitalActionEnvelope(
             symbol=symbol,
@@ -730,9 +948,22 @@ def envelope_for(
             named_gaps=named_gaps,
             quality_authority=quality_authority,
             starter_capped=limited,
+            security_risk_ceiling_pct=security_risk.ceiling_pct,
+            security_risk_because=security_risk.because,
+            security_risk_capped=security_risk_binds,
             price_as_of=price.as_of,
             portfolio_as_of=portfolio_as_of,
         )
+
+    if security_risk_binds:
+        binding = (
+            f"the {security_risk.ceiling_pct:g}% security-risk maximum "
+            "total position (under your security-risk policy)"
+        )
+    elif room <= capacity.capacity_pct:
+        binding = "the evidence ceiling"
+    else:
+        binding = capacity.binding
 
     return CapitalActionEnvelope(
         symbol=symbol,
@@ -743,14 +974,13 @@ def envelope_for(
         evidence_ceiling=ceiling_name,
         capacity_ceiling_pct=capacity.capacity_pct,
         final_pct=final,
-        binding_constraint=(
-            "the evidence ceiling"
-            if room <= capacity.capacity_pct
-            else capacity.binding
-        ),
+        binding_constraint=binding,
         named_gaps=named_gaps,
         quality_authority=quality_authority,
         starter_capped=limited,
+        security_risk_ceiling_pct=security_risk.ceiling_pct,
+        security_risk_because=security_risk.because,
+        security_risk_capped=security_risk_binds,
         price_as_of=price.as_of,
         portfolio_as_of=portfolio_as_of,
     )

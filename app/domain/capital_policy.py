@@ -62,6 +62,15 @@ class CapitalPolicy:
     maximum_acceptable_drawdown_pct: float
     reduce_policy: ReducePolicy
 
+    #: The security-risk maximum total positions — #234's owner ruling.
+    #: Each is an explicit, separately named value even where its number
+    #: equals an existing course limit, because no field may secretly
+    #: serve two meanings. All three are required: a missing one refuses
+    #: the whole policy exactly as every sizing field does.
+    security_risk_high_max_total_pct: float
+    security_risk_severe_max_total_pct: float
+    security_risk_unmeasured_max_total_pct: float
+
     #: Where this policy came from and which exact decision-bearing
     #: values it carried — the pair travels with every envelope.
     source: str
@@ -77,6 +86,13 @@ class CapitalPolicy:
             "target_cash_pct": self.target_cash_pct,
             "minimum_cash_pct": self.minimum_cash_pct,
             "maximum_acceptable_drawdown_pct": self.maximum_acceptable_drawdown_pct,
+            "security_risk_high_max_total_pct": self.security_risk_high_max_total_pct,
+            "security_risk_severe_max_total_pct": (
+                self.security_risk_severe_max_total_pct
+            ),
+            "security_risk_unmeasured_max_total_pct": (
+                self.security_risk_unmeasured_max_total_pct
+            ),
         }
 
         for name, value in percentages.items():
@@ -107,6 +123,26 @@ class CapitalPolicy:
 
         if self.maximum_acceptable_drawdown_pct <= 0:
             raise ValueError("maximum_acceptable_drawdown_pct must be positive")
+
+        # The security-risk ceilings must order: the harsher the reading,
+        # the smaller the room. An unmeasured reading is capped no looser
+        # than a HIGH one, because missing evidence must never buy a
+        # larger envelope than measured evidence.
+        if (
+            self.security_risk_severe_max_total_pct
+            > self.security_risk_high_max_total_pct
+        ):
+            raise ValueError(
+                "the ruling requires SECURITY_RISK_SEVERE <= SECURITY_RISK_HIGH"
+            )
+
+        if (
+            self.security_risk_unmeasured_max_total_pct
+            > self.security_risk_high_max_total_pct
+        ):
+            raise ValueError(
+                "the ruling requires SECURITY_RISK_UNMEASURED <= SECURITY_RISK_HIGH"
+            )
 
     @property
     def cash_floor_pct(self) -> float:
@@ -157,6 +193,9 @@ DECISION_BEARING_FIELDS = (
     "portfolio_max_age_minutes",
     "maximum_acceptable_drawdown_pct",
     "reduce_policy",
+    "security_risk_high_max_total_pct",
+    "security_risk_severe_max_total_pct",
+    "security_risk_unmeasured_max_total_pct",
 )
 
 

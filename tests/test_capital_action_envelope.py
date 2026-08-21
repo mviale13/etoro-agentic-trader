@@ -27,6 +27,7 @@ from app.domain.capital_envelope import (
     envelope_for,
     portfolio_observation_for,
     price_observation_for,
+    security_risk_ceiling_for,
 )
 from app.domain.capital_policy import (
     CapitalPolicy,
@@ -53,6 +54,9 @@ def policy(**overrides) -> CapitalPolicy:
         portfolio_max_age_minutes=15.0,
         maximum_acceptable_drawdown_pct=20.0,
         reduce_policy=ReducePolicy.RESTORE_TO_POLICY_CAP,
+        security_risk_high_max_total_pct=2.0,
+        security_risk_severe_max_total_pct=1.0,
+        security_risk_unmeasured_max_total_pct=1.0,
         source="investor_strategy.json",
         version="testversion1",
     )
@@ -78,6 +82,9 @@ def strategy_document(**overrides) -> dict:
             "price_max_age_minutes": 15,
             "portfolio_max_age_minutes": 15,
             "reduce_policy": "restore_to_policy_cap",
+            "security_risk_high_max_total_pct": 2.0,
+            "security_risk_severe_max_total_pct": 1.0,
+            "security_risk_unmeasured_max_total_pct": 1.0,
         },
         "decision_rules": {
             "require_human_approval": True,
@@ -171,11 +178,15 @@ def envelope(
     drawdown: float | None = 2.0,
     equity: bool = True,
     the_policy: CapitalPolicy | None = None,
+    volatility_band: str | None = "LOW",
+    drawdown_band: str | None = "LOW",
 ) -> CapitalActionEnvelope:
+    used = the_policy or policy()
+
     return envelope_for(
         symbol="KO",
         course=course,
-        policy=the_policy or policy(),
+        policy=used,
         capacity=cap if cap is not None else capacity(),
         named_gaps=gaps,
         quality_authority=authority,
@@ -184,6 +195,11 @@ def envelope(
         portfolio_as_of=("eToro account response received at 2026-08-19 14:58 UTC"),
         drawdown_depth_pct=drawdown,
         is_equity=equity,
+        security_risk=security_risk_ceiling_for(
+            policy=used,
+            volatility_band=volatility_band,
+            drawdown_band=drawdown_band,
+        ),
     )
 
 
