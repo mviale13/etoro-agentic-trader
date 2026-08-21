@@ -59,7 +59,14 @@ def token_facts(**overrides) -> CompanyFacts:
         price_identity="hyperliquid",
         price_claimants=("TokenInsight", "CoinGecko"),
         price_rule=ESTABLISHMENT_RULE,
-        price_reading=Provenance(source="TokenInsight", observed_at=MOMENT),
+        price_reading=Provenance(
+            source="TokenInsight",
+            observed_at=MOMENT,
+            # TokenInsight states no observation time — measured
+            # 2026-08-21, see `test_token_facts_provider`. `MOMENT` is
+            # the receipt time under the amendment below.
+            observation_stated=False,
+        ),
     )
     values.update(overrides)
 
@@ -67,7 +74,16 @@ def token_facts(**overrides) -> CompanyFacts:
 
 
 def test_a_judged_price_identifies_all_five_things_the_ruling_names() -> None:
-    """One sentence, composed in the domain, carrying the whole ruling."""
+    """One sentence, composed in the domain, carrying the whole ruling.
+
+    Amended 2026-08-21. The ruling's fifth element is *when the figure
+    was read*, and this test used to satisfy it with the literal string
+    "observed 2026-08-20 14:29 UTC" — built from TokenInsight's
+    `market_data.last_updated`, which was then measured not to advance
+    with the price it accompanies. The element stands; what changed is
+    that TokenInsight cannot supply it, so the sentence prints
+    MOVRvest's receipt time and says that is what it is.
+    """
 
     stated = token_facts().price_provenance
 
@@ -82,9 +98,36 @@ def test_a_judged_price_identifies_all_five_things_the_ruling_names() -> None:
     # corroborated figure as one vendor's number.
     assert "TokenInsight and CoinGecko" in stated
 
-    # The observation time, and the rule that admitted it.
-    assert "observed 2026-08-20 14:29 UTC" in stated
+    # When it was read, labelled as the clock it actually is — and the
+    # rule that admitted it.
+    assert "received 2026-08-20 14:29 UTC" in stated
+    assert "TokenInsight states no observation time for it" in stated
     assert ESTABLISHMENT_RULE in stated
+
+    # The word the amendment withdraws. A receipt time printed as an
+    # observation is the whole defect, and it must not reappear by any
+    # route — including a future source that happens to be named first.
+    assert "observed 2026-08-20 14:29 UTC" not in stated
+
+
+def test_a_source_that_states_an_observation_time_is_quoted_as_observing() -> None:
+    """The amendment narrows the claim; it does not withdraw it everywhere.
+
+    CoinGecko's `last_updated` *does* advance — measured minutes behind
+    the fetch on the same day TokenInsight's stood 16.5 hours behind it.
+    A source that states an observation time is still quoted as stating
+    one, so the receipt wording marks a real difference between sources
+    rather than becoming the platform's uniform hedge.
+    """
+
+    stated = token_facts(
+        price_claimants=("CoinGecko",),
+        price_reading=Provenance(source="CoinGecko", observed_at=MOMENT),
+    ).price_provenance
+
+    assert stated is not None
+    assert "observed 2026-08-20 14:29 UTC" in stated
+    assert "receipt time" not in stated
 
 
 def test_a_vendor_quote_is_never_dressed_in_the_gate_s_sentence() -> None:

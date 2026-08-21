@@ -38,6 +38,22 @@ class Provenance:
     #: discovering it.
     last_known: bool = False
 
+    #: False when `observed_at` is the moment MOVRvest *received* the
+    #: figure rather than a moment the source states it was observed.
+    #:
+    #: A receipt clock, named as one, on #223's precedent: the same
+    #: ruling `PortfolioObservation` makes about eToro, arriving through
+    #: the provider door instead of the broker one. It is set only where
+    #: the source has been *measured* to state no observation time for
+    #: the value it publishes — never as a convenience when a timestamp
+    #: is merely inconvenient, because substituting the fetch moment for
+    #: a stated one is the defect this flag exists to make impossible to
+    #: commit silently.
+    #:
+    #: The default is True, so every reading whose source does state an
+    #: observation time is unchanged and unqualified.
+    observation_stated: bool = True
+
     def age(
         self,
         now: datetime | None = None,
@@ -72,6 +88,13 @@ class Provenance:
             when = "yesterday"
         else:
             when = f"{age.days} days ago"
+
+        # "received" rather than a bare age wherever the clock is a
+        # receipt clock. The word is the whole disclosure at this
+        # length: it says when the figure reached MOVRvest and claims
+        # nothing about when the source observed it.
+        if not self.observation_stated:
+            when = f"received {when}"
 
         # Not "unreachable since": all that is known is that the most
         # recent attempt failed, not that every attempt between would have.

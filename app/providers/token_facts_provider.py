@@ -129,14 +129,34 @@ class TokenFactsProvider:
             symbol_echo=answered or symbol,
             provider_id=str(data.get("id") or token_id),
             source=cls.SOURCE,
-            # Dated by the provider's own data timestamp where it sends
-            # one — the honest age of the observation — and by the read
-            # otherwise.
+            # A receipt clock, and named as one — #223's ruling arriving
+            # through the provider door.
+            #
+            # This adapter used to read `market_data.last_updated` as
+            # "the honest age of the observation". Measured on
+            # 2026-08-21, it is not an observation time at all: over a
+            # single 90-second window `price_latest` moved from
+            # 73.06613809983222 to 73.0488279001271 while
+            # `last_updated` did not advance by one millisecond, and
+            # over 16.5 hours it stayed frozen at 2026-08-20T14:29:38
+            # across five assets stamped within 49 seconds of each
+            # other — one batch stamp, not a per-quote time.
+            #
+            # No field in the payload states when `price_latest` was
+            # observed. `rating.update_date` belongs to another object,
+            # `ath_date`/`atl_date` are all-time extremes, and
+            # `tickers[].last_traded_at` is a venue's last trade — also
+            # frozen across the same 90 seconds. So the honest reading
+            # is that TokenInsight states no observation time, and the
+            # only moment this platform can vouch for is its own.
+            #
+            # What must never happen here is the substitution done
+            # silently: `observation_stated=False` is what keeps the
+            # receipt moment from being read as the source's.
             read=Provenance(
                 source=cls.SOURCE,
-                observed_at=(
-                    cls._moment(market.get("last_updated")) or datetime.now(UTC)
-                ),
+                observed_at=datetime.now(UTC),
+                observation_stated=False,
             ),
             price=cls._amount(usd.get("price_latest")),
             market_cap=cls._amount(usd.get("market_cap")),
@@ -193,17 +213,29 @@ class TokenFactsProvider:
 
         return None
 
-    @staticmethod
-    def _moment(value: object) -> datetime | None:
-        """A millisecond timestamp, where the provider sent one."""
 
-        if not isinstance(value, (int, float)) or isinstance(value, bool):
-            return None
+def _receipt_clock(value: dict[str, Any]) -> dict[str, Any] | None:
+    """Bring a schema-1 record forward by discarding a false timestamp.
 
-        try:
-            return datetime.fromtimestamp(float(value) / 1000, tz=UTC)
-        except (OverflowError, OSError, ValueError):
-            return None
+    A schema-1 record's `observed_at` is `market_data.last_updated` —
+    measured not to describe the price stored beside it. There is no
+    arithmetic that turns it into an observation time and none that
+    turns it into a receipt time either, so it is dropped rather than
+    relabelled: reissuing the frozen batch stamp as a receipt moment
+    would be the same fabrication in the opposite direction.
+
+    What survives is real. The record's own `stored_at` is the moment
+    MOVRvest wrote the response down, which is exactly the receipt
+    clock schema 2 carries — and `_restore` already falls back to it
+    when no `observed_at` is present. So the migration drops the field
+    and marks the clock, and the entry keeps its figures rather than
+    costing a re-acquisition.
+    """
+
+    migrated = {key: item for key, item in value.items() if key != "observed_at"}
+    migrated["observation_stated"] = False
+
+    return migrated
 
 
 class CachedTokenFactsProvider:
@@ -229,12 +261,15 @@ class CachedTokenFactsProvider:
         self._provider = provider or TokenFactsProvider()
         self._cache = cache or JsonCache(
             evidence_path("cache", "token_facts"),
-            # Schema 1, and records written before this store
-            # declared one are accepted as schema 1 deliberately —
-            # their shape is what schema 1 describes. The next bump
-            # needs a migration or they re-acquire, which is the
-            # protection: the store cannot change shape by accident.
-            schema=1,
+            # Schema 2: `observed_at` stopped meaning "when the source
+            # says it observed this" and started meaning "when MOVRvest
+            # received it", which is a change of meaning rather than of
+            # shape — precisely the kind a reader must never absorb
+            # silently.
+            schema=2,
+            migrations={1: _receipt_clock},
+            # Records predating the schema key have schema 1's shape,
+            # and reach 2 through the same migration.
             accepts_unversioned=True,
         )
         self._acquires = acquires
@@ -279,6 +314,7 @@ class CachedTokenFactsProvider:
             "provider_id": claims.provider_id,
             "source": claims.source,
             "observed_at": claims.read.observed_at.isoformat(),
+            "observation_stated": claims.read.observation_stated,
             "price": claims.price,
             "market_cap": claims.market_cap,
             "circulating_supply": claims.circulating_supply,
@@ -325,6 +361,11 @@ class CachedTokenFactsProvider:
             read=Provenance(
                 source=str(value.get("source", TokenFactsProvider.SOURCE)),
                 observed_at=observed_at,
+                # A record that does not say is a receipt clock: this
+                # store's only writer is the adapter above, and it
+                # states no observation time. Defaulting to True here
+                # would restore the very claim schema 2 withdrew.
+                observation_stated=value.get("observation_stated") is True,
             ),
             price=amount("price"),
             market_cap=amount("market_cap"),

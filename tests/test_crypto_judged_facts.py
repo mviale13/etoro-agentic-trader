@@ -303,3 +303,52 @@ def test_a_judged_committee_still_sends_every_field_it_did() -> None:
         "refs",
     ):
         assert field in sent, field
+
+
+def test_a_receipt_clock_reaches_the_wire_saying_so() -> None:
+    """The qualifier must survive the adapter, not just the gate.
+
+    This is where it was found to be lost. `_age` rebuilt a
+    `Provenance` from a fact's source and moment alone, and the third
+    field defaulted back to True — so a row whose clock is MOVRvest's
+    receipt clock rendered *"TokenInsight, 28 minutes ago"*, which is
+    the original defect restored one layer further out.
+
+    The gate can only carry a fact honestly; every surface that unpacks
+    one has to keep it that way.
+    """
+
+    from datetime import UTC, datetime
+
+    from app.domain.provenance import Provenance
+
+    received = datetime(2026, 8, 21, 6, 59, 42, tzinfo=UTC)
+
+    outcome = judge(
+        "HYPE",
+        [
+            tokeninsight(
+                read=Provenance(
+                    source="TokenInsight",
+                    observed_at=received,
+                    observation_stated=False,
+                )
+            )
+        ],
+    )
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    aged = [
+        row
+        for group in profile.groups
+        for row in group.rows
+        if row.age is not None and row.source == "TokenInsight"
+    ]
+
+    assert aged, "no TokenInsight row carried an age at all"
+
+    for row in aged:
+        assert "received" in row.age, row.label

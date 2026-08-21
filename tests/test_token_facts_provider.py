@@ -8,6 +8,7 @@ the import graph, the same way the rating's own boundary is.
 
 from __future__ import annotations
 
+import json
 import pathlib
 from datetime import UTC, datetime
 
@@ -15,6 +16,7 @@ from app.infrastructure.cache.json_cache import JsonCache
 from app.providers.token_facts_provider import (
     CachedTokenFactsProvider,
     TokenFactsProvider,
+    _receipt_clock,
 )
 
 #: The provider's answer for Hyperliquid, in the shape the coin
@@ -61,8 +63,57 @@ def test_the_payload_distills_into_unjudged_claims() -> None:
     assert claims.spot_volume_change_24h == -0.3007
     assert claims.price_change_24h == -0.0091
 
-    # Dated by the provider's own data timestamp, not the read.
-    assert claims.read.observed_at == datetime.fromtimestamp(1786338257, tz=UTC)
+    # Dated by the read, and *declared* to be dated by the read.
+    #
+    # This assertion used to read "dated by the provider's own data
+    # timestamp, not the read" and pinned `last_updated` as the
+    # observation time. The 2026-08-21 measurement withdrew that: the
+    # field does not advance with the price it sits beside, so it never
+    # described this figure.
+    assert claims.read.observation_stated is False
+    assert claims.read.observed_at != datetime.fromtimestamp(1786338257, tz=UTC)
+    assert claims.read.observed_at.tzinfo is not None
+
+
+def test_the_frozen_provider_timestamp_reaches_nothing() -> None:
+    """`last_updated` is not read as an observation time — at all.
+
+    The measurement, live on 2026-08-21: over one 90-second window
+    `price_latest` moved 73.06613809983222 → 73.0488279001271 while
+    `market_data.last_updated` did not advance, and it stood 16.5 hours
+    behind the fetch across five assets stamped within 49 seconds of
+    each other. A batch stamp, not a per-quote clock.
+
+    So the test is not that a different field is preferred — it is that
+    this value cannot appear anywhere in the claim, however the payload
+    moves it.
+    """
+
+    moved = {
+        **HYPERLIQUID,
+        "market_data": {
+            **HYPERLIQUID["market_data"],  # type: ignore[dict-item]
+            "last_updated": 1_786_338_257_000,
+            "price": [
+                {
+                    **HYPERLIQUID["market_data"]["price"][0],  # type: ignore[index]
+                    "price_latest": 73.0488279001271,
+                }
+            ],
+        },
+    }
+
+    claims = TokenFactsProvider._distill("HYPE", "hyperliquid", moved)
+
+    frozen = datetime.fromtimestamp(1786338257, tz=UTC)
+
+    assert claims.price == 73.0488279001271
+    assert claims.read.observed_at != frozen
+    assert claims.read.observation_stated is False
+
+    # And the reading says "received", never a bare age that an
+    # investor would read as the price's own.
+    assert "received" in claims.read.stated()
 
 
 def test_an_answer_about_another_token_is_refused() -> None:
@@ -148,6 +199,73 @@ def test_stored_claims_survive_the_cache_round_trip(
     assert served.circulating_supply == claims.circulating_supply
     assert served.spot_volume_change_24h == claims.spot_volume_change_24h
     assert served.read.observed_at == claims.read.observed_at
+
+    # The qualifier survives the store. A round trip that dropped it
+    # would restore exactly the claim schema 2 withdrew.
+    assert served.read.observation_stated is False
+
+
+def test_a_schema_one_record_comes_forward_on_the_receipt_clock(
+    tmp_path: pathlib.Path,
+) -> None:
+    """The migration keeps the figures and drops the false timestamp.
+
+    A schema-1 record's `observed_at` is `market_data.last_updated`.
+    It cannot become an observation time (it never was one) and it must
+    not be relabelled a receipt time (it is not that either). What the
+    record does hold honestly is `stored_at` — the moment MOVRvest
+    wrote the response down — so that is what the entry ages on.
+    """
+
+    written = "2026-08-21T06:59:42.550069+00:00"
+    frozen = "2026-08-20T14:29:38+00:00"
+
+    legacy = JsonCache(str(tmp_path / "token_facts"), schema=1)
+    legacy.write(
+        "HYPE",
+        {
+            "symbol": "HYPE",
+            "provider_id": "hyperliquid",
+            "source": "TokenInsight",
+            "observed_at": frozen,
+            "price": 72.73774324560395,
+            "market_cap": 24_600_288_707.6,
+            "circulating_supply": 336_685_219.0,
+            "max_supply": 1_000_000_000.0,
+            "fully_diluted_valuation": None,
+            "rank": 9.0,
+            "spot_volume_24h": 110_882_604.5,
+            "spot_volume_change_24h": -0.0194,
+            "price_change_24h": 0.0177,
+        },
+    )
+
+    # Rewrite `stored_at` so the entry's receipt moment is the one the
+    # live record carried, rather than this test's clock.
+    path = next((tmp_path / "token_facts").glob("HYPE.*.json"))
+    record = json.loads(path.read_text(encoding="utf-8"))
+    record["stored_at"] = written
+    path.write_text(json.dumps(record), encoding="utf-8")
+
+    served = CachedTokenFactsProvider.stored(
+        JsonCache(
+            str(tmp_path / "token_facts"),
+            schema=2,
+            migrations={1: _receipt_clock},
+            accepts_unversioned=True,
+        )
+    ).claims("HYPE")
+
+    assert served is not None
+
+    # The evidence survives — the migration costs no re-acquisition.
+    assert served.price == 72.73774324560395
+    assert served.circulating_supply == 336_685_219.0
+
+    # The false timestamp does not.
+    assert served.read.observed_at != datetime.fromisoformat(frozen)
+    assert served.read.observed_at == datetime.fromisoformat(written)
+    assert served.read.observation_stated is False
 
 
 # ── the structural separation from the rating ───────────────────────

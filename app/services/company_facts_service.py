@@ -419,7 +419,11 @@ class CompanyFactsService:
                 and price.source
                 and price.observed_at is not None
             ):
-                return Provenance(source=price.source, observed_at=price.observed_at)
+                return Provenance(
+                    source=price.source,
+                    observed_at=price.observed_at,
+                    observation_stated=price.observation_stated,
+                )
 
             return None
 

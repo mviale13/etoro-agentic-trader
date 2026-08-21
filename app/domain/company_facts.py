@@ -176,8 +176,15 @@ class CompanyFacts:
         price to identify, in one sentence composed here so no surface
         assembles it differently: the token, the crypto-native provider's
         own identifier for it, the claimants whose independent agreement
-        established the figure, the observation time, and the versioned
+        established the figure, when it was read, and the versioned
         rule that admitted it.
+
+        *When it was read* is two different facts and this sentence says
+        which one it holds. A source that states an observation time is
+        quoted as observing; one measured to state none has MOVRvest's
+        own receipt time printed and labelled as a receipt time. The
+        investor is never left to infer a price's age from a clock that
+        does not measure it.
 
         None where the price was not admitted by a rule — an equity's
         quote is the vendor's own figure under the vendor's own ticker,
@@ -202,14 +209,26 @@ class CompanyFacts:
             else self.symbol
         )
 
-        observed = (
-            "at an observation time the source did not state"
-            if self.price_reading is None
-            else (
+        # Three cases, worded apart, because collapsing any two of them
+        # is the defect this property was measured to have. A receipt
+        # time printed as "observed" reads to an investor as the age of
+        # the price — and on 2026-08-21 that sentence dated a figure
+        # received three minutes earlier to sixteen hours before, on
+        # all eight tokens in the book.
+        if self.price_reading is None:
+            observed = "at an observation time the source did not state"
+        elif not self.price_reading.observation_stated:
+            observed = (
+                "received "
+                f"{self.price_reading.observed_at.astimezone(UTC):%Y-%m-%d %H:%M} UTC "
+                f"(receipt time; {self.price_reading.source} states no "
+                "observation time for it)"
+            )
+        else:
+            observed = (
                 "observed "
                 f"{self.price_reading.observed_at.astimezone(UTC):%Y-%m-%d %H:%M} UTC"
             )
-        )
 
         return (
             f"The price for {subject} was established by {established}, "
