@@ -926,13 +926,26 @@ future investor required-return policy clause.
 `forwardPE` accepted with an undisclosed definition; Yahoo
 `dividendYield` entering with a ×100 scale mismatch (BNP.PA renders
 885% — `value_provider.from_info` converts `debtToEquity` and
-`netExpenseRatio` but not `dividendYield`); and **SPCX, an ETF, classed
-`stock` because eToro's own metadata says `asset_type_id` 5** — so a
-fund receives a P/E judgment, LOW quality and a SELL veto. The same
-mapper silently conflates `trailingEps`/`forwardEps` and
+`netExpenseRatio` but not `dividendYield`). The same mapper silently
+conflates `trailingEps`/`forwardEps` and
 `volume24Hr`/`regularMarketVolume`. The crypto side already owns the
 needed architecture (the #99 claim→validation gate); the equity/broker
 path predates it.
+
+**The third failure listed here — *"SPCX, an ETF, classed `stock`"* —
+is withdrawn: SPCX is not a fund.** eToro's own payload names it *"Space
+Exploration Technologies Corp"* at `assetTypeId` 5 and Yahoo names it
+the same, taxonomy `EQUITY`; the two agree, so no misclassification
+exists to fix. What did exist is recorded elsewhere and is a different
+defect: on 2026-08-13 the vendor's payload named a *"SPAC and New Issue
+ETF"*, the contradiction dissolved by vendor drift, and **no store
+recorded that it had ever happened**
+([`IDENTITY_HISTORY_RETENTION_MEASUREMENT.md`](docs/architecture/IDENTITY_HISTORY_RETENTION_MEASUREMENT.md)).
+The corpus-wide check is
+[`FUND_EVIDENCE_RESEARCH.md`](docs/architecture/FUND_EVIDENCE_RESEARCH.md)
+§10: 76 of 79 stored securities joined to broker metadata, **zero class
+mismatches**, one fund (IB01.L) already bypassing every company
+question.
 
 **A fund cannot receive evaluative meaning from a company question its
 playbook does not ask** (the Fund Analytical Boundary, F1,
