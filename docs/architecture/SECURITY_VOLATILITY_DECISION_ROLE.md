@@ -383,3 +383,86 @@ this platform knows least about.
   and `conviction-mean@1` are all `UNSOURCED`.** Every band in this
   document is a house constant measured in `DECISION_PHILOSOPHY_AUDIT.md`,
   and naming them does not make them right.
+
+---
+
+## Owner's ruling — 2026-08-21
+
+**Conclusion B is accepted.**
+
+> Historical price volatility is not, by itself, a verdict on the
+> investment thesis. The target contract moves security volatility from
+> automatic thesis rejection into action eligibility and magnitude.
+> Implementation is gated by the four prerequisite corrections below.
+
+The ruling is a direction and not a licence to remove the veto. **The
+absolute volatility veto stays in place until every prerequisite below
+has landed**, and neither the implementation slice nor the research
+slice that follows may remove it.
+
+### The four prerequisites
+
+1. **Negative or zero P/E must never band CHEAP.** A forward or
+   trailing P/E at or below zero means earnings-based valuation is not
+   measurable through P/E — it is not a cheap security. The exact
+   reported value is preserved as evidence, and no other valuation
+   method is substituted for it.
+2. **Unequal score coverage must not produce a cross-company conviction
+   ranking that reads as comparable.** Two convictions computed over
+   different numbers of score families are not two points on one scale,
+   and presenting them as a ranking asserts that they are.
+3. **Non-company securities must not pass through company-quality
+   analysis.** A fund has no earnings, no dividend policy of its own and
+   no company profitability, and no proxy for those may produce a
+   company-quality verdict for one.
+4. **The Capital Action Envelope must carry an explicit per-security
+   volatility constraint before the absolute veto is removed.**
+   Otherwise B is a rejection deleted rather than a constraint applied.
+   The constraint's values are the owner's to write.
+
+### Clarifications carried with the ruling
+
+- **Do not penalise missing quality as though missing information were
+  bad company quality.** The two are different facts and only one of
+  them is about the company.
+- **Do not fill an absent score with zero.** Zero is the lowest score on
+  the scale, which is a judgment; absence is the lack of one.
+- **Until a new conviction contract is ruled, carry participation and
+  prohibit cross-coverage ranking.** The number may be shown beside its
+  coverage; it may not be ordered against a number computed over a
+  different set of families.
+- **Momentum alone must not be described as a business thesis.** Five of
+  the sixty-four have strengths that are only momentum, and under DV2
+  that is what licenses a conviction number at all.
+- **Drawdown and volatility remain separate measurements.** Neither
+  stands in for the other, and this document's Finding 1 — that no
+  drawdown of any depth can reject — is not repaired by conflating them.
+- **No risk threshold changes in the research PR.**
+
+### What lands next, and what does not
+
+The implementation slice that follows builds only the prerequisites
+that need no new owner sizing threshold: **A** (negative P/E), **B**
+(unequal conviction coverage) and **C** (the asset-class boundary,
+including an audit of the stored corpus for other mismatches).
+Prerequisite 4 is researched and not implemented — candidate policy
+shapes for how annualised volatility constrains OPEN eligibility, ADD
+eligibility, maximum total position and maximum incremental position
+change, with maximum drawdown measured separately, and **no threshold
+or multiplier invented**. That research lands as
+`docs/architecture/SECURITY_VOLATILITY_CAPITAL_ENVELOPE.md` and must
+conclude one of: **A. POLICY VALUES READY**, **B. MECHANISM READY,
+OWNER VALUES REQUIRED**, or **C. NOT READY**.
+
+Implementation and research are separate PRs, and both stop for owner
+review.
+
+### Already landed under this ruling
+
+The second clarification's first half arrived with the owner's
+amendments to #231: a conviction is now stated as *"computed from 4 of
+5 score families"* with the absent families named, and
+`ExecutiveDecision` carries the participation counts. That is
+presentation and provenance only — the conviction arithmetic is
+untouched, and prerequisite 2's ranking prohibition is the
+implementation slice's work.
