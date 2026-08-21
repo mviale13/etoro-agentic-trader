@@ -10,11 +10,28 @@ from app.domain.value_signal import ValueSignal
 
 
 class ValueSignalService:
-    #: The bands of `pe-bands@1`. Named so the provenance guard can
+    #: The bands of `pe-bands@2`. Named so the provenance guard can
     #: fingerprint them: moving one under an unchanged rule version is a
     #: test failure, not a quiet edit.
     PE_CHEAP_BELOW = 18
     PE_FAIR_BELOW = 28
+
+    #: The floor beneath which a price-to-earnings ratio measures
+    #: nothing. **Not a band and not a threshold anyone chose** — it is
+    #: where the arithmetic stops meaning what its name says. A P/E is a
+    #: price divided by earnings; at or below zero the denominator is
+    #: not earnings the price is being paid for, so a small negative
+    #: number is not a low multiple and a large negative one is not a
+    #: high multiple. Both say the same thing — this company is expected
+    #: to lose money — and no multiple describes it.
+    #:
+    #: The measured defect (`SECURITY_VOLATILITY_DECISION_ROLE.md`,
+    #: Finding 5): LUNR's forward P/E of **−328** satisfied `pe < 18`
+    #: and banded **CHEAP at confidence 90**, the strongest valuation
+    #: reading this platform can produce. The volatility veto was
+    #: hiding it, and the owner's ruling of 2026-08-21 makes removing it
+    #: a prerequisite of removing the veto.
+    PE_MEASURABLE_ABOVE = 0.0
 
     def build(
         self,
@@ -85,6 +102,45 @@ class ValueSignalService:
         )
 
         finding = (Finding.neutral(comparison.stated),)
+
+        if pe <= self.PE_MEASURABLE_ABOVE:
+            # Measured, and unbandable. The figure is preserved exactly
+            # as the provider reported it — it is evidence about the
+            # company, and a reader is entitled to see the number that
+            # could not be interpreted. What is withheld is the
+            # *meaning*: no band, and therefore no valuation score, so
+            # the question leaves the answered set and lowers the
+            # decision's coverage instead of scoring 80 for it.
+            #
+            # UNKNOWN and not `applicable=False`: the question applies.
+            # This is a company with earnings, and they are negative —
+            # unlike a fund or a token, where there are no earnings for
+            # a price to be judged against and the question never
+            # arises. Collapsing the two would tell an investor that a
+            # loss-making company is the same kind of thing as a bond
+            # ETF.
+            #
+            # And no substitute: nothing here reaches for price-to-book,
+            # price-to-sales or a peer multiple. This platform holds one
+            # unaudited multiple at a date (`VALUATION_AUTHORITY.md`),
+            # and answering a question it cannot answer with a different
+            # question it also cannot answer is not an improvement.
+            return ValueSignal(
+                valuation="UNKNOWN",
+                confidence=20,
+                # The rule that refused the band is the rule that owns
+                # the band — identity, never endorsement.
+                rule=PE_BANDS,
+                evidence=finding,
+                observation=observation,
+                comparison=comparison,
+                basis=(
+                    f"Valuation is not scored: the forward P/E is {pe:.1f}, "
+                    "so earnings-based valuation is not measurable through "
+                    "P/E for this company. The figure is reported as read "
+                    "and no other valuation method stands in for it."
+                ),
+            )
 
         if pe < self.PE_CHEAP_BELOW:
             return ValueSignal(

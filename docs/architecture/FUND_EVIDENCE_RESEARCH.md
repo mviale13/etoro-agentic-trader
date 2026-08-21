@@ -414,3 +414,80 @@ become the fund's next thing needed; the boundary membership is
 exactly three classes and UNKNOWN stays out; the honest behaviours —
 identity-selected playbook, exclusions, earnings-calendar silence —
 are pinned).
+
+---
+
+## 10. The stored-corpus asset-class audit (2026-08-21)
+
+Prerequisite C of the owner's ruling on
+[`SECURITY_VOLATILITY_DECISION_ROLE.md`](SECURITY_VOLATILITY_DECISION_ROLE.md)
+asked for two things: that non-company securities bypass
+company-quality analysis, and that the **complete stored corpus** be
+audited for other asset-class mismatches. This is the audit. Zero
+provider calls: it is the acquisition of 2026-08-21, replayed.
+
+### What was compared
+
+Every security the store holds fundamentals for, joined to the broker's
+own metadata from the newest watchlist evidence payload, on the symbol
+stem — Yahoo strips the venue suffix (`VOW3.DE` → `VOW3`) and appends
+`-USD` for tokens, so a naive join loses 22 European listings and
+reports them as unclassified.
+
+**76 of 79 stored securities joined.** Three did not and are named
+rather than counted away: they carry stored fundamentals and appear on
+no current watchlist, which is a fact about the watchlists rather than
+about their class.
+
+Two independent signals were placed against the broker's
+`assetTypeId`:
+
+| Signal | Held for | Says |
+|---|---|---|
+| `vendor_identity.taxonomy` | 26 of 79 | `EQUITY`, `CRYPTOCURRENCY` — the vendor's own classification |
+| `expense_ratio` | 1 of 79 | a fund-shaped fact: the vendor reports one only for a fund |
+
+### The result
+
+**Zero mismatches.** No security's broker class disagrees with the
+vendor's taxonomy, and the one security carrying a fund-shaped fact —
+`IB01.L`, the iShares $ Treasury Bond 0-1yr UCITS ETF — is classed
+`etf` by the broker and already bypasses every company question.
+
+The live book's classes: 64 stock, 8 crypto, 2 commodity, 1 ETF.
+
+### SPCX is not a fund, and the ruling's example is refuted
+
+The ruling names SPCX as a fund that must bypass company-quality
+factors. **On today's evidence it is not one**, and both sides agree
+about that:
+
+- eToro's own watchlist payload: `symbolName` **SPCX**, `displayName`
+  **"Space Exploration Technologies Corp"**, `assetTypeId` **5**.
+- Yahoo's stored fundamentals: `vendor_identity.name` **"Space
+  Exploration Technologies Corp."**, `taxonomy` **EQUITY**.
+
+This is the same conclusion §1 reached by measurement — *"one identity
+worry dissolved under measurement"* — and
+[`IDENTITY_HISTORY_RETENTION_MEASUREMENT.md`](IDENTITY_HISTORY_RETENTION_MEASUREMENT.md)
+records how it got there: on 2026-08-13 the vendor's payload named a
+*"SPAC and New Issue ETF"*, and the vendor has since drifted into
+agreement with the broker. **A real contradiction existed and no store
+recorded it**, which is that document's finding and not this one's.
+
+So SPCX is not routed through the fund boundary. Classifying it as a
+fund would mean asserting a class neither source states — Invariant 2,
+and the exact substitution the decision path stopped making elsewhere.
+The sentence in `CLAUDE.md` calling SPCX an ETF is stale against both
+measurements and should be corrected when that file is next touched.
+
+### What the audit cannot establish
+
+- **A missing taxonomy is not agreement.** 53 of 79 securities carry no
+  vendor taxonomy at all, so for those the audit compared the broker
+  against nothing. It found no disagreement; it did not find corroboration.
+- **The corpus holds one fund.** A boundary measured against a single
+  member is pinned, not validated — the same thinness §1 recorded, and
+  the reason F2 stays unstarted.
+- **`expense_ratio` is a sufficient tell, not a necessary one.** A fund
+  whose vendor record omits it would look company-shaped here.

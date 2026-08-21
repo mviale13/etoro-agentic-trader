@@ -102,6 +102,12 @@ def decision(
             # both are carried in production — a stub that lags the
             # contract fails the stage for a reason no real run has.
             conviction_basis="computed from 4 of 5 score families",
+            # The coverage beside the sentence, because production
+            # carries both — a stub that lags the contract fails the
+            # stage for a reason no real run has.
+            conviction_participating=4,
+            conviction_expected=5,
+            conviction_absent_families=("business quality",),
             blocker=DecisionBlocker.none(),
             evidence_as_of=None,
             missing_evidence=(),

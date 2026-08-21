@@ -26,6 +26,7 @@ flattened, because flattening any of them is how a page starts lying:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
 from enum import StrEnum
 
@@ -313,12 +314,19 @@ class CycleReviewResponse(BaseModel):
     portfolio: RecordedPortfolioResponse | None = None
 
     #: Watched-but-unheld securities this cycle **evaluated**, ordered by
-    #: the conviction the Artificial CIO assigned, highest first.
+    #: the conviction the Artificial CIO assigned, highest first — where
+    #: those convictions are comparable at all.
     #:
     #: Empty means none were evaluated — which a surface must not render
     #: as "nothing is worth considering". Evaluating candidates costs
     #: provider and pipeline calls, so a cycle does it only when asked.
     candidates: list[CourseResponse] = []
+
+    #: Whether the order above is a ranking. False where the recorded
+    #: convictions were computed over different score families, or where
+    #: the record does not say which — the list is then by symbol, and a
+    #: surface may not present it as an order of merit.
+    candidates_ranked: bool = False
 
     @classmethod
     def from_log(cls, log: CycleLog) -> CycleReviewResponse:
@@ -386,26 +394,60 @@ class CycleReviewResponse(BaseModel):
                 if finished.portfolio is None
                 else RecordedPortfolioResponse.of(finished.portfolio)
             ),
-            # Ranked here, from the conviction the pipeline already
+            # Ordered here, from the conviction the pipeline already
             # assigned. Ordering is priority, never certainty — and a
-            # candidate with no conviction is never ranked above one
+            # candidate with no conviction is never placed above one
             # that has it.
+            #
+            # **Only where the convictions share a denominator.** Two
+            # numbers averaged over different score families are not two
+            # points on one scale, and an order asserts that they are
+            # (the owner's ruling of 2026-08-21, prerequisite 2). Where
+            # they do not, the candidates come back by symbol — an
+            # order that is obviously not a judgment — and a surface
+            # reads `candidates_ranked` before calling it a ranking.
             candidates=[
-                CourseResponse.of(entry)
-                for entry in sorted(
-                    finished.candidates,
-                    key=lambda item: (
-                        item.conviction is not None,
-                        item.conviction or 0,
-                    ),
-                    reverse=True,
-                )
+                CourseResponse.of(entry) for entry in _ordered(finished.candidates)
             ],
+            candidates_ranked=_comparable_coverage(finished.candidates),
             stream_complete=log.is_complete_stream,
             unreadable_records=log.unreadable_records,
             unsupported_schemas=log.unsupported_schemas,
             lifecycle_anomalies=log.lifecycle_anomalies,
         )
+
+
+def _comparable_coverage(entries: Sequence[DecisionSummary]) -> bool:
+    """Whether these convictions were computed over the same families.
+
+    **Counts are not enough**, and neither is silence. Two securities
+    judged on four of five families are not comparable when one is
+    missing business quality and the other valuation, so the comparison
+    is over the absent-family tuples. And a record that does not say —
+    written before the counts existed — is not evidence that they
+    matched: an entry carrying a conviction and no coverage makes the
+    whole group incomparable rather than assumed-uniform.
+    """
+
+    judged = [entry for entry in entries if entry.conviction is not None]
+
+    if any(entry.conviction_participating is None for entry in judged):
+        return False
+
+    return len({entry.conviction_absent_families for entry in judged}) <= 1
+
+
+def _ordered(entries: Sequence[DecisionSummary]) -> list[DecisionSummary]:
+    """Highest conviction first where that means something; by symbol otherwise."""
+
+    if not _comparable_coverage(entries):
+        return sorted(entries, key=lambda item: item.symbol)
+
+    return sorted(
+        entries,
+        key=lambda item: (item.conviction is not None, item.conviction or 0),
+        reverse=True,
+    )
 
 
 def _last_known(log: CycleLog, *, exclude: str) -> LastKnownResponse | None:

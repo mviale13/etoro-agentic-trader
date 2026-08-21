@@ -297,6 +297,13 @@ def _encode_decision(entry: DecisionSummary) -> dict[str, Any]:
         "action_because": entry.action_because,
         "asks_for_something": entry.asks_for_something,
         "conviction_basis": entry.conviction_basis,
+        # The coverage that conviction was computed over. Optional under
+        # the same schema, like everything below it — and a record
+        # lacking the keys decodes as *coverage not recorded*, never as
+        # coverage that happened to match another security's.
+        "conviction_participating": entry.conviction_participating,
+        "conviction_expected": entry.conviction_expected,
+        "conviction_absent_families": list(entry.conviction_absent_families),
         # Optional and backward-compatible under the same schema: a
         # pre-envelope record simply lacks the key and decodes exactly
         # as it always did.
@@ -319,6 +326,19 @@ def _decode_decision(entry: dict[str, Any]) -> DecisionSummary:
             int(entry["conviction"]) if entry.get("conviction") is not None else None
         ),
         conviction_basis=str(entry.get("conviction_basis", "")),
+        conviction_participating=(
+            int(entry["conviction_participating"])
+            if entry.get("conviction_participating") is not None
+            else None
+        ),
+        conviction_expected=(
+            int(entry["conviction_expected"])
+            if entry.get("conviction_expected") is not None
+            else None
+        ),
+        conviction_absent_families=tuple(
+            str(name) for name in entry.get("conviction_absent_families", [])
+        ),
         evidence_as_of=str(entry.get("evidence_as_of", "")),
         action_kind=str(entry.get("action_kind", "")),
         action_statement=str(entry.get("action_statement", "")),

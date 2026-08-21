@@ -310,7 +310,10 @@ export function LatestCioReview({ review }: { review: CycleReview }) {
 
       <HoldingsTable review={review} />
 
-      <Opportunities candidates={review.candidates} />
+      <Opportunities
+        candidates={review.candidates}
+        ranked={review.candidatesRanked}
+      />
 
       <StrategyCard portfolio={review.portfolio} />
 
