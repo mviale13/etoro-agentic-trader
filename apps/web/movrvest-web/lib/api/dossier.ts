@@ -438,6 +438,7 @@ export interface DossierViewModel {
    * above. Null only when the backend predates the field.
    */
   understanding: DossierUnderstanding | null;
+  fundamentals: DossierFundamentals | null;
 
   /**
    * The conclusion as because / despite / review if.
@@ -593,6 +594,35 @@ export interface DossierUnderstanding {
   businessAbsentBecause: string | null;
   financial: DossierFinancialUnderstanding | null;
   financialAbsentBecause: string | null;
+}
+
+/**
+ * One fundamentals metric under its honest authority. The standing is
+ * the row's whole meaning — filing evidence, a labelled provider
+ * fallback (possibly last-known), an absence in the filing route's own
+ * words, or a refusal — and `because` is the backend's sentence for it,
+ * rendered verbatim.
+ */
+export interface DossierFundamentalRow {
+  metric: string;
+  label: string;
+  /** Null exactly where the standing shows no figure; zero is a figure. */
+  value: number | null;
+  /** "fraction", "multiple" or "currency" — how to read the number. */
+  unit: string;
+  standing: string;
+  source: string | null;
+  asOf: string | null;
+  /** Established by the provider's own record, never inferred. */
+  currency: string | null;
+  period: string | null;
+  because: string;
+  stated: string | null;
+}
+
+export interface DossierFundamentals {
+  explained: string;
+  rows: readonly DossierFundamentalRow[];
 }
 
 /**
@@ -1279,6 +1309,64 @@ function parseFundCost(value: unknown): DossierFundCost | null {
     stated: requireString(value.stated, "fund_cost.stated"),
     expenseRatio: value.expense_ratio,
     read: parseProvenance(value.read, "fund_cost.read"),
+  };
+}
+
+function parseFundamentals(value: unknown): DossierFundamentals | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Expected an object or null at "fundamentals".');
+  }
+
+  if (!Array.isArray(value.rows)) {
+    throw new Error('Expected an array at "fundamentals.rows".');
+  }
+
+  return {
+    explained: requireString(value.explained, "fundamentals.explained"),
+    rows: value.rows.map((row, index) => {
+      if (!isRecord(row)) {
+        throw new Error(`Expected an object at "fundamentals.rows[${index}]".`);
+      }
+
+      return {
+        metric: requireString(row.metric, `fundamentals.rows[${index}].metric`),
+        label: requireString(row.label, `fundamentals.rows[${index}].label`),
+        value: optionalNumber(row.value),
+        unit: requireString(row.unit, `fundamentals.rows[${index}].unit`),
+        standing: requireString(
+          row.standing,
+          `fundamentals.rows[${index}].standing`,
+        ),
+        source: optionalString(
+          row.source,
+          `fundamentals.rows[${index}].source`,
+        ),
+        asOf: optionalString(row.as_of, `fundamentals.rows[${index}].as_of`),
+        currency: optionalString(
+          row.currency,
+          `fundamentals.rows[${index}].currency`,
+        ),
+        period: optionalString(
+          row.period,
+          `fundamentals.rows[${index}].period`,
+        ),
+        // The backend's sentence is required, not defaulted: a figure
+        // without its worded meaning is exactly what this surface must
+        // never invent.
+        because: requireString(
+          row.because,
+          `fundamentals.rows[${index}].because`,
+        ),
+        stated: optionalString(
+          row.stated,
+          `fundamentals.rows[${index}].stated`,
+        ),
+      };
+    }),
   };
 }
 
@@ -2347,6 +2435,7 @@ function parseDossier(payload: unknown): DossierViewModel {
       "narrative_absent",
     ),
     understanding: parseUnderstanding(payload.understanding),
+    fundamentals: parseFundamentals(payload.fundamentals),
     synthesis: parseSynthesis(payload.synthesis),
   };
 }

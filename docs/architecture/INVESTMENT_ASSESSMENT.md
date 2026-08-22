@@ -541,3 +541,31 @@ produces assessments emits `InvestmentAssessment`s and nothing else,
 and the second decision in JPM's entry stream will either still say
 `MONITOR` with a richer record, or say something more — and either
 way say it honestly.
+
+---
+
+## Owner ruling — 2026-08-23: provider facts as labelled descriptive fallback
+
+> Secondary provider facts may be presented as explicitly labelled
+> descriptive fallback when filing-grade evidence is unavailable. They
+> do not become filing-established evidence, do not raise evidence
+> authority, do not erase the evidence gap, and cannot enlarge a
+> capital-action envelope.
+
+Built as `app/domain/fundamentals_presentation.py` and the dossier's
+Fundamentals section: for every metric, filing-established evidence
+first, an admissible stored provider value second (labelled, dated by
+receipt, refused where the stored snapshot carries no vendor identity
+claim), and the exact refusal or absence third. The Yahoo boundary is
+unmoved — the filing analysts still read `FinancialUnderstanding` and
+nothing else, no assessment basis admits a provider restatement, and
+the selection is presentation that both routes' outputs feed and
+neither route sees.
+
+Two subordinate rules, enforced in the same module: **currency is never
+inferred** — a cash flow is denominated by the provider's own
+`financialCurrency` (carried on the stored snapshot since schema 5) or
+by nothing, never by ticker, venue or domicile — and **a period is
+never guessed**: the stored provider record states none, so none is
+printed, and *"reporting period not stated by the stored record"* is
+the maximum claim.

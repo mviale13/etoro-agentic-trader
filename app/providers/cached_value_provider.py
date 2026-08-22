@@ -74,14 +74,20 @@ class CachedValueProvider:
             # pre-boundary market cap has no established denomination
             # and a pre-capture record holds no vendor account, which
             # is exactly what their silence downstream should say.
+            # Schema 5 adds `financial_currency` — the provider's own
+            # statement of its figures' denomination, audited present
+            # in the live payload on 2026-08-23 — under the same rule:
+            # a pre-5 record restores with the denomination not
+            # established, never with one inferred.
             # Records written before this store declared a schema are
             # accepted as schema 1 deliberately — their shape is what
             # schema 1 describes.
-            schema=4,
+            schema=5,
             migrations={
                 1: lambda value: value,
                 2: lambda value: value,
                 3: lambda value: value,
+                4: lambda value: value,
             },
             accepts_unversioned=True,
         )
@@ -302,6 +308,7 @@ class CachedValueProvider:
             "current_ratio": snapshot.current_ratio,
             "operating_cash_flow": snapshot.operating_cash_flow,
             "free_cash_flow": snapshot.free_cash_flow,
+            "financial_currency": snapshot.financial_currency,
             "sector": snapshot.sector,
             "industry": snapshot.industry,
             "source": reading.source,
@@ -367,6 +374,7 @@ class CachedValueProvider:
             current_ratio=number("current_ratio"),
             operating_cash_flow=number("operating_cash_flow"),
             free_cash_flow=number("free_cash_flow"),
+            financial_currency=text("financial_currency"),
             sector=text("sector"),
             industry=text("industry"),
             reading=Provenance(

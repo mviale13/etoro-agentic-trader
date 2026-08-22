@@ -185,6 +185,12 @@ class ValueProvider:
             current_ratio=cls._ratio(info.get("currentRatio")),
             operating_cash_flow=cls._ratio(info.get("operatingCashflow")),
             free_cash_flow=cls._ratio(info.get("freeCashflow")),
+            # The provider's own statement of what its financial
+            # figures are denominated in — audited live 2026-08-23:
+            # DIS carries "USD" and NESN.SW "CHF", while the *quote*
+            # currency is a different field with a different meaning.
+            # Carried verbatim; never inferred from anything.
+            financial_currency=cls._text(info.get("financialCurrency")),
             sector=cls._text(info.get("sector")),
             industry=cls._text(info.get("industry")),
             reading=reading,

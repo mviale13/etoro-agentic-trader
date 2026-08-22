@@ -37,6 +37,7 @@ from app.api.models.executive_brief import (
     ExecutivePriorityResponse,
     InvestmentCaseResponse,
 )
+from app.api.models.fundamentals_adapter import fundamentals_response
 from app.api.models.portfolio_briefing import (
     ActionResponse,
     BriefingLineResponse,
@@ -77,6 +78,7 @@ from app.domain.decision_history import (
 from app.domain.dossier_definition import DossierDefinition, definition_for
 from app.domain.executive.executive_action import ExecutiveAction
 from app.domain.executive_narrative import ExecutiveNarrative
+from app.domain.fundamentals_presentation import fundamentals_for
 from app.domain.playbook import InvestmentPlaybook
 from app.domain.playbook_selection import PlaybookSelection
 from app.domain.provenance import Provenance
@@ -86,6 +88,7 @@ from app.domain.token_rating import TokenRating
 from app.domain.valuation_snapshot import ValuationSnapshot
 from app.providers.cached_value_provider import CachedValueProvider
 from app.providers.token_insight_provider import CachedTokenInsightProvider
+from app.providers.yahoo_market_provider import YahooInstrument
 from app.renderers import ExecutiveBriefRenderer
 from app.renderers.brief_language import (
     conviction_label,
@@ -957,6 +960,31 @@ async def dossier(
         else None
     )
 
+    # The fundamentals section: filing evidence first, an explicitly
+    # labelled provider fallback second, the exact absence third — the
+    # owner's ruling of 2026-08-23, composed at the surface exactly as
+    # the fund cost and the token rating are, so "it reaches no score"
+    # stays a fact about the code. Read-only both ways: the financial
+    # understanding is already in hand, and the provider snapshot comes
+    # through the stored door under the vendor's own symbol — a
+    # security never acquired offers no fallback rather than a fetched
+    # one, and composing this makes zero provider calls and zero store
+    # writes.
+    fundamentals = None
+
+    if definition.filings_apply:
+        instrument = YahooInstrument.for_security(
+            normalized_symbol,
+            normalized_symbol,
+            asset_class if asset_class is not None else AssetClass.STOCK,
+        )
+        fundamentals = fundamentals_response(
+            fundamentals_for(
+                understanding.financial if understanding is not None else None,
+                CachedValueProvider.stored().snapshot(instrument.yahoo_symbol),
+            )
+        )
+
     # A third party's published rating, read from the store and composed
     # here at the surface — deliberately not on `CompanyFacts`, not on
     # the signals and not in the research package. Reaching it only at
@@ -1101,6 +1129,7 @@ async def dossier(
         understanding=(
             understanding_response(understanding) if understanding is not None else None
         ),
+        fundamentals=fundamentals,
         # Composed from the decision, the thesis and the understanding
         # already in hand. Deterministic, and complete without the
         # writer: the dossier's conclusion never depends on a model.

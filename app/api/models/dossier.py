@@ -70,6 +70,48 @@ class ProvenanceResponse(BaseModel):
     last_known: bool
 
 
+class FundamentalRowResponse(BaseModel):
+    """One fundamentals metric under its honest authority.
+
+    `standing` is the row's whole meaning: filing evidence, an
+    explicitly labelled provider fallback (possibly last-known), an
+    absence in the filing route's own words, or a refusal with its
+    reason. The page renders `because` verbatim and derives nothing.
+    """
+
+    metric: str
+    label: str
+
+    #: The figure, read through `unit`. None exactly where the standing
+    #: shows none — a measured zero is a figure, never an absence.
+    value: float | None
+    unit: str
+    standing: str
+
+    source: str | None
+    as_of: str | None
+
+    #: ISO code where the provider's own record establishes one. Never
+    #: inferred, and only meaningful for currency-unit rows.
+    currency: str | None
+
+    #: The reporting period where established. The stored provider
+    #: record establishes none, so fallback rows always carry None.
+    period: str | None
+
+    because: str
+
+    #: The filing arithmetic, for filing-evidence rows only.
+    stated: str | None
+
+
+class FundamentalsResponse(BaseModel):
+    """The compact fundamentals section: one explanation, twelve rows."""
+
+    explained: str
+    rows: list[FundamentalRowResponse]
+
+
 class FundCostResponse(BaseModel):
     """What owning a fund costs, as the provider reports it.
 
@@ -1171,6 +1213,15 @@ class DossierResponse(BaseModel):
     #: filing or asks a model, so a company nothing has been observed
     #: for arrives with both halves absent and their reasons worded.
     understanding: UnderstandingResponse | None = None
+
+    #: The fundamentals the investor asked the dossier for, each under
+    #: its honest authority — filing evidence first, an explicitly
+    #: labelled provider fallback second, the exact absence third
+    #: (owner ruling, 2026-08-23). Presentation only: nothing here
+    #: reached the decision, raised any authority, or touched an
+    #: envelope, and composing it reads the stores alone. None where
+    #: filings do not apply to the subject.
+    fundamentals: FundamentalsResponse | None = None
 
     # ── The conclusion, stated so it can be challenged ──────────────
     #: The decision as because / despite / review if, composed from the

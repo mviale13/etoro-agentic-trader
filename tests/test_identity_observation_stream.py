@@ -123,7 +123,7 @@ def acquire_twice(tmp_path) -> IdentityObservationStore:
     """
 
     store = IdentityObservationStore(tmp_path / "identity")
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
 
     first = CachedValueProvider(
         provider=ProviderStub(
@@ -290,7 +290,7 @@ class ExplodingStore(IdentityObservationStore):
 def test_read_and_evaluate_paths_never_append(tmp_path) -> None:
     """`snapshot`, the stored door, and the CLI render all stay reads."""
 
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
 
     acquiring = CachedValueProvider(
         provider=ProviderStub(observed(AGREEING, TUESDAY)),  # type: ignore[arg-type]
@@ -318,7 +318,7 @@ def test_a_cache_served_read_observes_nothing(tmp_path) -> None:
     """Serving today's cached reading is not a funded acquisition."""
 
     store = IdentityObservationStore(tmp_path / "identity")
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
 
     provider = CachedValueProvider(
         provider=ProviderStub(  # type: ignore[arg-type]
@@ -342,7 +342,7 @@ def test_the_observation_lands_before_the_cache_replacement(tmp_path) -> None:
     ahead of the one that remembers.
     """
 
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
     seen_at_append: list[str | None] = []
 
     class OrderSpy(IdentityObservationStore):
@@ -394,15 +394,22 @@ def test_the_observation_lands_before_the_cache_replacement(tmp_path) -> None:
 def test_the_fundamentals_cache_schema_and_latest_value_behavior_are_unchanged(
     tmp_path,
 ) -> None:
-    """Schema 4, same migrations, still a latest-value replacement."""
+    """Schema 5 since the 2026-08-23 ruling, still a latest-value replacement.
+
+    Written at 4 by #216 to pin that the identity stream changed no
+    cache contract; schema 5 adds `financial_currency` (the fundamentals
+    fallback ruling), and what this test protects is unchanged — the
+    migrations are the identity and the cache holds only the latest
+    account.
+    """
 
     live = CachedValueProvider()
 
-    assert live._cache.schema == 4  # noqa: SLF001
-    assert set(live._cache.migrations) == {1, 2, 3}  # noqa: SLF001
+    assert live._cache.schema == 5  # noqa: SLF001
+    assert set(live._cache.migrations) == {1, 2, 3, 4}  # noqa: SLF001
 
     store = acquire_twice(tmp_path)
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
 
     entry = cache.read("SPCX")
 
@@ -552,7 +559,7 @@ def test_history_is_filed_under_the_investor_symbol_and_cache_under_the_vendors(
     """
 
     store = IdentityObservationStore(tmp_path / "identity")
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
 
     broker = ProviderIdentityClaim(
         provider="eToro",
@@ -594,7 +601,7 @@ def test_a_venue_translated_listing_separates_the_same_way(tmp_path) -> None:
     """Broker NESN.ZU, vendor NESN.SW — the equity translation case."""
 
     store = IdentityObservationStore(tmp_path / "identity")
-    cache = JsonCache(tmp_path / "fundamentals", schema=4)
+    cache = JsonCache(tmp_path / "fundamentals", schema=5)
 
     broker = ProviderIdentityClaim(
         provider="eToro", symbol="NESN.ZU", name="Nestle", taxonomy="5"

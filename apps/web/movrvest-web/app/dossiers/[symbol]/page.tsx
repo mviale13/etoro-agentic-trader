@@ -40,6 +40,8 @@ import type {
   DossierSynthesis,
   DossierSynthesisFact,
   DossierTokenRating,
+  DossierFundamentalRow,
+  DossierFundamentals,
   DossierUnderstanding,
   DossierViewModel,
   TokenFactRow,
@@ -1750,6 +1752,10 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       <Recommendation dossier={dossier} />
       <InvestorContext dossier={dossier} />
 
+      {dossier.fundamentals ? (
+        <Fundamentals fundamentals={dossier.fundamentals} />
+      ) : null}
+
       {dossier.understanding ? (
         <Understanding
           understanding={dossier.understanding}
@@ -1775,6 +1781,115 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
       </Suspense>
     </div>
   );
+}
+
+
+/**
+ * The fundamentals the investor asked the dossier for, each figure under
+ * its honest authority — filing evidence first, an explicitly labelled
+ * provider fallback second, the exact absence third (owner ruling,
+ * 2026-08-23).
+ *
+ * Presentation only. The standings, sentences, currencies and dates all
+ * arrive from the backend; this component formats numbers and renders
+ * badges, and derives nothing. A provider fallback is descriptive — it
+ * is not filing evidence, and the detailed filing section below still
+ * shows the evidence and the gaps exactly as before.
+ */
+function Fundamentals({ fundamentals }: { fundamentals: DossierFundamentals }) {
+  return (
+    <section aria-labelledby="fundamentals-heading">
+      <SectionHeading id="fundamentals-heading">Fundamentals</SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        {fundamentals.explained}
+      </p>
+
+      <div className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        {fundamentals.rows.map((row) => (
+          <FundamentalRow key={row.metric} row={row} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** The badge text for a standing — labels, never colours-as-verdicts. */
+const FUNDAMENTAL_BADGES: Record<string, string> = {
+  filing_evidence: "Filing evidence",
+  provider_fallback: "Provider fallback",
+  last_known_provider_fallback: "Last known",
+  unavailable: "Not established",
+  refused: "Refused",
+};
+
+function FundamentalRow({ row }: { row: DossierFundamentalRow }) {
+  const badge = FUNDAMENTAL_BADGES[row.standing] ?? row.standing;
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          {row.label}
+        </span>
+        <span className="shrink-0 rounded-full border border-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+          {badge}
+        </span>
+      </div>
+
+      <p className="mt-1 text-base font-semibold tabular-nums text-slate-900">
+        {formatFundamental(row)}
+      </p>
+
+      <p className="mt-1 text-xs leading-5 text-slate-500">{row.because}</p>
+
+      {row.stated ? (
+        <details className="mt-1">
+          <summary className="cursor-pointer text-xs text-slate-400">
+            The arithmetic, as the filing states it
+          </summary>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{row.stated}</p>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Format a figure by its unit. A currency amount is prefixed with the
+ * provider-established code where one exists and with nothing where it
+ * does not — no symbol is ever guessed from the ticker or venue.
+ */
+function formatFundamental(row: DossierFundamentalRow): string {
+  if (row.value === null) {
+    return "\u2014";
+  }
+
+  if (row.unit === "fraction") {
+    return `${(row.value * 100).toFixed(1)}%`;
+  }
+
+  if (row.unit === "currency") {
+    const compact = compactAmount(row.value);
+
+    return row.currency ? `${row.currency} ${compact}` : compact;
+  }
+
+  return `${row.value.toFixed(2)}x`;
+}
+
+function compactAmount(value: number): string {
+  const magnitude = Math.abs(value);
+
+  if (magnitude >= 1_000_000_000) {
+    return `${(value / 1_000_000_000).toFixed(2)}bn`;
+  }
+
+  if (magnitude >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1)}m`;
+  }
+
+  return value.toLocaleString("en-US");
 }
 
 /**
