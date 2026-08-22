@@ -8,7 +8,7 @@ number moved their ranking.
 """
 
 from app.application.brain.reasoning.risk_analyst import RiskAnalyst
-from app.cio import ArtificialCIO, DecisionEvidence, DecisionPolicy, DecisionState
+from app.cio import ArtificialCIO, DecisionEvidence, DecisionState
 from app.domain.finding import Finding
 from tests.test_brain_context import make_market, make_policy, make_portfolio
 from tests.test_security_evidence import build_evidence, make_brain, make_company
@@ -135,20 +135,18 @@ def test_a_measured_breach_no_longer_rejects() -> None:
     """The 2026-08-21 cutover, at this file's own boundary.
 
     This test asserted the opposite until the owner's ruling removed
-    `risk_score > maximum_acceptable_risk → REJECT`. The surrounding
-    principle is untouched and is what this file is about: an
-    *unmeasured* risk still refuses to progress to a recommendation.
-    What changed is that a *measured* violent one no longer refuses the
-    thesis — it bounds the position's size instead.
+    the @2 gate (risk over its former 70 threshold rejected the
+    thesis; the field is deleted as dead). The surrounding principle
+    is untouched and is what this file is about: an *unmeasured* risk
+    still refuses to progress to a recommendation. What changed is
+    that a *measured* violent one no longer refuses the thesis — it
+    bounds the position's size instead.
     """
 
-    policy = DecisionPolicy()
+    for score in (71, 85, 100):
+        decided = ArtificialCIO().decide(evidence(risk_score=score))
 
-    decided = ArtificialCIO().decide(
-        evidence(risk_score=policy.maximum_acceptable_risk + 1),
-    )
-
-    assert decided.state is not DecisionState.REJECT
+        assert decided.state is not DecisionState.REJECT
 
 
 def test_conviction_averages_only_what_was_measured() -> None:
@@ -237,8 +235,16 @@ def test_a_securitys_own_risk_is_what_the_cio_scores() -> None:
     assert violent_score > calm_score
 
 
-def test_a_severe_security_is_rejected_on_its_own_record() -> None:
-    from app.cio import DecisionPolicy
+def test_a_severe_security_scores_at_its_own_severity() -> None:
+    """The reading's arithmetic, with no gate on the other end.
+
+    SEVERE turns into risk 85 through `risk-severity@1` exactly as it
+    always did; since the 2026-08-21 cutover the score reaches
+    conviction as safety and sizes the envelope ceiling instead of
+    rejecting the thesis.
+    """
+
+    from app.domain.risk_signal import RiskSignal
 
     brain = make_brain(
         evidence={"VIOLENT": (_with_risk(make_company("VIOLENT"), "SEVERE"),)},
@@ -246,8 +252,7 @@ def test_a_severe_security_is_rejected_on_its_own_record() -> None:
 
     score = build_evidence(brain, "VIOLENT").risk_score
 
-    assert score is not None
-    assert score > DecisionPolicy().maximum_acceptable_risk
+    assert score == round(RiskSignal.SEVERITIES["SEVERE"] * 100)
 
 
 def _with_risk(company, level: str):

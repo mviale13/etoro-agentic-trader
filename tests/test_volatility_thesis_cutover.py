@@ -176,18 +176,45 @@ def test_an_unmeasured_risk_still_refuses_a_recommendation() -> None:
     assert "unmeasured risk" in decision.blocker.stated
 
 
-def test_the_severity_placement_still_has_its_referent() -> None:
-    """`maximum_acceptable_risk` gates nothing and anchors something.
+def test_the_dead_threshold_is_gone_from_executed_code() -> None:
+    """The owner's structural control, enforced rather than asserted.
 
-    It was kept rather than deleted because `risk-severity`'s argument
-    places SEVERE above it deliberately. A future reader finding an
-    unused constant would be right to remove it, so the relationship it
-    still carries is asserted here.
+    `maximum_acceptable_risk` was deleted as dead — the envelope reads
+    the risk band and the three explicit CapitalPolicy ceilings, so a
+    retained field would read as a live rule while selecting nothing.
+    Executed production code may not reference it; the phrase survives
+    only in historical prose describing the removed @2 gate, which the
+    AST never sees.
     """
 
-    severe = RiskSignal.SEVERITIES["SEVERE"] * 100
+    import ast
+    import pathlib
 
-    assert severe > DecisionPolicy().maximum_acceptable_risk
+    offenders: list[str] = []
+
+    for path in pathlib.Path("app").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+
+        for node in ast.walk(tree):
+            named = (
+                isinstance(node, ast.Name)
+                and node.id == "maximum_acceptable_risk"
+                or isinstance(node, ast.Attribute)
+                and node.attr == "maximum_acceptable_risk"
+                or isinstance(node, ast.Constant)
+                and node.value == "maximum_acceptable_risk"
+                or isinstance(node, (ast.AnnAssign, ast.arg))
+                and getattr(getattr(node, "target", node), "id", None)
+                == "maximum_acceptable_risk"
+            )
+
+            if named:
+                offenders.append(f"{path}:{node.lineno}")
+
+    assert not offenders, offenders
+
+    # And the policy no longer carries it as a field at all.
+    assert "maximum_acceptable_risk" not in DecisionPolicy.model_fields
 
 
 # ── the envelope is where volatility now speaks ─────────────────────

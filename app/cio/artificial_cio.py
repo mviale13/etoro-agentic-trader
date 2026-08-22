@@ -222,9 +222,11 @@ class ArtificialCIO:
 
         # **Historical volatility no longer rejects a thesis.** The owner's
         # ruling of 2026-08-21 removed the one transition that lived here —
-        # `risk_score > policy.maximum_acceptable_risk → REJECT` — because
-        # a security's own price record is a statement about how violently
-        # it has moved, not about whether the investment case is sound.
+        # `risk_score > maximum_acceptable_risk → REJECT`, against the
+        # policy's former threshold of 70, a field since deleted as dead —
+        # because a security's own price record is a statement about how
+        # violently it has moved, not about whether the investment case is
+        # sound.
         # AMD was REJECTed on 71.8% annualised volatility while its own
         # analysts read growth, profitability, balance sheet and cash flow
         # as strong or better.

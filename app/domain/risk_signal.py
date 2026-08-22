@@ -46,9 +46,13 @@ class RiskSignal:
     #: How violent each band is, as a ratio. Stated once, here, because two
     #: layers were about to hold their own copy of the same judgement.
     #:
-    #: SEVERE sits above `DecisionPolicy.maximum_acceptable_risk`, so a
-    #: security that swings that hard is rejected on its own record rather
-    #: than on a judgement about the account holding it.
+    #: SEVERE's 0.85 sat above the former decision gate's threshold of 70,
+    #: and until the owner's ruling of 2026-08-21 that placement rejected
+    #: the thesis outright. The constants are unchanged; where they act
+    #: is not: the severity reaches conviction as safety, and the band
+    #: selects the Capital Action Envelope's tightest security-risk
+    #: ceiling — a bound on the position's size, never on whether the
+    #: case may be considered.
     SEVERITIES = {
         "LOW": 0.20,
         "MODERATE": 0.45,

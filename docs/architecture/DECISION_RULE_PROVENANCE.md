@@ -83,10 +83,11 @@ re-pricing a band are different decisions — audit #1, #2).
 | `actionable-buy@1` | 17 | governs | unsourced | BUY → execution trigger |
 | `veto-sell@1` | 18 | governs | unsourced | SELL → veto |
 
-Audit #3 (the risk-ceiling gate) is a threshold *of* `decision-gates@1`
-(`maximum_acceptable_risk` is one of the nine fingerprinted policy
-fields); its written argument lives with `risk-severity@1`, which is
-what the argument is about.
+Audit #3 (the risk-ceiling gate) was a threshold *of* `decision-gates@1`
+(`maximum_acceptable_risk`, then one of the nine fingerprinted policy
+fields); its written argument lived with `risk-severity@1`. The owner's
+ruling of 2026-08-21 removed the gate at `decision-gates@3` and deleted
+the field as dead — gate *membership* is fingerprinted in its place.
 
 **No provenance was upgraded by naming.** Fifteen of sixteen rules are
 exactly as unsourced or argued as the audit found them.
