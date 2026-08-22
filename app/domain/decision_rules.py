@@ -153,12 +153,20 @@ _AUDIT = "unsourced existing behaviour; measured in DECISION_PHILOSOPHY_AUDIT.md
 RISK_BANDS = _interprets("risk-bands", RuleStatus.UNSOURCED, _AUDIT)
 
 #: A risk level → a severity constant → the risk score.
+#: The severity constants are unchanged; what they *do* changed under
+#: the owner's ruling of 2026-08-21. SEVERE no longer rejects a thesis
+#: on its own record — it scores as safety into conviction, and its
+#: band selects the Capital Action Envelope's tightest security-risk
+#: ceiling. (Historically, SEVERE's 85 was placed above the removed
+#: gate's threshold of 70 deliberately, which is what made the
+#: rejection automatic; the gate is gone and no threshold replaced it.)
 RISK_SEVERITY = _interprets(
     "risk-severity",
     RuleStatus.ARGUED,
-    "argued in risk_signal.py: SEVERE is placed above the policy's "
-    "maximum acceptable risk deliberately, so a security that swings "
-    "that hard is rejected on its own record",
+    "argued in risk_signal.py: a band's severity is the security's own "
+    "record turned into a score — since the 2026-08-21 ruling it "
+    "reaches conviction as safety and sizes the security-risk envelope "
+    "ceiling, and it rejects nothing",
 )
 
 #: Forward P/E → CHEAP/FAIR/EXPENSIVE, and at or below zero → no band
@@ -334,11 +342,22 @@ DECISION_AUTHORITY = _governs(
 #: the grounded band the same page printed. A quorate grounded
 #: assessment is now security-level evidence, and the gate order, the
 #: policy constants and every other gate are as they were.
+#: **@3** — the security-risk rejection is gone, and so is its
+#: threshold. The owner's ruling of 2026-08-21 removed the @2 cascade's
+#: `risk_score > maximum_acceptable_risk → REJECT` (the policy field
+#: held 70) and then deleted the field itself as dead: historical
+#: volatility is a measurement of how violently a security has moved,
+#: not a verdict on its investment case, and it now constrains position
+#: *size* through the Capital Action Envelope's security-risk ceiling
+#: instead of refusing the thesis. One gate fewer, one policy constant
+#: fewer, every remaining gate unmoved.
 DECISION_GATES = _governs(
     "decision-gates",
     RuleStatus.UNSOURCED,
-    _AUDIT + "; evidence input widened in DECISION_EVIDENCE_CONVERGENCE.md",
-    version=2,
+    _AUDIT
+    + "; evidence input widened in DECISION_EVIDENCE_CONVERGENCE.md"
+    + "; security-risk rejection removed in SECURITY_VOLATILITY_CAPITAL_ENVELOPE.md",
+    version=3,
 )
 
 #: The unweighted mean of present scores, capped by state.
