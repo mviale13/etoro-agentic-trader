@@ -403,6 +403,19 @@ async def run(
     # price, and an envelope must not word one it never read.
     established_prices: frozenset[str] = frozenset()
 
+    # The exact per-security quotes this cycle's acquisition read,
+    # keyed by canonical MOVRvest symbol. Empty until the acquisition
+    # says otherwise, so a failed batch refuses every envelope in the
+    # existing typed words rather than inventing a price.
+    #
+    # This used to be `brain.market.quotes` — the SPY/QQQ/IWM market
+    # strip, a collection that cannot contain a holding — so every
+    # capital-asking course ever recorded refused with "no market quote
+    # was acquired this cycle" beside its own record saying 26 priced
+    # of 26 (the golden-path acceptance's finding 1). The acquisition
+    # stage owns the quotes it took; this carries them, verbatim.
+    acquired_quotes: dict[str, MarketQuote] = {}
+
     # ── stage 1: the explicit acquisition, once ─────────────────────
     try:
         acquired = await (acquisition or MarketAcquisitionService()).acquire()
@@ -429,6 +442,9 @@ async def run(
         established_prices = frozenset(
             security.symbol.upper().strip() for security in acquired.priced
         )
+        acquired_quotes = {
+            quote.symbol.upper().strip(): quote for quote in acquired.quotes
+        }
         stages.append(CycleStage(name="acquisition", outcome=StageOutcome.RAN))
 
     # ── stage 2: the canonical decision pass over the active book ───
@@ -478,7 +494,7 @@ async def run(
 
         # Each envelope resolves the exact security's own quote from
         # this map; no market-wide reading authorizes any of them.
-        quotes = {quote.symbol.upper().strip(): quote for quote in brain.market.quotes}
+        quotes = acquired_quotes
 
         for workspace in workspaces:
             if workspace.decision is not None and workspace.action is not None:
@@ -583,6 +599,23 @@ async def run(
                     action_statement=workspace.action.statement,
                     action_because=workspace.action.because,
                     asks_for_something=workspace.action.kind.asks_for_something,
+                    # A funded candidate's OPEN course is a capital
+                    # course, and it gets the same envelope from the
+                    # same quote map as a holding's — one contract, one
+                    # source of prices. A candidate the cycle never
+                    # priced refuses in the existing typed words.
+                    envelope=_envelope(
+                        workspace,
+                        policy_reading=policy_reading,
+                        brain=brain,
+                        weights=weights,
+                        cash_pct=cash_pct,
+                        total_value=total_value,
+                        drawdown_pct=drawdown_pct,
+                        quotes=quotes,
+                        established_prices=established_prices,
+                        evaluated_at=evaluated_at,
+                    ),
                 )
                 for workspace in service.pipeline.execute_all(
                     symbols=wanted, brain=brain

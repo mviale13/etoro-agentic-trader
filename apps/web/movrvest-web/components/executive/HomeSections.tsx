@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 
 import type {
   CycleCourse,
@@ -222,7 +223,8 @@ export function HoldingsTable({ review }: { review: CycleReview }) {
 
             <tbody>
               {all.map((row) => (
-                <tr className="border-b border-slate-100" key={row.symbol}>
+                <Fragment key={row.symbol}>
+                <tr className="border-b border-slate-100">
                   <td className={`${CELL} font-semibold text-slate-950`}>
                     <Link
                       className="underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900"
@@ -243,6 +245,18 @@ export function HoldingsTable({ review }: { review: CycleReview }) {
                   </td>
                   <td className={CELL}>{movement(row.symbol)}</td>
                 </tr>
+
+                {/* The envelope belongs to this holding's course, so it
+                    sits with it rather than in a column that would be
+                    empty for every non-capital row. */}
+                {row.course?.envelope ? (
+                  <tr className="border-b border-slate-100">
+                    <td className="px-3 pb-3" colSpan={6}>
+                      <CourseEnvelope course={row.course} />
+                    </td>
+                  </tr>
+                ) : null}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -312,6 +326,53 @@ export function blockerCell(candidate: CycleCourse): string {
   return candidate.blocker.stated;
 }
 
+/**
+ * The Capital Action Envelope beside the course it belongs to.
+ *
+ * The backend's own sentence, rendered as written — an upward bound, a
+ * reduction floor, a zero-capacity statement or a refusal, each already
+ * worded by the domain. Nothing here computes, compares or converts:
+ * no currency amount, no share quantity, no order control.
+ *
+ * It belongs to the cycle whose course this is. A page that recomputed
+ * one would be answering a question the recorded review did not ask.
+ */
+export function CourseEnvelope({ course }: { course: CycleCourse }) {
+  const envelope = course.envelope;
+
+  if (!envelope) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+      <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+        Capital consideration
+      </p>
+
+      <p className="mt-1 text-sm leading-6 text-slate-800">{envelope.stated}</p>
+
+      {envelope.securityRiskBecause ? (
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          {envelope.securityRiskBecause}
+        </p>
+      ) : null}
+
+      {envelope.namedGaps.length > 0 ? (
+        <p className="mt-1 text-xs leading-5 text-slate-600">
+          What limits this consideration — and it limits the action, not the
+          company: {envelope.namedGaps.join("; ")}
+        </p>
+      ) : null}
+
+      <p className="mt-1 text-xs leading-5 text-slate-500">
+        A policy consideration bound, not an order, a target, or a
+        recommendation to transact. {envelope.liquidity}
+      </p>
+    </div>
+  );
+}
+
 function CaseRows({ cases }: { cases: CycleCourse[] }) {
   return (
     <div className="mt-4 grid gap-3">
@@ -377,6 +438,8 @@ function CaseRows({ cases }: { cases: CycleCourse[] }) {
               Still visible: {candidate.blocker.despite.join(" · ")}
             </p>
           ) : null}
+
+          <CourseEnvelope course={candidate} />
         </article>
       ))}
     </div>
