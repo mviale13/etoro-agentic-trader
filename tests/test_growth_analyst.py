@@ -38,8 +38,10 @@ def test_strong_growth() -> None:
     assert opinion.confidence == 1.0
     assert opinion.verdict is GrowthVerdict.STRONG
     assert opinion.evidence == (
-        "Revenue growth is 25.0%.",
-        "Earnings growth is 35.0%.",
+        "Provider-reported revenue growth was 25.0%; the stored provider "
+        "record states neither its reporting period nor its formula.",
+        "Provider-reported earnings growth was 35.0%; the stored provider "
+        "record states neither its reporting period nor its formula.",
     )
     assert opinion.uncertainty == ()
 

@@ -52,7 +52,9 @@ AMD_RISK = RiskSignal(
 AMD_RESEARCH = FindingLedger.of(
     (
         Finding.favourable(
-            "Growth is strong — Revenue growth is 50.1%. Earnings growth is 159.5%.",
+            "The provider-reported growth signal is strong — Provider-reported "
+            "revenue growth was 50.1%; the stored provider record states "
+            "neither its reporting period nor its formula.",
             Dimension.RESEARCH,
         ),
         Finding.favourable(
