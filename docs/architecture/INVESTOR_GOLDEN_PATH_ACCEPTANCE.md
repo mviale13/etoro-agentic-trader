@@ -175,3 +175,25 @@ and no third:
    the judged pool; the adapter's groups predate them. Display only.
 
 No P0 was found: every failure fails closed.
+
+---
+
+## Owner ruling — 2026-08-23
+
+**Conclusion B accepted.** P1 #1 — the Capital Action Envelope
+computing from the exact per-security quote the cycle's acquisition
+already owns, and rendering wherever that cycle's course is shown — is
+**approved as the immediate repair**. P1 #2 — the Price row on the
+crypto asset profile — is **approved as the next, separate repair**.
+Every P2 item listed above **remains parked**: the bare-`Provenance`
+adapter rebuilds, the RECOMMEND rationale's stale risk-gate mention,
+the recorded cycle's pre-#243 wording, UDMY's null `evidence_as_of`,
+and NESN.ZU's designed identity refusals stay as recorded, untouched
+by either repair.
+
+The repair's boundaries, restated with the ruling: the envelope's
+contract, policy values, decision semantics and the crypto refusal are
+unchanged; quotes are carried as typed observations out of the
+acquisition stage — never re-fetched, never rebuilt from prose, never
+dated by the evaluation clock; and the envelope belongs to the latest
+completed cycle, which a dossier page reads and never recomputes.
