@@ -66,6 +66,14 @@ class ValuationSnapshot:
     current_ratio: float | None = None
     operating_cash_flow: float | None = None
     free_cash_flow: float | None = None
+
+    #: The currency the provider says the company's financial figures
+    #: are reported in — its own `financialCurrency` field, carried
+    #: verbatim. Distinct from the quote currency (BP.L quotes in GBp
+    #: and reports in USD), which is exactly why no consumer may infer
+    #: one from the other. None on records written before schema 5,
+    #: which restore with the denomination not established.
+    financial_currency: str | None = None
     sector: str | None = None
     industry: str | None = None
 
