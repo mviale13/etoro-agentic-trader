@@ -352,3 +352,261 @@ def test_a_receipt_clock_reaches_the_wire_saying_so() -> None:
 
     for row in aged:
         assert "received" in row.age, row.label
+
+
+# ── the established spot price on the token's own page ──────────────
+
+
+def test_hype_renders_its_established_spot_price() -> None:
+    """Control 1 and 2 of the owner ruling of 2026-08-23.
+
+    The figure was established, corroborated and provenance-carrying —
+    and the asset profile, whose groups predate #231, had no Price row
+    at all (the golden-path acceptance's finding 2). It leads the
+    Market group now, with everything the judged fact carries.
+    """
+
+    from datetime import UTC, datetime
+
+    from app.domain.provenance import Provenance
+
+    received = datetime(2026, 8, 22, 23, 36, tzinfo=UTC)
+
+    outcome = judge(
+        "HYPE",
+        [
+            tokeninsight(
+                read=Provenance(
+                    source="TokenInsight",
+                    observed_at=received,
+                    observation_stated=False,
+                )
+            ),
+            coingecko(
+                read=Provenance(source="CoinGecko", observed_at=received),
+            ),
+        ],
+    )
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    market = next(group for group in profile.groups if group.title == "Market")
+    price = market.rows[0]
+
+    assert price.label == "Price"
+    assert price.standing == TokenFactStanding.ESTABLISHED.value
+    assert price.standing_stated
+    assert price.source == "TokenInsight"
+
+    # Cents, not the large-value formatter's whole dollars.
+    assert price.stated == "$54.23"
+
+    # The receipt-time qualifier survives — never called an observation.
+    assert price.age is not None
+    assert "received" in price.age
+
+    # The corroboration account, verbatim from the gate.
+    assert price.because is not None
+    assert "independently corroborated by CoinGecko" in price.because
+
+
+def test_a_valid_price_never_resolves_the_market_value_conflict() -> None:
+    """Control 3: two separate readings, and the disagreement stands."""
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    market = next(group for group in profile.groups if group.title == "Market")
+    price, market_value = market.rows[0], market.rows[1]
+
+    assert price.label == "Price"
+    assert price.stated is not None
+
+    assert market_value.label == "Market value"
+    assert market_value.standing == TokenFactStanding.CONFLICTED.value
+    assert market_value.stated is None
+    assert market_value.because is not None
+    assert "credible sources disagree" in market_value.because
+
+
+def test_a_conflicted_price_serves_no_figure() -> None:
+    """Control 4: the standing decides, exactly as every other row."""
+
+    outcome = judge(
+        "HYPE",
+        [tokeninsight(price=54.23), coingecko(price=95.0, market_cap=21_130_000_000.0)],
+    )
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    price = next(group for group in profile.groups if group.title == "Market").rows[0]
+
+    assert price.standing == TokenFactStanding.CONFLICTED.value
+    assert price.stated is None
+    assert price.because is not None
+
+
+def test_an_absent_price_stays_absent() -> None:
+    """Control 5: nothing is invented from market value or supply."""
+
+    profile = asset_profile_response(judge("HYPE", []))
+
+    assert profile is not None
+
+    price = next(group for group in profile.groups if group.title == "Market").rows[0]
+
+    assert price.standing == TokenFactStanding.ABSENT.value
+    assert price.stated is None
+    assert price.because
+
+
+def test_every_other_row_is_unchanged_by_the_insertion() -> None:
+    """Control 7: byte-equivalent apart from the inserted Price row."""
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    groups = {
+        group.title: [row.label for row in group.rows] for group in profile.groups
+    }
+
+    assert groups["Market"] == [
+        "Price",
+        "Market value",
+        "Market-value rank",
+        "Price change over 24 hours",
+    ]
+    assert groups["Trading activity"] == [
+        "Tracked spot volume over 24 hours",
+        "Spot-volume change over 24 hours",
+        "Reported market volume over 24 hours",
+    ]
+    assert groups["Supply"][0] == "Circulating supply"
+    assert groups["Dilution context"][0] == "Fully diluted valuation"
+    assert groups["History"] == ["Project age"]
+
+
+def test_the_price_formatter_covers_this_corpus() -> None:
+    """Two-decimal prices and a five-digit one with separators."""
+
+    from app.api.models.asset_profile_adapter import _price
+
+    assert _price(72.73774324560395) == "$72.74"
+    assert _price(220.7342) == "$220.73"
+    assert _price(75_416.06528006498) == "$75,416.07"
+    assert _price(0.08455767548381632) == "$0.08"
+
+    # And it is not the large-value formatter, which would round these.
+    from app.api.models.asset_profile_adapter import _money
+
+    assert _money(72.73774324560395) == "$73"
+
+
+# ── the establishment account travels on the wire ───────────────────
+
+
+def test_the_price_row_carries_its_claimants_and_rule_structurally() -> None:
+    """Controls 1, 2 and 4 of the owner ruling of 2026-08-23.
+
+    The PR claimed "claimants and rule visible" while the wire carried
+    neither. They are fields now — carried straight off the judged
+    fact, never inferred from `source` (one served claimant is not the
+    set that agreed) and never parsed back out of `because`.
+    """
+
+    from app.domain.token_fact_validation import ESTABLISHMENT_RULE
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    price = next(group for group in profile.groups if group.title == "Market").rows[0]
+
+    assert price.label == "Price"
+    assert price.claimants == ["TokenInsight", "CoinGecko"]
+    assert price.rule == ESTABLISHMENT_RULE
+    assert price.rule == "token-fact-establishment@1"
+
+    # Control 4: recoverable from the fields, not from the prose. The
+    # sentence names the corroborator but never the served claimant as
+    # a list member, and never the rule at all.
+    assert price.because is not None
+    assert ESTABLISHMENT_RULE not in price.because
+    assert price.source == "TokenInsight"
+
+
+def test_a_claimed_row_carries_no_establishment_account() -> None:
+    """Control 5: agreement inside one provider is not corroboration."""
+
+    outcome = judge("HYPE", [tokeninsight()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    price = next(group for group in profile.groups if group.title == "Market").rows[0]
+
+    assert price.standing == TokenFactStanding.CLAIMED.value
+    assert price.claimants == []
+    assert price.rule is None
+
+
+def test_a_conflicted_row_carries_no_establishment_account() -> None:
+    """Control 6: nothing agreed, so nothing established it."""
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    market_value = next(
+        group for group in profile.groups if group.title == "Market"
+    ).rows[1]
+
+    assert market_value.label == "Market value"
+    assert market_value.standing == TokenFactStanding.CONFLICTED.value
+    assert market_value.claimants == []
+    assert market_value.rule is None
+
+
+def test_a_calculated_row_carries_no_provider_claimants_or_rule() -> None:
+    """Control 7: MOVRvest's arithmetic borrows nobody's authority."""
+
+    from tests.test_token_fact_validation import bitcoin_sets
+
+    outcome = judge("BTC", bitcoin_sets())
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    share = next(group for group in profile.groups if group.title == "Supply").rows[-1]
+
+    assert share.label == "Share of maximum supply circulating"
+    assert share.standing == "calculated"
+    assert share.claimants == []
+    assert share.rule is None
+
+
+def test_an_absent_row_carries_no_establishment_account() -> None:
+    profile = asset_profile_response(judge("HYPE", []))
+
+    assert profile is not None
+
+    for group in profile.groups:
+        for row in group.rows:
+            assert row.claimants == []
+            assert row.rule is None
