@@ -117,6 +117,12 @@ def _row(outcome: TokenMarketFacts, name: str) -> TokenFactRowResponse:
         source=fact.source,
         age=_age(fact),
         because=fact.because,
+        # Straight off the judged fact. Never inferred from `source`,
+        # never parsed out of `because`, and never manufactured from
+        # the standing: a claimed, conflicted, rejected or absent fact
+        # carries the empty tuple and the null the gate gave it.
+        claimants=list(fact.claimants),
+        rule=fact.rule,
     )
 
 
@@ -139,6 +145,8 @@ def _rank_row(outcome: TokenMarketFacts) -> TokenFactRowResponse:
         source=fact.source,
         age=_age(fact),
         because=fact.because,
+        claimants=list(fact.claimants),
+        rule=fact.rule,
     )
 
 
@@ -205,6 +213,12 @@ def _calculated(
         source=None,
         age=None,
         because=because,
+        # A MOVRvest calculation has no provider claimants and was
+        # admitted by no establishment rule — it is arithmetic over
+        # figures that were themselves established, and saying
+        # otherwise would lend it their authority.
+        claimants=[],
+        rule=None,
     )
 
 

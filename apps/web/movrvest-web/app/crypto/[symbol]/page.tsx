@@ -12,6 +12,7 @@ import {
   type CryptoIdentity,
   type DecisionView,
   type CryptoQuestionView,
+  type FactRowView,
   type FactsView,
   type IntelligenceView,
   type ProtocolFactView,
@@ -1727,6 +1728,43 @@ function Market({ market }: { market: MarketView | null }) {
  * Everything is worded by the backend — value, standing, standing
  * sentence, source, age, reason. This groups and places.
  */
+/**
+ * Which independent sources agreed, and under which versioned rule.
+ *
+ * An **evidence account**, not another standing badge: the badge says
+ * what the figure is worth, and this says what made it worth that. It
+ * is composed from the row's own `claimants` and `rule` — carried
+ * structurally on the wire — and never parsed back out of the
+ * `because` sentence or inferred from `source`, which names only the
+ * served claimant.
+ *
+ * Rendered only where a rule admitted the value. A claimed, conflicted,
+ * rejected or absent fact carries no rule, and a MOVRvest calculation
+ * has no provider claimants at all — none of them gets an empty
+ * provenance line.
+ *
+ * It does not repeat the served-source and age line above it: that
+ * says who is quoted and how old the reading is; this says who agreed.
+ */
+function EstablishmentAccount({ row }: { row: FactRowView }) {
+  if (!row.rule || row.claimants.length === 0) {
+    return null;
+  }
+
+  const named =
+    row.claimants.length === 1
+      ? row.claimants[0]
+      : `${row.claimants.slice(0, -1).join(", ")} and ${
+          row.claimants[row.claimants.length - 1]
+        }`;
+
+  return (
+    <p className="mt-0.5 text-xs leading-5 text-slate-400">
+      Established by {named} under {row.rule}.
+    </p>
+  );
+}
+
 function JudgedFacts({
   facts,
   symbol,
@@ -1782,6 +1820,8 @@ function JudgedFacts({
                   {row.age ? (
                     <p className="mt-0.5 text-xs text-slate-400">{row.age}</p>
                   ) : null}
+
+                  <EstablishmentAccount row={row} />
                 </div>
               ))}
             </dl>

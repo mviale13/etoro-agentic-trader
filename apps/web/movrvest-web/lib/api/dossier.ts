@@ -644,6 +644,20 @@ export interface TokenFactRow {
   source: string | null;
   age: string | null;
   because: string | null;
+
+  /**
+   * Every source whose independent agreement established the value —
+   * the served claimant first, then the corroborators. Empty for every
+   * other standing and for MOVRvest-calculated rows.
+   *
+   * Carried structurally so the page can name them without parsing the
+   * `because` sentence, and never inferred from `source`: one served
+   * claimant is not the set that agreed.
+   */
+  claimants: readonly string[];
+
+  /** The versioned rule that admitted the value, or null. */
+  rule: string | null;
 }
 
 export interface TokenFactGroup {
@@ -969,6 +983,22 @@ function optionalString(value: unknown, field: string): string | null {
   }
 
   return value.trim().length === 0 ? null : value;
+}
+
+/**
+ * An array of strings, required and strictly shaped.
+ *
+ * A claimant list is evidence about who agreed. A malformed one is a
+ * broken contract, not a list to render approximately — so this throws
+ * rather than coercing to `[]`, which would silently turn "we do not
+ * know who agreed" into "nobody did".
+ */
+function requireStrings(value: unknown, field: string): string[] {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+    throw new Error(`Expected an array of strings at "${field}"`);
+  }
+
+  return value as string[];
 }
 
 function requireNumber(value: unknown, field: string): number {
@@ -1401,6 +1431,12 @@ function parseAssetProfile(value: unknown): DossierAssetProfile | null {
             source: optionalString(row.source, `${field}.source`),
             age: optionalString(row.age, `${field}.age`),
             because: optionalString(row.because, `${field}.because`),
+            // Required by the contract and strict about shape: a
+            // claimant list that is not an array of strings, or a rule
+            // that is neither a string nor null, is a broken contract
+            // rather than a row to render approximately.
+            claimants: requireStrings(row.claimants, `${field}.claimants`),
+            rule: optionalString(row.rule, `${field}.rule`),
           };
         }),
     })),

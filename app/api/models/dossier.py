@@ -192,6 +192,25 @@ class TokenFactRowResponse(BaseModel):
     #: could check, or why it is absent.
     because: str | None
 
+    #: Every source whose independent agreement established this value —
+    #: the served claimant first, then the corroborators, exactly as the
+    #: gate ordered them. Empty for every standing but ESTABLISHED,
+    #: because nothing agreed, and empty for MOVRvest-calculated rows,
+    #: which have no provider claimants at all.
+    #:
+    #: Carried structurally rather than left in prose: a surface that
+    #: must name the claimants may not parse a sentence to find them,
+    #: and a sentence is not a list. Nothing here is inferred from
+    #: `source` — one served claimant is not the set that agreed.
+    claimants: list[str] = []
+
+    #: The versioned rule under which this standing was reached, so a
+    #: figure on the page names what admitted it instead of arriving as
+    #: a bare number. Null where no rule admitted it — a claim, a
+    #: conflict, an absence and a MOVRvest calculation all carry null,
+    #: and none of them may have one manufactured from the standing.
+    rule: str | None = None
+
 
 class TokenFactGroupResponse(BaseModel):
     """One group of the asset profile — Market, Supply, Dilution…"""

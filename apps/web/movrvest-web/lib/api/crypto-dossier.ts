@@ -49,6 +49,22 @@ function requireString(value: unknown, field: string): string {
   return value;
 }
 
+/**
+ * An array of strings, required and strictly shaped.
+ *
+ * A claimant list is evidence about who agreed, so a malformed one is
+ * a broken contract rather than a list to render approximately —
+ * coercing it to `[]` would turn "we cannot read who agreed" into
+ * "nobody did".
+ */
+function requireStrings(value: unknown, field: string): string[] {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+    throw new Error(`Expected an array of strings at "${field}".`);
+  }
+
+  return value as string[];
+}
+
 function optionalString(value: unknown, field: string): string | null {
   if (value === null || value === undefined) {
     return null;
@@ -625,6 +641,20 @@ export interface FactRowView {
   age: string | null;
   /** Why it stands as it does. Always present, and always shown. */
   because: string;
+
+  /**
+   * Every source whose independent agreement established the value —
+   * the served claimant first, then the corroborators. Empty for every
+   * other standing and for MOVRvest-calculated rows.
+   *
+   * Carried structurally so the page can name them without parsing
+   * `because`, and never inferred from `source`, which names only the
+   * claimant whose figure is printed.
+   */
+  claimants: readonly string[];
+
+  /** The versioned rule that admitted the value, or null. */
+  rule: string | null;
 }
 
 export interface FactGroupView {
@@ -749,6 +779,15 @@ function parseFacts(value: unknown): FactsView | null {
             row.because,
             `${field}.rows[${position}].because`,
           ),
+          // Required by the contract and strictly shaped: a claimant
+          // list that is not an array of strings, or a rule that is
+          // neither a string nor null, is a broken contract rather
+          // than a row to render approximately.
+          claimants: requireStrings(
+            row.claimants,
+            `${field}.rows[${position}].claimants`,
+          ),
+          rule: optionalString(row.rule, `${field}.rows[${position}].rule`),
         })),
       };
     }),

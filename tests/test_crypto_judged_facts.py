@@ -510,3 +510,103 @@ def test_the_price_formatter_covers_this_corpus() -> None:
     from app.api.models.asset_profile_adapter import _money
 
     assert _money(72.73774324560395) == "$73"
+
+
+# ── the establishment account travels on the wire ───────────────────
+
+
+def test_the_price_row_carries_its_claimants_and_rule_structurally() -> None:
+    """Controls 1, 2 and 4 of the owner ruling of 2026-08-23.
+
+    The PR claimed "claimants and rule visible" while the wire carried
+    neither. They are fields now — carried straight off the judged
+    fact, never inferred from `source` (one served claimant is not the
+    set that agreed) and never parsed back out of `because`.
+    """
+
+    from app.domain.token_fact_validation import ESTABLISHMENT_RULE
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    price = next(group for group in profile.groups if group.title == "Market").rows[0]
+
+    assert price.label == "Price"
+    assert price.claimants == ["TokenInsight", "CoinGecko"]
+    assert price.rule == ESTABLISHMENT_RULE
+    assert price.rule == "token-fact-establishment@1"
+
+    # Control 4: recoverable from the fields, not from the prose. The
+    # sentence names the corroborator but never the served claimant as
+    # a list member, and never the rule at all.
+    assert price.because is not None
+    assert ESTABLISHMENT_RULE not in price.because
+    assert price.source == "TokenInsight"
+
+
+def test_a_claimed_row_carries_no_establishment_account() -> None:
+    """Control 5: agreement inside one provider is not corroboration."""
+
+    outcome = judge("HYPE", [tokeninsight()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    price = next(group for group in profile.groups if group.title == "Market").rows[0]
+
+    assert price.standing == TokenFactStanding.CLAIMED.value
+    assert price.claimants == []
+    assert price.rule is None
+
+
+def test_a_conflicted_row_carries_no_establishment_account() -> None:
+    """Control 6: nothing agreed, so nothing established it."""
+
+    outcome = judge("HYPE", [tokeninsight(), coingecko(), yahoo()])
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    market_value = next(
+        group for group in profile.groups if group.title == "Market"
+    ).rows[1]
+
+    assert market_value.label == "Market value"
+    assert market_value.standing == TokenFactStanding.CONFLICTED.value
+    assert market_value.claimants == []
+    assert market_value.rule is None
+
+
+def test_a_calculated_row_carries_no_provider_claimants_or_rule() -> None:
+    """Control 7: MOVRvest's arithmetic borrows nobody's authority."""
+
+    from tests.test_token_fact_validation import bitcoin_sets
+
+    outcome = judge("BTC", bitcoin_sets())
+
+    profile = asset_profile_response(outcome)
+
+    assert profile is not None
+
+    share = next(group for group in profile.groups if group.title == "Supply").rows[-1]
+
+    assert share.label == "Share of maximum supply circulating"
+    assert share.standing == "calculated"
+    assert share.claimants == []
+    assert share.rule is None
+
+
+def test_an_absent_row_carries_no_establishment_account() -> None:
+    profile = asset_profile_response(judge("HYPE", []))
+
+    assert profile is not None
+
+    for group in profile.groups:
+        for row in group.rows:
+            assert row.claimants == []
+            assert row.rule is None
