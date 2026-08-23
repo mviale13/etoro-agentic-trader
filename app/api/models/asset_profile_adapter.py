@@ -43,6 +43,21 @@ def asset_profile_response(
         TokenFactGroupResponse(
             title="Market",
             rows=[
+                # The established spot price, first — the most basic
+                # question an investor asks of a token, and the answer
+                # this page could not give (the golden-path
+                # acceptance's finding 2) while the figure sat
+                # established one layer below. Display only: the same
+                # judged fact every other row is built from, with its
+                # standing, source, claimants, rule and receipt-time
+                # qualifier carried unchanged.
+                #
+                # It leads the group and does not replace the market
+                # value below it: a corroborated price and a
+                # *conflicted* market value are two separate readings,
+                # and a valid price must never resolve, suppress or
+                # visually stand in for the disagreement.
+                _row(outcome, "price"),
                 _row(outcome, "market_cap"),
                 _rank_row(outcome),
                 _row(outcome, "price_change_24h"),
@@ -197,6 +212,9 @@ def _stated(fact: TokenFact) -> str | None:
     if fact.value is None or not fact.standing.serves_value:
         return None
 
+    if fact.fact == "price":
+        return _price(fact.value)
+
     if fact.fact in _MONEY:
         return _money(fact.value)
 
@@ -207,6 +225,25 @@ def _stated(fact: TokenFact) -> str | None:
         return f"{fact.value * 100:+.1f}%"
 
     return f"{fact.value:,.2f}"
+
+
+def _price(value: float) -> str:
+    """A spot price, at the precision a price is read at.
+
+    Its own formatter rather than `_money`, which exists to render
+    market values and volumes at a scale that shows them — and which
+    rounds anything under a million to whole dollars, turning HYPE's
+    $72.74 into "$73" and losing exactly the part a price is consulted
+    for. Two decimals with thousands separators covers this corpus:
+    the tokens MOVRvest reads trade from $0.08 to $75,000.
+
+    No broader cryptocurrency precision policy is introduced here. A
+    sub-cent asset would need a rule this corpus has not earned, and
+    inventing one ahead of the case is the taxonomy-first move this
+    platform keeps shut out.
+    """
+
+    return f"${value:,.2f}"
 
 
 def _money(value: float) -> str:
