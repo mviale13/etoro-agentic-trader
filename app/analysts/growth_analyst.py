@@ -5,8 +5,9 @@ fields whose reporting period and formula the provider does not
 document (`GROWTH_METRIC_AUTHORITY_MEASUREMENT.md`, owner ruling
 2026-08-23). The measurement found the filing's fiscal-year growth and
 these fields to be **non-comparable measurements**: DIS's filing
-earnings growth is +132.65% where the provider reports −48.3%, and
-neither figure reproduces from anything this platform holds.
+earnings growth is +132.65% where the provider reports −48.3%, and the
+provider figures do not reproduce from the held filing inputs — the
+filing figures themselves reproduce exactly from their checked cells.
 
 So the contract is naming, not arithmetic. The bands and verdicts are
 untouched, and every sentence this analyst produces says whose figure

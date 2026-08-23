@@ -168,9 +168,10 @@ def test_dis_renders_both_quantities_with_distinct_names() -> None:
     assert finding is not None
     assert "-48.3%" in finding.statement
 
-    # And the two are never the same unqualified fact: neither carries
-    # the other's bare label.
-    assert "Provider-reported" not in earnings.label or "FY filing" in earnings.label
+    # And the two are never the same unqualified fact: the row's label
+    # is exactly the filing name, and the finding never borrows it.
+    assert earnings.label == "Earnings growth — FY filing"
+    assert "Provider-reported" not in earnings.label
     assert "FY filing" not in finding.statement
 
 
