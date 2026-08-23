@@ -70,25 +70,38 @@ type DossierPageProps = {
  * formats, groups and discloses; it computes nothing.
  */
 /** One symbol's course in the latest completed cycle, or nothing. */
-interface RecordedCourse {
+export interface RecordedCourse {
   course: CycleCourse;
   finishedAt: string;
 }
 
 /**
- * The course this symbol received in the latest *completed* review.
+ * The course this symbol received in the **latest successfully
+ * completed attempt from a complete stream**, or nothing.
  *
- * Only a complete cycle qualifies: a failed, partial or interrupted one
- * recorded no usable capital consideration, and an unreadable stream
- * keeps the existing refusal rules by simply yielding nothing here. A
- * symbol the review did not cover yields nothing too — the page then
- * shows no envelope rather than an empty or zero one.
+ * Two conditions, and both are required (the owner's ruling of
+ * 2026-08-23):
+ *
+ * - the latest attempt completed successfully, and
+ * - the cycle stream itself is complete — no unreadable records, no
+ *   unsupported schemas, no lifecycle anomalies.
+ *
+ * A failed, partial or interrupted attempt shows no envelope. So does
+ * a complete attempt sitting in a defective stream: an unreadable line
+ * may be the actual latest cycle, and this page cannot know which
+ * account reading or policy an envelope beside it rested on.
+ *
+ * **There is deliberately no `lastKnown` fallback.** An older envelope
+ * is older policy and account guidance; placing it beside a newer
+ * dossier decision would present stale sizing as current. Where the
+ * conditions do not hold, the page shows nothing at all — never a
+ * manufactured envelope, never an implied zero capacity.
  */
-function recordedCourse(
+export function recordedCourse(
   review: CycleReview | null,
   symbol: string,
 ): RecordedCourse | null {
-  if (!review || review.execution !== "complete") {
+  if (!review || review.execution !== "complete" || !review.streamComplete) {
     return null;
   }
 
@@ -1838,8 +1851,8 @@ function Dossier({
 
 
 /**
- * One symbol's course and envelope, as the latest completed cycle
- * recorded them.
+ * One symbol's course and envelope, as the latest successfully
+ * completed attempt from a complete stream recorded them.
  *
  * Read, never recomputed. The envelope is a property of the review that
  * produced it: its price gate aged that cycle's quote, its capacity

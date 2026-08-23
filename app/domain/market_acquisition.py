@@ -119,16 +119,6 @@ class MarketAcquisition:
 
     securities: tuple[AcquiredSecurity, ...]
 
-    #: The exact per-security quotes this acquisition read, verbatim —
-    #: value and provenance untouched, keyed by each quote's own
-    #: canonical MOVRvest symbol. The holdings, the funded candidates
-    #: and the market strip, because that is what the one batch asked
-    #: for. This is the collection the Capital Action Envelope's price
-    #: gate consumes: the acquisition stage owns the quotes it took,
-    #: and a later stage that re-derived them from a `priced` flag or a
-    #: market-wide strip would be gating on something else (the golden
-    #: path acceptance's finding 1). Empty exactly where the batch
-    #: failed, which is what the typed refusal downstream words.
     #: The instruments the market strip is made of, as far as they priced.
     instruments: tuple[str, ...]
 
