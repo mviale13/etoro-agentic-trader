@@ -46,18 +46,19 @@ not a missing record.
 | **TSLA** revenue growth | **−2.93%** | FY2025 vs FY2024 (ended 2025-12-31; 10-K `0001628280-26-003952`): 94,827 vs 97,690 | **+25.5%** | 2026-08-09 (dated, served as dated) | No |
 | **TSLA** earnings growth | **−46.11%** | same statement: 3,855 vs 7,153 | **−3.0%** | 2026-08-09 | No |
 
-Disagreement, absolute and directional:
+Numerical separation between the two measurements:
 
 | | absolute gap | direction |
 |---|---|---|
 | DIS revenue | 3.4 pp | same sign |
-| DIS earnings | **181.0 pp** | **sign flip** (filing up, provider down) |
-| TSLA revenue | **28.4 pp** | **sign flip** (filing down, provider up) |
+| DIS earnings | **181.0 pp** | **sign differs** (filing up, provider down) |
+| TSLA revenue | **28.4 pp** | **sign differs** (filing down, provider up) |
 | TSLA earnings | 43.1 pp | same sign |
 
-Both overlap companies disagree materially, and each carries one sign
-flip — in opposite directions. **These are not two observations of one
-quantity in disagreement; they are two different quantities.**
+Both overlap pairs sit far apart, each with one sign difference — in
+opposite directions. **The two figures are not contradictions: they are
+non-comparable measurements, and they remain non-comparable unless the
+provider's period and formula become established.**
 
 ## 3. What the provider says the fields mean
 
@@ -112,12 +113,15 @@ ValuationSnapshot ── CompanyFactsService ──> CompanyFacts
 **What it does NOT reach — each verified in source, then confirmed by
 replay:**
 
-- **No score.** The quality signal's factors are size, earnings (eps
-  sign) and dividend; the company committee's vote is value + quality +
-  momentum (`research` appears zero times in
-  `company_committee_service.py`); the evidence score is cognitive
-  confidence + committee confidence; conviction averages the five
-  families, and growth is not one.
+- **A local score, and no canonical one.** Provider growth *does*
+  reach `GrowthAnalyst`'s own local score and verdict — the bands in
+  the diagram above — and that local score selects the finding's sense
+  and wording. What it does not reach is any canonical decision score:
+  the quality signal's factors are size, earnings (eps sign) and
+  dividend; the company committee's vote is value + quality + momentum
+  (`research` appears zero times in `company_committee_service.py`);
+  the evidence score is cognitive confidence + committee confidence;
+  conviction averages the five families, and growth is not one.
 - **No gate.** `_research_findings`' own contract: *"weighed as
   evidence not gated"*.
 - **No missing-evidence clause.** `_missing_evidence` names valuation,
@@ -178,15 +182,15 @@ income fell 46%; the provider's unknown window says revenue grew
 
 No strengths list emptied under any variant, so no conviction was
 withheld. The structural trace of §4 is therefore confirmed end to end:
-**the growth fields decide sentences, and only sentences.**
+**beyond the analyst's own local score and verdict, the growth fields decide sentences, and only sentences.**
 
 ### What C costs
 
-C deletes the growth sentence from 40 of 44 companies — including
-readings that are almost certainly directionally true (NVDA, MSFT,
-AMZN "strong") — and buys **no decision correction**, because nothing
-decides from the value. Its entire yield is the removal of 40 true
-observations from investor-facing prose in exchange for period purity.
+C deletes the growth sentence from 40 of 44 companies and buys **no
+decision correction**, because nothing decides from the value. Its
+entire yield is the removal of 40 provider-reported observations whose
+period and formula are undocumented from investor-facing prose, in
+exchange for period purity.
 
 ---
 
@@ -258,9 +262,35 @@ the freeze reserves to an owner ruling.
 ### What C would need (not recommended)
 
 Nothing technical — it is one line — but the measurement prices it:
-40 of 44 companies fall silent about growth to fix zero decisions.
+40 of 44 companies fall silent about growth — 40 provider-reported
+observations whose period and formula are undocumented — to fix zero
+decisions.
 If the owner values period purity above reading breadth in investor
 prose, C is buildable as measured.
+
+---
+
+## Owner ruling — 2026-08-23
+
+**B — SEPARATE METRICS READY. Accepted**, with four amendments applied
+above: the ruling is recorded dated; "reaches no score" is corrected —
+provider growth reaches `GrowthAnalyst`'s local score and verdict, and
+no conviction arithmetic, canonical decision score, gate, blocker,
+capital envelope or CIO branch; C's cost is stated as 40
+provider-reported observations whose period and formula are
+undocumented, with no claim to their truth; and the two figures are
+described as **non-comparable measurements**, never as contradictions,
+unless their periods and formulas become established.
+
+The implementation ordered with the ruling: filing growth named
+*"Revenue/Earnings growth — FY filing"*, never fed into the provider
+analyst's bands; provider growth named *"Provider-reported revenue/
+earnings growth — period not stated"*, its evidence sentence stating
+that the stored record establishes neither period nor formula, its
+verdict worded as a provider-reported growth *signal*; no comparison,
+reconciliation, blending or averaging between the two; thresholds,
+bands, filing arithmetic, Business Quality, conviction, decisions,
+blockers, committees and envelopes untouched.
 
 ---
 
