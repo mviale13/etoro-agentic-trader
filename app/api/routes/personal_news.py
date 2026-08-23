@@ -60,8 +60,9 @@ def get_personal_ticker_news(symbol: str) -> dict[str, Any]:
         "retrieved_at": result.retrieved_at.isoformat(),
         "heading": "Ticker News",
         "explanation": (
-            "Recent articles Massive associates with this ticker. These "
-            "items have not been assessed or verified by MOVRvest."
+            "The latest articles Massive associates with this ticker, at "
+            "most three. These items have not been assessed or verified "
+            "by MOVRvest."
         ),
         "displayable": result.outcome is NewsOutcome.DISPLAY_ONLY,
         "leads": [

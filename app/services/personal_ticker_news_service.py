@@ -10,9 +10,9 @@ gated anything.
 The flow is fixed by `MASSIVE_FREE_PERSONAL_NEWS_MEASUREMENT.md`:
 
 ```text
-one page, at most 50, next_url ignored
+one page, at most 3 (the provider's own newest-first order), next_url ignored
     ↓
-the oldest published_utc on that page
+the oldest published_utc among the leads that survive selection
     ↓
 who holds the ticker today, and who held it then
     ↓
@@ -62,6 +62,17 @@ from app.providers.massive_news_provider import (
 #: terms describe. Exact rather than truthy, because "yes" would be
 #: something a person could set without reading what they agreed to.
 PERSONAL_USE_CONFIRMATION = "I_CONFIRM_PERSONAL_SINGLE_USER"
+
+#: How many articles the dossier shows: the newest three by
+#: `published_at` (owner ruling, 2026-08-23). The provider's own
+#: endpoint carries the ordering (`order=desc, sort=published_utc`), so
+#: the request itself is reduced to this limit rather than a page of 50
+#: being fetched and discarded — and because the admissibility filters
+#: still run after the fetch, three is the **maximum** shown, never a
+#: promise: an inadmissible item among the newest three shrinks the
+#: display rather than reaching deeper into the feed. "Latest three
+#: returned by the provider" is the whole claim.
+DISPLAY_LIMIT = 3
 
 #: What turns the feature on at all. Off unless it says one of these.
 _ENABLED = ("true", "1", "on", "yes")
@@ -154,7 +165,7 @@ class PersonalTickerNewsService:
             )
 
         try:
-            page = provider.news(symbol)
+            page = provider.news(symbol, limit=DISPLAY_LIMIT)
         except MassiveUnavailable:
             return PersonalNewsResult(
                 queried_ticker=symbol,
@@ -162,7 +173,7 @@ class PersonalTickerNewsService:
                 retrieved_at=asked_at,
             )
 
-        leads = self._leads(symbol, page)
+        leads = self._newest(self._leads(symbol, page))
 
         if not leads:
             return PersonalNewsResult(
@@ -171,6 +182,8 @@ class PersonalTickerNewsService:
                 retrieved_at=asked_at,
             )
 
+        # The identity window covers exactly what is displayed: the
+        # oldest of the (at most three) leads that survived selection.
         oldest = min(lead.published_at for lead in leads).date()
 
         try:
@@ -225,6 +238,23 @@ class PersonalTickerNewsService:
             identity_now=now_cik,
             identity_at_oldest=then_cik,
         )
+
+    @staticmethod
+    def _newest(leads: tuple[PersonalNewsLead, ...]) -> tuple[PersonalNewsLead, ...]:
+        """The newest leads by `published_at`, at most DISPLAY_LIMIT of them.
+
+        The provider already orders the page newest-first, and this
+        platform does not merely trust that: the sort is its own. It is
+        **stable**, so two items published at the same instant keep the
+        provider's page order between them — a deterministic tiebreak
+        that invents no second ordering — and sentiment is consulted
+        nowhere, because ranking by it is the judgment this feature
+        does not make.
+        """
+
+        ordered = sorted(leads, key=lambda lead: lead.published_at, reverse=True)
+
+        return tuple(ordered[:DISPLAY_LIMIT])
 
     def _leads(
         self, symbol: str, page: list[dict[str, Any]]
