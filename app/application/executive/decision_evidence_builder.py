@@ -45,6 +45,7 @@ from app.domain.finding import (
     statements_where,
 )
 from app.domain.opinion import Opinion
+from app.domain.research_plan import AnalystKey
 from app.domain.risk_signal import RiskSignal
 from app.domain.score_basis import (
     Contribution,
@@ -1034,12 +1035,29 @@ class DecisionEvidenceBuilder:
         # order it asked them. An analyst the playbook declined leaves no
         # finding here and is explained on the playbook itself, so a
         # missing verdict never has to be read as a failed one.
+        #
+        # Growth is named for what it measures. Its analyst reads
+        # provider fields whose period and formula are undocumented
+        # (owner ruling 2026-08-23), so its verdict is worded as a
+        # provider-reported growth *signal* — "The provider-reported
+        # growth signal is declining" — and the unqualified "Growth is
+        # declining" is unproducible. The other analysts keep their
+        # names; renaming them is the broader authority question this
+        # slice deliberately does not open.
         findings = (
-            DecisionEvidenceBuilder._opinion_finding(key.label, opinion)
+            DecisionEvidenceBuilder._opinion_finding(
+                DecisionEvidenceBuilder._FINDING_ASPECTS.get(key, key.label),
+                opinion,
+            )
             for key, opinion in research.opinions.items()
         )
 
         return tuple(finding for finding in findings if finding is not None)
+
+    #: Per-analyst overrides of the aspect a finding sentence opens
+    #: with, where the analyst's honest name is not the analyst's short
+    #: one. Keyed by `AnalystKey`, consulted only where present.
+    _FINDING_ASPECTS = {AnalystKey.GROWTH: "The provider-reported growth signal"}
 
     @staticmethod
     def _opinion_finding(

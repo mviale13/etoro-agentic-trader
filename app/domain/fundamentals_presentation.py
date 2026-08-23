@@ -255,6 +255,31 @@ def fundamentals_for(
     )
 
 
+#: The two growth metrics carry their authority in their name — the
+#: owner's ruling of 2026-08-23, after the measurement showed the
+#: filing's fiscal-year growth and the provider's undocumented-window
+#: growth to be non-comparable measurements. Everywhere one of these
+#: rows shows a figure, the label says whose window it is; the other
+#: ten metrics keep their #240 names, because renaming them is the
+#: broader question this slice does not open.
+_GROWTH_NAMES = {
+    "revenue_growth": (
+        "Revenue growth — FY filing",
+        "Provider-reported revenue growth — period not stated",
+    ),
+    "earnings_growth": (
+        "Earnings growth — FY filing",
+        "Provider-reported earnings growth — period not stated",
+    ),
+}
+
+#: The clause every provider growth row carries, verbatim — the same
+#: sentence the growth analyst now words its own evidence with.
+_GROWTH_UNSTATED = (
+    "The stored provider record states neither its reporting period nor its formula."
+)
+
+
 def _select(
     metric: str,
     label: str,
@@ -276,7 +301,7 @@ def _select(
         if established is not None and established.value is not None:
             return FundamentalFact(
                 metric=metric,
-                label=label,
+                label=(_GROWTH_NAMES[metric][0] if metric in _GROWTH_NAMES else label),
                 value=established.value,
                 unit=established.unit.value,
                 standing=FundamentalStanding.FILING_EVIDENCE,
@@ -347,6 +372,9 @@ def _select(
             ),
         ]
 
+        if metric in _GROWTH_NAMES:
+            sentences.append(_GROWTH_UNSTATED)
+
         if unit is MeasureUnit.CURRENCY:
             sentences.append(
                 "Reporting period not stated by the stored record."
@@ -359,7 +387,7 @@ def _select(
 
         return FundamentalFact(
             metric=metric,
-            label=label,
+            label=(_GROWTH_NAMES[metric][1] if metric in _GROWTH_NAMES else label),
             value=value,
             unit=unit.value,
             standing=(
