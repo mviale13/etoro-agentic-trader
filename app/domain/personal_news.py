@@ -277,9 +277,10 @@ class PersonalNewsResult:
         """
 
         return (
-            "Publisher coverage is limited and may be concentrated. No "
-            "items returned does not mean that no material development "
-            "occurred."
+            "At most the latest three articles returned by the provider "
+            "are shown — never complete coverage. Publisher coverage is "
+            "limited and may be concentrated, and no items returned does "
+            "not mean that no material development occurred."
         )
 
     @property

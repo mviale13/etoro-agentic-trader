@@ -29,6 +29,7 @@ from app.providers.massive_news_provider import (
     redacted,
 )
 from app.services.personal_ticker_news_service import (
+    DISPLAY_LIMIT,
     PERSONAL_USE_CONFIRMATION,
     PersonalTickerNewsService,
     is_available,
@@ -257,12 +258,20 @@ def test_nothing_is_displayed_before_identity_is_settled() -> None:
 
 
 def test_the_page_is_capped_and_the_cursor_is_never_followed() -> None:
-    """`next_url` returned items newer than page one, with no overlap."""
+    """The request itself carries the display limit; `next_url` stays ignored.
+
+    Asked at 50 until the 2026-08-23 ruling: the dossier shows at most
+    the latest three, the provider's endpoint already orders
+    newest-first, so the payload is reduced at the request rather than
+    fetched and discarded. No provider call was added — the same one
+    call asks for less.
+    """
 
     service, stub = served(identities=held("1", "1"))
     service.news_for("ADBE")
 
-    assert stub.news_calls == [("ADBE", MAXIMUM_PAGE)]
+    assert stub.news_calls == [("ADBE", DISPLAY_LIMIT)]
+    assert DISPLAY_LIMIT == 3
     assert MAXIMUM_PAGE == 50
 
 
@@ -746,7 +755,13 @@ def test_sentiment_is_never_inferred_from_the_words_of_an_article() -> None:
 
 
 def test_sentiment_changes_neither_the_order_nor_the_membership() -> None:
-    """The provider's order survives, and nothing is filtered by mood."""
+    """The provider's order survives, and nothing is filtered by mood.
+
+    Four equal-timestamped items and a three-item display: the one that
+    leaves is the provider's fourth, never the most negative — the cut
+    is positional, and a bearish item ahead of a positive one stays
+    ahead of it.
+    """
 
     page = [
         {**article("a1"), "insights": [insight("ADBE", "negative")]},
@@ -758,12 +773,11 @@ def test_sentiment_changes_neither_the_order_nor_the_membership() -> None:
 
     leads = service.news_for("ADBE").leads
 
-    assert [lead.provider_article_id for lead in leads] == ["a1", "a2", "a3", "a4"]
+    assert [lead.provider_article_id for lead in leads] == ["a1", "a2", "a3"]
     assert [lead.provider_sentiment for lead in leads] == [
         ProviderSentiment.NEGATIVE,
         ProviderSentiment.POSITIVE,
         None,
-        ProviderSentiment.NEGATIVE,
     ]
 
 
@@ -969,3 +983,101 @@ def test_the_row_divider_is_structural_and_not_a_first_child_rule() -> None:
 
     assert "divide-y divide-slate-100" in component
     assert "first:border-t-0" not in component
+
+
+# ── the latest three (owner ruling, 2026-08-23) ─────────────────────
+
+
+def test_only_the_three_newest_by_published_at_are_shown() -> None:
+    """A provider page out of order is still served newest-first."""
+
+    page = [
+        article("a1", published="2026-08-14T10:00:00Z"),
+        article("a2", published="2026-08-16T10:00:00Z"),
+        article("a3", published="2026-08-13T10:00:00Z"),
+        article("a4", published="2026-08-15T10:00:00Z"),
+    ]
+    service, _ = served(
+        page=page,
+        identities={None: Identity("1"), date(2026, 8, 14): Identity("1")},
+    )
+
+    leads = service.news_for("ADBE").leads
+
+    assert [lead.provider_article_id for lead in leads] == ["a2", "a4", "a1"]
+    assert len(leads) <= DISPLAY_LIMIT
+
+
+def test_equal_timestamps_keep_the_providers_page_order() -> None:
+    """The tiebreak is the provider's own order — stable, pinned, and
+    never a second ranking invented here."""
+
+    page = [
+        article("first", published="2026-08-16T10:00:00Z"),
+        article("second", published="2026-08-16T10:00:00Z"),
+        article("third", published="2026-08-16T10:00:00Z"),
+        article("fourth", published="2026-08-16T10:00:00Z"),
+    ]
+    service, _ = served(page=page, identities=held("1", "1"))
+
+    leads = service.news_for("ADBE").leads
+
+    assert [lead.provider_article_id for lead in leads] == [
+        "first",
+        "second",
+        "third",
+    ]
+
+
+def test_an_inadmissible_item_shrinks_the_display_rather_than_reaching_deeper() -> None:
+    """Three is the maximum claim, never a promise.
+
+    The request asks for the newest three; one of them fails the
+    exact-ticker association gate, and the display shows two. Reaching
+    deeper into the feed would cost a second provider call, which this
+    slice does not add.
+    """
+
+    page = [
+        article("a1", published="2026-08-16T10:00:00Z"),
+        article("a2", published="2026-08-15T10:00:00Z", tickers=("MSFT",)),
+        article("a3", published="2026-08-14T10:00:00Z"),
+    ]
+    service, _ = served(
+        page=page,
+        identities={None: Identity("1"), date(2026, 8, 14): Identity("1")},
+    )
+
+    leads = service.news_for("ADBE").leads
+
+    assert [lead.provider_article_id for lead in leads] == ["a1", "a3"]
+
+
+def test_the_identity_window_covers_exactly_what_is_displayed() -> None:
+    """The oldest displayed lead sets the window the CIK gate checks."""
+
+    page = [
+        article("a1", published="2026-08-16T10:00:00Z"),
+        article("a2", published="2026-08-12T10:00:00Z"),
+    ]
+    service, stub = served(
+        page=page,
+        identities={None: Identity("1"), date(2026, 8, 12): Identity("1")},
+    )
+
+    result = service.news_for("ADBE")
+
+    assert result.outcome is NewsOutcome.DISPLAY_ONLY
+    assert stub.identity_calls == [("ADBE", None), ("ADBE", date(2026, 8, 12))]
+
+
+def test_the_coverage_notice_carries_the_maximum_claim() -> None:
+    service, _ = served(identities=held("1", "1"))
+
+    notice = service.news_for("ADBE").coverage_notice
+
+    assert "latest three articles returned by the provider" in notice
+    assert "never complete coverage" in notice
+
+    for overclaim in ("all news", "complete picture", "full coverage"):
+        assert overclaim not in notice
