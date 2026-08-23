@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.domain.exchange_rate import ExchangeRate
+from app.domain.market_snapshot import MarketQuote
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,6 +123,19 @@ class MarketAcquisition:
     instruments: tuple[str, ...]
 
     vix: float | None
+
+    #: The exact per-security quotes this acquisition read, verbatim —
+    #: value and provenance untouched, keyed downstream by each quote's
+    #: own canonical MOVRvest symbol. The holdings, the funded
+    #: candidates and the market strip, because that is what the one
+    #: batch asked for. This is the collection the Capital Action
+    #: Envelope's price gate consumes: the acquisition stage owns the
+    #: quotes it took, and a later stage that re-derived them from a
+    #: `priced` flag or from the market strip alone would be gating on
+    #: something else (the golden-path acceptance's finding 1). Empty
+    #: exactly where the batch failed, which is what the typed refusal
+    #: downstream words.
+    quotes: tuple[MarketQuote, ...] = ()
 
     #: The currency rate the account's euro figures are converted at.
     #: Absent where none could be read, and the figures are absent with it.

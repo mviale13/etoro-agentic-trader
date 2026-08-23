@@ -195,6 +195,10 @@ class MarketAcquisitionService:
 
         return MarketAcquisition(
             securities=tuple(securities),
+            # The batch itself, verbatim: the envelope's price gate
+            # reads these exact observations, never a re-fetch and
+            # never the strip alone.
+            quotes=tuple(quotes),
             instruments=tuple(
                 instrument.movrvest_symbol
                 for instrument in YahooMarketProvider.DEFAULT_INSTRUMENTS

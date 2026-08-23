@@ -61,6 +61,15 @@ export interface CycleEnvelope {
   bindingConstraint: string;
   because: string;
   namedGaps: string[];
+
+  /**
+   * #236's security-risk maximum total position and the policy's own
+   * account of it. Null where no ceiling applied; carried, never
+   * recomposed.
+   */
+  securityRiskCeilingPct: number | null;
+  securityRiskBecause: string;
+  securityRiskCapped: boolean;
   qualityAuthority: string | null;
   starterCapped: boolean;
   priceAsOf: string;
@@ -371,6 +380,15 @@ function envelopeOf(raw: unknown, field: string): CycleEnvelope | null {
     bindingConstraint: requiredString(item, "binding_constraint"),
     because: requiredString(item, "because"),
     namedGaps: requiredStrings(item, "named_gaps"),
+    securityRiskCeilingPct: nullableNumber(item, "security_risk_ceiling_pct"),
+    // Optional by contract: a record written before #236 carries no
+    // security-risk fields, and decodes as carrying no ceiling — never
+    // as a ceiling of zero.
+    securityRiskBecause:
+      typeof item.security_risk_because === "string"
+        ? item.security_risk_because
+        : "",
+    securityRiskCapped: item.security_risk_capped === true,
     qualityAuthority: nullableString(item, "quality_authority"),
     starterCapped: requiredBoolean(item, "starter_capped"),
     priceAsOf: requiredString(item, "price_as_of"),

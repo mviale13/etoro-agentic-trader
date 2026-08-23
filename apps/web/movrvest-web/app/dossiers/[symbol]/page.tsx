@@ -15,6 +15,10 @@ import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { redirect } from "next/navigation";
 
+import { CourseEnvelope } from "@/components/executive/HomeSections";
+import { getCycleReview } from "@/lib/api/cycle-review";
+import type { CycleCourse, CycleReview } from "@/lib/api/cycle-review";
+
 import {
   TickerNews,
   TickerNewsFallback,
@@ -65,11 +69,66 @@ type DossierPageProps = {
  * Everything rendered here arrives from the backend dossier. This page
  * formats, groups and discloses; it computes nothing.
  */
+/** One symbol's course in the latest completed cycle, or nothing. */
+export interface RecordedCourse {
+  course: CycleCourse;
+  finishedAt: string;
+}
+
+/**
+ * The course this symbol received in the **latest successfully
+ * completed attempt from a complete stream**, or nothing.
+ *
+ * Two conditions, and both are required (the owner's ruling of
+ * 2026-08-23):
+ *
+ * - the latest attempt completed successfully, and
+ * - the cycle stream itself is complete — no unreadable records, no
+ *   unsupported schemas, no lifecycle anomalies.
+ *
+ * A failed, partial or interrupted attempt shows no envelope. So does
+ * a complete attempt sitting in a defective stream: an unreadable line
+ * may be the actual latest cycle, and this page cannot know which
+ * account reading or policy an envelope beside it rested on.
+ *
+ * **There is deliberately no `lastKnown` fallback.** An older envelope
+ * is older policy and account guidance; placing it beside a newer
+ * dossier decision would present stale sizing as current. Where the
+ * conditions do not hold, the page shows nothing at all — never a
+ * manufactured envelope, never an implied zero capacity.
+ */
+export function recordedCourse(
+  review: CycleReview | null,
+  symbol: string,
+): RecordedCourse | null {
+  if (!review || review.execution !== "complete" || !review.streamComplete) {
+    return null;
+  }
+
+  const course =
+    review.courses.find((entry) => entry.symbol === symbol) ??
+    review.candidates.find((entry) => entry.symbol === symbol);
+
+  if (!course || !review.finishedAt) {
+    return null;
+  }
+
+  return { course, finishedAt: review.finishedAt };
+}
+
 export default async function DossierPage({ params }: DossierPageProps) {
   const { symbol } = await params;
   const normalizedSymbol = symbol.toUpperCase();
 
   const result = await getDossier(normalizedSymbol);
+
+  // The envelope belongs to the latest completed cycle, never to this
+  // request. The page reads the recorded review and renders the course
+  // this symbol actually received — it does not recompute an envelope,
+  // and it cannot: `getCycleReview` is a read of the append-only cycle
+  // store (the golden-path acceptance's finding 1).
+  const review = await getCycleReview();
+  const recorded = recordedCourse(review.review, normalizedSymbol);
 
   // The backend retired this surface for the crypto corpus: one asset,
   // one decision surface. The reader is sent to the canonical page
@@ -104,7 +163,7 @@ export default async function DossierPage({ params }: DossierPageProps) {
         </Link>
 
         {result.dossier ? (
-          <Dossier dossier={result.dossier} />
+          <Dossier dossier={result.dossier} recorded={recorded} />
         ) : (
           <Unavailable backendUrl={result.backendUrl} error={result.error} />
         )}
@@ -1668,7 +1727,13 @@ function Supply({ supply, symbol }: { supply: DossierSupply; symbol: string }) {
   );
 }
 
-function Dossier({ dossier }: { dossier: DossierViewModel }) {
+function Dossier({
+  dossier,
+  recorded,
+}: {
+  dossier: DossierViewModel;
+  recorded: RecordedCourse | null;
+}) {
   return (
     <div className="mt-8 space-y-10">
       {/* A token's analysis lives on its own surface, because a token is
@@ -1750,6 +1815,7 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
 
       <WhatChanged dossier={dossier} />
       <Recommendation dossier={dossier} />
+      {recorded ? <RecordedEnvelope recorded={recorded} /> : null}
       <InvestorContext dossier={dossier} />
 
       {dossier.fundamentals ? (
@@ -1783,6 +1849,43 @@ function Dossier({ dossier }: { dossier: DossierViewModel }) {
   );
 }
 
+
+/**
+ * One symbol's course and envelope, as the latest successfully
+ * completed attempt from a complete stream recorded them.
+ *
+ * Read, never recomputed. The envelope is a property of the review that
+ * produced it: its price gate aged that cycle's quote, its capacity
+ * arithmetic used that cycle's account reading, and recomputing one
+ * during a page request would answer a question the recorded review did
+ * not ask — and could disagree with the homepage showing the same
+ * cycle. A symbol the latest completed cycle did not cover renders
+ * nothing at all: no envelope is manufactured, and no zero capacity is
+ * implied.
+ */
+function RecordedEnvelope({ recorded }: { recorded: RecordedCourse }) {
+  if (!recorded.course.envelope) {
+    return null;
+  }
+
+  return (
+    <section aria-labelledby="recorded-envelope-heading">
+      <SectionHeading id="recorded-envelope-heading">
+        What the latest review allowed
+      </SectionHeading>
+
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+        From the CIO review completed {recorded.finishedAt}, which is where
+        this consideration was decided. This page shows what that review
+        recorded and computes nothing of its own.
+      </p>
+
+      <div className="mt-3">
+        <CourseEnvelope course={recorded.course} />
+      </div>
+    </section>
+  );
+}
 
 /**
  * The fundamentals the investor asked the dossier for, each figure under
