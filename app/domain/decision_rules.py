@@ -351,13 +351,24 @@ DECISION_AUTHORITY = _governs(
 #: *size* through the Capital Action Envelope's security-risk ceiling
 #: instead of refusing the thesis. One gate fewer, one policy constant
 #: fewer, every remaining gate unmoved.
+#: **@4** — the company vote's two direct gates are gone. The owner's
+#: ruling of 2026-08-24 removed `analyst_veto → REJECT` (the
+#: value/quality/momentum vote reaching SELL, ahead of every score) and
+#: the final `not actionable_now → PREPARE` (the same vote reaching
+#: BUY), because a one-session provider price move carrying an ASSUMED
+#: warrant decided both. `actionable-buy` and `veto-sell` are deleted
+#: with them, and **nothing replaces the execution trigger**: a case
+#: that satisfies quality, evidence, valuation, risk and portfolio fit
+#: is recommended on those alone. Two gates fewer, every remaining gate
+#: and every policy constant unmoved.
 DECISION_GATES = _governs(
     "decision-gates",
     RuleStatus.UNSOURCED,
     _AUDIT
     + "; evidence input widened in DECISION_EVIDENCE_CONVERGENCE.md"
-    + "; security-risk rejection removed in SECURITY_VOLATILITY_CAPITAL_ENVELOPE.md",
-    version=3,
+    + "; security-risk rejection removed in SECURITY_VOLATILITY_CAPITAL_ENVELOPE.md"
+    + "; company-vote gates removed in COMPANY_VOTE_DECISION_AUTHORITY.md",
+    version=4,
 )
 
 #: The unweighted mean of present scores, capped by state.
@@ -374,12 +385,6 @@ CONVICTION_MEAN = _governs(
     _AUDIT + "; withheld without a supporting reason, DECISION_EVIDENCE_CONVERGENCE.md",
     version=2,
 )
-
-#: A BUY vote is the execution trigger — the final gate to RECOMMEND.
-ACTIONABLE_BUY = _governs("actionable-buy", RuleStatus.UNSOURCED, _AUDIT)
-
-#: A SELL vote is an analyst veto — REJECT, ahead of every score.
-VETO_SELL = _governs("veto-sell", RuleStatus.UNSOURCED, _AUDIT)
 
 #: The digital-asset gates: posture arithmetic over recorded committee
 #: judgments, with INVESTIGATE as a structural ceiling. No number
@@ -424,8 +429,6 @@ DECISION_RULES: dict[str, DecisionRule] = {
         DECISION_AUTHORITY,
         DECISION_GATES,
         CONVICTION_MEAN,
-        ACTIONABLE_BUY,
-        VETO_SELL,
         DIGITAL_ASSET_GATES,
     )
 }

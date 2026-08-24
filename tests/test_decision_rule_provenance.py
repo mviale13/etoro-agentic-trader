@@ -192,6 +192,12 @@ GOVERNED: dict[str, object] = {
         # hashed in its own right, and a future silent removal is
         # impossible either way.
         "gates: no-security-risk-rejection",
+        # **And no company-vote gate.** The 2026-08-24 ruling removed
+        # `analyst_veto -> REJECT` and `not actionable_now -> PREPARE`,
+        # neither of which had a threshold either. Hashed by membership
+        # for the same reason as the line above: the policy dump cannot
+        # see a gate that never carried a constant.
+        "gates: no-company-vote-veto-or-execution-trigger",
     ),
     "conviction-mean": (
         "unweighted-mean-of-present-scores",
@@ -205,8 +211,6 @@ GOVERNED: dict[str, object] = {
         # that may not be emitted is a different rule from one that must.
         "withheld-without-a-supporting-reason",
     ),
-    "actionable-buy": ("recommendation == BUY",),
-    "veto-sell": ("recommendation == SELL",),
     # No numeric constant exists in this rule; what it governs is the
     # posture partition and the two reachable states, hashed so neither
     # can widen under an unchanged version. RECOMMEND appearing in this
@@ -253,10 +257,8 @@ PINNED: dict[str, tuple[int, RuleStatus, str]] = {
     # evidence); the mean is unchanged and may now decline to speak. No
     # threshold in either was edited, and the version says so anyway —
     # what a rule *reads* is as decision-bearing as where it cuts.
-    "decision-gates": (3, RuleStatus.UNSOURCED, "ae80f30c37ad"),
+    "decision-gates": (4, RuleStatus.UNSOURCED, "ebeaafd356ca"),
     "conviction-mean": (2, RuleStatus.UNSOURCED, "b8cd60d55c95"),
-    "actionable-buy": (1, RuleStatus.UNSOURCED, "87618568469b"),
-    "veto-sell": (1, RuleStatus.UNSOURCED, "7734b674289c"),
     # DV3. Widening the applicable-posture set, adding a reachable
     # state, or letting a conviction through requires re-pinning here.
     "digital-asset-gates": (1, RuleStatus.ARGUED, "f05180f01fda"),
@@ -610,4 +612,4 @@ def test_kinds_partition_the_registry() -> None:
 
     assert interprets | governs == set(DECISION_RULES)
     assert not interprets & governs
-    assert {"decision-gates", "signal-vote", "actionable-buy", "veto-sell"} <= governs
+    assert {"decision-gates", "signal-vote"} <= governs

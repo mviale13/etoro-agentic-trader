@@ -56,26 +56,34 @@ def test_adapter_produces_normalized_decision_evidence() -> None:
     assert len(result.risks) == 2
 
 
-def test_adapter_propagates_analyst_veto() -> None:
-    items = (
-        analyst(
-            source="BalanceSheetAnalyst",
-            category=EvidenceCategory.BALANCE_SHEET,
-            score=20,
-            confidence=95,
-            veto=True,
-        ),
-    )
+def test_the_adapter_carries_no_veto() -> None:
+    """The owner's ruling of 2026-08-24, at the second producer.
+
+    `AnalystEvidence.veto` fed `DecisionEvidence.analyst_veto`, which
+    no longer exists. The field is gone rather than left unread: a
+    veto nothing can act on is dead vocabulary that reads as live.
+    """
+
+    from app.cio.evidence_adapter import AnalystEvidence
+
+    assert "veto" not in AnalystEvidence.model_fields
 
     result = EvidenceAdapter().adapt(
         symbol="TEST",
-        analyst_evidence=items,
+        analyst_evidence=(
+            analyst(
+                source="BalanceSheetAnalyst",
+                category=EvidenceCategory.BALANCE_SHEET,
+                score=20,
+                confidence=95,
+            ),
+        ),
         valuation_score=80,
         risk_score=80,
         portfolio_fit_score=80,
     )
 
-    assert result.analyst_veto is True
+    assert not hasattr(result, "analyst_veto")
 
 
 def test_empty_evidence_produces_zero_scores() -> None:

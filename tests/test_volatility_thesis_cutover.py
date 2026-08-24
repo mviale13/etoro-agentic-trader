@@ -51,7 +51,6 @@ def evidence(**overrides: object) -> DecisionEvidence:
         "valuation_score": 80,
         "risk_score": 20,
         "portfolio_fit_score": 80,
-        "actionable_now": True,
         "strengths": ("Large-cap company.",),
     }
 
@@ -93,7 +92,6 @@ def test_the_obsolete_sentence_is_unproducible() -> None:
     cascade = (
         {},
         {"hard_reject": True},
-        {"analyst_veto": True},
         {"security_evidenced": False},
         {"risk_score": 85, "risk_reading": AMD_RISK},
         {"risk_score": None},
@@ -103,7 +101,6 @@ def test_the_obsolete_sentence_is_unproducible() -> None:
         {"valuation_score": None},
         {"valuation_score": 40},
         {"portfolio_fit_score": 10},
-        {"actionable_now": False},
     )
 
     for overrides in cascade:
@@ -119,9 +116,16 @@ def test_the_obsolete_sentence_is_unproducible() -> None:
 
 
 def test_the_gate_removal_is_pinned_as_a_rule_change() -> None:
-    """A cascade may not lose a gate without its rule version moving."""
+    """A cascade may not lose a gate without its rule version moving.
 
-    assert DECISION_GATES.version == 3
+    @3 is this cutover's own — the security-risk rejection. @4 is the
+    2026-08-24 company-vote ruling, which removed two more. The
+    assertion tracks *at least* this cutover rather than pinning the
+    contract forever at the version it happened to ship under;
+    `test_decision_rule_provenance` owns the exact pin.
+    """
+
+    assert DECISION_GATES.version >= 3
 
 
 # ── and nothing about risk was weakened ─────────────────────────────

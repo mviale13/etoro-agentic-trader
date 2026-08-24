@@ -21,6 +21,7 @@ Three properties are tested here:
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from app.cio.artificial_cio import ArtificialCIO
 from app.cio.decision_state import DecisionState
@@ -79,7 +80,6 @@ def evidence(**overrides: object) -> DecisionEvidence:
         "valuation_score": 80,
         "risk_score": 20,
         "portfolio_fit_score": 80,
-        "actionable_now": True,
         "strengths": ("Large-cap company.",),
         "findings": AMD_RESEARCH,
     }
@@ -150,23 +150,21 @@ def test_a_severe_reading_still_reaches_the_decision_as_evidence() -> None:
     assert violent.conviction < calm.conviction
 
 
-def test_an_analyst_veto_claims_nothing_about_what_it_does_not_say() -> None:
-    """The veto is a SELL vote, and a SELL vote may be about the business.
+def test_no_blocker_can_be_reached_from_a_company_vote() -> None:
+    """The owner's ruling of 2026-08-24, at the vocabulary.
 
-    It is composed from quality, value, momentum and risk together, so
-    unlike the risk ceiling it cannot be declared silent about the
-    company. The analysts who disagree are still quoted — that is a
-    disagreement on the record — but no disclaimer is attached.
+    Both members the company vote used to reach are gone, so no
+    sentence naming a specialist's veto or an unfired execution trigger
+    can be produced at all — and a caller that still tries to set
+    either flag is refused by the schema rather than quietly ignored.
     """
 
-    decision = ArtificialCIO().decide(evidence(analyst_veto=True))
+    assert not hasattr(BlockerKind, "ANALYST_VETO")
+    assert not hasattr(BlockerKind, "EXECUTION_TRIGGER")
 
-    blocker = decision.blocker
-
-    assert blocker is not None
-    assert blocker.kind is BlockerKind.ANALYST_VETO
-    assert blocker.does_not_say == ""
-    assert blocker.despite
+    for flag in ("analyst_veto", "actionable_now"):
+        with pytest.raises(ValidationError):
+            evidence(**{flag: True})
 
 
 def test_a_quality_gate_carries_no_counterweight_and_no_disclaimer() -> None:
@@ -191,7 +189,6 @@ def test_a_quality_gate_carries_no_counterweight_and_no_disclaimer() -> None:
     ("overrides", "kind"),
     [
         ({"hard_reject": True}, BlockerKind.POLICY_GATE),
-        ({"analyst_veto": True}, BlockerKind.ANALYST_VETO),
         ({"security_evidenced": False}, BlockerKind.MISSING_EVIDENCE),
         ({"quality_score": 20}, BlockerKind.QUALITY_GATE),
         ({"evidence_score": 10}, BlockerKind.MISSING_EVIDENCE),
@@ -205,7 +202,6 @@ def test_a_quality_gate_carries_no_counterweight_and_no_disclaimer() -> None:
         ({"valuation_score": 40}, BlockerKind.VALUATION_GATE),
         ({"portfolio_fit_score": None}, BlockerKind.PORTFOLIO_FIT_GATE),
         ({"portfolio_fit_score": 10}, BlockerKind.PORTFOLIO_FIT_GATE),
-        ({"actionable_now": False}, BlockerKind.EXECUTION_TRIGGER),
     ],
 )
 def test_every_branch_names_its_own_gate(
@@ -214,10 +210,11 @@ def test_every_branch_names_its_own_gate(
 ) -> None:
     """One case, one gate moved at a time, across the whole cascade.
 
-    REJECT is reached two ways here — a policy gate and an analyst veto
-    — and a surface reading the state back into a cause could not tell
-    them apart. It was three until the 2026-08-21 cutover removed the
-    severity rejection.
+    The table shrinks as the cascade does. It was three REJECT routes
+    until the 2026-08-21 cutover removed the severity rejection, two
+    until the 2026-08-24 ruling removed the company vote's veto, and
+    the timing trigger went with it — so REJECT now has exactly one
+    route and no gate here is reached from a price move.
     """
 
     decision = ArtificialCIO().decide(evidence(**overrides))
@@ -242,7 +239,6 @@ def test_the_cascade_produces_every_declared_kind_but_the_platform_limit() -> No
         for overrides in (
             {},
             {"hard_reject": True},
-            {"analyst_veto": True},
             {"security_evidenced": False},
             # RISK_GATE is now produced by the *unmeasured* route alone:
             # the severity rejection left the cascade in the 2026-08-21
@@ -252,7 +248,6 @@ def test_the_cascade_produces_every_declared_kind_but_the_platform_limit() -> No
             {"evidence_score": 10},
             {"valuation_score": 40},
             {"portfolio_fit_score": 10},
-            {"actionable_now": False},
         )
     }
 
@@ -263,12 +258,11 @@ def test_the_cascade_produces_every_declared_kind_but_the_platform_limit() -> No
 
 
 def test_a_capped_conviction_says_it_was_capped() -> None:
-    """AMD's 40 is `conviction-mean@1`'s REJECT cap, not a mean of 40.
+    """The REJECT cap is a property of the state, not of a route to it.
 
-    Reached through the analyst veto since the 2026-08-21 cutover: the
-    severity rejection that used to bring this case here is gone, and
-    the cap is a property of the REJECT *state* rather than of any one
-    route to it.
+    The severity rejection left in the 2026-08-21 cutover and the
+    company vote's veto in the 2026-08-24 ruling, so the one remaining
+    route is the hard policy gate. The cap is unchanged.
     """
 
     decision = ArtificialCIO().decide(
@@ -279,7 +273,7 @@ def test_a_capped_conviction_says_it_was_capped() -> None:
             risk_score=85,
             portfolio_fit_score=60,
             risk_reading=AMD_RISK,
-            analyst_veto=True,
+            hard_reject=True,
         ),
     )
 

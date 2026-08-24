@@ -182,19 +182,21 @@ class ArtificialCIO:
                 ),
             )
 
-        if evidence.analyst_veto:
-            return (
-                DecisionState.REJECT,
-                "A specialist analyst identified a veto-level risk.",
-                self._blocked(
-                    evidence,
-                    BlockerKind.ANALYST_VETO,
-                    (
-                        "Blocked by a specialist analyst's veto: it read a "
-                        "risk at the level that stops a case outright."
-                    ),
-                ),
-            )
+        # **A company vote no longer rejects a thesis.** The owner's
+        # ruling of 2026-08-24 removed the transition that lived here —
+        # `analyst_veto -> REJECT`, set from the value/quality/momentum
+        # vote reaching SELL — because a one-session provider price move
+        # decided it. AMD was REJECTed on a -4.28% day while its own
+        # analysts read growth, profitability, balance sheet and cash
+        # flow as strong or better, and the blocker called that "a
+        # specialist analyst's veto" when no analyst had spoken.
+        #
+        # This is the volatility ruling of 2026-08-21 applied to the
+        # same question one layer up: market behaviour may inform risk,
+        # timing and eventual sizing, and may not become a judgment
+        # about business quality. Value, quality and momentum are all
+        # still measured, still banded, still shown, and still scored
+        # into conviction. What they no longer do is stop a case.
 
         # Nothing about the security itself was gathered — the symbol names
         # nothing the platform could describe. Said plainly, and kept apart
@@ -454,22 +456,15 @@ class ArtificialCIO:
                 ),
             )
 
-        if not evidence.actionable_now:
-            return (
-                DecisionState.PREPARE,
-                (
-                    "The investment case is ready, but its execution "
-                    "trigger has not occurred."
-                ),
-                self._blocked(
-                    evidence,
-                    BlockerKind.EXECUTION_TRIGGER,
-                    (
-                        "Blocked on timing alone: the case is ready and its "
-                        "execution trigger has not occurred."
-                    ),
-                ),
-            )
+        # **And a company vote no longer authorizes one.** The final
+        # gate here read `actionable_now`, which was the same vote
+        # reaching BUY — so a positive one-session move was the last
+        # thing standing between PREPARE and RECOMMEND. Measured over
+        # the live book, that flag was decided by the day's price band
+        # for four securities. Removed with its sibling, and **not
+        # replaced**: no technical-analysis trigger is introduced here.
+        # A case that satisfies quality, evidence, valuation, risk and
+        # portfolio fit is now recommended on those alone.
 
         return (
             DecisionState.RECOMMEND,

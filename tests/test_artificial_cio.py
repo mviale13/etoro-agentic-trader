@@ -13,7 +13,6 @@ def evidence(
     *,
     symbol: str = "MSFT",
     valuation: int = 75,
-    actionable: bool = True,
 ) -> DecisionEvidence:
     return DecisionEvidence(
         symbol=symbol,
@@ -22,7 +21,6 @@ def evidence(
         valuation_score=valuation,
         risk_score=25,
         portfolio_fit_score=80,
-        actionable_now=actionable,
         evidence_weighed=("Durable competitive advantage.",),
         risks=("Valuation risk.",),
         catalysts=("Cloud growth acceleration.",),

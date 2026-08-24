@@ -240,20 +240,48 @@ def test_security_evidence_distinguishes_two_holdings() -> None:
     assert good.valuation_score > poor.valuation_score
 
 
-def test_a_sell_opinion_vetoes_the_case() -> None:
-    brain = make_brain(
-        evidence={"SELLME": (make_company("SELLME", recommendation="SELL"),)},
+def test_no_company_vote_reaches_the_decision_as_a_flag() -> None:
+    """The owner's ruling of 2026-08-24, at the builder that applied it.
+
+    A SELL once became `analyst_veto` and a BUY `actionable_now`, and
+    the evidence carried both to the cascade. Neither field exists now,
+    so the vote reaches the decision as description and nothing else —
+    and a SELL and a BUY produce byte-identical decision evidence.
+    """
+
+    sell = build_evidence(
+        make_brain(evidence={"S": (make_company("S", recommendation="SELL"),)}),
+        "S",
+    )
+    buy = build_evidence(
+        make_brain(evidence={"S": (make_company("S", recommendation="BUY"),)}),
+        "S",
     )
 
-    assert build_evidence(brain, "SELLME").analyst_veto is True
+    assert not hasattr(sell, "analyst_veto")
+    assert not hasattr(sell, "actionable_now")
 
+    # Every gate input the cascade reads is identical under a SELL and
+    # a BUY. The vote no longer reaches any of them.
+    for field in (
+        "quality_score",
+        "valuation_score",
+        "risk_score",
+        "portfolio_fit_score",
+        "hard_reject",
+        "security_evidenced",
+    ):
+        assert getattr(sell, field) == getattr(buy, field), field
 
-def test_a_hold_opinion_does_not_veto_the_case() -> None:
-    brain = make_brain(
-        evidence={"HOLDME": (make_company("HOLDME", recommendation="HOLD"),)},
+    # **And one input is deliberately still shared.** The vote's own
+    # confidence remains a term of the evidence score, which this slice
+    # does not touch: removing it would leave `evidence_score` built
+    # from account-level confidence alone and identical for every
+    # security. Recorded here so the residual is visible rather than
+    # implied — see COMPANY_VOTE_DECISION_AUTHORITY.md.
+    assert sell.evidence_score == buy.evidence_score, (
+        "a SELL and a BUY of equal magnitude score the same evidence"
     )
-
-    assert build_evidence(brain, "HOLDME").analyst_veto is False
 
 
 def test_low_quality_stays_above_the_rejection_floor() -> None:

@@ -25,7 +25,6 @@ def evidence(**overrides: object) -> DecisionEvidence:
             "valuation_score": 80,
             "risk_score": 20,
             "portfolio_fit_score": 80,
-            "actionable_now": True,
             # A case that clears every gate cites something in its favour.
             # Without one the CIO withholds the conviction entirely, which
             # is a different invariant tested in its own file.

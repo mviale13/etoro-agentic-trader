@@ -883,6 +883,35 @@ one decision-shaped fallback unreachable. Two committee packages are
 market/account and never reaches `decide()`; `app/application/committees/`
 reviews one security — with the naming debt written down.
 
+**And the most powerful bit is gone** (the Company Vote ruling,
+[`COMPANY_VOTE_DECISION_AUTHORITY.md`](docs/architecture/COMPANY_VOTE_DECISION_AUTHORITY.md),
+accepted and built). The audit's `analyst_veto` was never an analyst:
+it was `company.recommendation == "SELL"` from the three-band vote, and
+its sibling `actionable_now` was the same vote reaching BUY. Momentum
+weighs 0.25 and swings 0.50 across its range — **exactly the width of
+both thresholds** — so a one-session provider price move carrying an
+ASSUMED warrant decided each end. AMD moved PREPARE → REJECT on −4.28%
+with quality, valuation and risk byte-identical, blocked by "a
+specialist analyst's veto" when no analyst had spoken; the cliff is
+**0.01pp wide** (−0.49% holds, −0.50% rejects). Both gates deleted,
+`decision-gates@4`, and **nothing replaces the execution trigger**.
+Measured first over the whole book: **2 movements, both candidates,
+0 held securities, 0 courses lost**, DIS and BNP.PA keeping RECOMMEND,
+digital assets untouched by construction. `veto-sell`, `actionable-buy`,
+`BlockerKind.ANALYST_VETO` and `EXECUTION_TRIGGER` are removed rather
+than left unread.
+
+**The one authority deliberately left standing is named, not glossed.**
+The vote's *confidence* still feeds `evidence_score`, and it rises with
+the vote's **magnitude** — so AMD's evidence went 71 → 83 on the day
+it fell 4.28%, the platform calling the case better evidenced because
+the price dropped. It stays because `cognitive_confidence` is
+`(portfolio + market + risk) / 3`, entirely account-level: dropping the
+company term makes `evidence_score` identical for every security and
+three evidence gates security-blind. **0 states move through it today
+and 1 blocker does** (MSFT), and the state crossing is reachable rather
+than impossible — a genuine coverage measure needs a policy ruling.
+
 **Every decision-bearing constant is a rule with a pinned fingerprint.**
 Sixteen `DecisionRule`s (`app/domain/decision_rules.py`) cover the
 eighteen transformations; statuses are structural (tests assert exactly
