@@ -26,7 +26,11 @@ from app.domain.capital_policy import (
     ReducePolicy,
     policy_version,
 )
-from app.domain.strategic_allocation import AllocationBand, StrategicAllocation
+from app.domain.strategic_allocation import (
+    AllocationBand,
+    HardLimits,
+    StrategicAllocation,
+)
 from app.services.investor_strategy_service import STRATEGY_PATH
 
 #: Each asset class's operating range, and the field it is stated in.
@@ -243,12 +247,26 @@ def _strategic_allocation(
     whatever sentence the domain refused with. Nothing is defaulted and
     nothing is repaired: a plan this platform completed on the
     investor's behalf would be its plan, not theirs.
+
+    **The hard limits come from `values`**, the same already-required
+    `minimum_cash_pct` and `maximum_crypto_pct` the `CapitalPolicy`
+    below is built from — so the ranges are validated against the
+    *active* limits rather than against a remembered pair, and the
+    envelope and the CIO's guidance cannot come to differ.
     """
 
     block = raw.get("portfolio_policy")
 
     if not isinstance(block, dict):
         return "the owner strategy states no portfolio_policy section"
+
+    try:
+        limits = HardLimits(
+            minimum_cash_pct=float(values["minimum_cash_pct"]),  # type: ignore[arg-type]
+            maximum_crypto_pct=float(values["maximum_crypto_pct"]),  # type: ignore[arg-type]
+        )
+    except (TypeError, ValueError) as error:
+        return f"the owner strategy is contradictory: {error}"
 
     bands: dict[str, AllocationBand] = {}
 
@@ -287,6 +305,7 @@ def _strategic_allocation(
             etfs=bands["etfs"],
             crypto=bands["crypto"],
             cash=bands["cash"],
+            limits=limits,
         )
     except ValueError as error:
         return f"the owner strategy is contradictory: {error}"

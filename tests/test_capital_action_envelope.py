@@ -36,10 +36,20 @@ from app.domain.capital_policy import (
 )
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
-from app.domain.strategic_allocation import AllocationBand, StrategicAllocation
+from app.domain.strategic_allocation import (
+    AllocationBand,
+    HardLimits,
+    StrategicAllocation,
+)
 from app.services.capital_policy_service import CapitalPolicyService
 
 MOMENT = datetime(2026, 8, 19, 15, 0, tzinfo=UTC)
+
+#: The active policy's hard limits — minimum cash and maximum crypto.
+#: The strategy file states these once and every reader receives them;
+#: they are not constants of the allocation module, which is precisely
+#: the second authority this amendment removed.
+OWNER_LIMITS = HardLimits(minimum_cash_pct=15.0, maximum_crypto_pct=40.0)
 
 #: The owner's strategic allocation of 2026-08-24, as the tracked
 #: strategy states it: four targets totalling 100%, each inside its own
@@ -57,6 +67,10 @@ OWNER_ALLOCATION = StrategicAllocation(
     cash=AllocationBand(
         asset="cash", target_pct=25.0, minimum_pct=15.0, maximum_pct=45.0
     ),
+    # The hard limits the active policy states — not a second copy of
+    # them. These are what `minimum_cash_pct` and `maximum_crypto_pct`
+    # say in the strategy document this suite loads.
+    limits=OWNER_LIMITS,
 )
 
 

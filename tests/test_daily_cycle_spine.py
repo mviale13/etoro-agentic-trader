@@ -135,7 +135,13 @@ class BrainStub:
             portfolio=SimpleNamespace(
                 total_value=10_000.0,
                 holdings=(),
-                allocation=SimpleNamespace(cash=58.0),
+                # All four measured shares, which is what a
+                # `PortfolioAllocation` carries — the record reads the
+                # account's own shape from here and must keep doing so
+                # whether or not a strategic plan validated.
+                allocation=SimpleNamespace(
+                    stocks=30.0, etfs=2.0, crypto=10.0, cash=58.0
+                ),
                 available_cash_usd=5_800.0,
                 last_sync=None,
                 drawdown=SimpleNamespace(current_depth=0.02),

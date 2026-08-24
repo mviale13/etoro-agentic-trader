@@ -29,6 +29,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.commands.cycle import _portfolio_weights, _recorded_portfolio
+from app.domain.capital_policy import CapitalPolicyReading
 from app.domain.daily_cycle import (
     RecordedHolding,
     RecordedPortfolio,
@@ -66,7 +67,10 @@ def brain(*positions: PortfolioPosition, total: float = 100_000.0):
         portfolio=SimpleNamespace(
             total_value=total,
             holdings=positions,
-            allocation=SimpleNamespace(cash=25.0),
+            # All four measured shares, because that is what a
+            # `PortfolioAllocation` carries and what the record now
+            # reads the account's own shape from.
+            allocation=SimpleNamespace(stocks=50.0, etfs=0.0, crypto=25.0, cash=25.0),
             available_cash_usd=25_000.0,
             last_sync=None,
         ),
@@ -78,7 +82,18 @@ def recorded(*positions: PortfolioPosition, total: float = 100_000.0):
     stub = brain(*positions, total=total)
     weights, cash_pct, total_value = _portfolio_weights(stub)
 
-    return _recorded_portfolio(stub, weights, cash_pct, total_value)
+    # No validated allocation policy: these pin the holdings fold,
+    # and the plan beside it is a different fact. The refusal travels,
+    # and the holdings must survive it intact.
+    return _recorded_portfolio(
+        stub,
+        weights,
+        cash_pct,
+        total_value,
+        policy_reading=CapitalPolicyReading(
+            refused_because="no policy is loaded in this fixture"
+        ),
+    )
 
 
 # ── the cycle records securities, not trades ────────────────────────

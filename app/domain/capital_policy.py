@@ -29,7 +29,7 @@ import math
 from dataclasses import dataclass
 from enum import StrEnum
 
-from app.domain.strategic_allocation import StrategicAllocation
+from app.domain.strategic_allocation import HardLimits, StrategicAllocation
 
 
 class ReducePolicy(StrEnum):
@@ -152,6 +152,36 @@ class CapitalPolicy:
             raise ValueError(
                 "the ruling requires SECURITY_RISK_UNMEASURED <= SECURITY_RISK_HIGH"
             )
+
+        # One hard-limit authority, enforced rather than trusted. The
+        # allocation's ranges were validated against `limits`, and the
+        # envelope funds against `minimum_cash_pct` / `max_crypto_pct`.
+        # If those ever came from two places, this refuses by name — it
+        # does not pick whichever number it likes better.
+        if self.allocation.limits != self.hard_limits:
+            raise ValueError(
+                "the allocation was validated against a different hard limit "
+                "than the envelope funds against: allocation states minimum "
+                f"cash {self.allocation.limits.minimum_cash_pct:g}% and "
+                f"maximum crypto {self.allocation.limits.maximum_crypto_pct:g}%, "
+                f"the policy states {self.minimum_cash_pct:g}% and "
+                f"{self.max_crypto_pct:g}%"
+            )
+
+    @property
+    def hard_limits(self) -> HardLimits:
+        """The two allocation limits that block an action.
+
+        The single authority: the CIO's guidance, the operating-range
+        validation and the envelope's funding room all read this, so a
+        change to the owner's strategy moves all three together or
+        moves none of them.
+        """
+
+        return HardLimits(
+            minimum_cash_pct=self.minimum_cash_pct,
+            maximum_crypto_pct=self.max_crypto_pct,
+        )
 
     @property
     def cash_floor_pct(self) -> float:

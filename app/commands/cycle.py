@@ -62,10 +62,8 @@ from app.domain.daily_cycle import (
     no_action_permitted,
 )
 from app.domain.market_snapshot import MarketQuote
-from app.domain.strategic_allocation import (
-    StrategicAllocation,
-    portfolio_guidance_for,
-)
+from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.domain.strategic_allocation import portfolio_guidance_for
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.capital_policy_service import CapitalPolicyService
@@ -138,7 +136,7 @@ def _recorded_portfolio(
     weights: dict[str, float],
     cash_pct: float | None,
     total_value: float | None,
-    allocation: StrategicAllocation | None = None,
+    policy_reading: CapitalPolicyReading,
 ) -> RecordedPortfolio | None:
     """The account as this cycle read it, for a page that may not fetch.
 
@@ -158,12 +156,25 @@ def _recorded_portfolio(
     same one the store reads through, and it is also what makes these
     holdings joinable with the per-security courses recorded beside
     them — 17 rows sat next to 14 courses drawn from the same account.
+
+    **The plan shown here is the validated one, or none.**
+    `policy_reading` is the very reading the Capital Action Envelope
+    funds from, so the targets on the page, the ranges the CIO's
+    guidance quotes and the limits the envelope enforces are one
+    object. Before this, `InvestmentPolicyMapper` supplied the table
+    independently: `CapitalPolicyService` could refuse an allocation
+    totalling 105% while the mapper rendered those same 105% as the
+    investor's plan, and the refusal reached no reader at all.
     """
 
     if total_value is None:
         return None
 
     portfolio = brain.portfolio
+
+    allocation = (
+        policy_reading.policy.allocation if policy_reading.policy is not None else None
+    )
 
     holdings: list[RecordedHolding] = []
 
@@ -183,79 +194,134 @@ def _recorded_portfolio(
             )
         )
 
-    allocations: tuple[RecordedAllocation, ...] = ()
-    compliant: bool | None = None
+    # The account's own shape, measured from the portfolio and owing
+    # nothing to any policy. It survives a refused plan intact: an
+    # unreadable strategy is a fact about the strategy, not about the
+    # account, and erasing the account to report it would be a worse
+    # answer than the one being fixed.
+    measured = {
+        "stocks": portfolio.allocation.stocks,
+        "etfs": portfolio.allocation.etfs,
+        "crypto": portfolio.allocation.crypto,
+        "cash": portfolio.allocation.cash,
+    }
+
     guidance_stated = ""
     guidance_refused = ""
+    policy_refused = "" if allocation is not None else policy_reading.refused_because
+
+    if allocation is None:
+        # No validated plan, so no plan is shown: no target, no range,
+        # no standing, no total and no compliance judgment. The
+        # independently mapped `InvestmentPolicy` is *not* consulted as
+        # a substitute — it is the second authority this repairs, and
+        # it is what let a set of targets totalling 105% render as
+        # though the owner had stated it.
+        return RecordedPortfolio(
+            total_value=round(total_value, 2),
+            available_cash_usd=portfolio.available_cash_usd,
+            cash_pct=cash_pct,
+            holdings=holdings_by_security(holdings),
+            observed=_observed(portfolio),
+            allocations=tuple(
+                RecordedAllocation(
+                    asset=asset,
+                    current_pct=None if share is None else round(share, 2),
+                    target_pct=None,
+                    difference_pct=None,
+                )
+                for asset, share in measured.items()
+            ),
+            compliant=None,
+            allocation_policy_refused=policy_refused,
+        )
+
+    allocations = tuple(
+        RecordedAllocation(
+            asset=band.asset,
+            current_pct=(
+                None
+                if measured.get(band.asset) is None
+                else round(measured[band.asset], 2)  # type: ignore[arg-type]
+            ),
+            # The validated plan's own target, not a second reading of
+            # the same file: the table an investor sees is the object
+            # the envelope and the guidance were built from.
+            target_pct=round(band.target_pct, 2),
+            difference_pct=(
+                None
+                if measured.get(band.asset) is None
+                else round(measured[band.asset] - band.target_pct, 2)  # type: ignore[operator]
+            ),
+        )
+        for band in allocation.bands
+    )
+
+    compliant: bool | None = None
 
     policy = getattr(brain, "investment_policy", None)
 
     if policy is not None:
-        # Compared here because this is where both halves are in hand.
-        # The endpoint stays a pure projection, and the page calculates
-        # nothing.
-        analysis = PolicyAnalyzer().analyze(portfolio, policy)
-
-        allocations = tuple(
-            RecordedAllocation(
-                asset=item.asset,
-                current_pct=item.current,
-                target_pct=item.target,
-                difference_pct=item.difference,
-            )
-            for item in analysis.allocations
-        )
-        compliant = analysis.compliant
+        # Compliance against the investor's rebalance threshold, which
+        # `InvestmentPolicy` owns and this module must not restate.
+        # Reached only with a validated plan in hand.
+        compliant = PolicyAnalyzer().analyze(portfolio, policy).compliant
 
     # The CIO's allocation guidance, composed once — here, during the
     # cycle, from this cycle's own portfolio reading and the owner's
     # active policy. It names no security, sizes nothing and reads no
     # conviction: allocation drift authorizes no trade, and the object
     # has no access to a course through which it could suggest one.
-    if allocation is not None and allocations:
-        # Read from the allocations just recorded rather than from the
-        # portfolio a second time: one reading, one set of figures, and
-        # the guidance cannot disagree with the table it sits under.
-        current = {item.asset: item.current_pct for item in allocations}
+    #
+    # Read from the allocations just recorded rather than from the
+    # portfolio a second time: one reading, one set of figures, and the
+    # guidance cannot disagree with the table it sits under.
+    guidance = portfolio_guidance_for(
+        allocation,
+        {item.asset: item.current_pct for item in allocations},
+    )
 
-        guidance = portfolio_guidance_for(allocation, current)
+    guidance_stated = guidance.stated
+    guidance_refused = guidance.refused_because
 
-        guidance_stated = guidance.stated
-        guidance_refused = guidance.refused_because
+    by_asset = {item.asset: item for item in guidance.allocations}
 
-        by_asset = {item.asset: item for item in guidance.allocations}
-
-        allocations = tuple(
-            replace(
-                recorded,
-                minimum_pct=by_asset[recorded.asset].minimum_pct,
-                maximum_pct=by_asset[recorded.asset].maximum_pct,
-                standing=by_asset[recorded.asset].standing.value,
-                stated=by_asset[recorded.asset].stated,
-            )
-            if recorded.asset in by_asset
-            else recorded
-            for recorded in allocations
+    allocations = tuple(
+        replace(
+            recorded,
+            minimum_pct=by_asset[recorded.asset].minimum_pct,
+            maximum_pct=by_asset[recorded.asset].maximum_pct,
+            standing=by_asset[recorded.asset].standing.value,
+            stated=by_asset[recorded.asset].stated,
         )
+        if recorded.asset in by_asset
+        else recorded
+        for recorded in allocations
+    )
 
     return RecordedPortfolio(
         total_value=round(total_value, 2),
         available_cash_usd=portfolio.available_cash_usd,
         cash_pct=cash_pct,
         holdings=holdings_by_security(holdings),
-        observed=(
-            ""
-            if portfolio.last_sync is None
-            else (
-                "eToro account response received at "
-                f"{portfolio.last_sync.astimezone(UTC):%Y-%m-%d %H:%M} UTC "
-                "(receipt time; eToro states no account observation time)"
-            )
-        ),
+        observed=_observed(portfolio),
         allocations=allocations,
         compliant=compliant,
         allocation_guidance=guidance_stated,
         allocation_guidance_refused=guidance_refused,
+    )
+
+
+def _observed(portfolio: PortfolioSnapshot) -> str:
+    """The receipt-time wording from #223, said in one place."""
+
+    if portfolio.last_sync is None:
+        return ""
+
+    return (
+        "eToro account response received at "
+        f"{portfolio.last_sync.astimezone(UTC):%Y-%m-%d %H:%M} UTC "
+        "(receipt time; eToro states no account observation time)"
     )
 
 
@@ -600,13 +666,10 @@ async def run(
             weights,
             cash_pct,
             total_value,
-            # The owner's strategic allocation, from the same reading
-            # the envelope's policy came from — one policy, one cycle.
-            allocation=(
-                policy_reading.policy.allocation
-                if policy_reading.policy is not None
-                else None
-            ),
+            # The same reading the envelope's policy came from — one
+            # policy, one cycle. A refusal travels with it, so the page
+            # can state it rather than silently showing another plan.
+            policy_reading=policy_reading,
         )
 
         # Watched-but-unheld securities, evaluated through the very same

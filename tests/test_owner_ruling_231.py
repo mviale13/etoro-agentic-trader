@@ -40,11 +40,21 @@ from app.domain.capital_envelope import (
 from app.domain.capital_policy import CapitalPolicy, ReducePolicy
 from app.domain.company_facts import CompanyFacts
 from app.domain.provenance import Provenance
-from app.domain.strategic_allocation import AllocationBand, StrategicAllocation
+from app.domain.strategic_allocation import (
+    AllocationBand,
+    HardLimits,
+    StrategicAllocation,
+)
 from app.domain.token_fact_validation import ESTABLISHMENT_RULE
 from app.domain.token_facts import TokenFact, TokenFactStanding
 
 MOMENT = datetime(2026, 8, 20, 14, 29, 38, tzinfo=UTC)
+
+#: The active policy's hard limits — minimum cash and maximum crypto.
+#: The strategy file states these once and every reader receives them;
+#: they are not constants of the allocation module, which is precisely
+#: the second authority this amendment removed.
+OWNER_LIMITS = HardLimits(minimum_cash_pct=15.0, maximum_crypto_pct=40.0)
 
 #: The owner's strategic allocation of 2026-08-24, as the tracked
 #: strategy states it: four targets totalling 100%, each inside its own
@@ -62,6 +72,10 @@ OWNER_ALLOCATION = StrategicAllocation(
     cash=AllocationBand(
         asset="cash", target_pct=25.0, minimum_pct=15.0, maximum_pct=45.0
     ),
+    # The hard limits the active policy states — not a second copy of
+    # them. These are what `minimum_cash_pct` and `maximum_crypto_pct`
+    # say in the strategy document this suite loads.
+    limits=OWNER_LIMITS,
 )
 
 
@@ -212,9 +226,15 @@ def policy() -> CapitalPolicy:
         standard_initial_position_pct=3.0,
         max_add_weight_change_pct=2.0,
         max_single_position_pct=20.0,
-        max_crypto_pct=65.0,
-        target_cash_pct=5.0,
-        minimum_cash_pct=40.0,
+        # The owner's own limits, and the same pair `OWNER_ALLOCATION`
+        # was validated against. Carrying the pre-ruling 65/40 here
+        # while the allocation held 40/15 is exactly the two-authority
+        # state `CapitalPolicy` now refuses — a policy cannot fund
+        # against one hard limit while its plan was checked against
+        # another.
+        max_crypto_pct=40.0,
+        target_cash_pct=25.0,
+        minimum_cash_pct=15.0,
         price_max_age_minutes=15.0,
         portfolio_max_age_minutes=15.0,
         maximum_acceptable_drawdown_pct=20.0,

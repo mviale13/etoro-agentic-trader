@@ -19,8 +19,6 @@ import json
 import pytest
 
 from app.domain.strategic_allocation import (
-    HARD_MAXIMUM_CRYPTO_PCT,
-    HARD_MINIMUM_CASH_PCT,
     AllocationBand,
     AllocationStanding,
     StrategicAllocation,
@@ -29,12 +27,19 @@ from app.domain.strategic_allocation import (
 )
 from tests.test_capital_action_envelope import (
     OWNER_ALLOCATION,
+    OWNER_LIMITS,
     capacity,
     envelope,
     policy,
     reading_for,
     strategy_document,
 )
+
+#: The hard limits, read from the active policy rather than from this
+#: module. Every assertion below quotes these, so a test cannot pass by
+#: agreeing with a number the production path no longer holds.
+FLOOR = OWNER_LIMITS.minimum_cash_pct
+CEILING = OWNER_LIMITS.maximum_crypto_pct
 
 #: The live account as the last completed cycle recorded it.
 LIVE = {"stocks": 10.3, "etfs": 0.0, "crypto": 35.63, "cash": 54.07}
@@ -65,6 +70,7 @@ def test_targets_that_do_not_total_one_hundred_refuse_by_name() -> None:
             cash=AllocationBand(
                 asset="cash", target_pct=20.0, minimum_pct=15.0, maximum_pct=45.0
             ),
+            limits=OWNER_LIMITS,
         )
 
     assert "must total 100%" in str(refused.value)
@@ -89,6 +95,7 @@ def test_a_band_may_not_contradict_a_hard_limit() -> None:
             cash=AllocationBand(
                 asset="cash", target_pct=25.0, minimum_pct=10.0, maximum_pct=45.0
             ),
+            limits=OWNER_LIMITS,
         )
 
     assert "hard minimum-cash limit" in str(cash.value)
@@ -101,6 +108,7 @@ def test_a_band_may_not_contradict_a_hard_limit() -> None:
                 asset="crypto", target_pct=25.0, minimum_pct=15.0, maximum_pct=65.0
             ),
             cash=band("cash"),
+            limits=OWNER_LIMITS,
         )
 
     assert "hard maximum-crypto limit" in str(crypto.value)
@@ -171,8 +179,8 @@ def test_the_cash_target_and_the_cash_floor_are_distinct() -> None:
     live = policy()
 
     assert live.target_cash_pct == 25.0
-    assert live.minimum_cash_pct == HARD_MINIMUM_CASH_PCT
-    assert live.cash_floor_pct == HARD_MINIMUM_CASH_PCT
+    assert live.minimum_cash_pct == FLOOR
+    assert live.cash_floor_pct == FLOOR
     assert live.cash_floor_pct != live.target_cash_pct
 
 
@@ -205,7 +213,7 @@ def test_deployment_below_the_hard_floor_is_impossible() -> None:
 def test_crypto_above_target_but_inside_range_is_permitted() -> None:
     """Acceptance 6: 35.63% forces no reduction."""
 
-    reading = guidance_for(band("crypto"), LIVE["crypto"])
+    reading = guidance_for(band("crypto"), LIVE["crypto"], OWNER_LIMITS)
 
     assert reading.standing is AllocationStanding.WITHIN_RANGE
     assert "Above the 25% strategic crypto target" in reading.stated
@@ -214,10 +222,10 @@ def test_crypto_above_target_but_inside_range_is_permitted() -> None:
 
 
 def test_crypto_above_the_hard_limit_uses_the_reduce_floor_wording() -> None:
-    reading = guidance_for(band("crypto"), 45.0)
+    reading = guidance_for(band("crypto"), 45.0, OWNER_LIMITS)
 
     assert reading.standing is AllocationStanding.ABOVE_RANGE
-    assert f"{HARD_MAXIMUM_CRYPTO_PCT:g}% hard maximum-crypto" in reading.stated
+    assert f"{CEILING:g}% hard maximum-crypto" in reading.stated
     assert "REDUCE policy floor" in reading.stated
     assert "never a full exit" in reading.stated
 
@@ -263,7 +271,7 @@ def test_the_portfolio_guidance_says_what_the_ruling_requires() -> None:
 
 
 def test_cash_below_target_is_permitted_not_non_compliant() -> None:
-    reading = guidance_for(band("cash"), 20.0)
+    reading = guidance_for(band("cash"), 20.0, OWNER_LIMITS)
 
     assert reading.standing is AllocationStanding.WITHIN_RANGE
     assert "permitted, not non-compliant" in reading.stated
@@ -271,7 +279,7 @@ def test_cash_below_target_is_permitted_not_non_compliant() -> None:
 
 
 def test_cash_below_the_hard_floor_is_a_breach_with_no_capacity() -> None:
-    reading = guidance_for(band("cash"), 12.0)
+    reading = guidance_for(band("cash"), 12.0, OWNER_LIMITS)
 
     assert reading.standing is AllocationStanding.BELOW_RANGE
     assert "hard minimum-cash limit" in reading.stated
@@ -281,7 +289,7 @@ def test_cash_below_the_hard_floor_is_a_breach_with_no_capacity() -> None:
 def test_an_unmeasured_allocation_refuses_guidance() -> None:
     """Never a substituted zero, and never a difference of zero."""
 
-    reading = guidance_for(band("stocks"), None)
+    reading = guidance_for(band("stocks"), None, OWNER_LIMITS)
 
     assert reading.standing is AllocationStanding.UNMEASURED
     assert reading.current_pct is None
@@ -298,7 +306,7 @@ def test_an_unmeasured_allocation_refuses_guidance() -> None:
 
 
 def test_a_standing_carries_its_range_and_its_difference() -> None:
-    reading = guidance_for(band("stocks"), LIVE["stocks"])
+    reading = guidance_for(band("stocks"), LIVE["stocks"], OWNER_LIMITS)
 
     assert reading.current_pct == 10.3
     assert reading.target_pct == 35.0

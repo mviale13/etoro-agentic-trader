@@ -8,8 +8,13 @@ did not have, and the whole module exists to keep them apart:
 - **An operating range permits tactical flexibility.** Sitting outside a
   target but inside its range is a normal state, not a breach.
 - **A hard limit is the only allocation boundary that blocks an
-  action.** Minimum cash 15%, maximum crypto 40%, maximum single
-  position 20%.
+  action** — and it has exactly one author. The active policy states
+  the minimum cash and the maximum crypto; this module holds neither
+  as a constant and receives both as `HardLimits`, so the boundary the
+  CIO quotes is the boundary the Capital Action Envelope funds
+  against. A copy here would let one owner edit move the envelope and
+  leave the guidance quoting the old figure, with nothing able to see
+  the disagreement.
 
 The failure this replaces made all three one thing. `target_cash_pct`
 was 5 beside `minimum_cash_pct` 40 — two incompatible statements — and
@@ -45,11 +50,37 @@ ASSET_LABELS = {
     "cash": "cash",
 }
 
-#: The hard limits, which are not policy inputs but boundaries every
-#: policy is checked against. They block actions; nothing else here
-#: does.
-HARD_MINIMUM_CASH_PCT = 15.0
-HARD_MAXIMUM_CRYPTO_PCT = 40.0
+
+@dataclass(frozen=True, slots=True)
+class HardLimits:
+    """The two allocation limits that block an action, as policy states them.
+
+    **These were module constants — 15.0 and 40.0 — and that was a
+    second authority.** The active strategy file already states a
+    minimum cash and a maximum crypto, and the Capital Action Envelope
+    funds against *those*; a copy here meant one owner edit could move
+    the envelope's floor and leave the CIO's guidance quoting the old
+    number, with nothing in the code able to see the disagreement.
+
+    So the limits arrive from the same validated reading the envelope
+    uses and are never defaulted: this object has no fallback values,
+    and `StrategicAllocation` requires one, so no production path can
+    reach a hard limit this platform invented.
+    """
+
+    minimum_cash_pct: float
+    maximum_crypto_pct: float
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("minimum_cash_pct", self.minimum_cash_pct),
+            ("maximum_crypto_pct", self.maximum_crypto_pct),
+        ):
+            if not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ValueError(f"the hard {name} is not a finite number")
+
+            if not 0.0 <= float(value) <= 100.0:
+                raise ValueError(f"the hard {name} is outside 0..100")
 
 
 class AllocationStanding(StrEnum):
@@ -129,6 +160,12 @@ class StrategicAllocation:
     crypto: AllocationBand
     cash: AllocationBand
 
+    #: The active policy's own hard limits, required and never
+    #: defaulted. The ranges above are validated against *these*, so
+    #: the boundary the guidance quotes is the boundary the envelope
+    #: funds against — by construction rather than by coincidence.
+    limits: HardLimits
+
     def __post_init__(self) -> None:
         total = sum(band.target_pct for band in self.bands)
 
@@ -142,31 +179,34 @@ class StrategicAllocation:
 
         # The bands are checked against the hard limits, never the other
         # way round: a plan may sit anywhere inside them and may not
-        # describe a state the limits forbid.
-        if self.cash.minimum_pct < HARD_MINIMUM_CASH_PCT:
+        # describe a state the limits forbid. A range that contradicts
+        # the active limit refuses the whole plan by name — this platform
+        # does not pick whichever of the two numbers it prefers.
+        floor = self.limits.minimum_cash_pct
+        ceiling = self.limits.maximum_crypto_pct
+
+        if self.cash.minimum_pct < floor:
             raise ValueError(
                 f"the cash range's minimum ({self.cash.minimum_pct:g}%) is "
-                f"below the {HARD_MINIMUM_CASH_PCT:g}% hard minimum-cash limit"
+                f"below the {floor:g}% hard minimum-cash limit"
             )
 
-        if self.cash.target_pct < HARD_MINIMUM_CASH_PCT:
+        if self.cash.target_pct < floor:
             raise ValueError(
                 f"the strategic cash target ({self.cash.target_pct:g}%) is "
-                f"below the {HARD_MINIMUM_CASH_PCT:g}% hard minimum-cash limit"
+                f"below the {floor:g}% hard minimum-cash limit"
             )
 
-        if self.crypto.maximum_pct > HARD_MAXIMUM_CRYPTO_PCT:
+        if self.crypto.maximum_pct > ceiling:
             raise ValueError(
                 f"the crypto range's maximum ({self.crypto.maximum_pct:g}%) "
-                f"exceeds the {HARD_MAXIMUM_CRYPTO_PCT:g}% hard maximum-crypto "
-                "limit"
+                f"exceeds the {ceiling:g}% hard maximum-crypto limit"
             )
 
-        if self.crypto.target_pct > HARD_MAXIMUM_CRYPTO_PCT:
+        if self.crypto.target_pct > ceiling:
             raise ValueError(
                 f"the strategic crypto target ({self.crypto.target_pct:g}%) "
-                f"exceeds the {HARD_MAXIMUM_CRYPTO_PCT:g}% hard maximum-crypto "
-                "limit"
+                f"exceeds the {ceiling:g}% hard maximum-crypto limit"
             )
 
     @property
@@ -209,6 +249,7 @@ class AllocationGuidance:
 def guidance_for(
     band: AllocationBand,
     current_pct: float | None,
+    limits: HardLimits,
 ) -> AllocationGuidance:
     """One asset class's standing and its worded guidance.
 
@@ -219,6 +260,9 @@ def guidance_for(
     permitted and forces no reduction, and crypto above the hard
     maximum is a breach whose remedy is the existing REDUCE policy
     floor rather than an exit.
+
+    `limits` is required, so every hard-limit figure a reader sees was
+    supplied by the active policy rather than remembered here.
     """
 
     standing = band.standing_of(current_pct)
@@ -250,7 +294,7 @@ def guidance_for(
         maximum_pct=band.maximum_pct,
         difference_pct=round(current_pct - band.target_pct, 2),
         standing=standing,
-        stated=_stated(band, current_pct, standing),
+        stated=_stated(band, current_pct, standing, limits),
     )
 
 
@@ -258,12 +302,13 @@ def _stated(
     band: AllocationBand,
     current_pct: float,
     standing: AllocationStanding,
+    limits: HardLimits,
 ) -> str:
     if band.asset == "cash":
-        return _cash_stated(band, current_pct, standing)
+        return _cash_stated(band, current_pct, standing, limits)
 
     if band.asset == "crypto":
-        return _crypto_stated(band, current_pct, standing)
+        return _crypto_stated(band, current_pct, standing, limits)
 
     if standing is AllocationStanding.BELOW_RANGE:
         return (
@@ -284,6 +329,7 @@ def _cash_stated(
     band: AllocationBand,
     current_pct: float,
     standing: AllocationStanding,
+    limits: HardLimits,
 ) -> str:
     """Cash, where the target and the floor mean opposite things.
 
@@ -292,11 +338,16 @@ def _cash_stated(
     breach. Calling the first one non-compliant is what made the
     account look wrong for holding the cash its own plan allows it to
     deploy.
+
+    Every figure named here is the policy's own — the same
+    `minimum_cash_pct` the envelope's funding room is measured above.
     """
 
-    if current_pct < HARD_MINIMUM_CASH_PCT:
+    floor = limits.minimum_cash_pct
+
+    if current_pct < floor:
         return (
-            f"Below the {HARD_MINIMUM_CASH_PCT:g}% hard minimum-cash limit. "
+            f"Below the {floor:g}% hard minimum-cash limit. "
             "This is a limit breach: no OPEN or ADD capacity exists while it "
             "stands."
         )
@@ -305,14 +356,14 @@ def _cash_stated(
         return (
             "Above the operating range. This cash is available to fund "
             "independently qualified opportunities while preserving the "
-            f"{HARD_MINIMUM_CASH_PCT:g}% hard floor; holding it is not a "
+            f"{floor:g}% hard floor; holding it is not a "
             "fault, and deploying it is not required."
         )
 
     if current_pct < band.target_pct:
         return (
             f"Below the {band.target_pct:g}% strategic cash target and above "
-            f"the {HARD_MINIMUM_CASH_PCT:g}% hard floor. This is permitted, "
+            f"the {floor:g}% hard floor. This is permitted, "
             "not non-compliant: the target is a destination, and only the "
             "floor blocks deployment."
         )
@@ -324,12 +375,15 @@ def _crypto_stated(
     band: AllocationBand,
     current_pct: float,
     standing: AllocationStanding,
+    limits: HardLimits,
 ) -> str:
     """Crypto, where above the target is not a reduction instruction."""
 
-    if current_pct > HARD_MAXIMUM_CRYPTO_PCT:
+    ceiling = limits.maximum_crypto_pct
+
+    if current_pct > ceiling:
         return (
-            f"Above the {HARD_MAXIMUM_CRYPTO_PCT:g}% hard maximum-crypto "
+            f"Above the {ceiling:g}% hard maximum-crypto "
             "limit. This is a limit breach; any reduction follows the "
             "existing REDUCE policy floor, which is the minimum that "
             "restores the limit and never a full exit."
@@ -412,7 +466,8 @@ def portfolio_guidance_for(
     """
 
     guidance = tuple(
-        guidance_for(band, current.get(band.asset)) for band in allocation.bands
+        guidance_for(band, current.get(band.asset), allocation.limits)
+        for band in allocation.bands
     )
 
     measured = [
@@ -432,11 +487,14 @@ def portfolio_guidance_for(
 
     return PortfolioAllocationGuidance(
         allocations=guidance,
-        stated=_portfolio_stated(guidance),
+        stated=_portfolio_stated(guidance, allocation.limits),
     )
 
 
-def _portfolio_stated(guidance: tuple[AllocationGuidance, ...]) -> str:
+def _portfolio_stated(
+    guidance: tuple[AllocationGuidance, ...],
+    limits: HardLimits,
+) -> str:
     """One paragraph, assembled only from the standings themselves.
 
     Every clause is licensed by a standing this platform measured, and
@@ -469,22 +527,22 @@ def _portfolio_stated(guidance: tuple[AllocationGuidance, ...]) -> str:
             )
         elif crypto.standing is AllocationStanding.ABOVE_RANGE:
             clauses.append(
-                f"crypto is above its {HARD_MAXIMUM_CRYPTO_PCT:g}% hard limit"
+                f"crypto is above its {limits.maximum_crypto_pct:g}% hard limit"
             )
 
     cash = by_asset.get("cash")
 
     if cash is not None and cash.current_pct is not None:
-        if cash.current_pct < HARD_MINIMUM_CASH_PCT:
+        if cash.current_pct < limits.minimum_cash_pct:
             clauses.append(
-                f"cash is below its {HARD_MINIMUM_CASH_PCT:g}% hard floor, so "
+                f"cash is below its {limits.minimum_cash_pct:g}% hard floor, so "
                 "no new deployment is available"
             )
         elif cash.standing is AllocationStanding.ABOVE_RANGE:
             clauses.append(
                 "cash is above its operating range and may fund "
                 "independently qualified opportunities while preserving the "
-                f"{HARD_MINIMUM_CASH_PCT:g}% hard floor"
+                f"{limits.minimum_cash_pct:g}% hard floor"
             )
         elif cash.current_pct < cash.target_pct:
             clauses.append(

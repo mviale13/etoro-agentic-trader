@@ -216,7 +216,12 @@ class AllocationResponse(BaseModel):
 
     asset: str
     current_pct: float | None
-    target_pct: float
+
+    #: Null exactly where the allocation policy was refused. The
+    #: measured share above belongs to the account and survives; a
+    #: target belongs to the plan, and none is stated where none was
+    #: validated.
+    target_pct: float | None
 
     #: Null where the comparison could not be made. An unmeasured
     #: difference is not a difference of zero, and is never credited as
@@ -253,6 +258,12 @@ class RecordedPortfolioResponse(BaseModel):
     allocation_guidance: str = ""
     allocation_guidance_refused: str = ""
 
+    #: Why the allocation *policy* could not be read, verbatim. Where
+    #: this carries text, no target, range, standing or compliance
+    #: judgment above it may be treated as the investor's plan —
+    #: there is none.
+    allocation_policy_refused: str = ""
+
     @classmethod
     def of(cls, portfolio: RecordedPortfolio) -> RecordedPortfolioResponse:
         return cls(
@@ -284,6 +295,7 @@ class RecordedPortfolioResponse(BaseModel):
             compliant=portfolio.compliant,
             allocation_guidance=portfolio.allocation_guidance,
             allocation_guidance_refused=portfolio.allocation_guidance_refused,
+            allocation_policy_refused=portfolio.allocation_policy_refused,
         )
 
 

@@ -401,6 +401,7 @@ def _encode_portfolio(portfolio: RecordedPortfolio | None) -> dict[str, Any] | N
         "compliant": portfolio.compliant,
         "allocation_guidance": portfolio.allocation_guidance,
         "allocation_guidance_refused": portfolio.allocation_guidance_refused,
+        "allocation_policy_refused": portfolio.allocation_policy_refused,
         "holdings": [
             {
                 "symbol": holding.symbol,
@@ -467,6 +468,7 @@ def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
         ),
         allocation_guidance=str(raw.get("allocation_guidance", "")),
         allocation_guidance_refused=str(raw.get("allocation_guidance_refused", "")),
+        allocation_policy_refused=str(raw.get("allocation_policy_refused", "")),
         holdings=holdings_by_security(
             RecordedHolding(
                 symbol=str(item["symbol"]),
@@ -487,7 +489,15 @@ def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
                     if item.get("current_pct") is not None
                     else None
                 ),
-                target_pct=float(item["target_pct"]),
+                # Absent or null means the allocation policy stated no
+                # target — a record written under a refused plan. Every
+                # historical line carries a number here and decodes to
+                # exactly that number, unchanged.
+                target_pct=(
+                    float(item["target_pct"])
+                    if item.get("target_pct") is not None
+                    else None
+                ),
                 difference_pct=(
                     float(item["difference_pct"])
                     if item.get("difference_pct") is not None
