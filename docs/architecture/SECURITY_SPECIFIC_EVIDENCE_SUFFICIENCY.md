@@ -336,3 +336,29 @@ acquisition, the one fact that distinguishes a refusal from a gap.
 Nothing here is implemented. No provider or model call was made, no
 funded cycle run, and no quality, valuation, safety, portfolio-fit,
 allocation or capital-envelope policy was touched.
+
+---
+
+## Owner ruling — 2026-08-24
+
+Recorded on PR #249, against the measurement above.
+
+1. **Conclusion B accepted** — typed coverage ready, decision mapping
+   not ready.
+2. **`QualityCoverage.earned / available` is rejected as a coverage
+   measure**, because `earned` measures *performance*. It is not a
+   weaker coverage signal; it is a different quantity.
+3. **`available / expected` is accepted** as the existing honest
+   breadth pair.
+4. **No numeric score and no thresholds are approved.**
+5. **The existing 35 / 60 / 75 evidence thresholds have no authority
+   over a coverage fraction.** They were fitted to a confidence blend
+   and do not transfer.
+6. **Breadth, source authority, refusal state and business performance
+   must remain separate.** None may be averaged into another.
+7. **Missing information may constrain progression and never lowers
+   company quality.**
+8. **The next prerequisite is durable acquisition-outcome
+   persistence.**
+9. **No backfill, re-observation or decision change is authorized by
+   this ruling.**
