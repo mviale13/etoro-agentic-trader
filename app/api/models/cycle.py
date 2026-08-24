@@ -212,16 +212,32 @@ class HoldingResponse(BaseModel):
 
 
 class AllocationResponse(BaseModel):
-    """One asset class against the investor's own target."""
+    """One asset class against the investor's own target and range."""
 
     asset: str
     current_pct: float | None
-    target_pct: float
+
+    #: Null exactly where the allocation policy was refused. The
+    #: measured share above belongs to the account and survives; a
+    #: target belongs to the plan, and none is stated where none was
+    #: validated.
+    target_pct: float | None
 
     #: Null where the comparison could not be made. An unmeasured
     #: difference is not a difference of zero, and is never credited as
     #: sitting on target.
     difference_pct: float | None
+
+    #: The operating range the target sits inside — tactical latitude,
+    #: not a limit. Null on a record written before the ranges existed.
+    minimum_pct: float | None = None
+    maximum_pct: float | None = None
+
+    #: Where the allocation sits against that range, and the CIO's
+    #: worded guidance for it. Empty on a pre-ruling record, which then
+    #: carries no standing rather than a guessed one.
+    standing: str = ""
+    stated: str = ""
 
 
 class RecordedPortfolioResponse(BaseModel):
@@ -236,6 +252,17 @@ class RecordedPortfolioResponse(BaseModel):
 
     #: Null where any required comparison was unmeasured.
     compliant: bool | None
+
+    #: The CIO's account of the account's shape, composed during the
+    #: cycle and carried verbatim. Exactly one of these is present.
+    allocation_guidance: str = ""
+    allocation_guidance_refused: str = ""
+
+    #: Why the allocation *policy* could not be read, verbatim. Where
+    #: this carries text, no target, range, standing or compliance
+    #: judgment above it may be treated as the investor's plan —
+    #: there is none.
+    allocation_policy_refused: str = ""
 
     @classmethod
     def of(cls, portfolio: RecordedPortfolio) -> RecordedPortfolioResponse:
@@ -258,10 +285,17 @@ class RecordedPortfolioResponse(BaseModel):
                     current_pct=item.current_pct,
                     target_pct=item.target_pct,
                     difference_pct=item.difference_pct,
+                    minimum_pct=item.minimum_pct,
+                    maximum_pct=item.maximum_pct,
+                    standing=item.standing,
+                    stated=item.stated,
                 )
                 for item in portfolio.allocations
             ],
             compliant=portfolio.compliant,
+            allocation_guidance=portfolio.allocation_guidance,
+            allocation_guidance_refused=portfolio.allocation_guidance_refused,
+            allocation_policy_refused=portfolio.allocation_policy_refused,
         )
 
 

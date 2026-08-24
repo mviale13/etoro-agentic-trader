@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import type {
   CycleCourse,
   CycleReview,
+  RecordedAllocation,
   RecordedPortfolio,
 } from "@/lib/api/cycle-review";
 
@@ -296,6 +297,142 @@ export function blockedCases(candidates: CycleCourse[]): CycleCourse[] {
 }
 
 /** The conviction, or the honest reason there is no figure to show. */
+/**
+ * What each asset class is called in the table.
+ *
+ * CSS `capitalize` rendered the field name "etfs" as "Etfs" — it
+ * uppercases the first letter of a word and leaves the rest, which is
+ * wrong for an initialism. The backend's own sentences already say
+ * "ETFs", and this keeps the table agreeing with them.
+ */
+function assetLabel(asset: string): string {
+  const labels: Record<string, string> = {
+    stocks: "Stocks",
+    etfs: "ETFs",
+    crypto: "Crypto",
+    cash: "Cash",
+  };
+
+  return labels[asset] ?? asset;
+}
+
+/**
+ * Which of the three strategy cards this review earns.
+ *
+ * `plan` renders the targets, ranges, standings, total and compliance;
+ * `policy-refused` renders the backend's refusal and the measured
+ * account with none of those; `no-comparison` is a review that
+ * recorded no allocation at all.
+ *
+ * Exported because it *is* the decision — the component branches on
+ * this and nothing else, so a test of this function is a test of what
+ * the page shows. The defect it exists to prevent: a refused policy
+ * rendering an independently mapped plan, targets and all.
+ */
+export type StrategyCardShape = "plan" | "policy-refused" | "no-comparison";
+
+export function strategyCardShape(
+  portfolio: RecordedPortfolio | null,
+): StrategyCardShape {
+  if (portfolio?.allocationPolicyRefused) {
+    return "policy-refused";
+  }
+
+  if (!portfolio || portfolio.allocations.length === 0) {
+    return "no-comparison";
+  }
+
+  return "plan";
+}
+
+/**
+ * The four targets added up, or nothing where any target is missing.
+ *
+ * A missing target is not zero, so it cannot be summed into a total.
+ * Returning null renders a dash — the same absence the rest of this
+ * table uses — rather than a figure the plan never stated.
+ */
+export function targetTotal(allocations: RecordedAllocation[]): number | null {
+  if (allocations.some((item) => item.targetPct === null)) {
+    return null;
+  }
+
+  return allocations.reduce((sum, item) => sum + (item.targetPct ?? 0), 0);
+}
+
+/** The operating range as the investor reads it, or a dash. */
+function operatingRange(allocation: RecordedAllocation): string {
+  if (allocation.minimumPct === null || allocation.maximumPct === null) {
+    return "\u2014";
+  }
+
+  return `${allocation.minimumPct}\u2013${allocation.maximumPct}%`;
+}
+
+/** The standing in the investor's words. Never a colour-coded verdict. */
+function standingLabel(standing: string): string {
+  const labels: Record<string, string> = {
+    below_range: "Below range",
+    within_range: "Within range",
+    above_range: "Above range",
+    unmeasured: "Not measured",
+  };
+
+  return labels[standing] ?? "\u2014";
+}
+
+/**
+ * Why there is no strategic plan to compare against, said once.
+ *
+ * The backend's own sentence, verbatim. This component states no
+ * consequence of its own and repairs nothing: a strategy the platform
+ * could not validate is reported as unvalidated, and the alternative —
+ * which shipped before this — was a table of targets no owner stated.
+ */
+function PolicyRefusal({ reason }: { reason: string }) {
+  return (
+    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <p className="text-xs uppercase tracking-[0.14em] text-amber-700">
+        No strategic allocation was applied
+      </p>
+
+      <p className="mt-1 text-sm leading-6 text-slate-800">{reason}</p>
+
+      <p className="mt-2 text-xs leading-5 text-slate-600">
+        No targets, operating ranges, standings or compliance judgment are
+        shown, because this review validated no plan to state them from.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The CIO's account of the account's shape.
+ *
+ * Rendered from the completed cycle's own record — this component
+ * composes nothing. It is guidance about allocation and never an
+ * instruction: it names no security, proposes no trade and sizes
+ * nothing, because allocation drift authorizes none of those.
+ */
+function AllocationGuidance({ portfolio }: { portfolio: RecordedPortfolio }) {
+  const text =
+    portfolio.allocationGuidance || portfolio.allocationGuidanceRefused;
+
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+        What the CIO says about this shape
+      </p>
+
+      <p className="mt-1 text-sm leading-6 text-slate-800">{text}</p>
+    </div>
+  );
+}
+
 export function convictionCell(candidate: CycleCourse): string {
   if (candidate.conviction === null) {
     return candidate.convictionBasis || "Not stated";
@@ -556,7 +693,9 @@ export function StrategyCard({
 }: {
   portfolio: RecordedPortfolio | null;
 }) {
-  if (!portfolio || portfolio.allocations.length === 0) {
+  const shape = strategyCardShape(portfolio);
+
+  if (portfolio === null || shape === "no-comparison") {
     return (
       <section className={CARD}>
         <h2 className={HEAD}>Your portfolio against your strategy</h2>
@@ -565,6 +704,59 @@ export function StrategyCard({
           This review recorded no comparison against your Investment Policy, so
           none is shown.
         </p>
+      </section>
+    );
+  }
+
+  // No validated allocation policy, so no plan is shown: the refusal in
+  // the backend's own words, and the account as this review measured it.
+  // Nothing here reconstructs a target, a range, a standing, a total or
+  // a compliance judgment — there is no plan to state one from.
+  if (shape === "policy-refused") {
+    return (
+      <section className={CARD}>
+        <h2 className={HEAD}>Your portfolio against your strategy</h2>
+
+        <PolicyRefusal reason={portfolio.allocationPolicyRefused} />
+
+        {portfolio.allocations.length > 0 ? (
+          <>
+            <p className="mt-4 text-xs uppercase tracking-[0.14em] text-slate-500">
+              What this review measured
+            </p>
+
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[320px] border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className={TH}>Allocation</th>
+                    <th className={TH}>Now</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {portfolio.allocations.map((allocation) => (
+                    <tr
+                      className="border-b border-slate-100"
+                      key={allocation.asset}
+                    >
+                      <td className={`${CELL} text-slate-950`}>
+                        {assetLabel(allocation.asset)}
+                      </td>
+                      <td className={CELL}>{percent(allocation.currentPct)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              These are measurements of your account. They are shown without a
+              target because your strategy states none that this review could
+              validate.
+            </p>
+          </>
+        ) : null}
       </section>
     );
   }
@@ -589,27 +781,51 @@ export function StrategyCard({
             <tr className="border-b border-slate-200">
               <th className={TH}>Allocation</th>
               <th className={TH}>Now</th>
-              <th className={TH}>Target</th>
-              <th className={TH}>Difference</th>
+              <th className={TH}>Strategic target</th>
+              <th className={TH}>Operating range</th>
+              <th className={TH}>Standing</th>
             </tr>
           </thead>
 
           <tbody>
             {portfolio.allocations.map((allocation) => (
               <tr className="border-b border-slate-100" key={allocation.asset}>
-                <td className={`${CELL} capitalize text-slate-950`}>
-                  {allocation.asset}
+                <td className={`${CELL} text-slate-950`}>
+                  {assetLabel(allocation.asset)}
                 </td>
                 <td className={CELL}>{percent(allocation.currentPct)}</td>
                 <td className={CELL}>{percent(allocation.targetPct)}</td>
-                <td className={CELL}>
-                  {signedPercent(allocation.differencePct)}
-                </td>
+                <td className={CELL}>{operatingRange(allocation)}</td>
+                <td className={CELL}>{standingLabel(allocation.standing)}</td>
               </tr>
             ))}
           </tbody>
+
+          {/* The targets are a plan, so the page shows that they add
+              up. A set of targets totalling anything but 100% is a
+              broken plan, and the reader is the one who should see it
+              — this account rendered 0/0/0/5 for as long as the mapper
+              was allowed to invent three of the four.
+
+              Reached only with a validated plan in hand, and it never
+              sums a missing target into a total: a refused policy has
+              already returned above, and a "Total 0%" would be the
+              same invention under a different name. */}
+          <tfoot>
+            <tr>
+              <td className={`${CELL} font-semibold text-slate-950`}>Total</td>
+              <td className={CELL} />
+              <td className={`${CELL} font-semibold text-slate-950`}>
+                {percent(targetTotal(portfolio.allocations))}
+              </td>
+              <td className={CELL} />
+              <td className={CELL} />
+            </tr>
+          </tfoot>
         </table>
       </div>
+
+      <AllocationGuidance portfolio={portfolio} />
 
       {portfolio.allocations.some((a) => a.differencePct === null) ? (
         <p className="mt-3 text-xs leading-5 text-slate-500">

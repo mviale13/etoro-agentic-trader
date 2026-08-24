@@ -29,6 +29,8 @@ import math
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.domain.strategic_allocation import HardLimits, StrategicAllocation
+
 
 class ReducePolicy(StrEnum):
     """What a REDUCE envelope may compute. v1 has exactly one member."""
@@ -70,6 +72,13 @@ class CapitalPolicy:
     security_risk_high_max_total_pct: float
     security_risk_severe_max_total_pct: float
     security_risk_unmeasured_max_total_pct: float
+
+    #: The owner's strategic allocation: four targets totalling 100%,
+    #: each inside its own operating range, validated as one plan.
+    #: Carried so allocation guidance and the funding gate read the
+    #: same policy — and required, because a policy without it is the
+    #: state that rendered 0/0/0/5.
+    allocation: StrategicAllocation
 
     #: Where this policy came from and which exact decision-bearing
     #: values it carried — the pair travels with every envelope.
@@ -144,16 +153,54 @@ class CapitalPolicy:
                 "the ruling requires SECURITY_RISK_UNMEASURED <= SECURITY_RISK_HIGH"
             )
 
-    @property
-    def cash_floor_pct(self) -> float:
-        """CAPITAL_ACTION_CASH_FLOOR_PCT = max(target, minimum).
+        # One hard-limit authority, enforced rather than trusted. The
+        # allocation's ranges were validated against `limits`, and the
+        # envelope funds against `minimum_cash_pct` / `max_crypto_pct`.
+        # If those ever came from two places, this refuses by name — it
+        # does not pick whichever number it likes better.
+        if self.allocation.limits != self.hard_limits:
+            raise ValueError(
+                "the allocation was validated against a different hard limit "
+                "than the envelope funds against: allocation states minimum "
+                f"cash {self.allocation.limits.minimum_cash_pct:g}% and "
+                f"maximum crypto {self.allocation.limits.maximum_crypto_pct:g}%, "
+                f"the policy states {self.minimum_cash_pct:g}% and "
+                f"{self.max_crypto_pct:g}%"
+            )
 
-        40.0 under the currently declared strategy — the stricter of
-        the two cash statements the owner made, because capital freed
-        below either one was reserved for something else.
+    @property
+    def hard_limits(self) -> HardLimits:
+        """The two allocation limits that block an action.
+
+        The single authority: the CIO's guidance, the operating-range
+        validation and the envelope's funding room all read this, so a
+        change to the owner's strategy moves all three together or
+        moves none of them.
         """
 
-        return max(self.target_cash_pct, self.minimum_cash_pct)
+        return HardLimits(
+            minimum_cash_pct=self.minimum_cash_pct,
+            maximum_crypto_pct=self.max_crypto_pct,
+        )
+
+    @property
+    def cash_floor_pct(self) -> float:
+        """The hard minimum-cash limit, and only that.
+
+        **This was `max(target, minimum)`**, which turned whichever
+        cash number happened to be larger into a floor under every
+        deployment — so the 25% strategic *destination* blocked capital
+        the investor's own plan permits. The owner's ruling of
+        2026-08-24 separates the two: a target is where the account is
+        heading, an operating range is tactical latitude, and only a
+        hard limit blocks an action.
+
+        So funding room is measured above the hard floor. The target
+        does not vanish — it is what the allocation guidance reports
+        the account against — it simply stops gating.
+        """
+
+        return self.minimum_cash_pct
 
 
 @dataclass(frozen=True, slots=True)

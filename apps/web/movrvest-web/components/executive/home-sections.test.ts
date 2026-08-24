@@ -8,8 +8,14 @@ import {
   convictionCell,
   isComparable,
   movementLabel,
+  strategyCardShape,
+  targetTotal,
 } from "./HomeSections";
-import type { CycleCourse, CycleReview } from "@/lib/api/cycle-review";
+import type {
+  CycleCourse,
+  CycleReview,
+  RecordedPortfolio,
+} from "@/lib/api/cycle-review";
 
 /**
  * The rules the homepage encodes, each one a place it could invent a
@@ -209,5 +215,142 @@ describe("a conviction is never shown alone", () => {
         }),
       ),
     ).toBe("No conviction is stated: this case cites no support.");
+  });
+});
+
+/**
+ * The owner's amendment to #247: a refused allocation policy must not
+ * still render a plan.
+ *
+ * `strategyCardShape` is the branch the card takes and the only one it
+ * takes, so these are assertions about what an investor sees — not a
+ * re-implementation of it. The defect: `CapitalPolicyService` refused
+ * targets totalling 105% while `InvestmentPolicyMapper` mapped those
+ * same 105% onto the page, and the refusal reached no reader.
+ */
+function recordedPortfolio(
+  overrides: Partial<RecordedPortfolio> = {},
+): RecordedPortfolio {
+  return {
+    totalValue: 10_000,
+    availableCashUsd: 5_407,
+    cashPct: 54.07,
+    observed: "",
+    holdings: [],
+    allocations: [
+      {
+        asset: "stocks",
+        currentPct: 10.3,
+        targetPct: 35,
+        differencePct: -24.7,
+        minimumPct: 25,
+        maximumPct: 45,
+        standing: "below_range",
+        stated: "Below the operating range.",
+      },
+      {
+        asset: "cash",
+        currentPct: 54.07,
+        targetPct: 25,
+        differencePct: 29.07,
+        minimumPct: 15,
+        maximumPct: 45,
+        standing: "above_range",
+        stated: "Above the operating range.",
+      },
+    ],
+    compliant: false,
+    allocationGuidance: "Cash is above its operating range.",
+    allocationGuidanceRefused: "",
+    allocationPolicyRefused: "",
+    ...overrides,
+  };
+}
+
+/** The record a refused policy produces: measured, and with no plan. */
+function refusedPortfolio(): RecordedPortfolio {
+  return recordedPortfolio({
+    allocations: [
+      {
+        asset: "stocks",
+        currentPct: 10.3,
+        targetPct: null,
+        differencePct: null,
+        minimumPct: null,
+        maximumPct: null,
+        standing: "",
+        stated: "",
+      },
+      {
+        asset: "cash",
+        currentPct: 54.07,
+        targetPct: null,
+        differencePct: null,
+        minimumPct: null,
+        maximumPct: null,
+        standing: "",
+        stated: "",
+      },
+    ],
+    compliant: null,
+    allocationGuidance: "",
+    allocationPolicyRefused:
+      "the owner strategy is contradictory: the four strategic targets must " +
+      "total 100%, and they total 105%",
+  });
+}
+
+describe("a refused allocation policy shows no plan", () => {
+  it("renders the refusal instead of the strategic target table", () => {
+    expect(strategyCardShape(refusedPortfolio())).toBe("policy-refused");
+  });
+
+  it("renders the plan where the policy validated", () => {
+    expect(strategyCardShape(recordedPortfolio())).toBe("plan");
+  });
+
+  it("keeps a review that recorded no allocation distinct from a refusal", () => {
+    expect(strategyCardShape(recordedPortfolio({ allocations: [] }))).toBe(
+      "no-comparison",
+    );
+    expect(strategyCardShape(null)).toBe("no-comparison");
+  });
+
+  it("prefers the refusal even where allocations were recorded", () => {
+    // The measured shares are still there — refusing the plan must not
+    // erase the account — and they are still not a plan.
+    const portfolio = refusedPortfolio();
+
+    expect(portfolio.allocations).toHaveLength(2);
+    expect(strategyCardShape(portfolio)).toBe("policy-refused");
+  });
+});
+
+describe("the strategic targets total, or state no total", () => {
+  it("adds the four targets up where every one is stated", () => {
+    expect(targetTotal(recordedPortfolio().allocations)).toBe(60);
+  });
+
+  it("states no total rather than 0% where a target is missing", () => {
+    // The misleading "Total 0%" the amendment forbids: four absent
+    // targets summed as four zeros would read as a plan allocating
+    // nothing, which is not what a refused policy means.
+    expect(targetTotal(refusedPortfolio().allocations)).toBeNull();
+
+    expect(
+      targetTotal([
+        ...recordedPortfolio().allocations,
+        {
+          asset: "crypto",
+          currentPct: 35.63,
+          targetPct: null,
+          differencePct: null,
+          minimumPct: null,
+          maximumPct: null,
+          standing: "",
+          stated: "",
+        },
+      ]),
+    ).toBeNull();
   });
 });

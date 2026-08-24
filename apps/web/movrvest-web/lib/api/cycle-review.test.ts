@@ -283,6 +283,67 @@ describe("the recorded portfolio and candidates", () => {
     expect(review.portfolio?.compliant).toBeNull();
   });
 
+  it("carries a refused allocation policy and states no target", () => {
+    // The owner's amendment: `CapitalPolicyService` refused the plan,
+    // so the record states no target at all. A target of 0 here would
+    // be a plan this platform invented — the exact defect the backend
+    // stopped producing, arriving through the parser instead.
+    const review = parseCycleReview({
+      ...valid(),
+      portfolio: {
+        total_value: 10000,
+        available_cash_usd: 5407,
+        cash_pct: 54.07,
+        observed: "eToro account response received at 2026-08-24 12:00 UTC",
+        compliant: null,
+        holdings: [],
+        allocation_policy_refused:
+          "the owner strategy is contradictory: the four strategic targets " +
+          "must total 100%, and they total 105%",
+        allocations: [
+          {
+            asset: "cash",
+            current_pct: 54.07,
+            target_pct: null,
+            difference_pct: null,
+          },
+        ],
+      },
+    });
+
+    expect(review.portfolio?.allocationPolicyRefused).toContain("105%");
+    expect(review.portfolio?.allocations[0].targetPct).toBeNull();
+
+    // The account itself survives the refusal.
+    expect(review.portfolio?.allocations[0].currentPct).toBe(54.07);
+    expect(review.portfolio?.cashPct).toBe(54.07);
+  });
+
+  it("reads no policy refusal where the backend stated none", () => {
+    const review = parseCycleReview({
+      ...valid(),
+      portfolio: {
+        total_value: 10000,
+        available_cash_usd: 5407,
+        cash_pct: 54.07,
+        observed: "",
+        compliant: true,
+        holdings: [],
+        allocations: [
+          {
+            asset: "cash",
+            current_pct: 54.07,
+            target_pct: 25,
+            difference_pct: 29.07,
+          },
+        ],
+      },
+    });
+
+    expect(review.portfolio?.allocationPolicyRefused).toBe("");
+    expect(review.portfolio?.allocations[0].targetPct).toBe(25);
+  });
+
   it("rejects a malformed portfolio rather than dropping the account", () => {
     expect(() =>
       parseCycleReview(withField("portfolio", { total_value: 1 })),

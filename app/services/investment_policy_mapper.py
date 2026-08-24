@@ -40,10 +40,15 @@ class InvestmentPolicyMapper:
 
         investor_type = str(preferences.get("investor_type") or "custom")
 
-        target_cash = self._required_number(
-            portfolio_policy,
-            "target_cash_pct",
-        )
+        # Every strategic target is the investor's, read from the
+        # tracked strategy. The three non-cash targets were **hardcoded
+        # to zero** here until the owner's ruling of 2026-08-24, so the
+        # strategy page rendered 0/0/0/5 and totalled 5% — a plan this
+        # platform invented and then reported back as the investor's.
+        target_cash = self._required_number(portfolio_policy, "target_cash_pct")
+        target_stocks = self._required_number(portfolio_policy, "target_stocks_pct")
+        target_etfs = self._required_number(portfolio_policy, "target_etfs_pct")
+        target_crypto = self._required_number(portfolio_policy, "target_crypto_pct")
 
         maximum_single_position = self._optional_number(
             portfolio_policy,
@@ -68,9 +73,9 @@ class InvestmentPolicyMapper:
         return InvestmentPolicy(
             risk_profile=investor_type,
             target=AllocationTarget(
-                stocks=0.0,
-                etfs=0.0,
-                crypto=0.0,
+                stocks=target_stocks,
+                etfs=target_etfs,
+                crypto=target_crypto,
                 cash=target_cash,
             ),
             constraints=InvestmentConstraints(

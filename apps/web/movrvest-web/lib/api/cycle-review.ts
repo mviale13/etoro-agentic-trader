@@ -123,9 +123,25 @@ export interface RecordedHolding {
 export interface RecordedAllocation {
   asset: string;
   currentPct: number | null;
-  targetPct: number;
+  /**
+   * Null exactly where the allocation policy was refused. The measured
+   * share above belongs to the account and survives; a target belongs
+   * to the plan, and none is stated where none was validated.
+   */
+  targetPct: number | null;
   /** Null where the comparison could not be made. Not a difference of zero. */
   differencePct: number | null;
+
+  /**
+   * The operating range the target sits inside — tactical latitude, not
+   * a limit. Null on a record written before the ranges existed.
+   */
+  minimumPct: number | null;
+  maximumPct: number | null;
+
+  /** Where it sits against that range, and the CIO's worded guidance. */
+  standing: string;
+  stated: string;
 }
 
 export interface RecordedPortfolio {
@@ -138,6 +154,21 @@ export interface RecordedPortfolio {
   allocations: RecordedAllocation[];
   /** Null where any required comparison was unmeasured. */
   compliant: boolean | null;
+
+  /**
+   * The CIO's account of the account's shape, composed during the cycle
+   * and rendered from the record. Exactly one of these carries text.
+   */
+  allocationGuidance: string;
+  allocationGuidanceRefused: string;
+
+  /**
+   * Why the allocation *policy* could not be read, in the backend's own
+   * words. Where this carries text there is no validated plan, so no
+   * target, range, standing, total or compliance judgment may be shown
+   * — the page states the refusal instead of another plan.
+   */
+  allocationPolicyRefused: string;
 }
 
 export interface LastKnownCycle {
@@ -482,10 +513,33 @@ function portfolioOf(raw: unknown): RecordedPortfolio | null {
       return {
         asset: requiredString(allocation, "asset"),
         currentPct: nullableNumber(allocation, "current_pct"),
-        targetPct: requiredFinite(allocation, "target_pct"),
+        // Nullable by contract: a record written under a refused
+        // allocation policy states no target, and decodes as stating
+        // none — never as a target of zero.
+        targetPct: nullableNumber(allocation, "target_pct"),
         differencePct: nullableNumber(allocation, "difference_pct"),
+        // Optional by contract: a record written before the operating
+        // ranges existed carries none, and decodes as carrying none —
+        // never as a range of zero.
+        minimumPct: nullableNumber(allocation, "minimum_pct"),
+        maximumPct: nullableNumber(allocation, "maximum_pct"),
+        standing:
+          typeof allocation.standing === "string" ? allocation.standing : "",
+        stated: typeof allocation.stated === "string" ? allocation.stated : "",
       };
     }),
+    allocationGuidance:
+      typeof item.allocation_guidance === "string"
+        ? item.allocation_guidance
+        : "",
+    allocationGuidanceRefused:
+      typeof item.allocation_guidance_refused === "string"
+        ? item.allocation_guidance_refused
+        : "",
+    allocationPolicyRefused:
+      typeof item.allocation_policy_refused === "string"
+        ? item.allocation_policy_refused
+        : "",
   };
 }
 

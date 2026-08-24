@@ -36,9 +36,42 @@ from app.domain.capital_policy import (
 )
 from app.domain.market_snapshot import MarketQuote
 from app.domain.provenance import Provenance
+from app.domain.strategic_allocation import (
+    AllocationBand,
+    HardLimits,
+    StrategicAllocation,
+)
 from app.services.capital_policy_service import CapitalPolicyService
 
 MOMENT = datetime(2026, 8, 19, 15, 0, tzinfo=UTC)
+
+#: The active policy's hard limits — minimum cash and maximum crypto.
+#: The strategy file states these once and every reader receives them;
+#: they are not constants of the allocation module, which is precisely
+#: the second authority this amendment removed.
+OWNER_LIMITS = HardLimits(minimum_cash_pct=15.0, maximum_crypto_pct=40.0)
+
+#: The owner's strategic allocation of 2026-08-24, as the tracked
+#: strategy states it: four targets totalling 100%, each inside its own
+#: operating range.
+OWNER_ALLOCATION = StrategicAllocation(
+    stocks=AllocationBand(
+        asset="stocks", target_pct=35.0, minimum_pct=25.0, maximum_pct=45.0
+    ),
+    etfs=AllocationBand(
+        asset="etfs", target_pct=15.0, minimum_pct=10.0, maximum_pct=25.0
+    ),
+    crypto=AllocationBand(
+        asset="crypto", target_pct=25.0, minimum_pct=15.0, maximum_pct=40.0
+    ),
+    cash=AllocationBand(
+        asset="cash", target_pct=25.0, minimum_pct=15.0, maximum_pct=45.0
+    ),
+    # The hard limits the active policy states — not a second copy of
+    # them. These are what `minimum_cash_pct` and `maximum_crypto_pct`
+    # say in the strategy document this suite loads.
+    limits=OWNER_LIMITS,
+)
 
 
 def policy(**overrides) -> CapitalPolicy:
@@ -47,9 +80,9 @@ def policy(**overrides) -> CapitalPolicy:
         standard_initial_position_pct=3.0,
         max_add_weight_change_pct=2.0,
         max_single_position_pct=20.0,
-        max_crypto_pct=65.0,
-        target_cash_pct=5.0,
-        minimum_cash_pct=40.0,
+        max_crypto_pct=40.0,
+        target_cash_pct=25.0,
+        minimum_cash_pct=15.0,
         price_max_age_minutes=15.0,
         portfolio_max_age_minutes=15.0,
         maximum_acceptable_drawdown_pct=20.0,
@@ -57,6 +90,7 @@ def policy(**overrides) -> CapitalPolicy:
         security_risk_high_max_total_pct=2.0,
         security_risk_severe_max_total_pct=1.0,
         security_risk_unmeasured_max_total_pct=1.0,
+        allocation=OWNER_ALLOCATION,
         source="investor_strategy.json",
         version="testversion1",
     )
@@ -70,10 +104,17 @@ def strategy_document(**overrides) -> dict:
         "status": "active",
         "objectives": {"maximum_acceptable_drawdown_pct": 20},
         "portfolio_policy": {
-            "target_cash_pct": 5,
-            "minimum_cash_pct": 40,
+            "target_cash_pct": 25,
+            "minimum_cash_pct": 15,
             "maximum_single_position_pct": 20,
-            "maximum_crypto_pct": 65,
+            "maximum_crypto_pct": 40,
+            "target_stocks_pct": 35,
+            "target_etfs_pct": 15,
+            "target_crypto_pct": 25,
+            "stocks_range_pct": {"minimum": 25, "maximum": 45},
+            "etfs_range_pct": {"minimum": 10, "maximum": 25},
+            "crypto_range_pct": {"minimum": 15, "maximum": 40},
+            "cash_range_pct": {"minimum": 15, "maximum": 45},
         },
         "capital_envelope": {
             "starter_max_total_position_pct": 1.0,
@@ -365,16 +406,26 @@ def test_7_a_broker_that_did_not_answer_is_not_an_empty_account() -> None:
     assert "unavailable or non-positive" in unusable.refused_because
 
 
-def test_8_the_cash_floor_is_the_stricter_of_the_two_cash_statements() -> None:
-    assert policy().cash_floor_pct == 40.0
+def test_8_the_cash_floor_is_the_hard_limit_and_not_the_target() -> None:
+    """The owner's ruling of 2026-08-24, at the gate it changed.
 
-    # cash 58% − floor 40% = 18% funding room; concentration room 20%.
+    This asserted `max(target, minimum)` — which made whichever cash
+    number happened to be larger a floor under every deployment, so the
+    25% strategic *destination* blocked capital the investor's own plan
+    permits. A target is where the account is heading; only a hard
+    limit blocks an action.
+    """
+
+    assert policy().cash_floor_pct == 15.0
+    assert policy().target_cash_pct == 25.0, "the target still exists"
+
+    # cash 58% − hard floor 15% = 43% funding room; concentration 20%.
     room = capacity()
 
-    assert room.funding_room_pct == pytest.approx(18.0)
+    assert room.funding_room_pct == pytest.approx(43.0)
     assert room.concentration_room_pct == pytest.approx(20.0)
-    assert room.capacity_pct == pytest.approx(18.0)
-    assert "cash floor" in room.binding
+    assert room.capacity_pct == pytest.approx(20.0)
+    assert "concentration" in room.binding
 
 
 # ── 9–14: the ceilings ──────────────────────────────────────────────

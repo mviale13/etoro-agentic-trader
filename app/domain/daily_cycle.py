@@ -231,12 +231,36 @@ def holdings_by_security(
 
 @dataclass(frozen=True, slots=True)
 class RecordedAllocation:
-    """One asset class against the investor's own target."""
+    """One asset class against the investor's own target and range.
+
+    `current_pct` is a **measurement of the account** and survives
+    whatever happens to the plan. Everything else is the plan, and is
+    None or empty wherever the allocation policy could not be
+    validated — a refused plan leaves the account measured and states
+    no target, which is not the same as a target of zero.
+    """
 
     asset: str
     current_pct: float | None
-    target_pct: float
+
+    #: None exactly where the allocation policy was refused. A target
+    #: is a statement of the investor's plan, and this platform states
+    #: none where it could not read one.
+    target_pct: float | None
     difference_pct: float | None
+
+    #: The operating range the target sits inside. Tactical latitude,
+    #: not a limit: being outside the target but inside the range is a
+    #: normal state (owner ruling, 2026-08-24). Both None only on a
+    #: record written before the ranges existed.
+    minimum_pct: float | None = None
+    maximum_pct: float | None = None
+
+    #: "below_range" | "within_range" | "above_range" | "unmeasured",
+    #: and the CIO's worded guidance for it. Empty on a pre-ruling
+    #: record, which then carries no standing rather than a guessed one.
+    standing: str = ""
+    stated: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -270,12 +294,32 @@ class RecordedPortfolio:
     observed: str = ""
 
     #: The account against the investor's own strategy, compared at
-    #: cycle time by `PolicyAnalyzer` because that is where both halves
-    #: are in hand. A difference of None is unmeasured, never zero.
+    #: cycle time because that is where both halves are in hand. The
+    #: measured share is the account's; the target, range and standing
+    #: are the *validated* `StrategicAllocation`'s and appear only when
+    #: there is one. A difference of None is unmeasured, never zero.
     allocations: tuple[RecordedAllocation, ...] = ()
 
-    #: None where any required comparison was unmeasured — an unread
-    #: allocation is never credited as compliant.
+    #: The CIO's account of the account's shape, composed once during
+    #: the cycle from that cycle's own portfolio reading and the active
+    #: policy. Rendered from this record — a page recomputes nothing,
+    #: so no two surfaces can disagree about what the review said.
+    #: Empty on a pre-ruling record and wherever no allocation could be
+    #: read, which the refusal below then words.
+    allocation_guidance: str = ""
+    allocation_guidance_refused: str = ""
+
+    #: Why the allocation *policy* itself could not be read — the
+    #: `CapitalPolicyReading`'s own sentence, verbatim. A different
+    #: fact from the refusal above: that one says no allocation could
+    #: be measured, this one says the plan to measure it against is
+    #: missing or contradictory. Non-empty exactly where no target,
+    #: range, standing or compliance judgment may be shown.
+    allocation_policy_refused: str = ""
+
+    #: None where any required comparison was unmeasured, and always
+    #: None under a refused allocation policy — a plan this platform
+    #: could not validate produces no compliance judgment at all.
     compliant: bool | None = None
 
     def __post_init__(self) -> None:

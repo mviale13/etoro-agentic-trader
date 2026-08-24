@@ -435,7 +435,9 @@ def test_8_fully_measured_inputs_are_unchanged_end_to_end() -> None:
     assert live.standard_initial_position_pct == 3.0
     assert live.max_add_weight_change_pct == 2.0
     assert live.max_single_position_pct == 20.0
-    assert live.cash_floor_pct == 40.0
+    # The floor is the hard minimum-cash limit since the owner's ruling
+    # of 2026-08-24; the 25% strategic target no longer gates.
+    assert live.cash_floor_pct == 15.0
     assert live.portfolio_max_age_minutes == 15.0
 
     # And the envelope arithmetic over measured inputs is unchanged.
@@ -451,7 +453,10 @@ def test_8_fully_measured_inputs_are_unchanged_end_to_end() -> None:
     assert limited_open.starter_capped is True
 
     assert envelope("add").final_pct == 2.0
-    assert envelope("open", cap=capacity(cash=40.5)).final_pct == 0.5
+    # Funding room still binds when it is the smallest term: cash 15.5%
+    # over the 15% hard floor leaves 0.5%. Read against the old 40%
+    # floor this case was cash=40.5; the shape it tests is unchanged.
+    assert envelope("open", cap=capacity(cash=15.5)).final_pct == 0.5
 
 
 def test_8b_a_measured_snapshot_produces_the_same_allocation_as_before() -> None:
