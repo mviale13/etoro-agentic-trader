@@ -2,17 +2,24 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from enum import StrEnum
+from datetime import UTC, datetime
 
+from app.domain.knowledge_acquisition import KnowledgeAcquisitionEvent
 from app.domain.knowledge_consensus import (
     QUORUM,
     CompanyKnowledgeConsensus,
     consensus_of,
 )
+from app.domain.knowledge_state import KnowledgeState as KnowledgeState
 from app.domain.primary_source import (
+    PrimarySource,
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
+)
+from app.infrastructure.evidence.knowledge_outcome_store import (
+    KnowledgeOutcomeStore,
 )
 from app.providers.primary_source_provider import PrimarySourceResolver
 from app.repositories.company_knowledge_store import (
@@ -24,61 +31,6 @@ from app.services.company_knowledge_extractor import (
     ExtractionRejected,
 )
 from app.services.company_knowledge_reader import resolve_reader
-
-
-class KnowledgeState(StrEnum):
-    """How the knowledge in hand was — or was not — obtained.
-
-    Operationally and semantically different situations that a single
-    "no knowledge" would flatten into one. Each calls for something
-    different:
-
-    - `AVAILABLE_CACHED` — read from a document already extracted. The
-      normal path, and free.
-    - `AVAILABLE_ACQUIRED` — a new document was fetched and read this
-      cycle. Costs a fetch and two model calls, once per document.
-    - `UNAVAILABLE` — no provider holds a source for this security. A
-      gap in coverage: try another provider, not the same one again.
-    - `PROVIDER_ERROR` — a provider could not be reached. Retrying may
-      help, which is exactly what makes it different from a gap.
-    - `INVALID_EXTRACTION` — a document was read and failed grounding
-      validation. Nothing from it is trusted or partly stored.
-    - `DOCUMENT_REFUSED` — the authoritative document exists, was
-      retrieved and was parsed, and the section this platform needs
-      cannot be supplied from the component or structure it supports.
-      **Not a coverage gap**: another provider is not the remedy and an
-      immediate retry cannot help, because nothing failed. A future
-      capability — following the page ranges a cross-reference index
-      names — may change the answer, which is what makes it different
-      from a filing that simply does not contain the section.
-    """
-
-    AVAILABLE_CACHED = "available_cached"
-    AVAILABLE_ACQUIRED = "available_acquired"
-    UNAVAILABLE = "unavailable"
-    PROVIDER_ERROR = "provider_error"
-    INVALID_EXTRACTION = "invalid_extraction"
-    DOCUMENT_REFUSED = "document_refused"
-
-    @property
-    def is_available(self) -> bool:
-        return self in (
-            KnowledgeState.AVAILABLE_CACHED,
-            KnowledgeState.AVAILABLE_ACQUIRED,
-        )
-
-    @property
-    def may_succeed_later(self) -> bool:
-        """Whether asking again could plausibly produce a different answer.
-
-        `DOCUMENT_REFUSED` is deliberately **false**. Nothing failed and
-        nothing is intermittent: the filing says what it says, and the
-        same request will be refused for the same structural reason for
-        as long as this platform reads the same component. What could
-        change the answer is a capability, not a retry.
-        """
-
-        return self is KnowledgeState.PROVIDER_ERROR
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,6 +50,29 @@ class KnowledgeOutcome:
     state: KnowledgeState
     knowledge: CompanyKnowledgeConsensus | None = None
     absent_because: str | None = None
+
+
+@dataclass(slots=True)
+class _Attempt:
+    """What one acquisition path learned about itself, as it learned it.
+
+    Filled in by the body and read once by the recorder, so composing
+    the terminal event needs one call site rather than one per return
+    branch. Deliberately mutable and deliberately private: it is a
+    scratchpad for a single call, never a stored shape.
+
+    `failure` holds an exception **class name**, never a message. A
+    provider message may carry an API key, a signed URL, an account
+    identifier or a fragment of the document itself, and this record is
+    written to disk.
+    """
+
+    source_key: str | None = None
+    source_published: str = ""
+    failure: str = ""
+    observations_after: int = 0
+    ended_in_refusal: bool = False
+    usable_source_key: str | None = None
 
 
 class CompanyKnowledgeService:
@@ -130,9 +105,18 @@ class CompanyKnowledgeService:
         store: CompanyKnowledgeStore | None = None,
         sources: PrimarySourceResolver | None = None,
         extractor: CompanyKnowledgeExtractor | None = None,
+        outcomes: KnowledgeOutcomeStore | None = None,
+        clock: Callable[[], datetime] | None = None,
     ) -> None:
         self._store = store or JsonCompanyKnowledgeStore()
         self._sources = sources or PrimarySourceResolver()
+
+        # The acquisition-outcome journal. Written by the two funded
+        # doors and by nothing else — `established()` never touches it,
+        # because a page view is not an attempt. The clock is a seam so
+        # the attempted-at contract is deterministic in tests.
+        self._outcomes = outcomes or KnowledgeOutcomeStore()
+        self._clock = clock or (lambda: datetime.now(UTC))
 
         # The reader is composed from configuration rather than passed
         # in, so the pipeline reads filings by default. A caller that
@@ -170,6 +154,63 @@ class CompanyKnowledgeService:
             self._extractor = resolved
 
     async def knowledge(self, symbol: str) -> KnowledgeOutcome:
+        """The funded door, and the one terminal event it records."""
+
+        return await self._recorded(symbol, self._knowledge)
+
+    async def observe(self, symbol: str, target: int = QUORUM) -> KnowledgeOutcome:
+        """The funded door that fills a quorum, and its terminal event."""
+
+        return await self._recorded(
+            symbol, lambda s, a: self._observe(s, a, target=target)
+        )
+
+    async def _recorded(
+        self,
+        symbol: str,
+        run: Callable[[str, _Attempt], Awaitable[KnowledgeOutcome]],
+    ) -> KnowledgeOutcome:
+        """Run one funded attempt, then append exactly one event.
+
+        **`attempted_at` means attempted-at.** The clock is read before
+        the funded body begins, because an extraction can take long
+        enough that a stamp taken afterwards would date the attempt by
+        its outcome. Capturing a time is not writing an event: the
+        append still happens only after the outcome is known, so a
+        killed attempt carries its captured time nowhere.
+
+        **Ordering is the contract.** The body writes any observation it
+        takes to the knowledge store first; this appends afterwards, so
+        a process killed between the two leaves the knowledge usable and
+        invents no attempt outcome. There is no `try/finally` here on
+        purpose: a hard kill must produce *no* terminal event rather
+        than a manufactured one, so an exception escaping the body
+        propagates and nothing is written.
+        """
+
+        attempt = _Attempt()
+        attempted_at = self._clock()
+
+        outcome = await run(symbol, attempt)
+
+        self._outcomes.append(
+            KnowledgeAcquisitionEvent(
+                symbol=symbol,
+                attempted_at=attempted_at,
+                state=outcome.state,
+                source_key=attempt.source_key,
+                source_published=attempt.source_published,
+                because=_safe_reason(outcome, attempt),
+                knowledge_usable=outcome.knowledge is not None,
+                usable_source_key=attempt.usable_source_key,
+                observations_after=attempt.observations_after,
+                ended_in_refusal=attempt.ended_in_refusal,
+            )
+        )
+
+        return outcome
+
+    async def _knowledge(self, symbol: str, attempt: _Attempt) -> KnowledgeOutcome:
         """What is known about this company, reading a filing only if new.
 
         What comes back is a consensus, derived from the stored
@@ -188,6 +229,13 @@ class CompanyKnowledgeService:
             # An outage and a gap in coverage are different answers, and
             # only one is worth asking about again. Whatever the store
             # already holds from an earlier document still stands.
+            #
+            # No source key is recorded: resolution is what failed, and
+            # *we could not find a filing* is a different fact from *we
+            # found one and could not read it*.
+            attempt.failure = type(unavailable).__name__
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=(
                     KnowledgeState.PROVIDER_ERROR
@@ -198,15 +246,24 @@ class CompanyKnowledgeService:
                 absent_because=str(unavailable),
             )
 
+        attempt.source_key = source.key
+        attempt.source_published = _published(source)
+
         observations = self._store.read(symbol, source.key)
 
         if observations:
+            attempt.observations_after = len(observations)
+            attempt.usable_source_key = source.key
+
             return KnowledgeOutcome(
                 state=KnowledgeState.AVAILABLE_CACHED,
                 knowledge=consensus_of(observations),
             )
 
         if self._extractor is None:
+            attempt.failure = "NoReaderConfigured"
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.UNAVAILABLE,
                 knowledge=self._latest(symbol),
@@ -223,6 +280,9 @@ class CompanyKnowledgeService:
         try:
             document = provider.fetch(source)
         except PrimarySourceUnavailable as failure:
+            attempt.failure = type(failure).__name__
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=(
                     KnowledgeState.PROVIDER_ERROR
@@ -238,6 +298,8 @@ class CompanyKnowledgeService:
         # nothing is written. `INVALID_EXTRACTION` would say the
         # opposite of all three, and it would bill for the privilege.
         if document.business_refusal is not None:
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.DOCUMENT_REFUSED,
                 knowledge=self._latest(symbol),
@@ -249,13 +311,24 @@ class CompanyKnowledgeService:
         except ExtractionRejected as rejected:
             # Nothing from a reading that failed its grounding contract
             # is stored, in part or at all.
+            attempt.failure = type(rejected).__name__
+            attempt.ended_in_refusal = True
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.INVALID_EXTRACTION,
                 knowledge=self._latest(symbol),
                 absent_because=str(rejected),
             )
 
+        # The knowledge write lands before any event claims usable
+        # acquired knowledge — the ordering the outcome journal's
+        # durability contract rests on.
         self._store.append(extracted)
+
+        stored = self._store.read(symbol, extracted.source.key)
+        attempt.observations_after = len(stored)
+        attempt.usable_source_key = extracted.source.key
 
         return KnowledgeOutcome(
             state=KnowledgeState.AVAILABLE_ACQUIRED,
@@ -266,7 +339,9 @@ class CompanyKnowledgeService:
             knowledge=consensus_of(self._store.read(symbol, extracted.source.key)),
         )
 
-    async def observe(self, symbol: str, target: int = QUORUM) -> KnowledgeOutcome:
+    async def _observe(
+        self, symbol: str, attempt: _Attempt, target: int = QUORUM
+    ) -> KnowledgeOutcome:
         """Take observations of the current document up to a count.
 
         The explicit spend that fills a consensus — to the quorum by
@@ -288,9 +363,16 @@ class CompanyKnowledgeService:
         self._compose_reader()
 
         if self._extractor is None:
+            attempt.failure = "NoReaderConfigured"
+            # Before source resolution, so the refused attempt costs no
+            # provider call — and what the store already holds from an
+            # earlier document still stands, on this path as on every
+            # other non-available terminal path.
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.UNAVAILABLE,
-                knowledge=None,
+                knowledge=self._latest(symbol),
                 absent_because=(
                     self._unreadable
                     or "No reader is configured, so nothing can be observed."
@@ -299,8 +381,13 @@ class CompanyKnowledgeService:
 
         try:
             source, provider = self._sources.resolve(symbol)
+            attempt.source_key = source.key
+            attempt.source_published = _published(source)
             document = provider.fetch(source)
         except PrimarySourceUnavailable as unavailable:
+            attempt.failure = type(unavailable).__name__
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=(
                     KnowledgeState.PROVIDER_ERROR
@@ -316,6 +403,8 @@ class CompanyKnowledgeService:
         # section would bill five model calls for a document that
         # carries no section to read.
         if document.business_refusal is not None:
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.DOCUMENT_REFUSED,
                 knowledge=self._latest(symbol),
@@ -332,19 +421,35 @@ class CompanyKnowledgeService:
                 # document that resists reading; what was already
                 # observed stands.
                 refused = str(rejected)
+                attempt.failure = type(rejected).__name__
+                attempt.ended_in_refusal = True
                 break
 
             self._store.append(observation)
 
         observations = self._store.read(symbol, source.key)
+        attempt.observations_after = len(observations)
 
         if not observations:
+            # Nothing from the current document survived, and an older
+            # document's knowledge — where one exists — still stands.
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.INVALID_EXTRACTION,
-                knowledge=None,
+                knowledge=self._latest(symbol),
                 absent_because=refused,
             )
 
+        attempt.usable_source_key = source.key
+
+        # **The case that earned the separate event object.** Some
+        # observations were taken and a later extraction was refused:
+        # the knowledge is real and the run ended in a refusal, and no
+        # single `KnowledgeState` can say both. The state stays
+        # AVAILABLE_ACQUIRED, which is true, and `ended_in_refusal`
+        # carries the other half beside it rather than overloading the
+        # state into a lie in the opposite direction.
         return KnowledgeOutcome(
             state=KnowledgeState.AVAILABLE_ACQUIRED,
             knowledge=consensus_of(observations),
@@ -386,9 +491,61 @@ class CompanyKnowledgeService:
             knowledge=consensus,
         )
 
+    def _note_usable(self, symbol: str, attempt: _Attempt) -> None:
+        """Record what still serves beside an outcome that acquired nothing.
+
+        The first dimension, read where the second has already failed:
+        last year's filing still describes the business when today's
+        lookup does not.
+        """
+
+        held = self._store.latest(symbol)
+
+        if held:
+            attempt.observations_after = len(held)
+            attempt.usable_source_key = held[0].source.key
+
     def _latest(self, symbol: str) -> CompanyKnowledgeConsensus | None:
         """Consensus over the newest document's observations, if any."""
 
         observations = self._store.latest(symbol)
 
         return consensus_of(observations) if observations else None
+
+
+def _published(source: PrimarySource) -> str:
+    """The document's own publication date, ISO-formatted.
+
+    `published_on` is the canonical field and it is required on
+    `PrimarySource`, so a resolved source always carries one. The
+    journal's `source_published` stays empty only where no source was
+    resolved at all — the attempt scratchpad's own default, never a
+    probe of a field that might not exist. The first cut of this
+    helper read `.published` through `getattr`, a field no source has
+    ever had, so every event recorded an empty date while claiming the
+    source was resolved; typing the parameter is what makes that
+    mistake unwritable.
+    """
+
+    return source.published_on.isoformat()
+
+
+def _safe_reason(outcome: KnowledgeOutcome, attempt: _Attempt) -> str:
+    """Why, in wording that may be written to disk.
+
+    **A raw provider or extraction message is never persisted.** Those
+    strings are composed by libraries this platform does not control and
+    have carried API keys, signed URLs, account identifiers and document
+    fragments. What survives is the exception *class*, which names the
+    kind of failure and can carry nothing else.
+
+    A document refusal is the one exception, and it is not one: its
+    wording comes from `business_refusal.stated()` — a typed carrier
+    this platform composed itself — so quoting it discloses nothing a
+    provider put there.
+    """
+
+    if outcome.state is KnowledgeState.DOCUMENT_REFUSED:
+        return (outcome.absent_because or "").strip()
+
+    return attempt.failure
