@@ -241,6 +241,11 @@ class DecisionEvidenceBuilder:
             # names the volatility, and neither can drift from the other
             # because both come off this one object.
             risk_reading=company.signals.risk if company is not None else None,
+            # The same carriage for valuation: the band, the measured
+            # multiple and the signal's own account travel beside the
+            # score, so the blocker downstream can quote what was read
+            # rather than the number it became.
+            valuation_reading=(company.signals.value if company is not None else None),
             portfolio_fit_score=portfolio_fit.score,
             # Each score's own reasoning, worded where the score is
             # computed. A band is this platform's policy, not a

@@ -12,6 +12,7 @@ from app.domain.finding import FindingLedger
 from app.domain.provenance import Provenance
 from app.domain.risk_signal import RiskSignal
 from app.domain.score_basis import ScoreBases
+from app.domain.value_signal import ValueSignal
 
 
 class DecisionEvidence(BaseModel):
@@ -135,6 +136,14 @@ class DecisionEvidence(BaseModel):
     #: or a sentence being reassembled by parsing prose. None where
     #: nothing measured it.
     risk_reading: RiskSignal | None = None
+
+    #: The valuation reading itself, beside the score — `risk_reading`'s
+    #: precedent, applied to the other gate that was explaining itself
+    #: with a number. 55 is the FAIR band, and *what was measured* — a
+    #: forward P/E of 20.6× — lives here, so the refusal can name the
+    #: reading instead of the score. The gate still reads the score and
+    #: only the score; nothing about the decision moves.
+    valuation_reading: ValueSignal | None = None
 
     hard_reject: bool = False
 

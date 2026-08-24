@@ -392,7 +392,19 @@ class ArtificialCIO:
                 self._blocked(
                     evidence,
                     BlockerKind.VALUATION_GATE,
-                    self._unassessable_valuation(evidence),
+                    # The fund and token wording is already exact — a
+                    # platform limit, not a pending measurement — and
+                    # stays. For a company, the investor's sentence: what
+                    # the evidence cannot yet establish, not which score
+                    # is missing.
+                    self._unassessable_valuation(evidence)
+                    if evidence.asset_class is not None
+                    and evidence.asset_class.has_no_company
+                    else (
+                        "The available evidence does not establish whether "
+                        "the shares offer good value at today's price, so "
+                        "valuation cannot yet support a purchase."
+                    ),
                 ),
             )
 
@@ -424,12 +436,14 @@ class ArtificialCIO:
                 self._blocked(
                     evidence,
                     BlockerKind.VALUATION_GATE,
-                    (
-                        f"Blocked by what it costs: valuation scores "
-                        f"{evidence.valuation_score} against the "
-                        f"{policy.minimum_recommendation_valuation} a "
-                        "recommendation needs."
-                    ),
+                    # The owner's product feedback of 2026-08-24: "scores
+                    # 55 against the 60 a recommendation needs" is not
+                    # investor language. The sentence now names what was
+                    # measured and what it means for the course; the
+                    # score itself stays on the payload and in the score
+                    # basis as audit detail, and the gate above read it
+                    # unchanged.
+                    self._short_valuation(evidence),
                 ),
             )
 
@@ -639,6 +653,77 @@ class ArtificialCIO:
         return (
             "Business quality has not been measured, so the case cannot "
             "progress beyond research."
+        )
+
+    @staticmethod
+    def _short_valuation(evidence: DecisionEvidence) -> str:
+        """Why the price does not support action, in the investor's terms.
+
+        Composed deterministically from the typed valuation reading the
+        evidence already carries — the band, the measured multiple and
+        nothing else. Three rules, each load-bearing:
+
+        - **The score is not the explanation.** It stays on the payload
+          and in the score basis as audit detail; the sentence a reader
+          acts on names what was measured instead.
+        - **"Expensive" is never claimed.** This platform holds one
+          unaudited multiple and no benchmark (VALUATION_AUTHORITY.md),
+          so even the EXPENSIVE band is worded as this platform's own
+          bar, not as an established fact about the market.
+        - **A poor valuation is not a poor business.** The sentence says
+          so itself, and the blocker's `does_not_say` says it again.
+
+        What could change the conclusion is stated as possibility,
+        never promise — a better entry price, or stronger earnings and
+        cash-flow evidence. No target price, expected return or margin
+        of safety is computed; none is held.
+        """
+
+        reading = evidence.valuation_reading
+        observation = reading.observation if reading is not None else None
+
+        if reading is None or observation is None:
+            # The score exists and the reading behind it was not
+            # carried — a caller-built evidence, never the live
+            # pipeline. Nothing quotable, so nothing is quoted.
+            return (
+                "The available evidence does not establish that the "
+                "shares offer good value at today's price, so valuation "
+                "cannot support a purchase."
+            )
+
+        measured = f"{observation.label} of {observation.value:.1f}{observation.unit}"
+
+        if reading.valuation == "EXPENSIVE":
+            middle = (
+                f"At a {measured}, the price sits above what this "
+                "platform's own valuation bands will support a purchase "
+                "at — a house rule over the measured multiple, not a "
+                "market comparison."
+            )
+        elif reading.valuation == "FAIR":
+            middle = (
+                f"At a {measured}, the shares are fully priced under "
+                "this platform's own valuation bands — not cheap enough "
+                "to support a purchase, and not read as overpriced "
+                "either. That is a house rule over the measured "
+                "multiple, not a market comparison."
+            )
+        else:
+            # A band this composer has no honest sentence for — CHEAP
+            # blocked by a custom policy bar, or a vocabulary this code
+            # predates. The measured fact is named; no band is claimed.
+            middle = (
+                f"At a {measured}, the price does not clear the bar this "
+                "policy sets for a recommendation."
+            )
+
+        return (
+            "The valuation is not attractive enough at today's price. "
+            f"{middle} The business may still be credible, but today's "
+            "price does not offer enough margin of safety to justify "
+            "opening or adding to a position. Wait for a better entry "
+            "price, or for stronger earnings and cash-flow evidence."
         )
 
     @staticmethod
