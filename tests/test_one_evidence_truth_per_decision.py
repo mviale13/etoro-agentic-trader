@@ -396,7 +396,6 @@ def test_a_low_grounded_band_supports_caution_and_not_a_recommendation() -> None
             valuation_score=85,
             risk_score=20,
             portfolio_fit_score=85,
-            actionable_now=True,
             strengths=("Cheap.",),
         )
     )

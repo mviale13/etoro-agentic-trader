@@ -182,19 +182,33 @@ class ArtificialCIO:
                 ),
             )
 
-        if evidence.analyst_veto:
-            return (
-                DecisionState.REJECT,
-                "A specialist analyst identified a veto-level risk.",
-                self._blocked(
-                    evidence,
-                    BlockerKind.ANALYST_VETO,
-                    (
-                        "Blocked by a specialist analyst's veto: it read a "
-                        "risk at the level that stops a case outright."
-                    ),
-                ),
-            )
+        # **A company vote no longer rejects a thesis *here*.** The
+        # owner's ruling of 2026-08-24 removed the transition that
+        # lived at this line — `analyst_veto -> REJECT`, set from the
+        # value/quality/momentum vote reaching SELL — because a
+        # one-session provider price move decided it. AMD was REJECTed
+        # on a -4.28% day while its own analysts read growth,
+        # profitability, balance sheet and cash flow as strong or
+        # better, and the blocker called that "a specialist analyst's
+        # veto" when no analyst had spoken.
+        #
+        # This is the volatility ruling of 2026-08-21 applied to the
+        # same question one layer up: market behaviour may inform risk,
+        # timing and eventual sizing, and may not become a judgment
+        # about business quality.
+        #
+        # **Stated exactly, because the weaker claim is the true one:**
+        # The company vote's SELL and BUY directions no longer
+        # directly reject or authorize a case. Its confidence remains
+        # decision-bearing through `evidence_score`; that residual
+        # changes one live blocker, can reach a state threshold, and is
+        # **not** accepted as the final contract.
+        #
+        # So value, quality and momentum are still measured, banded,
+        # shown and scored into conviction — and they no longer stop a
+        # case *through the deleted direct branches*. They remain
+        # capable of affecting the evidence gates below through Path C,
+        # which this ruling did not touch.
 
         # Nothing about the security itself was gathered — the symbol names
         # nothing the platform could describe. Said plainly, and kept apart
@@ -454,22 +468,20 @@ class ArtificialCIO:
                 ),
             )
 
-        if not evidence.actionable_now:
-            return (
-                DecisionState.PREPARE,
-                (
-                    "The investment case is ready, but its execution "
-                    "trigger has not occurred."
-                ),
-                self._blocked(
-                    evidence,
-                    BlockerKind.EXECUTION_TRIGGER,
-                    (
-                        "Blocked on timing alone: the case is ready and its "
-                        "execution trigger has not occurred."
-                    ),
-                ),
-            )
+        # **And a company vote no longer authorizes one here either.**
+        # The final gate at this line read `actionable_now`, which was
+        # the same vote reaching BUY — so a positive one-session move
+        # was the last thing standing between PREPARE and RECOMMEND.
+        # Measured over the live book, that flag was decided by the
+        # day's price band for four securities. Removed with its
+        # sibling, and **not replaced**: no technical-analysis trigger
+        # is introduced here.
+        #
+        # A case that satisfies quality, evidence, valuation, risk and
+        # portfolio fit is recommended on those alone — noting that the
+        # evidence gate above still carries the vote's magnitude
+        # through Path C, which is a residual and not a settled
+        # contract.
 
         return (
             DecisionState.RECOMMEND,

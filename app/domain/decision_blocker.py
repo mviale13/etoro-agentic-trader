@@ -55,16 +55,6 @@ class BlockerKind(StrEnum):
     #: one.
     RISK_GATE = "risk_gate"
 
-    #: A specialist analyst voted the case down outright.
-    #:
-    #: Its own member rather than a risk gate, and the difference is not
-    #: cosmetic: the veto is a SELL vote composed from quality, value,
-    #: momentum and risk together, so it *may* be a statement about the
-    #: business — and a blocker that carried "this does not say the
-    #: business is weak" beside it would be asserting something this
-    #: platform has not established. UUUU is the live case.
-    ANALYST_VETO = "analyst_veto"
-
     #: What the security costs, against what this platform's bands call
     #: attractive — or the absence of any reading of it.
     VALUATION_GATE = "valuation_gate"
@@ -80,9 +70,6 @@ class BlockerKind(StrEnum):
     #: A hard policy gate refused the case outright.
     POLICY_GATE = "policy_gate"
 
-    #: The case is ready and its execution trigger has not occurred.
-    EXECUTION_TRIGGER = "execution_trigger"
-
     #: This platform cannot take the case further, whatever the evidence
     #: says. A limit of MOVRvest, never a finding about the asset —
     #: every digital asset is here, and the crypto path's own ceiling
@@ -97,15 +84,14 @@ class BlockerKind(StrEnum):
 #: What a gate that is not about the business does not claim about it.
 #:
 #: Worded here, once, and only attached where the gate that fired was
-#: something other than quality: a risk ruling, a valuation band, a
-#: portfolio-fit measure and a timing trigger are all silent about
-#: whether the company is any good.
+#: something other than quality: a risk ruling, a valuation band and a
+#: portfolio-fit measure are all silent about whether the company is any
+#: good.
 def _does_not_say(kind: BlockerKind, symbol: str) -> str:
     if kind in (
         BlockerKind.RISK_GATE,
         BlockerKind.VALUATION_GATE,
         BlockerKind.PORTFOLIO_FIT_GATE,
-        BlockerKind.EXECUTION_TRIGGER,
     ):
         return (
             f"This is a {_NAMES[kind]} ruling. It does not say "
@@ -119,7 +105,6 @@ _NAMES = {
     BlockerKind.RISK_GATE: "risk",
     BlockerKind.VALUATION_GATE: "valuation",
     BlockerKind.PORTFOLIO_FIT_GATE: "portfolio-fit",
-    BlockerKind.EXECUTION_TRIGGER: "timing",
 }
 
 

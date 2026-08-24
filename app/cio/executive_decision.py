@@ -136,9 +136,7 @@ class DecisionEvidence(BaseModel):
     #: nothing measured it.
     risk_reading: RiskSignal | None = None
 
-    actionable_now: bool = False
     hard_reject: bool = False
-    analyst_veto: bool = False
 
     #: Every finding read about this security, favourable or not.
     #:

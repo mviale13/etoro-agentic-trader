@@ -30,8 +30,6 @@ class AnalystEvidence(BaseModel):
     risks: tuple[str, ...] = ()
     missing_evidence: tuple[str, ...] = ()
 
-    veto: bool = False
-
 
 class EvidenceAdapter:
     """Converts specialist opinions into CIO-level decision evidence."""
@@ -44,7 +42,6 @@ class EvidenceAdapter:
         valuation_score: int,
         risk_score: int,
         portfolio_fit_score: int,
-        actionable_now: bool = False,
         hard_reject: bool = False,
         catalysts: tuple[str, ...] = (),
         next_trigger: str | None = None,
@@ -69,9 +66,7 @@ class EvidenceAdapter:
             valuation_score=valuation_score,
             risk_score=risk_score,
             portfolio_fit_score=portfolio_fit_score,
-            actionable_now=actionable_now,
             hard_reject=hard_reject,
-            analyst_veto=any(evidence.veto for evidence in analyst_evidence),
             evidence_weighed=evidence_weighed,
             risks=risks,
             missing_evidence=missing_evidence,

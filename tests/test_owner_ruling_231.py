@@ -388,7 +388,6 @@ def scored(**overrides) -> DecisionEvidence:
         "valuation_score": 25,
         "risk_score": 85,
         "portfolio_fit_score": 60,
-        "actionable_now": True,
         "strengths": ("Large-cap company.",),
     }
     values.update(overrides)
@@ -502,15 +501,16 @@ def test_the_arithmetic_is_untouched_by_the_wording() -> None:
 
 
 def test_the_state_cap_is_never_reported_as_a_participation_count() -> None:
-    """AMD's 40 is the REJECT cap; five families still spoke for it.
+    """The REJECT cap is 40; five families still spoke for it.
 
-    The veto is what brings this case to REJECT since the 2026-08-21
-    cutover removed the severity rejection. #231's amendment is
-    unaffected: it is about never printing a count without its
-    expectation, whichever gate produced the state.
+    The route to REJECT has changed twice — the 2026-08-21 cutover
+    removed the severity rejection and the 2026-08-24 ruling the
+    company vote's veto, leaving the hard policy gate. #231's
+    amendment is unaffected either way: it is about never printing a
+    count without its expectation, whichever gate produced the state.
     """
 
-    decision = ArtificialCIO().decide(scored(analyst_veto=True))
+    decision = ArtificialCIO().decide(scored(hard_reject=True))
 
     assert decision.state is DecisionState.REJECT
     assert decision.conviction == ArtificialCIO.CONVICTION_LIMITS[DecisionState.REJECT]

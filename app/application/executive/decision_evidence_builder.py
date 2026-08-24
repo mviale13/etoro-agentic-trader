@@ -20,7 +20,6 @@ from app.domain.committee.opinion import CommitteeOpinion
 from app.domain.company_recommendation import CompanyRecommendation
 from app.domain.company_research import CompanyResearch
 from app.domain.decision_rules import (
-    ACTIONABLE_BUY,
     COGNITIVE_CONFIDENCE,
     EVIDENCE_SCORE,
     PE_BANDS,
@@ -29,7 +28,6 @@ from app.domain.decision_rules import (
     QUALITY_GROUNDED,
     RISK_BANDS,
     RISK_SEVERITY,
-    VETO_SELL,
 )
 from app.domain.decision_rules import (
     VALUATION_SCORES as VALUATION_SCORES_RULE,
@@ -78,8 +76,27 @@ class DecisionEvidenceBuilder:
     #
     # LOW quality sits above the rejection floor deliberately: the security
     # committee rates such holdings HOLD, and the Artificial CIO must not
-    # reject an investment case its own committee is content to hold. A
-    # genuine sell opinion is expressed through analyst_veto instead.
+    # reject an investment case its own committee is content to hold.
+    #
+    # **And no *direction* of that committee rejects or authorizes one
+    # either.** The company value/quality/momentum vote once mapped SELL
+    # to an analyst veto and BUY to the execution trigger; the owner's
+    # ruling of 2026-08-24 removed both, because a one-session provider
+    # price move decided them.
+    #
+    # **The vote is not therefore descriptive.** Its *direction* is;
+    # its *magnitude* is not. `_evidence_score` below still averages
+    # the company vote's confidence into `evidence_score`, and that
+    # confidence is `50 + |score| * 50` — it rises with how far the
+    # vote is from neutral, in either direction. AMD's evidence score
+    # went 71 to 83 on the day its price fell 4.28%.
+    #
+    # Said exactly: the company vote's SELL and BUY directions no
+    # longer directly reject or authorize a case. Its confidence
+    # remains decision-bearing through `evidence_score`; that residual
+    # changes one live blocker, can reach a state threshold, and is
+    # **not** accepted as the final contract. See
+    # `docs/architecture/COMPANY_VOTE_DECISION_AUTHORITY.md`.
 
     portfolio_fit: PortfolioFit = field(default_factory=PortfolioFit)
 
@@ -153,15 +170,6 @@ class DecisionEvidenceBuilder:
         # so the ledger the committees pointed at and the evidence built
         # beside it cannot straddle midnight and disagree.
         today = today if today is not None else datetime.now(UTC).date()
-
-        investment = next(
-            (
-                opinion
-                for opinion in committee_opinions
-                if opinion.committee == "Investment Committee"
-            ),
-            None,
-        )
 
         quality = self._quality_value(company, quality_assessment, financial_standing)
 
@@ -270,9 +278,7 @@ class DecisionEvidenceBuilder:
             # object, which is the same object the score above came from.
             grounded_quality=quality_assessment,
             asset_class=asset_class,
-            actionable_now=self._actionable_now(company, investment),
             hard_reject=False,
-            analyst_veto=company is not None and company.recommendation == "SELL",
             evidence_weighed=evidence_weighed,
             strengths=strengths,
             risks=risks,
@@ -290,10 +296,6 @@ class DecisionEvidenceBuilder:
                 quality_assessment,
             ),
             catalysts=catalysts,
-            # The two mappings this builder applies to the vote: a BUY
-            # is the execution trigger, a SELL is a veto. Stamped where
-            # they are applied — identity, never endorsement.
-            rules=(ACTIONABLE_BUY, VETO_SELL),
         )
 
     @classmethod
@@ -890,24 +892,6 @@ class DecisionEvidenceBuilder:
             # changes, not when the market does.
             kind=ScoreKind.POLICY,
             rules=(PORTFOLIO_FIT,),
-        )
-
-    @staticmethod
-    def _actionable_now(
-        company: CompanyRecommendation | None,
-        investment: CommitteeOpinion | None,
-    ) -> bool:
-        if company is not None:
-            return company.recommendation == "BUY"
-
-        # A committee states a position, never an action, so what stands
-        # in for a missing security verdict is the direction its opinion
-        # points. An abstention is not a positive stance and never
-        # clears this: `stance` is None there, and None is not positive.
-        return (
-            investment is not None
-            and investment.stance is not None
-            and investment.stance.is_positive
         )
 
     @staticmethod
