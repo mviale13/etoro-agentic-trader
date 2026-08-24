@@ -14,6 +14,7 @@ from app.domain.knowledge_consensus import (
 )
 from app.domain.knowledge_state import KnowledgeState as KnowledgeState
 from app.domain.primary_source import (
+    PrimarySource,
     PrimarySourceProviderError,
     PrimarySourceUnavailable,
 )
@@ -105,14 +106,17 @@ class CompanyKnowledgeService:
         sources: PrimarySourceResolver | None = None,
         extractor: CompanyKnowledgeExtractor | None = None,
         outcomes: KnowledgeOutcomeStore | None = None,
+        clock: Callable[[], datetime] | None = None,
     ) -> None:
         self._store = store or JsonCompanyKnowledgeStore()
         self._sources = sources or PrimarySourceResolver()
 
         # The acquisition-outcome journal. Written by the two funded
         # doors and by nothing else — `established()` never touches it,
-        # because a page view is not an attempt.
+        # because a page view is not an attempt. The clock is a seam so
+        # the attempted-at contract is deterministic in tests.
         self._outcomes = outcomes or KnowledgeOutcomeStore()
+        self._clock = clock or (lambda: datetime.now(UTC))
 
         # The reader is composed from configuration rather than passed
         # in, so the pipeline reads filings by default. A caller that
@@ -168,6 +172,13 @@ class CompanyKnowledgeService:
     ) -> KnowledgeOutcome:
         """Run one funded attempt, then append exactly one event.
 
+        **`attempted_at` means attempted-at.** The clock is read before
+        the funded body begins, because an extraction can take long
+        enough that a stamp taken afterwards would date the attempt by
+        its outcome. Capturing a time is not writing an event: the
+        append still happens only after the outcome is known, so a
+        killed attempt carries its captured time nowhere.
+
         **Ordering is the contract.** The body writes any observation it
         takes to the knowledge store first; this appends afterwards, so
         a process killed between the two leaves the knowledge usable and
@@ -178,13 +189,14 @@ class CompanyKnowledgeService:
         """
 
         attempt = _Attempt()
+        attempted_at = self._clock()
 
         outcome = await run(symbol, attempt)
 
         self._outcomes.append(
             KnowledgeAcquisitionEvent(
-                symbol=symbol.upper().strip(),
-                attempted_at=datetime.now(UTC),
+                symbol=symbol,
+                attempted_at=attempted_at,
                 state=outcome.state,
                 source_key=attempt.source_key,
                 source_published=attempt.source_published,
@@ -352,10 +364,15 @@ class CompanyKnowledgeService:
 
         if self._extractor is None:
             attempt.failure = "NoReaderConfigured"
+            # Before source resolution, so the refused attempt costs no
+            # provider call — and what the store already holds from an
+            # earlier document still stands, on this path as on every
+            # other non-available terminal path.
+            self._note_usable(symbol, attempt)
 
             return KnowledgeOutcome(
                 state=KnowledgeState.UNAVAILABLE,
-                knowledge=None,
+                knowledge=self._latest(symbol),
                 absent_because=(
                     self._unreadable
                     or "No reader is configured, so nothing can be observed."
@@ -414,9 +431,13 @@ class CompanyKnowledgeService:
         attempt.observations_after = len(observations)
 
         if not observations:
+            # Nothing from the current document survived, and an older
+            # document's knowledge — where one exists — still stands.
+            self._note_usable(symbol, attempt)
+
             return KnowledgeOutcome(
                 state=KnowledgeState.INVALID_EXTRACTION,
-                knowledge=None,
+                knowledge=self._latest(symbol),
                 absent_because=refused,
             )
 
@@ -492,12 +513,21 @@ class CompanyKnowledgeService:
         return consensus_of(observations) if observations else None
 
 
-def _published(source: object) -> str:
-    """The document's own publication date, where the source states one."""
+def _published(source: PrimarySource) -> str:
+    """The document's own publication date, ISO-formatted.
 
-    published = getattr(source, "published", None)
+    `published_on` is the canonical field and it is required on
+    `PrimarySource`, so a resolved source always carries one. The
+    journal's `source_published` stays empty only where no source was
+    resolved at all — the attempt scratchpad's own default, never a
+    probe of a field that might not exist. The first cut of this
+    helper read `.published` through `getattr`, a field no source has
+    ever had, so every event recorded an empty date while claiming the
+    source was resolved; typing the parameter is what makes that
+    mistake unwritable.
+    """
 
-    return "" if published is None else str(published)
+    return source.published_on.isoformat()
 
 
 def _safe_reason(outcome: KnowledgeOutcome, attempt: _Attempt) -> str:

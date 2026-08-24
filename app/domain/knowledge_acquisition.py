@@ -47,10 +47,20 @@ about `evidence_score`.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import datetime
 
 from app.domain.knowledge_state import KnowledgeState
+
+#: What a canonical MOVRvest symbol may look like as a journal filename.
+#: Alphanumeric first, then alphanumerics, dots and hyphens — which
+#: admits `NESN.ZU`, `VOW3.DE`, `NOVO-B.CO` and `1INCH`, and refuses
+#: every path-shaping input (`../DIS`, `A/B`, a lone whitespace) at the
+#: type rather than at the filesystem. Validation, not encoding: two
+#: distinct symbols are never rewritten onto one filename, because
+#: nothing is rewritten at all.
+SAFE_SYMBOL = re.compile(r"^[A-Z0-9][A-Z0-9.\-]*$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,14 +116,49 @@ class KnowledgeAcquisitionEvent:
     ended_in_refusal: bool = False
 
     def __post_init__(self) -> None:
-        if not self.symbol.strip():
+        # Normalized once, here, so every consumer downstream — the
+        # store's filename, the history's identity check — reads one
+        # canonical spelling rather than each normalizing its own way.
+        object.__setattr__(self, "symbol", self.symbol.upper().strip())
+
+        if not self.symbol:
             raise ValueError("an acquisition event names the symbol it attempted")
+
+        if not SAFE_SYMBOL.fullmatch(self.symbol):
+            raise ValueError(f"{self.symbol!r} is not a canonical MOVRvest symbol")
 
         if self.attempted_at.tzinfo is None:
             raise ValueError("an acquisition event is stamped in an aware timezone")
 
+        # The two dimensions must agree with each other. Usable
+        # knowledge is a claim about the store, and it is checkable:
+        # it implies stored observations and the document they belong
+        # to, and its absence implies neither survives on the event.
         if self.knowledge_usable and self.observations_after <= 0:
             raise ValueError("usable knowledge implies at least one stored observation")
+
+        if self.knowledge_usable and self.usable_source_key is None:
+            raise ValueError("usable knowledge implies the document it was read from")
+
+        if not self.knowledge_usable and (
+            self.usable_source_key is not None or self.observations_after > 0
+        ):
+            raise ValueError(
+                "unusable knowledge cannot carry a usable source key or "
+                "restorable observations"
+            )
+
+        if self.state.is_available and not self.knowledge_usable:
+            raise ValueError(
+                "an available outcome without usable knowledge is a "
+                "contradiction, not a state"
+            )
+
+        if self.ended_in_refusal and not self.because.strip():
+            raise ValueError("a refusal-ended attempt carries its safe reason")
+
+        if self.state is KnowledgeState.DOCUMENT_REFUSED and not self.because.strip():
+            raise ValueError("a document refusal carries its safe typed reason")
 
     @property
     def had_prior_knowledge(self) -> bool:

@@ -598,6 +598,401 @@ def test_the_history_is_a_projection_and_stores_nothing() -> None:
     assert history.skipped == 0
 
 
+# ── provenance: the canonical publication field ─────────────────────
+
+
+def test_the_event_records_the_sources_own_publication_date(
+    tmp_path: Path,
+) -> None:
+    """Production-shaped: a real `PrimarySource`, its exact ISO date.
+
+    The first cut read `.published` through `getattr` — a field no
+    source has ever had — so every event recorded an empty date while
+    claiming the source was resolved. The fixture is the real
+    `PrimarySource` the service suite uses, published 2025-11-13.
+    """
+
+    store = outcomes(tmp_path)
+
+    asyncio.run(
+        service(tmp_path, ProviderStub(), ExtractorStub(), store).knowledge("DIS")
+    )
+
+    event = store.history("DIS").latest
+
+    assert event is not None
+    assert event.source_published == "2025-11-13"
+
+
+def test_no_production_path_reads_a_published_field() -> None:
+    """`published_on` is the canonical field; `.published` never existed.
+
+    Enforced at the AST so the probe cannot come back under a different
+    spelling of the same mistake.
+    """
+
+    import ast
+    import pathlib as _pathlib
+
+    tree = ast.parse(
+        _pathlib.Path("app/services/company_knowledge_service.py").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    accessed = {
+        node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)
+    } | {
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+    }
+
+    assert "published" not in accessed
+    assert "published_on" in {
+        node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)
+    }
+
+
+# ── strict decoding: malformed is unreadable, never repaired ────────
+
+
+def valid_line(**overrides: object) -> str:
+    """A line this writer would produce, with one field bent per test."""
+
+    row: dict[str, object] = {
+        "schema": SCHEMA,
+        "symbol": "DIS",
+        "attempted_at": "2026-08-24T18:00:00+00:00",
+        "state": "unavailable",
+        "source_key": None,
+        "source_published": "",
+        "because": "",
+        "knowledge_usable": False,
+        "usable_source_key": None,
+        "observations_after": 0,
+        "ended_in_refusal": False,
+    }
+    row.update(overrides)
+
+    return json.dumps(row) + "\n"
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"knowledge_usable": "false"},
+        {"ended_in_refusal": 0},
+        {"observations_after": "1"},
+        {"observations_after": -1},
+        {"observations_after": True},
+        {"attempted_at": "2026-08-24T18:00:00"},
+        {"source_published": "13/11/2025"},
+        {"symbol": ""},
+        {"symbol": 7},
+        {"because": None},
+        {"state": "acquired"},
+        {"source_key": 7},
+    ],
+    ids=[
+        "usable-as-string",
+        "refusal-as-zero",
+        "count-as-string",
+        "count-negative",
+        "count-as-boolean",
+        "naive-timestamp",
+        "invalid-publication-date",
+        "empty-symbol",
+        "numeric-symbol",
+        "null-because",
+        "unknown-state",
+        "numeric-source-key",
+    ],
+)
+def test_a_malformed_current_schema_line_is_unreadable(
+    tmp_path: Path, overrides: dict[str, object]
+) -> None:
+    """No `bool()`, `int()` or `str()` ever repairs a stored value.
+
+    The decisive row: `"knowledge_usable": "false"` — a coercing reader
+    turns it into `True`, because a non-empty string is truthy. A
+    journal whose reader can invert a stored fact is worse than no
+    journal.
+    """
+
+    store = outcomes(tmp_path)
+    store.path_for("DIS").parent.mkdir(parents=True, exist_ok=True)
+    store.path_for("DIS").write_text(valid_line(**overrides))
+
+    history = store.history("DIS")
+
+    assert history.events == (), "the bent line decoded"
+    assert history.unreadable_records == 1
+    assert history.is_complete is False
+
+
+def test_the_unbent_control_line_decodes(tmp_path: Path) -> None:
+    """The fixture itself is valid — so each refusal above is the bend."""
+
+    store = outcomes(tmp_path)
+    store.path_for("DIS").parent.mkdir(parents=True, exist_ok=True)
+    store.path_for("DIS").write_text(valid_line())
+
+    history = store.history("DIS")
+
+    assert history.attempts == 1
+    assert history.is_complete is True
+    assert history.events[0].knowledge_usable is False
+
+
+def test_a_boolean_schema_is_never_schema_one(tmp_path: Path) -> None:
+    """JSON `true` equals `1` in Python; it is still not schema 1."""
+
+    store = outcomes(tmp_path)
+    store.path_for("DIS").parent.mkdir(parents=True, exist_ok=True)
+    store.path_for("DIS").write_text(valid_line(schema=True))
+
+    history = store.history("DIS")
+
+    assert history.events == ()
+    assert history.unsupported_schemas == (("True", 1),)
+
+
+# ── construction invariants ─────────────────────────────────────────
+
+
+def test_an_available_outcome_requires_usable_knowledge() -> None:
+    with pytest.raises(ValueError, match="contradiction"):
+        KnowledgeAcquisitionEvent(
+            symbol="DIS",
+            attempted_at=MOMENT,
+            state=KnowledgeState.AVAILABLE_ACQUIRED,
+            knowledge_usable=False,
+        )
+
+
+def test_usable_knowledge_requires_its_document() -> None:
+    with pytest.raises(ValueError, match="document it was read from"):
+        KnowledgeAcquisitionEvent(
+            symbol="DIS",
+            attempted_at=MOMENT,
+            state=KnowledgeState.AVAILABLE_CACHED,
+            knowledge_usable=True,
+            observations_after=1,
+        )
+
+
+def test_unusable_knowledge_carries_no_key_and_no_count() -> None:
+    with pytest.raises(ValueError, match="unusable knowledge"):
+        KnowledgeAcquisitionEvent(
+            symbol="DIS",
+            attempted_at=MOMENT,
+            state=KnowledgeState.UNAVAILABLE,
+            knowledge_usable=False,
+            usable_source_key="0001744489-25-000155",
+        )
+
+    with pytest.raises(ValueError, match="unusable knowledge"):
+        KnowledgeAcquisitionEvent(
+            symbol="DIS",
+            attempted_at=MOMENT,
+            state=KnowledgeState.UNAVAILABLE,
+            knowledge_usable=False,
+            observations_after=3,
+        )
+
+
+def test_a_refusal_ended_attempt_carries_its_reason() -> None:
+    with pytest.raises(ValueError, match="safe reason"):
+        KnowledgeAcquisitionEvent(
+            symbol="DIS",
+            attempted_at=MOMENT,
+            state=KnowledgeState.INVALID_EXTRACTION,
+            ended_in_refusal=True,
+            because="",
+        )
+
+
+def test_a_document_refusal_carries_its_typed_reason() -> None:
+    with pytest.raises(ValueError, match="typed reason"):
+        KnowledgeAcquisitionEvent(
+            symbol="DIS",
+            attempted_at=MOMENT,
+            state=KnowledgeState.DOCUMENT_REFUSED,
+            because="  ",
+        )
+
+
+# ── symbol identity and path safety ─────────────────────────────────
+
+
+def test_the_event_normalizes_its_symbol_once() -> None:
+    event = KnowledgeAcquisitionEvent(
+        symbol="  dis ",
+        attempted_at=MOMENT,
+        state=KnowledgeState.UNAVAILABLE,
+    )
+
+    assert event.symbol == "DIS"
+
+
+@pytest.mark.parametrize("symbol", ["NESN.ZU", "VOW3.DE", "NOVO-B.CO", "BNP.PA"])
+def test_dotted_and_hyphenated_symbols_round_trip(tmp_path: Path, symbol: str) -> None:
+    store = outcomes(tmp_path)
+
+    store.append(
+        KnowledgeAcquisitionEvent(
+            symbol=symbol,
+            attempted_at=MOMENT,
+            state=KnowledgeState.UNAVAILABLE,
+        )
+    )
+
+    history = store.history(symbol)
+
+    assert history.attempts == 1
+    assert history.events[0].symbol == symbol
+    assert store.path_for(symbol).resolve().parent == (tmp_path / "outcomes").resolve()
+
+
+@pytest.mark.parametrize(
+    "hostile", ["../DIS", "A/B", "   ", "DIS\u0000", ".hidden", "a\\b"]
+)
+def test_path_shaping_symbols_never_reach_the_filesystem(
+    tmp_path: Path, hostile: str
+) -> None:
+    """Validated, never encoded — and refused before any path exists."""
+
+    store = outcomes(tmp_path)
+
+    with pytest.raises(ValueError, match="canonical MOVRvest symbol"):
+        store.path_for(hostile)
+
+    with pytest.raises(ValueError, match="canonical MOVRvest symbol"):
+        store.history(hostile)
+
+    with pytest.raises(ValueError):
+        KnowledgeAcquisitionEvent(
+            symbol=hostile,
+            attempted_at=MOMENT,
+            state=KnowledgeState.UNAVAILABLE,
+        )
+
+    assert not (tmp_path / "outcomes").exists() or not any(
+        (tmp_path / "outcomes").iterdir()
+    ), "a hostile symbol created something"
+
+
+def test_another_symbols_event_is_unreadable_not_pooled(tmp_path: Path) -> None:
+    """A journal keyed by symbol may not serve one symbol's history
+    out of another's attempts."""
+
+    store = outcomes(tmp_path)
+
+    asyncio.run(
+        service(tmp_path, ProviderStub(), ExtractorStub(), store).knowledge("DIS")
+    )
+
+    with store.path_for("DIS").open("a", encoding="utf-8") as stream:
+        stream.write(valid_line(symbol="MSFT"))
+
+    history = store.history("DIS")
+
+    assert history.attempts == 1
+    assert all(e.symbol == "DIS" for e in history.events)
+    assert history.unreadable_records == 1
+    assert history.latest is None, "an alien line breaks the complete claim"
+
+
+# ── prior knowledge on the no-reader observe path ───────────────────
+
+
+def test_a_no_reader_observe_preserves_prior_knowledge(tmp_path: Path) -> None:
+    """Amendment 4's control, exactly as worded.
+
+    First store valid knowledge; then observe through a service with no
+    configured reader. The refused attempt records the prior knowledge
+    beside its own failure, touches no provider and asks no model — and
+    the knowledge itself remains readable.
+    """
+
+    store = outcomes(tmp_path)
+
+    asyncio.run(
+        service(tmp_path, ProviderStub(), ExtractorStub(), store).knowledge("DIS")
+    )
+
+    provider = ProviderStub()
+    unread = CompanyKnowledgeService(
+        store=JsonCompanyKnowledgeStore(tmp_path / "knowledge"),
+        sources=ResolverStub(provider),  # type: ignore[arg-type]
+        extractor=None,
+        outcomes=store,
+    )
+
+    outcome = asyncio.run(unread.observe("DIS"))
+
+    event = store.history("DIS").latest
+
+    assert event is not None
+    assert event.state is KnowledgeState.UNAVAILABLE
+    assert event.knowledge_usable is True
+    assert event.usable_source_key is not None
+    assert event.observations_after == 1
+    assert event.had_prior_knowledge is True
+
+    assert outcome.knowledge is not None, "the earlier reading still serves"
+    assert unread.established("DIS").knowledge is not None
+
+    assert provider.lookups == 0, "the refused attempt resolved a source"
+    assert provider.documents_read == 0, "the refused attempt fetched"
+
+
+# ── attempted-at means attempted-at ─────────────────────────────────
+
+
+def test_attempted_at_is_captured_before_the_funded_body_runs(
+    tmp_path: Path,
+) -> None:
+    """The stamp is the attempt's start, not its end.
+
+    The clock ticks forward one minute per reading, and the extraction
+    itself consumes a tick — so a stamp taken after the body would
+    carry the second tick, and the event must carry the first.
+    """
+
+    from datetime import timedelta
+
+    ticks = [MOMENT + timedelta(minutes=i) for i in range(10)]
+
+    def clock() -> datetime:
+        return ticks.pop(0)
+
+    class TimeConsuming(ExtractorStub):
+        async def extract(self, symbol: str, document: SourceDocument):
+            clock()  # the extraction takes a minute
+
+            return await super().extract(symbol, document)
+
+    store = outcomes(tmp_path)
+    knowing = CompanyKnowledgeService(
+        store=JsonCompanyKnowledgeStore(tmp_path / "knowledge"),
+        sources=ResolverStub(ProviderStub()),  # type: ignore[arg-type]
+        extractor=TimeConsuming(),  # type: ignore[arg-type]
+        outcomes=store,
+        clock=clock,
+    )
+
+    asyncio.run(knowing.knowledge("DIS"))
+
+    event = store.history("DIS").latest
+
+    assert event is not None
+    assert event.attempted_at == MOMENT, (
+        "the event was stamped after the extraction rather than before it"
+    )
+
+
 # ── nothing decision-bearing moved ──────────────────────────────────
 
 

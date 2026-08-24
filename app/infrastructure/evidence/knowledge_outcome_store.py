@@ -25,11 +25,12 @@ distinction this stream exists to stop guessing at.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
 from app.domain.knowledge_acquisition import (
+    SAFE_SYMBOL,
     KnowledgeAcquisitionEvent,
     KnowledgeOutcomeHistory,
 )
@@ -52,7 +53,29 @@ class KnowledgeOutcomeStore:
         )
 
     def path_for(self, symbol: str) -> Path:
-        return self._root / f"{symbol.upper().strip()}.jsonl"
+        """The one file this symbol's outcomes live in, or a refusal.
+
+        Validated, never encoded: a symbol that is not canonical is
+        refused outright rather than rewritten into a filename, so two
+        distinct symbols can never collide on one file and no
+        path-shaping input (`../DIS`, `A/B`, whitespace) reaches the
+        filesystem at all. The containment check is belt on top of
+        braces — the pattern already admits no separator — and it is an
+        invariant worth crashing on rather than a case worth handling.
+        """
+
+        normalized = symbol.upper().strip()
+
+        if not SAFE_SYMBOL.fullmatch(normalized):
+            raise ValueError(f"{symbol!r} is not a canonical MOVRvest symbol")
+
+        path = self._root / f"{normalized}.jsonl"
+
+        assert path.resolve().parent == self._root.resolve(), (
+            f"{symbol!r} resolved outside the journal root"
+        )
+
+        return path
 
     # ── writing ─────────────────────────────────────────────────────
 
@@ -105,18 +128,30 @@ class KnowledgeOutcomeStore:
                     unreadable += 1
                     continue
 
-                if isinstance(row, dict) and row.get("schema") != SCHEMA:
+                declared = row.get("schema") if isinstance(row, dict) else None
+
+                if isinstance(row, dict) and (
+                    type(declared) is not int or declared != SCHEMA
+                ):
                     # Refused, never pooled: reading a line whose shape
                     # this reader does not understand as though it did
                     # is the silent cross-schema read the knowledge
-                    # store's own contract forbids.
-                    declared = str(row.get("schema"))
-                    unsupported[declared] = unsupported.get(declared, 0) + 1
+                    # store's own contract forbids. `type is int`
+                    # rather than isinstance, because a JSON `true`
+                    # decodes to a bool that *equals* 1 — and a boolean
+                    # schema is not schema 1, it is a shape this reader
+                    # has never written.
+                    unsupported[str(declared)] = unsupported.get(str(declared), 0) + 1
                     continue
 
                 decoded = _decode(row)
 
-                if decoded is None:
+                if decoded is None or decoded.symbol != normalized:
+                    # A malformed current-schema line, or another
+                    # symbol's event inside this symbol's file. Both
+                    # are counted, and neither is pooled: a journal
+                    # keyed by symbol may not serve one symbol's
+                    # history out of another's attempts.
                     unreadable += 1
                     continue
 
@@ -146,28 +181,114 @@ def _encode(event: KnowledgeAcquisitionEvent) -> dict[str, Any]:
     }
 
 
+def _string_or_none(value: Any) -> tuple[bool, str | None]:
+    """The value exactly as stored, or a refusal. Never a repair."""
+
+    if value is None:
+        return True, None
+
+    if type(value) is str:
+        return True, value
+
+    return False, None
+
+
 def _decode(row: Any) -> KnowledgeAcquisitionEvent | None:
+    """One stored line, decoded strictly or refused whole.
+
+    **A current-schema malformed record is unreadable, not repaired.**
+    The first cut of this decoder ran every field through `bool()`,
+    `int()` and `str()` — which would have read a stored
+    `"knowledge_usable": "false"` as `True`, because a non-empty string
+    is truthy. A journal whose reader can invert a stored fact while
+    "repairing" it is worse than no journal, so every field is checked
+    for its exact type and an exact-schema line that fails any check is
+    counted unreadable, never coerced into a plausible event.
+    """
+
     if not isinstance(row, dict):
+        return None
+
+    symbol = row.get("symbol")
+
+    if type(symbol) is not str or not symbol.strip():
+        return None
+
+    raw_attempted = row.get("attempted_at")
+
+    if type(raw_attempted) is not str:
+        return None
+
+    try:
+        attempted_at = datetime.fromisoformat(raw_attempted)
+    except ValueError:
+        return None
+
+    if attempted_at.tzinfo is None:
+        return None
+
+    raw_state = row.get("state")
+
+    if type(raw_state) is not str:
+        return None
+
+    try:
+        state = KnowledgeState(raw_state)
+    except ValueError:
+        return None
+
+    source_ok, source_key = _string_or_none(row.get("source_key"))
+    usable_ok, usable_source_key = _string_or_none(row.get("usable_source_key"))
+
+    if not source_ok or not usable_ok:
+        return None
+
+    source_published = row.get("source_published")
+
+    if type(source_published) is not str:
+        return None
+
+    if source_published:
+        try:
+            date.fromisoformat(source_published)
+        except ValueError:
+            return None
+
+    because = row.get("because")
+
+    if type(because) is not str:
+        return None
+
+    knowledge_usable = row.get("knowledge_usable")
+    ended_in_refusal = row.get("ended_in_refusal")
+
+    # `type is bool`, not isinstance-and-truthiness: a stored `0` or
+    # `"false"` is a record this writer never produced.
+    if type(knowledge_usable) is not bool or type(ended_in_refusal) is not bool:
+        return None
+
+    observations_after = row.get("observations_after")
+
+    # `type is int` refuses bool too — `True` is an int by inheritance
+    # and a count of `True` observations is not a count.
+    if type(observations_after) is not int or observations_after < 0:
         return None
 
     try:
         return KnowledgeAcquisitionEvent(
-            symbol=str(row["symbol"]),
-            attempted_at=datetime.fromisoformat(str(row["attempted_at"])),
-            state=KnowledgeState(str(row["state"])),
-            source_key=(
-                str(row["source_key"]) if row.get("source_key") is not None else None
-            ),
-            source_published=str(row.get("source_published", "")),
-            because=str(row.get("because", "")),
-            knowledge_usable=bool(row.get("knowledge_usable", False)),
-            usable_source_key=(
-                str(row["usable_source_key"])
-                if row.get("usable_source_key") is not None
-                else None
-            ),
-            observations_after=int(row.get("observations_after", 0)),
-            ended_in_refusal=bool(row.get("ended_in_refusal", False)),
+            symbol=symbol,
+            attempted_at=attempted_at,
+            state=state,
+            source_key=source_key,
+            source_published=source_published,
+            because=because,
+            knowledge_usable=knowledge_usable,
+            usable_source_key=usable_source_key,
+            observations_after=observations_after,
+            ended_in_refusal=ended_in_refusal,
         )
-    except (KeyError, TypeError, ValueError):
+    except ValueError:
+        # A line whose fields are each well-typed and whose whole
+        # violates the event's own invariants — refused for the same
+        # reason, under the same count.
         return None

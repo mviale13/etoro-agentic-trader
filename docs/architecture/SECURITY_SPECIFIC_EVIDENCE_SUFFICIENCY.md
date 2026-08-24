@@ -412,11 +412,16 @@ produce *no* terminal event rather than a manufactured one. Pinned by a
 test that kills the process between the two writes and asserts the
 knowledge survives usable while the journal stays empty.
 
-### Where it appends, and where it cannot
+### Who owns persistence, and who merely reaches it
 
-**Appends — the funded doors, one terminal event per attempt:**
+**Persistence is owned by the two service doors** —
+`CompanyKnowledgeService.knowledge()` and `.observe()` append exactly
+one terminal event each, inside the door itself. The callers below are
+the production paths that currently *reach* those doors; they own
+nothing, and a future caller cannot bypass persistence except by
+deliberately calling the service's private internals:
 
-| call site | command |
+| current caller | command |
 |---|---|
 | `app/commands/knowledge.py:35` | `movrvest knowledge SYMBOL` |
 | `app/commands/understanding.py:24` | `movrvest understanding SYMBOL` |
@@ -424,7 +429,8 @@ knowledge survives usable while the journal stays empty.
 | `app/commands/observe.py:25,27` | `movrvest observe SYMBOL` |
 | `app/services/playbook_selection_service.py:57` | `movrvest playbook SYMBOL` |
 
-**Appends nothing — the read-only doors. A page view is not an attempt:**
+**`established()` remains the non-appending read-only door. A page
+view is not an attempt:**
 
 | call site | surface |
 |---|---|
@@ -462,6 +468,40 @@ malformed records are counted apart and never pooled.
 It prevents a complete claim about the acquisition lifecycle, not a
 claim about the company; the two live in different stores, and a test
 ruins the journal and asserts the knowledge still serves.
+
+### The fail-closed amendments (owner, 2026-08-24)
+
+Corrected before merge, each with its own pin:
+
+- **Provenance**: the canonical field is `PrimarySource.published_on`.
+  The first cut probed a nonexistent `.published` through `getattr`, so
+  every event recorded an empty date; the helper is now typed against
+  `PrimarySource`, a production-shaped control asserts the exact ISO
+  date, and an AST test bans any `.published` access on the path.
+- **Strict decoding**: a current-schema malformed record is unreadable,
+  never repaired. No `bool()`/`int()`/`str()` coercion — the decisive
+  case is `"knowledge_usable": "false"`, which a coercing reader
+  inverts to `True`. Twelve bends pinned, each against an unbent
+  control line; a boolean schema value is never schema 1.
+- **Construction invariants**: available ⇒ usable; usable ⇒ positive
+  observations *and* a usable source key; unusable ⇒ neither; a
+  refusal-ended attempt and a document refusal each carry a non-empty
+  safe reason. No measured path contradicted any of them.
+- **Symbol and path identity**: the event normalizes its symbol once at
+  construction and validates it against `SAFE_SYMBOL`; a decoded row
+  whose symbol is not the requested canonical symbol counts as
+  unreadable, never pooled; `../DIS`, `A/B`, NUL and whitespace-only
+  are refused before any path exists, with a containment assertion,
+  while `NESN.ZU`, `VOW3.DE` and `NOVO-B.CO` round-trip; nothing is
+  encoded, so two symbols cannot collide on one file.
+- **Prior knowledge on every non-available path**: the no-reader
+  `observe()` and the observe-path `INVALID_EXTRACTION` now record
+  last-known knowledge exactly as every other non-available terminal
+  does, at zero provider and model cost.
+- **`attempted_at` means attempted-at**: the clock is injected and read
+  before the funded body begins; the append still happens only after
+  the outcome is known, so a killed attempt carries its captured time
+  nowhere.
 
 ### Boundaries held
 
