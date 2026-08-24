@@ -78,11 +78,25 @@ class DecisionEvidenceBuilder:
     # committee rates such holdings HOLD, and the Artificial CIO must not
     # reject an investment case its own committee is content to hold.
     #
-    # **And no vote of that committee rejects one either.** The company
-    # value/quality/momentum vote once mapped SELL to an analyst veto and
-    # BUY to the execution trigger; the owner's ruling of 2026-08-24
-    # removed both, because a one-session provider price move decided
-    # them. The vote remains, visible and descriptive.
+    # **And no *direction* of that committee rejects or authorizes one
+    # either.** The company value/quality/momentum vote once mapped SELL
+    # to an analyst veto and BUY to the execution trigger; the owner's
+    # ruling of 2026-08-24 removed both, because a one-session provider
+    # price move decided them.
+    #
+    # **The vote is not therefore descriptive.** Its *direction* is;
+    # its *magnitude* is not. `_evidence_score` below still averages
+    # the company vote's confidence into `evidence_score`, and that
+    # confidence is `50 + |score| * 50` — it rises with how far the
+    # vote is from neutral, in either direction. AMD's evidence score
+    # went 71 to 83 on the day its price fell 4.28%.
+    #
+    # Said exactly: the company vote's SELL and BUY directions no
+    # longer directly reject or authorize a case. Its confidence
+    # remains decision-bearing through `evidence_score`; that residual
+    # changes one live blocker, can reach a state threshold, and is
+    # **not** accepted as the final contract. See
+    # `docs/architecture/COMPANY_VOTE_DECISION_AUTHORITY.md`.
 
     portfolio_fit: PortfolioFit = field(default_factory=PortfolioFit)
 

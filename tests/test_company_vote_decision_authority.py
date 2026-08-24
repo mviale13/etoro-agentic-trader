@@ -1,10 +1,17 @@
-"""The company vote describes; it no longer decides.
+"""The company vote's direct decision gates, removed.
 
-The owner's ruling of 2026-08-24. A one-session price move may remain
-visible as a descriptive momentum signal. It may not, by itself or
-through the composite company vote, reject an investment thesis,
-authorize a recommendation, manufacture an analyst veto, or alter a
-capital envelope.
+The owner's ruling of 2026-08-24, stated exactly:
+
+    The company vote's SELL and BUY directions no longer directly
+    reject or authorize a case. Its confidence remains decision-bearing
+    through `evidence_score`; that residual changes one live blocker,
+    can reach a state threshold, and is **not** accepted as the final
+    contract.
+
+**This is not "the vote is now descriptive".** Its *direction* is; its
+*magnitude* is not, and the difference is the whole residual. What the
+ruling removed is the two direct mappings — a SELL that rejected and a
+BUY that authorized.
 
 What this replaces, measured on the live book:
 
@@ -23,9 +30,15 @@ slice introduces no technical-analysis trigger. A case that satisfies
 quality, evidence, valuation, risk and portfolio fit is recommended on
 those alone.
 
+**Path C survives and is not accepted as final.** `evidence_score`
+still averages the vote's confidence, which is magnitude-derived — so
+a larger one-session move still raises it. The residual is measured
+and pinned at the end of this file rather than described away.
+
 This is the volatility ruling of 2026-08-21 applied one layer up:
 market behaviour may inform risk, timing and eventual sizing without
-becoming a judgment about business quality.
+becoming a judgment about business quality — a boundary this slice
+moves toward and does not yet reach.
 """
 
 from __future__ import annotations
@@ -182,13 +195,19 @@ def test_amd_does_not_move_on_the_daily_change(change: float) -> None:
     the session moves. Before this ruling −0.49% left AMD at PREPARE
     and −0.50% rejected it; the whole decision turned on one hundredth
     of a percentage point of provider-reported price.
+
+    AMD's *state* is now stable across the sweep. That is a fact about
+    AMD, whose quality band holds it at PREPARE either way — not a
+    general claim that momentum can no longer move a state. Path C can
+    still reach an evidence threshold; see the residual test below.
     """
 
     reading = signals(change)
     vote = CompanyCommitteeService().evaluate("AMD", reading)
 
     # The vote still swings across the boundary — it is still measured,
-    # still banded, and still says what it says.
+    # still banded, and still says what it says. Its *direction* now
+    # reaches no gate; its magnitude still reaches `evidence_score`.
     assert reading.value.valuation == "EXPENSIVE"
     assert reading.quality.quality == "MEDIUM"
 
@@ -203,7 +222,9 @@ def test_amd_does_not_move_on_the_daily_change(change: float) -> None:
         )
     )
 
-    # ...and none of it reaches the decision.
+    # ...and no direction of it reaches this decision. AMD is held by
+    # its quality band at both ends of the boundary that used to
+    # decide between PREPARE and REJECT.
     assert decision.state is DecisionState.PREPARE
     assert decision.blocker is not None
     assert decision.blocker.kind is BlockerKind.QUALITY_GATE
@@ -212,8 +233,13 @@ def test_amd_does_not_move_on_the_daily_change(change: float) -> None:
     assert vote.recommendation in {"BUY", "HOLD", "SELL"}
 
 
-def test_the_sell_vote_still_happens_and_reaches_nothing() -> None:
-    """The committee still says SELL on the day it said SELL."""
+def test_the_sell_vote_still_happens_and_reaches_no_direct_gate() -> None:
+    """The committee still says SELL on the day it said SELL.
+
+    "Reaches no direct gate" rather than "reaches nothing": the vote's
+    confidence still reaches `evidence_score`. Only the direction is
+    disconnected here.
+    """
 
     vote = CompanyCommitteeService().evaluate("AMD", signals(-4.28))
 

@@ -883,7 +883,8 @@ one decision-shaped fallback unreachable. Two committee packages are
 market/account and never reaches `decide()`; `app/application/committees/`
 reviews one security — with the naming debt written down.
 
-**And the most powerful bit is gone** (the Company Vote ruling,
+**And the most powerful bit's two direct gates are gone** (the Company
+Vote ruling,
 [`COMPANY_VOTE_DECISION_AUTHORITY.md`](docs/architecture/COMPANY_VOTE_DECISION_AUTHORITY.md),
 accepted and built). The audit's `analyst_veto` was never an analyst:
 it was `company.recommendation == "SELL"` from the three-band vote, and
@@ -901,16 +902,26 @@ digital assets untouched by construction. `veto-sell`, `actionable-buy`,
 `BlockerKind.ANALYST_VETO` and `EXECUTION_TRIGGER` are removed rather
 than left unread.
 
-**The one authority deliberately left standing is named, not glossed.**
-The vote's *confidence* still feeds `evidence_score`, and it rises with
-the vote's **magnitude** — so AMD's evidence went 71 → 83 on the day
-it fell 4.28%, the platform calling the case better evidenced because
-the price dropped. It stays because `cognitive_confidence` is
-`(portfolio + market + risk) / 3`, entirely account-level: dropping the
-company term makes `evidence_score` identical for every security and
-three evidence gates security-blind. **0 states move through it today
-and 1 blocker does** (MSFT), and the state crossing is reachable rather
-than impossible — a genuine coverage measure needs a policy ruling.
+**Say it exactly, because the weaker claim is the true one.** *The
+company vote's SELL and BUY directions no longer directly reject or
+authorize a case. Its confidence remains decision-bearing through
+`evidence_score`; that residual changes one live blocker, can reach a
+state threshold, and is **not** accepted as the final contract.* The
+vote is **not** now descriptive — its *direction* is, its *magnitude*
+is not — and momentum has **not** lost all decision authority.
+
+The residual: `evidence_score` averages the vote's confidence, which is
+`50 + |score| × 50` and so rises with distance from neutral in either
+direction — AMD's evidence went 71 → 83 on the day it fell 4.28%, the
+platform calling the case better evidenced because the price dropped.
+It stays because `cognitive_confidence` is `(portfolio + market +
+risk) / 3`, entirely account-level: dropping the company term makes
+`evidence_score` identical for every security and three evidence gates
+security-blind, and the owner has ruled that trade explicitly
+unacceptable. **0 states move through it today and 1 blocker does**
+(MSFT), and the state crossing is reachable rather than impossible.
+**A security-specific evidence-coverage measurement is the next policy
+slice**, research-only and stopping for a ruling.
 
 **Every decision-bearing constant is a rule with a pinned fingerprint.**
 Sixteen `DecisionRule`s (`app/domain/decision_rules.py`) cover the

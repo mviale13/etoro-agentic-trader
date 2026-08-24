@@ -1,6 +1,21 @@
 # Company Vote Decision Authority
 
-**Status: accepted and built.** Owner ruling, 2026-08-24.
+**Status: direct gates removed and accepted. Path C open.** Owner
+rulings, 2026-08-24.
+
+**The precise claim, used everywhere in this repository:**
+
+> The company vote's SELL and BUY directions no longer directly reject
+> or authorize a case. Its confidence remains decision-bearing through
+> `evidence_score`; that residual changes one live blocker, can reach a
+> state threshold, and is **not** accepted as the final contract.
+
+That is deliberately weaker than the sentence this document first
+carried. The vote is **not** now descriptive: its *direction* is, its
+*magnitude* is not. Momentum has **not** lost all decision authority —
+it has lost the two direct gates.
+
+The owner's behavioural ruling this slice implements:
 
 > A one-session price move may remain visible as a descriptive momentum
 > signal. It may not, by itself or through the composite company vote:
@@ -10,7 +25,10 @@
 
 This is the volatility ruling of 2026-08-21 applied one layer up.
 **Market behaviour may inform risk, timing and eventual sizing without
-becoming a judgment about business quality.**
+becoming a judgment about business quality** — a boundary this slice
+moves toward and does not yet reach, because the third clause
+(*claim that evidence is more complete*) is exactly what Path C still
+does.
 
 ---
 
@@ -77,7 +95,7 @@ Every option produces the **same two movements**, and both are the veto:
 
 | | movements | held securities moved |
 |---|---|---|
-| 1 · descriptive only | AMD `REJECT→PREPARE`, UUUU `REJECT→INVESTIGATE` | **0** |
+| 1 · direction *and* confidence removed | AMD `REJECT→PREPARE`, UUUU `REJECT→INVESTIGATE` | **0** |
 | 2 · direct gates removed | identical | **0** |
 | 3 · SELL veto removed only | identical | **0** |
 
@@ -108,7 +126,8 @@ Two gates deleted from `decision-gates`, re-versioned **@3 → @4**:
 
 **Nothing replaces the execution trigger.** No technical-analysis
 trigger is introduced. A case that satisfies quality, evidence,
-valuation, risk and portfolio fit is recommended on those alone.
+valuation, risk and portfolio fit is recommended on those alone —
+noting that `evidence` there still carries the vote's magnitude.
 
 The vocabulary is *removed*, not left unread: `DecisionEvidence` refuses
 either field at construction, so a caller that still sets one fails
@@ -119,6 +138,10 @@ them — a veto nothing can act on is dead vocabulary that reads as live.
 measured, banded, evidenced and rendered; the committee still states its
 direction and summary; conviction still averages five families; every
 genuine gate still fires; and no policy constant moved.
+
+**And what is untouched that should not be read as settled**: Path C.
+Value, quality and momentum no longer stop a case *through the deleted
+direct branches*; they remain capable of affecting the evidence gates.
 
 ---
 
@@ -178,3 +201,47 @@ No order-capable path is introduced. No valuation, quality, risk,
 portfolio-fit, capital-envelope or allocation-policy threshold changed.
 No new timing model. The digital-asset contract is untouched by
 construction rather than by coincidence.
+
+---
+
+## Owner ruling — 2026-08-24
+
+Recorded after the Stage 0 measurement and the corpus verification
+above, on PR #248.
+
+**Accepted.**
+
+- **Direct-gate removal.** `SELL → analyst veto` and
+  `BUY → execution trigger` are removed. Neither is to be restored or
+  replaced.
+- **Deletion of the unreachable vocabulary** — the `DecisionEvidence`
+  fields, `BlockerKind.ANALYST_VETO`, `BlockerKind.EXECUTION_TRIGGER`,
+  the `veto-sell` and `actionable-buy` rules, `_actionable_now` and
+  `AnalystEvidence.veto`.
+- **`decision-gates@4`**, re-fingerprinted.
+- **The two corpus movements**: AMD `REJECT → PREPARE` and
+  UUUU `REJECT → INVESTIGATE`.
+- **Zero held movements and zero lost courses.**
+
+**Explicitly not accepted.**
+
+- **Path C is not the final evidence-sufficiency contract.** The
+  company vote's magnitude-derived confidence remains a term of
+  `evidence_score`, and it is accepted only as a *residual carried
+  forward*, never as a settled measure of how well a security is
+  evidenced.
+- **Path C is not to be "fixed" by dropping the company term.** Doing
+  so would leave `evidence_score` built from account-level confidence
+  alone and identical across every security, which trades one wrong
+  answer for a worse one.
+- **No replacement formula is to be invented in this PR.**
+
+**Next.** A **security-specific evidence-coverage measurement** is the
+next policy slice: research only, offline, and stopping for a ruling
+before anything is implemented. It must replace magnitude-derived
+confidence without making every security inherit the same account-level
+score and without treating missing information as negative business
+evidence.
+
+**Standing.** Momentum remains visible. No technical-analysis trigger is
+introduced, in this slice or the next.
