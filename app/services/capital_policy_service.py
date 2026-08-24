@@ -26,7 +26,17 @@ from app.domain.capital_policy import (
     ReducePolicy,
     policy_version,
 )
+from app.domain.strategic_allocation import AllocationBand, StrategicAllocation
 from app.services.investor_strategy_service import STRATEGY_PATH
+
+#: Each asset class's operating range, and the field it is stated in.
+#: Required like the targets, and for the same reason.
+_RANGES = {
+    "stocks": "stocks_range_pct",
+    "etfs": "etfs_range_pct",
+    "crypto": "crypto_range_pct",
+    "cash": "cash_range_pct",
+}
 
 SOURCE = "investor_strategy.json"
 
@@ -45,6 +55,12 @@ _REQUIRED = {
     "maximum_crypto_pct": "portfolio_policy",
     "target_cash_pct": "portfolio_policy",
     "minimum_cash_pct": "portfolio_policy",
+    # The owner's strategic allocation (2026-08-24). Required, with no
+    # numeric defaults: a plan this platform invented for the investor
+    # is worse than one it refuses to read.
+    "target_stocks_pct": "portfolio_policy",
+    "target_etfs_pct": "portfolio_policy",
+    "target_crypto_pct": "portfolio_policy",
     "maximum_acceptable_drawdown_pct": "objectives",
 }
 
@@ -123,6 +139,14 @@ class CapitalPolicyService:
 
             values[field] = value
 
+        allocation_reading = _strategic_allocation(raw, values)
+
+        if isinstance(allocation_reading, str):
+            # A contradiction, named exactly. Never a fallback to zeros:
+            # the strategy page showed 0/0/0/5 for as long as the mapper
+            # was allowed to invent a plan, and it totalled 5%.
+            return CapitalPolicyReading(refused_because=allocation_reading)
+
         try:
             reduce_policy = ReducePolicy(str(values["reduce_policy"]))
         except ValueError:
@@ -194,6 +218,7 @@ class CapitalPolicyService:
                 security_risk_unmeasured_max_total_pct=float(
                     values["security_risk_unmeasured_max_total_pct"]  # type: ignore[arg-type]
                 ),
+                allocation=allocation_reading,
                 source=SOURCE,
                 version=policy_version(hashed),
             )
@@ -203,3 +228,65 @@ class CapitalPolicyService:
             )
 
         return CapitalPolicyReading(policy=policy)
+
+
+def _strategic_allocation(
+    raw: dict[str, object],
+    values: dict[str, object],
+) -> StrategicAllocation | str:
+    """The owner's four bands, or the exact contradiction that refused them.
+
+    Every rule of the ruling is enforced by construction — the targets
+    total 100, each band orders minimum <= target <= maximum, the cash
+    band respects the hard minimum and the crypto band the hard maximum
+    — so this reads the fields, hands them to the domain, and returns
+    whatever sentence the domain refused with. Nothing is defaulted and
+    nothing is repaired: a plan this platform completed on the
+    investor's behalf would be its plan, not theirs.
+    """
+
+    block = raw.get("portfolio_policy")
+
+    if not isinstance(block, dict):
+        return "the owner strategy states no portfolio_policy section"
+
+    bands: dict[str, AllocationBand] = {}
+
+    for asset, field in _RANGES.items():
+        stated = block.get(field)
+
+        if not isinstance(stated, dict):
+            return (
+                f"the owner strategy does not state portfolio_policy.{field}, "
+                "and an operating range refuses rather than defaults"
+            )
+
+        minimum, maximum = stated.get("minimum"), stated.get("maximum")
+
+        if not isinstance(minimum, (int, float)) or not isinstance(
+            maximum, (int, float)
+        ):
+            return (
+                f"portfolio_policy.{field} does not state both a numeric "
+                "minimum and maximum"
+            )
+
+        try:
+            bands[asset] = AllocationBand(
+                asset=asset,
+                target_pct=float(values[f"target_{asset}_pct"]),  # type: ignore[arg-type]
+                minimum_pct=float(minimum),
+                maximum_pct=float(maximum),
+            )
+        except (TypeError, ValueError) as error:
+            return f"the owner strategy is contradictory: {error}"
+
+    try:
+        return StrategicAllocation(
+            stocks=bands["stocks"],
+            etfs=bands["etfs"],
+            crypto=bands["crypto"],
+            cash=bands["cash"],
+        )
+    except ValueError as error:
+        return f"the owner strategy is contradictory: {error}"

@@ -231,12 +231,25 @@ def holdings_by_security(
 
 @dataclass(frozen=True, slots=True)
 class RecordedAllocation:
-    """One asset class against the investor's own target."""
+    """One asset class against the investor's own target and range."""
 
     asset: str
     current_pct: float | None
     target_pct: float
     difference_pct: float | None
+
+    #: The operating range the target sits inside. Tactical latitude,
+    #: not a limit: being outside the target but inside the range is a
+    #: normal state (owner ruling, 2026-08-24). Both None only on a
+    #: record written before the ranges existed.
+    minimum_pct: float | None = None
+    maximum_pct: float | None = None
+
+    #: "below_range" | "within_range" | "above_range" | "unmeasured",
+    #: and the CIO's worded guidance for it. Empty on a pre-ruling
+    #: record, which then carries no standing rather than a guessed one.
+    standing: str = ""
+    stated: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -273,6 +286,15 @@ class RecordedPortfolio:
     #: cycle time by `PolicyAnalyzer` because that is where both halves
     #: are in hand. A difference of None is unmeasured, never zero.
     allocations: tuple[RecordedAllocation, ...] = ()
+
+    #: The CIO's account of the account's shape, composed once during
+    #: the cycle from that cycle's own portfolio reading and the active
+    #: policy. Rendered from this record — a page recomputes nothing,
+    #: so no two surfaces can disagree about what the review said.
+    #: Empty on a pre-ruling record and wherever no allocation could be
+    #: read, which the refusal below then words.
+    allocation_guidance: str = ""
+    allocation_guidance_refused: str = ""
 
     #: None where any required comparison was unmeasured — an unread
     #: allocation is never credited as compliant.

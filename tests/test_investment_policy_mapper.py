@@ -14,6 +14,9 @@ def complete_strategy() -> dict[str, Any]:
         },
         "portfolio_policy": {
             "target_cash_pct": 20,
+            "target_stocks_pct": 40,
+            "target_etfs_pct": 15,
+            "target_crypto_pct": 25,
             "maximum_single_position_pct": 15,
             "maximum_crypto_pct": 25,
         },
@@ -27,6 +30,19 @@ def test_maps_questionnaire_to_policy() -> None:
 
     assert policy.risk_profile == "long_term"
     assert policy.target.cash == 20
+
+    # Every target is the investor's own. All three non-cash targets
+    # were hardcoded to zero here until the owner's ruling of
+    # 2026-08-24, so the strategy page showed 0/0/0/5 and totalled 5%.
+    assert policy.target.stocks == 40
+    assert policy.target.etfs == 15
+    assert policy.target.crypto == 25
+    assert (
+        policy.target.stocks
+        + policy.target.etfs
+        + policy.target.crypto
+        + policy.target.cash
+    ) == 100
     assert policy.constraints.max_single_position == 15
     assert policy.constraints.max_crypto == 25
     assert policy.constraints.rebalance_threshold == 5

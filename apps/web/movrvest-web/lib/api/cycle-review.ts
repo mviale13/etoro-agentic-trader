@@ -126,6 +126,17 @@ export interface RecordedAllocation {
   targetPct: number;
   /** Null where the comparison could not be made. Not a difference of zero. */
   differencePct: number | null;
+
+  /**
+   * The operating range the target sits inside — tactical latitude, not
+   * a limit. Null on a record written before the ranges existed.
+   */
+  minimumPct: number | null;
+  maximumPct: number | null;
+
+  /** Where it sits against that range, and the CIO's worded guidance. */
+  standing: string;
+  stated: string;
 }
 
 export interface RecordedPortfolio {
@@ -138,6 +149,13 @@ export interface RecordedPortfolio {
   allocations: RecordedAllocation[];
   /** Null where any required comparison was unmeasured. */
   compliant: boolean | null;
+
+  /**
+   * The CIO's account of the account's shape, composed during the cycle
+   * and rendered from the record. Exactly one of these carries text.
+   */
+  allocationGuidance: string;
+  allocationGuidanceRefused: string;
 }
 
 export interface LastKnownCycle {
@@ -484,8 +502,24 @@ function portfolioOf(raw: unknown): RecordedPortfolio | null {
         currentPct: nullableNumber(allocation, "current_pct"),
         targetPct: requiredFinite(allocation, "target_pct"),
         differencePct: nullableNumber(allocation, "difference_pct"),
+        // Optional by contract: a record written before the operating
+        // ranges existed carries none, and decodes as carrying none —
+        // never as a range of zero.
+        minimumPct: nullableNumber(allocation, "minimum_pct"),
+        maximumPct: nullableNumber(allocation, "maximum_pct"),
+        standing:
+          typeof allocation.standing === "string" ? allocation.standing : "",
+        stated: typeof allocation.stated === "string" ? allocation.stated : "",
       };
     }),
+    allocationGuidance:
+      typeof item.allocation_guidance === "string"
+        ? item.allocation_guidance
+        : "",
+    allocationGuidanceRefused:
+      typeof item.allocation_guidance_refused === "string"
+        ? item.allocation_guidance_refused
+        : "",
   };
 }
 

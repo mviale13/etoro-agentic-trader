@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import type {
   CycleCourse,
   CycleReview,
+  RecordedAllocation,
   RecordedPortfolio,
 } from "@/lib/api/cycle-review";
 
@@ -296,6 +297,73 @@ export function blockedCases(candidates: CycleCourse[]): CycleCourse[] {
 }
 
 /** The conviction, or the honest reason there is no figure to show. */
+/**
+ * What each asset class is called in the table.
+ *
+ * CSS `capitalize` rendered the field name "etfs" as "Etfs" — it
+ * uppercases the first letter of a word and leaves the rest, which is
+ * wrong for an initialism. The backend's own sentences already say
+ * "ETFs", and this keeps the table agreeing with them.
+ */
+function assetLabel(asset: string): string {
+  const labels: Record<string, string> = {
+    stocks: "Stocks",
+    etfs: "ETFs",
+    crypto: "Crypto",
+    cash: "Cash",
+  };
+
+  return labels[asset] ?? asset;
+}
+
+/** The operating range as the investor reads it, or a dash. */
+function operatingRange(allocation: RecordedAllocation): string {
+  if (allocation.minimumPct === null || allocation.maximumPct === null) {
+    return "\u2014";
+  }
+
+  return `${allocation.minimumPct}\u2013${allocation.maximumPct}%`;
+}
+
+/** The standing in the investor's words. Never a colour-coded verdict. */
+function standingLabel(standing: string): string {
+  const labels: Record<string, string> = {
+    below_range: "Below range",
+    within_range: "Within range",
+    above_range: "Above range",
+    unmeasured: "Not measured",
+  };
+
+  return labels[standing] ?? "\u2014";
+}
+
+/**
+ * The CIO's account of the account's shape.
+ *
+ * Rendered from the completed cycle's own record — this component
+ * composes nothing. It is guidance about allocation and never an
+ * instruction: it names no security, proposes no trade and sizes
+ * nothing, because allocation drift authorizes none of those.
+ */
+function AllocationGuidance({ portfolio }: { portfolio: RecordedPortfolio }) {
+  const text =
+    portfolio.allocationGuidance || portfolio.allocationGuidanceRefused;
+
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+        What the CIO says about this shape
+      </p>
+
+      <p className="mt-1 text-sm leading-6 text-slate-800">{text}</p>
+    </div>
+  );
+}
+
 export function convictionCell(candidate: CycleCourse): string {
   if (candidate.conviction === null) {
     return candidate.convictionBasis || "Not stated";
@@ -589,27 +657,51 @@ export function StrategyCard({
             <tr className="border-b border-slate-200">
               <th className={TH}>Allocation</th>
               <th className={TH}>Now</th>
-              <th className={TH}>Target</th>
-              <th className={TH}>Difference</th>
+              <th className={TH}>Strategic target</th>
+              <th className={TH}>Operating range</th>
+              <th className={TH}>Standing</th>
             </tr>
           </thead>
 
           <tbody>
             {portfolio.allocations.map((allocation) => (
               <tr className="border-b border-slate-100" key={allocation.asset}>
-                <td className={`${CELL} capitalize text-slate-950`}>
-                  {allocation.asset}
+                <td className={`${CELL} text-slate-950`}>
+                  {assetLabel(allocation.asset)}
                 </td>
                 <td className={CELL}>{percent(allocation.currentPct)}</td>
                 <td className={CELL}>{percent(allocation.targetPct)}</td>
-                <td className={CELL}>
-                  {signedPercent(allocation.differencePct)}
-                </td>
+                <td className={CELL}>{operatingRange(allocation)}</td>
+                <td className={CELL}>{standingLabel(allocation.standing)}</td>
               </tr>
             ))}
           </tbody>
+
+          {/* The targets are a plan, so the page shows that they add
+              up. A set of targets totalling anything but 100% is a
+              broken plan, and the reader is the one who should see it
+              — this account rendered 0/0/0/5 for as long as the mapper
+              was allowed to invent three of the four. */}
+          <tfoot>
+            <tr>
+              <td className={`${CELL} font-semibold text-slate-950`}>Total</td>
+              <td className={CELL} />
+              <td className={`${CELL} font-semibold text-slate-950`}>
+                {percent(
+                  portfolio.allocations.reduce(
+                    (sum, item) => sum + item.targetPct,
+                    0,
+                  ),
+                )}
+              </td>
+              <td className={CELL} />
+              <td className={CELL} />
+            </tr>
+          </tfoot>
         </table>
       </div>
+
+      <AllocationGuidance portfolio={portfolio} />
 
       {portfolio.allocations.some((a) => a.differencePct === null) ? (
         <p className="mt-3 text-xs leading-5 text-slate-500">

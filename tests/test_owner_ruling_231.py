@@ -40,10 +40,29 @@ from app.domain.capital_envelope import (
 from app.domain.capital_policy import CapitalPolicy, ReducePolicy
 from app.domain.company_facts import CompanyFacts
 from app.domain.provenance import Provenance
+from app.domain.strategic_allocation import AllocationBand, StrategicAllocation
 from app.domain.token_fact_validation import ESTABLISHMENT_RULE
 from app.domain.token_facts import TokenFact, TokenFactStanding
 
 MOMENT = datetime(2026, 8, 20, 14, 29, 38, tzinfo=UTC)
+
+#: The owner's strategic allocation of 2026-08-24, as the tracked
+#: strategy states it: four targets totalling 100%, each inside its own
+#: operating range.
+OWNER_ALLOCATION = StrategicAllocation(
+    stocks=AllocationBand(
+        asset="stocks", target_pct=35.0, minimum_pct=25.0, maximum_pct=45.0
+    ),
+    etfs=AllocationBand(
+        asset="etfs", target_pct=15.0, minimum_pct=10.0, maximum_pct=25.0
+    ),
+    crypto=AllocationBand(
+        asset="crypto", target_pct=25.0, minimum_pct=15.0, maximum_pct=40.0
+    ),
+    cash=AllocationBand(
+        asset="cash", target_pct=25.0, minimum_pct=15.0, maximum_pct=45.0
+    ),
+)
 
 
 # ── amendment 2: the judged price says who judged it ────────────────
@@ -203,6 +222,7 @@ def policy() -> CapitalPolicy:
         security_risk_high_max_total_pct=2.0,
         security_risk_severe_max_total_pct=1.0,
         security_risk_unmeasured_max_total_pct=1.0,
+        allocation=OWNER_ALLOCATION,
         source="investor_strategy.json",
         version="testversion1",
     )

@@ -399,6 +399,8 @@ def _encode_portfolio(portfolio: RecordedPortfolio | None) -> dict[str, Any] | N
         "cash_pct": portfolio.cash_pct,
         "observed": portfolio.observed,
         "compliant": portfolio.compliant,
+        "allocation_guidance": portfolio.allocation_guidance,
+        "allocation_guidance_refused": portfolio.allocation_guidance_refused,
         "holdings": [
             {
                 "symbol": holding.symbol,
@@ -413,6 +415,10 @@ def _encode_portfolio(portfolio: RecordedPortfolio | None) -> dict[str, Any] | N
                 "current_pct": item.current_pct,
                 "target_pct": item.target_pct,
                 "difference_pct": item.difference_pct,
+                "minimum_pct": item.minimum_pct,
+                "maximum_pct": item.maximum_pct,
+                "standing": item.standing,
+                "stated": item.stated,
             }
             for item in portfolio.allocations
         ],
@@ -459,6 +465,8 @@ def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
         compliant=(
             bool(raw["compliant"]) if raw.get("compliant") is not None else None
         ),
+        allocation_guidance=str(raw.get("allocation_guidance", "")),
+        allocation_guidance_refused=str(raw.get("allocation_guidance_refused", "")),
         holdings=holdings_by_security(
             RecordedHolding(
                 symbol=str(item["symbol"]),
@@ -485,6 +493,21 @@ def _decode_portfolio(raw: Any) -> RecordedPortfolio | None:
                     if item.get("difference_pct") is not None
                     else None
                 ),
+                # Optional under the same schema — the envelope's
+                # precedent. A pre-ruling record decodes as carrying no
+                # range and no standing, never as a range of zero.
+                minimum_pct=(
+                    float(item["minimum_pct"])
+                    if item.get("minimum_pct") is not None
+                    else None
+                ),
+                maximum_pct=(
+                    float(item["maximum_pct"])
+                    if item.get("maximum_pct") is not None
+                    else None
+                ),
+                standing=str(item.get("standing", "")),
+                stated=str(item.get("stated", "")),
             )
             for item in raw.get("allocations", [])
         ),

@@ -19,6 +19,7 @@ manufacture or mask a change here.
 from __future__ import annotations
 
 import uuid
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from app.application.brain.brain_builder_service import BrainBuilderService
@@ -61,6 +62,10 @@ from app.domain.daily_cycle import (
     no_action_permitted,
 )
 from app.domain.market_snapshot import MarketQuote
+from app.domain.strategic_allocation import (
+    StrategicAllocation,
+    portfolio_guidance_for,
+)
 from app.infrastructure.evidence.daily_cycle_store import DailyCycleStore
 from app.repositories.json_event_repository import JsonEventRepository
 from app.services.capital_policy_service import CapitalPolicyService
@@ -133,6 +138,7 @@ def _recorded_portfolio(
     weights: dict[str, float],
     cash_pct: float | None,
     total_value: float | None,
+    allocation: StrategicAllocation | None = None,
 ) -> RecordedPortfolio | None:
     """The account as this cycle read it, for a page that may not fetch.
 
@@ -179,6 +185,8 @@ def _recorded_portfolio(
 
     allocations: tuple[RecordedAllocation, ...] = ()
     compliant: bool | None = None
+    guidance_stated = ""
+    guidance_refused = ""
 
     policy = getattr(brain, "investment_policy", None)
 
@@ -199,6 +207,37 @@ def _recorded_portfolio(
         )
         compliant = analysis.compliant
 
+    # The CIO's allocation guidance, composed once — here, during the
+    # cycle, from this cycle's own portfolio reading and the owner's
+    # active policy. It names no security, sizes nothing and reads no
+    # conviction: allocation drift authorizes no trade, and the object
+    # has no access to a course through which it could suggest one.
+    if allocation is not None and allocations:
+        # Read from the allocations just recorded rather than from the
+        # portfolio a second time: one reading, one set of figures, and
+        # the guidance cannot disagree with the table it sits under.
+        current = {item.asset: item.current_pct for item in allocations}
+
+        guidance = portfolio_guidance_for(allocation, current)
+
+        guidance_stated = guidance.stated
+        guidance_refused = guidance.refused_because
+
+        by_asset = {item.asset: item for item in guidance.allocations}
+
+        allocations = tuple(
+            replace(
+                recorded,
+                minimum_pct=by_asset[recorded.asset].minimum_pct,
+                maximum_pct=by_asset[recorded.asset].maximum_pct,
+                standing=by_asset[recorded.asset].standing.value,
+                stated=by_asset[recorded.asset].stated,
+            )
+            if recorded.asset in by_asset
+            else recorded
+            for recorded in allocations
+        )
+
     return RecordedPortfolio(
         total_value=round(total_value, 2),
         available_cash_usd=portfolio.available_cash_usd,
@@ -215,6 +254,8 @@ def _recorded_portfolio(
         ),
         allocations=allocations,
         compliant=compliant,
+        allocation_guidance=guidance_stated,
+        allocation_guidance_refused=guidance_refused,
     )
 
 
@@ -554,7 +595,19 @@ async def run(
 
         decisions = tuple(carried)
 
-        recorded_portfolio = _recorded_portfolio(brain, weights, cash_pct, total_value)
+        recorded_portfolio = _recorded_portfolio(
+            brain,
+            weights,
+            cash_pct,
+            total_value,
+            # The owner's strategic allocation, from the same reading
+            # the envelope's policy came from — one policy, one cycle.
+            allocation=(
+                policy_reading.policy.allocation
+                if policy_reading.policy is not None
+                else None
+            ),
+        )
 
         # Watched-but-unheld securities, evaluated through the very same
         # pipeline as a holding — so their conviction means what a
