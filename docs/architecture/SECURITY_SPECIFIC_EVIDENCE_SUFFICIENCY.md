@@ -362,3 +362,117 @@ Recorded on PR #249, against the measurement above.
    persistence.**
 9. **No backfill, re-observation or decision change is authorized by
    this ruling.**
+
+---
+
+## Implementation status — the Company Knowledge Outcome Journal
+
+**Built, and it persists facts only.** It replaces no score, moves no
+decision, and the slice after it decides how typed breadth and
+persisted outcome authority relate to `evidence_score`.
+
+### What the measurement said, and what now exists
+
+The blocker was **not** that the vocabulary was missing. `KnowledgeState`
+already carried all six outcomes and already separated a retryable
+failure from a structural refusal. The blocker was that four of the six
+were computed at acquisition and **thrown away**, so at the point of
+decision *a filing whose section was structurally refused* and *a
+company nobody had ever looked at* were the same fact.
+
+`KnowledgeAcquisitionEvent` (`app/domain/knowledge_acquisition.py`) and
+`KnowledgeOutcomeStore`
+(`app/infrastructure/evidence/knowledge_outcome_store.py`) persist it:
+append-only JSON Lines, one file per canonical symbol, schema on every
+line, following the intelligence journal (#111) by way of the identity
+stream (#216).
+
+### Two dimensions, never collapsed
+
+`knowledge_usable` and `state` are separate fields because one boolean
+cannot hold both halves. Pinned: a **provider error with last year's
+knowledge** and a **document refusal with older knowledge** both record
+`knowledge_usable=True` beside a non-available state, and
+`had_prior_knowledge` names that pair.
+
+### `KnowledgeState` is not overloaded
+
+`observe()` legitimately ends `AVAILABLE_ACQUIRED` when some
+observations were taken and a later extraction was refused — the
+knowledge is real *and* the run ended in a refusal. No single state can
+say both, so `ended_in_refusal` carries the second half beside the
+state rather than inventing a seventh member that would be a lie in the
+other direction. This is why the attempt is a separate typed object.
+
+### Ordering and durability
+
+The knowledge write lands first; the event appends last. There is **no
+`try/finally`** on the acquisition path, deliberately: a hard kill must
+produce *no* terminal event rather than a manufactured one. Pinned by a
+test that kills the process between the two writes and asserts the
+knowledge survives usable while the journal stays empty.
+
+### Where it appends, and where it cannot
+
+**Appends — the funded doors, one terminal event per attempt:**
+
+| call site | command |
+|---|---|
+| `app/commands/knowledge.py:35` | `movrvest knowledge SYMBOL` |
+| `app/commands/understanding.py:24` | `movrvest understanding SYMBOL` |
+| `app/commands/archetype.py:26` | `movrvest archetype SYMBOL` |
+| `app/commands/observe.py:25,27` | `movrvest observe SYMBOL` |
+| `app/services/playbook_selection_service.py:57` | `movrvest playbook SYMBOL` |
+
+**Appends nothing — the read-only doors. A page view is not an attempt:**
+
+| call site | surface |
+|---|---|
+| `app/services/company_understanding_service.py:107` | the per-security dossier |
+| `app/services/company_research_service.py:135` | Research |
+| `app/services/stored_playbook_selection.py:58` | the grounded playbook selector |
+
+Pinned by a test that calls `established()` three times and asserts the
+journal, the source resolver, the document fetch and the model are all
+untouched.
+
+### Safety
+
+**No raw provider or extraction message is ever persisted** — only the
+exception *class*. Those strings are composed by libraries this platform
+does not control and have carried API keys, signed URLs, account
+identifiers and document fragments. A document refusal is the one
+retained wording, and it is not an exception: it comes from
+`business_refusal.stated()`, a typed carrier this platform composed.
+
+Pinned with a seeded failure carrying an API key, a URL query, an
+account identifier and a document fragment, asserted absent from disk on
+both the provider and the extraction path, plus a test that the
+document's own words never enter the journal.
+
+### Read contract
+
+`KnowledgeOutcomeHistory` returns decoded events, an unreadable count,
+an unsupported-schema tally and `is_complete`. **`latest` returns `None`
+where the history is incomplete** — with a line missing, the newest
+readable event may not be the newest event. Unknown schemas and
+malformed records are counted apart and never pooled.
+
+**A corrupt outcome history does not erase usable company knowledge.**
+It prevents a complete claim about the acquisition lifecycle, not a
+claim about the company; the two live in different stores, and a test
+ruins the journal and asserts the knowledge still serves.
+
+### Boundaries held
+
+No backfill — a fresh installation starts empty, and an old-schema
+knowledge document that cannot be restored is **not** recorded as a
+document refusal. The company-knowledge observation schema is unchanged
+and the 31 stale grounded documents were not re-read. No scheduler, no
+retry policy, no funded cycle, and no provider or model call in
+acceptance. `KnowledgeState` moved to `app/domain/knowledge_state.py`
+to break an import cycle and is re-exported unchanged, so every existing
+import keeps working.
+
+Guarded at the import graph: nothing in the decision path references the
+journal, and the journal references no decision object.
