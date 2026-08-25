@@ -39,6 +39,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.dependencies import get_issuance_rule_provider
 from app.api.models.asset_profile_adapter import asset_profile_response
+from app.api.models.crypto_brief_adapter import brief_for
 from app.api.models.crypto_dossier_adapter import (
     asset_quality_response,
     intelligence_response,
@@ -135,8 +136,22 @@ async def get_crypto_dossier(
 
     journal = IntelligenceJournalService()
 
+    # Resolved once and held, because the brief composes over both. Two
+    # reads would let one half of the Overview answer from a different
+    # snapshot than the other, and a page that disagrees with itself is
+    # worse than one that says less.
+    decision = DigitalAssetDecisionService().decide(asset)
+    intelligence = CryptoIntelligenceService().snapshot(asset, asset_class)
+
     return {
         "symbol": asset,
+        # ── what the investor is being told, and why ──
+        # A composition over the decision and the intelligence snapshot
+        # that quotes both and authors nothing: the current view, what
+        # blocks progress, what would change it, and the one-line setup
+        # the hero states beneath the course. Every sentence belongs to
+        # the layer that established it (Invariant 10).
+        "brief": brief_for(decision, intelligence).as_dict(),
         # ── the Artificial CIO's answer, from judged states only ──
         # A projection of recorded judgments and assessment statements
         # (`digital-asset-gates@1`), serialised by the domain. Nothing
@@ -145,7 +160,7 @@ async def get_crypto_dossier(
         # judge` recorded and stops. This is the one canonical decision
         # surface for a digital asset; the legacy executive dossier now
         # answers 410 for every asset in this corpus.
-        "decision": DigitalAssetDecisionService().decide(asset).as_dict(),
+        "decision": decision.as_dict(),
         # ── what am I looking at ──
         "playbook": crypto_playbook_response(playbook),
         "protocol": protocol_fundamentals_response(
@@ -175,9 +190,7 @@ async def get_crypto_dossier(
             TokenFactsService().established(asset, asset, asset_class)
         ),
         # ── what is happening ──
-        "intelligence": intelligence_response(
-            CryptoIntelligenceService().snapshot(asset, asset_class)
-        ),
+        "intelligence": intelligence_response(intelligence),
         # ── how long this platform has been looking ──
         "journal": journal_response(
             journal.history(asset),

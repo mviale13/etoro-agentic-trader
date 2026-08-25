@@ -16,7 +16,9 @@
  * - facts that do not exist are omitted — absence is not a card.
  */
 
+import type { RecordedPortfolio } from "@/lib/api/cycle-review";
 import type {
+  BriefView,
   CryptoDossier,
   DriverView,
   EventView,
@@ -63,6 +65,24 @@ export interface HeroReturn {
   standingStated: string;
 }
 
+/**
+ * What the investor already owns of this asset, from the last completed
+ * cycle — never from a live account read.
+ *
+ * A dated share of a recorded portfolio, and the date travels with it.
+ * `held: false` is a positive finding and not a missing value: the
+ * cycle recorded fourteen holdings and this asset was not among them,
+ * which is different from *we could not read your account*, and that
+ * third state is `null` exposure altogether.
+ */
+export interface ExposureModel {
+  held: boolean;
+  weightStated: string | null;
+  valueStated: string | null;
+  /** The cycle's own receipt-time wording. Never reworded here. */
+  observed: string;
+}
+
 export interface HeroModel {
   symbol: string;
   /** The recognised project name, where the corpus carries one. */
@@ -76,17 +96,41 @@ export interface HeroModel {
   returns: readonly HeroReturn[];
   state: string;
   /**
-   * The one concise course line. Licensed by the decision's own
-   * ceiling: while the ceiling stands, no digital asset carries a
-   * capital action, and the spec asks for that said directly.
+   * What the course means for capital — the CIO layer's sentence, and
+   * the **only** place it appears. It was previously rendered here and
+   * again in the card below, so the investor read "INVESTIGATE — no
+   * capital action is suggested" twice before reaching a finding.
    */
   courseLine: string | null;
+  /**
+   * One sentence: what is supportive, set against what is not
+   * established. Composed by the CIO layer from quoted findings —
+   * never worded here.
+   */
+  setup: string | null;
+  /** Why no setup could be stated, where none could. */
+  setupAbsent: string | null;
+  /** Null where no completed cycle could be read at all. */
+  exposure: ExposureModel | null;
 }
 
+/** The windows the hero leads with, and the short label each carries. */
 const RETURN_INTERVALS: Record<string, string> = {
   "24h": "24h",
   "7d": "7d",
   "30d": "30d",
+};
+
+/**
+ * Every window the market layer measures, including the 1h the hero
+ * omits — and short labels, because the backend's own
+ * ``intervalStated`` reads "over 30 days" and four of those wrapped the
+ * setup row into three lines on a phone. The label is this surface's to
+ * choose; the figure and the window it belongs to are not.
+ */
+const SETUP_INTERVALS: Record<string, string> = {
+  "1h": "1h",
+  ...RETURN_INTERVALS,
 };
 
 function marketRow(
@@ -104,9 +148,49 @@ function marketRow(
   return null;
 }
 
+/**
+ * This asset's place in the recorded portfolio, or the fact it has none.
+ *
+ * Reads the last completed cycle only. A cycle still running, or a
+ * portfolio the record could not carry, yields `null` — the surface
+ * then says nothing about exposure rather than implying zero.
+ */
+export function exposureModel(
+  symbol: string,
+  portfolio: RecordedPortfolio | null,
+): ExposureModel | null {
+  if (portfolio === null) {
+    return null;
+  }
+
+  const holding = portfolio.holdings.find((item) => item.symbol === symbol);
+
+  if (holding === undefined) {
+    return { held: false, weightStated: null, valueStated: null, observed: portfolio.observed };
+  }
+
+  return {
+    held: true,
+    // `weight_pct` is null where the share could not be computed, and
+    // the record is explicit that this is never 0.0 for it — so an
+    // uncomputable share stays absent instead of reading as no position.
+    weightStated:
+      holding.weightPct === null ? null : `${holding.weightPct.toFixed(1)}%`,
+    valueStated: CURRENCY.format(holding.marketValueUsd),
+    observed: portfolio.observed,
+  };
+}
+
+const CURRENCY = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
 export function heroModel(
   dossier: CryptoDossier,
   name: string | null,
+  portfolio: RecordedPortfolio | null = null,
 ): HeroModel {
   const returns: HeroReturn[] = [];
 
@@ -128,16 +212,119 @@ export function heroModel(
     role: dossier.identity.name,
     price: marketRow(dossier, "Price"),
     returns,
-    state: dossier.decision.state,
-    courseLine: dossier.decision.ceiling
-      ? "No capital action is suggested."
-      : null,
+    state: dossier.brief.course,
+    courseLine: dossier.brief.courseMeans || null,
+    setup: dossier.brief.setup,
+    setupAbsent: dossier.brief.setupAbsent,
+    exposure: exposureModel(dossier.symbol, portfolio),
+  };
+}
+
+// ── market setup ────────────────────────────────────────────────────
+
+/**
+ * Where the price is, and over what windows — nothing conditional.
+ *
+ * The brief asked for two more things and **neither is held**: a
+ * position within the recent measured range, and volume against a
+ * normal. There is no high, no low and no baseline anywhere in the
+ * payload — the only "all-time" figures in the corpus are event
+ * headlines about *open interest*, which is a different quantity — so
+ * both are named as absences rather than approximated from returns.
+ * Deriving a range from a 30-day return would be this surface
+ * calculating, which it may not do.
+ */
+export interface MarketSetupModel {
+  returns: readonly HeroReturn[];
+  volumeStated: string | null;
+  volumeAge: string | null;
+  /** What this platform cannot yet say about the setup, and why. */
+  unavailable: readonly string[];
+}
+
+export function marketSetup(dossier: CryptoDossier): MarketSetupModel {
+  const returns: HeroReturn[] = [];
+
+  for (const item of dossier.market?.returns ?? []) {
+    const short = SETUP_INTERVALS[item.interval];
+
+    if (short && item.label === "Price return" && item.stated !== null) {
+      returns.push({
+        short,
+        stated: item.stated,
+        standingStated: item.standingStated,
+      });
+    }
+  }
+
+  const volume = marketRow(dossier, "Reported market volume over 24 hours");
+
+  return {
+    returns,
+    volumeStated: volume?.stated ?? null,
+    volumeAge: volume?.age ?? null,
+    unavailable: [
+      "Where the price sits in its recent range is not stated: no high " +
+        "or low is held for this asset over any window.",
+      "Whether today's volume is normal is not stated: no baseline " +
+        "volume is held to compare it against.",
+    ],
   };
 }
 
 // ── the three summary widgets ───────────────────────────────────────
 
 const SUMMARY_LIMIT = 3;
+
+/**
+ * One block of the CIO brief, ready to render.
+ *
+ * A pass-through with a heading attached. The lines, their order, their
+ * count and their absences were all settled by the CIO layer — this
+ * names the block and stops, so no ranking, filtering or re-wording can
+ * enter on the way to the page.
+ */
+export interface BriefBlock {
+  id: string;
+  title: string;
+  lines: readonly {
+    stated: string;
+    owner: string;
+    qualification: string | null;
+    support: string | null;
+  }[];
+  absent: string | null;
+  /** How many findings this block holds back, where it holds any. */
+  withheld: number;
+}
+
+export function briefBlocks(brief: BriefView): readonly BriefBlock[] {
+  const withheld = new Map(brief.withheld.map((item) => [item.block, item.count]));
+
+  return [
+    {
+      id: "current_view",
+      title: "Current view",
+      lines: brief.currentView,
+      absent: brief.currentViewAbsent,
+      withheld: withheld.get("current_view") ?? 0,
+    },
+    {
+      id: "blocks_progress",
+      title: "What blocks progress",
+      lines: brief.blocksProgress,
+      absent: brief.blocksProgressAbsent,
+      withheld: withheld.get("blocks_progress") ?? 0,
+    },
+    {
+      id: "would_change_view",
+      title: "What would change the view",
+      lines: brief.wouldChangeView,
+      absent: brief.wouldChangeViewAbsent,
+      withheld: withheld.get("would_change_view") ?? 0,
+    },
+  ];
+}
 
 export interface SummaryItem {
   stated: string;
@@ -215,26 +402,43 @@ export interface KeyFact {
   entity: string | null;
 }
 
+/**
+ * How many metrics the Overview shows before sending the reader on.
+ *
+ * Six. The measured problem was that sixteen rows — two TVL readings,
+ * four fee and revenue figures, DEX volume, open interest, four supply
+ * values and two 400-character conflict essays — made a 1,362px block
+ * that dominated the page and buried the developments beside it. The
+ * rest is not deleted; it is where it belongs, under Economics and
+ * Tokenomics, and the Overview links to both.
+ */
+export const KEY_FACT_LIMIT = 6;
+
 /** Which judged-fact labels the compact widget shows, in this order.
     Price is deliberately absent: the hero owns it, and no fact may
     appear in two default widgets. */
 const FACT_LABELS = [
   "Market value",
-  "Market-value rank",
   "Reported market volume over 24 hours",
-  "Maximum supply",
-  "Circulating supply",
-  "Total supply",
   "Fully diluted valuation",
+  "Circulating supply",
+  "Maximum supply",
+  "Market-value rank",
 ] as const;
 
-/** Which protocol-fact families the widget admits. */
-const PROTOCOL_FAMILIES = new Set([
-  "capital",
-  "value_generation",
-  "holder_accrual",
-  "activity",
-]);
+/**
+ * Which protocol quantities the snapshot admits, in preference order.
+ *
+ * By **label**, not by family: the families carry four figures each
+ * across two mapped entities, so admitting a family admitted eight rows
+ * where the investor needed one. Fees, holder revenue and the second
+ * entity's readings are the Economics view's subject.
+ */
+const PROTOCOL_LABELS = [
+  "Total value locked",
+  "Protocol revenue",
+  "Open interest",
+] as const;
 
 function fromFactRow(row: FactRowView): KeyFact {
   return {
@@ -270,7 +474,8 @@ function fromProtocolFact(entity: string, fact: ProtocolFactView): KeyFact {
  * already owns the value.
  */
 export function keyFacts(dossier: CryptoDossier): readonly KeyFact[] {
-  const rows: KeyFact[] = [];
+  const market: KeyFact[] = [];
+  const protocol: KeyFact[] = [];
 
   const byLabel = new Map<string, FactRowView>();
 
@@ -284,16 +489,48 @@ export function keyFacts(dossier: CryptoDossier): readonly KeyFact[] {
     const row = byLabel.get(label);
 
     if (row && row.standing !== "absent") {
-      rows.push(fromFactRow(row));
+      market.push(fromFactRow(row));
     }
   }
 
-  for (const entity of dossier.protocol?.entities ?? []) {
-    for (const fact of entity.facts) {
-      if (PROTOCOL_FAMILIES.has(fact.family) && fact.stated !== null) {
-        rows.push(fromProtocolFact(entity.name, fact));
+  // One row per quantity, from the first mapped entity that reports it.
+  // Hyperliquid maps two entities and both publish a total value locked
+  // ($6.73bn and $1.53bn); printing both put the investor in the middle
+  // of an entity-mapping question the Overview does not ask, and the
+  // Economics view does.
+  const taken = new Set<string>();
+
+  for (const label of PROTOCOL_LABELS) {
+    for (const entity of dossier.protocol?.entities ?? []) {
+      if (taken.has(label)) {
+        break;
+      }
+
+      for (const fact of entity.facts) {
+        if (fact.label === label && fact.stated !== null) {
+          protocol.push(fromProtocolFact(entity.name, fact));
+          taken.add(label);
+          break;
+        }
       }
     }
+  }
+
+  // Interleaved by kind rather than concatenated, so the six that
+  // survive are never all of one kind: an asset with no mapped protocol
+  // shows six market rows, and one with both shows three of each.
+  const rows: KeyFact[] = [];
+
+  for (let index = 0; rows.length < KEY_FACT_LIMIT; index += 1) {
+    const next = [market[index], protocol[index]].filter(
+      (row): row is KeyFact => row !== undefined,
+    );
+
+    if (next.length === 0) {
+      break;
+    }
+
+    rows.push(...next.slice(0, KEY_FACT_LIMIT - rows.length));
   }
 
   return rows;

@@ -1479,8 +1479,49 @@ export interface DecisionView {
   silentCommittees: readonly string[];
 }
 
+/**
+ * One quoted finding, with the layer that established it.
+ *
+ * `stated` is the claim clause and `qualification` is whatever the
+ * owning layer used to qualify its own claim. They arrive apart so a
+ * headline can carry the claim and the reader can still reach the
+ * qualification — never so a surface can drop it.
+ */
+export interface BriefLineView {
+  stated: string;
+  owner: string;
+  qualification: string | null;
+  support: string | null;
+}
+
+/**
+ * The Overview's answer, composed by the CIO layer and quoted here.
+ *
+ * Every sentence belongs to the layer that established it. This
+ * interface is deliberately all strings and nulls: there is no score,
+ * no rank and no field a surface could read a verdict out of, and the
+ * absences are worded rather than empty so a silent block never renders
+ * as a confident one.
+ */
+export interface BriefView {
+  course: string;
+  courseMeans: string;
+  setup: string | null;
+  setupAbsent: string | null;
+  currentView: readonly BriefLineView[];
+  currentViewAbsent: string | null;
+  blocksProgress: readonly BriefLineView[];
+  blocksProgressAbsent: string | null;
+  wouldChangeView: readonly BriefLineView[];
+  wouldChangeViewAbsent: string | null;
+  withheld: readonly { block: string; count: number }[];
+  boundary: string;
+}
+
 export interface CryptoDossier {
   symbol: string;
+  /** What the investor is being told and why — the Overview's spine. */
+  brief: BriefView;
   decision: DecisionView;
   identity: CryptoIdentity;
   protocol: ProtocolView | null;
@@ -1504,6 +1545,64 @@ export interface CryptoDossierResult {
   source: "backend" | "unavailable";
   backendUrl: string;
   error?: string;
+}
+
+function parseBriefLines(value: unknown, field: string): BriefLineView[] {
+  return recordList(value, field).map((item, index) => ({
+    stated: requireString(item.stated, `${field}[${index}].stated`),
+    owner: requireString(item.owner, `${field}[${index}].owner`),
+    qualification: optionalString(
+      item.qualification,
+      `${field}[${index}].qualification`,
+    ),
+    support: optionalString(item.support, `${field}[${index}].support`),
+  }));
+}
+
+/**
+ * Strict, because a half-decoded brief is worse than no brief.
+ *
+ * Every sentence here is the platform's conclusion about an investment.
+ * A tolerant parse that let one field through as `undefined` would
+ * render a block heading with nothing beneath it, and an empty block
+ * reads as *nothing to say* when the truth would be *we failed to read
+ * it*. Those are opposite claims, so this throws instead.
+ */
+function parseBrief(record: UnknownRecord): BriefView {
+  return {
+    course: requireString(record.course, "brief.course"),
+    courseMeans: requireString(record.course_means, "brief.course_means"),
+    setup: optionalString(record.setup, "brief.setup"),
+    setupAbsent: optionalString(record.setup_absent, "brief.setup_absent"),
+    currentView: parseBriefLines(record.current_view, "brief.current_view"),
+    currentViewAbsent: optionalString(
+      record.current_view_absent,
+      "brief.current_view_absent",
+    ),
+    blocksProgress: parseBriefLines(
+      record.blocks_progress,
+      "brief.blocks_progress",
+    ),
+    blocksProgressAbsent: optionalString(
+      record.blocks_progress_absent,
+      "brief.blocks_progress_absent",
+    ),
+    wouldChangeView: parseBriefLines(
+      record.would_change_view,
+      "brief.would_change_view",
+    ),
+    wouldChangeViewAbsent: optionalString(
+      record.would_change_view_absent,
+      "brief.would_change_view_absent",
+    ),
+    withheld: recordList(record.withheld, "brief.withheld").map(
+      (item, index) => ({
+        block: requireString(item.block, `brief.withheld[${index}].block`),
+        count: requireNumber(item.count, `brief.withheld[${index}].count`),
+      }),
+    ),
+    boundary: requireString(record.boundary, "brief.boundary"),
+  };
 }
 
 function parseDecision(record: UnknownRecord): DecisionView {
@@ -1540,6 +1639,7 @@ function parseDossier(payload: unknown): CryptoDossier {
 
   return {
     symbol: requireString(record.symbol, "symbol"),
+    brief: parseBrief(requireRecord(record.brief, "brief")),
     decision: parseDecision(requireRecord(record.decision, "decision")),
     identity: parseIdentity(requireRecord(record.playbook, "playbook")),
     protocol: optionalSection(record.protocol, "protocol", (value) => ({

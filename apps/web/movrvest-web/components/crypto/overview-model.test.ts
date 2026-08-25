@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { CryptoDossier } from "@/lib/api/crypto-dossier";
 
 import {
+  KEY_FACT_LIMIT,
+  briefBlocks,
+  exposureModel,
   heroModel,
   keyFacts,
-  keyRisks,
   latestDevelopments,
+  marketSetup,
   viewFromParam,
-  watchNext,
-  whyItMatters,
 } from "./overview-model";
 
 /**
@@ -23,6 +24,43 @@ import {
 function dossier(overrides: Record<string, unknown> = {}): CryptoDossier {
   const base = {
     symbol: "HYPE",
+    brief: {
+      course: "INVESTIGATE",
+      courseMeans: "No capital action is suggested.",
+      setup:
+        "Economic activity is reaching the token itself, but no issuance rule is held.",
+      setupAbsent: null,
+      currentView: [
+        {
+          stated: "Economic activity is reaching the token itself",
+          owner: "Intelligence",
+          qualification: "A protocol can earn and pass its holders nothing.",
+          support: "Observed",
+        },
+      ],
+      currentViewAbsent: null,
+      blocksProgress: [
+        {
+          stated: "No issuance rule is held",
+          owner: "Supply Governance Committee",
+          qualification: "That is a statement about what this platform has read.",
+          support: null,
+        },
+      ],
+      blocksProgressAbsent: null,
+      wouldChangeView: [
+        {
+          stated: "Whether the fee economy holds up",
+          owner: "Intelligence",
+          qualification: null,
+          support: "the next daily fee and holder-revenue reading",
+        },
+      ],
+      wouldChangeViewAbsent: null,
+      withheld: [{ block: "blocks_progress", count: 2 }],
+      boundary:
+        "No digital asset can currently progress past INVESTIGATE: this platform judges an investment case on business quality and valuation.",
+    },
     identity: {
       name: "Exchange network",
       explanation: "Read as a trading venue that runs its own settlement layer.",
@@ -382,145 +420,157 @@ describe("the hero", () => {
     expect(hero.returns).toEqual([]);
   });
 
-  it("offers no course line where no ceiling stands", () => {
+  it("offers no course line where the brief states none", () => {
     const bare = dossier();
     const hero = heroModel(
-      dossier({ decision: { ...bare.decision, ceiling: "" } }),
+      dossier({ brief: { ...bare.brief, courseMeans: "" } }),
       null,
     );
 
     expect(hero.courseLine).toBeNull();
   });
+
+  it("takes the course and its meaning from the brief, never from two places", () => {
+    const hero = heroModel(dossier(), null);
+
+    expect(hero.state).toBe("INVESTIGATE");
+    expect(hero.courseLine).toBe("No capital action is suggested.");
+    expect(hero.setup).toContain("Economic activity is reaching the token itself");
+  });
+
+  it("renders the brief's own account where no setup could be composed", () => {
+    const bare = dossier();
+    const hero = heroModel(
+      dossier({
+        brief: {
+          ...bare.brief,
+          setup: null,
+          setupAbsent: "Nothing is currently established either way.",
+        },
+      }),
+      null,
+    );
+
+    expect(hero.setup).toBeNull();
+    expect(hero.setupAbsent).toBe("Nothing is currently established either way.");
+  });
 });
 
 // ── summary widgets ─────────────────────────────────────────────────
 
-describe("the three summary widgets", () => {
-  it("caps why-it-matters at three non-adverse drivers, in served order", () => {
-    const items = whyItMatters(dossier());
+describe("the CIO brief", () => {
+  it("passes the backend's blocks through in order, adding only headings", () => {
+    const blocks = briefBlocks(dossier().brief);
 
-    expect(items).toHaveLength(3);
-    expect(items[0].stated).toBe(
-      "Economic activity is reaching the token itself.",
-    );
-    expect(items.every((item) => item.tag !== "Adverse")).toBe(true);
-  });
-
-  it("builds key risks from material uncertainties then adverse drivers", () => {
-    const risks = keyRisks(dossier());
-
-    expect(risks).toHaveLength(3);
-    expect(risks[0].tag).toBe("Material uncertainty");
-    expect(risks[1].tag).toBe("Material uncertainty");
-    expect(risks[2].tag).toBe("Adverse development");
-  });
-
-  it("never lets adverse developments displace a material uncertainty", () => {
-    // The discriminating case: three adverse developments and one
-    // structural uncertainty. Ordered the other way round, the
-    // uncertainty that actually constrains the CIO's view falls off a
-    // three-item widget and the investor never sees it.
-    const base = dossier();
-    const crowded = dossier({
-      decision: {
-        ...base.decision,
-        materialUncertainties: [
-          "Circulating supply cannot be stated as a single figure.",
-        ],
-      },
-      intelligence: {
-        ...base.intelligence,
-        drivers: [
-          {
-            stated: "First adverse development.",
-            directionStated: "Adverse",
-            supportStated: "Supported",
-            mattersBecause: null,
-            claims: [],
-          },
-          {
-            stated: "Second adverse development.",
-            directionStated: "Adverse",
-            supportStated: "Supported",
-            mattersBecause: null,
-            claims: [],
-          },
-          {
-            stated: "Third adverse development.",
-            directionStated: "Adverse",
-            supportStated: "Supported",
-            mattersBecause: null,
-            claims: [],
-          },
-        ],
-      },
-    });
-
-    const risks = keyRisks(crowded);
-
-    expect(risks).toHaveLength(3);
-    expect(risks[0]).toEqual({
-      stated: "Circulating supply cannot be stated as a single figure.",
-      tag: "Material uncertainty",
-    });
-
-    // The remaining slots are filled from the served order — nothing is
-    // scored, ranked or read for sentiment, and the third adverse
-    // development simply does not fit.
-    expect(risks.map((risk) => risk.stated)).toEqual([
-      "Circulating supply cannot be stated as a single figure.",
-      "First adverse development.",
-      "Second adverse development.",
+    expect(blocks.map((block) => block.title)).toEqual([
+      "Current view",
+      "What blocks progress",
+      "What would change the view",
     ]);
-  });
 
-  it("caps key risks at three even where the decision alone overflows", () => {
-    const base = dossier();
-    const risks = keyRisks(
-      dossier({
-        decision: {
-          ...base.decision,
-          materialUncertainties: ["One.", "Two.", "Three.", "Four."],
-        },
-      }),
-    );
-
-    expect(risks).toHaveLength(3);
-    expect(risks.every((risk) => risk.tag === "Material uncertainty")).toBe(
-      true,
+    expect(blocks[0].lines[0].stated).toBe(
+      "Economic activity is reaching the token itself",
     );
   });
 
-  it("keeps watch-next but never its raw refs", () => {
-    const items = watchNext(dossier());
+  it("carries the owner and the qualification with every line", () => {
+    const [view, blocked] = briefBlocks(dossier().brief);
 
-    expect(items).toHaveLength(1);
-    expect(items[0].stated).toBe("Whether the fee economy holds up.");
-    expect(JSON.stringify(items)).not.toContain(
-      "network.fees.hyperliquid-protocol",
-    );
+    expect(view.lines[0].owner).toBe("Intelligence");
+    expect(blocked.lines[0].owner).toBe("Supply Governance Committee");
+    expect(blocked.lines[0].qualification).toContain("what this platform has read");
   });
 
-  it("yields empty widgets for the sparse specimen, never shells", () => {
-    const sparse = dossier({
-      intelligence: { drivers: [], events: [], watchNext: [] },
-      decision: {
-        state: "MONITOR",
-        rationale: "No structural question is yet established as applicable.",
-        unresolved: [],
-        materialUncertainties: [],
-        ceiling: "No digital asset can currently progress past INVESTIGATE.",
-      },
-    });
+  it("reports what a capped block holds back", () => {
+    const blocks = briefBlocks(dossier().brief);
 
-    expect(whyItMatters(sparse)).toEqual([]);
-    expect(keyRisks(sparse)).toEqual([]);
-    expect(watchNext(sparse)).toEqual([]);
-    expect(latestDevelopments(sparse)).toEqual([]);
+    expect(blocks[1].withheld).toBe(2);
+    expect(blocks[0].withheld).toBe(0);
+  });
+
+  it("renders a stated absence rather than an empty block", () => {
+    const brief = {
+      ...dossier().brief,
+      currentView: [],
+      currentViewAbsent: "No driver is currently held for this asset.",
+    };
+
+    const [view] = briefBlocks(brief);
+
+    expect(view.lines).toHaveLength(0);
+    expect(view.absent).toBe("No driver is currently held for this asset.");
   });
 });
 
-// ── key facts ───────────────────────────────────────────────────────
+describe("the market setup", () => {
+  it("shows every measured window, including the 1h the hero omits", () => {
+    const setup = marketSetup(dossier());
+    const windows = setup.returns.map((item) => item.short);
+
+    expect(setup.returns.length).toBeGreaterThan(0);
+    expect(windows).toContain("1h");
+    expect(windows).toContain("30d");
+  });
+
+  it("carries no price, because the hero already leads with it", () => {
+    expect(Object.keys(marketSetup(dossier()))).not.toContain("price");
+  });
+
+  it("names what is not held instead of deriving a range from a return", () => {
+    const setup = marketSetup(dossier());
+
+    expect(setup.unavailable).toHaveLength(2);
+    expect(setup.unavailable.join(" ")).toContain("no high or low is held");
+    expect(setup.unavailable.join(" ")).toContain("no baseline");
+  });
+
+  it("words no conditional scenario, because no layer establishes one", () => {
+    const setup = marketSetup(dossier());
+    const prose = [...setup.unavailable].join(" ").toLowerCase();
+
+    for (const forecast of ["would be", "continuation", "if momentum", "expect"]) {
+      expect(prose).not.toContain(forecast);
+    }
+  });
+});
+
+describe("portfolio exposure", () => {
+  const portfolio = {
+    observed: "eToro account response received at 2026-08-24 17:35 UTC",
+    holdings: [
+      { symbol: "BTC", marketValueUsd: 24726.47, weightPct: 23.124 },
+      { symbol: "SOL", marketValueUsd: 387.1, weightPct: null },
+    ],
+  } as never;
+
+  it("states a recorded share with the cycle's own receipt wording", () => {
+    const exposure = exposureModel("BTC", portfolio);
+
+    expect(exposure).toEqual({
+      held: true,
+      weightStated: "23.1%",
+      valueStated: "$24,726",
+      observed: "eToro account response received at 2026-08-24 17:35 UTC",
+    });
+  });
+
+  it("treats an uncomputable share as absent, never as no position", () => {
+    expect(exposureModel("SOL", portfolio)?.weightStated).toBeNull();
+    expect(exposureModel("SOL", portfolio)?.held).toBe(true);
+  });
+
+  it("distinguishes not-held from no-readable-cycle", () => {
+    expect(exposureModel("HYPE", portfolio)?.held).toBe(false);
+    expect(exposureModel("HYPE", null)).toBeNull();
+  });
+
+  it("never states a zero for an asset the portfolio does not contain", () => {
+    const exposure = exposureModel("HYPE", portfolio);
+
+    expect(exposure?.weightStated).toBeNull();
+    expect(exposure?.valueStated).toBeNull();
+  });
+});
 
 describe("the key facts widget", () => {
   it("keeps a conflict a conflict and never serves a number for it", () => {
@@ -559,10 +609,28 @@ describe("the key facts widget", () => {
 
   it("labels protocol figures with their economic entity", () => {
     const facts = keyFacts(dossier());
-    const fees = facts.find((fact) => fact.label === "Fees paid by users");
+    const protocolFact = facts.find((fact) => fact.entity !== null);
 
-    expect(fees?.entity).toBe("Hyperliquid");
-    expect(fees?.stated).toBe("$3.1m");
+    expect(protocolFact?.entity).toBe("Hyperliquid");
+    expect(protocolFact?.stated).not.toBeNull();
+  });
+
+  it("shows six metrics at most", () => {
+    expect(keyFacts(dossier()).length).toBeLessThanOrEqual(KEY_FACT_LIMIT);
+    expect(KEY_FACT_LIMIT).toBe(6);
+  });
+
+  it("shows one row per quantity, never one per mapped entity", () => {
+    const labels = keyFacts(dossier()).map((fact) => fact.label);
+
+    expect(new Set(labels).size).toBe(labels.length);
+  });
+
+  it("keeps the fee and holder-revenue detail for Economics", () => {
+    const labels = keyFacts(dossier()).map((fact) => fact.label);
+
+    expect(labels).not.toContain("Fees paid by users");
+    expect(labels).not.toContain("Holder revenue");
   });
 
   it("surfaces no raw metric identifier", () => {

@@ -441,3 +441,88 @@ and passed — while `WorkspacePlaceholder`, a *component*, held a tenth
 `components/` too, and mutation-checked three ways: a page reclaiming
 its own `<main>`, a component doing the same, and the container
 reverting to a fixed 1,600px. All three fail the suite.
+
+### The crypto Overview explains the situation; the other tabs prove it
+
+Measured from product use: *"much better than the old dossier, but it
+still feels like a well-organized evidence report rather than a CIO
+product. The main problem is hierarchy, not styling."* Desktop
+**2,495px**, mobile **4,085px**, a **1,362px** Key Facts block
+dominating the page, and the conclusion abstract and repeated.
+
+**The sentences moved to the backend, because the frontend may not
+author them.** A hero line reading *"momentum is supportive, but
+MOVRvest cannot establish the issuance rule"* is economic
+interpretation, and Invariant 10 forbids this side inventing it. So
+`app/api/models/crypto_brief_adapter.py` composes the brief — current
+view, what blocks progress, what would change it, and the one-line
+setup — by **quoting** the layer that owns each finding: a `Driver`
+from the intelligence snapshot, an `UnresolvedQuestion` from the
+committee that raised it, a material uncertainty from the assessment, a
+`WatchItem` from the intelligence layer. It adds headings, an order and
+one connective, and a test asserts every emitted clause appears
+verbatim in its source sentence.
+
+**It is Communication and not the CIO, and the guard said so first.**
+Written under `app/cio/`, it was rejected by the crypto intelligence
+layer's own import test: nothing in `app/cio/` may import
+`crypto_intelligence`, because what is *happening* must never reach
+what is *decided*. The guard was right and the placement was wrong.
+This layer reads a decision already made and explains it.
+
+| | before | after |
+|---|---|---|
+| desktop Overview | 2,495px | **1,572px** (target 1,300–1,700) |
+| mobile Overview | 4,085px | **2,812px** (target < 2,600) |
+| metrics visible by default | 16 | **6** |
+| `INVESTIGATE` rendered | 2× | **1×** |
+| "No capital action is suggested" | 2× | **1×** |
+| source-disagreement essays open by default | 2 (343 and 414 chars) | **0** |
+| grid row heights | 1,362px / 1,362px | 589px / 736px |
+
+**Three defects the corpus forced, all found on the first live run.**
+
+1. **One splitter may not be pointed at two sentence shapes.** A
+   decision sentence qualifies itself — *"No mechanical issuance rule is
+   held. That is a statement about what this platform has read…"* — so a
+   full stop or colon separates claim from support. A driver's colon
+   carries a **category**: *"Token economics: Hyperliquid Reports Strong
+   Revenue…"*. Splitting it left the brief asserting *"Token economics"*
+   as a finding, and TAO rendered that non-sentence **twice in one
+   block**. Drivers and watch items are now quoted whole, and even for
+   decision sentences the colon cuts only before a lowercase
+   continuation — a capitalised right-hand side is a title.
+2. **A side degrades to fewer clauses and never vanishes.** ETH's second
+   supportive clause could not be safely lowercased, and refusing the
+   whole side left its setup **opening on a blocker** while the block
+   below still listed what supported the case.
+3. **Case is never repaired.** Joining quoted clauses needs the second
+   lowercased, and lowercasing one that opens on a proper noun corrupts
+   it. The joiner lowercases only openers on an explicit closed-class
+   list and otherwise emits **two intact sentences** — ADA reads *"The
+   asset has moved +36% over a month. Committee judgment is off…"*
+   rather than *"…but Committee judgment is off"*.
+
+**Two things the brief asked for are not held, and are named as
+absent.** There is no high, no low and no baseline volume anywhere in
+the payload — the only "all-time" figures in the corpus are event
+headlines about *open interest*, a different quantity — so *position
+within the recent measured range* and *volume relative to normal* are
+stated as absences. No conditional scenario is worded for the same
+reason: *"continuation would be better supported if…"* is a forecast
+and no layer beneath this one establishes one.
+
+**Exposure has three states, not two.** A recorded share, an asset the
+completed cycle did not contain (**HYPE is not among the 14 holdings**),
+and no readable cycle at all. The middle is a finding and reads *"Not
+held"*; the last is silence. Neither renders as 0%.
+
+**`BLOCK_LIMIT` is 2, measured not chosen**: at three the mobile
+Overview ran 3,239px and the brief alone was 1,021px. A capped block
+says how many findings it holds back.
+
+**Mobile lands at 2,812px against a 2,600px target** — 8% over, and
+recorded rather than hidden. The remaining ~210px costs either a
+metric's provenance line, one of the three developments, or the
+exposure receipt wording; all three were judged worth more than the
+target.
