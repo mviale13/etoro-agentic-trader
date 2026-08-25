@@ -24,6 +24,15 @@ class Settings(BaseSettings):
     anthropic_auth_token: str = ""
     openai_api_key: str = ""
     movrvest_executive_writer: str = ""
+
+    #: The Fresh Quote Ribbon's operator switch — default off. The
+    #: repository's eToro REST credential is mechanically separate from
+    #: the broad OAuth MCP connection, but whether it is restricted to
+    #: read-only use is an administrative fact this codebase cannot
+    #: establish; until an operator determines it, display quotes stay
+    #: dark rather than borrowing an unverified privilege boundary
+    #: (owner ruling on #255, point 6).
+    movrvest_fresh_quotes: str = ""
     movrvest_intelligence_synthesis: str = ""
     movrvest_committee_judgment: str = ""
     movrvest_writer_provider: str = ""
