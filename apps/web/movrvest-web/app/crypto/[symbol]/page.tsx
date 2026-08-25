@@ -12,6 +12,7 @@ import {
   viewFromParam,
   type CryptoView,
 } from "@/components/crypto/overview-model";
+import { getCycleReview } from "@/lib/api/cycle-review";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageMain } from "@/components/layout/PageMain";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
@@ -72,9 +73,14 @@ export default async function CryptoDossierPage({
   const asset = symbol.toUpperCase();
   const view = viewFromParam(viewParam);
 
-  const [result, corpus] = await Promise.all([
+  // Three stored-door reads, none of which acquires anything. The
+  // cycle is read for one thing only — whether this asset is in the
+  // last completed portfolio and at what share — and a cycle that
+  // cannot be read leaves exposure absent rather than zero.
+  const [result, corpus, cycle] = await Promise.all([
     getCryptoDossier(asset),
     getCryptoCorpus(),
+    getCycleReview(),
   ]);
 
   return (
@@ -112,6 +118,7 @@ export default async function CryptoDossierPage({
                 // corpus label, which is the archetype and already
                 // rendered as the role beside it.
                 result.dossier.protocol?.entities[0]?.name ?? null,
+                cycle.review?.portfolio ?? null,
               )}
             />
 
@@ -249,7 +256,10 @@ function ActiveView({
     );
   }
 
-  return <CryptoOverviewView dossier={dossier} />;
+  // The brief is passed explicitly rather than dug out of the dossier
+  // inside the view: it is the Overview's spine, and the composition
+  // point is where that should be visible.
+  return <CryptoOverviewView dossier={dossier} brief={dossier.brief} />;
 }
 
 function Heading({ id, children }: { id: string; children: React.ReactNode }) {
