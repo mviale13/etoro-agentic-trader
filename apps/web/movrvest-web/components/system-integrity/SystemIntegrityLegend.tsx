@@ -20,8 +20,13 @@ const HEADLINE = {
 export function SystemIntegrityLegend() {
   const { integrity } = usePageIntegrity();
 
+  // Application chrome, not investment content: the legend sits in the
+  // navigation rail's footer rather than floating over the page. The
+  // sidebar collapses to a top bar on small screens and the legend is
+  // hidden with the rest of its footer there — unobtrusive, and never
+  // between the investor and the evidence.
   return (
-    <div className="fixed bottom-5 right-5 z-[100] rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+    <div className="mt-6 hidden rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2.5 lg:block">
       <div className="flex items-center gap-3">
         {integrity ? (
           <BackendStatusDot
@@ -38,11 +43,11 @@ export function SystemIntegrityLegend() {
         )}
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             System Integrity
           </p>
 
-          <p className="text-xs font-semibold text-slate-700">
+          <p className="text-xs font-semibold text-slate-300">
             {integrity ? HEADLINE[integrity.status] : "Unclassified"}
           </p>
         </div>

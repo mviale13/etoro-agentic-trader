@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { PageIntegrityProvider } from "@/components/system-integrity/PageIntegrityContext";
-import { SystemIntegrityLegend } from "@/components/system-integrity/SystemIntegrityLegend";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +33,6 @@ export default function RootLayout({
         <PageIntegrityProvider>
           {children}
 
-          <SystemIntegrityLegend />
         </PageIntegrityProvider>
       </body>
     </html>

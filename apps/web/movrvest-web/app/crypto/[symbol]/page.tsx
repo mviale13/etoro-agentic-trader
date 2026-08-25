@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { ArrowLeft, CircleAlert } from "lucide-react";
 
+import {
+  CryptoHero,
+  CryptoOverviewView,
+  CryptoTabs,
+} from "@/components/crypto/CryptoOverview";
+import {
+  heroModel,
+  viewFromParam,
+  type CryptoView,
+} from "@/components/crypto/overview-model";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import {
@@ -27,7 +37,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { params: Promise<{ symbol: string }> };
+type PageProps = {
+  params: Promise<{ symbol: string }>;
+  searchParams: Promise<{ view?: string | string[] }>;
+};
 
 /**
  * Everything this platform can say about one digital asset.
@@ -48,9 +61,14 @@ type PageProps = { params: Promise<{ symbol: string }> };
  * the backend declines to interpret a measurement, this page renders
  * the declining sentence rather than a friendlier one of its own.
  */
-export default async function CryptoDossierPage({ params }: PageProps) {
+export default async function CryptoDossierPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { symbol } = await params;
+  const { view: viewParam } = await searchParams;
   const asset = symbol.toUpperCase();
+  const view = viewFromParam(viewParam);
 
   const [result, corpus] = await Promise.all([
     getCryptoDossier(asset),
@@ -83,7 +101,22 @@ export default async function CryptoDossierPage({ params }: PageProps) {
         <Switcher corpus={corpus} current={asset} />
 
         {result.dossier ? (
-          <Sections dossier={result.dossier} />
+          <>
+            <CryptoHero
+              hero={heroModel(
+                result.dossier,
+                // The recognised project name is the mapped economic
+                // entity's own — "Hyperliquid", "Bitcoin" — never the
+                // corpus label, which is the archetype and already
+                // rendered as the role beside it.
+                result.dossier.protocol?.entities[0]?.name ?? null,
+              )}
+            />
+
+            <CryptoTabs symbol={asset} current={view} />
+
+            <ActiveView view={view} dossier={result.dossier} />
+          </>
         ) : (
           <Unavailable url={result.backendUrl} error={result.error} />
         )}
@@ -104,23 +137,27 @@ function Switcher({
     return null;
   }
 
+  // Compact by design: the asset list is already fetched for this
+  // page, so the selector adds no request — and it stays a set of
+  // plain links, small enough not to compete with the hero below it.
   return (
-    <nav aria-label="Digital assets" className="mt-6 flex flex-wrap gap-2">
+    <nav
+      aria-label="Digital assets"
+      className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+    >
       {corpus.map((asset) => (
         <Link
           key={asset.symbol}
           href={`/crypto/${asset.symbol}`}
           aria-current={asset.symbol === current ? "page" : undefined}
+          title={asset.name}
           className={
             asset.symbol === current
-              ? "rounded-full bg-slate-950 px-4 py-1.5 text-sm font-semibold text-white"
-              : "rounded-full border border-slate-200 px-4 py-1.5 text-sm font-semibold text-slate-600 hover:border-slate-400 hover:text-slate-950"
+              ? "font-semibold text-slate-950 underline underline-offset-4"
+              : "font-medium text-slate-400 hover:text-slate-950 focus-visible:text-slate-950"
           }
         >
           {asset.symbol}
-          <span className="ml-2 font-normal text-xs opacity-70">
-            {asset.name}
-          </span>
         </Link>
       ))}
     </nav>
@@ -145,30 +182,72 @@ function Unavailable({ url, error }: { url: string; error?: string }) {
   );
 }
 
-function Sections({ dossier }: { dossier: CryptoDossier }) {
-  return (
-    <div className="mt-8 space-y-10">
-      <Identity symbol={dossier.symbol} identity={dossier.identity} />
-      <Decision symbol={dossier.symbol} decision={dossier.decision} />
-      <Assessment assessment={dossier.assessment} />
-      <Committees
-        committees={dossier.committees.committees}
-        protocol={dossier.protocol}
-      />
-      <Questions identity={dossier.identity} quality={dossier.quality} />
-      {dossier.protocol ? (
-        <ProtocolEconomics protocol={dossier.protocol} symbol={dossier.symbol} />
-      ) : null}
-      <Supply supply={dossier.supply} issuance={dossier.issuance} />
-      <Market market={dossier.market} />
-      {dossier.facts ? (
-        <JudgedFacts facts={dossier.facts} symbol={dossier.symbol} />
-      ) : null}
-      <Happening intelligence={dossier.intelligence} />
-      <Maturity journal={dossier.journal} />
-      <Gaps dossier={dossier} />
-    </div>
-  );
+/**
+ * One view at a time, organised around the investor's questions.
+ *
+ * Nothing decision-bearing disappeared in the redesign: every section
+ * the long page carried is reachable under a view, and the deepest
+ * audit material — lenses, the question framework, capture history,
+ * what is not known — lives together under Evidence.
+ */
+function ActiveView({
+  view,
+  dossier,
+}: {
+  view: CryptoView;
+  dossier: CryptoDossier;
+}) {
+  if (view === "economics") {
+    return (
+      <div className="mt-8 space-y-10">
+        {dossier.protocol ? (
+          <ProtocolEconomics
+            protocol={dossier.protocol}
+            symbol={dossier.symbol}
+          />
+        ) : null}
+        <Market market={dossier.market} />
+      </div>
+    );
+  }
+
+  if (view === "tokenomics") {
+    return (
+      <div className="mt-8 space-y-10">
+        <Supply supply={dossier.supply} issuance={dossier.issuance} />
+      </div>
+    );
+  }
+
+  if (view === "developments") {
+    return (
+      <div className="mt-8 space-y-10">
+        <Happening intelligence={dossier.intelligence} />
+      </div>
+    );
+  }
+
+  if (view === "evidence") {
+    return (
+      <div className="mt-8 space-y-10">
+        <Identity symbol={dossier.symbol} identity={dossier.identity} />
+        <Decision symbol={dossier.symbol} decision={dossier.decision} />
+        <Assessment assessment={dossier.assessment} />
+        <Committees
+          committees={dossier.committees.committees}
+          protocol={dossier.protocol}
+        />
+        <Questions identity={dossier.identity} quality={dossier.quality} />
+        {dossier.facts ? (
+          <JudgedFacts facts={dossier.facts} symbol={dossier.symbol} />
+        ) : null}
+        <Maturity journal={dossier.journal} />
+        <Gaps dossier={dossier} />
+      </div>
+    );
+  }
+
+  return <CryptoOverviewView dossier={dossier} />;
 }
 
 function Heading({ id, children }: { id: string; children: React.ReactNode }) {

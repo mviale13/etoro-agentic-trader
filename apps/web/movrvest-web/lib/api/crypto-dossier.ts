@@ -1005,6 +1005,8 @@ function parseIssuance(record: UnknownRecord): IssuanceView {
 
 export interface MarketObservationView {
   label: string;
+  /** The raw interval token — "instant", "1h", "24h", "7d", "30d". */
+  interval: string;
   intervalStated: string;
   stated: string | null;
   standingStated: string;
@@ -1039,6 +1041,7 @@ function parseObservation(
 ): MarketObservationView {
   return {
     label: requireString(item.label, `${field}.label`),
+    interval: requireString(item.interval, `${field}.interval`),
     intervalStated: requireString(
       item.interval_stated,
       `${field}.interval_stated`,

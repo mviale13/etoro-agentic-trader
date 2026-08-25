@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { SystemIntegrityLegend } from "@/components/system-integrity/SystemIntegrityLegend";
 import {
   BriefcaseBusiness,
   ChartNoAxesCombined,
@@ -69,9 +71,13 @@ export function ExecutiveNavigation() {
           })}
         </nav>
 
-        <p className="mt-auto hidden px-3 pt-8 text-xs leading-5 text-slate-500 lg:block">
-          Intelligence becomes conviction.
-        </p>
+        <div className="mt-auto hidden lg:block">
+          <SystemIntegrityLegend />
+
+          <p className="px-3 pt-4 text-xs leading-5 text-slate-500">
+            Intelligence becomes conviction.
+          </p>
+        </div>
       </div>
     </aside>
   );
