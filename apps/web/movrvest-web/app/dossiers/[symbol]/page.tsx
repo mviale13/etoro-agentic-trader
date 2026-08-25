@@ -15,7 +15,6 @@ import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { redirect } from "next/navigation";
 
-import { CourseEnvelope } from "@/components/executive/HomeSections";
 import { getCycleReview } from "@/lib/api/cycle-review";
 import type { CycleCourse, CycleReview } from "@/lib/api/cycle-review";
 
@@ -55,10 +54,23 @@ import type {
   ValueChainView,
 } from "@/lib/api/dossier";
 
+import {
+  DossierHero,
+  DossierOverviewView,
+  DossierTabs,
+} from "@/components/dossier/DossierOverview";
+import {
+  type DossierView,
+  formattedFigure,
+  heroModel,
+  viewFromParam,
+} from "@/components/dossier/overview-model";
+
 export const dynamic = "force-dynamic";
 
 type DossierPageProps = {
   params: Promise<{ symbol: string }>;
+  searchParams: Promise<{ view?: string | string[] }>;
 };
 
 /**
@@ -116,9 +128,14 @@ export function recordedCourse(
   return { course, finishedAt: review.finishedAt };
 }
 
-export default async function DossierPage({ params }: DossierPageProps) {
+export default async function DossierPage({
+  params,
+  searchParams,
+}: DossierPageProps) {
   const { symbol } = await params;
+  const { view: viewParam } = await searchParams;
   const normalizedSymbol = symbol.toUpperCase();
+  const view = viewFromParam(viewParam);
 
   const result = await getDossier(normalizedSymbol);
 
@@ -153,7 +170,7 @@ export default async function DossierPage({ params }: DossierPageProps) {
         }
       />
 
-      <main className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-950"
@@ -163,7 +180,12 @@ export default async function DossierPage({ params }: DossierPageProps) {
         </Link>
 
         {result.dossier ? (
-          <Dossier dossier={result.dossier} recorded={recorded} />
+          <Dossier
+            dossier={result.dossier}
+            review={review.review}
+            recorded={recorded}
+            view={view}
+          />
         ) : (
           <Unavailable backendUrl={result.backendUrl} error={result.error} />
         )}
@@ -1727,24 +1749,45 @@ function Supply({ supply, symbol }: { supply: DossierSupply; symbol: string }) {
   );
 }
 
+/**
+ * One security, in five views, in the order the investor meets the
+ * questions: what is the course, what are the numbers, what is the
+ * thesis and how has it moved, what is happening, and where can all of
+ * it be audited.
+ *
+ * Every section the long page carried is still here — none was deleted,
+ * and none was reworded. What changed is which of them the investor
+ * meets first. Before this, the course *"Consider adding to DIS"* first
+ * appeared 3,659px down, below the conviction score, the committee
+ * agreement, an AI-written narrative and the whole decision history;
+ * the capital envelope was at 5,110px and the fundamentals at 5,800px.
+ *
+ * Only the active view renders, so nothing is hidden in a panel and
+ * paid for anyway — and the page still issues exactly the requests it
+ * issued before, minus the narrative on every view but one.
+ */
 function Dossier({
   dossier,
+  review,
   recorded,
+  view,
 }: {
   dossier: DossierViewModel;
+  review: CycleReview | null;
   recorded: RecordedCourse | null;
+  view: DossierView;
 }) {
   return (
-    <div className="mt-8 space-y-10">
+    <>
       {/* A token's analysis lives on its own surface, because a token is
           not a company with different labels: the conviction, the score
-          and the committee agreement below are the equity case, and none
-          of the crypto evidence reaches them. Linked rather than
+          and the committee agreement are the equity case, and none of
+          the crypto evidence reaches them. Linked rather than
           redirected while both exist. */}
       {dossier.definition.kind === "crypto" ? (
         <Link
           href={`/crypto/${dossier.symbol}`}
-          className="flex items-center justify-between rounded-[20px] border border-slate-200 bg-white px-5 py-4 hover:border-slate-400"
+          className="mt-8 flex items-center justify-between rounded-[20px] border border-slate-200 bg-white px-5 py-4 hover:border-slate-400"
         >
           <span className="text-sm text-slate-700">
             <span className="font-semibold text-slate-900">
@@ -1759,131 +1802,168 @@ function Dossier({
         </Link>
       ) : null}
 
-      <DecisionHeader dossier={dossier} />
+      <DossierHero
+        hero={heroModel(dossier, review, recorded?.finishedAt ?? null)}
+      />
 
-      {dossier.securityEvidenced ? null : <UnevidencedNotice />}
+      {dossier.securityEvidenced ? null : (
+        <div className="mt-4">
+          <UnevidencedNotice />
+        </div>
+      )}
 
-      {/* Asked for from the browser once this page is readable. The
-          case above does not wait on it and does not depend on it. */}
-      <ExecutiveNarrative symbol={dossier.symbol} />
+      <DossierTabs symbol={dossier.symbol} current={view} />
 
-      {dossier.classification ? (
-        <Classification
-          classification={dossier.classification}
-          heading={dossier.definition.classificationHeading}
-        />
-      ) : null}
-
-      {dossier.playbook ? (
-        <Playbook
-          playbook={dossier.playbook}
-          rating={dossier.tokenRating}
-          heading={dossier.definition.analysisHeading}
-        />
-      ) : null}
-
-      {dossier.fundCost ? <FundCost cost={dossier.fundCost} /> : null}
-
-      {dossier.assetProfile ? (
-        <AssetProfile profile={dossier.assetProfile} symbol={dossier.symbol} />
-      ) : null}
-
-      {dossier.protocolFundamentals ? (
-        <ProtocolFundamentals
-          fundamentals={dossier.protocolFundamentals}
-          symbol={dossier.symbol}
-        />
-      ) : null}
-
-      {dossier.cryptoPlaybook ? (
-        <CryptoPlaybook
-          playbook={dossier.cryptoPlaybook}
-          symbol={dossier.symbol}
-        />
-      ) : null}
-
-      {dossier.supply ? (
-        <Supply supply={dossier.supply} symbol={dossier.symbol} />
-      ) : null}
-
-      {dossier.cryptoMarket ? (
-        <CryptoMarketContext
-          context={dossier.cryptoMarket}
-          symbol={dossier.symbol}
-        />
-      ) : null}
-
-      <WhatChanged dossier={dossier} />
-      <Recommendation dossier={dossier} />
-      {recorded ? <RecordedEnvelope recorded={recorded} /> : null}
-      <InvestorContext dossier={dossier} />
-
-      {dossier.fundamentals ? (
-        <Fundamentals fundamentals={dossier.fundamentals} />
-      ) : null}
-
-      {dossier.understanding ? (
-        <Understanding
-          understanding={dossier.understanding}
-          symbol={dossier.symbol}
-        />
-      ) : null}
-
-      <WhyTrustThis dossier={dossier} />
-
-      {/* Last, and deliberately: an unverified discovery surface sits
-          after the case rather than beside it, so nothing above it
-          reads as though it were evidence the case rests on.
-
-          Behind Suspense, and that is load-bearing rather than
-          decorative. One reading is three provider requests paced
-          thirteen seconds apart, so awaiting it here would hold the
-          entire investment case behind roughly half a minute of a
-          discovery surface that reaches no part of it. It streams in
-          on its own, once, and a failure inside it leaves everything
-          above untouched. */}
-      <Suspense fallback={<TickerNewsFallback />}>
-        <TickerNews symbol={dossier.symbol} />
-      </Suspense>
-    </div>
+      <ActiveView dossier={dossier} recorded={recorded} view={view} />
+    </>
   );
 }
 
+/**
+ * The news surface, behind Suspense, exactly as before.
+ *
+ * That boundary is load-bearing rather than decorative: one reading is
+ * three provider requests paced thirteen seconds apart, so awaiting it
+ * would hold the entire investment case behind roughly half a minute of
+ * a discovery surface that reaches no part of it. The deterministic
+ * Overview renders first and this streams in on its own; a failure
+ * inside it leaves everything else untouched.
+ */
+function News({ symbol }: { symbol: string }) {
+  return (
+    <Suspense fallback={<TickerNewsFallback />}>
+      <TickerNews symbol={symbol} />
+    </Suspense>
+  );
+}
 
 /**
- * One symbol's course and envelope, as the latest successfully
- * completed attempt from a complete stream recorded them.
+ * One view at a time.
  *
- * Read, never recomputed. The envelope is a property of the review that
- * produced it: its price gate aged that cycle's quote, its capacity
- * arithmetic used that cycle's account reading, and recomputing one
- * during a page request would answer a question the recorded review did
- * not ask — and could disagree with the homepage showing the same
- * cycle. A symbol the latest completed cycle did not cover renders
- * nothing at all: no envelope is manufactured, and no zero capacity is
- * implied.
+ * The placement rules the redesign rests on:
+ *
+ * - **the Overview never renders `ExecutiveNarrative`.** It is a client
+ *   component that fetches on mount, so omitting it *is* the mechanism
+ *   — the default view issues no narrative request and the case never
+ *   waits on a model. It renders under Thesis, invoking the existing
+ *   bounded path unchanged;
+ * - **conviction, committee agreement, the score families and the
+ *   provider classification live under Evidence**, not beside the
+ *   course. A score is how this platform reached a view; it is not the
+ *   view, and it is not the explanation;
+ * - **portfolio and market context are Thesis material.** An
+ *   account-wide condition is not a reason to revisit a company, so it
+ *   never enters the Overview's company widgets;
+ * - the full dated decision history is Thesis; the Overview says one
+ *   line about it.
  */
-function RecordedEnvelope({ recorded }: { recorded: RecordedCourse }) {
-  if (!recorded.course.envelope) {
-    return null;
+function ActiveView({
+  dossier,
+  recorded,
+  view,
+}: {
+  dossier: DossierViewModel;
+  recorded: RecordedCourse | null;
+  view: DossierView;
+}) {
+  if (view === "financials") {
+    return (
+      <div className="mt-8 space-y-10">
+        {dossier.fundamentals ? (
+          <Fundamentals fundamentals={dossier.fundamentals} />
+        ) : null}
+
+        {dossier.understanding ? (
+          <Understanding
+            understanding={dossier.understanding}
+            symbol={dossier.symbol}
+          />
+        ) : null}
+
+        {dossier.fundCost ? <FundCost cost={dossier.fundCost} /> : null}
+      </div>
+    );
+  }
+
+  if (view === "thesis") {
+    return (
+      <div className="mt-8 space-y-10">
+        <ExecutiveNarrative symbol={dossier.symbol} />
+        <Recommendation dossier={dossier} />
+        <InvestorContext dossier={dossier} />
+        <WhatChanged dossier={dossier} />
+      </div>
+    );
+  }
+
+  if (view === "developments") {
+    return (
+      <div className="mt-8 space-y-10">
+        <News symbol={dossier.symbol} />
+      </div>
+    );
+  }
+
+  if (view === "evidence") {
+    return (
+      <div className="mt-8 space-y-10">
+        <DecisionHeader dossier={dossier} />
+
+        {dossier.classification ? (
+          <Classification
+            classification={dossier.classification}
+            heading={dossier.definition.classificationHeading}
+          />
+        ) : null}
+
+        {dossier.playbook ? (
+          <Playbook
+            playbook={dossier.playbook}
+            rating={dossier.tokenRating}
+            heading={dossier.definition.analysisHeading}
+          />
+        ) : null}
+
+        {dossier.assetProfile ? (
+          <AssetProfile profile={dossier.assetProfile} symbol={dossier.symbol} />
+        ) : null}
+
+        {dossier.protocolFundamentals ? (
+          <ProtocolFundamentals
+            fundamentals={dossier.protocolFundamentals}
+            symbol={dossier.symbol}
+          />
+        ) : null}
+
+        {dossier.cryptoPlaybook ? (
+          <CryptoPlaybook
+            playbook={dossier.cryptoPlaybook}
+            symbol={dossier.symbol}
+          />
+        ) : null}
+
+        {dossier.supply ? (
+          <Supply supply={dossier.supply} symbol={dossier.symbol} />
+        ) : null}
+
+        {dossier.cryptoMarket ? (
+          <CryptoMarketContext
+            context={dossier.cryptoMarket}
+            symbol={dossier.symbol}
+          />
+        ) : null}
+
+        <WhyTrustThis dossier={dossier} />
+      </div>
+    );
   }
 
   return (
-    <section aria-labelledby="recorded-envelope-heading">
-      <SectionHeading id="recorded-envelope-heading">
-        What the latest review allowed
-      </SectionHeading>
-
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-        From the CIO review completed {recorded.finishedAt}, which is where
-        this consideration was decided. This page shows what that review
-        recorded and computes nothing of its own.
-      </p>
-
-      <div className="mt-3">
-        <CourseEnvelope course={recorded.course} />
-      </div>
-    </section>
+    <DossierOverviewView
+      dossier={dossier}
+      recorded={recorded}
+      news={<News symbol={dossier.symbol} />}
+    />
   );
 }
 
@@ -1963,36 +2043,11 @@ function FundamentalRow({ row }: { row: DossierFundamentalRow }) {
  * provider-established code where one exists and with nothing where it
  * does not — no symbol is ever guessed from the ticker or venue.
  */
+/** One formatting rule, shared with the Overview snapshot: the two
+    surfaces must render the same number the same way, and two copies of
+    the rule is how they stop doing that. */
 function formatFundamental(row: DossierFundamentalRow): string {
-  if (row.value === null) {
-    return "\u2014";
-  }
-
-  if (row.unit === "fraction") {
-    return `${(row.value * 100).toFixed(1)}%`;
-  }
-
-  if (row.unit === "currency") {
-    const compact = compactAmount(row.value);
-
-    return row.currency ? `${row.currency} ${compact}` : compact;
-  }
-
-  return `${row.value.toFixed(2)}x`;
-}
-
-function compactAmount(value: number): string {
-  const magnitude = Math.abs(value);
-
-  if (magnitude >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(2)}bn`;
-  }
-
-  if (magnitude >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}m`;
-  }
-
-  return value.toLocaleString("en-US");
+  return formattedFigure(row) ?? "\u2014";
 }
 
 /**
@@ -2345,12 +2400,15 @@ function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
       </p>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-        <h1
+        {/* The hero above owns the page's h1 now. This keeps its own
+            heading — the section is still the audit trail's front door —
+            one level down, so a view carries one h1 rather than two. */}
+        <h2
           id="decision-heading"
           className="text-4xl font-semibold tracking-[-0.045em] text-slate-950 sm:text-5xl"
         >
           {dossier.symbol}
-        </h1>
+        </h2>
 
         <div className="text-right">
           <p className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -2409,10 +2467,20 @@ function DecisionHeader({ dossier }: { dossier: DossierViewModel }) {
               : `${Math.round(dossier.committeeAgreement * 100)}%`}
           </dd>
 
-          <p className="mt-1 text-xs text-slate-500">
+          {/* **The participation account, not the ratio alone.** "100%"
+              beside "Across the committees that spoke" reads as broad
+              consensus, and on DIS it is one committee agreeing with
+              itself while another abstained. The synthesis already
+              words that exactly — "All 1 committees that spoke agree,
+              and 1 abstained" — so the percentage is never shown
+              without it. Where the synthesis carries no sentence the
+              generic line stands, which is the honest fallback rather
+              than a count this side would have to compute. */}
+          <p className="mt-1 text-xs leading-5 text-slate-500">
             {dossier.committeeAgreement === null
               ? "No committee could form a view"
-              : "Across the committees that spoke"}
+              : (dossier.synthesis?.deliberation?.agreement ??
+                "Across the committees that spoke")}
           </p>
         </div>
 

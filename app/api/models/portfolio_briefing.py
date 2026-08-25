@@ -59,6 +59,13 @@ class ActionResponse(BaseModel):
     #: scheduled — which is not the same as nothing being expected.
     checkpoint: str | None
 
+    #: Whether this consideration puts a decision in front of the
+    #: investor — the domain's own reading of the action kind, carried so
+    #: a surface comparing this action with a recorded one compares the
+    #: same five facts the cycle record states, rather than re-deriving
+    #: one of them from the kind string.
+    asks_for_something: bool = False
+
 
 class RankedInvestmentCaseResponse(BaseModel):
     """

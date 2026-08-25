@@ -2427,6 +2427,7 @@ function parseDossier(payload: unknown): DossierViewModel {
           statement: requireString(payload.action.statement, "action.statement"),
           because: requireString(payload.action.because, "action.because"),
           checkpoint: optionalString(payload.action.checkpoint, "action.checkpoint"),
+          asksForSomething: payload.action.asks_for_something === true,
         }
       : null,
     summary: requireString(payload.summary, "summary"),

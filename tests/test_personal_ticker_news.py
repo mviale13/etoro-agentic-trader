@@ -885,8 +885,11 @@ def test_the_dossier_never_awaits_the_news_before_it_renders() -> None:
 def test_the_news_is_streamed_behind_its_own_suspense_boundary() -> None:
     page = dossier_page()
 
+    # The boundary now lives in the page's News wrapper, which every
+    # view renders the ticker news through — the assertion follows the
+    # component, not a particular call site.
     assert "<Suspense fallback={<TickerNewsFallback />}>" in page
-    assert "<TickerNews symbol={dossier.symbol} />" in page
+    assert "<TickerNews symbol={symbol} />" in page
 
     # The fetch lives in the streamed component, not on the page.
     assert "await getPersonalNews" in ticker_news_component()

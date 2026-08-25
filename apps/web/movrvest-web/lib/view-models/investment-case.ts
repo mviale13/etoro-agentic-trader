@@ -51,6 +51,13 @@ export interface ExecutiveActionViewModel {
   statement: string;
   because: string;
   checkpoint: string | null;
+  /** Whether this consideration puts a decision in front of the
+      investor — the domain's own reading of the kind, carried so a
+      comparison with a recorded course compares the same five facts the
+      cycle record states, never a re-derivation from the kind string.
+      Absent on an older payload, which reads as false — a comparison,
+      not a claim. */
+  asksForSomething: boolean;
 }
 
 export interface RankedInvestmentCaseViewModel {

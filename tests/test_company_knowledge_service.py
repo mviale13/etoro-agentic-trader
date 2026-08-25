@@ -699,3 +699,69 @@ def test_a_superseded_entry_is_replaced_by_what_is_read_next(
     store.append(knowledge())
 
     assert len(store.read("DIS", ACCESSION)) == 1
+
+
+def test_the_read_only_absence_names_the_stream_it_speaks_for(
+    tmp_path: Path,
+) -> None:
+    """
+    An absence may only report what *this* stream does not hold.
+
+    The sentence read "No filing has been read for DIS" — a claim about
+    filings, which this service cannot make: it reads business
+    descriptions, and financial statements are a separate observation
+    stream with a separate quorum that is never pooled with these.
+
+    Disney is the company that disproved it. Its dossier printed "No
+    filing has been read for DIS" directly beside revenue and earnings
+    growth computed from 10-K 0001744489-25-000155, period ended
+    2025-09-27, via SEC EDGAR. The absence was real; the sentence
+    describing it was false, and an investor reading both concluded the
+    figures were unsourced.
+    """
+
+    outcome = service(tmp_path, ProviderStub(), ExtractorStub()).established("DIS")
+
+    assert outcome.state is KnowledgeState.UNAVAILABLE
+    assert outcome.knowledge is None
+
+    stated = outcome.absent_because or ""
+
+    # What is actually missing, named as such...
+    assert "No business description has been read for DIS" in stated
+
+    # ...the other stream left explicitly undisturbed...
+    assert "Financial statements are read separately" in stated
+
+    # ...the acquisition route still stated, because the absence is a
+    # spend nobody has taken rather than a failure...
+    assert "movrvest observe" in stated
+
+    # ...and the claim this service was never entitled to make, gone.
+    assert "No filing has been read" not in stated
+
+
+def test_no_symbol_is_special_cased_in_the_absence(tmp_path: Path) -> None:
+    """The repair is the sentence, not a branch.
+
+    Disney found the defect and every security has it, so the wording
+    must be produced the same way for a symbol that has never been near
+    a statement stream.
+    """
+
+    store = JsonCompanyKnowledgeStore(tmp_path)
+
+    for symbol in ("DIS", "MSFT", "BNP.PA", "ZZZZ"):
+        stated = (
+            CompanyKnowledgeService(
+                store=store,
+                sources=ResolverStub(ProviderStub()),  # type: ignore[arg-type]
+                extractor=ExtractorStub(),  # type: ignore[arg-type]
+            )
+            .established(symbol)
+            .absent_because
+            or ""
+        )
+
+        assert f"No business description has been read for {symbol}" in stated
+        assert "Financial statements are read separately" in stated
