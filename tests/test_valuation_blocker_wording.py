@@ -74,15 +74,12 @@ def test_the_msft_specimen_reads_as_cio_advice() -> None:
 
     assert blocked.kind is BlockerKind.VALUATION_GATE
     assert blocked.stated == (
-        "The valuation is not attractive enough at today's price. At a "
-        "Forward P/E of 20.6×, the shares are fully priced under this "
-        "platform's own valuation bands — not cheap enough to support a "
-        "purchase, and not read as overpriced either. That is a house "
-        "rule over the measured multiple, not a market comparison. The "
-        "business may still be credible, but today's price does not "
-        "offer enough margin of safety to justify opening or adding to "
-        "a position. Wait for a better entry price, or for stronger "
-        "earnings and cash-flow evidence."
+        "At 20.6× forward earnings, MSFT sits in this platform's middle "
+        "valuation band: not overpriced, but not cheap enough to support "
+        "a buy recommendation. This is a house rule applied to one "
+        "measured multiple, not a market comparison or a judgment on "
+        "the business. Wait for the forward P/E to move into the "
+        "cheaper band before reconsidering a purchase."
     )
 
     # The decision itself is byte-identical to what the score sentence
@@ -118,11 +115,15 @@ def test_the_expensive_band_names_the_bar_and_not_the_word() -> None:
 
     stated = blocked.stated
 
-    assert "Forward P/E of 29.3×" in stated
-    assert "sits above what this platform's own valuation bands" in stated
-    assert "not a market comparison" in stated
+    assert stated == (
+        "At 29.3× forward earnings, MSFT sits above the valuation range "
+        "this platform accepts for a buy recommendation. This is a "
+        "house rule applied to one measured multiple, not a market "
+        "comparison or a judgment on the business. Wait for the forward "
+        "P/E to move into a more attractive band before reconsidering a "
+        "purchase."
+    )
     assert "expensive" not in stated.lower()
-    assert "Wait for a better entry price" in stated
 
 
 def test_the_fair_band_is_mixed_not_condemned() -> None:
@@ -130,8 +131,8 @@ def test_the_fair_band_is_mixed_not_condemned() -> None:
 
     stated = blocked.stated
 
-    assert "fully priced" in stated
-    assert "not read as overpriced either" in stated
+    assert "middle valuation band" in stated
+    assert "not overpriced, but not cheap enough" in stated
 
 
 def test_the_four_shapes_are_distinct() -> None:
@@ -220,10 +221,82 @@ def test_no_shape_manufactures_a_figure_or_a_verdict() -> None:
 
 
 def test_the_change_of_course_is_possibility_not_promise() -> None:
+    """Reconsidering is what is offered — never a promised outcome."""
+
     _, blocked = blocker()
 
-    assert "Wait for a better entry price" in blocked.stated
+    assert "before reconsidering a purchase" in blocked.stated
     assert "will " not in blocked.stated
+    assert "guarantee" not in blocked.stated.lower()
+
+
+def test_no_shape_claims_a_margin_of_safety() -> None:
+    """The platform measured no intrinsic value, expected return or
+    margin of safety — it holds one multiple and applies a house band —
+    so none may be said to be missing. The owner's correction 1."""
+
+    shapes = [
+        blocker(valuation_score=25, valuation_reading=reading("EXPENSIVE", 29.3)),
+        blocker(),
+        blocker(valuation_score=55, valuation_reading=reading("CHEAP", 12.0)),
+        blocker(valuation_reading=None),
+        blocker(valuation_score=None),
+    ]
+
+    for _decision, blocked in shapes:
+        assert "margin of safety" not in blocked.stated.lower()
+
+
+def test_cash_flow_is_never_named_as_clearing_this_gate() -> None:
+    """Cash flow is not an input to pe-bands, and generic earnings
+    evidence does not necessarily move the forward P/E. The owner's
+    correction 2."""
+
+    shapes = [
+        blocker(valuation_score=25, valuation_reading=reading("EXPENSIVE", 29.3)),
+        blocker(),
+        blocker(valuation_score=55, valuation_reading=reading("CHEAP", 12.0)),
+        blocker(valuation_reading=None),
+        blocker(valuation_score=None),
+    ]
+
+    for _decision, blocked in shapes:
+        lowered = blocked.stated.lower()
+
+        assert "cash flow" not in lowered
+        assert "cash-flow" not in lowered
+        assert "stronger earnings" not in lowered
+
+
+def test_the_reconsideration_condition_is_the_gates_own_input() -> None:
+    """What could change the ruling is the multiple moving bands — the
+    one input pe-bands actually reads. The owner's correction 3."""
+
+    for overrides in (
+        {},
+        {"valuation_score": 25, "valuation_reading": reading("EXPENSIVE", 29.3)},
+    ):
+        _, blocked = blocker(**overrides)
+
+        assert "Wait for the forward P/E to move into" in blocked.stated
+        assert "band before reconsidering a purchase" in blocked.stated
+
+
+def test_no_target_price_or_guaranteed_outcome() -> None:
+    """Crossing the band earns reconsideration, never a promised
+    recommendation. The owner's correction 3, second half."""
+
+    for overrides in (
+        {},
+        {"valuation_score": 25, "valuation_reading": reading("EXPENSIVE", 29.3)},
+    ):
+        _, blocked = blocker(**overrides)
+        stated = blocked.stated
+
+        for banned in ("target price", "will be recommended", "will produce", "$"):
+            assert banned not in stated, banned
+
+        assert "reconsidering" in stated
 
 
 def test_the_builder_carries_the_reading_to_the_decision() -> None:
@@ -251,6 +324,6 @@ def test_an_unknown_band_names_the_fact_and_claims_no_band() -> None:
 
     stated = blocked.stated
 
-    assert "Forward P/E of 12.0×" in stated
+    assert "At 12.0× forward earnings" in stated
     assert "does not clear the bar this policy sets" in stated
     assert "cheap" not in stated.lower().replace("not cheap", "")

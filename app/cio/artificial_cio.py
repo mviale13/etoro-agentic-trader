@@ -661,22 +661,27 @@ class ArtificialCIO:
 
         Composed deterministically from the typed valuation reading the
         evidence already carries — the band, the measured multiple and
-        nothing else. Three rules, each load-bearing:
+        nothing else. Four rules, each load-bearing (the owner's ruling
+        on #251):
 
         - **The score is not the explanation.** It stays on the payload
           and in the score basis as audit detail; the sentence a reader
           acts on names what was measured instead.
-        - **"Expensive" is never claimed.** This platform holds one
-          unaudited multiple and no benchmark (VALUATION_AUTHORITY.md),
-          so even the EXPENSIVE band is worded as this platform's own
-          bar, not as an established fact about the market.
+        - **"Expensive" is never claimed, and neither is a margin of
+          safety.** This platform holds one unaudited multiple and no
+          benchmark (VALUATION_AUTHORITY.md) — no intrinsic value,
+          expected return or margin of safety was measured, so none may
+          be said to be missing.
         - **A poor valuation is not a poor business.** The sentence says
           so itself, and the blocker's `does_not_say` says it again.
-
-        What could change the conclusion is stated as possibility,
-        never promise — a better entry price, or stronger earnings and
-        cash-flow evidence. No target price, expected return or margin
-        of safety is computed; none is held.
+        - **The reconsideration condition is the gate's own input.**
+          Only the forward P/E moving into a cheaper band can change
+          this ruling, so that is what the reader is told to wait for —
+          never "stronger earnings and cash-flow evidence", which does
+          not feed this gate and does not necessarily move the
+          multiple. No target price, and no promise that crossing the
+          band produces a recommendation: reconsidering is what is
+          offered.
         """
 
         reading = evidence.valuation_reading
@@ -692,38 +697,47 @@ class ArtificialCIO:
                 "cannot support a purchase."
             )
 
-        measured = f"{observation.label} of {observation.value:.1f}{observation.unit}"
+        # "20.6× forward earnings" for the one metric that decides
+        # pe-bands@2; the observation's own label for anything else, so
+        # a future metric is named rather than misdescribed.
+        measured = (
+            f"{observation.value:.1f}\u00d7 forward earnings"
+            if observation.metric == "forward_pe"
+            else f"a {observation.label} of {observation.value:.1f}{observation.unit}"
+        )
+
+        house_rule = (
+            "This is a house rule applied to one measured multiple, not "
+            "a market comparison or a judgment on the business."
+        )
 
         if reading.valuation == "EXPENSIVE":
-            middle = (
-                f"At a {measured}, the price sits above what this "
-                "platform's own valuation bands will support a purchase "
-                "at — a house rule over the measured multiple, not a "
-                "market comparison."
-            )
-        elif reading.valuation == "FAIR":
-            middle = (
-                f"At a {measured}, the shares are fully priced under "
-                "this platform's own valuation bands — not cheap enough "
-                "to support a purchase, and not read as overpriced "
-                "either. That is a house rule over the measured "
-                "multiple, not a market comparison."
-            )
-        else:
-            # A band this composer has no honest sentence for — CHEAP
-            # blocked by a custom policy bar, or a vocabulary this code
-            # predates. The measured fact is named; no band is claimed.
-            middle = (
-                f"At a {measured}, the price does not clear the bar this "
-                "policy sets for a recommendation."
+            return (
+                f"At {measured}, {evidence.symbol} sits above the "
+                "valuation range this platform accepts for a buy "
+                f"recommendation. {house_rule} Wait for the forward P/E "
+                "to move into a more attractive band before "
+                "reconsidering a purchase."
             )
 
+        if reading.valuation == "FAIR":
+            return (
+                f"At {measured}, {evidence.symbol} sits in this "
+                "platform's middle valuation band: not overpriced, but "
+                "not cheap enough to support a buy recommendation. "
+                f"{house_rule} Wait for the forward P/E to move into "
+                "the cheaper band before reconsidering a purchase."
+            )
+
+        # A band this composer has no honest sentence for — CHEAP
+        # blocked by a custom policy bar, or a vocabulary this code
+        # predates. The measured fact is named; no band is claimed, and
+        # the reconsideration condition stays the gate's own input.
         return (
-            "The valuation is not attractive enough at today's price. "
-            f"{middle} The business may still be credible, but today's "
-            "price does not offer enough margin of safety to justify "
-            "opening or adding to a position. Wait for a better entry "
-            "price, or for stronger earnings and cash-flow evidence."
+            f"At {measured}, the price does not clear the bar this "
+            f"policy sets for a buy recommendation. {house_rule} Wait "
+            "for the measured multiple to move into a band this policy "
+            "accepts before reconsidering a purchase."
         )
 
     @staticmethod
