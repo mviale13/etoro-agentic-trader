@@ -39,6 +39,25 @@ function requireRecord(value: unknown, field: string): UnknownRecord {
   return value;
 }
 
+/** A supply verdict, or a thrown contract violation.
+
+    Deliberately not a fallback: an unrecognised verdict is a backend
+    this parser does not understand, and rendering it as a conflict
+    would tell an investor two sources disagree on the strength of a
+    word nobody here has read. */
+function requireSupplyVerdict(value: unknown, field: string): SupplyVerdict {
+  if (
+    typeof value !== "string" ||
+    !(SUPPLY_VERDICTS as readonly string[]).includes(value)
+  ) {
+    throw new Error(
+      `Expected one of ${SUPPLY_VERDICTS.join(", ")} at "${field}", received ${JSON.stringify(value)}`,
+    );
+  }
+
+  return value as SupplyVerdict;
+}
+
 function requireString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error(
@@ -816,24 +835,52 @@ export interface SupplyFigureView {
   caveats: readonly string[];
 }
 
+/** The domain's three verdicts, closed. An unknown value is a contract
+    violation and fails the parse: quietly treating it as a conflict
+    would let a future verdict this side has never seen be reported to
+    an investor as a disagreement. */
+export const SUPPLY_VERDICTS = ["corroborated", "conflicted", "coexist"] as const;
+
+export type SupplyVerdict = (typeof SUPPLY_VERDICTS)[number];
+
 export interface SupplyComparisonView {
+  /** The domain's own verdict token — `corroborated`, `conflicted`,
+      `coexist`. Carried because grouping and settlement must key on the
+      typed value: `verdictStated` is display prose ("Agree",
+      "Conflict", "Measure different things") and reading a state out of
+      it is exactly the prose-matching this layer forbids. */
+  verdict: SupplyVerdict;
   verdictStated: string;
   leftSource: string;
   leftStated: string;
   rightSource: string;
   rightStated: string;
+  /** Which concept each side claims, from the domain's own
+      `SupplyFact.concept`. Two fields because a comparison may span two
+      quantities — a `coexist` verdict is exactly that case — so a
+      surface groups one under a concept only when both sides agree. */
+  leftConcept: string;
+  rightConcept: string;
   because: string;
+}
+
+export interface UnresolvedSupplyView {
+  stated: string;
+  /** The quantity this is about, or null where it concerns the whole
+      picture. Lets a surface fold an account of circulating supply into
+      that row instead of printing it a second time beside it. */
+  concept: string | null;
 }
 
 export interface SupplyView {
   figures: readonly SupplyFigureView[];
   comparisons: readonly SupplyComparisonView[];
   methodologyDisagreement: boolean;
-  unresolved: readonly string[];
+  unresolved: readonly UnresolvedSupplyView[];
   unavailableBecause: string | null;
 }
 
-function parseSupply(record: UnknownRecord): SupplyView {
+export function parseSupply(record: UnknownRecord): SupplyView {
   return {
     figures: recordList(record.figures, "supply.figures").map((item, index) => {
       const field = `supply.figures[${index}]`;
@@ -868,6 +915,7 @@ function parseSupply(record: UnknownRecord): SupplyView {
         const field = `supply.comparisons[${index}]`;
 
         return {
+          verdict: requireSupplyVerdict(item.verdict, `${field}.verdict`),
           verdictStated: requireString(
             item.verdict_stated,
             `${field}.verdict_stated`,
@@ -882,6 +930,14 @@ function parseSupply(record: UnknownRecord): SupplyView {
             item.right_stated,
             `${field}.right_stated`,
           ),
+          leftConcept: requireString(
+            item.left_concept,
+            `${field}.left_concept`,
+          ),
+          rightConcept: requireString(
+            item.right_concept,
+            `${field}.right_concept`,
+          ),
           because: requireString(item.because, `${field}.because`),
         };
       },
@@ -890,7 +946,15 @@ function parseSupply(record: UnknownRecord): SupplyView {
       record.methodology_disagreement,
       "supply.methodology_disagreement",
     ),
-    unresolved: stringList(record.unresolved),
+    unresolved: recordList(record.unresolved, "supply.unresolved").map(
+      (item, index) => ({
+        stated: requireString(item.stated, `supply.unresolved[${index}].stated`),
+        concept: optionalString(
+          item.concept,
+          `supply.unresolved[${index}].concept`,
+        ),
+      }),
+    ),
     unavailableBecause: optionalString(
       record.unavailable_because,
       "supply.unavailable_because",

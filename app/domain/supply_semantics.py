@@ -492,6 +492,26 @@ def _gap(left: float, right: float) -> float | None:
 
 
 @dataclass(frozen=True, slots=True)
+class UnresolvedSupply:
+    """One thing this platform could not settle, and what it is about.
+
+    The sentence was always here; the concept was not, so a surface had
+    no way to tell an account of *circulating supply* apart from an
+    account of the token's evidence as a whole. Without it a page
+    reporting "circulating supply is not settled" printed the exclusion
+    -set sentence beside it as a second, separate finding — two
+    statements about one quantity.
+
+    `concept` is None where the gap is about the whole picture rather
+    than one quantity: "no chain reading for this token" is not a
+    statement about circulating supply.
+    """
+
+    stated: str
+    concept: SupplyConcept | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class SupplyPicture:
     """Everything held about one token's supply, and how the parts relate."""
 
@@ -504,8 +524,9 @@ class SupplyPicture:
     comparisons: tuple[SupplyComparison, ...] = ()
 
     #: What could not be settled, and exactly what is missing. Empty is
-    #: a real answer and so is a full list.
-    unresolved: tuple[str, ...] = ()
+    #: a real answer and so is a full list. Each item names the concept
+    #: it is about, or None where it is about the whole picture.
+    unresolved: tuple[UnresolvedSupply, ...] = ()
 
     #: Why nothing is held, where nothing is.
     unavailable_because: str | None = None

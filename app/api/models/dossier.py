@@ -660,7 +660,32 @@ class SupplyComparisonResponse(BaseModel):
     right_source: str
     right_stated: str
 
+    #: Which supply concept each side claims, carried from the domain's
+    #: own `SupplyFact.concept` so a surface can group a comparison
+    #: under the quantity it is about.
+    #:
+    #: **Two fields, not one, because a comparison may span two
+    #: concepts.** `compare()` returns `coexist` exactly when the two
+    #: sides claim *different* quantities — "different quantities, both
+    #: able to be right" — and ADA carries one live. A single `concept`
+    #: would have to name a winner, which is the thing this vocabulary
+    #: exists to refuse.
+    left_concept: str
+    right_concept: str
+
     because: str
+
+
+class UnresolvedSupplyResponse(BaseModel):
+    """One unsettled thing, and the quantity it is about.
+
+    `concept` is null where the gap concerns the whole picture rather
+    than one quantity, so a surface can fold an account of circulating
+    supply into that row instead of printing it a second time beside it.
+    """
+
+    stated: str
+    concept: str | None
 
 
 class SupplyPictureResponse(BaseModel):
@@ -681,7 +706,7 @@ class SupplyPictureResponse(BaseModel):
     methodology_disagreement: bool
 
     #: What is still missing, named rather than left blank.
-    unresolved: list[str]
+    unresolved: list[UnresolvedSupplyResponse]
 
     unavailable_because: str | None
 

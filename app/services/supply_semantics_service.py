@@ -33,8 +33,10 @@ from app.domain.evidence_standing import EvidenceStanding
 from app.domain.supply_mappings import mappings_for
 from app.domain.supply_semantics import (
     SupplyComparison,
+    SupplyConcept,
     SupplyFact,
     SupplyPicture,
+    UnresolvedSupply,
     compare,
 )
 from app.domain.token_fact_validation import TokenClaimSet
@@ -219,15 +221,22 @@ class SupplySemanticsService:
         symbol: str,
         chain: tuple[SupplyFact, ...],
         facts: tuple[SupplyFact, ...],
-    ) -> tuple[str, ...]:
+    ) -> tuple[UnresolvedSupply, ...]:
         """What is still missing, named rather than left blank."""
 
-        missing: list[str] = []
+        missing: list[UnresolvedSupply] = []
 
         if not chain:
             missing.append(
-                f"No chain reading for {symbol}. Every figure here is a "
-                "vendor's, so nothing can say what any of them counts."
+                UnresolvedSupply(
+                    stated=(
+                        f"No chain reading for {symbol}. Every figure here is "
+                        "a vendor's, so nothing can say what any of them "
+                        "counts."
+                    ),
+                    # About the whole picture, not one quantity.
+                    concept=None,
+                )
             )
 
         undisclosed = sorted(
@@ -241,11 +250,17 @@ class SupplySemanticsService:
 
         if undisclosed:
             missing.append(
-                "The exclusion set behind "
-                + ", ".join(undisclosed)
-                + "'s circulating figure is not published, so this "
-                "platform cannot say whether it counts the same tokens "
-                "as anyone else's."
+                UnresolvedSupply(
+                    stated=(
+                        "The exclusion set behind "
+                        + ", ".join(undisclosed)
+                        + "'s circulating figure is not published, so this "
+                        "platform cannot say whether it counts the same "
+                        "tokens as anyone else's."
+                    ),
+                    # This is an account of the circulating estimate.
+                    concept=SupplyConcept.CIRCULATING_ESTIMATE,
+                )
             )
 
         return tuple(missing)

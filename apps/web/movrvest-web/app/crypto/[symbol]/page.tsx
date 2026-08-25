@@ -6,6 +6,7 @@ import {
   CryptoOverviewView,
   CryptoTabs,
 } from "@/components/crypto/CryptoOverview";
+import { TokenSupply } from "@/components/crypto/TokenSupply";
 import {
   heroModel,
   viewFromParam,
@@ -1542,6 +1543,13 @@ function ProtocolEconomics({
  * are three different facts — and two of them only conflict if they
  * claim to represent the same thing.
  */
+/**
+ * Token supply and what is still to come.
+ *
+ * The supply half is `TokenSupply` — the summary, the unsettled panel,
+ * the grouped source detail and the collapsed comparison audit. This
+ * composer keeps the issuance section beside it unchanged.
+ */
 function Supply({
   supply,
   issuance,
@@ -1554,77 +1562,10 @@ function Supply({
   }
 
   return (
-    <section aria-labelledby="supply-heading">
-      <Heading id="supply-heading">Supply, and what is still to come</Heading>
-
-      {supply ? (
-        <div className="mt-3 space-y-2">
-          {supply.figures.map((figure, index) => (
-            <Card key={`${figure.concept}-${figure.source}-${index}`}>
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {figure.conceptStated}
-                </span>
-                <span className="text-[15px] font-semibold text-slate-900">
-                  {figure.stated}
-                </span>
-              </div>
-
-              <p className="mt-1.5 text-sm text-slate-600">
-                {figure.definedBy} {figure.methodology}
-              </p>
-
-              <p className="mt-1.5 text-xs text-slate-500">
-                {figure.standingStated} · {figure.authorityStated}
-                {figure.age ? ` · ${figure.age}` : ""}
-              </p>
-
-              {figure.caveats.map((caveat, index) => (
-                <p
-                  key={`fig-caveat-${index}`}
-                  className="mt-1.5 text-xs text-amber-800"
-                >
-                  {caveat}
-                </p>
-              ))}
-            </Card>
-          ))}
-
-          {supply.comparisons.map((comparison, index) => (
-            <Card
-              key={`${comparison.leftSource}-${comparison.rightSource}-${index}`}
-            >
-              <p className="text-sm font-semibold text-slate-800">
-                {comparison.verdictStated}
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                {comparison.leftSource}: {comparison.leftStated} ·{" "}
-                {comparison.rightSource}: {comparison.rightStated}
-              </p>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-                {comparison.because}
-              </p>
-            </Card>
-          ))}
-
-          {supply.unresolved.length > 0 ? (
-            <Card>
-              <List title="Not resolved" items={supply.unresolved} />
-            </Card>
-          ) : null}
-
-          {supply.unavailableBecause ? (
-            <Card>
-              <p className="text-sm text-slate-600">
-                {supply.unavailableBecause}
-              </p>
-            </Card>
-          ) : null}
-        </div>
-      ) : null}
-
+    <div className="space-y-10">
+      {supply ? <TokenSupply supply={supply} /> : null}
       {issuance ? <Issuance issuance={issuance} /> : null}
-    </section>
+    </div>
   );
 }
 
@@ -2218,7 +2159,9 @@ function Gaps({ dossier }: { dossier: CryptoDossier }) {
     .map((cell) => `${cell.name}: ${cell.postureStated}`);
 
   const conflicts = [
-    ...(dossier.supply?.unresolved ?? []),
+    // The unresolved carrier is typed now; this surface wants the
+    // sentences.
+    ...(dossier.supply?.unresolved ?? []).map((item) => item.stated),
     ...(dossier.intelligence?.conflicting ?? []),
   ];
 
