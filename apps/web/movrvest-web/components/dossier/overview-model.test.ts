@@ -38,6 +38,7 @@ function dossier(overrides: Record<string, unknown> = {}): DossierViewModel {
       because:
         "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
       checkpoint: "Reports earnings in 79 days (Nov 12).",
+      asksForSomething: true,
     },
     conviction: 75,
     convictionLabel: "High Conviction",
@@ -159,6 +160,7 @@ function envelope(): CycleCourse {
     disposition: "RECOMMEND",
     actionKind: "add",
     actionStatement: "Consider adding to DIS.",
+    asksForSomething: true,
     envelope: {
       kind: "upward_bounded",
       stated:
@@ -261,14 +263,178 @@ describe("the course", () => {
 // ── capital consideration ───────────────────────────────────────────
 
 describe("the capital consideration", () => {
-  it("carries the recorded course and its review time", () => {
-    const capital = capitalModel({
-      course: envelope(),
+  const recorded = () => ({
+    course: envelope(),
+    finishedAt: "2026-08-24 17:35 UTC",
+  });
+
+  it("renders the envelope where the recorded and current courses match exactly", () => {
+    // Pin 1: recorded ADD, current ADD, all five facts identical.
+    const capital = capitalModel(dossier(), recorded());
+
+    expect(capital?.kind).toBe("recorded");
+
+    if (capital?.kind === "recorded") {
+      expect(capital.finishedAt).toBe("2026-08-24 17:35 UTC");
+      // Pin 6: the domain's sentence, byte for byte.
+      expect(capital.course.envelope?.stated).toBe(
+        "MOVRvest's course is ADD. The current policy permits consideration up to a 2% portfolio weight, subject to the binding portfolio-capacity constraint.",
+      );
+    }
+  });
+
+  it("withholds a recorded ADD envelope from a current WAIT course", () => {
+    // Pin 2: the decision moved between the recorded cycle and this
+    // request. The older allowance is recorded truth, not current
+    // guidance, and must not sit beside a course it was not decided for.
+    const capital = capitalModel(
+      dossier({
+        decisionState: "PREPARE",
+        action: {
+          kind: "wait",
+          statement: "Wait before opening DIS.",
+          because: "The case is credible but not yet actionable.",
+          checkpoint: null,
+          asksForSomething: false,
+        },
+      }),
+      recorded(),
+    );
+
+    expect(capital).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds a recorded WAIT-course envelope from a current ADD course", () => {
+    // Pin 3: the mirror image. A recorded non-ADD course carrying any
+    // envelope must not decorate a newer ADD.
+    const waitCourse = {
+      ...envelope(),
+      disposition: "PREPARE",
+      actionKind: "wait",
+      actionStatement: "Wait before opening DIS.",
+      asksForSomething: false,
+    } as unknown as CycleCourse;
+
+    const capital = capitalModel(dossier(), {
+      course: waitCourse,
       finishedAt: "2026-08-24 17:35 UTC",
     });
 
-    expect(capital?.finishedAt).toBe("2026-08-24 17:35 UTC");
-    expect(capital?.course.envelope?.stated).toContain("up to a 2% portfolio");
+    expect(capital).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds on a same-disposition course whose action differs", () => {
+    // Pin 4: disposition agreement is not course agreement. The same
+    // RECOMMEND with a different action kind or statement is a
+    // different course, exactly.
+    const differentKind = capitalModel(
+      dossier({
+        action: {
+          kind: "open",
+          statement: "Consider opening DIS.",
+          because: "The investment case satisfies every gate.",
+          checkpoint: null,
+          asksForSomething: true,
+        },
+      }),
+      recorded(),
+    );
+
+    expect(differentKind).toEqual({ kind: "different_course" });
+
+    const differentStatement = capitalModel(
+      dossier({
+        action: {
+          kind: "add",
+          statement: "Consider adding to DIS today.",
+          because: "The investment case satisfies every gate.",
+          checkpoint: null,
+          asksForSomething: true,
+        },
+      }),
+      recorded(),
+    );
+
+    expect(differentStatement).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds on a symbol mismatch alone", () => {
+    // `recordedCourse` selects by symbol before this runs, so today no
+    // caller can reach the guard with a foreign course — but the guard
+    // is the contract, not the caller, and a future call site that
+    // forgot to pre-filter must still be caught here.
+    const capital = capitalModel(
+      dossier({
+        symbol: "MSFT",
+        action: {
+          kind: "add",
+          statement: "Consider adding to DIS.",
+          because:
+            "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+          checkpoint: null,
+          asksForSomething: true,
+        },
+      }),
+      recorded(),
+    );
+
+    expect(capital).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds on a disposition mismatch alone", () => {
+    // Every other fact identical: the guard must hold on any single
+    // field, not only when several move together.
+    const capital = capitalModel(
+      dossier({ decisionState: "PREPARE" }),
+      recorded(),
+    );
+
+    expect(capital).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds on an action-kind mismatch alone", () => {
+    const capital = capitalModel(
+      dossier({
+        action: {
+          kind: "open",
+          statement: "Consider adding to DIS.",
+          because:
+            "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+          checkpoint: null,
+          asksForSomething: true,
+        },
+      }),
+      recorded(),
+    );
+
+    expect(capital).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds where the two sides disagree on asking for something", () => {
+    const capital = capitalModel(
+      dossier({
+        action: {
+          kind: "add",
+          statement: "Consider adding to DIS.",
+          because:
+            "The investment case satisfies quality, evidence, valuation, risk, and portfolio gates.",
+          checkpoint: null,
+          asksForSomething: false,
+        },
+      }),
+      recorded(),
+    );
+
+    expect(capital).toEqual({ kind: "different_course" });
+  });
+
+  it("withholds where the current dossier carries no action at all", () => {
+    // No action carrier means no current course to agree with, and a
+    // recorded allowance cannot be shown beside a course this platform
+    // will not word.
+    const capital = capitalModel(dossier({ action: null }), recorded());
+
+    expect(capital).toEqual({ kind: "different_course" });
   });
 
   it("renders nothing for a non-capital course rather than a shell", () => {
@@ -278,28 +444,33 @@ describe("the capital consideration", () => {
     } as unknown as CycleCourse;
 
     expect(
-      capitalModel({ course: withoutEnvelope, finishedAt: "whenever" }),
+      capitalModel(dossier(), {
+        course: withoutEnvelope,
+        finishedAt: "whenever",
+      }),
     ).toBeNull();
   });
 
   it("renders nothing where no completed cycle covered the security", () => {
+    // Pin 5's selector half: no recorded coverage — including the
+    // incomplete-stream case, which `recordedCourse` already resolves
+    // to null before this selector runs — yields nothing, unchanged.
     // No stale fallback: an older envelope is older policy and older
-    // account guidance, and placing it beside a newer decision would
-    // present stale sizing as current.
-    expect(capitalModel(null)).toBeNull();
+    // account guidance.
+    expect(capitalModel(dossier(), null)).toBeNull();
   });
 
   it("never reads the envelope's number", () => {
-    const capital = capitalModel({
-      course: envelope(),
-      finishedAt: "2026-08-24 17:35 UTC",
-    });
+    const capital = capitalModel(dossier(), recorded());
 
     // The selector hands the whole course to the domain's own renderer.
     // It does not decide what 2.0 means, and no field it produces is
     // derived from it.
     expect(JSON.stringify(capital)).not.toContain('"derivedPct"');
-    expect(capital?.course.envelope?.stated).toBeTruthy();
+
+    if (capital?.kind === "recorded") {
+      expect(capital.course.envelope?.stated).toBeTruthy();
+    }
   });
 });
 

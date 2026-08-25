@@ -228,31 +228,62 @@ export function courseModel(dossier: DossierViewModel): CourseModel | null {
 
 // ── capital consideration ───────────────────────────────────────────
 
-export interface CapitalModel {
-  course: CycleCourse;
-  finishedAt: string;
-}
+export type CapitalModel =
+  | { kind: "recorded"; course: CycleCourse; finishedAt: string }
+  | { kind: "different_course" };
 
 /**
- * The envelope the latest completed review recorded, or nothing.
+ * The envelope the latest completed review recorded — rendered only for
+ * the course it belongs to.
  *
- * A thin selector on purpose: the envelope's own sentence, its
- * constraints, its liquidity limitation and the full disclaimer are
- * rendered by the component the homepage already uses, and nothing here
- * reads `finalPct`, decides whether it means a total position or
- * additional room, or recomputes anything.
+ * **Two clocks meet here, and that is the hazard.** The displayed
+ * course is computed during this request; the envelope was decided by
+ * the latest completed CIO cycle. Between the two the decision can
+ * move, and without a gate this page could put a current WAIT or
+ * RESEARCH beside an older ADD allowance — recorded truth presented as
+ * current guidance.
  *
- * A course with no envelope returns null, so a non-capital course
- * renders no shell and implies no zero capacity.
+ * So a recorded envelope renders only when the recorded course and the
+ * current one agree **exactly** on all five facts the cycle record
+ * states: symbol, disposition, action kind, action statement, and
+ * whether the action asks for something. Every one is compared as the
+ * two carriers state it — nothing is normalised, re-derived from a kind
+ * string, or forgiven as close enough. Where any differs, the recorded
+ * envelope is withheld and nothing is substituted or recomputed; the
+ * surface states the withholding in one sentence and exposes no score
+ * or comparison mechanics.
+ *
+ * A thin selector otherwise, on purpose: the envelope's own sentence,
+ * constraints, liquidity limitation and full disclaimer are rendered by
+ * the component the homepage already uses, `finalPct` is read by
+ * nothing, and a recorded course with no envelope returns null — a
+ * non-capital course renders no shell, implies no zero capacity, and
+ * has no allowance for the sentence to be about.
  */
 export function capitalModel(
+  dossier: DossierViewModel,
   recorded: { course: CycleCourse; finishedAt: string } | null,
 ): CapitalModel | null {
   if (!recorded || !recorded.course.envelope) {
     return null;
   }
 
-  return recorded;
+  const action = dossier.action;
+  const course = recorded.course;
+
+  const sameCourse =
+    action !== null &&
+    course.symbol === dossier.symbol &&
+    course.disposition === dossier.decisionState &&
+    course.actionKind === action.kind &&
+    course.actionStatement === action.statement &&
+    course.asksForSomething === action.asksForSomething;
+
+  if (!sameCourse) {
+    return { kind: "different_course" };
+  }
+
+  return { kind: "recorded", course, finishedAt: recorded.finishedAt };
 }
 
 // ── the three summary widgets ───────────────────────────────────────

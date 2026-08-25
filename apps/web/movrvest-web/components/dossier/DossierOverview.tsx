@@ -238,11 +238,34 @@ export function DossierCourseBlock({
 
 // ── capital consideration ───────────────────────────────────────────
 
-/** What the latest completed review allowed, in the domain's own
-    sentence. Absent for a non-capital course, and never a shell. */
+/**
+ * What the latest completed review allowed, in the domain's own
+ * sentence — and only for the course it was decided for.
+ *
+ * Where the latest recorded allowance belongs to a different course
+ * than the one displayed above, the envelope is withheld and the
+ * withholding is stated in one sentence. No substitute envelope, no
+ * recomputation, and no score or comparison mechanics: which facts
+ * differed is the selector's business, not the reader's.
+ */
 export function DossierCapital({ capital }: { capital: CapitalModel | null }) {
   if (!capital) {
     return null;
+  }
+
+  if (capital.kind === "different_course") {
+    return (
+      <section aria-labelledby="dossier-capital" className={CARD}>
+        <h2 id="dossier-capital" className={CARD_HEAD}>
+          Capital allowance
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          No current capital allowance is shown because the latest recorded
+          allowance belongs to a different course.
+        </p>
+      </section>
+    );
   }
 
   return (
@@ -424,7 +447,7 @@ export function DossierOverviewView({
   news: React.ReactNode;
 }) {
   const course = courseModel(dossier);
-  const capital = capitalModel(recorded);
+  const capital = capitalModel(dossier, recorded);
 
   return (
     <div className="mt-6 space-y-4">

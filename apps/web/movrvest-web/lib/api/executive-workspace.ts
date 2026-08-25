@@ -89,6 +89,7 @@ interface RankedCasePayload {
     statement: string;
     because: string;
     checkpoint: string | null;
+    asks_for_something?: boolean;
   } | null;
   conviction_change: {
     previous: number;
@@ -356,6 +357,7 @@ function parsePortfolioBriefing(payload: unknown): PortfolioBriefingPayload {
               item.action.checkpoint,
               `investment_cases[${index}].action.checkpoint`,
             ),
+            asksForSomething: item.action.asks_for_something === true,
           }
         : null,
     })),
@@ -427,7 +429,15 @@ function mapInvestmentCases(
     risks: item.risks,
     expectedHoldingPeriod: item.expected_holding_period,
     trend: item.trend,
-    action: item.action,
+    action: item.action
+      ? {
+          kind: item.action.kind,
+          statement: item.action.statement,
+          because: item.action.because,
+          checkpoint: item.action.checkpoint,
+          asksForSomething: item.action.asks_for_something === true,
+        }
+      : null,
     convictionChange: item.conviction_change,
     playbookName: item.playbook_name,
     dossierHref: `/dossiers/${encodeURIComponent(item.symbol)}`,

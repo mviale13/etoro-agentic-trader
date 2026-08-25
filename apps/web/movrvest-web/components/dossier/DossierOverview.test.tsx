@@ -32,6 +32,7 @@ function dossier(overrides: Record<string, unknown> = {}): DossierViewModel {
       statement: "Consider adding to DIS.",
       because: "The investment case satisfies every gate.",
       checkpoint: "Reports earnings in 79 days (Nov 12).",
+      asksForSomething: true,
     },
     conviction: 75,
     convictionLabel: "High Conviction",
@@ -107,6 +108,7 @@ function recorded() {
       disposition: "RECOMMEND",
       actionKind: "add",
       actionStatement: "Consider adding to DIS.",
+      asksForSomething: true,
       envelope: {
         kind: "upward_bounded",
         stated:
@@ -301,6 +303,40 @@ describe("the Overview", () => {
     expect(markup).toContain("up to a 2% portfolio weight");
     expect(markup).toContain("Liquidity is unmeasured for equities");
     expect(markup).toContain("not an order");
+  });
+
+  it("withholds a recorded allowance from a different current course, in one sentence", () => {
+    // The two clocks disagree: the latest completed cycle recorded an
+    // ADD allowance, and this request's course is WAIT. The envelope —
+    // its sentence, its constraints, its disclaimer — must not render,
+    // and the withholding is stated without exposing which facts
+    // differed or any score.
+    const markup = renderToStaticMarkup(
+      <DossierOverviewView
+        dossier={dossier({
+          decisionState: "PREPARE",
+          action: {
+            kind: "wait",
+            statement: "Wait before opening DIS.",
+            because: "The case is credible but not yet actionable.",
+            checkpoint: null,
+            asksForSomething: false,
+          },
+        })}
+        recorded={recorded()}
+        news={NEWS}
+      />,
+    );
+
+    expect(markup).toContain(
+      "No current capital allowance is shown because the latest recorded allowance belongs to a different course.",
+    );
+    expect(markup).not.toContain("up to a 2% portfolio weight");
+    expect(markup).not.toContain("What the latest review allowed");
+    expect(markup).not.toContain("CourseEnvelope");
+    // No comparison mechanics reach the reader.
+    expect(markup).not.toContain("disposition");
+    expect(markup).not.toContain("action kind");
   });
 
   it("renders no envelope shell for a non-capital course", () => {

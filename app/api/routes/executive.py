@@ -481,6 +481,7 @@ def _action(action: ExecutiveAction | None) -> ActionResponse | None:
         statement=action.statement,
         because=action.because,
         checkpoint=action.checkpoint,
+        asks_for_something=action.kind.asks_for_something,
     )
 
 
