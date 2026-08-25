@@ -73,7 +73,9 @@ export function CryptoHero({ hero }: { hero: HeroModel }) {
               </p>
             </>
           ) : (
-            <p className="text-sm text-slate-500">No price is held.</p>
+            // The investor needs the state, not an account of this
+            // platform's store.
+            <p className="text-sm text-slate-500">Price unavailable.</p>
           )}
         </div>
       </div>
@@ -183,10 +185,25 @@ export function CryptoDecisionBlock({ dossier }: { dossier: CryptoDossier }) {
         </div>
       ) : null}
 
+      {/* The platform boundary, available and out of the way.
+
+          The sentence explains why *MOVRvest* stops where it does — it
+          is about this platform, not about the asset — so as an
+          always-visible paragraph it competed with the course, the
+          rationale and the open questions, which are what the investor
+          came for. It stays in the DOM, one native disclosure away, and
+          the backend's wording is rendered exactly: nothing here
+          summarises it, parses it or reads a shorter claim out of it. */}
       {decision.boundary ? (
-        <p className="mt-4 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
-          {decision.boundary}
-        </p>
+        <details className="mt-4 border-t border-slate-100 pt-3">
+          <summary className="cursor-pointer text-xs font-semibold text-slate-500">
+            Why MOVRvest stops here
+          </summary>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            {decision.boundary}
+          </p>
+        </details>
       ) : null}
     </section>
   );
@@ -326,7 +343,7 @@ function DevelopmentRow({ development }: { development: Development }) {
           <span className="text-xs text-slate-400">{development.age}</span>
         ) : null}
         <span className="text-xs text-slate-400">
-          {development.verification}
+          {development.sourceCoverage}
         </span>
       </summary>
 

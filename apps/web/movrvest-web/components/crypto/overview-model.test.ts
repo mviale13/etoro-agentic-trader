@@ -406,12 +406,89 @@ describe("the three summary widgets", () => {
     expect(items.every((item) => item.tag !== "Adverse")).toBe(true);
   });
 
-  it("builds key risks from adverse drivers then material uncertainties", () => {
+  it("builds key risks from material uncertainties then adverse drivers", () => {
     const risks = keyRisks(dossier());
 
     expect(risks).toHaveLength(3);
-    expect(risks[0].tag).toBe("Adverse development");
+    expect(risks[0].tag).toBe("Material uncertainty");
     expect(risks[1].tag).toBe("Material uncertainty");
+    expect(risks[2].tag).toBe("Adverse development");
+  });
+
+  it("never lets adverse developments displace a material uncertainty", () => {
+    // The discriminating case: three adverse developments and one
+    // structural uncertainty. Ordered the other way round, the
+    // uncertainty that actually constrains the CIO's view falls off a
+    // three-item widget and the investor never sees it.
+    const base = dossier();
+    const crowded = dossier({
+      decision: {
+        ...base.decision,
+        materialUncertainties: [
+          "Circulating supply cannot be stated as a single figure.",
+        ],
+      },
+      intelligence: {
+        ...base.intelligence,
+        drivers: [
+          {
+            stated: "First adverse development.",
+            directionStated: "Adverse",
+            supportStated: "Supported",
+            mattersBecause: null,
+            claims: [],
+          },
+          {
+            stated: "Second adverse development.",
+            directionStated: "Adverse",
+            supportStated: "Supported",
+            mattersBecause: null,
+            claims: [],
+          },
+          {
+            stated: "Third adverse development.",
+            directionStated: "Adverse",
+            supportStated: "Supported",
+            mattersBecause: null,
+            claims: [],
+          },
+        ],
+      },
+    });
+
+    const risks = keyRisks(crowded);
+
+    expect(risks).toHaveLength(3);
+    expect(risks[0]).toEqual({
+      stated: "Circulating supply cannot be stated as a single figure.",
+      tag: "Material uncertainty",
+    });
+
+    // The remaining slots are filled from the served order — nothing is
+    // scored, ranked or read for sentiment, and the third adverse
+    // development simply does not fit.
+    expect(risks.map((risk) => risk.stated)).toEqual([
+      "Circulating supply cannot be stated as a single figure.",
+      "First adverse development.",
+      "Second adverse development.",
+    ]);
+  });
+
+  it("caps key risks at three even where the decision alone overflows", () => {
+    const base = dossier();
+    const risks = keyRisks(
+      dossier({
+        decision: {
+          ...base.decision,
+          materialUncertainties: ["One.", "Two.", "Three.", "Four."],
+        },
+      }),
+    );
+
+    expect(risks).toHaveLength(3);
+    expect(risks.every((risk) => risk.tag === "Material uncertainty")).toBe(
+      true,
+    );
   });
 
   it("keeps watch-next but never its raw refs", () => {
@@ -513,18 +590,47 @@ describe("latest developments", () => {
     ).toBeUndefined();
   });
 
-  it("carries category, age, one relevance sentence and verification", () => {
+  it("carries category, age, one relevance sentence and source coverage", () => {
     const [first] = latestDevelopments(dossier());
 
     expect(first.category).toBe("Regulatory");
     expect(first.age).toBe("20 hours ago");
     expect(first.relevance).toContain("CFTC");
-    expect(first.verification).toBe("Reported by 2 sources");
+    expect(first.sourceCoverage).toBe("Reported by 2 sources");
   });
 
   it("counts repeated coverage as sources, never as confirmation", () => {
     const developments = latestDevelopments(dossier());
 
-    expect(developments[1].verification).toBe("Single source");
+    expect(developments[1].sourceCoverage).toBe("One source");
+  });
+
+  it("never turns multi-source coverage into a claim of verification", () => {
+    // Repeated reporting is coverage. Two outlets carrying one account
+    // are two reports of it and not a check on it, and no typed carrier
+    // reaching here establishes that anything was verified. The field
+    // is named for what it holds so a later reader cannot borrow a
+    // stronger claim from a looser name.
+    const multiSource = latestDevelopments(dossier())[0];
+
+    expect(multiSource.sourceCoverage).toBe("Reported by 2 sources");
+    expect(multiSource.sources).toHaveLength(2);
+
+    const blob = JSON.stringify(latestDevelopments(dossier())).toLowerCase();
+
+    for (const claim of [
+      "verified",
+      "verification",
+      "confirmed",
+      "corroborated",
+      "independently",
+      "source agreement",
+    ]) {
+      expect(blob).not.toContain(claim);
+    }
+
+    // And the carrier itself offers no field a claim of verification
+    // could be written into.
+    expect(Object.keys(multiSource)).not.toContain("verification");
   });
 });

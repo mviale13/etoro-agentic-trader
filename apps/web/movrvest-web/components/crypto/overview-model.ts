@@ -158,20 +158,28 @@ export function whyItMatters(dossier: CryptoDossier): readonly SummaryItem[] {
 }
 
 /**
- * Adverse developments first, then the decision's own material
- * uncertainties — both already typed and already curated. Order within
- * each list is the backend's; nothing here ranks.
+ * The decision's own material uncertainties first, then adverse
+ * developments in whatever room is left — both already typed and
+ * already curated. Order within each list is the backend's.
+ *
+ * **This is not a risk-ranking model.** Nothing here scores, weighs or
+ * reads sentiment; the only rule is whose authority comes first. The
+ * decision owns the uncertainties that constrain the CIO's own view, so
+ * they are never displaced by current news: with three adverse
+ * developments and one material uncertainty, the earlier ordering
+ * pushed the structural constraint off a three-item widget entirely and
+ * the investor lost the very thing the course rests on.
  */
 export function keyRisks(dossier: CryptoDossier): readonly SummaryItem[] {
-  const adverse = (dossier.intelligence?.drivers ?? [])
-    .filter((driver: DriverView) => driver.directionStated === "Adverse")
-    .map((driver) => ({ stated: driver.stated, tag: "Adverse development" }));
-
   const uncertainties = dossier.decision.materialUncertainties.map(
     (stated) => ({ stated, tag: "Material uncertainty" }),
   );
 
-  return [...adverse, ...uncertainties].slice(0, SUMMARY_LIMIT);
+  const adverse = (dossier.intelligence?.drivers ?? [])
+    .filter((driver: DriverView) => driver.directionStated === "Adverse")
+    .map((driver) => ({ stated: driver.stated, tag: "Adverse development" }));
+
+  return [...uncertainties, ...adverse].slice(0, SUMMARY_LIMIT);
 }
 
 export interface WatchItem {
@@ -302,8 +310,15 @@ export interface Development {
   age: string | null;
   /** One short relevance sentence — the first typed account held. */
   relevance: string | null;
-  /** The verification standing, from the event's own source count. */
-  verification: string;
+  /**
+   * How many surfaces reported this development — **coverage, never
+   * verification.** Two outlets carrying one account are two reports of
+   * it and not a check on it, and no typed carrier here establishes
+   * that anything was verified, confirmed, corroborated or agreed. The
+   * name says coverage so that a later reader cannot borrow a stronger
+   * claim from the field it arrived in.
+   */
+  sourceCoverage: string;
   sources: readonly string[];
   accounts: readonly { stated: string; source: string }[];
 }
@@ -325,9 +340,9 @@ export function latestDevelopments(
       age: event.age ? event.age.replace(/^,\s*/, "") : null,
       relevance:
         event.interpretations[0]?.stated ?? event.facts[0]?.stated ?? null,
-      verification: event.isMultiSource
+      sourceCoverage: event.isMultiSource
         ? `Reported by ${event.sources.length} sources`
-        : "Single source",
+        : "One source",
       sources: event.sources,
       accounts: event.interpretations.map((item) => ({
         stated: item.stated,
