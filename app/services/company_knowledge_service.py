@@ -477,12 +477,39 @@ class CompanyKnowledgeService:
         consensus = self._latest(symbol)
 
         if consensus is None:
+            # **This stream, and no claim about any other.** The sentence
+            # here said "No filing has been read" — a claim about
+            # filings, which this service is not in a position to make.
+            # It reads one stream: the business description a filer
+            # prints under Item 1, its segments and their sizes. Financial
+            # statements are a separate observation stream with a separate
+            # quorum, deliberately never pooled with these, and a company
+            # can have one without the other.
+            #
+            # Disney is exactly that company. Its dossier reported "No
+            # filing has been read for DIS" beside revenue and earnings
+            # growth computed from 10-K 0001744489-25-000155, period ended
+            # 2025-09-27, via SEC EDGAR — a filing this platform had
+            # plainly read. The absence was real and the sentence
+            # describing it was false, which is worse than either alone:
+            # an investor reading both concluded the figures were
+            # unsourced.
+            #
+            # So it now names what is missing rather than what has not
+            # happened. No symbol is special-cased and nothing consults
+            # the statement stream from here: a sentence that only speaks
+            # for its own evidence cannot contradict evidence it does not
+            # own.
             return KnowledgeOutcome(
                 state=KnowledgeState.UNAVAILABLE,
                 absent_because=(
-                    f"No filing has been read for {symbol.upper().strip()}. "
-                    "Reading one is an explicit spend, and no surface takes "
-                    "it — `movrvest observe` does."
+                    "No business description has been read for "
+                    f"{symbol.upper().strip()}: this platform holds no "
+                    "reading of what the company says it does, or of its "
+                    "segments and their sizes. Reading one is an explicit "
+                    "spend, and no surface takes it — `movrvest observe` "
+                    "does. Financial statements are read separately and "
+                    "may be held regardless."
                 ),
             )
 

@@ -400,6 +400,16 @@ def test_the_dossier_serves_both_concepts_with_their_sentences(
 
     assert playbook["state"] == "unavailable"
     assert playbook["playbook"] is None
-    assert "No filing has been read for MSFT" in cast(str, playbook["stated"])
+
+    # The absence names the stream it speaks for. It read "No filing has
+    # been read", which is a claim about filings — and Disney disproved
+    # it while displaying growth computed from its own 10-K. This service
+    # reads business descriptions; financial statements are a separate
+    # stream with a separate quorum, and may be held either way.
+    stated = cast(str, playbook["stated"])
+
+    assert "No business description has been read for MSFT" in stated
+    assert "Financial statements are read separately" in stated
+    assert "No filing has been read" not in stated
 
     assert cast(str, classification["distinction"])
