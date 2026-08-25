@@ -1,5 +1,6 @@
 import { LatestCioReview } from "@/components/executive/LatestCioReview";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { getCycleReview } from "@/lib/api/cycle-review";
 import type { CycleReviewFailure } from "@/lib/api/cycle-review";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
@@ -52,7 +53,7 @@ export default async function HomePage() {
         }
       />
 
-      <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <PageMain>
         {result.review ? (
           <LatestCioReview review={result.review} />
         ) : (
@@ -91,7 +92,7 @@ export default async function HomePage() {
             ) : null}
           </section>
         )}
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }

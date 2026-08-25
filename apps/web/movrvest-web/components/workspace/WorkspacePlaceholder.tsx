@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
+import { PageMain } from "@/components/layout/PageMain";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 
@@ -25,7 +26,7 @@ export function WorkspacePlaceholder({
   nextLabel = "Return to Executive Brief",
 }: WorkspacePlaceholderProps) {
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
+    <PageMain className="min-h-screen">
       <PageIntegrity
         status="placeholder"
         description={`${title} is still a workspace placeholder.`}
@@ -78,6 +79,6 @@ export function WorkspacePlaceholder({
           <ArrowRight aria-hidden="true" className="h-4 w-4" />
         </Link>
       </section>
-    </main>
+    </PageMain>
   );
 }

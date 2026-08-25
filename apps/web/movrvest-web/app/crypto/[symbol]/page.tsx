@@ -13,6 +13,7 @@ import {
   type CryptoView,
 } from "@/components/crypto/overview-model";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import {
   getCryptoCorpus,
@@ -90,7 +91,7 @@ export default async function CryptoDossierPage({
         }
       />
 
-      <main className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <PageMain>
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-950"
@@ -121,7 +122,7 @@ export default async function CryptoDossierPage({
         ) : (
           <Unavailable url={result.backendUrl} error={result.error} />
         )}
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { CapacityToAct } from "@/components/portfolio/CapacityToAct";
 import { ExecutivePortfolioAssessment } from "@/components/portfolio/ExecutivePortfolioAssessment";
 import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
@@ -397,7 +398,7 @@ export default async function PortfolioPage() {
         }
       />
 
-      <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <PageMain>
         <header className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -459,7 +460,7 @@ export default async function PortfolioPage() {
             </details>
           </section>
         )}
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }
