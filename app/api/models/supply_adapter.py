@@ -83,6 +83,8 @@ def _comparison(item: SupplyComparison) -> SupplyComparisonResponse:
         left_stated=item.left.stated,
         right_source=item.right.source,
         right_stated=item.right.stated,
+        left_concept=item.left.concept.value,
+        right_concept=item.right.concept.value,
         because=item.because,
     )
 

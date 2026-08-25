@@ -817,11 +817,23 @@ export interface SupplyFigureView {
 }
 
 export interface SupplyComparisonView {
+  /** The domain's own verdict token — `corroborated`, `conflicted`,
+      `coexist`. Carried because grouping and settlement must key on the
+      typed value: `verdictStated` is display prose ("Agree",
+      "Conflict", "Measure different things") and reading a state out of
+      it is exactly the prose-matching this layer forbids. */
+  verdict: string;
   verdictStated: string;
   leftSource: string;
   leftStated: string;
   rightSource: string;
   rightStated: string;
+  /** Which concept each side claims, from the domain's own
+      `SupplyFact.concept`. Two fields because a comparison may span two
+      quantities — a `coexist` verdict is exactly that case — so a
+      surface groups one under a concept only when both sides agree. */
+  leftConcept: string;
+  rightConcept: string;
   because: string;
 }
 
@@ -868,6 +880,7 @@ function parseSupply(record: UnknownRecord): SupplyView {
         const field = `supply.comparisons[${index}]`;
 
         return {
+          verdict: requireString(item.verdict, `${field}.verdict`),
           verdictStated: requireString(
             item.verdict_stated,
             `${field}.verdict_stated`,
@@ -881,6 +894,14 @@ function parseSupply(record: UnknownRecord): SupplyView {
           rightStated: requireString(
             item.right_stated,
             `${field}.right_stated`,
+          ),
+          leftConcept: requireString(
+            item.left_concept,
+            `${field}.left_concept`,
+          ),
+          rightConcept: requireString(
+            item.right_concept,
+            `${field}.right_concept`,
           ),
           because: requireString(item.because, `${field}.because`),
         };
