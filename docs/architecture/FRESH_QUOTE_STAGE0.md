@@ -5,13 +5,13 @@ Budget: max 5 authenticated provider calls, no retries. **Used 4.**
 | # | call | receipt (UTC) | outcome |
 |---|---|---|---|
 | 1 | eToro MCP `get-instruments-overview`, one batch: DIS, MSFT, BNP.PA, HYPE, TAO, ZZZZNOTASYMBOL | 14:12:58 | 200; 5 resolved + typed `notFoundSymbols`; per-instrument tz-aware `asOf` 14:13:04.87–05.72 |
-| 2 | identical, 95 s later | 14:14:40 | 200; **every `asOf` advanced** (~14:14:42–48); prices and spreads moved, BNP.PA included (Euronext open) |
+| 2 | identical, 95 s later | 14:14:40 | 200; **every `asOf` advanced** (~14:14:42–48); prices and spreads moved, BNP.PA included |
 | 3 | REST `/api/v1/market-data/instruments/rates` via urllib | 14:15:36 | **403 Cloudflare 1010 at the edge** (`cfOrigin;dur=0` — never reached eToro); urllib UA is bot-filtered. Harness defect, not entitlement |
 | 4 | same route via httpx (the production client), ids 1016,1004,1238,100446,100418,999999999 | 14:15:52 | **200 on the repo's own credential**; ratelimit-limit 120/60s, remaining 119 |
 
 ## Findings
 
-- **Coverage**: US (DIS, MSFT), non-US (BNP.PA, live Euronext quote), crypto
+- **Coverage**: US (DIS, MSFT), non-US (BNP.PA, Euronext-listed), crypto
   (HYPE, TAO) — all in one batched call on either surface.
 - **Identity**: stable `instrumentId`; HYPE → 100446 "Hyperliquid", TAO →
   100418 "Bittensor" — no ticker collision (the Yahoo "Supreme Finance USD"
@@ -58,3 +58,47 @@ Budget: max 5 authenticated provider calls, no retries. **Used 4.**
   CURRENT iff source age ≤ 120 s at receipt, else STALE.
 - `delay_status: UNKNOWN`, `market_status: UNKNOWN`, `currency: null` —
   the provider states none of them.
+
+
+## The supported claim, and its limits (owner ruling, point 7)
+
+The provider states **neither a delay nor a market status**. So the only
+claim this platform may make about a displayed quote is:
+
+> Source-clock current within MOVRvest's two-minute display window;
+> provider delay not stated.
+
+*"Live"*, *"real-time"* and *"quoted live"* are **not** supported by
+anything measured here and appear nowhere in the code, the UI or this
+record. A quote whose source clock has advanced is a quote whose source
+clock has advanced — it is not evidence of an undelayed feed.
+
+## Credential privilege — unresolved, and why the ribbon defaults off
+(owner ruling, point 6)
+
+Stage 0 proves the repository's `ETORO_API_KEY` / `ETORO_USER_KEY` are
+**entitled** to read the rates route. It does **not** establish their
+**privilege boundary**. Two facts, kept apart:
+
+- **Mechanically separate.** These are REST header credentials read from
+  the repository `.env`; the MCP connection measured in #224 is a
+  distinct OAuth grant. Nothing in this codebase reads one to obtain the
+  other.
+- **Privilege unknown.** #224 measured the *MCP* connection carrying
+  `trade.real:write` among twelve write grants. Whether these REST keys
+  are restricted to read-only use is an **administrative fact about how
+  they were issued**, and no call this codebase can make would settle
+  it — an entitlement to read proves nothing about the absence of write
+  entitlement. No additional authenticated call is authorized to
+  investigate it.
+
+The structural absence of POST/order methods in the adapter is required
+and holds, and it is **not** a proof of least privilege.
+
+So, per the ruling's contingency: the implementation merges, and
+**fresh quotes default off behind `MOVRVEST_FRESH_QUOTES=on`**, an
+explicit operator action. With the flag unset the service contacts no
+provider and every symbol answers UNAVAILABLE naming the enabling
+action. **Production activation remains scope-unresolved** pending
+either a least-privilege read-only credential determination or a
+separate read-only eToro REST credential.

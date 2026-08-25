@@ -16,84 +16,66 @@
  * says "live".
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   type FreshQuoteView,
   headlineModel,
-  parseQuote,
   ribbonModel,
 } from "@/components/quote/quote-model";
+import { startQuotePoller } from "@/components/quote/quote-poller";
 
 const POLL_MS = 60_000;
 
-function useFreshQuote(symbol: string): FreshQuoteView | null {
+/**
+ * One quote and one render clock, owned by an effect-local poller.
+ *
+ * The clock advances on every scheduled attempt — including failed ones
+ * — because presentation currency expires by it: after 120 seconds
+ * without a newer quote, the model stops calling the held quote current
+ * whether or not the backend ever answered again.
+ *
+ * Everything the loop owns lives inside the poller `startQuotePoller`
+ * returns, and `stop()` in the cleanup ends it absolutely: a Strict
+ * Mode mount/cleanup/remount leaves exactly one live loop, and a
+ * stopped loop's in-flight fetch can neither set state nor schedule.
+ */
+function useFreshQuote(symbol: string): {
+  quote: FreshQuoteView | null;
+  renderClock: Date;
+} {
   const [quote, setQuote] = useState<FreshQuoteView | null>(null);
-  const alive = useRef(true);
+  const [renderClock, setRenderClock] = useState<Date>(() => new Date());
 
   useEffect(() => {
-    alive.current = true;
+    const poller = startQuotePoller({
+      fetchQuote: async (signal) => {
+        const response = await fetch(
+          `/api/quote/${encodeURIComponent(symbol)}`,
+          { cache: "no-store", signal },
+        );
 
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    async function poll(): Promise<void> {
-      // Only while visible: a background tab schedules nothing and the
-      // next foreground moment resumes the rhythm.
-      if (document.visibilityState === "visible") {
-        try {
-          const response = await fetch(
-            `/api/quote/${encodeURIComponent(symbol)}`,
-            { cache: "no-store" },
-          );
-
-          if (response.ok && alive.current) {
-            const body: unknown = await response.json();
-            const raw =
-              typeof body === "object" && body !== null
-                ? (body as { quotes?: unknown[] }).quotes?.[0]
-                : null;
-
-            const parsed = parseQuote(raw ?? null);
-
-            if (parsed) {
-              setQuote(parsed);
-            }
-          }
-        } catch {
-          // A quote failure is a quote failure; the fallback stands.
-        }
-      }
-
-      if (alive.current) {
-        timer = setTimeout(poll, POLL_MS);
-      }
-    }
+        return response.ok ? response.json() : null;
+      },
+      onQuote: setQuote,
+      onTick: () => setRenderClock(new Date()),
+      intervalMs: POLL_MS,
+      isVisible: () => document.visibilityState === "visible",
+    });
 
     function onVisible(): void {
-      if (document.visibilityState === "visible" && alive.current) {
-        if (timer) {
-          clearTimeout(timer);
-        }
-
-        void poll();
-      }
+      poller.wake();
     }
 
-    void poll();
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
-      alive.current = false;
-
-      if (timer) {
-        clearTimeout(timer);
-      }
-
       document.removeEventListener("visibilitychange", onVisible);
+      poller.stop();
     };
   }, [symbol]);
 
-  return quote;
+  return { quote, renderClock };
 }
 
 /**
@@ -102,8 +84,8 @@ function useFreshQuote(symbol: string): FreshQuoteView | null {
  * which is exactly what the hero showed before this existed.
  */
 export function StockQuoteRibbon({ symbol }: { symbol: string }) {
-  const quote = useFreshQuote(symbol);
-  const model = ribbonModel(quote, new Date());
+  const { quote, renderClock } = useFreshQuote(symbol);
+  const model = ribbonModel(quote, renderClock);
 
   if (!model) {
     return null;
@@ -146,11 +128,11 @@ export function CryptoHeadlinePrice({
   establishedStated: string | null;
   establishedAge: string | null;
 }) {
-  const quote = useFreshQuote(symbol);
+  const { quote, renderClock } = useFreshQuote(symbol);
   const model = headlineModel(
     quote,
     { stated: establishedStated, age: establishedAge },
-    new Date(),
+    renderClock,
   );
 
   if (model.kind === "fresh" && model.ribbon) {

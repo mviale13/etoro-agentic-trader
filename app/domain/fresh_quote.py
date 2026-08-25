@@ -140,7 +140,17 @@ class FreshQuote:
         if clock_kind is not ClockKind.SOURCE_STATED or source_as_of is None:
             return QuoteStatus.STALE
 
-        if received_at - source_as_of <= CURRENT_WINDOW:
+        age = received_at - source_as_of
+
+        # A source time later than receipt is a claim about the future,
+        # and a future clock establishes nothing about the present. The
+        # subtraction alone accepted it — any negative age is "<= 120s" —
+        # so the window is two-sided: currency needs an age between zero
+        # and the window, never a clock ahead of the receipt.
+        if age < timedelta(0):
+            return QuoteStatus.STALE
+
+        if age <= CURRENT_WINDOW:
             return QuoteStatus.CURRENT
 
         return QuoteStatus.STALE

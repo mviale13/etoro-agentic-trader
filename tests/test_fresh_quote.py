@@ -45,6 +45,37 @@ def test_current_needs_the_sources_own_clock_inside_the_window() -> None:
     )
 
 
+def test_the_window_boundaries_each_side_separately() -> None:
+    """119 s current, 121 s stale, equal time current, future stale —
+    four cases, four separate claims about one two-sided window."""
+
+    assert (
+        FreshQuote.status_of(
+            RECEIVED - timedelta(seconds=119), RECEIVED, ClockKind.SOURCE_STATED
+        )
+        is QuoteStatus.CURRENT
+    )
+    assert (
+        FreshQuote.status_of(
+            RECEIVED - timedelta(seconds=121), RECEIVED, ClockKind.SOURCE_STATED
+        )
+        is QuoteStatus.STALE
+    )
+    assert (
+        FreshQuote.status_of(RECEIVED, RECEIVED, ClockKind.SOURCE_STATED)
+        is QuoteStatus.CURRENT
+    )
+    # A source clock ahead of the receipt is a claim about the future.
+    # The one-sided subtraction accepted it — any negative age passes
+    # "<= 120 s" — and a future clock must establish nothing.
+    assert (
+        FreshQuote.status_of(
+            RECEIVED + timedelta(seconds=30), RECEIVED, ClockKind.SOURCE_STATED
+        )
+        is QuoteStatus.STALE
+    )
+
+
 def test_a_receipt_only_quote_is_never_current() -> None:
     """Recency of receipt is not recency of observation. A quote whose
     provider stated no time is STALE however fresh the delivery."""
@@ -214,11 +245,12 @@ def row(instrument_id: int, price: float, as_of: datetime) -> dict[str, Any]:
     }
 
 
-def settings() -> Settings:
+def settings(fresh_quotes: str = "on") -> Settings:
     return Settings(
         etoro_api_key="test-api-key",
         etoro_user_key="test-user-key",
         trading_mode="demo",
+        movrvest_fresh_quotes=fresh_quotes,
     )
 
 
@@ -477,3 +509,138 @@ def test_currency_delay_and_market_status_stay_unknown(tmp_path: Path) -> None:
         assert quote.currency is None
         assert quote.delay_status.value == "unknown"
         assert quote.market_status.value == "unknown"
+
+
+# ── the operator switch ─────────────────────────────────────────────
+
+
+def test_fresh_quotes_are_off_by_default(tmp_path: Path) -> None:
+    """The credential's entitlement is proven; its privilege boundary is
+    not. Until an operator establishes it, the ribbon is dark: every
+    symbol answers UNAVAILABLE with the enabling action named, and no
+    provider request is made."""
+
+    client = StubClient(fresh_rows())
+    svc = FreshQuoteService(
+        settings(fresh_quotes=""),
+        client=client,  # type: ignore[arg-type]
+        store=seeded_store(tmp_path),
+    )
+
+    quotes = asyncio.run(svc.quotes(("DIS", "HYPE")))
+
+    assert [q.status for q in quotes] == [
+        QuoteStatus.UNAVAILABLE,
+        QuoteStatus.UNAVAILABLE,
+    ]
+    assert all("MOVRVEST_FRESH_QUOTES" in q.stated for q in quotes)
+    assert all("scope-unresolved" in q.stated for q in quotes)
+    assert client.calls == 0
+
+
+# ── the producer price boundary ─────────────────────────────────────
+
+
+def test_an_invalid_headline_price_makes_the_answer_unavailable(
+    tmp_path: Path,
+) -> None:
+    """Zero, negative and non-finite are not prices of anything
+    tradable. The row is answered — and the answer is that no figure is
+    displayed."""
+
+    now = datetime.now(UTC)
+    rows = [
+        {**row(1016, 110.8, now), "lastExecution": 0},
+        {**row(1004, 487.4, now), "lastExecution": -3.5},
+        {**row(1238, 104.76, now), "lastExecution": float("inf")},
+        {**row(100446, 80.86, now), "lastExecution": "81"},
+    ]
+
+    quotes = asyncio.run(
+        service(tmp_path, StubClient(rows)).quotes(("DIS", "MSFT", "BNP.PA", "HYPE"))
+    )
+
+    for quote in quotes:
+        assert quote.status is QuoteStatus.UNAVAILABLE
+        assert quote.price is None
+        assert "no usable traded price" in quote.stated
+
+
+def test_invalid_bid_or_ask_becomes_null_without_losing_the_quote(
+    tmp_path: Path,
+) -> None:
+    now = datetime.now(UTC)
+    damaged = {**row(1016, 110.8, now), "bid": -1, "ask": float("nan")}
+
+    quotes = asyncio.run(service(tmp_path, StubClient([damaged])).quotes(("DIS",)))
+
+    assert quotes[0].status is QuoteStatus.CURRENT
+    assert quotes[0].price == 110.8
+    assert quotes[0].bid is None
+    assert quotes[0].ask is None
+
+
+# ── the catalog ages ────────────────────────────────────────────────
+
+
+def test_a_newly_stored_capture_resolves_after_the_ttl_without_restart(
+    tmp_path: Path,
+) -> None:
+    """The three-step pin: refused first, then a normal acquisition
+    stores the capture, then the TTL turns over and the same process
+    resolves it. Identity still comes only from the stored catalog —
+    nothing is inferred from the requested ticker."""
+
+    times = [0.0]
+    store = seeded_store(tmp_path)
+    client = StubClient(fresh_rows() + [row(9955, 42.0, datetime.now(UTC))])
+    svc = FreshQuoteService(
+        settings(),
+        client=client,  # type: ignore[arg-type]
+        store=store,
+        ttl_seconds=60.0,
+        clock=lambda: times[0],
+    )
+
+    # 1 — absent from every stored capture: refused.
+    first = asyncio.run(svc.quotes(("NEWCO",)))
+
+    assert first[0].status is QuoteStatus.IDENTITY_REFUSED
+
+    # 2 — a normal acquisition stores the capture that names it.
+    store.save(
+        broker="etoro",
+        environment="demo",
+        endpoint="watchlists",
+        payload={
+            "watchlists": [
+                {
+                    "items": [
+                        {
+                            "itemId": 9955,
+                            "market": {
+                                "id": "9955",
+                                "symbolName": "NEWCO",
+                                "displayName": "New Company",
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+        metadata={},
+    )
+
+    # Still inside the TTL: the frozen map stands, and so does the
+    # refusal — the reload is bounded, not eager.
+    still = asyncio.run(svc.quotes(("NEWCO",)))
+
+    assert still[0].status is QuoteStatus.IDENTITY_REFUSED
+
+    # 3 — the TTL turns over: the same process resolves it.
+    times[0] = 61.0
+    resolved = asyncio.run(svc.quotes(("NEWCO",)))
+
+    assert resolved[0].status is QuoteStatus.CURRENT
+    assert resolved[0].provider_instrument_identity == "9955"
+    assert resolved[0].provider_label == "New Company"

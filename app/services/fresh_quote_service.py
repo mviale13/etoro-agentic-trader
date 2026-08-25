@@ -31,6 +31,7 @@ The contract, enforced here rather than promised:
 from __future__ import annotations
 
 import asyncio
+import math
 import time
 import uuid
 from dataclasses import dataclass
@@ -91,6 +92,7 @@ class FreshQuoteService:
         self._monotonic = clock or time.monotonic
 
         self._catalog: dict[str, _Identity] | None = None
+        self._catalog_loaded_at: float | None = None
         self._quotes: dict[str, FreshQuote] = {}
         self._fetched_at: float | None = None
         self._lock = asyncio.Lock()
@@ -106,8 +108,14 @@ class FreshQuoteService:
         newest-first and only absent entries are filled.
         """
 
-        if self._catalog is not None:
-            return self._catalog
+        # The catalog ages on the same TTL as the quotes: a process that
+        # never restarts would otherwise refuse a newly watched security
+        # forever, because `movrvest acquire` appends captures the
+        # frozen map never re-reads. This is a stored read — a couple of
+        # dozen local files — never a provider call.
+        if self._catalog is not None and self._catalog_loaded_at is not None:
+            if self._monotonic() - self._catalog_loaded_at < self._ttl:
+                return self._catalog
 
         catalog: dict[str, _Identity] = {}
         environment = self._settings.trading_mode
@@ -167,6 +175,7 @@ class FreshQuoteService:
                     )
 
         self._catalog = catalog
+        self._catalog_loaded_at = self._monotonic()
 
         return catalog
 
@@ -186,6 +195,29 @@ class FreshQuoteService:
 
         if not wanted:
             return ()
+
+        # Off by default, on by an explicit operator action. The REST
+        # credential's entitlement to read rates is proven; its privilege
+        # *boundary* is not, and until an operator establishes it the
+        # ribbon stays dark — the heroes then render exactly their
+        # fallbacks. No provider is contacted on this path.
+        if not self._enabled():
+            return tuple(
+                FreshQuote.unavailable(
+                    symbol,
+                    _asset_class(symbol),
+                    PROVIDER,
+                    identity=None,
+                    label=None,
+                    because=(
+                        "Fresh display quotes are not enabled. Enabling them "
+                        "is an operator action (MOVRVEST_FRESH_QUOTES=on), "
+                        "and production activation remains scope-unresolved "
+                        "pending a least-privilege credential determination."
+                    ),
+                )
+                for symbol in wanted
+            )
 
         catalog = self._load_catalog()
 
@@ -226,6 +258,9 @@ class FreshQuoteService:
             )
 
         return tuple(results)
+
+    def _enabled(self) -> bool:
+        return self._settings.movrvest_fresh_quotes.strip().lower() == "on"
 
     def _stale(self) -> bool:
         return (
@@ -277,15 +312,37 @@ class FreshQuoteService:
 
             symbol, identity = entry
 
+            price = _price(row.get("lastExecution"))
+
+            # A headline price must be a finite, strictly positive
+            # number or there is no answer to display: zero and
+            # negative are not prices of anything tradable, and a
+            # non-finite float is transport noise. Invalid bid/ask
+            # merely become null — they qualify a price, they are not
+            # the price.
+            if price is None:
+                self._quotes[symbol] = FreshQuote.unavailable(
+                    symbol,
+                    _asset_class(symbol),
+                    PROVIDER,
+                    identity=str(instrument_id),
+                    label=identity.label,
+                    because=(
+                        "The provider's row carried no usable traded "
+                        "price, so no figure is displayed."
+                    ),
+                )
+                continue
+
             self._quotes[symbol] = FreshQuote.answered(
                 symbol=symbol,
                 asset_class=_asset_class(symbol),
                 provider=PROVIDER,
                 identity=str(instrument_id),
                 label=identity.label,
-                price=_number(row.get("lastExecution")),
-                bid=_number(row.get("bid")),
-                ask=_number(row.get("ask")),
+                price=price,
+                bid=_price(row.get("bid")),
+                ask=_price(row.get("ask")),
                 source_as_of=_moment(row.get("date")),
                 received_at=received_at,
             )
@@ -339,9 +396,14 @@ def _identifier(value: Any) -> int | None:
     return None
 
 
-def _number(value: Any) -> float | None:
+def _price(value: Any) -> float | None:
+    """A finite, strictly positive number, or nothing."""
+
     if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return float(value)
+        figure = float(value)
+
+        if math.isfinite(figure) and figure > 0:
+            return figure
 
     return None
 

@@ -215,3 +215,189 @@ describe("the age sentence", () => {
     expect(statedAge("whenever", NOW)).toBeNull();
   });
 });
+
+// ── currency expires in the browser ─────────────────────────────────
+
+describe("presentation currency at render time", () => {
+  it("re-asks the whole compound claim, not the stored status", () => {
+    // The backend judged `current` at receipt. The browser must judge
+    // again at every render: status, the source's clock kind, a valid
+    // source moment, and an age inside the window right now.
+    const held = quote(); // status: current, sourceAsOf 14:15:53
+
+    const at119 = new Date("2026-08-25T14:17:52Z"); // age 119s
+    expect(ribbonModel(held, at119)?.current).toBe(true);
+
+    const at121 = new Date("2026-08-25T14:17:54Z"); // age 121s
+    const expired = ribbonModel(held, at121);
+
+    expect(expired?.current).toBe(false);
+    expect(expired?.attribution).toContain("As of 14:15 UTC");
+    expect(expired?.attribution).not.toContain("Updated");
+  });
+
+  it("holds at equal time and refuses a future source clock", () => {
+    const held = quote();
+
+    // Equal time: age zero, current.
+    expect(
+      ribbonModel(held, new Date("2026-08-25T14:15:53.343Z"))?.current,
+    ).toBe(true);
+
+    // A source clock ahead of the render clock is a claim about the
+    // future; it establishes nothing and is not clamped to zero.
+    const future = ribbonModel(held, new Date("2026-08-25T14:14:00Z"));
+
+    expect(future?.current).toBe(false);
+    expect(future?.attribution).not.toContain("Updated");
+    expect(future?.attribution).not.toContain("0 seconds ago");
+  });
+
+  it("a status of current cannot survive the wrong clock kind", () => {
+    const wrongClock = quote({ clockKind: "receipt_only" });
+
+    // The parser would refuse this shape on the wire; the model refuses
+    // it independently, because defence at one boundary is not defence.
+    expect(ribbonModel(wrongClock, NOW)?.current).toBe(false);
+  });
+
+  it("an expired current quote drops the crypto headline to established", () => {
+    const established = {
+      stated: "$79.14",
+      age: "TokenInsight, received 22 hours ago",
+    };
+
+    const model = headlineModel(
+      quote(),
+      established,
+      new Date("2026-08-25T14:20:00Z"), // 4 minutes past the source clock
+    );
+
+    expect(model.kind).toBe("established");
+    expect(model.ribbon).toBeNull();
+  });
+
+  it("never refuses a negative age by clamping it into an age sentence", () => {
+    expect(statedAge("2026-08-25T14:30:00Z", NOW)).toBeNull();
+  });
+});
+
+// ── the parser is genuinely strict ──────────────────────────────────
+
+describe("strict parsing", () => {
+  function wire(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      movrvest_symbol: "DIS",
+      asset_class: "security",
+      provider: "eToro",
+      provider_instrument_identity: "1016",
+      provider_label: "Walt Disney",
+      price: 110.8,
+      currency: null,
+      bid: 110.8,
+      ask: 110.82,
+      source_as_of: "2026-08-25T14:15:52.962922+00:00",
+      received_at: "2026-08-25T14:15:53+00:00",
+      clock_kind: "source_stated",
+      delay_status: "unknown",
+      market_status: "unknown",
+      status: "current",
+      stated: "As eToro stated it, on the source's own clock.",
+      ...overrides,
+    };
+  }
+
+  it("requires every field to exist — absence is malformed, not defaulted", () => {
+    for (const key of [
+      "asset_class",
+      "provider",
+      "clock_kind",
+      "delay_status",
+      "market_status",
+      "provider_instrument_identity",
+      "provider_label",
+      "price",
+      "currency",
+      "source_as_of",
+      "received_at",
+    ]) {
+      const body = wire();
+      delete body[key];
+
+      expect(parseQuote(body), `missing ${key} must not parse`).toBeNull();
+    }
+  });
+
+  it("defaults nothing on the stale shape either", () => {
+    // The compound-claim check masks a defaulted clock kind on a
+    // `current` quote — it rejects current-with-receipt_only anyway. A
+    // stale quote has no such second gate, so a default would revive
+    // there: absence must be malformed on every shape, not just the
+    // one another rule happens to catch.
+    const stale = wire({ status: "stale" });
+
+    for (const key of ["clock_kind", "delay_status", "market_status", "asset_class", "provider"]) {
+      const body = { ...stale };
+      delete body[key];
+
+      expect(parseQuote(body), `stale missing ${key} must not parse`).toBeNull();
+    }
+  });
+
+  it("checks every enum by membership", () => {
+    expect(parseQuote(wire({ asset_class: "equity" }))).toBeNull();
+    expect(parseQuote(wire({ clock_kind: "server" }))).toBeNull();
+    expect(parseQuote(wire({ delay_status: "live" }))).toBeNull();
+    expect(parseQuote(wire({ market_status: "trading" }))).toBeNull();
+    expect(parseQuote(wire({ status: "fresh" }))).toBeNull();
+  });
+
+  it("refuses a current quote missing any leg of the compound claim", () => {
+    // A truncated `current` response must parse as no quote — not as a
+    // plausible current quote wearing defaults.
+    expect(
+      parseQuote(wire({ clock_kind: "receipt_only" })),
+    ).toBeNull();
+    expect(parseQuote(wire({ source_as_of: null }))).toBeNull();
+    expect(
+      parseQuote(wire({ provider_instrument_identity: null })),
+    ).toBeNull();
+    expect(parseQuote(wire({ provider: "" }))).toBeNull();
+    expect(parseQuote(wire({ price: null }))).toBeNull();
+  });
+
+  it("requires a displayed price to be finite and strictly positive", () => {
+    expect(parseQuote(wire({ price: 0 }))).toBeNull();
+    expect(parseQuote(wire({ price: -3.5 }))).toBeNull();
+    expect(parseQuote(wire({ price: Number.POSITIVE_INFINITY }))).toBeNull();
+    expect(parseQuote(wire({ price: "110.8" }))).toBeNull();
+  });
+
+  it("nulls an invalid bid or ask without losing the quote", () => {
+    const parsed = parseQuote(wire({ bid: -1, ask: "x" }));
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.bid).toBeNull();
+    expect(parsed?.ask).toBeNull();
+    expect(parsed?.price).toBe(110.8);
+  });
+
+  it("still parses the honest degraded shapes", () => {
+    const refused = parseQuote(
+      wire({
+        status: "identity_refused",
+        clock_kind: "receipt_only",
+        provider_instrument_identity: null,
+        provider_label: null,
+        price: null,
+        bid: null,
+        ask: null,
+        source_as_of: null,
+        received_at: null,
+      }),
+    );
+
+    expect(refused?.status).toBe("identity_refused");
+    expect(refused?.price).toBeNull();
+  });
+});

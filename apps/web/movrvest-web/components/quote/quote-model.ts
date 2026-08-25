@@ -39,6 +39,27 @@ export interface FreshQuoteView {
 }
 
 /** The wire shape, validated strictly: a malformed quote is no quote. */
+const ASSET_CLASSES = new Set(["security", "crypto"]);
+const CLOCK_KINDS = new Set(["source_stated", "receipt_only"]);
+const DELAY_STATUSES = new Set(["real_time", "delayed", "unknown"]);
+const MARKET_STATUSES = new Set(["open", "closed", "unknown"]);
+const STATUSES = new Set(["current", "stale", "identity_refused", "unavailable"]);
+
+/**
+ * Genuinely fail-closed: every wire field must exist with its declared
+ * shape, every enum is checked by membership, and nothing is defaulted.
+ *
+ * The earlier version claimed this and defaulted five fields — a
+ * missing `clock_kind` became `receipt_only`, a missing `asset_class`
+ * became `security` — which meant a truncated `current` response could
+ * parse into a plausible current quote. Now a malformed answer is no
+ * answer: a `current` quote missing its clock kind, source moment,
+ * identity, provider or price does not exist here.
+ *
+ * A displayed price must be finite and strictly positive; anything else
+ * fails the parse rather than rendering as a figure. Invalid bid/ask
+ * merely become null — they qualify a price, they are not the price.
+ */
 export function parseQuote(raw: unknown): FreshQuoteView | null {
   if (typeof raw !== "object" || raw === null) {
     return null;
@@ -46,38 +67,123 @@ export function parseQuote(raw: unknown): FreshQuoteView | null {
 
   const record = raw as Record<string, unknown>;
 
-  const requireString = (key: string): string | null =>
-    typeof record[key] === "string" ? (record[key] as string) : null;
-  const optionalString = (key: string): string | null =>
-    typeof record[key] === "string" ? (record[key] as string) : null;
-  const optionalNumber = (key: string): number | null =>
-    typeof record[key] === "number" && Number.isFinite(record[key] as number)
-      ? (record[key] as number)
+  const requiredString = (key: string): string | null =>
+    typeof record[key] === "string" && (record[key] as string) !== ""
+      ? (record[key] as string)
       : null;
 
-  const symbol = requireString("movrvest_symbol");
-  const status = requireString("status");
-  const stated = requireString("stated");
+  // Present, and either a string or an explicit null — an absent key is
+  // a malformed message, not an absent value.
+  const nullableString = (key: string): string | null | undefined => {
+    if (!(key in record)) {
+      return undefined;
+    }
 
-  if (!symbol || !status || !stated) {
+    const value = record[key];
+
+    return value === null || typeof value === "string"
+      ? (value as string | null)
+      : undefined;
+  };
+
+  const nullableNumber = (key: string): number | null | undefined => {
+    if (!(key in record)) {
+      return undefined;
+    }
+
+    const value = record[key];
+
+    if (value === null) {
+      return null;
+    }
+
+    return typeof value === "number" && Number.isFinite(value)
+      ? value
+      : undefined;
+  };
+
+  const enumMember = (key: string, allowed: Set<string>): string | null => {
+    const value = record[key];
+
+    return typeof value === "string" && allowed.has(value) ? value : null;
+  };
+
+  const symbol = requiredString("movrvest_symbol");
+  const assetClass = enumMember("asset_class", ASSET_CLASSES);
+  const provider = requiredString("provider");
+  const status = enumMember("status", STATUSES);
+  const clockKind = enumMember("clock_kind", CLOCK_KINDS);
+  const delayStatus = enumMember("delay_status", DELAY_STATUSES);
+  const marketStatus = enumMember("market_status", MARKET_STATUSES);
+  const stated = requiredString("stated");
+
+  const identity = nullableString("provider_instrument_identity");
+  const label = nullableString("provider_label");
+  const price = nullableNumber("price");
+  const currency = nullableString("currency");
+  const sourceAsOf = nullableString("source_as_of");
+  const receivedAt = nullableString("received_at");
+
+  if (
+    !symbol ||
+    !assetClass ||
+    !provider ||
+    !status ||
+    !clockKind ||
+    !delayStatus ||
+    !marketStatus ||
+    !stated ||
+    identity === undefined ||
+    label === undefined ||
+    price === undefined ||
+    currency === undefined ||
+    sourceAsOf === undefined ||
+    receivedAt === undefined
+  ) {
     return null;
   }
 
+  // A headline price is finite and strictly positive, or the whole
+  // answer is refused — a zero or negative figure rendered large is
+  // worse than no figure.
+  if (price !== null && price <= 0) {
+    return null;
+  }
+
+  // A current quote is a compound claim: it needs the source's own
+  // clock, that clock's moment, the instrument's identity and a price.
+  // Missing any of them, "current" is not a state this parser can
+  // hand to a renderer.
+  if (
+    status === "current" &&
+    (clockKind !== "source_stated" ||
+      sourceAsOf === null ||
+      identity === null ||
+      price === null)
+  ) {
+    return null;
+  }
+
+  // Invalid bid/ask become null rather than failing the quote: they
+  // qualify the price, they are not the price.
+  const bid = nullableNumber("bid");
+  const ask = nullableNumber("ask");
+
   return {
     movrvestSymbol: symbol,
-    assetClass: requireString("asset_class") ?? "security",
-    provider: requireString("provider") ?? "",
-    providerInstrumentIdentity: optionalString("provider_instrument_identity"),
-    providerLabel: optionalString("provider_label"),
-    price: optionalNumber("price"),
-    currency: optionalString("currency"),
-    bid: optionalNumber("bid"),
-    ask: optionalNumber("ask"),
-    sourceAsOf: optionalString("source_as_of"),
-    receivedAt: optionalString("received_at"),
-    clockKind: requireString("clock_kind") ?? "receipt_only",
-    delayStatus: requireString("delay_status") ?? "unknown",
-    marketStatus: requireString("market_status") ?? "unknown",
+    assetClass,
+    provider,
+    providerInstrumentIdentity: identity,
+    providerLabel: label,
+    price,
+    currency,
+    bid: bid === undefined || (bid !== null && bid <= 0) ? null : bid,
+    ask: ask === undefined || (ask !== null && ask <= 0) ? null : ask,
+    sourceAsOf,
+    receivedAt,
+    clockKind,
+    delayStatus,
+    marketStatus,
     status,
     stated,
   };
@@ -107,16 +213,45 @@ function formattedPrice(price: number, currency: string | null): string {
   return currency ? `${currency} ${figure}` : figure;
 }
 
-/** "18 seconds ago" / "3 minutes ago" — from the source clock to the
-    render moment, coarse on purpose: a ribbon is not a stopwatch. */
-export function statedAge(iso: string, now: Date): string | null {
-  const at = new Date(iso);
+/** How old a source-stated quote may be at render time and still be
+    presented as current. The same 120-second window the backend uses at
+    receipt, applied again here because the browser keeps rendering long
+    after the backend last answered. */
+export const CURRENT_WINDOW_SECONDS = 120;
+
+/** The quote's age at the render moment, in seconds, on the source's
+    own clock — or null where no valid source moment exists. Negative
+    for a source clock ahead of the render clock, and deliberately not
+    clamped: a future moment is a refused claim, not a zero-second-old
+    one. */
+export function sourceAgeSeconds(
+  sourceAsOf: string | null,
+  now: Date,
+): number | null {
+  if (!sourceAsOf) {
+    return null;
+  }
+
+  const at = new Date(sourceAsOf);
 
   if (Number.isNaN(at.getTime())) {
     return null;
   }
 
-  const seconds = Math.max(0, Math.floor((now.getTime() - at.getTime()) / 1000));
+  return (now.getTime() - at.getTime()) / 1000;
+}
+
+/** "18 seconds ago" / "3 minutes ago" — from the source clock to the
+    render moment, coarse on purpose: a ribbon is not a stopwatch. A
+    negative age is refused, never clamped to zero. */
+export function statedAge(iso: string, now: Date): string | null {
+  const age = sourceAgeSeconds(iso, now);
+
+  if (age === null || age < 0) {
+    return null;
+  }
+
+  const seconds = Math.floor(age);
 
   if (seconds < 60) {
     return `${seconds} second${seconds === 1 ? "" : "s"} ago`;
@@ -180,13 +315,31 @@ export function ribbonModel(
     qualifiers.push("Market closed");
   }
 
-  if (quote.status === "current" && quote.sourceAsOf) {
-    const age = statedAge(quote.sourceAsOf, now);
+  // **Currency expires in the browser.** The backend judged `current`
+  // at receipt, but this page keeps rendering long after that answer —
+  // a network failure after one success would otherwise leave "Updated
+  // 0 seconds ago" standing forever. So the presentation re-asks the
+  // whole compound claim at render time: the current status, the
+  // source's own clock, a valid source moment, and an age between zero
+  // and the window on that clock right now. A future source moment
+  // fails the same gate — a claim about the future establishes nothing
+  // about the present.
+  const age = sourceAgeSeconds(quote.sourceAsOf, now);
+
+  const currentAtRender =
+    quote.status === "current" &&
+    quote.clockKind === "source_stated" &&
+    age !== null &&
+    age >= 0 &&
+    age <= CURRENT_WINDOW_SECONDS;
+
+  if (currentAtRender && quote.sourceAsOf) {
+    const stated = statedAge(quote.sourceAsOf, now);
 
     return {
       figure: formattedPrice(quote.price, quote.currency),
-      attribution: age
-        ? `Updated ${age} · ${quote.provider}`
+      attribution: stated
+        ? `Updated ${stated} · ${quote.provider}`
         : `As of ${statedInstant(quote.sourceAsOf) ?? quote.sourceAsOf} · ${quote.provider}`,
       qualifiers,
       current: true,
