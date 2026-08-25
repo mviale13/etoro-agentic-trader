@@ -392,7 +392,19 @@ class ArtificialCIO:
                 self._blocked(
                     evidence,
                     BlockerKind.VALUATION_GATE,
-                    self._unassessable_valuation(evidence),
+                    # The fund and token wording is already exact — a
+                    # platform limit, not a pending measurement — and
+                    # stays. For a company, the investor's sentence: what
+                    # the evidence cannot yet establish, not which score
+                    # is missing.
+                    self._unassessable_valuation(evidence)
+                    if evidence.asset_class is not None
+                    and evidence.asset_class.has_no_company
+                    else (
+                        "The available evidence does not establish whether "
+                        "the shares offer good value at today's price, so "
+                        "valuation cannot yet support a purchase."
+                    ),
                 ),
             )
 
@@ -424,12 +436,14 @@ class ArtificialCIO:
                 self._blocked(
                     evidence,
                     BlockerKind.VALUATION_GATE,
-                    (
-                        f"Blocked by what it costs: valuation scores "
-                        f"{evidence.valuation_score} against the "
-                        f"{policy.minimum_recommendation_valuation} a "
-                        "recommendation needs."
-                    ),
+                    # The owner's product feedback of 2026-08-24: "scores
+                    # 55 against the 60 a recommendation needs" is not
+                    # investor language. The sentence now names what was
+                    # measured and what it means for the course; the
+                    # score itself stays on the payload and in the score
+                    # basis as audit detail, and the gate above read it
+                    # unchanged.
+                    self._short_valuation(evidence),
                 ),
             )
 
@@ -639,6 +653,91 @@ class ArtificialCIO:
         return (
             "Business quality has not been measured, so the case cannot "
             "progress beyond research."
+        )
+
+    @staticmethod
+    def _short_valuation(evidence: DecisionEvidence) -> str:
+        """Why the price does not support action, in the investor's terms.
+
+        Composed deterministically from the typed valuation reading the
+        evidence already carries — the band, the measured multiple and
+        nothing else. Four rules, each load-bearing (the owner's ruling
+        on #251):
+
+        - **The score is not the explanation.** It stays on the payload
+          and in the score basis as audit detail; the sentence a reader
+          acts on names what was measured instead.
+        - **"Expensive" is never claimed, and neither is a margin of
+          safety.** This platform holds one unaudited multiple and no
+          benchmark (VALUATION_AUTHORITY.md) — no intrinsic value,
+          expected return or margin of safety was measured, so none may
+          be said to be missing.
+        - **A poor valuation is not a poor business.** The sentence says
+          so itself, and the blocker's `does_not_say` says it again.
+        - **The reconsideration condition is the gate's own input.**
+          Only the forward P/E moving into a cheaper band can change
+          this ruling, so that is what the reader is told to wait for —
+          never "stronger earnings and cash-flow evidence", which does
+          not feed this gate and does not necessarily move the
+          multiple. No target price, and no promise that crossing the
+          band produces a recommendation: reconsidering is what is
+          offered.
+        """
+
+        reading = evidence.valuation_reading
+        observation = reading.observation if reading is not None else None
+
+        if reading is None or observation is None:
+            # The score exists and the reading behind it was not
+            # carried — a caller-built evidence, never the live
+            # pipeline. Nothing quotable, so nothing is quoted.
+            return (
+                "The available evidence does not establish that the "
+                "shares offer good value at today's price, so valuation "
+                "cannot support a purchase."
+            )
+
+        # "20.6× forward earnings" for the one metric that decides
+        # pe-bands@2; the observation's own label for anything else, so
+        # a future metric is named rather than misdescribed.
+        measured = (
+            f"{observation.value:.1f}\u00d7 forward earnings"
+            if observation.metric == "forward_pe"
+            else f"a {observation.label} of {observation.value:.1f}{observation.unit}"
+        )
+
+        house_rule = (
+            "This is a house rule applied to one measured multiple, not "
+            "a market comparison or a judgment on the business."
+        )
+
+        if reading.valuation == "EXPENSIVE":
+            return (
+                f"At {measured}, {evidence.symbol} sits above the "
+                "valuation range this platform accepts for a buy "
+                f"recommendation. {house_rule} Wait for the forward P/E "
+                "to move into a more attractive band before "
+                "reconsidering a purchase."
+            )
+
+        if reading.valuation == "FAIR":
+            return (
+                f"At {measured}, {evidence.symbol} sits in this "
+                "platform's middle valuation band: not overpriced, but "
+                "not cheap enough to support a buy recommendation. "
+                f"{house_rule} Wait for the forward P/E to move into "
+                "the cheaper band before reconsidering a purchase."
+            )
+
+        # A band this composer has no honest sentence for — CHEAP
+        # blocked by a custom policy bar, or a vocabulary this code
+        # predates. The measured fact is named; no band is claimed, and
+        # the reconsideration condition stays the gate's own input.
+        return (
+            f"At {measured}, the price does not clear the bar this "
+            f"policy sets for a buy recommendation. {house_rule} Wait "
+            "for the measured multiple to move into a band this policy "
+            "accepts before reconsidering a purchase."
         )
 
     @staticmethod
