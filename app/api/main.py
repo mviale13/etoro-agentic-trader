@@ -25,6 +25,7 @@ from app.api.routes.portfolio import router as portfolio_router
 from app.api.routes.portfolio_health import (
     router as portfolio_health_router,
 )
+from app.api.routes.quotes import router as quotes_router
 from app.api.routes.recommendation import (
     router as recommendation_router,
 )
@@ -64,6 +65,7 @@ app.include_router(recommendation_timeline_router)
 app.include_router(portfolio_health_router)
 app.include_router(investor_dna_router)
 app.include_router(portfolio_router)
+app.include_router(quotes_router)
 app.include_router(observation_router)
 app.include_router(committee_router)
 app.include_router(committee_matrix_router)

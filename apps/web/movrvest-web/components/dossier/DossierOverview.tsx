@@ -18,6 +18,7 @@
 import Link from "next/link";
 
 import { CourseEnvelope } from "@/components/executive/HomeSections";
+import { StockQuoteRibbon } from "@/components/quote/FreshQuoteRibbon";
 import type { CycleCourse } from "@/lib/api/cycle-review";
 import type { DossierViewModel } from "@/lib/api/dossier";
 import {
@@ -97,6 +98,13 @@ export function DossierHero({ hero }: { hero: HeroModel }) {
             </p>
           ) : null}
         </div>
+
+        {/* A display quote on the provider's own clock, polled from
+            this app's backend. Display only: the CIO review beside it
+            keeps its own clock, and nothing decisive reads this. Where
+            no quote stands the hero shows exactly what it showed
+            before this existed — nothing. */}
+        <StockQuoteRibbon symbol={hero.symbol} />
 
         <div className="text-right">
           {hero.reviewedAt ? (

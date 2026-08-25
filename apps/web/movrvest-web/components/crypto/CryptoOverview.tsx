@@ -12,6 +12,7 @@
 
 import Link from "next/link";
 
+import { CryptoHeadlinePrice } from "@/components/quote/FreshQuoteRibbon";
 import type { CryptoDossier } from "@/lib/api/crypto-dossier";
 import {
   type CryptoView,
@@ -59,24 +60,21 @@ export function CryptoHero({ hero }: { hero: HeroModel }) {
           <p className="mt-1 text-sm font-medium text-slate-700">{hero.role}</p>
         </div>
 
-        <div className="text-right">
-          {hero.price?.stated ? (
-            <>
-              <p className="text-3xl font-semibold tabular-nums text-slate-950">
-                {hero.price.stated}
-              </p>
-
-              <p className="mt-1 flex items-center justify-end gap-2 text-xs text-slate-500">
-                <StandingChip stated={hero.price.standingStated} />
-                {hero.price.age}
-              </p>
-            </>
-          ) : (
-            // The investor needs the state, not an account of this
-            // platform's store.
-            <p className="text-sm text-slate-500">Price unavailable.</p>
-          )}
-        </div>
+        {/* The headline price. Server-rendered with the established
+            figure so the page waits on nothing; the ribbon's first
+            successful poll replaces it with a current display quote on
+            the provider's own clock. The established price and its
+            methodology remain under Evidence untouched — this decides
+            which figure leads, never what any figure means, and a
+            display quote resolves no conflicted market value. Where no
+            current quote and no established price exist, the state is
+            stated: the investor needs the state, not an account of this
+            platform's store. */}
+        <CryptoHeadlinePrice
+          symbol={hero.symbol}
+          establishedStated={hero.price?.stated ?? null}
+          establishedAge={hero.price?.age ?? null}
+        />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3">
