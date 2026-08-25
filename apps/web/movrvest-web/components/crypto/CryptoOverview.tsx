@@ -20,7 +20,6 @@ import {
   VIEW_LABELS,
   VIEWS,
   decisionModel,
-  heroModel,
   keyFacts,
   keyRisks,
   latestDevelopments,
