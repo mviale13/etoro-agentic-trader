@@ -96,8 +96,8 @@ def _render(picture: SupplyPicture) -> None:
         print()
         print("  Unresolved")
 
-        for line in picture.unresolved:
-            print(_wrap(f"- {line}", "    "))
+        for gap in picture.unresolved:
+            print(_wrap(f"- {gap.stated}", "    "))
 
     print()
 

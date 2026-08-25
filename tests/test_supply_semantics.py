@@ -833,4 +833,11 @@ def test_nothing_but_a_cryptocurrency_gets_a_supply_picture() -> None:
 def test_a_security_with_no_chain_reading_says_so() -> None:
     picture = _picture("BTC")
 
-    assert any("No chain reading" in item for item in picture.unresolved)
+    assert any("No chain reading" in item.stated for item in picture.unresolved)
+
+    # The gap is about the whole picture, not one quantity.
+    assert all(
+        item.concept is None
+        for item in picture.unresolved
+        if "No chain reading" in item.stated
+    )

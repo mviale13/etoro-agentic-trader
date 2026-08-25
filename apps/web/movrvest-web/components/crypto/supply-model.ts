@@ -56,6 +56,9 @@ export const CONCEPT_ORDER = [
 export type UnsettledKind =
   //: Sources claim the same quantity and disagree.
   | "conflicted"
+  //: Some pairs agree and others were never compared, so no figure may
+  //: stand for the whole set.
+  | "incomplete"
   //: Several distinct facts under one concept — four excluded
   //: addresses, say — which the domain never compared because they are
   //: not rivals. Not a disagreement, and not unsettled.
@@ -160,7 +163,17 @@ function rowFor(
   // quantity, so the figure they agree on may be shown. It is still a
   // provider claim — the standing sentence is the backend's, and
   // nothing here promotes it to "established" or "verified".
-  if (conflicts.length === 0 && comparisons.length > 0) {
+  // **Alignment is the complete graph, not a count of figures.** Saying
+  // "3 reports align" requires every one of the C(n,2) same-concept
+  // pairs to have been compared *and* agreed. A partial graph — A=B
+  // examined, C never compared — would otherwise recruit C into an
+  // agreement nobody tested, and present its figure as corroborated on
+  // the strength of two other sources.
+  const expectedPairs = (sourceCount * (sourceCount - 1)) / 2;
+  const fullyCompared =
+    comparisons.length >= expectedPairs && conflicts.length === 0;
+
+  if (fullyCompared && comparisons.length > 0) {
     return {
       concept,
       label,
@@ -198,6 +211,22 @@ function rowFor(
   // nobody had contested. They are listed, counted and left alone: no
   // figure is promoted to represent the group, and **no total is
   // computed**, because the backend owns no total.
+  // Agreements as far as they go, and gaps in the graph. No figure
+  // stands for the set, and this is not a disagreement either.
+  if (conflicts.length === 0 && comparisons.length > 0) {
+    return {
+      concept,
+      label,
+      stated: null,
+      status: `${comparisons.length} of ${expectedPairs} pairs compared`,
+      because:
+        "Every comparison made agrees; the remaining pairs were not " +
+        "compared, so no figure is presented for the whole set.",
+      sourceCount,
+      unsettledKind: "incomplete",
+    };
+  }
+
   if (comparisons.length === 0) {
     return {
       concept,
@@ -226,44 +255,98 @@ function rowFor(
 }
 
 /**
- * The consequence of each unsettled quantity, in this platform's terms.
+ * One canonical statement per unsettled quantity.
  *
- * The backend's `unresolved` sentences say what is unresolved; this
- * adds what follows *for MOVRvest* — that it therefore presents no
- * single figure. It draws no investment implication, and there is
- * nowhere in this shape to put one.
+ * Two accounts of one quantity used to stand side by side: this
+ * layer's "circulating estimate is not settled", and the backend's own
+ * *"the exclusion set behind CoinGecko, TokenInsight, Yahoo Finance's
+ * circulating figure is not published…"*. Both true, both about
+ * circulating supply, and an investor reading them as two findings
+ * counted the problem twice.
+ *
+ * So the backend's unresolved items are **folded by their typed
+ * concept** — never by comparing sentences — into that concept's single
+ * entry, where they become its reason. An item carrying no concept is
+ * about the whole picture ("no chain reading for this token") and
+ * stands on its own. The original wording is never lost: it is the
+ * reason on the row, and it stays in the source detail beneath.
+ *
+ * The consequence sentence says what follows *for MOVRvest* — that it
+ * presents no single figure. It draws no investment implication, and
+ * there is nowhere in this shape to put one.
  */
 function unsettledFrom(
   supply: SupplyView,
   rows: readonly SupplyRow[],
 ): readonly { stated: string; consequence: string }[] {
   const items: { stated: string; consequence: string }[] = [];
+  const spokenFor = new Set<string>();
 
   for (const row of rows) {
-    // Only a genuine disagreement belongs here. A concept carrying
-    // several uncompared facts is not unsettled, and saying so would
-    // invent a controversy.
-    if (row.unsettledKind === "conflicted") {
-      items.push({
-        stated: `${row.label} is not settled.`,
-        consequence: `MOVRvest therefore does not present one ${row.label.toLowerCase()} figure.`,
-      });
+    // A concept holding several uncompared facts is not unsettled;
+    // saying so would invent a controversy.
+    if (row.unsettledKind !== "conflicted" && row.unsettledKind !== "incomplete") {
+      continue;
     }
+
+    spokenFor.add(row.concept);
+
+    // The backend's own account of this quantity, where it has one,
+    // becomes the row's reason rather than a second entry.
+    const owned = supply.unresolved.filter(
+      (item) => item.concept === row.concept,
+    );
+
+    items.push({
+      stated: `${row.label} is not settled.`,
+      consequence:
+        owned.length > 0
+          ? owned.map((item) => item.stated).join(" ")
+          : `MOVRvest therefore does not present one ${row.label.toLowerCase()} figure.`,
+    });
   }
 
-  // The backend's own unresolved sentences, kept verbatim and never
-  // deduplicated against the above — they are different statements.
-  for (const stated of supply.unresolved) {
-    items.push({ stated, consequence: "" });
+  // Gaps about the whole picture, and any concept-bearing gap whose
+  // quantity produced no row of its own — neither may vanish.
+  for (const item of supply.unresolved) {
+    if (item.concept === null || !spokenFor.has(item.concept)) {
+      items.push({ stated: item.stated, consequence: "" });
+    }
   }
 
   return items;
 }
 
-export function supplyModel(supply: SupplyView): SupplyModel {
-  const present = CONCEPT_ORDER.filter(
+/**
+ * Every concept the evidence actually carries, preferred order first.
+ *
+ * The known concepts keep their reading order; anything else — a
+ * quantity added to the corpus after this module was written — is
+ * appended in served order. **It reaches the summary as well as the
+ * source detail**: evidence must never fall out of the answer merely
+ * because a frontend constant predates it.
+ */
+function conceptsPresent(supply: SupplyView): readonly string[] {
+  const known: string[] = CONCEPT_ORDER.filter(
     (concept) => figuresOf(supply, concept).length > 0,
   );
+
+  const unknown: string[] = [];
+
+  for (const figure of supply.figures) {
+    if (
+      !(CONCEPT_ORDER as readonly string[]).includes(figure.concept) &&
+      !unknown.includes(figure.concept)
+    ) {
+      unknown.push(figure.concept);
+    }
+  }
+
+  return [...known, ...unknown];
+}
+
+export function supplyModel(supply: SupplyView): SupplyModel {
+  const present = conceptsPresent(supply);
 
   const rows = present
     .map((concept) => rowFor(supply, concept))
@@ -275,22 +358,6 @@ export function supplyModel(supply: SupplyView): SupplyModel {
     figures: figuresOf(supply, concept),
     comparisons: comparisonsOf(supply, concept),
   }));
-
-  // Any concept the corpus carries that this module's order does not
-  // name still gets a group: an unknown quantity must not vanish
-  // because a constant here was written before it existed.
-  for (const figure of supply.figures) {
-    if (!present.includes(figure.concept as (typeof CONCEPT_ORDER)[number])) {
-      if (!groups.some((group) => group.concept === figure.concept)) {
-        groups.push({
-          concept: figure.concept,
-          label: figure.conceptStated,
-          figures: figuresOf(supply, figure.concept),
-          comparisons: comparisonsOf(supply, figure.concept),
-        });
-      }
-    }
-  }
 
   return {
     rows,

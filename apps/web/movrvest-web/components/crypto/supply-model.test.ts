@@ -39,7 +39,7 @@ function figure(
 }
 
 function comparison(
-  verdict: string,
+  verdict: "corroborated" | "conflicted" | "coexist",
   verdictStated: string,
   leftConcept: string,
   rightConcept: string,
@@ -99,7 +99,13 @@ function hype(): SupplyView {
         comparison("corroborated", "Agree", "max_supply", "max_supply"),
       ),
     ],
-    unresolved: ["Circulating supply cannot be stated as a single figure."],
+    unresolved: [
+      {
+        stated:
+          "The exclusion set behind CoinGecko is not published, so this platform cannot say whether it counts the same tokens as anyone else's.",
+        concept: "circulating_estimate",
+      },
+    ],
   });
 }
 
@@ -199,6 +205,69 @@ describe("settlement keys on the typed verdict", () => {
     expect(
       model.rows.find((row) => row.concept === "max_supply")?.unsettledKind,
     ).toBeNull();
+  });
+
+  it("requires the complete comparison graph before claiming alignment", () => {
+    // Three reports, only one pair examined. Saying "3 reports align"
+    // would recruit the third into an agreement nobody tested and
+    // present its figure as corroborated on the strength of the other
+    // two. C(3,2) = 3 pairs are required.
+    const partial = supply({
+      figures: [
+        figure("max_supply", "Protocol maximum", "A", "21m"),
+        figure("max_supply", "Protocol maximum", "B", "21m"),
+        figure("max_supply", "Protocol maximum", "C", "21m"),
+      ],
+      comparisons: [
+        comparison("corroborated", "Agree", "max_supply", "max_supply"),
+      ],
+    });
+
+    const row = supplyModel(partial).rows[0];
+
+    expect(row.unsettledKind).toBe("incomplete");
+    expect(row.stated).toBeNull();
+    expect(row.status).toBe("1 of 3 pairs compared");
+    expect(row.because).toContain("were not compared");
+  });
+
+  it("claims alignment once every pair is examined and agrees", () => {
+    const complete = supply({
+      figures: [
+        figure("max_supply", "Protocol maximum", "A", "21m"),
+        figure("max_supply", "Protocol maximum", "B", "21m"),
+        figure("max_supply", "Protocol maximum", "C", "21m"),
+      ],
+      comparisons: Array.from({ length: 3 }, () =>
+        comparison("corroborated", "Agree", "max_supply", "max_supply"),
+      ),
+    });
+
+    const row = supplyModel(complete).rows[0];
+
+    expect(row.unsettledKind).toBeNull();
+    expect(row.status).toBe("3 reports align");
+    expect(row.stated).toBe("21m");
+  });
+
+  it("an incomplete graph is not a disagreement", () => {
+    const partial = supply({
+      figures: [
+        figure("max_supply", "Protocol maximum", "A", "21m"),
+        figure("max_supply", "Protocol maximum", "B", "21m"),
+        figure("max_supply", "Protocol maximum", "C", "21m"),
+      ],
+      comparisons: [
+        comparison("corroborated", "Agree", "max_supply", "max_supply"),
+      ],
+    });
+
+    const model = supplyModel(partial);
+
+    // It still cannot be presented as one figure, so it is named — but
+    // never as sources disagreeing.
+    expect(model.unsettled).toHaveLength(1);
+    expect(JSON.stringify(model.unsettled)).not.toMatch(/conflict|disagree/i);
   });
 
   it("presents a lone report as exactly that", () => {
@@ -323,16 +392,29 @@ describe("grouping", () => {
     ]);
   });
 
-  it("surfaces a concept this module's order does not name", () => {
+  it("surfaces a concept this module's order does not name — in the summary too", () => {
     // A quantity added to the corpus after this constant was written
-    // must not vanish because it is unlisted.
+    // must not vanish, and must not appear only in the source detail:
+    // evidence never falls out of the *answer* because a frontend
+    // constant predates it.
     const exotic = supply({
-      figures: [figure("staked_balance", "Staked balance", "Chain", "5m")],
+      figures: [
+        figure("max_supply", "Protocol maximum", "A", "21m"),
+        figure("staked_balance", "Staked balance", "Chain", "5m"),
+      ],
     });
 
     const model = supplyModel(exotic);
 
     expect(model.groups.map((group) => group.concept)).toContain("staked_balance");
+    expect(model.rows.map((row) => row.concept)).toContain("staked_balance");
+
+    // Known concepts keep their preferred order; the unknown one is
+    // appended in served order rather than interleaved.
+    expect(model.rows.map((row) => row.concept)).toEqual([
+      "max_supply",
+      "staked_balance",
+    ]);
   });
 });
 
@@ -346,12 +428,21 @@ describe("the unsettled panel", () => {
     expect(stated).toContain("Circulating supply is not settled.");
     expect(stated).toContain("Emitted supply is not settled.");
 
+    // Where the backend owns an account of the quantity, that account
+    // *is* the consequence; where it does not, this layer states its
+    // own. Either way there is exactly one per concept.
     const circulating = model.unsettled.find((item) =>
       item.stated.startsWith("Circulating"),
     );
 
-    expect(circulating?.consequence).toBe(
-      "MOVRvest therefore does not present one circulating supply figure.",
+    expect(circulating?.consequence).toContain("The exclusion set behind");
+
+    const emitted = model.unsettled.find((item) =>
+      item.stated.startsWith("Emitted"),
+    );
+
+    expect(emitted?.consequence).toBe(
+      "MOVRvest therefore does not present one emitted supply figure.",
     );
   });
 
@@ -370,12 +461,50 @@ describe("the unsettled panel", () => {
     }
   });
 
-  it("carries the backend's own unresolved sentences verbatim", () => {
+  it("gives one canonical statement per unsettled concept", () => {
+    // Two accounts of circulating supply used to stand side by side —
+    // this layer's "not settled" and the backend's exclusion-set
+    // sentence — and an investor counted the problem twice. The
+    // backend's account is folded in **by its typed concept**, never by
+    // comparing sentences, and becomes the row's reason.
     const model = supplyModel(hype());
-
-    expect(model.unsettled.map((item) => item.stated)).toContain(
-      "Circulating supply cannot be stated as a single figure.",
+    const circulating = model.unsettled.filter((item) =>
+      item.stated.startsWith("Circulating"),
     );
+
+    expect(circulating).toHaveLength(1);
+    expect(circulating[0].consequence).toContain("The exclusion set behind");
+
+    // ...and the original wording is not lost.
+    expect(JSON.stringify(model.unsettled)).toContain(
+      "cannot say whether it counts the same tokens",
+    );
+
+    // The load-bearing half: the backend's account appears **only** as
+    // that row's reason, never as a second entry beside it. Filtering
+    // on "Circulating" alone missed this, because the backend's
+    // sentence opens with "The exclusion set behind".
+    expect(model.unsettled).toHaveLength(2); // emitted + circulating
+    expect(
+      model.unsettled.filter((item) =>
+        item.stated.includes("The exclusion set behind"),
+      ),
+    ).toHaveLength(0);
+  });
+
+  it("keeps a whole-picture gap as its own entry", () => {
+    const model = supplyModel(
+      supply({
+        figures: [figure("max_supply", "Protocol maximum", "A", "21m")],
+        unresolved: [
+          { stated: "No chain reading for BTC.", concept: null },
+        ],
+      }),
+    );
+
+    expect(model.unsettled.map((item) => item.stated)).toEqual([
+      "No chain reading for BTC.",
+    ]);
   });
 
   it("is empty where everything is settled", () => {

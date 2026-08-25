@@ -676,6 +676,18 @@ class SupplyComparisonResponse(BaseModel):
     because: str
 
 
+class UnresolvedSupplyResponse(BaseModel):
+    """One unsettled thing, and the quantity it is about.
+
+    `concept` is null where the gap concerns the whole picture rather
+    than one quantity, so a surface can fold an account of circulating
+    supply into that row instead of printing it a second time beside it.
+    """
+
+    stated: str
+    concept: str | None
+
+
 class SupplyPictureResponse(BaseModel):
     """A token's supply, read as a vocabulary rather than as one number.
 
@@ -694,7 +706,7 @@ class SupplyPictureResponse(BaseModel):
     methodology_disagreement: bool
 
     #: What is still missing, named rather than left blank.
-    unresolved: list[str]
+    unresolved: list[UnresolvedSupplyResponse]
 
     unavailable_because: str | None
 

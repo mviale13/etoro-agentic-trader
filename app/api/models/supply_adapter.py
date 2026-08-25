@@ -17,6 +17,7 @@ from app.api.models.dossier import (
     SupplyComparisonResponse,
     SupplyFigureResponse,
     SupplyPictureResponse,
+    UnresolvedSupplyResponse,
 )
 from app.domain.provenance import Provenance
 from app.domain.supply_semantics import (
@@ -49,7 +50,13 @@ def supply_response(picture: SupplyPicture | None) -> SupplyPictureResponse | No
         figures=figures,
         comparisons=[_comparison(item) for item in picture.comparisons],
         methodology_disagreement=picture.has_methodology_disagreement,
-        unresolved=list(picture.unresolved),
+        unresolved=[
+            UnresolvedSupplyResponse(
+                stated=item.stated,
+                concept=item.concept.value if item.concept else None,
+            )
+            for item in picture.unresolved
+        ],
         unavailable_because=picture.unavailable_because,
     )
 

@@ -174,13 +174,21 @@ export function TokenSupply({ supply }: { supply: SupplyView }) {
       {/* Summary wide, unsettled narrow — and the summary is written
           first, so the single mobile column keeps that priority. */}
       <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <div className={`${PANEL} px-5 py-3`}>
-          <dl className="divide-y divide-slate-100">
+        {/* The summary panel was anonymous: the code named this section
+            and the page did not. The heading is the authority boundary
+            in four words — "can say", never "knows", because what is
+            held here is provider claims. */}
+        <section aria-labelledby="supply-can-say" className={`${PANEL} px-5 py-4`}>
+          <h3 id="supply-can-say" className={HEAD}>
+            What MOVRvest can say
+          </h3>
+
+          <dl className="mt-2 divide-y divide-slate-100">
             {model.rows.map((row) => (
               <SummaryRow key={row.concept} row={row} />
             ))}
           </dl>
-        </div>
+        </section>
 
         {model.unsettled.length > 0 ? (
           <section

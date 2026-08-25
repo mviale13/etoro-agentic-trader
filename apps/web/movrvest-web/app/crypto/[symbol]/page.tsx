@@ -2159,7 +2159,9 @@ function Gaps({ dossier }: { dossier: CryptoDossier }) {
     .map((cell) => `${cell.name}: ${cell.postureStated}`);
 
   const conflicts = [
-    ...(dossier.supply?.unresolved ?? []),
+    // The unresolved carrier is typed now; this surface wants the
+    // sentences.
+    ...(dossier.supply?.unresolved ?? []).map((item) => item.stated),
     ...(dossier.intelligence?.conflicting ?? []),
   ];
 
