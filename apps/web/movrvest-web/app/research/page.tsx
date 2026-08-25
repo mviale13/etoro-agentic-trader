@@ -9,6 +9,7 @@ import {
 
 import { DecisionCard } from "@/components/decisions/DecisionCard";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { getResearchPipeline } from "@/lib/api/research";
@@ -389,7 +390,7 @@ export default async function ResearchPage() {
 
   return (
     <DashboardLayout>
-      <main className="mx-auto w-[90%] max-w-[1700px] py-10">
+      <PageMain>
         <PageIntegrity
           status={pipeline ? "partial" : "placeholder"}
           endpoint={pipeline ? "/research/candidates" : undefined}
@@ -573,7 +574,7 @@ export default async function ResearchPage() {
             </div>
           </div>
         </section>
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }

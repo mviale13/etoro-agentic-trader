@@ -4,6 +4,7 @@ import {
   getStrategyReadiness,
 } from "@/lib/strategy-api";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 
@@ -24,7 +25,7 @@ export default async function StrategyPage() {
           description="Backend unreachable. Nothing is shown in its place."
         />
 
-        <main className="mx-auto w-full max-w-4xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+        <PageMain>
           <section className="rounded-[28px] border border-amber-200 bg-amber-50 px-8 py-10">
             <h1 className="text-3xl font-semibold tracking-[-0.035em] text-amber-950">
               The backend is unreachable
@@ -47,7 +48,7 @@ export default async function StrategyPage() {
               </details>
             ) : null}
           </section>
-        </main>
+        </PageMain>
       </DashboardLayout>
     );
   }
@@ -60,7 +61,7 @@ export default async function StrategyPage() {
         description="The investment policy is read from and written to the backend."
       />
 
-      <main className="mx-auto w-full max-w-4xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <PageMain>
         <div className="mb-8">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-semibold tracking-[-0.035em] text-slate-950">
@@ -110,7 +111,7 @@ export default async function StrategyPage() {
         <InvestmentPolicyForm
           initialStrategy={strategy}
         />
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }

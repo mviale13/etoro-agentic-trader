@@ -11,6 +11,7 @@ import {
 
 import { ExecutiveNarrative } from "@/components/executive/ExecutiveNarrative";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { redirect } from "next/navigation";
@@ -170,7 +171,7 @@ export default async function DossierPage({
         }
       />
 
-      <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <PageMain>
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-950"
@@ -189,7 +190,7 @@ export default async function DossierPage({
         ) : (
           <Unavailable backendUrl={result.backendUrl} error={result.error} />
         )}
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }

@@ -88,7 +88,7 @@ export function InvestmentPolicyForm({
           Investor profile
         </h2>
 
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-4 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           <label>
             Name
             <input
@@ -181,7 +181,7 @@ export function InvestmentPolicyForm({
           Objectives
         </h2>
 
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-4 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           <label className="md:col-span-2">
             Primary goal
             <textarea
@@ -291,7 +291,7 @@ export function InvestmentPolicyForm({
           Portfolio limits
         </h2>
 
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-4 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           <label>
             Target cash allocation %
             <input

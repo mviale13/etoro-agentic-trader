@@ -1,6 +1,7 @@
 import { Database, History, Scale, Timer } from "lucide-react";
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PageMain } from "@/components/layout/PageMain";
 import { PageIntegrity } from "@/components/system-integrity/PageIntegrity";
 import { StatusPill } from "@/components/ui/StatusPill";
 import {
@@ -248,7 +249,7 @@ export default async function TrackRecordPage() {
         }
       />
 
-      <main className="mx-auto w-full max-w-[1600px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <PageMain>
         <header className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -308,7 +309,7 @@ export default async function TrackRecordPage() {
             </details>
           </section>
         )}
-      </main>
+      </PageMain>
     </DashboardLayout>
   );
 }

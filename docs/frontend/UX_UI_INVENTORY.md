@@ -393,3 +393,51 @@ that very date
 - Rendered-page verification: VOW3.DE shows the three 9 August moves
   with *"Business quality could no longer be measured (it was 62)"*, and
   JPM — which never changed — keeps its honest "Stable".
+
+### One page container, fluid — `PageMain`
+
+Raised from product use, twice: the token-supply answer read as a
+narrow column on a 1,990px display. It was not the tokenomics view's
+fault. The app carried **four different answers to the width question
+across ten containers** — `max-w-[1600px]` on five pages,
+`w-[90%] max-w-[1700px]` on Research, `max-w-5xl` (1,024px) on the
+crypto dossier, `max-w-4xl` (896px) on Investor Policy, and
+`max-w-6xl` inside `WorkspacePlaceholder` — so the same screen
+rendered a crypto dossier at 944px of content and the portfolio beside
+it at 1,520px.
+
+`components/layout/PageMain.tsx` is now the only one. Measured on a
+1,990px viewport:
+
+| surface | before | after |
+|---|---|---|
+| `/crypto/[symbol]` | 944px — **47% of the display** | 1,607px — **81%** |
+| `/strategy` | 816px | 1,607px |
+| Brain, Settings | 1,072px | 1,607px |
+| `/research` | 1,560px | 1,607px |
+| home, portfolio, markets, dossiers, track-record | 1,520px | 1,607px |
+
+**Fluid means gutters, not a percentage.** `w-[90%]` grows its own
+margins with the display — which is why Research, the one page already
+written in the percentage idiom, rendered *narrower* than the
+fixed-1,600px pages on a wide screen. Constant padding spends every
+pixel the navigation leaves on content. The single `max-w-[2400px]` is
+an ultrawide guard, not a layout width: it engages past roughly a
+2,700px viewport, so 1,440px, 1,990px and 2,560px are all entirely
+fluid.
+
+**Widening a container is safe only because prose caps itself.**
+Reading measure lives on the content — `max-w-2xl` and its siblings
+appear 16 times in the crypto dossier alone — so no paragraph became a
+200-character line. Where content had no natural measure the fix was to
+show *more*, not *wider*: the policy form's three grids take a third
+column past `2xl`, and Investor Policy went from two sections visible
+to three while its inputs got **narrower**, 780px → 520px.
+
+**The lesson the slice earned: a guard that only watches where the last
+stray was found is not a guard.** The first source guard walked `app/`
+and passed — while `WorkspacePlaceholder`, a *component*, held a tenth
+`<main>` that Brain and Settings both rendered through. Widened to walk
+`components/` too, and mutation-checked three ways: a page reclaiming
+its own `<main>`, a component doing the same, and the container
+reverting to a fixed 1,600px. All three fail the suite.
