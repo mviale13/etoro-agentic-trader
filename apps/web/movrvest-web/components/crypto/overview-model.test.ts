@@ -24,6 +24,13 @@ import {
 function dossier(overrides: Record<string, unknown> = {}): CryptoDossier {
   const base = {
     symbol: "HYPE",
+    researchPlan: {
+      asksForCapital: false,
+      requirements: [],
+      absentBecause: "No decision-critical evidence is currently open.",
+      reconsideration:
+        "When decision-critical evidence changes, MOVRvest can reconsider the case.",
+    },
     brief: {
       course: "INVESTIGATE",
       courseMeans: "No capital action is suggested.",
@@ -48,15 +55,6 @@ function dossier(overrides: Record<string, unknown> = {}): CryptoDossier {
         },
       ],
       blocksProgressAbsent: null,
-      wouldChangeView: [
-        {
-          stated: "Whether the fee economy holds up",
-          owner: "Intelligence",
-          qualification: null,
-          support: "the next daily fee and holder-revenue reading",
-        },
-      ],
-      wouldChangeViewAbsent: null,
       withheld: [{ block: "blocks_progress", count: 2 }],
       boundary:
         "No digital asset can currently progress past INVESTIGATE: this platform judges an investment case on business quality and valuation.",
@@ -462,10 +460,12 @@ describe("the CIO brief", () => {
   it("passes the backend's blocks through in order, adding only headings", () => {
     const blocks = briefBlocks(dossier().brief);
 
+    // One block: *what would change the view* was measured out (no
+    // watch item resolves any blocker) and *what blocks progress*
+    // moved to the research plan, which owns a blocker beside what
+    // would settle it.
     expect(blocks.map((block) => block.title)).toEqual([
-      "Current view",
-      "What blocks progress",
-      "What would change the view",
+      "Why it is worth researching",
     ]);
 
     expect(blocks[0].lines[0].stated).toBe(
@@ -473,19 +473,29 @@ describe("the CIO brief", () => {
     );
   });
 
-  it("carries the owner and the qualification with every line", () => {
-    const [view, blocked] = briefBlocks(dossier().brief);
+  it("carries the owner with every line", () => {
+    const [view] = briefBlocks(dossier().brief);
 
     expect(view.lines[0].owner).toBe("Intelligence");
-    expect(blocked.lines[0].owner).toBe("Supply Governance Committee");
-    expect(blocked.lines[0].qualification).toContain("what this platform has read");
+  });
+
+  it("justifies attention and never authorises a purchase", () => {
+    const [view] = briefBlocks(dossier().brief);
+    const prose = view.lines.map((line) => line.stated).join(" ").toLowerCase();
+
+    for (const claim of ["buy", "recommend", "undervalued", "should own"]) {
+      expect(prose).not.toContain(claim);
+    }
   });
 
   it("reports what a capped block holds back", () => {
-    const blocks = briefBlocks(dossier().brief);
+    const bare = dossier();
+    const [view] = briefBlocks({
+      ...bare.brief,
+      withheld: [{ block: "current_view", count: 4 }],
+    });
 
-    expect(blocks[1].withheld).toBe(2);
-    expect(blocks[0].withheld).toBe(0);
+    expect(view.withheld).toBe(4);
   });
 
   it("renders a stated absence rather than an empty block", () => {

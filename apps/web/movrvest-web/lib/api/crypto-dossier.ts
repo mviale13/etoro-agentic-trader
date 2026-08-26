@@ -1510,18 +1510,48 @@ export interface BriefView {
   setupAbsent: string | null;
   currentView: readonly BriefLineView[];
   currentViewAbsent: string | null;
-  blocksProgress: readonly BriefLineView[];
-  blocksProgressAbsent: string | null;
-  wouldChangeView: readonly BriefLineView[];
-  wouldChangeViewAbsent: string | null;
   withheld: readonly { block: string; count: number }[];
   boundary: string;
+}
+
+/**
+ * One decision-critical blocker and the truthful next step for it.
+ *
+ * `nextStepKind` is what MOVRvest can *do*, and it is deliberately not
+ * a grade: `notCurrentlyResolvable` is a statement about this platform,
+ * never about the asset. There is no score, no progress figure and no
+ * completeness percentage anywhere in this shape — the plan is closed
+ * by construction rather than by measurement.
+ */
+export interface ResearchRequirementView {
+  blocker: string;
+  blockerStated: string;
+  whatIsMissing: string;
+  whyItMatters: string;
+  resolutionNeeded: string;
+  nextStepKind: string;
+  nextStepKindStated: string;
+  nextStepStated: string;
+  retryable: boolean;
+  destination: string | null;
+}
+
+export interface ResearchPlanView {
+  /** False exactly when the course asks for no capital action. */
+  asksForCapital: boolean;
+  requirements: readonly ResearchRequirementView[];
+  absentBecause: string | null;
+  /** What resolving a requirement licenses — reconsideration, and
+      never a recommendation. Rendered verbatim. */
+  reconsideration: string;
 }
 
 export interface CryptoDossier {
   symbol: string;
   /** What the investor is being told and why — the Overview's spine. */
   brief: BriefView;
+  /** What stands between INVESTIGATE and a capital decision. */
+  researchPlan: ResearchPlanView;
   decision: DecisionView;
   identity: CryptoIdentity;
   protocol: ProtocolView | null;
@@ -1579,22 +1609,6 @@ function parseBrief(record: UnknownRecord): BriefView {
       record.current_view_absent,
       "brief.current_view_absent",
     ),
-    blocksProgress: parseBriefLines(
-      record.blocks_progress,
-      "brief.blocks_progress",
-    ),
-    blocksProgressAbsent: optionalString(
-      record.blocks_progress_absent,
-      "brief.blocks_progress_absent",
-    ),
-    wouldChangeView: parseBriefLines(
-      record.would_change_view,
-      "brief.would_change_view",
-    ),
-    wouldChangeViewAbsent: optionalString(
-      record.would_change_view_absent,
-      "brief.would_change_view_absent",
-    ),
     withheld: recordList(record.withheld, "brief.withheld").map(
       (item, index) => ({
         block: requireString(item.block, `brief.withheld[${index}].block`),
@@ -1602,6 +1616,48 @@ function parseBrief(record: UnknownRecord): BriefView {
       }),
     ),
     boundary: requireString(record.boundary, "brief.boundary"),
+  };
+}
+
+function parseResearchPlan(record: UnknownRecord): ResearchPlanView {
+  return {
+    asksForCapital: requireBoolean(
+      record.asks_for_capital,
+      "research_plan.asks_for_capital",
+    ),
+    requirements: recordList(
+      record.requirements,
+      "research_plan.requirements",
+    ).map((item, index) => {
+      const at = `research_plan.requirements[${index}]`;
+
+      return {
+        blocker: requireString(item.blocker, `${at}.blocker`),
+        blockerStated: requireString(item.blocker_stated, `${at}.blocker_stated`),
+        whatIsMissing: requireString(item.what_is_missing, `${at}.what_is_missing`),
+        whyItMatters: requireString(item.why_it_matters, `${at}.why_it_matters`),
+        resolutionNeeded: requireString(
+          item.resolution_needed,
+          `${at}.resolution_needed`,
+        ),
+        nextStepKind: requireString(item.next_step_kind, `${at}.next_step_kind`),
+        nextStepKindStated: requireString(
+          item.next_step_kind_stated,
+          `${at}.next_step_kind_stated`,
+        ),
+        nextStepStated: requireString(item.next_step_stated, `${at}.next_step_stated`),
+        retryable: requireBoolean(item.retryable, `${at}.retryable`),
+        destination: optionalString(item.destination, `${at}.destination`),
+      };
+    }),
+    absentBecause: optionalString(
+      record.absent_because,
+      "research_plan.absent_because",
+    ),
+    reconsideration: requireString(
+      record.reconsideration,
+      "research_plan.reconsideration",
+    ),
   };
 }
 
@@ -1640,6 +1696,9 @@ function parseDossier(payload: unknown): CryptoDossier {
   return {
     symbol: requireString(record.symbol, "symbol"),
     brief: parseBrief(requireRecord(record.brief, "brief")),
+    researchPlan: parseResearchPlan(
+      requireRecord(record.research_plan, "research_plan"),
+    ),
     decision: parseDecision(requireRecord(record.decision, "decision")),
     identity: parseIdentity(requireRecord(record.playbook, "playbook")),
     protocol: optionalSection(record.protocol, "protocol", (value) => ({

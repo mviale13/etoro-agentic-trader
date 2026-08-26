@@ -16,10 +16,22 @@ twice, the conclusion read as a statement about the platform
 established by this platform"*), and the three summary widgets carried
 equal weight while carrying very unequal density.
 
-This layer answers the investor's three questions in the order they are
-asked — **what is the current view, what blocks progress, what would
-change it** — and supplies the one-line setup the hero states beneath
-the course.
+This layer answers **why the asset is worth researching at all** and
+supplies the one-line
+setup the hero states beneath the course. *What would change the view*
+was measured out of it: **not one watch item in the corpus resolves any
+blocker** (7 blockers, 10 watch items, 0 connections), because a
+blocker's refs are source names and committee keys while a watch item's
+are metric refs. The research plan answers that question from the
+blocker instead, and watch items stay where they belong, as contextual
+evidence under Developments.
+
+**What blocks capital moved out.** The blockers were listed here *and*
+in the research plan, which names each one's resolution — the same kind
+of information under two owners, and the plan is the only one of the
+two that renders a blocker with what would settle it. The blocking side
+is still derived here, because the setup sentence is built from it; it
+is no longer carried as a field.
 
 **It composes and it never authors.** Every sentence here is quoted
 from the layer that owns it: a `Driver` from the intelligence snapshot,
@@ -212,12 +224,6 @@ class CryptoInvestorBrief:
     current_view: tuple[BriefLine, ...] = ()
     current_view_absent: str | None = None
 
-    blocks_progress: tuple[BriefLine, ...] = ()
-    blocks_progress_absent: str | None = None
-
-    would_change_view: tuple[BriefLine, ...] = ()
-    would_change_view_absent: str | None = None
-
     #: How many findings each block is holding back, so a capped list
     #: never reads as a complete one.
     withheld: tuple[tuple[str, int], ...] = ()
@@ -236,10 +242,6 @@ class CryptoInvestorBrief:
             "setup_absent": self.setup_absent,
             "current_view": [line.as_dict() for line in self.current_view],
             "current_view_absent": self.current_view_absent,
-            "blocks_progress": [line.as_dict() for line in self.blocks_progress],
-            "blocks_progress_absent": self.blocks_progress_absent,
-            "would_change_view": [line.as_dict() for line in self.would_change_view],
-            "would_change_view_absent": self.would_change_view_absent,
             "withheld": [
                 {"block": block, "count": count} for block, count in self.withheld
             ],
@@ -318,35 +320,6 @@ def _blocks_progress(
                     support=driver.support.stated,
                 )
             )
-
-    return lines[:BLOCK_LIMIT], max(0, len(lines) - BLOCK_LIMIT)
-
-
-def _would_change_view(
-    snapshot: CryptoIntelligenceSnapshot | None,
-) -> tuple[list[BriefLine], int]:
-    """What would move this, and how anyone would tell.
-
-    Only the intelligence layer's watch items qualify. A watch item
-    cannot be constructed without evidence beneath it and it names what
-    would settle it, which is exactly the contract this block needs —
-    and it is why nothing here is invented from the blockers. *"Establish
-    the issuance rule"* would be this layer inventing a research task,
-    and a research task is not a thing an investor can watch for.
-    """
-
-    if snapshot is None:
-        return [], 0
-
-    lines = [
-        BriefLine(
-            stated=item.stated.rstrip("."),
-            owner="Intelligence",
-            qualification=None,
-            support=item.measured_by,
-        )
-        for item in snapshot.watch_next
-    ]
 
     return lines[:BLOCK_LIMIT], max(0, len(lines) - BLOCK_LIMIT)
 
@@ -447,19 +420,12 @@ def brief_for(
     """Compose the Overview's brief from evidence that already has words."""
 
     view, view_withheld = _current_view(snapshot)
-    blocked, blocked_withheld = _blocks_progress(decision, snapshot)
-    changing, changing_withheld = _would_change_view(snapshot)
+    blocked, _ = _blocks_progress(decision, snapshot)
 
     setup, setup_absent = _setup(view, blocked)
 
     withheld = tuple(
-        (block, count)
-        for block, count in (
-            ("current_view", view_withheld),
-            ("blocks_progress", blocked_withheld),
-            ("would_change_view", changing_withheld),
-        )
-        if count
+        (block, count) for block, count in (("current_view", view_withheld),) if count
     )
 
     return CryptoInvestorBrief(
@@ -476,21 +442,6 @@ def brief_for(
         else (
             "No driver is currently held for this asset. Nothing is "
             "asserted about what is moving it."
-        ),
-        blocks_progress=tuple(blocked),
-        blocks_progress_absent=None
-        if blocked
-        else (
-            "No committee question is open and no material uncertainty is "
-            "held. The course still rests on the platform boundary below."
-        ),
-        would_change_view=tuple(changing),
-        would_change_view_absent=None
-        if changing
-        else (
-            "Nothing is currently held that this platform could watch for. "
-            "A watch item needs evidence beneath it and a figure that would "
-            "settle it, and neither is available."
         ),
         withheld=withheld,
         boundary=decision.ceiling,
