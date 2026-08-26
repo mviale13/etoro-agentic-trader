@@ -112,6 +112,12 @@ export interface HeroModel {
   setupAbsent: string | null;
   /** Null where no completed cycle could be read at all. */
   exposure: ExposureModel | null;
+  /**
+   * Whether the existing course asks for capital. A reading of that
+   * course and **never a new decision state** — the hero says "Not
+   * ready for capital" only where the course already asks for none.
+   */
+  readyForCapital: boolean;
 }
 
 /** The windows the hero leads with, and the short label each carries. */
@@ -217,6 +223,7 @@ export function heroModel(
     setup: dossier.brief.setup,
     setupAbsent: dossier.brief.setupAbsent,
     exposure: exposureModel(dossier.symbol, portfolio),
+    readyForCapital: dossier.researchPlan.asksForCapital,
   };
 }
 
@@ -298,30 +305,30 @@ export interface BriefBlock {
   withheld: number;
 }
 
+/**
+ * One block, and the two that left are separate lessons.
+ *
+ * *What would change the view* was measured out: not one watch item in
+ * the corpus resolves any blocker, because a blocker's refs are source
+ * names and committee keys while a watch item's are metric refs.
+ *
+ * *What blocks progress* moved to the research plan, which is the only
+ * one of the two that renders a blocker beside what would settle it —
+ * the same kind of information under one owner.
+ *
+ * What is left justifies **attention, not investment**: momentum here
+ * is a market observation and never a thesis.
+ */
 export function briefBlocks(brief: BriefView): readonly BriefBlock[] {
   const withheld = new Map(brief.withheld.map((item) => [item.block, item.count]));
 
   return [
     {
       id: "current_view",
-      title: "Current view",
+      title: "Why it is worth researching",
       lines: brief.currentView,
       absent: brief.currentViewAbsent,
       withheld: withheld.get("current_view") ?? 0,
-    },
-    {
-      id: "blocks_progress",
-      title: "What blocks progress",
-      lines: brief.blocksProgress,
-      absent: brief.blocksProgressAbsent,
-      withheld: withheld.get("blocks_progress") ?? 0,
-    },
-    {
-      id: "would_change_view",
-      title: "What would change the view",
-      lines: brief.wouldChangeView,
-      absent: brief.wouldChangeViewAbsent,
-      withheld: withheld.get("would_change_view") ?? 0,
     },
   ];
 }

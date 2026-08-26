@@ -13,7 +13,12 @@
 import Link from "next/link";
 
 import { CryptoHeadlinePrice } from "@/components/quote/FreshQuoteRibbon";
-import type { BriefView, CryptoDossier } from "@/lib/api/crypto-dossier";
+import type {
+  BriefView,
+  CryptoDossier,
+  ResearchPlanView,
+  ResearchRequirementView,
+} from "@/lib/api/crypto-dossier";
 import {
   type BriefBlock,
   type CryptoView,
@@ -104,6 +109,15 @@ export function CryptoHero({ hero }: { hero: HeroModel }) {
             <p className="text-sm text-slate-500">— {hero.courseLine}</p>
           ) : null}
         </div>
+
+        {/* Investment readiness, said once and only where the existing
+            course asks for no capital. It is a reading of that course,
+            not a new decision state — nothing here decides anything. */}
+        {hero.readyForCapital === false ? (
+          <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Not ready for capital
+          </p>
+        ) : null}
 
         {/* One sentence: what holds up, set against what is not
             established. Composed by the CIO layer from quoted findings.
@@ -230,15 +244,19 @@ function BriefColumn({ blocks }: { blocks: readonly BriefBlock[] }) {
   return (
     <section aria-labelledby="crypto-brief" className={CARD}>
       <h2 id="crypto-brief" className={CARD_HEAD}>
-        MOVRvest brief
+        Why this asset is worth researching
       </h2>
 
       <div className="mt-1 divide-y divide-slate-100">
         {blocks.map((block) => (
           <div key={block.id} className="py-3.5">
-            <h3 className="text-sm font-semibold text-slate-950">
-              {block.title}
-            </h3>
+            {/* A single block repeats the section heading, so it does
+                not print one. Restored the moment a second appears. */}
+            {blocks.length > 1 ? (
+              <h3 className="text-sm font-semibold text-slate-950">
+                {block.title}
+              </h3>
+            ) : null}
 
             {block.lines.length > 0 ? (
               <ul className="mt-2 space-y-3">
@@ -521,17 +539,20 @@ export function CryptoDevelopments({ dossier }: { dossier: CryptoDossier }) {
 export function CryptoOverviewView({
   dossier,
   brief,
+  plan,
 }: {
   dossier: CryptoDossier;
   brief: BriefView;
+  plan: ResearchPlanView;
 }) {
   return (
     <div className="mt-6 space-y-3 sm:space-y-4">
       <CryptoMarketSetup dossier={dossier} />
 
       <div className="grid items-start gap-3 sm:gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="space-y-3 sm:space-y-4 lg:col-span-2">
           <BriefColumn blocks={briefBlocks(brief)} />
+          <ResearchPlan plan={plan} symbol={dossier.symbol} />
         </div>
 
         <div className="space-y-3 sm:space-y-4">
@@ -539,40 +560,144 @@ export function CryptoOverviewView({
           <CryptoKeyFacts dossier={dossier} />
         </div>
       </div>
-
-      <ProveIt symbol={dossier.symbol} />
     </div>
   );
 }
 
 /**
- * Where the evidence is, once the situation has been explained.
+ * What stands between this course and a capital decision.
  *
- * Plain links rather than a card: the sixteen-row facts block was the
- * page's largest element and most of it belongs to Economics and
- * Tokenomics. Nothing was deleted, so the Overview says where it went.
+ * One row per decision-critical blocker, and **exactly one** — the
+ * one-to-one rule is the whole point, and it was broken before this
+ * existed: HYPE showed a fee-economy watch item beside three unrelated
+ * supply blockers, none of which it could resolve.
+ *
+ * A table rather than a card each, because the redesign's compactness
+ * is a constraint and four cards would undo it. The evidence detail
+ * expands; the plan itself does not.
  */
-function ProveIt({ symbol }: { symbol: string }) {
-  const links: readonly { view: CryptoView; stated: string }[] = [
-    { view: "economics", stated: "All protocol and market metrics" },
-    { view: "tokenomics", stated: "Supply, issuance and source comparisons" },
-    { view: "evidence", stated: "Committees, questions and why MOVRvest stops here" },
-  ];
-
+function ResearchPlan({
+  plan,
+  symbol,
+}: {
+  plan: ResearchPlanView;
+  symbol: string;
+}) {
   return (
-    <nav
-      aria-label="Evidence behind this view"
-      className="flex flex-wrap gap-x-6 gap-y-1 px-1 pt-1"
-    >
-      {links.map((link) => (
-        <Link
-          key={link.view}
-          href={`/crypto/${symbol}?view=${link.view}`}
-          className="text-sm font-semibold text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline"
-        >
-          {link.stated} →
-        </Link>
-      ))}
-    </nav>
+    <section aria-labelledby="crypto-plan" className={CARD}>
+      <h2 id="crypto-plan" className={CARD_HEAD}>
+        What blocks capital, and what would resolve it
+      </h2>
+
+      {plan.requirements.length === 0 ? (
+        <p className="mt-3 text-sm leading-6 text-slate-500">
+          {plan.absentBecause}
+        </p>
+      ) : (
+        <div className="mt-1 divide-y divide-slate-100">
+          {plan.requirements.map((requirement) => (
+            <Requirement
+              key={requirement.blocker}
+              requirement={requirement}
+              symbol={symbol}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Resolving a blocker licenses another look and nothing more.
+          Rendered verbatim so no surface can promise an outcome. */}
+      <p className="mt-4 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
+        {plan.reconsideration}
+      </p>
+    </section>
+  );
+}
+
+function Requirement({
+  requirement,
+  symbol,
+}: {
+  requirement: ResearchRequirementView;
+  symbol: string;
+}) {
+  return (
+    <div className="py-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-sm font-semibold text-slate-950">
+          {requirement.blockerStated}
+        </h3>
+
+        {/* What MOVRvest can do about it. Never colour-coded: neither
+            state is a grade, and "no automatic path" is a statement
+            about this platform rather than about the asset. */}
+        <StandingChip stated={requirement.nextStepKindStated} />
+      </div>
+
+      {/* A divided list, not three columns.
+
+          Three columns inside a 717px column gave each cell ~215px,
+          and a licensed meaning like "a holder of a partly issued
+          token is diluted by a schedule rather than by a decision"
+          wrapped to six lines. One labelled row apiece wraps to one or
+          two, and the requirement reads as a row of a table — which is
+          what it is. */}
+      {/* Missing and Resolution stay open; *why it matters* expands.
+
+          It is the longest row and the least actionable — a licensed
+          meaning runs to two or three lines where the other two run to
+          one — and the brief licenses a requirement expanding for
+          evidence detail. Nothing is dropped: the sentence is in the
+          document, one native disclosure away. */}
+      <dl className="mt-1.5 space-y-1">
+        {(
+          [
+            ["Missing", requirement.whatIsMissing],
+            ["Resolution", requirement.resolutionNeeded],
+          ] as const
+        ).map(([label, value]) => (
+          <div key={label} className="flex flex-wrap gap-x-3">
+            <dt className="w-full shrink-0 text-[11px] font-semibold uppercase leading-4 tracking-wide text-slate-400 sm:w-[86px] sm:leading-5">
+              {label}
+            </dt>
+            <dd className="min-w-0 flex-1 text-sm leading-5 text-slate-700">
+              {value}
+            </dd>
+          </div>
+        ))}
+
+        <div className="flex flex-wrap gap-x-3">
+          <dt className="w-full shrink-0 text-[11px] font-semibold uppercase leading-4 tracking-wide text-slate-400 sm:w-[86px] sm:leading-5">
+            Matters
+          </dt>
+          <dd className="min-w-0 flex-1">
+            <details>
+              <summary className="cursor-pointer text-sm leading-5 text-slate-500">
+                Why this blocks a capital decision
+              </summary>
+
+              <p className="mt-1 text-sm leading-5 text-slate-700">
+                {requirement.whyItMatters}
+              </p>
+            </details>
+          </dd>
+        </div>
+      </dl>
+
+      <p className="mt-1.5 text-xs leading-5 text-slate-500">
+        {requirement.nextStepStated}
+        {requirement.destination ? (
+          <>
+            {" "}
+            <Link
+              href={`/crypto/${symbol}?view=${requirement.destination}`}
+              className="font-semibold text-slate-600 underline-offset-4 hover:text-slate-950 hover:underline"
+            >
+              Inspect the evidence →
+            </Link>
+          </>
+        ) : null}
+      </p>
+    </div>
   );
 }

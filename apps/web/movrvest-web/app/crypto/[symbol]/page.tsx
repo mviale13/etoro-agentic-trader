@@ -259,7 +259,13 @@ function ActiveView({
   // The brief is passed explicitly rather than dug out of the dossier
   // inside the view: it is the Overview's spine, and the composition
   // point is where that should be visible.
-  return <CryptoOverviewView dossier={dossier} brief={dossier.brief} />;
+  return (
+    <CryptoOverviewView
+      dossier={dossier}
+      brief={dossier.brief}
+      plan={dossier.researchPlan}
+    />
+  );
 }
 
 function Heading({ id, children }: { id: string; children: React.ReactNode }) {

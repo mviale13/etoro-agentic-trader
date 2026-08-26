@@ -72,12 +72,50 @@ function brief(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function plan(overrides: Record<string, unknown> = {}) {
+  return {
+    asksForCapital: false,
+    requirements: [
+      {
+        blocker: "supply_governance",
+        blockerStated: "Supply Governance Committee",
+        whatIsMissing: "No mechanical issuance rule is held for this asset.",
+        whyItMatters: "Is this token's new supply created by a mechanical rule?",
+        resolutionNeeded: "An answer to: is this token's new supply mechanical?",
+        nextStepKind: "not_currently_resolvable",
+        nextStepKindStated: "MOVRvest has no automatic path to this today",
+        nextStepStated: "MOVRvest currently has no automatic path to resolve this.",
+        retryable: false,
+        destination: "evidence",
+      },
+      {
+        blocker: "Circulating supply",
+        blockerStated: "Circulating supply",
+        whatIsMissing: "Sources differ on circulating supply.",
+        whyItMatters: "A holder of a partly issued token is diluted by a schedule.",
+        resolutionNeeded: "An exclusion set from the 3 of 4 sources that publish none.",
+        nextStepKind: "not_currently_resolvable",
+        nextStepKindStated: "MOVRvest has no automatic path to this today",
+        nextStepStated:
+          "MOVRvest holds every reading it can and cannot reconcile them: 3 of 4 sources publish no exclusion set.",
+        retryable: false,
+        destination: "tokenomics",
+      },
+    ],
+    absentBecause: null,
+    reconsideration:
+      "When decision-critical evidence changes, MOVRvest can reconsider the case. Resolving a requirement licenses another look; it does not produce a recommendation, a purchase, a capital envelope or a higher conviction.",
+    ...overrides,
+  };
+}
+
 function decisionDossier(
   overrides: Record<string, unknown> = {},
 ): CryptoDossier {
   return {
     symbol: "HYPE",
     brief: brief(),
+    researchPlan: plan(),
     identity: { name: "Exchange network", explanation: "" },
     decision: {
       state: "INVESTIGATE",
@@ -108,7 +146,7 @@ describe("the course", () => {
     const markup = renderToStaticMarkup(
       <>
         <CryptoHero hero={heroModel(decisionDossier(), "Hyperliquid")} />
-        <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />
+        <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />
       </>,
     );
 
@@ -152,7 +190,7 @@ describe("the course", () => {
 describe("the platform boundary", () => {
   it("does not appear on the Overview at all", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
     // It is audit material — a sentence about this platform where the
@@ -164,10 +202,9 @@ describe("the platform boundary", () => {
 
   it("is pointed to, so the reader knows where it went", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
-    expect(markup).toContain("why MOVRvest stops here");
     expect(markup).toContain("view=evidence");
   });
 });
@@ -175,52 +212,35 @@ describe("the platform boundary", () => {
 // ── the brief ───────────────────────────────────────────────────────
 
 describe("the CIO brief", () => {
-  it("renders the three blocks in the investor's order", () => {
+  it("puts why-it-is-worth-researching before what-blocks-capital", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
-    const view = markup.indexOf("Current view");
-    const blocked = markup.indexOf("What blocks progress");
-    const changing = markup.indexOf("What would change the view");
+    const worth = markup.indexOf("Why this asset is worth researching");
+    const blocks = markup.indexOf("What blocks capital");
 
-    expect(view).toBeGreaterThan(-1);
-    expect(blocked).toBeGreaterThan(view);
-    expect(changing).toBeGreaterThan(blocked);
-  });
-
-  it("keeps every qualification with the claim it limits", () => {
-    const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
-    );
-
-    expect(markup).toContain("No issuance rule is held");
-    expect(markup).toContain("That is a statement about what this platform has read.");
+    expect(worth).toBeGreaterThan(-1);
+    expect(blocks).toBeGreaterThan(worth);
   });
 
   it("names the owner of every finding", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
-    expect(markup).toContain("Supply Governance Committee");
-    expect(markup).toContain("Investor assessment");
+    expect(markup).toContain("Intelligence");
   });
 
-  it("says what a capped block holds back rather than truncating silently", () => {
+  it("names a blocker in exactly one place — the plan owns it", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
-    expect(markup).toContain("2 further findings under Evidence.");
-  });
-
-  it("renders a stated absence, never an empty block", () => {
-    const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
-    );
-
-    expect(markup).toContain("Nothing is currently held that could be watched.");
+    // Listed under the brief *and* the plan, "Circulating supply"
+    // rendered twice and the reader met the same blocker under two
+    // headings, only one of which said what would settle it.
+    expect(occurrences(markup, "Circulating supply")).toBe(1);
   });
 });
 
@@ -229,7 +249,7 @@ describe("the CIO brief", () => {
 describe("the Overview layout", () => {
   it("aligns its two columns at the top so neither stretches", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
     // The measured defect: the grid defaulted to `align-items: normal`,
@@ -240,7 +260,7 @@ describe("the Overview layout", () => {
 
   it("gives the investment case the wider column", () => {
     const markup = renderToStaticMarkup(
-      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} />,
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
     );
 
     // Three equal cards gave three findings equal authority they had
@@ -253,6 +273,7 @@ describe("the Overview layout", () => {
     const markup = renderToStaticMarkup(
       <CryptoOverviewView
         brief={brief()}
+        plan={plan()}
         dossier={decisionDossier({
           facts: {
             groups: [
@@ -352,5 +373,112 @@ describe("exposure in the hero", () => {
     );
 
     expect(markup).not.toContain("Your exposure");
+  });
+});
+
+// ── the research plan ───────────────────────────────────────────────
+
+describe("the research plan", () => {
+  it("renders exactly one requirement per blocker, each naming its blocker", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
+    );
+
+    // The one-to-one rule, which was broken before this existed: HYPE
+    // showed a fee-economy watch item beside three unrelated supply
+    // blockers, none of which it could resolve.
+    expect(occurrences(markup, "Supply Governance Committee")).toBe(1);
+    expect(occurrences(markup, "Circulating supply")).toBe(1);
+  });
+
+  it("states what is missing, why it matters and what would resolve it", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
+    );
+
+    expect(markup).toContain("Missing");
+    expect(markup).toContain("Matters");
+    expect(markup).toContain("Resolution");
+    expect(markup).toContain("An exclusion set from the 3 of 4 sources");
+  });
+
+  it("says honestly when MOVRvest cannot act, rather than manufacturing activity", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
+    );
+
+    expect(markup).toContain("no automatic path to resolve this");
+  });
+
+  it("promises reconsideration and never an outcome", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
+    );
+
+    expect(markup).toContain("MOVRvest can reconsider the case");
+
+    for (const promise of [
+      "will recommend",
+      "will monitor",
+      "will research",
+      "will alert",
+    ]) {
+      expect(markup.toLowerCase()).not.toContain(promise);
+    }
+  });
+
+  it("renders no button, because no workflow is reachable from a page", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
+    );
+
+    expect(markup).not.toContain("<button");
+  });
+
+  it("states an absence rather than an empty plan", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView
+        dossier={decisionDossier()}
+        brief={brief()}
+        plan={plan({
+          requirements: [],
+          absentBecause: "No decision-critical evidence is currently open.",
+        })}
+      />,
+    );
+
+    expect(markup).toContain("No decision-critical evidence is currently open.");
+  });
+
+  it("carries no score, count or completeness figure", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoOverviewView dossier={decisionDossier()} brief={brief()} plan={plan()} />,
+    );
+
+    expect(markup).not.toMatch(/\b\d+\s*%\s*(complete|resolved|done)/i);
+    expect(markup.toLowerCase()).not.toContain("progress");
+  });
+});
+
+describe("investment readiness", () => {
+  it("says not ready for capital only where the course asks for none", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoHero hero={heroModel(decisionDossier(), "Hyperliquid")} />,
+    );
+
+    expect(markup).toContain("Not ready for capital");
+  });
+
+  it("says nothing about readiness where the course does ask for capital", () => {
+    const markup = renderToStaticMarkup(
+      <CryptoHero
+        hero={heroModel(
+          decisionDossier({ researchPlan: plan({ asksForCapital: true }) }),
+          "Hyperliquid",
+        )}
+      />,
+    );
+
+    expect(markup).not.toContain("Not ready for capital");
   });
 });

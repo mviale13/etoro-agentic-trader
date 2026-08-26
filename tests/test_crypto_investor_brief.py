@@ -17,6 +17,7 @@ from app.api.models.crypto_brief_adapter import (
     LOWERCASEABLE,
     SETUP_LIMIT,
     BriefLine,
+    _blocks_progress,
     brief_for,
 )
 from app.cio.digital_asset_decision import (
@@ -102,8 +103,8 @@ class TestQuoting:
             ),
         )
 
-        brief = brief_for(_decision(unresolved=(question,)), _snapshot())
-        line = brief.blocks_progress[0]
+        lines, _ = _blocks_progress(_decision(unresolved=(question,)), _snapshot())
+        line = lines[0]
 
         assert line.stated == "No mechanical issuance rule is held for this asset"
         assert line.qualification is not None
@@ -113,7 +114,7 @@ class TestQuoting:
     def test_a_colon_cuts_only_before_a_continuation(self) -> None:
         """Lowercase after the colon is support; a capital is a title."""
 
-        brief = brief_for(
+        brief_for(
             _decision(
                 uncertainties=(
                     "Tokens in existence cannot be stated as a single figure: "
@@ -125,7 +126,18 @@ class TestQuoting:
             _snapshot(),
         )
 
-        cut, kept = brief.blocks_progress[0], brief.blocks_progress[1]
+        lines, _ = _blocks_progress(
+            _decision(
+                uncertainties=(
+                    "Tokens in existence cannot be stated as a single figure: "
+                    "available estimates run from 586.86 million to 955.31 "
+                    "million, a spread of 39%.",
+                    "Supply is unsettled: Hyperliquid Publishes Four Figures",
+                )
+            ),
+            _snapshot(),
+        )
+        cut, kept = lines[0], lines[1]
 
         assert cut.stated == "Tokens in existence cannot be stated as a single figure"
         assert kept.stated == "Supply is unsettled: Hyperliquid Publishes Four Figures"
@@ -258,12 +270,20 @@ class TestBlocks:
         )
 
         assert [line.stated for line in brief.current_view] == ["Fees are rising"]
-        assert [line.stated for line in brief.blocks_progress] == [
-            "A regulator opened a review"
-        ]
+
+        blocked, _ = _blocks_progress(
+            _decision(),
+            _snapshot(
+                drivers=(
+                    _driver("Fees are rising."),
+                    _driver("A regulator opened a review.", Direction.ADVERSE),
+                )
+            ),
+        )
+        assert [line.stated for line in blocked] == ["A regulator opened a review"]
 
     def test_open_questions_come_before_uncertainties(self) -> None:
-        brief = brief_for(
+        brief_for(
             _decision(
                 unresolved=(
                     UnresolvedQuestion(owner="Committee", stated="No rule is held."),
@@ -273,47 +293,38 @@ class TestBlocks:
             _snapshot(),
         )
 
-        assert [line.owner for line in brief.blocks_progress] == [
-            "Committee",
-            "Investor assessment",
-        ]
+        lines, _ = _blocks_progress(
+            _decision(
+                unresolved=(
+                    UnresolvedQuestion(owner="Committee", stated="No rule is held."),
+                ),
+                uncertainties=("Supply cannot be stated.",),
+            ),
+            _snapshot(),
+        )
+        assert [line.owner for line in lines] == ["Committee", "Investor assessment"]
 
     def test_a_capped_block_says_how_many_it_holds_back(self) -> None:
-        brief = brief_for(
+        brief_for(
             _decision(
                 uncertainties=tuple(f"Figure {n} is unsettled." for n in range(5))
             ),
             _snapshot(),
         )
 
-        assert len(brief.blocks_progress) == BLOCK_LIMIT
-        assert dict(brief.withheld)["blocks_progress"] == 5 - BLOCK_LIMIT
+        lines, withheld = _blocks_progress(
+            _decision(
+                uncertainties=tuple(f"Figure {n} is unsettled." for n in range(5))
+            ),
+            _snapshot(),
+        )
+        assert len(lines) == BLOCK_LIMIT
+        assert withheld == 5 - BLOCK_LIMIT
 
     def test_every_empty_block_states_its_absence(self) -> None:
         brief = brief_for(_decision(), _snapshot())
 
         assert brief.current_view_absent is not None
-        assert brief.blocks_progress_absent is not None
-        assert brief.would_change_view_absent is not None
-
-    def test_a_watch_item_carries_what_would_settle_it(self) -> None:
-        brief = brief_for(
-            _decision(),
-            _snapshot(
-                watch=(
-                    WatchItem(
-                        stated="Whether the fee economy holds up.",
-                        measured_by="the next daily fee reading",
-                        because=("ref",),
-                    ),
-                )
-            ),
-        )
-
-        line = brief.would_change_view[0]
-
-        assert line.stated == "Whether the fee economy holds up"
-        assert line.support == "the next daily fee reading"
 
 
 class TestItAuthorsNothing:
@@ -336,31 +347,23 @@ class TestItAuthorsNothing:
             ),
         )
         uncertainties = ("Supply cannot be stated: estimates run wide.",)
-        watch = (
-            WatchItem(
-                stated="Whether the fee economy holds up.",
-                measured_by="the next reading",
-                because=("ref",),
-            ),
-        )
-
         brief = brief_for(
             _decision(unresolved=questions, uncertainties=uncertainties),
-            _snapshot(drivers=drivers, watch=watch),
+            _snapshot(drivers=drivers),
         )
 
         sources = [
             *(driver.stated for driver in drivers),
             *(question.stated for question in questions),
             *uncertainties,
-            *(item.stated for item in watch),
         ]
 
-        lines: list[BriefLine] = [
-            *brief.current_view,
-            *brief.blocks_progress,
-            *brief.would_change_view,
-        ]
+        blocked, _ = _blocks_progress(
+            _decision(unresolved=questions, uncertainties=uncertainties),
+            _snapshot(drivers=drivers),
+        )
+
+        lines: list[BriefLine] = [*brief.current_view, *blocked]
 
         assert lines
 

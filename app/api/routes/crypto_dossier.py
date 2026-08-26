@@ -48,6 +48,7 @@ from app.api.models.crypto_dossier_adapter import (
 )
 from app.api.models.crypto_market_adapter import crypto_market_response
 from app.api.models.crypto_playbook_adapter import crypto_playbook_response
+from app.api.models.crypto_research_plan import research_plan
 from app.api.models.protocol_adapter import protocol_fundamentals_response
 from app.api.models.supply_adapter import supply_response
 from app.domain.asset_class import AssetClass
@@ -143,6 +144,14 @@ async def get_crypto_dossier(
     decision = DigitalAssetDecisionService().decide(asset)
     intelligence = CryptoIntelligenceService().snapshot(asset, asset_class)
 
+    # Resolved once and shared with the research plan below, for the
+    # same reason: two reads would let the plan answer from a different
+    # snapshot than the sections beside it.
+    assessment = InvestorAssessmentService().for_asset(asset)
+    committees = CommitteeMatrixService().for_asset(asset)
+    supply = SupplySemanticsService().established(asset, asset_class)
+    issuance_rule = issuance.rule(asset)
+
     return {
         "symbol": asset,
         # ── what the investor is being told, and why ──
@@ -152,6 +161,14 @@ async def get_crypto_dossier(
         # the hero states beneath the course. Every sentence belongs to
         # the layer that established it (Invariant 10).
         "brief": brief_for(decision, intelligence).as_dict(),
+        # ── what stands between INVESTIGATE and a capital decision ──
+        # One requirement per decision-critical blocker, each naming
+        # what is missing, why it matters, what would resolve it, and
+        # whether MOVRvest can act on it at all. Derived from typed
+        # states only, and it promises nothing.
+        "research_plan": research_plan(
+            decision, assessment, committees, supply, issuance_rule
+        ).as_dict(),
         # ── the Artificial CIO's answer, from judged states only ──
         # A projection of recorded judgments and assessment statements
         # (`digital-asset-gates@1`), serialised by the domain. Nothing
@@ -170,18 +187,16 @@ async def get_crypto_dossier(
         # Serialised by the domain itself: every statement already
         # carries its shape, its licensed meanings with their licensors,
         # and the refusal where no contract established one.
-        "assessment": InvestorAssessmentService().for_asset(asset).as_dict(),
+        "assessment": assessment.as_dict(),
         # ── which questions are asked, and what came of each ──
         "quality": asset_quality_response(
             CryptoAssetQualityService().established(asset, asset_class)
         ),
         # ── what each committee concluded, side by side, combined never ──
-        "committees": CommitteeMatrixService().for_asset(asset).as_dict(),
+        "committees": committees.as_dict(),
         # ── supply, as a vocabulary rather than a number ──
-        "supply": supply_response(
-            SupplySemanticsService().established(asset, asset_class)
-        ),
-        "issuance": issuance_response(issuance.rule(asset)),
+        "supply": supply_response(supply),
+        "issuance": issuance_response(issuance_rule),
         # ── the market it trades in, and its peers ──
         "market": crypto_market_response(
             CryptoMarketService().context(asset, asset_class)
