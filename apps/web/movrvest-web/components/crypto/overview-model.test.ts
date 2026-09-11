@@ -455,7 +455,7 @@ describe("the hero", () => {
   });
 });
 
-// ── the headline price's three states ───────────────────────────────
+// ── the headline price's standings ──────────────────────────────────
 
 describe("the stored headline price", () => {
   function row(overrides: Record<string, unknown> = {}) {
@@ -468,18 +468,18 @@ describe("the stored headline price", () => {
   it("serves the figure the gate served, with its standing and age", () => {
     const stored = storedPrice(row());
 
-    expect(stored?.conflicted).toBe(false);
+    expect(stored?.standing).toBe("established");
     expect(stored?.stated).toBe("$79.14");
     expect(stored?.standingStated).toBe("Established");
     expect(stored?.age).toBe("TokenInsight, received 19 hours ago");
   });
 
-  it("serves a provider claim's figure the same way", () => {
+  it("keeps a provider claim a claim, and never an establishment", () => {
     const stored = storedPrice(
       row({ standing: "claimed", standingStated: "Provider claim" }),
     );
 
-    expect(stored?.conflicted).toBe(false);
+    expect(stored?.standing).toBe("claimed");
     expect(stored?.stated).toBe("$79.14");
     expect(stored?.standingStated).toBe("Provider claim");
   });
@@ -507,14 +507,38 @@ describe("the stored headline price", () => {
       }),
     );
 
-    expect(conflicted?.conflicted).toBe(true);
+    expect(conflicted?.standing).toBe("conflicted");
     expect(conflicted?.standingStated).toBe("Sources conflict");
     expect(conflicted?.because).toBe(
       "credible sources disagree beyond tolerance (10%).",
     );
 
-    expect(absent?.conflicted).toBe(false);
+    expect(absent?.standing).toBe("unserved");
     expect(absent?.because).toBeNull();
+  });
+
+  it("gives the gate's four standings four distinct readings", () => {
+    const standings = [
+      ["established", "established"],
+      ["claimed", "claimed"],
+      ["conflicted", "conflicted"],
+      ["absent", "unserved"],
+    ] as const;
+
+    for (const [wire, expected] of standings) {
+      expect(storedPrice(row({ standing: wire }))?.standing).toBe(expected);
+    }
+  });
+
+  it("fails closed on a standing it does not recognise", () => {
+    // `rejected`, `calculated`, or one added later. An unnamed standing
+    // serves no figure: a figure this side cannot label is one that
+    // borrows whatever authority sits nearest it.
+    for (const unknown of ["rejected", "calculated", "something_new"]) {
+      const stored = storedPrice(row({ standing: unknown }));
+
+      expect(stored?.standing).toBe("unserved");
+    }
   });
 
   it("serves no value for a conflict, even one carrying a figure", () => {
@@ -522,7 +546,7 @@ describe("the stored headline price", () => {
       row({ standing: "conflicted", standingStated: "Sources conflict" }),
     );
 
-    expect(stored?.conflicted).toBe(true);
+    expect(stored?.standing).toBe("conflicted");
     expect(stored?.stated).toBeNull();
   });
 

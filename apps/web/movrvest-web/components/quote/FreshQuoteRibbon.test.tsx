@@ -1,20 +1,28 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import type { StoredPrice } from "./quote-model";
+import type { FreshQuoteView, StoredPrice } from "./quote-model";
 
-import { CryptoHeadlinePrice, StockQuoteRibbon } from "./FreshQuoteRibbon";
+import {
+  CryptoHeadlinePrice,
+  CryptoHeadlinePriceView,
+  StockQuoteRibbon,
+} from "./FreshQuoteRibbon";
 
 /**
- * What the ribbon renders before any poll — which is exactly what the
- * server sends. Effects do not run under `renderToStaticMarkup`, so
- * these pin the no-quote state: the page must be complete and honest
- * with zero quote requests made.
+ * What the crypto headline renders, for every combination of quote and
+ * stored standing that can reach it.
  *
- * The stored fallback has **three** states and the markup must
- * distinguish all three. A conflicted row and an empty store both carry
- * a null figure, and reading the figure alone is what made a refused
- * settlement render as an unreported price.
+ * Two properties carry this file. **A stored conflict outranks a
+ * current display quote** — one provider's number may not appear to
+ * settle a disagreement the gate refused to settle — and **a claim is
+ * never labelled as established**, because the hero is the first thing
+ * read and a borrowed label is read as authority.
+ *
+ * `CryptoHeadlinePrice` is pinned through `renderToStaticMarkup`, which
+ * is exactly what the server sends and runs no effects: that fixes the
+ * quote at null and pins the pre-poll state. Everything that needs a
+ * live quote goes through `CryptoHeadlinePriceView`, which takes one.
  */
 
 /**
@@ -30,43 +38,78 @@ const CONFLICT_ESSAY =
 
 const ABSENCE = "Price unavailable.";
 
+const NOW = new Date("2026-08-25T14:16:10Z");
+
 const ESTABLISHED: StoredPrice = {
   stated: "$79.14",
+  standing: "established",
   standingStated: "Established",
   age: "TokenInsight, received 22 hours ago",
   because: null,
-  conflicted: false,
 };
 
 const CLAIMED: StoredPrice = {
   stated: "$79.14",
+  standing: "claimed",
   standingStated: "Provider claim",
   age: "CoinGecko, received 4 hours ago",
-  because: "one source reports it and nothing here can corroborate it.",
-  conflicted: false,
+  because: null,
 };
 
 const CONFLICTED: StoredPrice = {
   stated: null,
+  standing: "conflicted",
   standingStated: "Sources conflict",
   age: null,
   because: CONFLICT_ESSAY,
-  conflicted: true,
 };
 
-const ABSENT: StoredPrice = {
+const UNSERVED: StoredPrice = {
   stated: null,
+  standing: "unserved",
   standingStated: "Not reported",
   age: null,
   because: null,
-  conflicted: false,
 };
 
+/** A CURRENT quote on the source's own clock, 16 seconds old at NOW. */
+const CURRENT: FreshQuoteView = {
+  movrvestSymbol: "HYPE",
+  assetClass: "crypto",
+  provider: "eToro",
+  providerInstrumentIdentity: "100446",
+  providerLabel: "Hyperliquid",
+  price: 80.86,
+  currency: null,
+  bid: 80.86,
+  ask: 80.87,
+  sourceAsOf: "2026-08-25T14:15:53.343213+00:00",
+  receivedAt: "2026-08-25T14:15:53.5+00:00",
+  clockKind: "source_stated",
+  delayStatus: "unknown",
+  marketStatus: "unknown",
+  status: "current",
+  stated: "As eToro stated it, on the source's own clock.",
+};
+
+/** The server-rendered headline: no quote, because effects do not run. */
 function headline(stored: StoredPrice | null): string {
   return renderToStaticMarkup(
     <CryptoHeadlinePrice symbol="HYPE" stored={stored} />,
   );
 }
+
+/** The same headline with a quote supplied directly. */
+function headlineWith(
+  quote: FreshQuoteView | null,
+  stored: StoredPrice | null,
+): string {
+  return renderToStaticMarkup(
+    <CryptoHeadlinePriceView quote={quote} stored={stored} now={NOW} />,
+  );
+}
+
+// ── the stored fallback, standing by standing ───────────────────────
 
 describe("the crypto headline, server-rendered", () => {
   it("leads with the established price, named as what it is", () => {
@@ -81,55 +124,90 @@ describe("the crypto headline, server-rendered", () => {
     expect(markup.toLowerCase()).not.toContain("live");
   });
 
-  it("serves a provider claim's figure the same way", () => {
-    // The gate serves a value for `claimed` as it does for
-    // `established`, and the hero leads with it either way.
-    const markup = headline(CLAIMED);
-
-    expect(markup).toContain("$79.14");
-    expect(markup).toContain("CoinGecko, received 4 hours ago");
-    expect(markup).not.toContain(ABSENCE);
-  });
-
   it("states the absence where nothing is held", () => {
-    expect(headline(ABSENT)).toContain(ABSENCE);
+    expect(headline(UNSERVED)).toContain(ABSENCE);
   });
 
   it("states the absence where no row exists at all", () => {
     expect(headline(null)).toContain(ABSENCE);
   });
+
+  it("states the absence for a standing it cannot name", () => {
+    // Fail-closed: a figure whose standing this side cannot name gets
+    // no label, and an unlabelled figure borrows the nearest authority.
+    expect(headline({ ...UNSERVED, stated: "$79.14" })).toContain(ABSENCE);
+  });
 });
+
+// ── a claim is not an establishment ─────────────────────────────────
+
+describe("the crypto headline, for a provider claim", () => {
+  it("shows the figure, the gate's own standing and the age", () => {
+    const markup = headline(CLAIMED);
+
+    expect(markup).toContain("$79.14");
+    expect(markup).toContain("Provider claim");
+    expect(markup).toContain("CoinGecko, received 4 hours ago");
+  });
+
+  it("never calls it established", () => {
+    // The defect: "Last established price" was a hardcoded label under
+    // any served figure, so one vendor's uncorroborated claim was
+    // printed under a corroborated price's name in the one place a
+    // reader looks first.
+    const markup = headline(CLAIMED);
+
+    expect(markup.toLowerCase()).not.toContain("established");
+    expect(markup.toLowerCase()).not.toContain("establish");
+  });
+
+  it("quotes whatever the gate calls it, composing no label of its own", () => {
+    const markup = headline({
+      ...CLAIMED,
+      standingStated: "One vendor reports it",
+    });
+
+    expect(markup).toContain("One vendor reports it");
+  });
+
+  it("renders differently from an established price of the same figure", () => {
+    // Same value, same shape, different authority — and the markup has
+    // to say so, or the distinction exists only in the model.
+    expect(headline(CLAIMED)).not.toBe(headline(ESTABLISHED));
+  });
+});
+
+// ── the conflicted state ────────────────────────────────────────────
 
 describe("the crypto headline, where sources disagree", () => {
   it("says the sources conflict, in the gate's own words", () => {
-    const markup = headline(CONFLICTED);
-
-    expect(markup).toContain("Sources conflict");
+    expect(headline(CONFLICTED)).toContain("Sources conflict");
   });
 
   it("carries the disagreement account character for character", () => {
-    // Nothing here shortens it, names the sources out of it, or
-    // composes a friendlier version: the escaped markup must hold the
-    // whole sentence exactly as the backend composed it.
+    // Nothing shortens it, names the sources out of it, or composes a
+    // friendlier version: the markup holds the whole sentence exactly
+    // as the backend composed it.
     expect(headline(CONFLICTED)).toContain(CONFLICT_ESSAY);
   });
 
   it("renders no figure, at any size", () => {
     const markup = headline(CONFLICTED);
 
-    // The gate serves none. `$80.12` and `$71.30` appear *inside* the
-    // account — as the two claims that disagree — and nowhere as a
-    // price this platform is quoting, so the check is structural: the
-    // headline figure's own element is absent.
+    // `$80.12` and `$71.30` appear *inside* the account — as the two
+    // claims that disagree — and nowhere as a price this platform is
+    // quoting, so the check is structural: the headline figure's own
+    // element is absent.
     expect(markup).not.toContain("text-3xl");
     expect(markup).not.toContain("tabular-nums");
     expect(markup).not.toContain("Last established price");
   });
 
+  it("carries no absence wording", () => {
+    expect(headline(CONFLICTED)).not.toContain(ABSENCE);
+  });
+
   it("never renders a value a conflicted row carries anyway", () => {
-    // The gate cannot produce this today. The assertion is what keeps
-    // the ordering honest if one ever arrives: a conflict is not
-    // resolvable by finding a number attached to it.
     const markup = headline({ ...CONFLICTED, stated: "$80.12" });
 
     expect(markup).toContain("Sources conflict");
@@ -137,24 +215,76 @@ describe("the crypto headline, where sources disagree", () => {
   });
 
   it("cannot regress into the absence, which is a different finding", () => {
-    // The defect this fixes, pinned directly: the conflicted render and
-    // the absent render must not be the same markup, and the conflicted
-    // one must never carry the absence sentence.
     const conflicted = headline(CONFLICTED);
 
     expect(conflicted).not.toContain(ABSENCE);
-    expect(conflicted).not.toBe(headline(ABSENT));
+    expect(conflicted).not.toBe(headline(UNSERVED));
   });
 
-  it("gives the three stored states three different renderings", () => {
-    const markups = [ESTABLISHED, CONFLICTED, ABSENT].map(headline);
+  it("gives the four stored standings four different renderings", () => {
+    const markups = [ESTABLISHED, CLAIMED, CONFLICTED, UNSERVED].map(headline);
 
-    expect(new Set(markups).size).toBe(3);
+    expect(new Set(markups).size).toBe(4);
 
-    // And each is recognisable as itself rather than merely different.
-    expect(markups[0]).toContain("$79.14");
-    expect(markups[1]).toContain(CONFLICT_ESSAY);
-    expect(markups[2]).toContain(ABSENCE);
+    expect(markups[0]).toContain("Last established price");
+    expect(markups[1]).toContain("Provider claim");
+    expect(markups[2]).toContain(CONFLICT_ESSAY);
+    expect(markups[3]).toContain(ABSENCE);
+  });
+});
+
+// ── a conflict outranks the display quote ───────────────────────────
+
+describe("a current quote beside a stored conflict", () => {
+  it("shows the conflict, never the quote's number", () => {
+    // THE discriminating case, rendered. `CURRENT` leads beside an
+    // established row — the control below proves the fixture really is
+    // current — so this markup reverts to the quote's figure the
+    // moment fresh-quote precedence is restored.
+    const markup = headlineWith(CURRENT, CONFLICTED);
+
+    expect(markup).toContain("Sources conflict");
+    expect(markup).toContain(CONFLICT_ESSAY);
+    expect(markup).not.toContain("80.86");
+    expect(markup).not.toContain("Updated");
+    expect(markup).not.toContain("text-3xl");
+  });
+
+  it("control: the same quote does lead beside an established row", () => {
+    const markup = headlineWith(CURRENT, ESTABLISHED);
+
+    expect(markup).toContain("80.86");
+    expect(markup).toContain("Updated 16 seconds ago · eToro");
+  });
+
+  it("control: the same quote does lead beside a claimed row", () => {
+    // A claim is outranked by a current quote exactly as an
+    // established figure is. Only the conflict is privileged, and it is
+    // privileged because it is not a figure.
+    const markup = headlineWith(CURRENT, CLAIMED);
+
+    expect(markup).toContain("80.86");
+    expect(markup).not.toContain("Provider claim");
+  });
+
+  it("falls back to the conflict when the quote goes stale", () => {
+    const markup = headlineWith({ ...CURRENT, status: "stale" }, CONFLICTED);
+
+    expect(markup).toContain("Sources conflict");
+    expect(markup).not.toContain("80.86");
+  });
+
+  it("falls back to the stored figure when the quote goes stale", () => {
+    const markup = headlineWith({ ...CURRENT, status: "stale" }, ESTABLISHED);
+
+    expect(markup).toContain("$79.14");
+    expect(markup).toContain("Last established price");
+    expect(markup).not.toContain("80.86");
+  });
+
+  it("shows the quote where the store holds nothing at all", () => {
+    expect(headlineWith(CURRENT, null)).toContain("80.86");
+    expect(headlineWith(CURRENT, UNSERVED)).toContain("80.86");
   });
 });
 

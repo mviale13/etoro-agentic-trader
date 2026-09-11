@@ -155,10 +155,10 @@ describe("the poll loop", () => {
         held,
         {
           stated: "$79.14",
+          standing: "established",
           standingStated: "Established",
           age: "22 hours ago",
           because: null,
-          conflicted: false,
         },
         at121,
       ).kind,
