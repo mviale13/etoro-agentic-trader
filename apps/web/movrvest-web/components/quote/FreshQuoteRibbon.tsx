@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 
 import {
   type FreshQuoteView,
+  type StoredPrice,
   headlineModel,
   ribbonModel,
 } from "@/components/quote/quote-model";
@@ -113,27 +114,81 @@ export function StockQuoteRibbon({ symbol }: { symbol: string }) {
 /**
  * The crypto hero's headline price.
  *
- * Server-rendered with the established fallback, so the page never
- * waits on a quote; the first successful poll replaces it with the
- * fresh figure — one visible update, no refresh. The established price
- * and its methodology remain under Evidence untouched; this only
- * decides which figure leads.
+ * Server-rendered with the stored fallback, so the page never waits on
+ * a quote; the first successful poll replaces it with the fresh figure
+ * — one visible update, no refresh. The stored price and its
+ * methodology remain under Evidence untouched; this only decides which
+ * figure leads.
+ *
+ * **It takes the whole stored row, not the figure off it.** Passing the
+ * value alone is what collapsed a source conflict into an absence: a
+ * conflicted row's figure is null by construction, so the value on its
+ * own is the same null an empty store sends, and the hero reported
+ * "Price unavailable." for a price its sources had each reported and
+ * disagreed about. The states are the row's to distinguish, so the row
+ * is what arrives here — standing included, because the label a stored
+ * figure gets is the standing's to choose.
  */
 export function CryptoHeadlinePrice({
   symbol,
-  establishedStated,
-  establishedAge,
+  stored,
 }: {
   symbol: string;
-  establishedStated: string | null;
-  establishedAge: string | null;
+  stored: StoredPrice | null;
 }) {
   const { quote, renderClock } = useFreshQuote(symbol);
-  const model = headlineModel(
-    quote,
-    { stated: establishedStated, age: establishedAge },
-    renderClock,
+
+  return (
+    <CryptoHeadlinePriceView quote={quote} stored={stored} now={renderClock} />
   );
+}
+
+/**
+ * The headline itself, given a quote and a stored row — no polling, no
+ * state, no clock of its own.
+ *
+ * Split out so the precedence is **render-testable at every input**.
+ * `CryptoHeadlinePrice` gets its quote from an effect, and effects do
+ * not run under `renderToStaticMarkup`, so through that component the
+ * quote is permanently null and the one case that matters most —
+ * *a current quote arriving beside a conflicted stored row* — could not
+ * be rendered at all. It can be rendered here.
+ */
+export function CryptoHeadlinePriceView({
+  quote,
+  stored,
+  now,
+}: {
+  quote: FreshQuoteView | null;
+  stored: StoredPrice | null;
+  now: Date;
+}) {
+  const model = headlineModel(quote, stored, now);
+
+  // Sources disagree, and that is a finding rather than a gap — and it
+  // is checked first, ahead of the quote. The standing is the gate's
+  // own label and the sentence beneath it is the gate's own account of
+  // the disagreement, rendered character for character: nothing here
+  // shortens it, names the sources out of it or chooses between them.
+  // No figure is rendered at any size, from any source. The Evidence
+  // view's rule is that a conflict is never hidden behind a value, and
+  // a display quote is one more vendor's value, not a ruling on the
+  // disagreement.
+  if (model.kind === "conflicted") {
+    return (
+      <div className="max-w-sm text-right">
+        <p className="text-xl font-semibold text-slate-900">
+          {model.storedStandingStated}
+        </p>
+
+        {model.conflictBecause ? (
+          <p className="mt-1 text-left text-xs leading-5 text-slate-500">
+            {model.conflictBecause}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   if (model.kind === "fresh" && model.ribbon) {
     return (
@@ -155,21 +210,31 @@ export function CryptoHeadlinePrice({
     );
   }
 
-  if (model.kind === "established") {
+  // The stored figure under its own standing. "Last established price"
+  // is this platform's framing of a *corroborated* stored reading — the
+  // "last" separates it from a live quote — and it was printed over a
+  // single-vendor claim too, which let the weaker claim borrow the
+  // stronger's authority in the one place a reader looks first. A claim
+  // now carries the gate's own words for what it is.
+  if (model.kind === "established" || model.kind === "claimed") {
     return (
       <div className="text-right">
         <p className="text-3xl font-semibold tabular-nums text-slate-950">
-          {model.establishedStated}
+          {model.storedStated}
         </p>
 
         <p className="mt-1 text-xs text-slate-500">
-          Last established price
-          {model.establishedAge ? ` · ${model.establishedAge}` : ""}
+          {model.kind === "established"
+            ? "Last established price"
+            : model.storedStandingStated}
+          {model.storedAge ? ` · ${model.storedAge}` : ""}
         </p>
       </div>
     );
   }
 
+  // Nothing is held, and nothing is claimed about why — the investor
+  // needs the state, not an account of this platform's store.
   return (
     <div className="text-right">
       <p className="text-sm text-slate-500">Price unavailable.</p>

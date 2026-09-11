@@ -16,6 +16,10 @@
  * - facts that do not exist are omitted — absence is not a card.
  */
 
+import type {
+  StoredPrice,
+  StoredStanding,
+} from "@/components/quote/quote-model";
 import type { RecordedPortfolio } from "@/lib/api/cycle-review";
 import type {
   BriefView,
@@ -192,6 +196,52 @@ const CURRENCY = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
+
+/**
+ * The judged-facts gate's standings, as the headline layer names them.
+ *
+ * The one place the wire's `standing` string is matched on the hero
+ * path. Anything unrecognised — a standing added later, `rejected`,
+ * `calculated` — reads `unserved`: fail-closed, because a figure whose
+ * standing this side cannot name is a figure it cannot label, and an
+ * unlabelled figure borrows whatever authority sits nearest it.
+ */
+const STORED_STANDINGS: Record<string, StoredStanding> = {
+  established: "established",
+  claimed: "claimed",
+  conflicted: "conflicted",
+};
+
+/**
+ * The headline price the hero falls back to, from the judged price row.
+ *
+ * The same rule `fromFactRow` keeps for the facts widget, applied to
+ * the one figure the page leads with: **a conflict serves no value, and
+ * it is not an absence either.** The hero collapsed those two — it read
+ * the row's `stated`, found the null every conflict carries, and said
+ * "Price unavailable." while the row beside it held "Sources conflict"
+ * and the gate's own account of who disagreed and by how much.
+ *
+ * The standing travels **structurally**, from the row's own `standing`
+ * field. Downstream never parses `standingStated` or `because` to
+ * recover it, and never infers it from whether a figure is present.
+ */
+export function storedPrice(row: FactRowView | null): StoredPrice | null {
+  if (row === null) {
+    return null;
+  }
+
+  const standing = STORED_STANDINGS[row.standing] ?? "unserved";
+  const conflicted = standing === "conflicted";
+
+  return {
+    stated: conflicted ? null : row.stated,
+    standing,
+    standingStated: row.standingStated,
+    age: row.age,
+    because: conflicted ? row.because : null,
+  };
+}
 
 export function heroModel(
   dossier: CryptoDossier,

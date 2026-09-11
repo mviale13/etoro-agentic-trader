@@ -29,6 +29,46 @@ const CAPITAL_ACTION = "No capital action is suggested.";
 const CONFLICT_ESSAY =
   "credible sources disagree beyond observation-timing tolerance (10%): TokenInsight reports $26.6bn; CoinGecko reports $17.7bn. The sources appear to count the concept differently, and no methodology rule chooses between them.";
 
+/**
+ * A conflicted *price*'s own account, which differs from the market
+ * value's above: a price is pooled at the same 10% tolerance and
+ * carries no methodology clause — only counts and market values get
+ * one — and each claim is named with its own reading.
+ */
+const PRICE_CONFLICT_ESSAY =
+  "credible sources disagree beyond observation-timing tolerance (10%): " +
+  "TokenInsight reports $80.12 (TokenInsight, received 22 hours ago); " +
+  "CoinGecko reports $71.30 (CoinGecko, received 3 hours ago). " +
+  "Uncertainty is exposed rather than a consensus manufactured.";
+
+const ABSENCE = "Price unavailable.";
+
+/** One judged price row, in the shape the dossier wire carries. */
+function priceFacts(overrides: Record<string, unknown> = {}) {
+  return {
+    groups: [
+      {
+        title: "Market",
+        rows: [
+          {
+            label: "Price",
+            stated: "$79.14",
+            standing: "established",
+            standingStated: "Established",
+            source: "TokenInsight",
+            age: "TokenInsight, received 22 hours ago",
+            because: "two sources agree within tolerance.",
+            claimants: ["TokenInsight", "CoinGecko"],
+            rule: "cross-source-agreement@1",
+            ...overrides,
+          },
+        ],
+      },
+    ],
+    rejected: [],
+  };
+}
+
 function occurrences(haystack: string, needle: string): number {
   return haystack.split(needle).length - 1;
 }
@@ -310,13 +350,81 @@ describe("the Overview layout", () => {
 
 // ── the hero's price ────────────────────────────────────────────────
 
-describe("the hero price", () => {
-  it("states the state, not the store, where no price is served", () => {
-    const markup = renderToStaticMarkup(
-      <CryptoHero hero={heroModel(decisionDossier(), "Hyperliquid")} />,
-    );
+/**
+ * The four standings the judged price row can reach the hero in, and
+ * the two collapses that flattened them.
+ *
+ * `established` and `claimed` serve a figure; `conflicted` serves none
+ * and carries the gate's own account of the disagreement; `absent` —
+ * and no row at all — is silence. The hero read the row's `stated` and
+ * nothing else, so a conflict arrived as the same null an empty store
+ * sends; and the label under a served figure was hardcoded, so a single
+ * vendor's claim was printed as an established price.
+ */
+function heroMarkup(overrides: Record<string, unknown> = {}): string {
+  return renderToStaticMarkup(
+    <CryptoHero
+      hero={heroModel(
+        decisionDossier({ facts: priceFacts(overrides) }),
+        "Hyperliquid",
+      )}
+    />,
+  );
+}
 
-    expect(markup).toContain("Price unavailable.");
+/** The hero with no facts at all — the store holds no price row. */
+function heroWithoutFacts(): string {
+  return renderToStaticMarkup(
+    <CryptoHero hero={heroModel(decisionDossier(), "Hyperliquid")} />,
+  );
+}
+
+const CLAIMED_PRICE = {
+  standing: "claimed",
+  standingStated: "Provider claim",
+  source: "CoinGecko",
+  age: "CoinGecko, received 4 hours ago",
+  because: "one source reports it and nothing here can corroborate it.",
+  claimants: [],
+  rule: null,
+};
+
+const CONFLICTED_PRICE = {
+  stated: null,
+  standing: "conflicted",
+  standingStated: "Sources conflict",
+  source: null,
+  age: null,
+  because: PRICE_CONFLICT_ESSAY,
+  claimants: [],
+  rule: null,
+};
+
+const ABSENT_PRICE = {
+  stated: null,
+  standing: "absent",
+  standingStated: "Not reported",
+  source: null,
+  age: null,
+  because: "no source reports it.",
+  claimants: [],
+  rule: null,
+};
+
+describe("the hero price", () => {
+  it("leads with an established figure, its label and its age", () => {
+    const markup = heroMarkup();
+
+    expect(markup).toContain("$79.14");
+    expect(markup).toContain("Last established price");
+    expect(markup).toContain("TokenInsight, received 22 hours ago");
+    expect(markup).not.toContain(ABSENCE);
+  });
+
+  it("states the state, not the store, where no price is served", () => {
+    const markup = heroWithoutFacts();
+
+    expect(markup).toContain(ABSENCE);
 
     // The rule is that the *price* states its state rather than this
     // platform's store. The original pin was the bare word "held",
@@ -331,6 +439,88 @@ describe("the hero price", () => {
     ]) {
       expect(markup).not.toContain(store);
     }
+  });
+
+  it("states the state where the row exists and reports nothing", () => {
+    expect(heroMarkup(ABSENT_PRICE)).toContain(ABSENCE);
+  });
+});
+
+describe("the hero price, for a provider claim", () => {
+  it("shows the figure under the gate's own standing, with its age", () => {
+    const markup = heroMarkup(CLAIMED_PRICE);
+
+    expect(markup).toContain("$79.14");
+    expect(markup).toContain("Provider claim");
+    expect(markup).toContain("CoinGecko, received 4 hours ago");
+  });
+
+  it("never calls a claim established", () => {
+    // The defect: "Last established price" was hardcoded under any
+    // served figure, so one vendor's uncorroborated claim wore a
+    // corroborated price's label in the place read first.
+    const markup = heroMarkup(CLAIMED_PRICE);
+
+    expect(markup).not.toContain("Last established price");
+    expect(markup.toLowerCase()).not.toContain("established");
+  });
+
+  it("renders differently from an established price of the same figure", () => {
+    expect(heroMarkup(CLAIMED_PRICE)).not.toBe(heroMarkup());
+  });
+});
+
+describe("the hero price, where sources disagree", () => {
+  it("says the sources conflict and carries their account verbatim", () => {
+    const markup = heroMarkup(CONFLICTED_PRICE);
+
+    expect(markup).toContain("Sources conflict");
+    expect(markup).toContain(PRICE_CONFLICT_ESSAY);
+  });
+
+  it("shows no price figure and no absence wording", () => {
+    const markup = heroMarkup(CONFLICTED_PRICE);
+
+    // Structural, because the account itself quotes both disputed
+    // figures: the headline figure's own element must be absent, and
+    // the served-price labels with it.
+    expect(markup).not.toContain("text-3xl");
+    expect(markup).not.toContain("Last established price");
+    expect(markup).not.toContain("Provider claim");
+    expect(markup).not.toContain(ABSENCE);
+  });
+
+  it("refuses a figure even on a conflicted row that carries one", () => {
+    // The gate serves none, so this cannot arise from it today. The pin
+    // is what keeps a conflict from being settled by a number that
+    // happens to be attached to it.
+    const markup = heroMarkup({ ...CONFLICTED_PRICE, stated: "$80.12" });
+
+    expect(markup).toContain("Sources conflict");
+    expect(markup).not.toContain("text-3xl");
+  });
+
+  it("cannot regress into the absence, which is a different finding", () => {
+    const conflicted = heroMarkup(CONFLICTED_PRICE);
+
+    expect(conflicted).not.toContain(ABSENCE);
+    expect(conflicted).not.toBe(heroWithoutFacts());
+  });
+
+  it("gives the four standings four different renderings", () => {
+    const markups = [
+      heroMarkup(),
+      heroMarkup(CLAIMED_PRICE),
+      heroMarkup(CONFLICTED_PRICE),
+      heroMarkup(ABSENT_PRICE),
+    ];
+
+    expect(new Set(markups).size).toBe(4);
+
+    expect(markups[0]).toContain("Last established price");
+    expect(markups[1]).toContain("Provider claim");
+    expect(markups[2]).toContain(PRICE_CONFLICT_ESSAY);
+    expect(markups[3]).toContain(ABSENCE);
   });
 });
 

@@ -13,10 +13,17 @@
  *   stated them.** The measured provider states neither, so with
  *   today's data they never render — the branches exist for a provider
  *   that does, not as inferences.
- * - **the fallback is the established price, named as what it is.** A
- *   crypto hero with no current quote shows "Last established price"
- *   with its actual age, or "Price unavailable." — never a stale value
- *   dressed as fresh.
+ * - **the fallback is the stored price, named as what it is.** A crypto
+ *   hero with no current quote shows the stored figure under *its own*
+ *   standing — "Last established price" only where the gate established
+ *   it, the gate's own "Provider claim" where one vendor claimed it —
+ *   or "Price unavailable." Never a stale value dressed as fresh, and
+ *   never a claim dressed as a corroborated fact.
+ * - **a conflict is not an absence, and outranks a display quote.**
+ *   Where the judged-facts gate found the sources in disagreement it
+ *   serves no figure, and the fallback states that in the gate's own
+ *   words rather than reporting an empty store — or quietly replacing
+ *   it, one poll later, with one provider's number.
  */
 
 export interface FreshQuoteView {
@@ -364,54 +371,153 @@ export function ribbonModel(
 
 // ── the crypto fallback ─────────────────────────────────────────────
 
+/**
+ * Which standing the judged-facts gate gave the stored price.
+ *
+ * A closed set, decided by the caller from the row's own `standing`
+ * field and **never** from the wording of `standingStated` or
+ * `because`, which are prose and would have to be parsed to yield it.
+ *
+ * **A claim is its own member.** Folding `claimed` into `established`
+ * is precisely how a single-vendor figure comes to be printed under an
+ * established price's label — the weaker claim borrowing the stronger's
+ * authority, which is the defect this vocabulary exists to prevent.
+ *
+ * `unserved` is everything that serves no figure and has nothing to say
+ * about why: nothing reported, and — fail-closed — any standing this
+ * module does not recognise. A figure whose standing cannot be named
+ * cannot be labelled, and an unlabelled figure is the whole problem.
+ */
+export type StoredStanding =
+  | "established"
+  | "claimed"
+  | "conflicted"
+  | "unserved";
+
+/**
+ * The stored price a crypto hero falls back to, exactly as the
+ * judged-facts gate served it.
+ *
+ * **Four states, and none of them is interchangeable with another**: a
+ * corroborated figure, one vendor's uncorroborated claim, a
+ * disagreement the gate refused to resolve, and nothing held at all.
+ * The third carries no figure by construction — the gate serves none
+ * for any conflict — so a caller that hands on only the value has
+ * already thrown the difference away, and "Sources conflict" arrives
+ * indistinguishable from an empty store.
+ */
+export interface StoredPrice {
+  /** The served figure, or null. Null for every conflict. */
+  stated: string | null;
+  /** Which standing the gate gave it. Structural, never prose. */
+  standing: StoredStanding;
+  /** The standing in the gate's own words — "Established", "Provider
+      claim", "Sources conflict". Never reworded or shortened here, and
+      never matched against: `standing` is what decisions read. */
+  standingStated: string;
+  age: string | null;
+  /** The gate's own account of why it stands as it does, carried only
+      where the sources disagree. Rendered character for character or
+      not at all: no shorter version of it is composed anywhere. */
+  because: string | null;
+}
+
 export interface HeadlineModel {
-  kind: "fresh" | "established" | "absent";
+  kind: "fresh" | "established" | "claimed" | "conflicted" | "absent";
   ribbon: RibbonModel | null;
-  /** For the established fallback: the stored figure and its own age
-      sentence, exactly as the judged-facts gate served them. */
-  establishedStated: string | null;
-  establishedAge: string | null;
+  /**
+   * The stored figure and its age, for whichever stored standing serves
+   * one.
+   *
+   * Named for the **store**, not for one of its standings. These fields
+   * were `establishedStated` / `establishedAge`, and a name is not
+   * inert: the moment a claimed row needed to serve a figure, the
+   * obvious move was to file it under the established field and let the
+   * renderer print an established label over a single-vendor claim.
+   */
+  storedStated: string | null;
+  storedAge: string | null;
+  /** The standing in the gate's own words, for every stored kind that
+      renders it — the claim's label and the conflict's alike. */
+  storedStandingStated: string | null;
+  /** The gate's disagreement account. Conflicts only. */
+  conflictBecause: string | null;
 }
 
 /**
- * Which price leads a crypto hero.
+ * Which price leads a crypto hero, in strict precedence.
  *
- * A CURRENT fresh quote is the headline. Anything less falls back to
- * the stored established price labelled as what it is — "Last
- * established price", with its actual age — and where none is held the
- * state is stated. A stale fresh quote never outranks the established
- * figure here: "current or fallback" is the rule, with no middle tier
- * that could dress a stale value as fresh.
+ * 1. **A conflict outranks everything, the display quote included.**
+ *    Its standing and the gate's own account of the disagreement, and
+ *    no number at all.
+ * 2. Otherwise a CURRENT fresh quote leads.
+ * 3. Otherwise the stored figure, labelled by *its own* standing.
+ * 4. Otherwise the state is stated.
+ *
+ * **Why the conflict goes first, ahead of a current quote.** This began
+ * as "current or fallback", which made the quote the first question
+ * asked — and a conflicted asset would then have server-rendered
+ * "Sources conflict" and, on the first successful poll, silently
+ * replaced it with one provider's number. The investor would have
+ * watched a disagreement resolve itself into a price, which is the
+ * averaging-away this platform refuses at the gate. A display quote is
+ * one more vendor's figure; it is not an adjudication, and it may not
+ * look like one. The stale rule is unchanged: a stale quote never
+ * outranks the stored row either.
+ *
+ * **Standing decides, never the figure.** A served figure is rendered
+ * only for a standing that serves one, so a row arriving with both a
+ * conflict and a value still serves none.
  */
 export function headlineModel(
   quote: FreshQuoteView | null,
-  established: { stated: string | null; age: string | null } | null,
+  stored: StoredPrice | null,
   now: Date,
 ): HeadlineModel {
+  if (stored?.standing === "conflicted") {
+    return {
+      kind: "conflicted",
+      ribbon: null,
+      storedStated: null,
+      storedAge: null,
+      storedStandingStated: stored.standingStated,
+      conflictBecause: stored.because,
+    };
+  }
+
   const ribbon = ribbonModel(quote, now);
 
   if (ribbon && ribbon.current) {
     return {
       kind: "fresh",
       ribbon,
-      establishedStated: null,
-      establishedAge: null,
+      storedStated: null,
+      storedAge: null,
+      storedStandingStated: null,
+      conflictBecause: null,
     };
   }
 
-  if (established?.stated) {
+  if (
+    stored?.stated &&
+    (stored.standing === "established" || stored.standing === "claimed")
+  ) {
     return {
-      kind: "established",
+      kind: stored.standing,
       ribbon: null,
-      establishedStated: established.stated,
-      establishedAge: established.age,
+      storedStated: stored.stated,
+      storedAge: stored.age,
+      storedStandingStated: stored.standingStated,
+      conflictBecause: null,
     };
   }
 
   return {
     kind: "absent",
     ribbon: null,
-    establishedStated: null,
-    establishedAge: null,
+    storedStated: null,
+    storedAge: null,
+    storedStandingStated: null,
+    conflictBecause: null,
   };
 }

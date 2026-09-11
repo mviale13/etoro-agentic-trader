@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   type FreshQuoteView,
+  type StoredPrice,
   headlineModel,
   parseQuote,
   ribbonModel,
@@ -15,6 +16,61 @@ import {
  */
 
 const NOW = new Date("2026-08-25T14:16:10Z");
+
+/**
+ * A conflicted price's own account, in the judged-facts gate's shape: a
+ * price is pooled at the 10% observation-timing tolerance and carries
+ * no methodology clause, which only counts and market values get.
+ *
+ * Held here as a constant so the assertions compare the whole sentence
+ * rather than a phrase inside it — the rule is that it travels
+ * character for character, and a substring check would pass on a
+ * summary of it.
+ */
+const CONFLICT_ESSAY =
+  "credible sources disagree beyond observation-timing tolerance (10%): " +
+  "TokenInsight reports $80.12 (TokenInsight, received 22 hours ago); " +
+  "CoinGecko reports $71.30 (CoinGecko, received 3 hours ago). " +
+  "Uncertainty is exposed rather than a consensus manufactured.";
+
+/**
+ * The four standings a stored price row can reach the headline in.
+ *
+ * Module scope on purpose: the precedence tests below contrast them
+ * against one another, and a fixture defined twice is a fixture that
+ * can drift into agreeing with whatever it is meant to discriminate.
+ */
+const ESTABLISHED: StoredPrice = {
+  stated: "$79.14",
+  standing: "established",
+  standingStated: "Established",
+  age: "TokenInsight, received 22 hours ago",
+  because: null,
+};
+
+const CLAIMED: StoredPrice = {
+  stated: "$79.14",
+  standing: "claimed",
+  standingStated: "Provider claim",
+  age: "CoinGecko, received 4 hours ago",
+  because: null,
+};
+
+const CONFLICTED: StoredPrice = {
+  stated: null,
+  standing: "conflicted",
+  standingStated: "Sources conflict",
+  age: null,
+  because: CONFLICT_ESSAY,
+};
+
+const UNSERVED: StoredPrice = {
+  stated: null,
+  standing: "unserved",
+  standingStated: "Not reported",
+  age: null,
+  because: null,
+};
 
 function quote(overrides: Partial<FreshQuoteView> = {}): FreshQuoteView {
   return {
@@ -166,39 +222,146 @@ describe("the ribbon", () => {
 // ── the crypto headline ─────────────────────────────────────────────
 
 describe("the crypto headline", () => {
-  const established = {
-    stated: "$79.14",
-    age: "TokenInsight, received 22 hours ago",
-  };
-
   it("leads with a current fresh quote", () => {
-    const model = headlineModel(quote(), established, NOW);
+    const model = headlineModel(quote(), ESTABLISHED, NOW);
 
     expect(model.kind).toBe("fresh");
     expect(model.ribbon?.figure).toBe("80.86");
   });
 
   it("falls back to the established price, named as what it is", () => {
-    const model = headlineModel(null, established, NOW);
+    const model = headlineModel(null, ESTABLISHED, NOW);
 
     expect(model.kind).toBe("established");
-    expect(model.establishedStated).toBe("$79.14");
-    expect(model.establishedAge).toBe("TokenInsight, received 22 hours ago");
+    expect(model.storedStated).toBe("$79.14");
+    expect(model.storedAge).toBe("TokenInsight, received 22 hours ago");
   });
 
-  it("a stale fresh quote never outranks the established figure", () => {
+  it("a stale fresh quote never outranks the stored figure", () => {
     // Current-or-fallback, with no middle tier that could dress a
     // stale value as fresh.
-    const model = headlineModel(quote({ status: "stale" }), established, NOW);
+    const model = headlineModel(quote({ status: "stale" }), ESTABLISHED, NOW);
 
     expect(model.kind).toBe("established");
     expect(model.ribbon).toBeNull();
   });
 
+  it("a stale fresh quote never outranks a stored conflict either", () => {
+    const model = headlineModel(quote({ status: "stale" }), CONFLICTED, NOW);
+
+    expect(model.kind).toBe("conflicted");
+    expect(model.ribbon).toBeNull();
+  });
+
+  it("keeps a conflict its own state, carrying the gate's own words", () => {
+    // The measured defect: a conflicted row's figure is null by
+    // construction, so a caller handing on the figure alone made
+    // "Sources conflict" arrive indistinguishable from an empty store.
+    const model = headlineModel(null, CONFLICTED, NOW);
+
+    expect(model.kind).toBe("conflicted");
+    expect(model.storedStandingStated).toBe("Sources conflict");
+    expect(model.conflictBecause).toBe(CONFLICT_ESSAY);
+    expect(model.storedStated).toBeNull();
+  });
+
+  it("serves no figure beside a conflict, even one carrying a value", () => {
+    // The gate serves none, so this cannot arise from it today. The
+    // rule is what guarantees it stays that way: the standing decides
+    // what is served, never the presence of a figure.
+    const model = headlineModel(null, { ...CONFLICTED, stated: "$26.60" }, NOW);
+
+    expect(model.kind).toBe("conflicted");
+    expect(model.storedStated).toBeNull();
+  });
+
   it("states the absence where neither figure exists", () => {
-    const model = headlineModel(null, { stated: null, age: null }, NOW);
+    expect(headlineModel(null, UNSERVED, NOW).kind).toBe("absent");
+  });
+
+  it("states the absence where no row is held at all", () => {
+    expect(headlineModel(null, null, NOW).kind).toBe("absent");
+  });
+
+  it("states the absence for a standing it cannot name", () => {
+    // Fail-closed. `storedPrice` maps anything unrecognised to
+    // `unserved`, and an unserved standing serves no figure even with
+    // one attached: an unlabelled figure borrows whatever authority
+    // sits nearest it.
+    const model = headlineModel(null, { ...UNSERVED, stated: "$79.14" }, NOW);
 
     expect(model.kind).toBe("absent");
+    expect(model.storedStated).toBeNull();
+  });
+
+  it("gives each stored standing its own answer", () => {
+    // The property the collapse broke — twice. Conflicted and unserved
+    // both read "absent", so a refused settlement looked like an
+    // unreported price; and claimed read "established", so one
+    // vendor's figure wore a corroborated price's label.
+    const kinds = [ESTABLISHED, CLAIMED, CONFLICTED, UNSERVED].map(
+      (stored) => headlineModel(null, stored, NOW).kind,
+    );
+
+    expect(kinds).toEqual(["established", "claimed", "conflicted", "absent"]);
+  });
+});
+
+// ── a claim is not an establishment ─────────────────────────────────
+
+describe("the claimed stored price", () => {
+  it("is never classified as established", () => {
+    expect(headlineModel(null, CLAIMED, NOW).kind).toBe("claimed");
+  });
+
+  it("serves its figure, its own standing and its age", () => {
+    const model = headlineModel(null, CLAIMED, NOW);
+
+    expect(model.storedStated).toBe("$79.14");
+    expect(model.storedStandingStated).toBe("Provider claim");
+    expect(model.storedAge).toBe("CoinGecko, received 4 hours ago");
+  });
+
+  it("quotes the gate's words for the standing and composes none", () => {
+    const model = headlineModel(
+      null,
+      { ...CLAIMED, standingStated: "One vendor reports it" },
+      NOW,
+    );
+
+    expect(model.storedStandingStated).toBe("One vendor reports it");
+  });
+
+  it("says nothing about establishment anywhere in the model", () => {
+    const model = headlineModel(null, CLAIMED, NOW);
+
+    expect(JSON.stringify(model).toLowerCase()).not.toContain("establish");
+  });
+});
+
+// ── a conflict outranks the display quote ───────────────────────────
+
+describe("precedence between a current quote and a stored conflict", () => {
+  it("refuses to let a current quote settle a stored disagreement", () => {
+    // THE discriminating case. `quote()` is CURRENT at NOW — the very
+    // fixture that makes `kind` "fresh" beside an established row — so
+    // this fails the moment the quote is consulted first again.
+    expect(headlineModel(quote(), ESTABLISHED, NOW).kind).toBe("fresh");
+    expect(headlineModel(quote(), CONFLICTED, NOW).kind).toBe("conflicted");
+  });
+
+  it("renders no number from any source while the sources disagree", () => {
+    const model = headlineModel(quote(), CONFLICTED, NOW);
+
+    expect(model.ribbon).toBeNull();
+    expect(model.storedStated).toBeNull();
+  });
+
+  it("still carries the gate's account under a current quote", () => {
+    const model = headlineModel(quote(), CONFLICTED, NOW);
+
+    expect(model.storedStandingStated).toBe("Sources conflict");
+    expect(model.conflictBecause).toBe(CONFLICT_ESSAY);
   });
 });
 
@@ -262,14 +425,9 @@ describe("presentation currency at render time", () => {
   });
 
   it("an expired current quote drops the crypto headline to established", () => {
-    const established = {
-      stated: "$79.14",
-      age: "TokenInsight, received 22 hours ago",
-    };
-
     const model = headlineModel(
       quote(),
-      established,
+      ESTABLISHED,
       new Date("2026-08-25T14:20:00Z"), // 4 minutes past the source clock
     );
 
