@@ -30,6 +30,7 @@ import {
   keyFacts,
   latestDevelopments,
   marketSetup,
+  storedPrice,
 } from "@/components/crypto/overview-model";
 
 const CARD = "rounded-2xl border border-slate-200 bg-white p-4 sm:p-5";
@@ -64,20 +65,24 @@ export function CryptoHero({ hero }: { hero: HeroModel }) {
           <p className="mt-1 text-sm font-medium text-slate-700">{hero.role}</p>
         </div>
 
-        {/* The headline price. Server-rendered with the established
-            figure so the page waits on nothing; the ribbon's first
-            successful poll replaces it with a current display quote on
-            the provider's own clock. The established price and its
-            methodology remain under Evidence untouched — this decides
-            which figure leads, never what any figure means, and a
-            display quote resolves no conflicted market value. Where no
-            current quote and no established price exist, the state is
-            stated: the investor needs the state, not an account of this
-            platform's store. */}
+        {/* The headline price. Server-rendered from the stored row so
+            the page waits on nothing; the ribbon's first successful poll
+            replaces it with a current display quote on the provider's
+            own clock. The stored price and its methodology remain under
+            Evidence untouched — this decides which figure leads, never
+            what any figure means, and a display quote resolves no
+            conflicted market value.
+
+            **The whole row goes down, not the figure off it.** This read
+            `hero.price?.stated`, which is null for every conflict as
+            well as for an empty store, so a price the gate had refused
+            to settle rendered as one nobody had reported — "Price
+            unavailable." beside a row carrying "Sources conflict" and
+            the gate's account of the disagreement. `storedPrice` keeps
+            the three states apart; nothing here words any of them. */}
         <CryptoHeadlinePrice
           symbol={hero.symbol}
-          establishedStated={hero.price?.stated ?? null}
-          establishedAge={hero.price?.age ?? null}
+          stored={storedPrice(hero.price)}
         />
       </div>
 

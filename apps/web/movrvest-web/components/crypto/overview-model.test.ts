@@ -10,6 +10,7 @@ import {
   keyFacts,
   latestDevelopments,
   marketSetup,
+  storedPrice,
   viewFromParam,
 } from "./overview-model";
 
@@ -451,6 +452,89 @@ describe("the hero", () => {
 
     expect(hero.setup).toBeNull();
     expect(hero.setupAbsent).toBe("Nothing is currently established either way.");
+  });
+});
+
+// ── the headline price's three states ───────────────────────────────
+
+describe("the stored headline price", () => {
+  function row(overrides: Record<string, unknown> = {}) {
+    const groups = dossier().facts?.groups ?? [];
+    const price = groups[0].rows[0];
+
+    return { ...price, ...overrides };
+  }
+
+  it("serves the figure the gate served, with its standing and age", () => {
+    const stored = storedPrice(row());
+
+    expect(stored?.conflicted).toBe(false);
+    expect(stored?.stated).toBe("$79.14");
+    expect(stored?.standingStated).toBe("Established");
+    expect(stored?.age).toBe("TokenInsight, received 19 hours ago");
+  });
+
+  it("serves a provider claim's figure the same way", () => {
+    const stored = storedPrice(
+      row({ standing: "claimed", standingStated: "Provider claim" }),
+    );
+
+    expect(stored?.conflicted).toBe(false);
+    expect(stored?.stated).toBe("$79.14");
+    expect(stored?.standingStated).toBe("Provider claim");
+  });
+
+  it("keeps a conflict apart from an absence, which the hero could not", () => {
+    // Both carry a null figure. Reading the figure alone is what made
+    // "Sources conflict" render as "Price unavailable."
+    const conflicted = storedPrice(
+      row({
+        stated: null,
+        standing: "conflicted",
+        standingStated: "Sources conflict",
+        age: null,
+        because: "credible sources disagree beyond tolerance (10%).",
+      }),
+    );
+
+    const absent = storedPrice(
+      row({
+        stated: null,
+        standing: "absent",
+        standingStated: "Not reported",
+        age: null,
+        because: "no source reports it.",
+      }),
+    );
+
+    expect(conflicted?.conflicted).toBe(true);
+    expect(conflicted?.standingStated).toBe("Sources conflict");
+    expect(conflicted?.because).toBe(
+      "credible sources disagree beyond tolerance (10%).",
+    );
+
+    expect(absent?.conflicted).toBe(false);
+    expect(absent?.because).toBeNull();
+  });
+
+  it("serves no value for a conflict, even one carrying a figure", () => {
+    const stored = storedPrice(
+      row({ standing: "conflicted", standingStated: "Sources conflict" }),
+    );
+
+    expect(stored?.conflicted).toBe(true);
+    expect(stored?.stated).toBeNull();
+  });
+
+  it("carries no reason where there is no disagreement to account for", () => {
+    // `because` exists on every row and says why it stands as it does.
+    // Only a conflict's is the headline's to render, and lifting the
+    // established row's would put an audit sentence in the hero.
+    expect(storedPrice(row())?.because).toBeNull();
+  });
+
+  it("holds nothing where no row exists", () => {
+    expect(storedPrice(null)).toBeNull();
   });
 });
 

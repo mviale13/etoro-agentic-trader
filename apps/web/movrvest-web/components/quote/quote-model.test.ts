@@ -16,6 +16,22 @@ import {
 
 const NOW = new Date("2026-08-25T14:16:10Z");
 
+/**
+ * A conflicted price's own account, in the judged-facts gate's shape: a
+ * price is pooled at the 10% observation-timing tolerance and carries
+ * no methodology clause, which only counts and market values get.
+ *
+ * Held here as a constant so the assertions compare the whole sentence
+ * rather than a phrase inside it — the rule is that it travels
+ * character for character, and a substring check would pass on a
+ * summary of it.
+ */
+const CONFLICT_ESSAY =
+  "credible sources disagree beyond observation-timing tolerance (10%): " +
+  "TokenInsight reports $80.12 (TokenInsight, received 22 hours ago); " +
+  "CoinGecko reports $71.30 (CoinGecko, received 3 hours ago). " +
+  "Uncertainty is exposed rather than a consensus manufactured.";
+
 function quote(overrides: Partial<FreshQuoteView> = {}): FreshQuoteView {
   return {
     movrvestSymbol: "HYPE",
@@ -168,7 +184,26 @@ describe("the ribbon", () => {
 describe("the crypto headline", () => {
   const established = {
     stated: "$79.14",
+    standingStated: "Established",
     age: "TokenInsight, received 22 hours ago",
+    because: null,
+    conflicted: false,
+  };
+
+  const conflicted = {
+    stated: null,
+    standingStated: "Sources conflict",
+    age: null,
+    because: CONFLICT_ESSAY,
+    conflicted: true,
+  };
+
+  const nothing = {
+    stated: null,
+    standingStated: "Not reported",
+    age: null,
+    because: null,
+    conflicted: false,
   };
 
   it("leads with a current fresh quote", () => {
@@ -195,10 +230,51 @@ describe("the crypto headline", () => {
     expect(model.ribbon).toBeNull();
   });
 
+  it("keeps a conflict its own state, carrying the gate's own words", () => {
+    // The measured defect: a conflicted row's figure is null by
+    // construction, so a caller handing on the figure alone made
+    // "Sources conflict" arrive indistinguishable from an empty store.
+    const model = headlineModel(null, conflicted, NOW);
+
+    expect(model.kind).toBe("conflicted");
+    expect(model.conflictStanding).toBe("Sources conflict");
+    expect(model.conflictBecause).toBe(CONFLICT_ESSAY);
+    expect(model.establishedStated).toBeNull();
+  });
+
+  it("serves no figure beside a conflict, even one carrying a value", () => {
+    // The gate serves none, so this cannot arise from it today. The
+    // order is what guarantees it stays that way: conflict is tested
+    // before value, never after.
+    const model = headlineModel(
+      null,
+      { ...conflicted, stated: "$26.60" },
+      NOW,
+    );
+
+    expect(model.kind).toBe("conflicted");
+    expect(model.establishedStated).toBeNull();
+  });
+
   it("states the absence where neither figure exists", () => {
-    const model = headlineModel(null, { stated: null, age: null }, NOW);
+    const model = headlineModel(null, nothing, NOW);
 
     expect(model.kind).toBe("absent");
+  });
+
+  it("states the absence where no row is held at all", () => {
+    expect(headlineModel(null, null, NOW).kind).toBe("absent");
+  });
+
+  it("gives each of the three stored states a different answer", () => {
+    // The property the collapse broke: two of these three read
+    // "absent", and the investor could not tell a refused settlement
+    // from an unreported price.
+    const kinds = [established, conflicted, nothing].map(
+      (stored) => headlineModel(null, stored, NOW).kind,
+    );
+
+    expect(kinds).toEqual(["established", "conflicted", "absent"]);
   });
 });
 
@@ -264,7 +340,10 @@ describe("presentation currency at render time", () => {
   it("an expired current quote drops the crypto headline to established", () => {
     const established = {
       stated: "$79.14",
+      standingStated: "Established",
       age: "TokenInsight, received 22 hours ago",
+      because: null,
+      conflicted: false,
     };
 
     const model = headlineModel(

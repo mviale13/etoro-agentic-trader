@@ -17,6 +17,10 @@
  *   crypto hero with no current quote shows "Last established price"
  *   with its actual age, or "Price unavailable." — never a stale value
  *   dressed as fresh.
+ * - **a conflict is not an absence.** Where the judged-facts gate found
+ *   the sources in disagreement it serves no figure, and the fallback
+ *   states that in the gate's own words rather than reporting an empty
+ *   store. Both are "no number"; only one of them is silence.
  */
 
 export interface FreshQuoteView {
@@ -364,28 +368,75 @@ export function ribbonModel(
 
 // ── the crypto fallback ─────────────────────────────────────────────
 
+/**
+ * The stored price a crypto hero falls back to, exactly as the
+ * judged-facts gate served it.
+ *
+ * **Three states, and they are not interchangeable**: a figure the gate
+ * served, a disagreement it refused to resolve, and nothing held at
+ * all. The middle one carries no figure by construction — the gate
+ * serves none for any conflict — so a caller that hands on only the
+ * value has already thrown the difference away, and "Sources conflict"
+ * arrives here indistinguishable from an empty store.
+ */
+export interface StoredPrice {
+  /** The served figure, or null. Null for every conflict. */
+  stated: string | null;
+  /** The standing in the gate's own words — "Established", "Provider
+      claim", "Sources conflict". Never reworded, shortened or matched
+      against here. */
+  standingStated: string;
+  age: string | null;
+  /** The gate's own account of why it stands as it does, carried only
+      where the sources disagree. Rendered character for character or
+      not at all: no shorter version of it is composed anywhere. */
+  because: string | null;
+  /** Whether the gate judged the sources to disagree. Decided by the
+      caller from the row's own `standing` field — never inferred here
+      from the wording of `standingStated` or `because`, which are
+      prose and would have to be parsed to yield it. */
+  conflicted: boolean;
+}
+
 export interface HeadlineModel {
-  kind: "fresh" | "established" | "absent";
+  kind: "fresh" | "established" | "conflicted" | "absent";
   ribbon: RibbonModel | null;
   /** For the established fallback: the stored figure and its own age
       sentence, exactly as the judged-facts gate served them. */
   establishedStated: string | null;
   establishedAge: string | null;
+  /** For the conflicted fallback: the standing and the gate's own
+      account of the disagreement, both carried verbatim. Null for
+      every other kind — a conflict is the only state that has them. */
+  conflictStanding: string | null;
+  conflictBecause: string | null;
 }
 
 /**
  * Which price leads a crypto hero.
  *
  * A CURRENT fresh quote is the headline. Anything less falls back to
- * the stored established price labelled as what it is — "Last
- * established price", with its actual age — and where none is held the
- * state is stated. A stale fresh quote never outranks the established
- * figure here: "current or fallback" is the rule, with no middle tier
- * that could dress a stale value as fresh.
+ * the stored row — and **the stored row has three states, not two**:
+ *
+ * - the gate served a figure → the figure, labelled as what it is;
+ * - the gate found the sources in conflict → its standing and its own
+ *   account of the disagreement, and **no number**;
+ * - the gate holds nothing → the state is stated.
+ *
+ * A stale fresh quote never outranks the stored row here: "current or
+ * fallback" is the rule, with no middle tier that could dress a stale
+ * value as fresh. A current one leads because it is current, and it
+ * settles nothing — the conflicted judged fact stands exactly as it
+ * did, under Evidence, either way.
+ *
+ * **Conflict is tested before value.** A conflicted row carries no
+ * figure by construction, so the order changes nothing the gate can
+ * produce today; it is the order that keeps a value from ever being
+ * served beside a disagreement should a row arrive carrying both.
  */
 export function headlineModel(
   quote: FreshQuoteView | null,
-  established: { stated: string | null; age: string | null } | null,
+  stored: StoredPrice | null,
   now: Date,
 ): HeadlineModel {
   const ribbon = ribbonModel(quote, now);
@@ -396,15 +447,30 @@ export function headlineModel(
       ribbon,
       establishedStated: null,
       establishedAge: null,
+      conflictStanding: null,
+      conflictBecause: null,
     };
   }
 
-  if (established?.stated) {
+  if (stored?.conflicted) {
+    return {
+      kind: "conflicted",
+      ribbon: null,
+      establishedStated: null,
+      establishedAge: null,
+      conflictStanding: stored.standingStated,
+      conflictBecause: stored.because,
+    };
+  }
+
+  if (stored?.stated) {
     return {
       kind: "established",
       ribbon: null,
-      establishedStated: established.stated,
-      establishedAge: established.age,
+      establishedStated: stored.stated,
+      establishedAge: stored.age,
+      conflictStanding: null,
+      conflictBecause: null,
     };
   }
 
@@ -413,5 +479,7 @@ export function headlineModel(
     ribbon: null,
     establishedStated: null,
     establishedAge: null,
+    conflictStanding: null,
+    conflictBecause: null,
   };
 }

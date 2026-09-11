@@ -151,7 +151,17 @@ describe("the poll loop", () => {
     expect(ribbonModel(held, at121)?.current).toBe(false);
     expect(ribbonModel(held, at121)?.attribution).toContain("As of");
     expect(
-      headlineModel(held, { stated: "$79.14", age: "22 hours ago" }, at121).kind,
+      headlineModel(
+        held,
+        {
+          stated: "$79.14",
+          standingStated: "Established",
+          age: "22 hours ago",
+          because: null,
+          conflicted: false,
+        },
+        at121,
+      ).kind,
     ).toBe("established");
 
     h.poller.stop();

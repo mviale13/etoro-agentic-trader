@@ -16,6 +16,7 @@
  * - facts that do not exist are omitted — absence is not a card.
  */
 
+import type { StoredPrice } from "@/components/quote/quote-model";
 import type { RecordedPortfolio } from "@/lib/api/cycle-review";
 import type {
   BriefView,
@@ -192,6 +193,36 @@ const CURRENCY = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
+
+/**
+ * The headline price the hero falls back to, from the judged price row.
+ *
+ * The same rule `fromFactRow` keeps for the facts widget, applied to
+ * the one figure the page leads with: **a conflict serves no value, and
+ * it is not an absence either.** The hero collapsed those two — it read
+ * the row's `stated`, found the null every conflict carries, and said
+ * "Price unavailable." while the row beside it held "Sources conflict"
+ * and the gate's own account of who disagreed and by how much.
+ *
+ * `standing` is the row's own field and is matched here and nowhere
+ * further down: the quote layer is *told* whether the sources conflict
+ * and is never asked to read it back out of prose.
+ */
+export function storedPrice(row: FactRowView | null): StoredPrice | null {
+  if (row === null) {
+    return null;
+  }
+
+  const conflicted = row.standing === "conflicted";
+
+  return {
+    stated: conflicted ? null : row.stated,
+    standingStated: row.standingStated,
+    age: row.age,
+    because: conflicted ? row.because : null,
+    conflicted,
+  };
+}
 
 export function heroModel(
   dossier: CryptoDossier,
