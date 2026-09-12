@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from app.domain.account_snapshot import AccountSnapshot
 from app.domain.asset_class import AssetClass
+from app.domain.held_security import held_securities
 from app.domain.portfolio_position import PortfolioPosition
 from app.domain.portfolio_snapshot import Allocation, PortfolioSnapshot
 from app.services.exchange_rate_service import ExchangeRateService
@@ -222,24 +223,22 @@ class PortfolioService:
         therefore collapsed the entire account into one nameless holding
         and reported it as the largest — the identity is the id, and the
         symbol is a label put on it afterwards.
+
+        The fold itself is `held_securities`, which is also what the
+        cycle's weights and the portfolio surface read. This measures a
+        policy limit and takes the largest; that it ranks the rest is
+        the shared function's business, not this one's.
         """
 
         if not positions:
             return None, 0.0
 
-        held: dict[int, tuple[str, float]] = {}
+        largest = held_securities(positions)[0]
 
-        for position in positions:
-            symbol, value = held.get(position.instrument_id, ("", 0.0))
-
-            held[position.instrument_id] = (
-                symbol or position.symbol,
-                value + position.market_value_usd,
-            )
-
-        symbol, value = max(held.values(), key=lambda holding: holding[1])
-
-        return symbol or None, cls._percentage(value, equity_usd)
+        return (
+            largest.symbol or None,
+            cls._percentage(largest.market_value_usd, equity_usd),
+        )
 
     @staticmethod
     def _percentage(value: float, total: float) -> float:

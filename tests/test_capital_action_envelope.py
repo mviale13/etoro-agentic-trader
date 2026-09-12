@@ -366,23 +366,34 @@ def test_6_split_broker_rows_aggregate_by_instrument_identity() -> None:
     from types import SimpleNamespace
 
     from app.commands.cycle import _portfolio_weights
+    from app.domain.portfolio_position import PortfolioPosition
 
+    # Real positions rather than stand-ins: the fold behind
+    # `_portfolio_weights` is shared with the portfolio surface and
+    # reads the whole row, so a stub carrying only what the weights
+    # need would be testing a shape the caller never sees.
     brain = SimpleNamespace(
         portfolio=SimpleNamespace(
             total_value=10_000.0,
             allocation=SimpleNamespace(cash=50.0),
             holdings=(
-                SimpleNamespace(
-                    instrument_id=7,
+                PortfolioPosition(
                     symbol="KO",
+                    quantity=30.0,
+                    invested_usd=1_800.0,
                     market_value_usd=2_000.0,
-                    is_resolved=True,
-                ),
-                SimpleNamespace(
+                    unrealized_pnl_usd=200.0,
+                    asset_class="stock",
                     instrument_id=7,
+                ),
+                PortfolioPosition(
                     symbol="KO",
+                    quantity=0.75,
+                    invested_usd=45.0,
                     market_value_usd=50.0,
-                    is_resolved=True,
+                    unrealized_pnl_usd=5.0,
+                    asset_class="stock",
+                    instrument_id=7,
                 ),
             ),
         )
@@ -1136,6 +1147,7 @@ def test_45_open_uses_zero_only_because_the_course_says_unheld(tmp_path) -> None
     from app.commands.cycle import _envelope, _portfolio_weights
     from app.domain.asset_class import AssetClass
     from app.domain.executive.executive_action import ActionKind
+    from app.domain.portfolio_position import PortfolioPosition
 
     brain = SimpleNamespace(
         portfolio=SimpleNamespace(
@@ -1143,17 +1155,23 @@ def test_45_open_uses_zero_only_because_the_course_says_unheld(tmp_path) -> None
             last_sync=MOMENT - timedelta(minutes=2),
             allocation=SimpleNamespace(cash=58.0),
             holdings=(
-                SimpleNamespace(
-                    instrument_id=7,
-                    market_value_usd=800.0,
-                    is_resolved=False,
+                PortfolioPosition(
                     symbol="",
+                    quantity=1.0,
+                    invested_usd=750.0,
+                    market_value_usd=800.0,
+                    unrealized_pnl_usd=50.0,
+                    asset_class=None,
+                    instrument_id=7,
                 ),
-                SimpleNamespace(
-                    instrument_id=8,
-                    market_value_usd=500.0,
-                    is_resolved=True,
+                PortfolioPosition(
                     symbol="KO",
+                    quantity=8.0,
+                    invested_usd=460.0,
+                    market_value_usd=500.0,
+                    unrealized_pnl_usd=40.0,
+                    asset_class="stock",
+                    instrument_id=8,
                 ),
             ),
         ),

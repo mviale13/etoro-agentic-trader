@@ -61,6 +61,7 @@ from app.domain.daily_cycle import (
     movement,
     no_action_permitted,
 )
+from app.domain.held_security import held_securities
 from app.domain.market_snapshot import MarketQuote
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 from app.domain.strategic_allocation import portfolio_guidance_for
@@ -101,6 +102,11 @@ def _portfolio_weights(
     read as a compliant 20.0% — then keyed by the resolved symbol.
     An unresolved holding contributes no symbol weight and is refused
     downstream rather than guessed.
+
+    The fold is `held_securities`, shared with the largest-position
+    measure and the portfolio surface. Two instruments resolving to one
+    symbol still sum here, because the *weight* is a share of the
+    account per ticker and the ticker is what every consumer keys on.
     """
 
     portfolio = brain.portfolio
@@ -109,24 +115,16 @@ def _portfolio_weights(
     if total is None or total <= 0:
         return ({}, None, total)
 
-    by_instrument: dict[int, float] = {}
-    names: dict[int, str] = {}
-
-    for holding in portfolio.holdings:
-        by_instrument[holding.instrument_id] = by_instrument.get(
-            holding.instrument_id, 0.0
-        ) + (holding.market_value_usd or 0.0)
-
-        if holding.is_resolved:
-            names[holding.instrument_id] = holding.symbol.upper().strip()
-
     weights: dict[str, float] = {}
 
-    for instrument_id, value in by_instrument.items():
-        symbol = names.get(instrument_id)
+    for held in held_securities(portfolio.holdings):
+        if not held.resolved:
+            continue
 
-        if symbol:
-            weights[symbol] = weights.get(symbol, 0.0) + value / total * 100.0
+        symbol = held.symbol.upper().strip()
+        weights[symbol] = (
+            weights.get(symbol, 0.0) + held.market_value_usd / total * 100.0
+        )
 
     return (weights, portfolio.allocation.cash, total)
 

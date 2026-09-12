@@ -19,6 +19,10 @@ import { CapacityToAct } from "@/components/portfolio/CapacityToAct";
 import { ExecutivePortfolioAssessment } from "@/components/portfolio/ExecutivePortfolioAssessment";
 import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
 import {
+  type HoldingsView,
+  holdingsViewFromParam,
+} from "@/components/portfolio/holdings-view";
+import {
   getPortfolioOverview,
   type PortfolioDrawdown,
   type PortfolioOverview,
@@ -179,7 +183,13 @@ function DrawdownCard({ drawdown }: { drawdown: PortfolioDrawdown | null }) {
   );
 }
 
-function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
+function PortfolioContent({
+  portfolio,
+  view,
+}: {
+  portfolio: PortfolioOverview;
+  view: HoldingsView;
+}) {
   // Null cash means the split itself is unknown. The bar is not
   // drawn at all rather than drawn as 100% invested, which is what
   // a substituted zero would have shown.
@@ -375,15 +385,26 @@ function PortfolioContent({ portfolio }: { portfolio: PortfolioOverview }) {
         </aside>
       </section>
 
+      {/* Keyed on the view so a server navigation re-seeds the
+          table's own state, rather than an effect syncing it. */}
       <HoldingsTable
+        key={view}
         holdings={portfolio.holdings}
+        heldSecurities={portfolio.heldSecurities}
         positions={portfolio.positions}
+        view={view}
       />
     </>
   );
 }
 
-export default async function PortfolioPage() {
+type PageProps = {
+  searchParams: Promise<{ holdings?: string | string[] }>;
+};
+
+export default async function PortfolioPage({ searchParams }: PageProps) {
+  const { holdings } = await searchParams;
+  const view = holdingsViewFromParam(holdings);
   const result = await getPortfolioOverview();
 
   return (
@@ -434,7 +455,7 @@ export default async function PortfolioPage() {
         </header>
 
         {result.portfolio ? (
-          <PortfolioContent portfolio={result.portfolio} />
+          <PortfolioContent portfolio={result.portfolio} view={view} />
         ) : (
           <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
             <h2 className="font-semibold">Unable to load the portfolio</h2>
