@@ -77,6 +77,30 @@ export interface PortfolioHolding {
   weightPct: number | null;
 }
 
+/**
+ * One **security**, from every trade the broker reports in it.
+ *
+ * A different fact from `PortfolioHolding`, not a tidier version of it:
+ * the broker reports a position per trade, so an account holding one
+ * security bought twice sends two rows. The weight is the share of the
+ * *summed* value, taken once by the backend — never a sum of the
+ * trades' percentages, and never computed on this side.
+ */
+export interface HeldSecurity {
+  /** The broker's own instrument identity — what the fold keyed on,
+      and what makes this row unique where a symbol would not. */
+  instrumentId: number;
+  symbol: string;
+  resolved: boolean;
+  assetClass: string | null;
+  investedUsd: number;
+  marketValueUsd: number;
+  unrealizedPnlUsd: number;
+  weightPct: number | null;
+  /** How many broker rows this holding was reported as. */
+  trades: number;
+}
+
 export interface PortfolioOverview {
   totalValueUsd: number;
   /** Absent where no rate has been read. Never a zero. */
@@ -94,6 +118,9 @@ export interface PortfolioOverview {
   risk: PortfolioRisk | null;
   capacity: PortfolioCapacity | null;
   holdings: PortfolioHolding[];
+  /** The same account as one row per security, largest first.
+      Empty where the backend served none. */
+  heldSecurities: HeldSecurity[];
 }
 
 export interface PortfolioOverviewResult {
@@ -291,6 +318,46 @@ function holdingsValue(portfolio: UnknownRecord): PortfolioHolding[] {
   });
 }
 
+/**
+ * The consolidated rows, exactly as the backend folded and ranked them.
+ *
+ * Nothing is summed, re-keyed or re-sorted here. A row missing its
+ * instrument identity is dropped rather than folded onto a symbol —
+ * the identity is the id, and the symbol is a label put on it
+ * afterwards.
+ */
+function heldSecuritiesValue(portfolio: UnknownRecord): HeldSecurity[] {
+  const rows = portfolio.holdings_by_security;
+
+  if (!Array.isArray(rows)) {
+    return [];
+  }
+
+  return rows.flatMap((item) => {
+    if (
+      !isRecord(item) ||
+      typeof item.symbol !== "string" ||
+      typeof item.instrument_id !== "number"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        instrumentId: item.instrument_id,
+        symbol: item.symbol,
+        resolved: item.resolved === true,
+        assetClass: stringValue(item, "asset_class") || null,
+        investedUsd: numberValue(item, "invested_usd"),
+        marketValueUsd: numberValue(item, "market_value_usd"),
+        unrealizedPnlUsd: numberValue(item, "unrealized_pnl_usd"),
+        weightPct: measuredNumber(item, "weight_pct"),
+        trades: numberValue(item, "trades"),
+      },
+    ];
+  });
+}
+
 export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
   const endpoint = `${BACKEND_URL}/brain/`;
 
@@ -353,6 +420,7 @@ export async function getPortfolioOverview(): Promise<PortfolioOverviewResult> {
         risk: riskValue(payload),
         capacity: capacityValue(payload),
         holdings: holdingsValue(portfolio),
+        heldSecurities: heldSecuritiesValue(portfolio),
       },
       source: "backend",
       backendUrl: endpoint,

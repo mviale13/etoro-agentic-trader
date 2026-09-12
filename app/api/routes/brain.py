@@ -8,6 +8,7 @@ from app.application.brain.reasoning.models.capacity_assessment import (
     CapacityAssessment,
 )
 from app.application.brain.reasoning.models.risk_assessment import RiskAssessment
+from app.domain.held_security import held_securities
 from app.domain.portfolio_drawdown import PortfolioDrawdown
 from app.domain.portfolio_snapshot import PortfolioSnapshot
 
@@ -130,6 +131,45 @@ def _holdings(portfolio: PortfolioSnapshot) -> list[dict[str, object]]:
     ]
 
 
+def _held_securities(portfolio: PortfolioSnapshot) -> list[dict[str, object]]:
+    """The same account as one row per security, largest first.
+
+    The broker reports a position per *trade*, so "what does this
+    account hold" and "what trades are open" are two questions with two
+    answers — and only the second one was ever served. On the live
+    account they differ for three securities and reorder eleven of
+    thirteen: ETOR renders at rows 7 and 16 as trades, and is the
+    fourth largest holding.
+
+    Served **beside** `_holdings` rather than instead of it: the
+    per-trade rows are the broker's own fact and the investor is
+    entitled to both. The fold is `held_securities`, shared with the
+    largest-position measure and the cycle's weights, and the share is
+    `weight_of` over the folded value rather than a sum of the trades'
+    percentages — see `PortfolioSnapshot.weight_of`.
+
+    This exists so the page does not have to compute it. A table that
+    folded these rows itself would be the dashboard calculating, which
+    is exactly what Invariant 8 forbids and what PR #230 refused.
+    """
+
+    return [
+        {
+            "instrument_id": held.instrument_id,
+            "symbol": held.symbol,
+            "resolved": held.resolved,
+            "asset_class": held.asset_class,
+            "quantity": held.quantity,
+            "invested_usd": held.invested_usd,
+            "market_value_usd": held.market_value_usd,
+            "unrealized_pnl_usd": held.unrealized_pnl_usd,
+            "weight_pct": portfolio.weight_of(held.market_value_usd),
+            "trades": held.trades,
+        }
+        for held in held_securities(portfolio.holdings)
+    ]
+
+
 @router.get("/")
 async def get_brain(
     service: BrainSnapshotService = Depends(get_brain_snapshot_service),
@@ -167,6 +207,7 @@ async def get_brain(
             "last_sync": brain.portfolio.last_sync,
             "drawdown": _drawdown(brain.portfolio.drawdown),
             "holdings": _holdings(brain.portfolio),
+            "holdings_by_security": _held_securities(brain.portfolio),
         },
         "risk": _risk(brain.risk),
         "capacity": _capacity(brain.capacity),

@@ -91,7 +91,23 @@ class PortfolioSnapshot:
         is absent, not zero.
         """
 
+        return self.weight_of(holding.market_value_usd)
+
+    def weight_of(self, market_value_usd: float) -> float | None:
+        """The same share, for a value rather than a single position.
+
+        A consolidated holding is several of the broker's rows, so the
+        share it needs is the share of the *summed* value — and adding
+        the rows' percentages is not that. It drifts, and it
+        re-implements the rule above badly: the part that matters here
+        is that an account reporting no value to take a share of yields
+        **absent, not zero**, and a sum of absent percentages is a
+        number nobody measured.
+
+        So the values fold, and the share is asked for once, here.
+        """
+
         if self.total_value <= 0.0:
             return None
 
-        return holding.market_value_usd / self.total_value * 100.0
+        return market_value_usd / self.total_value * 100.0
