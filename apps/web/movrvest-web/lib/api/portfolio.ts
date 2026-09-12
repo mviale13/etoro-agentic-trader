@@ -30,7 +30,24 @@ export interface PortfolioDrawdown {
  * Null is never rendered as zero: a risk nobody could measure and a risk
  * measured at nothing are opposite findings.
  */
+/**
+ * One risk indicator, with the band the backend's own rule gives it.
+ *
+ * `elevated` is the backend's answer, not a comparison made here: it
+ * means the score sits in the platform's HIGH or VERY_HIGH band. A page
+ * that decided that for itself would be running a second, quieter set of
+ * thresholds beside the real ones.
+ */
+export interface RiskIndicator {
+  key: string;
+  score: number | null;
+  level: string | null;
+  elevated: boolean;
+}
+
 export interface PortfolioRisk {
+  /** The composite: an equal mean of the four indicators, absent while
+      any of them is. **Not the account's total risk.** */
   overall: number | null;
   level: string | null;
   market: number | null;
@@ -40,6 +57,24 @@ export interface PortfolioRisk {
   factors: string[];
   evidence: { statement: string; source: string }[];
   unmeasured: string[];
+  /** The four indicators, in the order the backend serves them. */
+  indicators: RiskIndicator[];
+  /** How many of them carry a score, and how many exist at all — so the
+      page can count instead of claiming completeness. */
+  measuredCount: number;
+  indicatorCount: number;
+  /** The fall the drawdown score is measured against, and **whose limit
+      it is**. `investor` where they set one, `platform_default` where
+      this platform applied its own. */
+  drawdownLimitPct: number | null;
+  drawdownLimitSource: string | null;
+  /** The cash share below which the buffer indicator starts scoring. */
+  cashBufferThresholdPct: number | null;
+  /** Blended annualised volatility of what the account is exposed to,
+      and the share of the account that figure actually describes. */
+  marketVolatilityPct: number | null;
+  marketCoveredPct: number | null;
+  marketBenchmarks: string[];
 }
 
 /**
@@ -263,7 +298,46 @@ function riskValue(payload: UnknownRecord): PortfolioRisk | null {
         : [],
     ),
     unmeasured: stringList(risk, "unmeasured"),
+    indicators: indicatorsValue(risk),
+    measuredCount: numberValue(risk, "measured_count"),
+    indicatorCount: numberValue(risk, "component_count"),
+    drawdownLimitPct: measuredNumber(risk, "drawdown_limit_pct"),
+    drawdownLimitSource: stringValue(risk, "drawdown_limit_source") || null,
+    cashBufferThresholdPct: measuredNumber(risk, "cash_buffer_threshold_pct"),
+    marketVolatilityPct: measuredNumber(risk, "market_volatility_pct"),
+    marketCoveredPct: measuredNumber(risk, "market_covered_pct"),
+    marketBenchmarks: stringList(risk, "market_benchmarks"),
   };
+}
+
+/**
+ * The indicators, exactly as the backend banded them.
+ *
+ * A row with no key is dropped rather than rendered nameless — and no
+ * band is inferred here from the score, because that is the backend's
+ * rule to apply.
+ */
+function indicatorsValue(risk: UnknownRecord): RiskIndicator[] {
+  const rows = risk.components;
+
+  if (!Array.isArray(rows)) {
+    return [];
+  }
+
+  return rows.flatMap((item) => {
+    if (!isRecord(item) || typeof item.key !== "string") {
+      return [];
+    }
+
+    return [
+      {
+        key: item.key,
+        score: measuredNumber(item, "score"),
+        level: stringValue(item, "level") || null,
+        elevated: item.elevated === true,
+      },
+    ];
+  });
 }
 
 function capacityValue(payload: UnknownRecord): PortfolioCapacity | null {

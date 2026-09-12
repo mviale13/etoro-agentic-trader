@@ -4,13 +4,19 @@ from app.api.dependencies import get_brain_snapshot_service
 from app.application.brain.brain_snapshot_service import (
     BrainSnapshotService,
 )
+from app.application.brain.reasoning.models.assessment import (
+    AssessmentLevel,
+    assessment_level,
+)
 from app.application.brain.reasoning.models.capacity_assessment import (
     CapacityAssessment,
 )
 from app.application.brain.reasoning.models.risk_assessment import RiskAssessment
+from app.application.brain.reasoning.risk_analyst import RiskAnalyst
 from app.domain.held_security import held_securities
 from app.domain.portfolio_drawdown import PortfolioDrawdown
 from app.domain.portfolio_snapshot import PortfolioSnapshot
+from app.services.portfolio_drawdown_service import PortfolioDrawdownService
 
 router = APIRouter(
     prefix="/brain",
@@ -47,23 +53,96 @@ def _drawdown(
     }
 
 
-def _risk(
-    risk: RiskAssessment | None,
-) -> dict[str, object] | None:
-    """
-    The four ways this account can lose money, each measured or null.
+#: Which band counts as elevated, in the platform's own vocabulary.
+#:
+#: Not a threshold invented here: `assessment_level` already names every
+#: point on the 0–1 scale, and these are the two names it gives the top
+#: of it. A component sitting in one of them is conspicuous on the page
+#: whatever the composite reads, because an equal mean of four can sit in
+#: LOW while one of its terms is at the ceiling.
+_ELEVATED = (AssessmentLevel.HIGH, AssessmentLevel.VERY_HIGH)
 
-    Served as scores and statements, not as the five-segment bars the page
-    draws. What a score means visually is presentation; what it is worth
-    is measurement, and the page had been deciding both.
+#: Quoted from the analyst that applies it, never re-declared here.
+_CASH_BUFFER_THRESHOLD_PCT = RiskAnalyst.CASH_BUFFER_THRESHOLD_PCT
+
+
+def _investor_set(limit_pct: float | None) -> bool:
+    """Whether the score was measured against a limit the investor gave.
+
+    The same test `PortfolioDrawdownService.risk_score` applies when it
+    decides whether to fall back: a non-positive limit scores nothing, so
+    it is the platform's default that is in force and the page must say
+    so.
+    """
+
+    return limit_pct is not None and limit_pct > 0
+
+
+def _component(key: str, score: float | None) -> dict[str, object]:
+    """One indicator, with the band the platform's own rule gives it.
+
+    The band is resolved here so no surface has to compare a score
+    against a number of its own choosing — which is how a second, quieter
+    set of thresholds gets into a product.
+    """
+
+    level = assessment_level(score) if score is not None else None
+
+    return {
+        "key": key,
+        "score": score,
+        "level": level.value if level is not None else None,
+        "elevated": level in _ELEVATED if level is not None else False,
+    }
+
+
+def _risk(risk: RiskAssessment | None) -> dict[str, object] | None:
+    """
+    Four indicators of portfolio downside, each measured or null.
+
+    Served as scores, bands and the figures beneath them — never as the
+    five-segment bars the page draws. What a score means visually is
+    presentation; what it is worth is measurement, and the page had been
+    deciding both.
+
+    **`overall` is a composite of exactly these four and nothing else.**
+    An equal mean, absent while any term is missing. It is not the
+    account's total risk, and it cannot be: it averages, so a component
+    at the ceiling can sit inside a composite that reads low. Hence
+    `elevated` on every component — the page is told which terms are in
+    the platform's own HIGH or VERY_HIGH band rather than left to work it
+    out from the numbers.
+
+    The figures beneath each indicator are carried because the score
+    alone is unreadable: 0.55 says nothing, and "the account fell 15.8%
+    against the 20% this platform applies where the investor stated no
+    limit" says all of it — including whose limit it is, which is the one
+    thing a risk page must not get wrong.
     """
 
     if risk is None:
         return None
 
+    scores = (
+        risk.market_risk_score,
+        risk.drawdown_risk_score,
+        risk.concentration_risk_score,
+        risk.liquidity_risk_score,
+    )
+
+    components = [
+        _component("market", risk.market_risk_score),
+        _component("drawdown", risk.drawdown_risk_score),
+        _component("concentration", risk.concentration_risk_score),
+        _component("cash_buffer", risk.liquidity_risk_score),
+    ]
+
+    exposure = risk.market_exposure
+
     return {
         "overall": risk.overall_risk_score,
         "level": risk.risk_level.value if risk.risk_level is not None else None,
+        # The flat keys the contract already carried, untouched.
         "market": risk.market_risk_score,
         "concentration": risk.concentration_risk_score,
         "liquidity": risk.liquidity_risk_score,
@@ -75,6 +154,36 @@ def _risk(
             for item in risk.evidence
         ],
         "unmeasured": list(risk.unmeasured),
+        # ── what the composite is a composite of ──────────────────────
+        "components": components,
+        "measured_count": sum(1 for score in scores if score is not None),
+        "component_count": len(scores),
+        # ── the figures each indicator is a score of ──────────────────
+        #
+        # The investor's own limit where they set one, and the platform's
+        # default where they did not. Two different claims, and a page
+        # that says "the limit the investor set" over a default is
+        # picking an argument with a figure nobody chose.
+        "drawdown_limit_pct": (
+            risk.drawdown_limit_pct
+            if _investor_set(risk.drawdown_limit_pct)
+            else PortfolioDrawdownService.DEFAULT_TOLERANCE_PCT
+        ),
+        "drawdown_limit_source": (
+            "investor" if _investor_set(risk.drawdown_limit_pct) else "platform_default"
+        ),
+        "cash_buffer_threshold_pct": _CASH_BUFFER_THRESHOLD_PCT,
+        "market_volatility_pct": (
+            round(exposure.volatility * 100, 1) if exposure is not None else None
+        ),
+        "market_covered_pct": (
+            round(exposure.covered_share * 100, 1) if exposure is not None else None
+        ),
+        "market_benchmarks": (
+            sorted({name for item in exposure.exposures for name in item.benchmarks})
+            if exposure is not None
+            else []
+        ),
     }
 
 

@@ -9,6 +9,7 @@ from app.application.brain.reasoning.models.assessment import (
     Evidence,
     assessment_level,
 )
+from app.domain.market_risk import MarketRisk
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +35,32 @@ class RiskAssessment:
 
     #: Risks the platform cannot currently measure, named rather than scored.
     unmeasured: tuple[str, ...] = field(default_factory=tuple)
+
+    #: The exposure measurement `market_risk_score` was derived from, or
+    #: None where none could be taken.
+    #:
+    #: **Carried so a surface can state what the score is a score _of_.**
+    #: The blended volatility, the share of the account it covers and the
+    #: instruments it was read from all existed here and were discarded,
+    #: leaving only a 0–1 number and a sentence — so a page wanting to
+    #: say "18.0% annualised, describing 45.7% of the account" had to
+    #: parse it back out of the sentence, which is how a presentation
+    #: layer starts inventing facts.
+    #:
+    #: **Read by presentation only.** Nothing in the decision path
+    #: consults it; the CIO reads the scores, and this changes none of
+    #: them.
+    market_exposure: MarketRisk | None = None
+
+    #: The fall the investor said they could accept, where they said one
+    #: — and **None where the platform's own default was applied**.
+    #:
+    #: Carried because `drawdown_risk_score` is a ratio against one or
+    #: the other, and only this analyst knows which. A surface reaching
+    #: for a policy of its own to answer that would sooner or later
+    #: answer with a *different* policy's figure, and tell the investor
+    #: they had set a limit they never set.
+    drawdown_limit_pct: float | None = None
 
     def __post_init__(self) -> None:
         for field_name in (

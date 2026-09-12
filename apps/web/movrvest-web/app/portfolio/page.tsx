@@ -325,7 +325,17 @@ function PortfolioContent({
 
           <DrawdownCard drawdown={portfolio.drawdown} />
 
-          <ExecutivePortfolioAssessment risk={portfolio.risk} />
+          {/* The figures each indicator is a score of are already on
+              the wire — the drawdown, the largest holding and the cash
+              share. Passed rather than re-served, so nothing is
+              duplicated into the risk payload to reach one card. */}
+          <ExecutivePortfolioAssessment
+            cashPct={portfolio.liquidityPct}
+            drawdown={portfolio.drawdown}
+            largestPosition={portfolio.capacity?.largestPosition ?? null}
+            largestPositionPct={portfolio.capacity?.largestPositionPct ?? null}
+            risk={portfolio.risk}
+          />
         </div>
 
         <aside className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white sm:p-8">
