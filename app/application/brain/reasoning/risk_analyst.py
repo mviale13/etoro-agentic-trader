@@ -22,6 +22,16 @@ class RiskAnalyst:
     #: the audit found it, and naming it endorses nothing.
     CONFIDENCE = 0.80
 
+    #: The cash share below which this analyst starts scoring risk, and
+    #: at zero cash scores it at the ceiling.
+    #:
+    #: Named rather than inline so the surface that has to say *against
+    #: what* can quote it instead of hardcoding a second copy — a figure
+    #: worth 10.0 in two files is a figure that will one day be worth
+    #: 10.0 in one of them. Naming it endorses nothing: it remains this
+    #: analyst's own unsourced constant.
+    CASH_BUFFER_THRESHOLD_PCT = 10.0
+
     def __init__(
         self,
         market_risk_service: MarketRiskService | None = None,
@@ -139,6 +149,9 @@ class RiskAnalyst:
             mitigants=tuple(mitigants),
             evidence=tuple(evidence),
             unmeasured=tuple(unmeasured),
+            # Carried for presentation only — the scores are unchanged.
+            market_exposure=exposure,
+            drawdown_limit_pct=tolerance,
         )
 
     @staticmethod
@@ -303,7 +316,8 @@ class RiskAnalyst:
         return max(
             0.0,
             min(
-                (10.0 - cash) / 10.0,
+                (self.CASH_BUFFER_THRESHOLD_PCT - cash)
+                / self.CASH_BUFFER_THRESHOLD_PCT,
                 1.0,
             ),
         )
