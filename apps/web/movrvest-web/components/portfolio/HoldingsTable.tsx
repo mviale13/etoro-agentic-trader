@@ -1,6 +1,31 @@
-import Link from "next/link";
+"use client";
+
+/**
+ * A client component for one reason: **switching view must not cost a
+ * page load.**
+ *
+ * Both lists are already in this component's props, so choosing
+ * between them is free — but the toggle was two plain links, and this
+ * route is `force-dynamic`, so every click re-ran the whole server
+ * render *and* fired another authenticated account read for data the
+ * browser was already holding. Seconds of blank page to reorder
+ * thirteen rows.
+ *
+ * It is still two real anchors. The click is intercepted and the URL
+ * updated through the history API — which Next integrates with its
+ * router — so the view stays linkable, Back still undoes it, and with
+ * JavaScript off the anchors navigate exactly as they did before.
+ */
+
+import { useEffect, useState } from "react";
 import { Layers3 } from "lucide-react";
 
+import {
+  HOLDINGS_PARAM,
+  type HoldingsView,
+  holdingsViewFromParam,
+  holdingsViewHref,
+} from "@/components/portfolio/holdings-view";
 import { StatusPill } from "@/components/ui/StatusPill";
 import type { HeldSecurity, PortfolioHolding } from "@/lib/api/portfolio";
 
@@ -23,25 +48,6 @@ function assetClassLabel(value: string | null): string {
   }
 
   return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-export const HOLDINGS_VIEWS = ["securities", "trades"] as const;
-
-export type HoldingsView = (typeof HOLDINGS_VIEWS)[number];
-
-/**
- * Which view the URL asks for. Anything unrecognised is the default.
- *
- * The default is **securities**: "what the account holds" is a question
- * about securities, and the broker's trade rows are the evidence behind
- * the answer rather than the answer.
- */
-export function holdingsViewFromParam(
-  param: string | string[] | undefined,
-): HoldingsView {
-  const value = Array.isArray(param) ? param[0] : param;
-
-  return value === "trades" ? "trades" : "securities";
 }
 
 /**
@@ -87,13 +93,44 @@ export function HoldingsTable({
   holdings,
   heldSecurities,
   positions,
-  view,
+  view: serverView,
 }: {
   holdings: PortfolioHolding[];
   heldSecurities: HeldSecurity[];
   positions: number;
+  /** What the URL asked for, decided on the server so the first paint
+      is already right and a direct link works without JavaScript. */
   view: HoldingsView;
 }) {
+  // Seeded from the server's answer and owned here afterwards. A
+  // server navigation that lands on the other view — a direct link, a
+  // reload, the no-JavaScript path — remounts this component through
+  // the `key` at the call site, which re-seeds it. Syncing that with an
+  // effect instead would set state during render for no gain.
+  const [view, setView] = useState<HoldingsView>(serverView);
+
+  // Back and Forward move through the history entries the toggle
+  // pushed. Without this the URL would change and the table would not,
+  // which is a worse defect than the page load this replaced.
+  useEffect(() => {
+    function onPopState(): void {
+      setView(
+        holdingsViewFromParam(
+          new URLSearchParams(window.location.search).get(HOLDINGS_PARAM),
+        ),
+      );
+    }
+
+    window.addEventListener("popstate", onPopState);
+
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  function show(next: HoldingsView): void {
+    setView(next);
+    window.history.pushState(null, "", holdingsViewHref(next));
+  }
+
   // A consolidated view the backend did not serve is not silently
   // replaced with a folded-here one: the trade rows are shown and the
   // toggle says so, because inventing the fold on this side is the one
@@ -153,7 +190,11 @@ export function HoldingsTable({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <ViewToggle current={view} available={heldSecurities.length > 0} />
+          <ViewToggle
+            current={view}
+            available={heldSecurities.length > 0}
+            onShow={show}
+          />
 
           <StatusPill
             status="live"
@@ -254,19 +295,29 @@ export function HoldingsTable({
 }
 
 /**
- * Two links, not a control with state.
+ * Two anchors, enhanced — not a control that only works with scripts.
  *
- * Each view is a URL, so it survives a reload, can be linked, and needs
- * no JavaScript. Where the backend served no consolidated rows the
- * toggle states that rather than offering a view that would arrive
- * empty — an absence named, never a dead control.
+ * Each view is a real `href`, so it is linkable, and with JavaScript off
+ * the click navigates and the server renders the right view. With
+ * JavaScript on, the click is intercepted and only the URL moves: the
+ * rows are already here, and fetching them again to reorder them is the
+ * defect this replaced.
+ *
+ * Modified clicks — new tab, new window, download — are left entirely
+ * alone. Intercepting those would break the one thing an anchor is for.
+ *
+ * Where the backend served no consolidated rows the toggle states that
+ * rather than offering a view that would arrive empty: an absence
+ * named, never a dead control.
  */
 function ViewToggle({
   current,
   available,
+  onShow,
 }: {
   current: HoldingsView;
   available: boolean;
+  onShow: (view: HoldingsView) => void;
 }) {
   if (!available) {
     return (
@@ -290,12 +341,24 @@ function ViewToggle({
         const active = value === current;
 
         return (
-          <Link
+          <a
             key={value}
-            href={
-              value === "securities" ? "/portfolio" : `/portfolio?holdings=${value}`
-            }
+            href={holdingsViewHref(value)}
             aria-current={active ? "page" : undefined}
+            onClick={(event) => {
+              if (
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                event.button !== 0
+              ) {
+                return;
+              }
+
+              event.preventDefault();
+              onShow(value);
+            }}
             className={
               active
                 ? "rounded-[10px] bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
@@ -303,7 +366,7 @@ function ViewToggle({
             }
           >
             {label}
-          </Link>
+          </a>
         );
       })}
     </nav>

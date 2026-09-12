@@ -17,11 +17,11 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageMain } from "@/components/layout/PageMain";
 import { CapacityToAct } from "@/components/portfolio/CapacityToAct";
 import { ExecutivePortfolioAssessment } from "@/components/portfolio/ExecutivePortfolioAssessment";
+import { HoldingsTable } from "@/components/portfolio/HoldingsTable";
 import {
-  HoldingsTable,
-  holdingsViewFromParam,
   type HoldingsView,
-} from "@/components/portfolio/HoldingsTable";
+  holdingsViewFromParam,
+} from "@/components/portfolio/holdings-view";
 import {
   getPortfolioOverview,
   type PortfolioDrawdown,
@@ -385,7 +385,10 @@ function PortfolioContent({
         </aside>
       </section>
 
+      {/* Keyed on the view so a server navigation re-seeds the
+          table's own state, rather than an effect syncing it. */}
       <HoldingsTable
+        key={view}
         holdings={portfolio.holdings}
         heldSecurities={portfolio.heldSecurities}
         positions={portfolio.positions}

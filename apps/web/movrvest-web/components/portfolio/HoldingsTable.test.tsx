@@ -6,7 +6,8 @@ import { describe, expect, it } from "vitest";
 
 import type { HeldSecurity, PortfolioHolding } from "@/lib/api/portfolio";
 
-import { HoldingsTable, holdingsViewFromParam } from "./HoldingsTable";
+import { HoldingsTable } from "./HoldingsTable";
+import { holdingsViewFromParam, holdingsViewHref } from "./holdings-view";
 
 /**
  * What the account holds, asked two ways.
@@ -71,6 +72,7 @@ function renderedSymbols(markup: string): string[] {
 describe("the holdings view parameter", () => {
   it("defaults to securities, because that is the question the card asks", () => {
     expect(holdingsViewFromParam(undefined)).toBe("securities");
+    expect(holdingsViewFromParam(null)).toBe("securities");
     expect(holdingsViewFromParam("")).toBe("securities");
     expect(holdingsViewFromParam("nonsense")).toBe("securities");
     expect(holdingsViewFromParam("securities")).toBe("securities");
@@ -228,5 +230,41 @@ describe("the table computes nothing", () => {
     for (const arithmetic of [".reduce(", "+=", "marketValueUsd +", "weightPct +"]) {
       expect(source).not.toContain(arithmetic);
     }
+  });
+});
+
+// ── switching views must not cost a page load ───────────────────────
+
+describe("the toggle as progressive enhancement", () => {
+  it("keeps a real href on every view, so no-JavaScript still works", () => {
+    // The click is intercepted when scripts run; the anchor is what
+    // happens when they do not, and what a middle-click opens.
+    expect(holdingsViewHref("securities")).toBe("/portfolio");
+    expect(holdingsViewHref("trades")).toBe("/portfolio?holdings=trades");
+
+    const markup = render();
+
+    expect(markup).toContain(`href="${holdingsViewHref("securities")}"`);
+    expect(markup).toContain(`href="${holdingsViewHref("trades")}"`);
+  });
+
+  it("renders the server's view on the first paint, before any script", () => {
+    // `renderToStaticMarkup` runs no effects, so this is exactly what
+    // the server sends: the view the URL asked for, already correct.
+    expect(renderedSymbols(render({ view: "trades" }))).toHaveLength(7);
+    expect(renderedSymbols(render({ view: "securities" }))).toHaveLength(4);
+  });
+
+  it("does not navigate through the router, which would refetch", () => {
+    // A `next/link` here re-runs a force-dynamic server render and a
+    // fresh account read to reorder rows the browser already holds.
+    const source = readFileSync(
+      fileURLToPath(new URL("./HoldingsTable.tsx", import.meta.url)),
+      "utf8",
+    );
+
+    expect(source).not.toContain("next/link");
+    expect(source).not.toContain("useRouter");
+    expect(source).toContain("window.history.pushState");
   });
 });
